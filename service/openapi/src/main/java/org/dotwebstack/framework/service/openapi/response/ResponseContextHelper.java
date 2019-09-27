@@ -48,24 +48,24 @@ public class ResponseContextHelper {
         .orElse(graphQlField);
 
 
-    SchemaSummary responseSchema = responseObject.getSummary();
+    SchemaSummary summary = responseObject.getSummary();
     boolean skip = skipPath;
-    if (!responseSchema.isEnvelope() && !Objects.equals(responseSchema.getType(), OasConstants.ARRAY_TYPE)) {
-      if (!skipPath || !Objects.equals(responseSchema.getType(), OasConstants.OBJECT_TYPE)) {
+    if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE)) {
+      if (!skipPath || !Objects.equals(summary.getType(), OasConstants.OBJECT_TYPE)) {
         joiner.add(responseObject.getIdentifier());
-        if (responseSchema.isRequired()) {
-          responseObjects.put(joiner.toString(), responseSchema);
+        if (summary.isRequired()) {
+          responseObjects.put(joiner.toString(), summary);
         }
       }
       skip = false;
     }
 
     final boolean finalSkip = skip;
-    if (responseSchema.isRequired() || responseSchema.isEnvelope()
+    if (summary.isRequired() || summary.isEnvelope()
         || isExpanded(inputParams, getPathString(prefix, responseObject))) {
-      if (!responseSchema.getChildren()
+      if (!summary.getChildren()
           .isEmpty()) {
-        responseSchema.getChildren()
+        summary.getChildren()
             .stream()
             .flatMap(child -> getRequiredResponseObject(joiner.toString(), child, childField, inputParams, finalSkip)
                 .entrySet()
@@ -73,9 +73,9 @@ public class ResponseContextHelper {
             .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
       }
 
-      if (!responseSchema.getItems()
+      if (!summary.getItems()
           .isEmpty()) {
-        responseSchema.getItems()
+        summary.getItems()
             .stream()
             .flatMap(item -> getRequiredResponseObject(joiner.toString(), item, graphQlField, inputParams, finalSkip)
                 .entrySet()

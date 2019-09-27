@@ -30,14 +30,14 @@ public class QueryFieldHelper {
 
   private FieldDefinition getQueryFieldDefinition(String dwsQuery) {
     ObjectTypeDefinition query = (ObjectTypeDefinition) this.typeDefinitionRegistry.getType("Query")
-        .orElseThrow(() -> invalidConfigurationException("Type 'Query' not found in GraphQL summary."));
+        .orElseThrow(() -> invalidConfigurationException("Type 'Query' not found in GraphQL schema."));
     return query.getFieldDefinitions()
         .stream()
         .filter(fieldDefinition -> fieldDefinition.getName()
             .equals(dwsQuery))
         .findFirst()
         .orElseThrow(
-            () -> invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL summary.", dwsQuery));
+            () -> invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
   }
 
 }

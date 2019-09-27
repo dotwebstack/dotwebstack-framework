@@ -18,8 +18,8 @@ class ResponseMapperHelper {
             .getSummary(), object));
   }
 
-  private static boolean isEmptyList(SchemaSummary responseSchema, Object object) {
-    if (responseSchema.isNillable() && object instanceof List) {
+  private static boolean isEmptyList(SchemaSummary summary, Object object) {
+    if (summary.isNillable() && object instanceof List) {
       return ((List) object).isEmpty();
     }
     return false;

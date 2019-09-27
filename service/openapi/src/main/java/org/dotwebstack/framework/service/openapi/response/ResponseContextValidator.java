@@ -38,14 +38,15 @@ public class ResponseContextValidator {
             .get(0);
         if (!validatedReferences.contains(item.getSummary()
             .getRef())) {
+          ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
           if (item.getSummary()
               .isEnvelope()
               || !Objects.isNull(item.getSummary()
                   .getDwsExpr())) {
-            validate(item, field, validatedReferences, copyAndAddToList(parents, responseObject), isRoot);
+            validate(item, field, validatedReferences, copy, isRoot);
           } else {
-            validate(item, getChildFieldWithName(isRoot, field, responseObject, parents), validatedReferences,
-                copyAndAddToList(parents, responseObject), false);
+            validate(item, getChildFieldWithName(isRoot, field, responseObject, copy), validatedReferences,
+                copy, false);
           }
         }
         break;
@@ -63,12 +64,13 @@ public class ResponseContextValidator {
             .forEach(child -> {
               SchemaSummary childSummary = child.getSummary();
 
+              ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
               if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isEnvelope()
                   || !Objects.isNull(summary.getDwsExpr())) {
-                validate(child, field, validatedReferences, copyAndAddToList(parents, responseObject), isRoot);
+                validate(child, field, validatedReferences, copy, isRoot);
               } else {
-                validate(child, getChildFieldWithName(isRoot, field, child, parents), validatedReferences,
-                    copyAndAddToList(parents, responseObject), false);
+                validate(child, getChildFieldWithName(isRoot, field, child, copy), validatedReferences,
+                    copy, false);
               }
             });
         break;
@@ -97,7 +99,7 @@ public class ResponseContextValidator {
       }
     }
     throw invalidOpenApiConfigurationException(
-        "OAS field '{}' does not match with GraphQl object '{}' for summary type '{}'",
+        "OAS field '{}' does not match with GraphQl object '{}' for schema type '{}'",
         getPath(parents, responseObject.getIdentifier()), field.getName(), field.getType());
   }
 
@@ -115,18 +117,16 @@ public class ResponseContextValidator {
           .getType())) {
         arrayCount++;
       } else {
-        String parentIdentifier = parent.getIdentifier();
+        StringBuilder builder = new StringBuilder(parent.getIdentifier());
         if (parent.getSummary()
             .isEnvelope()) {
-          parentIdentifier = "<" + parentIdentifier + ">";
+          builder.insert(0, "<").append(">");
         }
         if (arrayCount > 0) {
-          parentIdentifier = parentIdentifier + IntStream.range(0, arrayCount)
-              .mapToObj(i -> "[]")
-              .collect(Collectors.joining());
+          IntStream.range(0, arrayCount).forEach(index -> builder.append("[]"));
           arrayCount = 0;
         }
-        joiner.add(parentIdentifier);
+        joiner.add(builder.toString());
       }
     }
     joiner.add(identifier);

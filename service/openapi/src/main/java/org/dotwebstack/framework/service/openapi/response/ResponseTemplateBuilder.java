@@ -179,10 +179,10 @@ public class ResponseTemplateBuilder {
     }
   }
 
-  private ResponseObject createResponseObject(String identifier, SchemaSummary responseSchema) {
+  private ResponseObject createResponseObject(String identifier, SchemaSummary summary) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .summary(responseSchema)
+        .summary(summary)
         .build();
   }
 
