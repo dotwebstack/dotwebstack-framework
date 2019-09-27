@@ -4,12 +4,11 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 
-import io.swagger.v3.oas.models.media.Schema;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -24,75 +23,87 @@ public class ResponseContextValidator {
   private final TypeValidator typeValidator = new TypeValidator();
 
   public void validate(@NonNull ResponseObject responseObject, @NonNull GraphQlField field) {
-    this.validate(responseObject, field, new HashSet<>(), new ArrayList<>());
+    this.validate(responseObject, field, new HashSet<>(), new ArrayList<>(), field.isListType());
   }
 
-  private void validate(ResponseObject responseObject, GraphQlField field, Set<Schema<?>> validatedSchemas,
-      List<ResponseObject> parents) {
+  private void validate(ResponseObject responseObject, GraphQlField field, Set<String> validatedReferences,
+      List<ResponseObject> parents, boolean isRoot) {
     String graphQlType = field.getType();
-    ResponseSchema responseSchema = responseObject.getSchema();
-    String oasType = responseSchema.getType();
+    SchemaSummary summary = responseObject.getSummary();
+    String oasType = summary.getType();
+
     switch (oasType) {
       case ARRAY_TYPE:
-        ResponseObject fieldTemplate = responseSchema.getItems()
+        ResponseObject item = summary.getItems()
             .get(0);
-        if (!validatedSchemas.contains(fieldTemplate.getSchema()
-            .getSchema())) {
-          GraphQlField usedField = field;
-          if (!Objects.equals(fieldTemplate.getIdentifier(), field.getName())) {
-            usedField = getChildFieldWithName(field, responseObject.getIdentifier());
+        if (!validatedReferences.contains(item.getSummary()
+            .getRef())) {
+          if (item.getSummary()
+              .isEnvelope()
+              || !Objects.isNull(item.getSummary()
+                  .getDwsExpr())) {
+            validate(item, field, validatedReferences, copyAndAddToList(parents, responseObject), isRoot);
+          } else {
+            validate(item, getChildFieldWithName(isRoot, field, responseObject, parents), validatedReferences,
+                copyAndAddToList(parents, responseObject), false);
           }
-          validate(fieldTemplate, usedField, validatedSchemas, copyAndAddToList(parents, responseObject));
         }
         break;
       case OBJECT_TYPE:
-        List<ResponseObject> children = responseSchema.getChildren();
-        if (Objects.nonNull(responseSchema.getSchema())) {
-          validatedSchemas.add(responseSchema.getSchema());
+        if (Objects.nonNull(summary.getRef())) {
+          validatedReferences.add(summary.getRef());
         }
 
-        children.stream()
-            .filter(child -> Objects.isNull(child.getSchema()
+        summary.getChildren()
+            .stream()
+            .filter(child -> Objects.isNull(child.getSummary()
                 .getDwsExpr())
-                && !validatedSchemas.contains(child.getSchema()
-                    .getSchema()))
+                && !validatedReferences.contains(child.getSummary()
+                    .getRef()))
             .forEach(child -> {
-              if (child.getSchema()
-                  .isEnvelope()) {
-                ResponseObject embedded = child.getSchema()
-                    .getChildren()
-                    .get(0);
-                validate(embedded, field, validatedSchemas, copyAndAddToList(parents, responseObject, child));
-              } else {
-                GraphQlField graphQlChildField = field.getFields()
-                    .stream()
-                    .filter(childField -> childField.getName()
-                        .equals(child.getIdentifier()))
-                    .findFirst()
-                    .orElseThrow(() -> invalidOpenApiConfigurationException(
-                        "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
-                        getPath(parents, child.getIdentifier()), field.getName(), field.getType()));
+              SchemaSummary childSummary = child.getSummary();
 
-                validate(child, graphQlChildField, validatedSchemas, copyAndAddToList(parents, responseObject));
+              if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isEnvelope()
+                  || !Objects.isNull(summary.getDwsExpr())) {
+                validate(child, field, validatedReferences, copyAndAddToList(parents, responseObject), isRoot);
+              } else {
+                validate(child, getChildFieldWithName(isRoot, field, child, parents), validatedReferences,
+                    copyAndAddToList(parents, responseObject), false);
               }
             });
         break;
       default:
+        if (!Objects.equals(field.getName(), responseObject.getIdentifier())) {
+          throw invalidOpenApiConfigurationException(
+              "OAS field '{}' does not match with GraphQl object '{}' for schema type '{}'",
+              getPath(parents, responseObject.getIdentifier()), field.getName(), field.getType());
+        }
         this.typeValidator.validateTypesGraphQlToOpenApi(oasType, graphQlType, responseObject.getIdentifier());
     }
   }
 
-  private GraphQlField getChildFieldWithName(GraphQlField field, String name) {
-    return field.getFields()
-        .stream()
-        .filter(childField -> Objects.equals(childField.getName(), name))
-        .findFirst()
-        .orElse(field);
+  private GraphQlField getChildFieldWithName(boolean isRoot, GraphQlField field, ResponseObject responseObject,
+      List<ResponseObject> parents) {
+    if (isRoot && Objects.equals(responseObject.getSummary()
+        .getType(), ARRAY_TYPE)) {
+      return field;
+    } else {
+      Optional<GraphQlField> match = field.getFields()
+          .stream()
+          .filter(childField -> Objects.equals(childField.getName(), responseObject.getIdentifier()))
+          .findFirst();
+      if (match.isPresent()) {
+        return match.get();
+      }
+    }
+    throw invalidOpenApiConfigurationException(
+        "OAS field '{}' does not match with GraphQl object '{}' for summary type '{}'",
+        getPath(parents, responseObject.getIdentifier()), field.getName(), field.getType());
   }
 
-  private ArrayList<ResponseObject> copyAndAddToList(List<ResponseObject> list, ResponseObject... responseObject) {
+  private ArrayList<ResponseObject> copyAndAddToList(List<ResponseObject> list, ResponseObject responseObject) {
     ArrayList<ResponseObject> responseObjects = new ArrayList<>(list);
-    responseObjects.addAll(Arrays.asList(responseObject));
+    responseObjects.add(responseObject);
     return responseObjects;
   }
 
@@ -100,12 +111,12 @@ public class ResponseContextValidator {
     StringJoiner joiner = new StringJoiner(".");
     int arrayCount = 0;
     for (ResponseObject parent : parents) {
-      if (ARRAY_TYPE.equals(parent.getSchema()
+      if (ARRAY_TYPE.equals(parent.getSummary()
           .getType())) {
         arrayCount++;
       } else {
         String parentIdentifier = parent.getIdentifier();
-        if (parent.getSchema()
+        if (parent.getSummary()
             .isEnvelope()) {
           parentIdentifier = "<" + parentIdentifier + ">";
         }

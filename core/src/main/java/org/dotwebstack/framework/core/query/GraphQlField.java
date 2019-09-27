@@ -12,6 +12,8 @@ public class GraphQlField {
 
   private String type;
 
+  boolean listType;
+
   @Builder.Default
   private List<GraphQlField> fields = Collections.emptyList();
 

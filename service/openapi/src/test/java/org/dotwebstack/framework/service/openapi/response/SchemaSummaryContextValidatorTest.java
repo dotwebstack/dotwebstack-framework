@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 
-public class ResponseSchemaContextValidatorTest {
+public class SchemaSummaryContextValidatorTest {
 
   private OpenAPI openApi;
 

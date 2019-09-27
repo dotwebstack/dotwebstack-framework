@@ -56,14 +56,14 @@ public class TestResources {
 
   public static GraphQlField getGraphQlField(TypeDefinitionRegistry typeDefinitionRegistry, String name) {
     ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeDefinitionRegistry.getType("Query")
-        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Query type not found in graphql schema."));
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Query type not found in graphql summary."));
     FieldDefinition fieldDefinition = objectTypeDefinition.getFieldDefinitions()
         .stream()
         .filter(fieldDefinition1 -> fieldDefinition1.getName()
             .equals(name))
         .findFirst()
         .orElseThrow(() -> ExceptionHelper
-            .invalidConfigurationException("Query field definition '{}' not found in graphql schema.", name));
+            .invalidConfigurationException("Query field definition '{}' not found in graphql summary.", name));
     return new GraphQlFieldBuilder(typeDefinitionRegistry).toGraphQlField(fieldDefinition, new HashMap<>());
   }
 

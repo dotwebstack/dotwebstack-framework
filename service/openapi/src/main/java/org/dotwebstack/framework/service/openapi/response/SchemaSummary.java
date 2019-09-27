@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Builder
 @Getter
-public class ResponseSchema {
+public class SchemaSummary {
 
   private String type;
 
@@ -22,6 +22,8 @@ public class ResponseSchema {
   private String dwsType;
 
   private Schema<?> schema;
+
+  private String ref;
 
   @Builder.Default
   @Setter

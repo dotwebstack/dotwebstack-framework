@@ -15,14 +15,14 @@ public class ResponseWriteContextHelper {
 
   public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
     return parentContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getChildren()
         .stream()
         .map(child -> {
           Object data = parentContext.getData();
           Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-          if (!child.getSchema()
+          if (!child.getSummary()
               .isEnvelope() && data instanceof Map) {
             data = ((Map) data).get(child.getIdentifier());
             dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
@@ -36,7 +36,7 @@ public class ResponseWriteContextHelper {
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
     ResponseObject childSchema = parentContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getItems()
         .get(0);
     return createNewResponseWriteContext(childSchema, parentContext.getData(), parentContext.getParameters(),
@@ -64,7 +64,7 @@ public class ResponseWriteContextHelper {
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
     Object data = parentContext.getData();
 
-    if (!childSchema.getSchema()
+    if (!childSchema.getSummary()
         .isEnvelope()) {
       if (!parentContext.getDataStack()
           .isEmpty()) {

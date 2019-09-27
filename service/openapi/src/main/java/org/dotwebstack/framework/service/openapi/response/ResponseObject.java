@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Builder
 @Getter
@@ -9,6 +10,7 @@ public class ResponseObject {
 
   private String identifier;
 
-  private ResponseSchema schema;
+  @Setter
+  private SchemaSummary summary;
 
 }

@@ -29,13 +29,15 @@ public class ResponseContextHelper {
     return getRequiredResponseObject("", successResponse.getResponseObject(), responseSchemaContext.getGraphQlField(),
         inputParams, true).keySet()
             .stream()
+            .map(path -> path.replaceFirst("^" + successResponse.getResponseObject()
+                .getIdentifier() + ".?", ""))
             .filter(path -> !path.isEmpty())
             .collect(Collectors.toSet());
   }
 
-  private static Map<String, ResponseSchema> getRequiredResponseObject(String prefix, ResponseObject responseObject,
+  private static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
       GraphQlField graphQlField, Map<String, Object> inputParams, boolean skipPath) {
-    Map<String, ResponseSchema> responseObjects = new HashMap<>();
+    Map<String, SchemaSummary> responseObjects = new HashMap<>();
     StringJoiner joiner = getStringJoiner(prefix);
 
     GraphQlField childField = graphQlField.getFields()
@@ -46,7 +48,7 @@ public class ResponseContextHelper {
         .orElse(graphQlField);
 
 
-    ResponseSchema responseSchema = responseObject.getSchema();
+    SchemaSummary responseSchema = responseObject.getSummary();
     boolean skip = skipPath;
     if (!responseSchema.isEnvelope() && !Objects.equals(responseSchema.getType(), OasConstants.ARRAY_TYPE)) {
       if (!skipPath || !Objects.equals(responseSchema.getType(), OasConstants.OBJECT_TYPE)) {

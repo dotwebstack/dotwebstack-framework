@@ -42,7 +42,7 @@ public class ResponseTemplateBuilderTest {
     assertEquals("application/hal+json", okResponse.getMediaType());
     assertEquals(200, okResponse.getResponseCode());
     assertEquals("object", okResponse.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getType());
   }
 
@@ -157,10 +157,10 @@ public class ResponseTemplateBuilderTest {
     assertEquals(1, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
     assertEquals(1, responseTemplate.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getChildren()
         .stream()
-        .filter(wrapper -> "template_content".equals(wrapper.getSchema()
+        .filter(wrapper -> "template_content".equals(wrapper.getSummary()
             .getDwsExpr()))
         .count());
   }

@@ -23,9 +23,9 @@ public class ResponseWriteContext {
   URI uri;
 
   public boolean isSchemaRequiredNonNillable() {
-    return getResponseObject().getSchema()
+    return getResponseObject().getSummary()
         .isRequired()
-        && !getResponseObject().getSchema()
+        && !getResponseObject().getSummary()
             .isNillable();
   }
 }

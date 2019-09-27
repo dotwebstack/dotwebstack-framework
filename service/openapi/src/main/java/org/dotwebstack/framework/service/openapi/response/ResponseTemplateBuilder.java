@@ -18,6 +18,7 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,19 +64,6 @@ public class ResponseTemplateBuilder {
     return responses;
   }
 
-  private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-      String pathName, String methodName, RequestBody requestBody, String queryName) {
-    validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
-    if (requestBody != null) {
-      validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
-    }
-    return apiResponse.getContent()
-        .entrySet()
-        .stream()
-        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName))
-        .collect(Collectors.toList());
-  }
-
   private void validateMediaType(@NonNull String responseCode, @NonNull Content content, @NonNull String pathName,
       @NonNull String methodName) {
     if (content.keySet()
@@ -95,20 +83,32 @@ public class ResponseTemplateBuilder {
     }
   }
 
+  private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
+      String pathName, String methodName, RequestBody requestBody, String queryName) {
+    validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
+    if (requestBody != null) {
+      validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
+    }
+    return apiResponse.getContent()
+        .entrySet()
+        .stream()
+        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName))
+        .collect(Collectors.toList());
+  }
+
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
       io.swagger.v3.oas.models.media.MediaType content, String queryName) {
     String ref = content.getSchema()
         .get$ref();
 
-    ResponseObject root;
-    Map<ObjectSchema, ResponseSchema> referenceMap = new HashMap<>();
-    if (Objects.nonNull(ref)) {
-      root = createResponseObject(openApi, queryName, resolveSchema(openApi, content.getSchema()), true, false,
-          referenceMap);
-    } else {
-      root = createResponseObject(openApi, queryName, content.getSchema(), true, false, referenceMap);
-    }
+    Schema schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
+    ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
+
+    Map<String, SchemaSummary> referenceMap = new HashMap<>();
+    referenceMap.put(ref, root.getSummary());
+
+    fillResponseObject(root, openApi, referenceMap, new ArrayList<>());
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
@@ -118,88 +118,84 @@ public class ResponseTemplateBuilder {
   }
 
   @SuppressWarnings("rawtypes")
-  private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
-      boolean isNillable, Map<ObjectSchema, ResponseSchema> referenceMap) {
-    if (schema.get$ref() != null) {
-      return createResponseObject(openApi, identifier, resolveSchema(openApi, schema), isRequired, isNillable,
-          referenceMap);
-    } else if (schema instanceof ObjectSchema) {
-      return createResponseObject(openApi, identifier, (ObjectSchema) schema, isRequired, isNillable, referenceMap);
-    } else if (schema instanceof ArraySchema) {
-      return createResponseObject(openApi, identifier, (ArraySchema) schema, isRequired, isNillable, referenceMap);
-    } else {
-      return createResponseFromSchema(identifier, schema, isRequired, isNillable);
-    }
-  }
+  private void fillResponseObject(ResponseObject responseObject, OpenAPI openApi,
+      Map<String, SchemaSummary> referenceMap, List<String> parents) {
+    Schema<?> oasSchema = responseObject.getSummary()
+        .getSchema();
+    SchemaSummary responseSummary = responseObject.getSummary();
+    parents.add(responseObject.getIdentifier());
 
-  @SuppressWarnings("rawtypes")
-  private ResponseObject createResponseObject(OpenAPI openApi, String identifier, ObjectSchema schema,
-      boolean isRequired, boolean isNillable, Map<ObjectSchema, ResponseSchema> referenceMap) {
-    Map<String, Schema> schemaProperties = schema.getProperties();
+    if (oasSchema instanceof ObjectSchema) {
+      List<ResponseObject> children = oasSchema.getProperties()
+          .entrySet()
+          .stream()
+          .map(entry -> {
+            String propId = entry.getKey();
+            Schema propSchema = entry.getValue();
+            String ref = null;
+            if (Objects.nonNull(propSchema.get$ref())) {
+              ref = propSchema.get$ref();
+              propSchema = resolveSchema(openApi, propSchema);
+            }
+            boolean childRequired = isRequired(responseSummary.getSchema(), propId);
+            boolean childNillable = isNillable(propSchema);
 
-    ResponseObject result = createResponseFromSchema(identifier, schema, isRequired, isNillable);
-    referenceMap.put(schema, result.getSchema());
+            if (referenceMap.containsKey(propSchema.get$ref())) {
+              return createResponseObject(propId, referenceMap.get(propSchema.get$ref()));
+            }
 
-    List<ResponseObject> children = schemaProperties.entrySet()
-        .stream()
-        .map(entry -> {
-          String propId = entry.getKey();
-          Schema propSchema = entry.getValue();
-          boolean childRequired = isRequired(schema, propId);
-          boolean childNillable = isNillable(propSchema);
-          if (referenceMap.containsKey(propSchema)) {
-            return createResponseFromSchema(propId, referenceMap.get(propSchema));
-          }
-          return createResponseObject(openApi, propId, propSchema, childRequired, childNillable, referenceMap);
-        })
-        .collect(Collectors.toList());
+            ResponseObject child = createResponseObject(propId, propSchema, ref, childRequired, childNillable);
 
-    result.getSchema()
-        .setChildren(children);
-    return result;
-  }
+            if (Objects.nonNull(propSchema.get$ref())) {
+              referenceMap.put(propSchema.get$ref(), child.getSummary());
+            }
 
-  @SuppressWarnings("rawtypes")
-  private ResponseObject createResponseObject(OpenAPI openApi, String identifier, ArraySchema schema,
-      boolean isRequired, boolean isNillable, Map<ObjectSchema, ResponseSchema> referenceMap) {
-    ResponseObject result = createResponseFromSchema(identifier, schema, isRequired, isNillable);
+            fillResponseObject(child, openApi, referenceMap, new ArrayList<>(parents));
+            return child;
+          })
+          .collect(Collectors.toList());
 
-    String ref = schema.getItems()
-        .get$ref();
+      responseObject.getSummary()
+          .setChildren(children);
+    } else if (oasSchema instanceof ArraySchema) {
+      String ref = ((ArraySchema) oasSchema).getItems()
+          .get$ref();
+      Schema usedSchema =
+          (Objects.nonNull(ref)) ? resolveSchema(openApi, oasSchema, ref) : ((ArraySchema) oasSchema).getItems();
 
-    Schema usedSchema = (Objects.nonNull(ref)) ? resolveSchema(openApi, schema, ref) : schema.getItems();
-    ResponseObject item;
-    if (referenceMap.containsKey(usedSchema)) {
-      item = createResponseFromSchema(identifier, referenceMap.get(usedSchema));
-    } else {
-      item = createResponseObject(openApi, identifier, usedSchema, true, isNillable(usedSchema), referenceMap);
-      if (usedSchema instanceof ObjectSchema) {
-        referenceMap.put((ObjectSchema) usedSchema, item.getSchema());
+      ResponseObject item;
+      if (referenceMap.containsKey(ref)) {
+        item = createResponseObject(responseObject.getIdentifier(), referenceMap.get(ref));
+      } else {
+        item = createResponseObject(responseObject.getIdentifier(), usedSchema, ref, true, isNillable(usedSchema));
+        if (Objects.nonNull(ref)) {
+          referenceMap.put(ref, item.getSummary());
+        }
+        fillResponseObject(item, openApi, referenceMap, new ArrayList<>(parents));
       }
-    }
 
-    result.getSchema()
-        .setItems(ImmutableList.of(item));
-    return result;
+      responseObject.getSummary()
+          .setItems(ImmutableList.of(item));
+    }
   }
 
-  private ResponseObject createResponseFromSchema(String identifier, ResponseSchema responseSchema) {
+  private ResponseObject createResponseObject(String identifier, SchemaSummary responseSchema) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .schema(responseSchema)
+        .summary(responseSchema)
         .build();
   }
 
-  private ResponseObject createResponseFromSchema(String identifier, Schema<?> schema, boolean isRequired,
+  private ResponseObject createResponseObject(String identifier, Schema<?> schema, String ref, boolean isRequired,
       boolean isNillable) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .schema(createResponseSchema(schema, isRequired, isNillable))
+        .summary(createResponseObject(schema, ref, isRequired, isNillable))
         .build();
   }
 
-  private ResponseSchema createResponseSchema(Schema<?> schema, boolean isRequired, boolean isNillable) {
-    return ResponseSchema.builder()
+  private SchemaSummary createResponseObject(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
+    return SchemaSummary.builder()
         .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
         .dwsType(getDwsType(schema))
@@ -207,6 +203,7 @@ public class ResponseTemplateBuilder {
         .dwsExpr(getDwsExpression(schema))
         .required(isRequired)
         .schema(schema)
+        .ref(ref)
         .build();
   }
 

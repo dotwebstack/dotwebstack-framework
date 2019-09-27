@@ -20,8 +20,8 @@ import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchema;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
+import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -286,7 +286,7 @@ class ResponseMapperTest {
       List<ResponseObject> children) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .schema(ResponseSchema.builder()
+        .summary(SchemaSummary.builder()
             .type(type)
             .children(children)
             .items(items)
@@ -299,7 +299,7 @@ class ResponseMapperTest {
       String dwsTemplate) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .schema(ResponseSchema.builder()
+        .summary(SchemaSummary.builder()
             .type(type)
             .required(required)
             .nillable(nillable)

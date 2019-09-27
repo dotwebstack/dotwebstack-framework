@@ -64,13 +64,13 @@ public class ResponseMapper {
 
   private Object mapDataToResponse(@NonNull ResponseWriteContext writeContext) {
     switch (writeContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getType()) {
       case ARRAY_TYPE:
         return mapArrayDataToResponse(writeContext);
       case OBJECT_TYPE:
         if (writeContext.getResponseObject()
-            .getSchema()
+            .getSummary()
             .isEnvelope()) {
           return mapEnvelopeObjectToResponse(writeContext);
         }
@@ -100,14 +100,14 @@ public class ResponseMapper {
     }
 
     if (Objects.nonNull(parentContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getDwsType())) {
       return parentContext.getData();
     }
 
     Map<String, Object> result = new HashMap<>();
     parentContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getChildren()
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
@@ -121,7 +121,7 @@ public class ResponseMapper {
 
   private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
     if (Objects.isNull(writeContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getDwsExpr())) {
       return writeContext.getData();
     }
@@ -154,7 +154,7 @@ public class ResponseMapper {
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
     return Objects.nonNull(writeContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
   }
 
@@ -162,7 +162,7 @@ public class ResponseMapper {
   private Object mapObject(ResponseWriteContext writeContext, Object object) {
     if (isRequiredAndNullOrEmpty(writeContext, object)) {
       if (writeContext.getResponseObject()
-          .getSchema()
+          .getSummary()
           .isNillable()) {
         return null;
       } else {
@@ -215,7 +215,7 @@ public class ResponseMapper {
         .forEach((key, value) -> context.set("env." + key, value));
 
     return jexlHelper.evaluateScript(writeContext.getResponseObject()
-        .getSchema()
+        .getSummary()
         .getDwsExpr(), context, String.class);
   }
 }
