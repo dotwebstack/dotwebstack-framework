@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -45,8 +44,8 @@ public class ResponseContextValidator {
                   .getDwsExpr())) {
             validate(item, field, validatedReferences, copy, isRoot);
           } else {
-            validate(item, getChildFieldWithName(isRoot, field, responseObject, copy), validatedReferences,
-                copy, false);
+            validate(item, getChildFieldWithName(isRoot, field, responseObject, copy), validatedReferences, copy,
+                false);
           }
         }
         break;
@@ -69,8 +68,7 @@ public class ResponseContextValidator {
                   || !Objects.isNull(summary.getDwsExpr())) {
                 validate(child, field, validatedReferences, copy, isRoot);
               } else {
-                validate(child, getChildFieldWithName(isRoot, field, child, copy), validatedReferences,
-                    copy, false);
+                validate(child, getChildFieldWithName(isRoot, field, child, copy), validatedReferences, copy, false);
               }
             });
         break;
@@ -120,10 +118,12 @@ public class ResponseContextValidator {
         StringBuilder builder = new StringBuilder(parent.getIdentifier());
         if (parent.getSummary()
             .isEnvelope()) {
-          builder.insert(0, "<").append(">");
+          builder.insert(0, "<")
+              .append(">");
         }
         if (arrayCount > 0) {
-          IntStream.range(0, arrayCount).forEach(index -> builder.append("[]"));
+          IntStream.range(0, arrayCount)
+              .forEach(index -> builder.append("[]"));
           arrayCount = 0;
         }
         joiner.add(builder.toString());

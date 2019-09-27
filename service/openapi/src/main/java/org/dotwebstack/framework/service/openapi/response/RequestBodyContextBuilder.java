@@ -49,8 +49,8 @@ public class RequestBodyContextBuilder {
     List<String> propertyNames = new ArrayList<>(((Set<String>) schema.getProperties()
         .keySet()));
     if (propertyNames.size() != 1) {
-      throw invalidConfigurationException(
-          "Request body summary should contain exactly 1 property, found properties ().", propertyNames.size());
+      throw invalidConfigurationException("Request body schema should contain exactly 1 property, found properties ().",
+          propertyNames.size());
     }
     return propertyNames.get(0);
   }
