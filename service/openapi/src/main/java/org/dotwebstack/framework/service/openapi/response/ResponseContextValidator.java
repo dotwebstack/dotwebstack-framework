@@ -26,7 +26,7 @@ public class ResponseContextValidator {
   }
 
   private void validate(ResponseObject responseObject, GraphQlField field, Set<String> validatedReferences,
-      List<ResponseObject> parents, boolean isRoot) {
+      List<ResponseObject> parents, boolean isArrayRoot) {
     String graphQlType = field.getType();
     SchemaSummary summary = responseObject.getSummary();
     String oasType = summary.getType();
@@ -42,9 +42,9 @@ public class ResponseContextValidator {
               .isEnvelope()
               || !Objects.isNull(item.getSummary()
                   .getDwsExpr())) {
-            validate(item, field, validatedReferences, copy, isRoot);
+            validate(item, field, validatedReferences, copy, isArrayRoot);
           } else {
-            validate(item, getChildFieldWithName(isRoot, field, responseObject, copy), validatedReferences, copy,
+            validate(item, getChildFieldWithName(isArrayRoot, field, responseObject, copy), validatedReferences, copy,
                 false);
           }
         }
@@ -66,9 +66,10 @@ public class ResponseContextValidator {
               ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
               if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isEnvelope()
                   || !Objects.isNull(summary.getDwsExpr())) {
-                validate(child, field, validatedReferences, copy, isRoot);
+                validate(child, field, validatedReferences, copy, isArrayRoot);
               } else {
-                validate(child, getChildFieldWithName(isRoot, field, child, copy), validatedReferences, copy, false);
+                validate(child, getChildFieldWithName(isArrayRoot, field, child, copy), validatedReferences, copy,
+                    false);
               }
             });
         break;

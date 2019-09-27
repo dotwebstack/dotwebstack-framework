@@ -29,8 +29,13 @@ public class ResponseContextHelper {
     return getRequiredResponseObject("", successResponse.getResponseObject(), responseSchemaContext.getGraphQlField(),
         inputParams, true).keySet()
             .stream()
-            .map(path -> path.replaceFirst("^" + successResponse.getResponseObject()
-                .getIdentifier() + ".?", ""))
+            .map(path -> {
+              if (path.startsWith(successResponse.getResponseObject()
+                  .getIdentifier() + ".")) {
+                return path.substring(path.indexOf('.') + 1);
+              }
+              return path;
+            })
             .filter(path -> !path.isEmpty())
             .collect(Collectors.toSet());
   }
@@ -86,7 +91,7 @@ public class ResponseContextHelper {
     return responseObjects;
   }
 
-  private static String getPathString(String prefix, ResponseObject responseObject) {
+  public static String getPathString(String prefix, ResponseObject responseObject) {
     StringJoiner expandJoiner = new StringJoiner(".");
     if (!prefix.isBlank()) {
       expandJoiner.add(prefix);

@@ -101,6 +101,7 @@ class ResponseMapperTest {
         .responseObject(getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING)))
         .data(data)
         .dataStack(dataStack)
+        .parameters(Collections.emptyMap())
         .build();
 
     // Act
@@ -288,6 +289,7 @@ class ResponseMapperTest {
         .identifier(identifier)
         .summary(SchemaSummary.builder()
             .type(type)
+            .required(true)
             .children(children)
             .items(items)
             .isEnvelope(envelop)
@@ -301,6 +303,7 @@ class ResponseMapperTest {
         .identifier(identifier)
         .summary(SchemaSummary.builder()
             .type(type)
+            .required(true)
             .required(required)
             .nillable(nillable)
             .dwsExpr(dwsTemplate)
