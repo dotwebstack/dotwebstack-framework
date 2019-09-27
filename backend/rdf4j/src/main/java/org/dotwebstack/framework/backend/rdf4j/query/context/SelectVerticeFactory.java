@@ -27,8 +27,16 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     super(serializerRouter, rdf4jProperties);
   }
 
-  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
+  public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
       List<Object> orderByList) {
+    Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
+    makeEdgesUnique(vertice.getEdges());
+    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
+    return vertice;
+  }
+
+  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+      List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
@@ -57,7 +65,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .operator(filter.getOperator())
               .build();
           Vertice childVertice =
-              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule), orderByList);
+              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
 
           edge = Edge.builder()
               .predicate(nodeShape.getPropertyShape(filter.getPath()
@@ -74,11 +82,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             .add(edge);
       }
     });
-
-    makeEdgesUnique(vertice.getEdges());
-
-    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
-
     return vertice;
   }
 
