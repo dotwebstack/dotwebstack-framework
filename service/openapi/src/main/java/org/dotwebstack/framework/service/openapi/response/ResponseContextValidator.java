@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.IntStream;
@@ -88,18 +87,15 @@ public class ResponseContextValidator {
     if (isRoot && Objects.equals(responseObject.getSummary()
         .getType(), ARRAY_TYPE)) {
       return field;
-    } else {
-      Optional<GraphQlField> match = field.getFields()
-          .stream()
-          .filter(childField -> Objects.equals(childField.getName(), responseObject.getIdentifier()))
-          .findFirst();
-      if (match.isPresent()) {
-        return match.get();
-      }
     }
-    throw invalidOpenApiConfigurationException(
-        "OAS field '{}' does not match with GraphQl object '{}' for schema type '{}'",
-        getPath(parents, responseObject.getIdentifier()), field.getName(), field.getType());
+    return field.getFields()
+        .stream()
+        .filter(childField -> Objects.equals(childField.getName(), responseObject.getIdentifier()))
+        .findFirst()
+        .orElseThrow(() -> invalidOpenApiConfigurationException(
+            "OAS field '{}' does not match with GraphQl object '{}' for schema type '{}'",
+            getPath(parents, responseObject.getIdentifier()), field.getName(), field.getType()));
+
   }
 
   private ArrayList<ResponseObject> copyAndAddToList(List<ResponseObject> list, ResponseObject responseObject) {
