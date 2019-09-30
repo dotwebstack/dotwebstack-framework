@@ -81,7 +81,7 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape, Collections.emptyList(),
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
         Collections.emptyList());
 
     // Assert
@@ -116,7 +116,7 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape, Collections.emptyList(),
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
         ImmutableList.of(ImmutableMap.of("field", "name", "order", "DESC")));
 
     // Assert
@@ -181,12 +181,10 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape,
-        singletonList(FilterRule.builder()
-            .path(Arrays.asList("beers", "ingredients", "name"))
-            .value("Hop")
-            .build()),
-        Collections.emptyList());
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
+        .path(Arrays.asList("beers", "ingredients", "name"))
+        .value("Hop")
+        .build()), Collections.emptyList());
 
     // Assert
     assertThat(vertice.getEdges()
@@ -244,12 +242,10 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape,
-        singletonList(FilterRule.builder()
-            .path(singletonList("name"))
-            .value("Alfa Brouwerij")
-            .build()),
-        Collections.emptyList());
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
+        .path(singletonList("name"))
+        .value("Alfa Brouwerij")
+        .build()), Collections.emptyList());
 
     // Assert
     assertThat(vertice.getEdges()
