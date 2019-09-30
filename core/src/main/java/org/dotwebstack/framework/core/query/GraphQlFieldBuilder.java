@@ -37,6 +37,7 @@ public class GraphQlFieldBuilder {
     GraphQlField result = GraphQlField.builder()
         .name(fieldDefinition.getName())
         .type(typeName)
+        .listType(TypeHelper.hasListType(fieldDefinition.getType()))
         .fields(fields)
         .arguments(arguments)
         .build();
@@ -76,6 +77,7 @@ public class GraphQlFieldBuilder {
                     .getArguments())
                 .type(typeNameFieldMap.get(childType)
                     .getType())
+                .listType(TypeHelper.hasListType(childFieldDefinition.getType()))
                 .build();
           }
           return toGraphQlField(childFieldDefinition, typeNameFieldMap);

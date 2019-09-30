@@ -14,14 +14,16 @@ public class ResponseWriteContextHelper {
   private ResponseWriteContextHelper() {}
 
   public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
-    return parentContext.getSchema()
+    return parentContext.getResponseObject()
+        .getSummary()
         .getChildren()
         .stream()
         .map(child -> {
           Object data = parentContext.getData();
           Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-          if (!child.isEnvelope() && data instanceof Map) {
+          if (!child.getSummary()
+              .isEnvelope() && data instanceof Map) {
             data = ((Map) data).get(child.getIdentifier());
             dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
           }
@@ -33,7 +35,8 @@ public class ResponseWriteContextHelper {
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
-    ResponseObject childSchema = parentContext.getSchema()
+    ResponseObject childSchema = parentContext.getResponseObject()
+        .getSummary()
         .getItems()
         .get(0);
     return createNewResponseWriteContext(childSchema, parentContext.getData(), parentContext.getParameters(),
@@ -61,7 +64,8 @@ public class ResponseWriteContextHelper {
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
     Object data = parentContext.getData();
 
-    if (!childSchema.isEnvelope()) {
+    if (!childSchema.getSummary()
+        .isEnvelope()) {
       if (!parentContext.getDataStack()
           .isEmpty()) {
         data = ((Map) parentContext.getDataStack()
@@ -84,14 +88,14 @@ public class ResponseWriteContextHelper {
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
-    return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(), dataStack,
-        parentContext.getUri());
+    return createNewResponseWriteContext(parentContext.getResponseObject(), childData, parentContext.getParameters(),
+        dataStack, parentContext.getUri());
   }
 
   public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
       Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack, URI uri) {
     return ResponseWriteContext.builder()
-        .schema(schema)
+        .responseObject(schema)
         .data(data)
         .parameters(parameters)
         .dataStack(dataStack)

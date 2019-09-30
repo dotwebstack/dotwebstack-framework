@@ -1,10 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getRequiredResponseObjectsForSuccessResponse;
+import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,7 +16,7 @@ public class GraphQlQueryBuilder {
 
   public String toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
-    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseSchemaContext);
+    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseSchemaContext, inputParams);
 
     StringBuilder builder = new StringBuilder();
     StringJoiner joiner = new StringJoiner(",", "{", "}");
@@ -74,15 +73,5 @@ public class GraphQlQueryBuilder {
         .replaceAll("\\[", "")
         .replaceAll("]", "")
         .matches("^ID$");
-  }
-
-  @SuppressWarnings("unchecked")
-  private boolean isExpanded(Map<String, Object> inputParams, String path) {
-    List<String> expandVariables = (List<String>) inputParams.get(X_DWS_EXPANDED_PARAMS);
-    if (Objects.nonNull(expandVariables)) {
-      return expandVariables.stream()
-          .anyMatch(path::equals);
-    }
-    return false;
   }
 }
