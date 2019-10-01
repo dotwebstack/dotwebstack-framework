@@ -13,7 +13,6 @@ type Query {
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
             name: [String] @filter(field: "name"),
-            localName: String = "Ambrass Bierbrouwerij" @filter,
             beerName: String @filter(field: "beers.name")): [Brewery!]!
     @sparql(
       repository: "local"

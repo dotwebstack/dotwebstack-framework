@@ -155,6 +155,7 @@
   .
 
   supplement_id:1 a beer_def:Supplement ;
+    beer_def:identifier "1" ;
     schema:name "Gist"
   .
 

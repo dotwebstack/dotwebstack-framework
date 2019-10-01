@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIris;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.createIri;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import java.util.ArrayList;
@@ -10,10 +13,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.dotwebstack.framework.backend.rdf4j.constants.Rdf4jConstants;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -21,11 +26,13 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.eclipse.rdf4j.sail.memory.model.MemStatement;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 public class NodeShapeFactory {
 
@@ -47,6 +54,7 @@ public class NodeShapeFactory {
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
         .targetClasses(findRequiredPropertyIris(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS))
         .propertyShapes(propertyShapes)
         .build();
 
@@ -191,6 +199,38 @@ public class NodeShapeFactory {
         .ifPresent(rest -> shapes.addAll(unwrapOrStatements(shapeModel, rest.getSubject())));
 
     return shapes;
+  }
+
+  private static void chainSuperclasses(NodeShape nodeShape, Map<IRI, NodeShape> nodeShapeMap, List<IRI> parents) {
+    if (Objects.nonNull(nodeShape.getParent())) {
+      if (nodeShapeMap.containsKey(nodeShape.getParent())) {
+        if (parents.contains(nodeShape.getParent())) {
+          throw invalidConfigurationException("Introducing cyclic reference by inheriting parent {} on nodeshape {}",
+              nodeShape.getParent(), nodeShape.getIdentifier());
+        }
+        parents.add(nodeShape.getParent());
+        chainSuperclasses(nodeShapeMap.get(nodeShape.getParent()), nodeShapeMap, parents);
+      } else {
+        throw invalidConfigurationException("Nodeshape {} tries to inherit from unexisting parent {}",
+            nodeShape.getIdentifier(), nodeShape.getParent());
+      }
+    }
+  }
+
+  public static NodeShape processInheritance(NodeShape nodeShape, Map<IRI, NodeShape> nodeShapeMap) {
+    ArrayList<IRI> parents = new ArrayList<>();
+    chainSuperclasses(nodeShape, nodeShapeMap, parents);
+    if (!parents.isEmpty()) {
+      parents.forEach(parent -> {
+        NodeShape parentShape = nodeShapeMap.get(parent);
+        parentShape.getPropertyShapes().forEach((key, value) -> {
+          if (!nodeShape.getPropertyShapes().keySet().contains(key)) {
+            nodeShape.getPropertyShapes().put(key, value);
+          }
+        });
+      });
+    }
+    return nodeShape;
   }
 
 }
