@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPro
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIris;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.createIri;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -26,13 +25,11 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.eclipse.rdf4j.sail.memory.model.MemStatement;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 public class NodeShapeFactory {
 
@@ -223,11 +220,15 @@ public class NodeShapeFactory {
     if (!parents.isEmpty()) {
       parents.forEach(parent -> {
         NodeShape parentShape = nodeShapeMap.get(parent);
-        parentShape.getPropertyShapes().forEach((key, value) -> {
-          if (!nodeShape.getPropertyShapes().keySet().contains(key)) {
-            nodeShape.getPropertyShapes().put(key, value);
-          }
-        });
+        parentShape.getPropertyShapes()
+            .forEach((key, value) -> {
+              if (!nodeShape.getPropertyShapes()
+                  .keySet()
+                  .contains(key)) {
+                nodeShape.getPropertyShapes()
+                    .put(key, value);
+              }
+            });
       });
     }
     return nodeShape;

@@ -33,7 +33,8 @@ public final class ValueUtils {
   }
 
   public static IRI findOptionalPropertyIri(Model model, Resource subject, IRI predicate) {
-    return Models.getPropertyIRI(model, subject, predicate).orElse(null);
+    return Models.getPropertyIRI(model, subject, predicate)
+        .orElse(null);
   }
 
   public static boolean isPropertyIriPresent(Model model, Resource subject, IRI predicate) {
