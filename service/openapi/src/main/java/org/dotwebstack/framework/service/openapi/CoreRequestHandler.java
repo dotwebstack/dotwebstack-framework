@@ -85,6 +85,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     validateSchema();
   }
 
+  /* For test purposes only. */
+  protected CoreRequestHandler() {
+    this.openApi = null;
+    this.pathName = null;
+    this.responseSchemaContext = null;
+    this.graphQL = null;
+    this.responseMapper = null;
+    this.paramHandlerRouter = null;
+    this.responseContextValidator = null;
+    this.requestBodyHandlerRouter = null;
+  }
+
   @Override
   public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
@@ -227,7 +239,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .collect(Collectors.toSet());
   }
 
-  private void validateParameterExistence(String type, Set<String> schemaParams, Set<String> givenParams) {
+  protected void validateParameterExistence(String type, Set<String> schemaParams, Set<String> givenParams) {
     List<String> unexistingVariables = givenParams.stream()
         .filter(parameter -> !schemaParams.contains(parameter))
         .collect(Collectors.toList());
