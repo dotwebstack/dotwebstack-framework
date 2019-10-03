@@ -9,9 +9,9 @@
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
 <https://github.com/dotwebstack/beer/shapes> {
-  beer_sh:AbstractShape a sh:NodeShape ;
+  beer_sh:Identifiable a sh:NodeShape ;
     sh:targetClass owl:Thing ;
-    sh:name "AbstractShape" ;
+    sh:name "Identifiable" ;
     sh:property
       beer_sh:Identifier ,
       beer_sh:Name
@@ -37,7 +37,7 @@
 
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
-    dws:inherits beer_sh:AbstractShape ;
+    dws:inherits beer_sh:Identifiable ;
     sh:name "Brewery" ;
     sh:property
       beer_sh:Brewery_localName ,
@@ -149,7 +149,7 @@
 
   beer_sh:Beer a sh:NodeShape ;
     sh:targetClass beer_def:Beer ;
-    dws:inherits beer_sh:AbstractShape ;
+    dws:inherits beer_sh:Identifiable ;
     sh:name "Beer" ;
     sh:property
       beer_sh:Beer_brewery ,
@@ -190,7 +190,7 @@
   beer_sh:BeerType a sh:NodeShape ;
     sh:name "BeerType" ;
     sh:targetClass beer_def:BeerType ;
-    dws:inherits beer_sh:AbstractShape ;
+    dws:inherits beer_sh:Identifiable ;
   .
 
   beer_sh:Beer_beerTypes a sh:PropertyShape ;
@@ -253,14 +253,14 @@
 
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
-    dws:inherits beer_sh:AbstractShape ;
+    dws:inherits beer_sh:Identifiable ;
     sh:name "Ingredient" ;
     sh:nodeKind sh:IRI ;
   .
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:targetClass beer_def:Supplement ;
-    dws:inherits beer_sh:AbstractShape ;
+    dws:inherits beer_sh:Identifiable ;
     sh:name "Supplement" ;
     sh:nodeKind sh:IRI
   .

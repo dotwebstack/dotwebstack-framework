@@ -51,7 +51,7 @@ public class NodeShapeFactory {
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
         .targetClasses(findRequiredPropertyIris(shapeModel, identifier, SHACL.TARGET_CLASS))
-        .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS))
+        .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS).orElse(null))
         .propertyShapes(propertyShapes)
         .build();
 
@@ -214,23 +214,21 @@ public class NodeShapeFactory {
     }
   }
 
-  public static NodeShape processInheritance(NodeShape nodeShape, Map<IRI, NodeShape> nodeShapeMap) {
+  public static NodeShape processInheritance(@NonNull NodeShape nodeShape, @NonNull Map<IRI, NodeShape> nodeShapeMap) {
     ArrayList<IRI> parents = new ArrayList<>();
     chainSuperclasses(nodeShape, nodeShapeMap, parents);
-    if (!parents.isEmpty()) {
-      parents.forEach(parent -> {
-        NodeShape parentShape = nodeShapeMap.get(parent);
-        parentShape.getPropertyShapes()
-            .forEach((key, value) -> {
-              if (!nodeShape.getPropertyShapes()
-                  .keySet()
-                  .contains(key)) {
-                nodeShape.getPropertyShapes()
-                    .put(key, value);
-              }
-            });
-      });
-    }
+    parents.forEach(parent -> {
+      NodeShape parentShape = nodeShapeMap.get(parent);
+      parentShape.getPropertyShapes()
+          .forEach((key, value) -> {
+            if (!nodeShape.getPropertyShapes()
+                .keySet()
+                .contains(key)) {
+              nodeShape.getPropertyShapes()
+                  .put(key, value);
+            }
+          });
+    });
     return nodeShape;
   }
 
