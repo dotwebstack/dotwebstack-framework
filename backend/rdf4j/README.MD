@@ -561,6 +561,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
     .
 ```
 
-In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://www.dotwebstack.org/\>) the properties of `Pet`. This means that besides the `fetchesBall` property
-(whether or not it likes to fetch a ball) an instance of `Dog` also has a name and an owner. The NodeShape `cat` has a 
-breed and because of the same inheritance relation with `Animal` also a name and an owner. 
+In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://www.dotwebstack.org/\>) to inherit the 
+properties of `Pet`. This means that besides the `fetchesBall` property (whether or not it likes to fetch a ball) an 
+instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
+relation with `Animal` also a name and an owner. 
