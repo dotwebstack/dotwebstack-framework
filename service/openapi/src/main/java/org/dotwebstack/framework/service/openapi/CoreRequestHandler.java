@@ -24,7 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -94,7 +97,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
         .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
-        .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST));
+        .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST))
+        .onErrorResume(InvalidConfigurationException.class, e -> getMonoError(format("Error while validating the request: %s", e.getMessage()), HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()
@@ -191,6 +195,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+
+      validateParameterExistence("query", getParameterNamesOfType("query"), request.queryParams()
+          .keySet());
+      validateParameterExistence("path", getParameterNamesOfType("path"), request.pathVariables()
+          .keySet());
+
       for (Parameter parameter : this.responseSchemaContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
         handler.getValue(request, parameter, responseSchemaContext)
@@ -205,6 +215,26 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     }
     return result;
+  }
+
+  private Set<String> getParameterNamesOfType(String type) {
+    return this.responseSchemaContext.getParameters()
+        .stream()
+        .filter(parameter -> Objects.equals(parameter.getIn(), type))
+        .map(Parameter::getName)
+        .collect(Collectors.toSet());
+  }
+
+  private void validateParameterExistence(String type, Set<String> schemaParams, Set<String> givenParams) {
+    List<String> unexistingVariables = givenParams.stream()
+        .filter(parameter -> !schemaParams.contains(parameter))
+        .collect(Collectors.toList());
+
+    if (!unexistingVariables.isEmpty()) {
+      throw invalidConfigurationException(
+          "The following of the provided {} parameters do not exist for this request: {}", type, unexistingVariables);
+    }
+
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
