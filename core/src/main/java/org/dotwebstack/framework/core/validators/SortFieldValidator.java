@@ -87,7 +87,7 @@ public class SortFieldValidator implements QueryValidator {
 
   private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
     Optional<String> sortFieldValue = getSortFieldValue(value);
-    if (!sortFieldValue.isPresent()) {
+    if (sortFieldValue.isEmpty()) {
       throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinitionType.getName(),
           CoreInputTypes.SORT_FIELD_FIELD);
     }
@@ -122,7 +122,7 @@ public class SortFieldValidator implements QueryValidator {
               .equals(field))
           .findFirst();
 
-      if (!matchedDefinition.isPresent()) {
+      if (matchedDefinition.isEmpty()) {
         throw invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.", type, field,
             fieldPath);
       }

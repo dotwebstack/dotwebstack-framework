@@ -82,18 +82,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    if (distinctQuery(sparqlDirective)) {
-      return this.query.distinct()
-          .getQueryString();
-    }
-    return this.query.getQueryString();
-  }
-
-  private boolean distinctQuery(@NonNull GraphQLDirective sparqlDirective) {
-    return Optional.of(sparqlDirective)
-        .map(directive -> directive.getArgument(Rdf4jDirectives.SPARQL_ARG_DISTINCT))
-        .map(argument -> (Boolean) argument.getValue())
-        .orElse(false);
+    return this.query.distinct().getQueryString();
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {

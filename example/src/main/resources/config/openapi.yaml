@@ -61,6 +61,7 @@ components:
         - identifier
         - name
         - localName
+        - owners
       properties:
         identifier:
           type: string
@@ -78,6 +79,11 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/Beer'
+        owners:
+          type: array
+          nullable: true
+          items:
+            type: string
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
