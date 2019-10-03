@@ -26,6 +26,7 @@ components:
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
+      x-dws-envelope: true
       required:
         - _embedded
         - _links
@@ -75,7 +76,6 @@ components:
           nullable: true
         beers:
           type: array
-          nullable: true
           items:
             $ref: '#/components/schemas/Beer'
         link:
@@ -117,8 +117,6 @@ paths:
         - name: expand
           x-dws-type: expand
           in: query
-          explode: false
-          required: false
           schema:
             type: array
             default: ['beers']
@@ -173,6 +171,15 @@ paths:
     get:
       x-dws-query: brewery
       parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
         - name: identifier
           in: path
           required: true

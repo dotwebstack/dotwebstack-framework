@@ -15,6 +15,8 @@ public final class NodeShape {
 
   private final Set<IRI> targetClasses;
 
+  private final IRI parent;
+
   private final String name;
 
   private final Map<String, PropertyShape> propertyShapes;

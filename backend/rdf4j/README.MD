@@ -529,3 +529,39 @@ sh:property [
 
 This construct makes it possible to have two property shapes with the same `sh:path` and each pointing to different node shape. 
 Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
+
+## 1.9 NodeShape Inheritance
+It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
+
+```shacl
+ ex:Pet a sh:NodeShape ;
+    sh:targetClass owl:Thing ;
+    sh:name "Animal" ;
+    sh:property
+      ex:name,
+      ex:owner
+  .
+
+  ex:Dog a sh:NodeShape ;
+    sh:name "Dog";
+    sh:targetClass ex_def:Dog ;
+    dws:inherits ex:Pet ;
+    sh:property
+      ex:fetchesBall ,
+      ...
+  .
+  
+  ex:Cat a sh:NodeShape ;
+    sh:name "Cat";
+    sh:targetClass ex_def:Cat ;
+    dws:inherits ex:Pet ;
+    sh:property
+      ex:breed ,
+      ...
+    .
+```
+
+In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://www.dotwebstack.org/\>) to inherit the 
+properties of `Pet`. This means that besides the `fetchesBall` property (whether or not it likes to fetch a ball) an 
+instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
+relation with `Animal` also a name and an owner. 

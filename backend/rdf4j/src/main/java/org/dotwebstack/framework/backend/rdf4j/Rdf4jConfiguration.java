@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
+import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -130,9 +132,13 @@ class Rdf4jConfiguration {
         .getPrefix());
 
     Map<IRI, NodeShape> nodeShapeMap = new HashMap<>();
-    Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
+    List<NodeShape> shapes = Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .stream()
         .map(subject -> createShapeFromModel(shapeModel, subject, nodeShapeMap))
+        .collect(Collectors.toList());
+
+    shapes.stream()
+        .map(shape -> processInheritance(shape, nodeShapeMap))
         .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
     return registry;
