@@ -82,7 +82,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    return this.query.distinct().getQueryString();
+    return this.query.distinct()
+        .getQueryString();
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
