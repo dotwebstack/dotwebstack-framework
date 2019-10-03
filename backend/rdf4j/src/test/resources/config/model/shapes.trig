@@ -1,18 +1,45 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dws: <http://www.dotwebstack.org/> .
 @prefix schema: <http://schema.org/> .
 @prefix beer: <https://github.com/dotwebstack/beer/> .
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
 <https://github.com/dotwebstack/beer/shapes> {
+  beer_sh:AbstractShape a sh:NodeShape ;
+    sh:targetClass owl:Thing ;
+    sh:name "AbstractShape" ;
+    sh:property
+      beer_sh:Identifier ,
+      beer_sh:Name
+  .
+
+  beer_sh:Identifier a sh:PropertyShape ;
+    sh:name "identifier" ;
+    sh:path beer_def:identifier ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+   beer_sh:Name a sh:PropertyShape ;
+     sh:name "name" ;
+     sh:path [ sh:alternativePath ( schema:name beer_def:label ) ] ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:nodeKind sh:Literal ;
+     sh:datatype xsd:string
+   .
+
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
+    dws:inherits beer_sh:AbstractShape ;
     sh:name "Brewery" ;
     sh:property
-      beer_sh:Brewery_identifier ,
-      beer_sh:Brewery_name ,
       beer_sh:Brewery_localName ,
       beer_sh:Brewery_address ,
       beer_sh:Brewery_founded ,
@@ -122,10 +149,9 @@
 
   beer_sh:Beer a sh:NodeShape ;
     sh:targetClass beer_def:Beer ;
+    dws:inherits beer_sh:AbstractShape ;
     sh:name "Beer" ;
     sh:property
-      beer_sh:Beer_identifier ,
-      beer_sh:Beer_name ,
       beer_sh:Beer_brewery ,
       beer_sh:Beer_beerTypes ,
       beer_sh:Beer_beerTypesZeroOrMore,
@@ -146,24 +172,6 @@
     ]
   .
 
-  beer_sh:Beer_identifier a sh:PropertyShape ;
-    sh:name "identifier" ;
-    sh:path beer_def:identifier ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
-  .
-
-  beer_sh:Beer_name a sh:PropertyShape ;
-    sh:name "name" ;
-    sh:path schema:name ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
-  .
-
   beer_sh:Beer_brewery a sh:PropertyShape ;
     sh:name "brewery" ;
     sh:path beer_def:brewery ;
@@ -182,17 +190,7 @@
   beer_sh:BeerType a sh:NodeShape ;
     sh:name "BeerType" ;
     sh:targetClass beer_def:BeerType ;
-    sh:property
-      beer_sh:BeerType_name ;
-  .
-
-  beer_sh:BeerType_name a sh:PropertyShape ;
-    sh:name "name" ;
-    sh:path schema:name ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
+    dws:inherits beer_sh:AbstractShape ;
   .
 
   beer_sh:Beer_beerTypes a sh:PropertyShape ;
@@ -255,35 +253,15 @@
 
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
+    dws:inherits beer_sh:AbstractShape ;
     sh:name "Ingredient" ;
-    sh:property
-      beer_sh:Ingredient_name ;
     sh:nodeKind sh:IRI ;
-  .
-
-  beer_sh:Ingredient_name a sh:PropertyShape ;
-    sh:name "name" ;
-    sh:path schema:name ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
   .
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:targetClass beer_def:Supplement ;
+    dws:inherits beer_sh:AbstractShape ;
     sh:name "Supplement" ;
-    sh:property
-      beer_sh:Supplement_name ;
     sh:nodeKind sh:IRI
-  .
-
-  beer_sh:Supplement_name a sh:PropertyShape ;
-    sh:name "name" ;
-    sh:path schema:name ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
   .
 }
