@@ -98,7 +98,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
         .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
         .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST))
-        .onErrorResume(InvalidConfigurationException.class, e -> getMonoError(format("Error while validating the request: %s", e.getMessage()), HttpStatus.BAD_REQUEST));
+        .onErrorResume(InvalidConfigurationException.class,
+            e -> getMonoError(format("Error while validating the request: %s", e.getMessage()),
+                HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()
