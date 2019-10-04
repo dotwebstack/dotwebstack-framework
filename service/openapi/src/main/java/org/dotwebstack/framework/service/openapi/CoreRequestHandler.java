@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -50,6 +51,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+@Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private OpenAPI openApi;
@@ -161,6 +163,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
+
+    LOG.debug("GraphQL query is:\n\n{}\n", formatGraphQlQuery(query));
+
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .variables(inputParams)
@@ -178,6 +183,35 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private String formatGraphQlQuery(String query) {
+    int indents = 0;
+    StringBuilder builder = new StringBuilder();
+    for (String character : query.split("")) {
+      switch (character) {
+        case "{":
+          builder.append(" {\n");
+          indents++;
+          builder.append("\t".repeat(Math.max(0, indents)));
+          break;
+        case "}":
+          builder.append("\n");
+          indents--;
+          builder.append("\t".repeat(Math.max(0, indents)));
+          builder.append("}");
+          break;
+        case ",":
+          builder.append(",\n");
+          builder.append("\t".repeat(Math.max(0, indents)));
+          break;
+        default:
+          builder.append(character);
+          break;
+      }
+    }
+
+    return builder.toString();
   }
 
   private ResponseTemplate getResponseTemplate() {

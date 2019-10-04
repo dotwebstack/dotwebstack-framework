@@ -1,6 +1,15 @@
 logging:
   level.org.dotwebstack: DEBUG
 
+management:
+  health:
+    solr:
+      enabled:  false
+  endpoints:
+    web:
+      exposure:
+        include: httptrace
+
 dotwebstack:
   base_url: http://localhost:8080
   rdf4j:
