@@ -175,7 +175,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     String query = buildQueryString(inputParams);
 
-    if(LOG.isDebugEnabled()) {
+    if (LOG.isDebugEnabled()) {
       logInputRequest(request);
       LOG.debug("GraphQL query is:\n\n{}\n", formatGraphQlQuery(query));
     }
