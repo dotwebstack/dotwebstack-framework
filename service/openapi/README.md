@@ -71,8 +71,8 @@ All parameter names in the OAS spec should correspond to existing GraphQL query 
 breweries(name: String): [Brewery!]!
 ```
 
-All `Query` and `Path` parameters provided in a request should exist in the schema. If this not the case for a given request,
-the application will return a `400` error status and a message stating which of the given parameters are not allowed.  
+All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for a given request,
+the application will return a `400` response with and a message stating which of the given parameters are not allowed.  
 
 # 1.1.3 Sort parameter
 The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with this extension should have an array type schema where the array contains the fields on which to sort.

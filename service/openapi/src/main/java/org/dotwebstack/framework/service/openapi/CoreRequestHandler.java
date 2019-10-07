@@ -4,6 +4,9 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -24,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -85,33 +86,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     validateSchema();
   }
 
-  /* For test purposes only. */
-  protected CoreRequestHandler() {
-    this.openApi = null;
-    this.pathName = null;
-    this.responseSchemaContext = null;
-    this.graphQL = null;
-    this.responseMapper = null;
-    this.paramHandlerRouter = null;
-    this.responseContextValidator = null;
-    this.requestBodyHandlerRouter = null;
-  }
-
   @Override
   public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
-            e -> getMonoError(format("Error while obtaining request parameters: %s", e.getMessage()),
+            exception -> getMonoError(format("Error while obtaining request parameters: %s", exception.getMessage()),
                 HttpStatus.BAD_REQUEST))
         .onErrorResume(JsonProcessingException.class,
-            e -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
-        .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
-        .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST))
+            exception -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(GraphQlErrorException.class,
+            exception -> getMonoError(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(NoResultFoundException.class, exception -> getMonoError(null, HttpStatus.NOT_FOUND))
+        .onErrorResume(UnsupportedMediaTypeException.class,
+            exception -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
+        .onErrorResume(BadRequestException.class, exception -> getMonoError(null, HttpStatus.BAD_REQUEST))
         .onErrorResume(InvalidConfigurationException.class,
-            e -> getMonoError(format("Error while validating the request: %s", e.getMessage()),
+            exception -> getMonoError(format("Error while validating the request: %s", exception.getMessage()),
                 HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
@@ -210,10 +201,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
 
-      validateParameterExistence("query", getParameterNamesOfType("query"), request.queryParams()
-          .keySet());
-      validateParameterExistence("path", getParameterNamesOfType("path"), request.pathVariables()
-          .keySet());
+      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
+          request.queryParams()
+              .keySet());
+      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
+          request.pathVariables()
+              .keySet());
 
       for (Parameter parameter : this.responseSchemaContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
@@ -227,28 +220,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValue(request, requestBody, result)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
+    } else {
+      validateRequestBodyNonexistent(request);
     }
     return result;
-  }
-
-  private Set<String> getParameterNamesOfType(String type) {
-    return this.responseSchemaContext.getParameters()
-        .stream()
-        .filter(parameter -> Objects.equals(parameter.getIn(), type))
-        .map(Parameter::getName)
-        .collect(Collectors.toSet());
-  }
-
-  protected void validateParameterExistence(String type, Set<String> schemaParams, Set<String> givenParams) {
-    List<String> unexistingVariables = givenParams.stream()
-        .filter(parameter -> !schemaParams.contains(parameter))
-        .collect(Collectors.toList());
-
-    if (!unexistingVariables.isEmpty()) {
-      throw invalidConfigurationException(
-          "The following of the provided {} parameters do not exist for this request: {}", type, unexistingVariables);
-    }
-
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
