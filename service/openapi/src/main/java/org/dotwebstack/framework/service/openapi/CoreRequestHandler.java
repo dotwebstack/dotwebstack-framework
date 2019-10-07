@@ -21,9 +21,11 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -164,6 +166,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     String query = buildQueryString(inputParams);
 
+    logInputRequest(request);
+
     LOG.debug("GraphQL query is:\n\n{}\n", formatGraphQlQuery(query));
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -183,6 +187,26 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private void logInputRequest(ServerRequest request) {
+    LOG.debug("Request received at: {}", request);
+
+    Map<Object, Object> paramMap = new LinkedHashMap<>();
+    paramMap.putAll(request.queryParams());
+    paramMap.putAll(request.headers()
+        .asHttpHeaders());
+    paramMap.putAll(request.pathVariables());
+    LOG.debug("Request contains following parameters: {}", paramMap.entrySet()
+        .stream()
+        .map(entry -> entry.getKey() + " -> " + entry.getValue())
+        .collect(Collectors.toList()));
+
+    Mono<String> mono = request.bodyToMono(String.class);
+    String value = mono.block();
+    if (Objects.nonNull(value)) {
+      LOG.debug("Request contains the following body: {}", value);
+    }
   }
 
   private String formatGraphQlQuery(String query) {
