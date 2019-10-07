@@ -4,6 +4,9 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -28,6 +31,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -91,14 +95,19 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
-            e -> getMonoError(format("Error while obtaining request parameters: %s", e.getMessage()),
+            exception -> getMonoError(format("Error while obtaining request parameters: %s", exception.getMessage()),
                 HttpStatus.BAD_REQUEST))
         .onErrorResume(JsonProcessingException.class,
-            e -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
-        .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
-        .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST));
+            exception -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(GraphQlErrorException.class,
+            exception -> getMonoError(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(NoResultFoundException.class, exception -> getMonoError(null, HttpStatus.NOT_FOUND))
+        .onErrorResume(UnsupportedMediaTypeException.class,
+            exception -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
+        .onErrorResume(BadRequestException.class, exception -> getMonoError(null, HttpStatus.BAD_REQUEST))
+        .onErrorResume(InvalidConfigurationException.class,
+            exception -> getMonoError(format("Error while validating the request: %s", exception.getMessage()),
+                HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()
@@ -250,6 +259,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+
+      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
+          request.queryParams()
+              .keySet());
+      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
+          request.pathVariables()
+              .keySet());
+
       for (Parameter parameter : this.responseSchemaContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
         handler.getValue(request, parameter, responseSchemaContext)
@@ -262,6 +279,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValue(request, requestBody, result)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
+    } else {
+      validateRequestBodyNonexistent(request);
     }
     return result;
   }
