@@ -176,6 +176,10 @@ public class ResponseMapper {
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
+    if (Objects.isNull(item)) {
+      return null;
+    }
+
     return Objects.nonNull(writeContext.getResponseObject()
         .getSummary()
         .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
