@@ -91,27 +91,6 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_omitsProperty_ForMissingNonRequiredProperty() throws NoResultFoundException, JsonProcessingException {
-    // Arrange
-    Object data = ImmutableMap.of("another key", "prop1value");
-    Deque<FieldContext> dataStack = new ArrayDeque<>();
-    dataStack.push(createFieldContext(data, Collections.emptyMap()));
-
-    ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .responseObject(getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING)))
-        .data(data)
-        .dataStack(dataStack)
-        .parameters(Collections.emptyMap())
-        .build();
-
-    // Act
-    String response = responseMapper.toJson(writeContext);
-
-    // Assert
-    assertTrue(response.equals("{}"));
-  }
-
-  @Test
   public void map_throwsException_ForMissingRequiredNonNillableProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()

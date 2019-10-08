@@ -137,9 +137,7 @@ public class ResponseMapper {
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
           Object object = mapObject(writeContext, mapDataToResponse(writeContext, path));
-          if (Objects.nonNull(object)) {
-            result.put(childSchema.getIdentifier(), convertType(writeContext, object));
-          }
+          result.put(childSchema.getIdentifier(), convertType(writeContext, object));
         });
     return result;
   }
