@@ -7,6 +7,7 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +44,8 @@ public class OpenApiConfiguration {
 
   private final OpenAPI openApi;
 
+  private final InputStream openApiStream;
+
   private final GraphQL graphQl;
 
   private final ResponseMapper responseMapper;
@@ -56,7 +59,7 @@ public class OpenApiConfiguration {
   private QueryFieldHelper queryFieldHelper;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
+      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.openApi = openApi;
     this.graphQl = graphQl;
@@ -67,6 +70,7 @@ public class OpenApiConfiguration {
         .typeDefinitionRegistry(typeDefinitionRegistry)
         .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
         .build();
+    this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
   }
 
@@ -94,7 +98,17 @@ public class OpenApiConfiguration {
 
         });
 
+    // routerFunctions.add(getOpenApiSpecEndpoint(HttpMethod.OPTIONS, openApi));
+    routerFunctions.add(getOpenApiSpecEndpoint(HttpMethod.GET, openApiStream));
     return routerFunctions.build();
+  }
+
+  private RouterFunction<ServerResponse> getOpenApiSpecEndpoint(HttpMethod method, @NonNull InputStream openApiStream) {
+    RequestPredicate requestPredicate = RequestPredicates.method(method)
+        .and(RequestPredicates.path("/openapi"))
+        .and(accept(MediaType.APPLICATION_JSON));
+
+    return RouterFunctions.route(requestPredicate, new OpenApiRequestHandler(openApiStream));
   }
 
   private List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
