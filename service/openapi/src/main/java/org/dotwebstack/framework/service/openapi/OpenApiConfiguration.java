@@ -106,8 +106,7 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(""))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    routerFunctions
-        .add(RouterFunctions.route(OPTIONS(""), new OptionsRequestHandler(List.of(HttpMethod.GET))));
+    routerFunctions.add(RouterFunctions.route(OPTIONS(""), new OptionsRequestHandler(List.of(HttpMethod.GET))));
     routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler()));
   }
 
