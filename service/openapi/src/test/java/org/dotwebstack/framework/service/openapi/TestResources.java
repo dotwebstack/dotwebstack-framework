@@ -17,22 +17,19 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 
-
 public class TestResources {
-  private static final String OPEN_API_STRING = readString("config/model/openapi.yml");
+  private static final String OPEN_API_FILE = "config/model/openapi.yml";
 
-  private static final String GRAPH_QL_STRING = readString("config/schema.graphqls");
+  private static final String GRAPH_QL_FILE = "config/schema.graphqls";
+
+  private static final String OPEN_API_STRING = readString(OPEN_API_FILE);
+
+  private static final String GRAPH_QL_STRING = readString(GRAPH_QL_FILE);
 
   private TestResources() {}
 
   public static OpenAPI openApi() {
     return new OpenAPIV3Parser().readContents(OPEN_API_STRING)
-        .getOpenAPI();
-  }
-
-  public static OpenAPI openApi(String regex, String replacement) {
-    String yaml = OPEN_API_STRING.replaceAll(regex, replacement);
-    return new OpenAPIV3Parser().readContents(yaml)
         .getOpenAPI();
   }
 

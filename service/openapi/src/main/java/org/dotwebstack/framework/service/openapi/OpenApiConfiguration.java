@@ -7,7 +7,6 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +18,9 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
+import org.dotwebstack.framework.service.openapi.handler.CoreRequestHandler;
+import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
+import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -42,9 +44,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class OpenApiConfiguration {
 
-  private final OpenAPI openApi;
+  public static final String OPENAPISPECENDPOINT = "/";
 
-  private final InputStream openApiStream;
+  private final OpenAPI openApi;
 
   private final GraphQL graphQl;
 
@@ -59,7 +61,7 @@ public class OpenApiConfiguration {
   private QueryFieldHelper queryFieldHelper;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.openApi = openApi;
     this.graphQl = graphQl;
@@ -70,7 +72,6 @@ public class OpenApiConfiguration {
         .typeDefinitionRegistry(typeDefinitionRegistry)
         .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
         .build();
-    this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
   }
 
@@ -98,17 +99,18 @@ public class OpenApiConfiguration {
 
         });
 
-    // routerFunctions.add(getOpenApiSpecEndpoint(HttpMethod.OPTIONS, openApi));
-    routerFunctions.add(getOpenApiSpecEndpoint(HttpMethod.GET, openApiStream));
+    addOpenApiSpecEndpoints(routerFunctions);
     return routerFunctions.build();
   }
 
-  private RouterFunction<ServerResponse> getOpenApiSpecEndpoint(HttpMethod method, @NonNull InputStream openApiStream) {
-    RequestPredicate requestPredicate = RequestPredicates.method(method)
-        .and(RequestPredicates.path("/openapi"))
+  protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions) {
+    RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
+        .and(RequestPredicates.path(OPENAPISPECENDPOINT))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    return RouterFunctions.route(requestPredicate, new OpenApiRequestHandler(openApiStream));
+    routerFunctions
+        .add(RouterFunctions.route(OPTIONS(OPENAPISPECENDPOINT), new OptionsRequestHandler(List.of(HttpMethod.GET))));
+    routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler()));
   }
 
   private List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {

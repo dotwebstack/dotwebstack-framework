@@ -2,7 +2,6 @@ package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import java.io.InputStream;
 import org.dotwebstack.framework.core.CoreProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,15 +15,6 @@ public class OpenApiSchemaConfiguration {
 
   public OpenApiSchemaConfiguration(CoreProperties properties) {
     this.coreProperties = properties;
-  }
-
-  @Bean
-  public InputStream openApiStream() {
-    return this.getClass()
-        .getClassLoader()
-        .getResourceAsStream(coreProperties.getNonPrefixedResourcePath()
-            .resolve(SPEC_FILENAME)
-            .getPath());
   }
 
   @Bean

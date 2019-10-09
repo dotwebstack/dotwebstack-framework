@@ -24,7 +24,6 @@ public class VendorExtensionHelper {
     return specNode;
   }
 
-
   private static void removeExtensionNodes(ContainerNode<?> node) {
     if (node.isObject()) {
       removeExtensionNodesFromObject((ObjectNode) node);
