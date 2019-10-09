@@ -17,24 +17,26 @@ import reactor.core.publisher.Mono;
 
 public class OpenApiRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private final String filePath = "config/openapi.yaml";
+  private static final String filePath = "config/openapi.yaml";
 
-  @Override
-  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
+  private final String openApiSpec;
+
+  public OpenApiRequestHandler(InputStream openApiStream) {
     try {
-      InputStream openApiStream = this.getClass()
-          .getClassLoader()
-          .getResourceAsStream(filePath);
       YAMLMapper mapper = new YAMLMapper();
       ObjectNode specNode = VendorExtensionHelper.removeVendorExtensions(openApiStream, mapper);
-      String openApiSpec = mapper.writer()
+      openApiSpec = mapper.writer()
           .writeValueAsString(specNode);
-      return ServerResponse.ok()
-          .contentType(MediaType.parseMediaType("application/json"))
-          .body(fromPublisher(Mono.just(openApiSpec), String.class));
     } catch (IOException e) {
       throw invalidConfigurationException("An unexpected error occurred while parsing the OpenApi Specification: {}",
           e);
     }
+  }
+
+  @Override
+  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
+    return ServerResponse.ok()
+        .contentType(MediaType.parseMediaType("text/vnd.yaml"))
+        .body(fromPublisher(Mono.just(openApiSpec), String.class));
   }
 }

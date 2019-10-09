@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -31,6 +32,11 @@ public class TestResources {
   public static OpenAPI openApi() {
     return new OpenAPIV3Parser().readContents(OPEN_API_STRING)
         .getOpenAPI();
+  }
+
+  public static InputStream openApiStream() {
+    return TestResources.class.getClassLoader()
+        .getResourceAsStream(OPEN_API_FILE);
   }
 
   public static TypeDefinitionRegistry typeDefinitionRegistry() {

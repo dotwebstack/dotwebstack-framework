@@ -7,6 +7,7 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,6 +47,8 @@ public class OpenApiConfiguration {
 
   private final OpenAPI openApi;
 
+  private final InputStream openApiStream;
+
   private final GraphQL graphQl;
 
   private final ResponseMapper responseMapper;
@@ -59,7 +62,7 @@ public class OpenApiConfiguration {
   private QueryFieldHelper queryFieldHelper;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
+      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.openApi = openApi;
     this.graphQl = graphQl;
@@ -70,6 +73,7 @@ public class OpenApiConfiguration {
         .typeDefinitionRegistry(typeDefinitionRegistry)
         .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
         .build();
+    this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
   }
 
@@ -97,17 +101,17 @@ public class OpenApiConfiguration {
 
         });
 
-    addOpenApiSpecEndpoints(routerFunctions);
+    addOpenApiSpecEndpoints(routerFunctions, openApiStream);
     return routerFunctions.build();
   }
 
-  protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions) {
+  protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions, @NonNull InputStream openApiStream) {
     RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
         .and(RequestPredicates.path(""))
         .and(accept(MediaType.APPLICATION_JSON));
 
     routerFunctions.add(RouterFunctions.route(OPTIONS(""), new OptionsRequestHandler(List.of(HttpMethod.GET))));
-    routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler()));
+    routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler(openApiStream)));
   }
 
   private List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {

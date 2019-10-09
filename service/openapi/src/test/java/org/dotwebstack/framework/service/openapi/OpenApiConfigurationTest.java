@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +51,8 @@ public class OpenApiConfigurationTest {
 
   private OpenAPI openApi;
 
+  private InputStream openApiStream;
+
   private OpenApiConfiguration openApiConfiguration;
 
   @Mock
@@ -65,8 +68,10 @@ public class OpenApiConfigurationTest {
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
+    this.openApiStream = TestResources.openApiStream();
     this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
-        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandlerRouter));
+        new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, responseContextValidator,
+        requestBodyHandlerRouter));
   }
 
   @Test
