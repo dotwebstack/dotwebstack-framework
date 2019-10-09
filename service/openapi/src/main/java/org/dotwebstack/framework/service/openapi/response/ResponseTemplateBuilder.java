@@ -106,7 +106,10 @@ public class ResponseTemplateBuilder {
     ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
 
     Map<String, SchemaSummary> referenceMap = new HashMap<>();
-    referenceMap.put(ref, root.getSummary());
+
+    if (Objects.nonNull(ref)) {
+      referenceMap.put(ref, root.getSummary());
+    }
 
     fillResponseObject(root, openApi, referenceMap, new ArrayList<>());
 
