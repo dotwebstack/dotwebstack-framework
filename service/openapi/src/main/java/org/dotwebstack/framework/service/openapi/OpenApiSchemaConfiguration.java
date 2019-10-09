@@ -20,11 +20,9 @@ public class OpenApiSchemaConfiguration {
 
   @Bean
   public InputStream openApiStream() {
-    return this.getClass()
-        .getClassLoader()
-        .getResourceAsStream(coreProperties.getNonPrefixedResourcePath()
-            .resolve(SPEC_FILENAME)
-            .getPath());
+    return getClass().getResourceAsStream(coreProperties.getResourcePath()
+        .resolve(SPEC_FILENAME)
+        .getPath());
   }
 
   @Bean

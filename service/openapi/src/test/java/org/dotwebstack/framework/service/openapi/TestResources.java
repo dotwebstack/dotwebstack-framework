@@ -19,6 +19,7 @@ import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 
 public class TestResources {
+
   private static final String OPEN_API_FILE = "config/model/openapi.yml";
 
   private static final String GRAPH_QL_FILE = "config/schema.graphqls";

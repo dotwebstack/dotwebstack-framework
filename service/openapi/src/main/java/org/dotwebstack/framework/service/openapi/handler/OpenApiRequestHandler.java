@@ -17,8 +17,6 @@ import reactor.core.publisher.Mono;
 
 public class OpenApiRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private static final String filePath = "config/openapi.yaml";
-
   private final String openApiSpec;
 
   public OpenApiRequestHandler(InputStream openApiStream) {
