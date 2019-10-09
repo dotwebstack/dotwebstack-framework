@@ -44,8 +44,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class OpenApiConfiguration {
 
-  public static final String OPENAPISPECENDPOINT = "/";
-
   private final OpenAPI openApi;
 
   private final GraphQL graphQl;
@@ -105,11 +103,11 @@ public class OpenApiConfiguration {
 
   protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions) {
     RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
-        .and(RequestPredicates.path(OPENAPISPECENDPOINT))
+        .and(RequestPredicates.path(""))
         .and(accept(MediaType.APPLICATION_JSON));
 
     routerFunctions
-        .add(RouterFunctions.route(OPTIONS(OPENAPISPECENDPOINT), new OptionsRequestHandler(List.of(HttpMethod.GET))));
+        .add(RouterFunctions.route(OPTIONS(""), new OptionsRequestHandler(List.of(HttpMethod.GET))));
     routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler()));
   }
 
