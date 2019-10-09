@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi;
+package org.dotwebstack.framework.service.openapi.handler;
 
 import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
@@ -76,7 +76,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final String pathName;
 
-  CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
+  public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.openApi = openApi;

@@ -215,3 +215,7 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 * `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used recursively to access parents of parents: `fields._parent._parent.<property>`.
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
+
+# 1.2 OpenApi specification on basepath
+The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
+anyone with access to your API can lookup specification used to generate the API.

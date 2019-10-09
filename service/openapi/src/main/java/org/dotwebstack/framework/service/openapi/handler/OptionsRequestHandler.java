@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi;
+package org.dotwebstack.framework.service.openapi.handler;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,11 +9,11 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
+public class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
 
   private List<HttpMethod> allowMethods;
 
-  OptionsRequestHandler(@NonNull List<HttpMethod> allowMethods) {
+  public OptionsRequestHandler(@NonNull List<HttpMethod> allowMethods) {
     this.allowMethods = allowMethods;
   }
 

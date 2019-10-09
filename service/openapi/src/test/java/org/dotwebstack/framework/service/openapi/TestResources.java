@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -17,11 +18,14 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 
-
 public class TestResources {
-  private static final String OPEN_API_STRING = readString("config/model/openapi.yml");
+  private static final String OPEN_API_FILE = "config/model/openapi.yml";
 
-  private static final String GRAPH_QL_STRING = readString("config/schema.graphqls");
+  private static final String GRAPH_QL_FILE = "config/schema.graphqls";
+
+  private static final String OPEN_API_STRING = readString(OPEN_API_FILE);
+
+  private static final String GRAPH_QL_STRING = readString(GRAPH_QL_FILE);
 
   private TestResources() {}
 
@@ -30,10 +34,9 @@ public class TestResources {
         .getOpenAPI();
   }
 
-  public static OpenAPI openApi(String regex, String replacement) {
-    String yaml = OPEN_API_STRING.replaceAll(regex, replacement);
-    return new OpenAPIV3Parser().readContents(yaml)
-        .getOpenAPI();
+  public static InputStream openApiStream() {
+    return TestResources.class.getClassLoader()
+        .getResourceAsStream(OPEN_API_FILE);
   }
 
   public static TypeDefinitionRegistry typeDefinitionRegistry() {

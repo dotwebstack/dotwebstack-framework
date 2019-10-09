@@ -15,7 +15,12 @@ public class CoreProperties {
 
   private static final String CLASSPATH_PREFIX = "classpath:/";
 
+  private static final String CONFIG_PATH = "config/";
+
   @NonNull
-  private URI resourcePath = URI.create(CLASSPATH_PREFIX + "config/");
+  private URI nonPrefixedResourcePath = URI.create(CONFIG_PATH);
+
+  @NonNull
+  private URI resourcePath = URI.create(CLASSPATH_PREFIX + CONFIG_PATH);
 
 }
