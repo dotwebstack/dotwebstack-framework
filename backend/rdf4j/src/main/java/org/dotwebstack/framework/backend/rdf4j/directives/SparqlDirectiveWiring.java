@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
@@ -81,7 +80,6 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
-    validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine,
         ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser, selectVerticeFactory,
@@ -91,19 +89,6 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
 
     return fieldDefinition;
-  }
-
-  private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
-    // the orderBy container in the @sparl directive
-    GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
-        .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
-
-    // the container in field definition to which the orderBy refers
-    GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
-
-    if (sortArgument != null && sortArgument.getDefaultValue() != null) {
-      sortFieldValidator.validate(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
-    }
   }
 
 }

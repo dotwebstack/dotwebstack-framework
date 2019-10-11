@@ -5,13 +5,17 @@ import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiv
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -116,6 +120,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
+    List<Object> orderByObject = getOrderByObject(environment, arguments);
+
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
@@ -127,7 +133,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
-        .getQueryString(arguments, sparqlDirective, filterMapping);
+        .getQueryString(arguments, sparqlDirective, filterMapping, orderByObject);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 
@@ -141,6 +147,28 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .stream()
         .map(bindings -> (IRI) bindings.getValue("s"))
         .collect(Collectors.toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+    Optional<GraphQLArgument> sortOptional = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
+        .findFirst();
+
+    List<Object> orderByObject;
+    if (sortOptional.isPresent()) {
+      GraphQLArgument sortArgument = sortOptional.get();
+      if (Objects.nonNull(arguments.get(sortArgument.getName()))) {
+        orderByObject = (List<Object>) arguments.get(sortArgument.getName());
+      } else {
+        orderByObject = (List<Object>) sortArgument.getDefaultValue();
+      }
+    } else {
+      orderByObject = Collections.emptyList();
+    }
+    return orderByObject;
   }
 
   private Model fetchGraph(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<IRI> subjects,

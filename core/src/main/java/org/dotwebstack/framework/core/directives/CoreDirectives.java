@@ -26,5 +26,7 @@ public final class CoreDirectives {
 
   public static final String FILTER_ARG_OPERATOR = "operator";
 
+  public static final String SORT_NAME = "sort";
+
   private CoreDirectives() {}
 }

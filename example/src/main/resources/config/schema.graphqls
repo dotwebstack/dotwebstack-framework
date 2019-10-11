@@ -8,7 +8,7 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
-  breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
+  breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
@@ -18,7 +18,6 @@ type Query {
       repository: "local"
       limit: "pageSize"
       offset: "(page - 1) * pageSize"
-      orderBy: "sort"
     )
 
   default_breweries : [Brewery!]!
@@ -26,10 +25,9 @@ type Query {
       repository: "local"
     )
 
-  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }]):[Brewery!]
+  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }] @sort):[Brewery!]
    @sparql(
       repository: "local"
-      orderBy: "sort"
    )
 
   breweries_paging_input(input: PageQueryInput): [Brewery!]!
@@ -49,13 +47,11 @@ type Query {
   breweries_sort_input(input: SortQueryInput): [Brewery!]!
     @sparql(
       repository: "local"
-      orderBy: "input.sort"
     )
 
-  beers(sort: [SortField!] =[{field: "name", order: ASC}]): [Beer!]!
+  beers(sort: [SortField!] =[{field: "name", order: ASC}] @sort): [Beer!]!
     @sparql(
       repository: "local"
-      orderBy: "sort"
     )
 }
 
@@ -98,7 +94,7 @@ type Supplement {
 }
 
 input SortQueryInput {
-  sort: [SortField!] = [{ field: "name", order: ASC }]
+  sort: [SortField!] = [{ field: "name", order: ASC }] @sort
 }
 
 input PageQueryInput {

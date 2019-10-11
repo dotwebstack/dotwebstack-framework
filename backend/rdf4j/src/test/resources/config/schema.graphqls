@@ -15,9 +15,9 @@ type Query {
       @filter(field: "founded", operator: ">"),
     foundedBefore: String 
       @filter(field: "founded", operator: "<"),
-    sort: [SortField!] = [{ field: "name", order: ASC }]
+    sort: [SortField!] = [{ field: "name", order: ASC }] @sort
   ): [Brewery!]!
-    @sparql(repository: "local", orderBy: "sort")
+    @sparql(repository: "local")
 
   breweriesWithInputObject(
     input: QueryParameters

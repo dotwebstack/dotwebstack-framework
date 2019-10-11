@@ -27,7 +27,9 @@ import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SortFieldValidator implements QueryValidator {
 
   private final CoreTraverser coreTraverser;
