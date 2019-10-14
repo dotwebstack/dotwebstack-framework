@@ -7,16 +7,6 @@ An extensible full-stack framework which offers the foundation and building bloc
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=org.dotwebstack.framework%3Adotwebstack-framework&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.dotwebstack.framework%3Adotwebstack-framework)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.dotwebstack.framework%3Adotwebstack-framework&metric=coverage)](https://sonarcloud.io/dashboard?id=org.dotwebstack.framework%3Adotwebstack-framework)
 
-## TODO
-
-* Global configuration for namespaces
-* Query filter arguments
-* Validate SHACL shapes against GraphQL schema
-* Decide whether to use property shape names for GraphQL schema mapping
-* Combine query results from multiple backends
-* Naming consistency: `iri` vs `uri`
-* Single or multiple repository connections?
-
 ## Getting started
 To get started with DotWebStack, create a new Spring project and add dependencies to one or more of the 
 service modules, one or more of the backend modules and spring-boot-starter-webflux. In maven this would look
@@ -63,6 +53,14 @@ result from the query response. See the specific service and backend modules to 
 
 * Travis CI: https://travis-ci.org/dotwebstack/dotwebstack-framework
 * SonarCloud: https://sonarcloud.io/dashboard/index/org.dotwebstack.framework:dotwebstack-framework
+
+## TODO
+
+* Global configuration for namespaces
+* Validate SHACL shapes against GraphQL schema
+* Decide whether to use property shape names for GraphQL schema mapping
+* Combine query results from multiple backends
+* Naming consistency: `iri` vs `uri`
 
 ## License
 
