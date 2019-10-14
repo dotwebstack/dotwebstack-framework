@@ -44,11 +44,6 @@ type Query {
      offset: "(input.page - 1) * input.pageSize"
    )
 
-  breweries_sort_input(input: SortQueryInput): [Brewery!]!
-    @sparql(
-      repository: "local"
-    )
-
   beers(sort: [SortField!] =[{field: "name", order: ASC}] @sort): [Beer!]!
     @sparql(
       repository: "local"
@@ -59,15 +54,16 @@ type Brewery {
   identifier: ID!
   name: String!
   localName: String
+  years(sort: [SortField] = [{order: DESC}]): [Float]!
   founded: Int!
     @transform(expr: "founded.getYear()")
   openinghours: String
-  owners: [String]
+  owners(sort: [SortField!] = [{order: ASC}] @sort): [String]
   url: String!
     @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
-  beers(ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
+  beers(sort: [SortField!] = [{field: "name", order: ASC}], ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
 type Address {
@@ -91,10 +87,6 @@ type Ingredient {
 
 type Supplement {
   name: String
-}
-
-input SortQueryInput {
-  sort: [SortField!] = [{ field: "name", order: ASC }] @sort
 }
 
 input PageQueryInput {

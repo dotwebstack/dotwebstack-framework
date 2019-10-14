@@ -183,7 +183,6 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
 
-
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 

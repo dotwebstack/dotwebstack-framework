@@ -62,6 +62,8 @@ components:
         - identifier
         - name
         - localName
+        - owners
+        - years
       properties:
         identifier:
           type: string
@@ -74,6 +76,14 @@ components:
         openinghours:
           type: string
           nullable: true
+        owners:
+          type: array
+          items:
+            type: string
+        years:
+          type: array
+          items:
+            type: number
         beers:
           type: array
           items:

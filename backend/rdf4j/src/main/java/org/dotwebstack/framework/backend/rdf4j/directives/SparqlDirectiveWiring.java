@@ -77,7 +77,6 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
 
-
     // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
 
@@ -90,5 +89,4 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     return fieldDefinition;
   }
-
 }

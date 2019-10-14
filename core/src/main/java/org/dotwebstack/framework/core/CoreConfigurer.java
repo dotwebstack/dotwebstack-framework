@@ -47,9 +47,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
 
-  private static final NonNullType requiredSortEnum = NonNullType
-      .newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
-          .build())
+  private static final TypeName optionalSortEnum = TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
+      .build();
+
+  private static final NonNullType requiredSortEnum = NonNullType.newNonNullType(optionalSortEnum)
       .build();
 
   private final TransformDirectiveWiring transformDirectiveWiring;
@@ -89,8 +90,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   }
 
   private DirectiveDefinition createSortDefinition() {
-    return DirectiveDefinition.newDirectiveDefinition()
-        .name(CoreDirectives.SORT_NAME)
+    return newDirectiveDefinition().name(CoreDirectives.SORT_NAME)
         .directiveLocations(ImmutableList.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                 .build(),
@@ -183,7 +183,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
         .scalar(CoreScalars.DATETIME)
         .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
         .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring)
-        .directive(CoreDirectives.FILTER_NAME, filterDirectiveWiring);
+        .directive(CoreDirectives.FILTER_NAME, filterDirectiveWiring)
+        .directive(CoreDirectives.SORT_NAME, sortDirectiveWiring);
   }
 
   private GraphQLCodeRegistry registerDataFetchers() {
