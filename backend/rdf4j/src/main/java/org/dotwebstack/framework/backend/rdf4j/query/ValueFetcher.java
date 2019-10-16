@@ -97,11 +97,23 @@ public final class ValueFetcher extends SourceDataFetcher {
     GraphQLArgument sortArgument = environment.getFieldDefinition()
         .getArgument(CoreDirectives.SORT_NAME);
     if (Objects.nonNull(sortArgument)
-        && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))
-        && GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(environment.getFieldType()))) {
+        && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       boolean asc = Objects.equals("ASC", ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("order")
           .toString());
-      return stream.sorted(getComparator(asc));
+
+      if (GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(environment.getFieldType()))) {
+        return stream.sorted(getComparator(asc));
+      }
+
+      if (Objects.nonNull(propertyShape.getNode())) {
+        String field = environment.getFieldDefinition()
+            .getName();
+        if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("field"))) {
+          field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("field")
+              .toString();
+        }
+        return stream.sorted(getComparator(asc, source.getModel(), field, propertyShape.getNode()));
+      }
     }
 
     return stream;

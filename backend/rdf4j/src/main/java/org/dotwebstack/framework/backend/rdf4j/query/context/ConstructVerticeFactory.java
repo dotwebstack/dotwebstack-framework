@@ -13,6 +13,7 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -63,9 +64,13 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
-    getArgumentFieldMapping(nodeShape, fields)
+    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.FILTER_NAME)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
             .forEach(edge -> processEdge(edge.getObject(), argument, query, nodeShape, field)));
+
+    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.SORT_NAME)
+        .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
+            .forEach(edge -> processEdgeSort(edge.getObject(), argument, query, nodeShape, field)));
 
     return Vertice.builder()
         .subject(subject)

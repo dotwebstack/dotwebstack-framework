@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableList;
 import graphql.Scalars;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -94,6 +95,9 @@ class ValueFetcherTest {
   @Mock
   private NodeShape nodeShape;
 
+  @Mock
+  private GraphQLFieldDefinition fieldDefinition;
+
   private List<CoreConverter<Value, ?>> converters;
 
   private Rdf4jConverterRouter converterRouter;
@@ -132,6 +136,8 @@ class ValueFetcherTest {
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH, BREWERY_IDENTIFIER_EXAMPLE_1)
         .build();
 
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -166,6 +172,8 @@ class ValueFetcherTest {
         .add(BREWERY_ADDRESS_EXAMPLE_1, ADDRESS_POSTALCODE_PATH, ADDRESS_POSTALCODE_EXAMPLE_1)
         .build();
 
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(fieldType);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -193,6 +201,8 @@ class ValueFetcherTest {
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_2)
         .build();
 
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -231,6 +241,8 @@ class ValueFetcherTest {
         .add(BREWERY_ADDRESS_EXAMPLE_2, ADDRESS_POSTALCODE_PATH, ADDRESS_POSTALCODE_EXAMPLE_2)
         .build();
 
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(fieldType);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -261,6 +273,9 @@ class ValueFetcherTest {
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_2)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -288,6 +303,9 @@ class ValueFetcherTest {
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(CoreScalars.DATETIME);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -312,6 +330,9 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
     Model model = new TreeModel();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -336,6 +357,9 @@ class ValueFetcherTest {
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), POSTAL_CODE_1)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -361,6 +385,9 @@ class ValueFetcherTest {
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), BEER_NAME_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -390,6 +417,9 @@ class ValueFetcherTest {
 
     Model model3 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
 
     // Act
     when(environment.getFieldType()).thenReturn(GraphQLString);
@@ -421,6 +451,9 @@ class ValueFetcherTest {
         .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 
@@ -448,6 +481,9 @@ class ValueFetcherTest {
         .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 
@@ -472,6 +508,9 @@ class ValueFetcherTest {
 
     Model model = new ModelBuilder().add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
         .build();
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLString);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 
