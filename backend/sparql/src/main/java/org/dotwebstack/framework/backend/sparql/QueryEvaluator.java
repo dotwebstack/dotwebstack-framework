@@ -29,7 +29,7 @@ public class QueryEvaluator {
   private static final Logger LOG = LoggerFactory.getLogger(QueryEvaluator.class);
 
   public Object evaluate(@NonNull RepositoryConnection repositoryConnection, @NonNull String query,
-      @NonNull Map<String, Value> bindings) {
+                         @NonNull Map<String, Value> bindings) {
     Query preparedQuery;
 
     try {
@@ -61,16 +61,16 @@ public class QueryEvaluator {
   }
 
   public void add(@NonNull RepositoryConnection repositoryConnection, @NonNull Model model,
-      @NonNull IRI targetGraph) {
+                  IRI targetGraph) {
     try {
-      if (queryContainsBNode(model)) {
-        GraphQuery query = repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
-            getInsertQuery(model, targetGraph));
-        query.evaluate();
-        LOG.debug("Insert data into targetGraph {}", targetGraph);
-      } else {
-        addMultipleStatements(repositoryConnection, model, targetGraph);
-      }
+      // if (queryContainsBNode(model)) {
+      // GraphQuery query = repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
+      // getInsertQuery(model, targetGraph));
+      // query.evaluate();
+      // LOG.debug("Insert data into targetGraph {}", targetGraph);
+      // } else {
+      addMultipleStatements(repositoryConnection, model, targetGraph);
+      // }
     } catch (RDF4JException e) {
       LOG.debug("Data could not be added to graph: {}", e.getMessage());
       throw new BackendException(
@@ -83,7 +83,7 @@ public class QueryEvaluator {
   }
 
   public void update(@NonNull RepositoryConnection repositoryConnection, @NonNull String query,
-      @NonNull Map<String, Value> bindings) {
+                     @NonNull Map<String, Value> bindings) {
     Update preparedQuery;
 
     try {
@@ -102,21 +102,24 @@ public class QueryEvaluator {
   }
 
   private void addMultipleStatements(@NonNull RepositoryConnection repositoryConnection,
-      @NonNull Model model, @NonNull IRI systemGraph) {
+                                     @NonNull Model model, @NonNull IRI targetGraph) {
+
+    // TODO Hier moeten we het dus op gaan lossen (althans dat denk ik)
+
     if (model.contexts().isEmpty()) {
-      repositoryConnection.add(model, systemGraph);
-      LOG.debug("Insert data into systemGraph {}", systemGraph);
+      repositoryConnection.add(model, targetGraph);
+      LOG.debug("Insert data into systemGraph {}", targetGraph);
     } else {
       model.contexts().forEach(graphName -> {
         if (graphName != null) {
           repositoryConnection.add(
               model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
                   Collectors.toList()),
-              graphName);
-          LOG.debug("Insert data into namedGraph {}", graphName);
+              targetGraph);
+          LOG.debug("Insert data into namedGraph {}", targetGraph);
         } else {
-          repositoryConnection.add(model, systemGraph);
-          LOG.debug("Insert data into default graph {}", systemGraph);
+          repositoryConnection.add(model, targetGraph);
+          LOG.debug("Insert data into default graph {}", targetGraph);
         }
       });
     }

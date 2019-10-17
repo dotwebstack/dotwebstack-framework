@@ -25,12 +25,17 @@ public class SparqlBackendPersistenceStepFactory {
     this.applicationProperties = applicationProperties;
   }
 
-  public PersistenceInsertIntoGraphStepExecutor create(@NonNull PersistenceStep persistenceStep,
+  public PersistenceInsertIntoStepExecutor create(@NonNull PersistenceStep persistenceStep,
       @NonNull Model transactionModel, @NonNull SparqlBackend sparqlBackend) {
     if (persistenceStep.getPersistenceStrategy().equals(
         ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH)) {
       return new PersistenceInsertIntoGraphStepExecutor(persistenceStep, transactionModel,
           sparqlBackend, queryEvaluator, applicationProperties);
+    }
+    if (persistenceStep.getPersistenceStrategy().equals(
+        ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPHS)) {
+      return new PersistenceInsertIntoGraphsStepExecutor(persistenceStep, transactionModel,
+          sparqlBackend, queryEvaluator);
     }
 
     throw new ConfigurationException(String.format("Strategy %s not support by %s",
