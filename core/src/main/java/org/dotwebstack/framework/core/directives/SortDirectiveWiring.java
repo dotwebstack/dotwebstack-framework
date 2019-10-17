@@ -32,35 +32,24 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
         .getType());
     GraphQLUnmodifiedType unpackedType = GraphQLTypeUtil.unwrapAll(rawType);
 
-    validateListType(rawType, environment.getFieldsContainer()
-        .getName(),
-        environment.getFieldDefinition()
-            .getName());
+    String fieldName = environment.getFieldsContainer()
+        .getName();
+    String typeName = environment.getFieldDefinition()
+        .getName();
+    String argumentName = environment.getElement()
+        .getName();
 
+    validateListType(rawType, fieldName, typeName);
     if (GraphQLTypeUtil.isScalar(unpackedType)) {
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
-
-      validateListSize(defaultSortValues, environment.getFieldsContainer()
-          .getName(),
-          environment.getFieldDefinition()
-              .getName());
-
+      validateListSize(defaultSortValues, fieldName, typeName);
       GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
-      validateSortFieldList(sortType, unpackedSortType.getName(), environment.getFieldsContainer()
-          .getName(),
-          environment.getFieldDefinition()
-              .getName(),
-          environment.getElement()
-              .getName());
-
+      validateSortFieldList(sortType, unpackedSortType.getName(), fieldName, typeName, argumentName);
       Map<String, String> defaultSortValue = (LinkedHashMap<String, String>) defaultSortValues.get(0);
-      validateFieldArgumentDoesNotExist(defaultSortValue, environment.getFieldDefinition()
-          .getName(),
-          environment.getElement()
-              .getName());
+      validateFieldArgumentDoesNotExist(defaultSortValue, typeName, argumentName);
     } else {
       SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
       GraphQLArgument sortArgument = environment.getElement();
@@ -69,7 +58,6 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
             .getType(), sortArgument, sortArgument.getDefaultValue());
       }
     }
-
     return environment.getElement();
   }
 
