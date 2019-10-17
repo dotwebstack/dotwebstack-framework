@@ -32,54 +32,35 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
         .getType());
     GraphQLUnmodifiedType unpackedType = GraphQLTypeUtil.unwrapAll(rawType);
 
-    if (!(GraphQLTypeUtil.isList(rawType))) {
-      throw invalidConfigurationException(
-          "Found an error on @sort directive defined on field {}.{}: @sort can only be defined on a list fields",
-          environment.getFieldsContainer()
-              .getName(),
-          environment.getFieldDefinition()
-              .getName());
-    }
+    validateListType(rawType, environment.getFieldsContainer()
+        .getName(),
+        environment.getFieldDefinition()
+            .getName());
 
     if (GraphQLTypeUtil.isScalar(unpackedType)) {
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
 
-      if (defaultSortValues.size() != 1) {
-        throw invalidConfigurationException(
-            "Found an error on @sort directive defined on field {}.{}: @sort directive defined on scalar list fields "
-                + "should have a size of exactly one",
-            environment.getFieldsContainer()
-                .getName(),
-            environment.getFieldDefinition()
-                .getName());
-      }
+      validateListSize(defaultSortValues, environment.getFieldsContainer()
+          .getName(),
+          environment.getFieldDefinition()
+              .getName());
 
       GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
-      if (!(GraphQLTypeUtil.isList(sortType) && Objects.equals(unpackedSortType.getName(), "SortField"))) {
-        throw invalidConfigurationException(
-            "Found an error on @sort directive defined on field {}.{}: @sort directive argument '{}' should be of "
-                + "type [SortField]",
-            environment.getFieldsContainer()
-                .getName(),
-            environment.getFieldDefinition()
-                .getName(),
-            environment.getElement()
-                .getName());
-      }
+      validateSortFieldList(sortType, unpackedSortType.getName(), environment.getFieldsContainer()
+          .getName(),
+          environment.getFieldDefinition()
+              .getName(),
+          environment.getElement()
+              .getName());
 
       Map<String, String> defaultSortValue = (LinkedHashMap<String, String>) defaultSortValues.get(0);
-      if (defaultSortValue.containsKey("field")) {
-        throw invalidConfigurationException(
-            "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
-                + "argument 'field'",
-            environment.getFieldsContainer()
-                .getName(),
-            environment.getFieldDefinition()
-                .getName());
-      }
+      validateFieldArgumentDoesNotExist(defaultSortValue, environment.getFieldDefinition()
+          .getName(),
+          environment.getElement()
+              .getName());
     } else {
       SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
       GraphQLArgument sortArgument = environment.getElement();
@@ -90,5 +71,41 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
     }
 
     return environment.getElement();
+  }
+
+  void validateFieldArgumentDoesNotExist(Map<String, String> defaultSortValue, String typeName, String fieldName) {
+    if (defaultSortValue.containsKey("field")) {
+      throw invalidConfigurationException(
+          "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
+              + "argument 'field'",
+          typeName, fieldName);
+    }
+  }
+
+  void validateListSize(List<Object> sortFields, String typeName, String fieldName) {
+    if (sortFields.size() != 1) {
+      throw invalidConfigurationException(
+          "Found an error on @sort directive defined on field {}.{}: @sort directive defined on scalar list fields "
+              + "should have a size of exactly one",
+          typeName, fieldName);
+    }
+  }
+
+  void validateSortFieldList(GraphQLType sortType, String sortfieldTypeName, String typeName, String fieldName,
+      String argumentName) {
+    if (!(GraphQLTypeUtil.isList(sortType) && Objects.equals(sortfieldTypeName, "SortField"))) {
+      throw invalidConfigurationException(
+          "Found an error on @sort directive defined on field {}.{}: @sort directive argument '{}' should be of "
+              + "type [SortField]",
+          typeName, fieldName, argumentName);
+    }
+  }
+
+  void validateListType(GraphQLType rawType, String typename, String fieldname) {
+    if (!(GraphQLTypeUtil.isList(rawType))) {
+      throw invalidConfigurationException(
+          "Found an error on @sort directive defined on field {}.{}: @sort can only be defined on a list fields",
+          typename, fieldname);
+    }
   }
 }
