@@ -115,7 +115,7 @@ public class QueryEvaluatorTest {
   @Test
   public void add_AddModel_WithValidModel() {
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model, applicationProperties.getSystemGraph());
@@ -258,7 +258,7 @@ public class QueryEvaluatorTest {
     thrown.expect(BackendException.class);
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
   }
 
   @Test
@@ -282,7 +282,7 @@ public class QueryEvaluatorTest {
     when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
@@ -310,7 +310,7 @@ public class QueryEvaluatorTest {
     when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
@@ -339,7 +339,7 @@ public class QueryEvaluatorTest {
     when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
@@ -353,7 +353,7 @@ public class QueryEvaluatorTest {
     model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model, context);
@@ -367,7 +367,7 @@ public class QueryEvaluatorTest {
     model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT, context));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+    queryEvaluator.addToGraph(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model.stream().collect(Collectors.toList()),
