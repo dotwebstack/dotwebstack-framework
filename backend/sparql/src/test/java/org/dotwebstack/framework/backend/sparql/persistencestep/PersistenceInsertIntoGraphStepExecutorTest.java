@@ -56,7 +56,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
     persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
 
     // Assert
-    verify(queryEvaluator, times(1)).add(any(), any(), any());
+    verify(queryEvaluator, times(1)).addToGraph(any(), any(), any());
   }
 
   @Test
@@ -70,7 +70,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
     persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
 
     // Assert
-    verify(queryEvaluator, times(1)).add(any(), any(), any());
+    verify(queryEvaluator, times(1)).addToGraph(any(), any(), any());
   }
 
 }
