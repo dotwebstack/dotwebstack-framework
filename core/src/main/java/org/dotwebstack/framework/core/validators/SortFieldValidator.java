@@ -137,8 +137,8 @@ public class SortFieldValidator implements QueryValidator {
           .getType();
       if (hasListType(matchedType)) {
         throw invalidConfigurationException(
-            "Field '{}' in type '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", type,
-            field, fieldPath);
+            "Field '{}' in type '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", field,
+            type, fieldPath);
       }
 
       if (fields.length > 1) {

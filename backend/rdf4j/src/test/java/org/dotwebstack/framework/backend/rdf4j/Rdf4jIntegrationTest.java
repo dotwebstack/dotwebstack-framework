@@ -28,7 +28,9 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
@@ -132,9 +134,9 @@ class Rdf4jIntegrationTest {
         IsMapContaining.hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"))))))));
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
 
 
@@ -442,5 +444,50 @@ class Rdf4jIntegrationTest {
 
     assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of("name", "Heineken Nederland", "localName", "Heineken Niederlande"))));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void graphQlQuery_ReturnOwners_WithSortAnnotation() {
+    List<String> expected =
+        List.of("A. de Bruijn", "I. Verhoef", "J. v. Hees", "J. v. Jansen", "L. du Clou", "M. Kuijpers", "Z. v. Marke");
+
+    // Arrange
+    String query = "{breweries(name: \"Heineken Nederland\"){owners}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+    List<String> owners = (List<String>) ((List<Map<String, Object>>) data.get("breweries")).get(0)
+        .get("owners");
+
+    assertThat(owners, is(equalTo(expected)));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void graphQlQuery_ReturnIngredients_WithDescSortAnnotation() {
+    List<String> expected = List.of("Sinasappel", "Hop", "Gerst");
+
+    // Arrange
+    String query = "{beer(identifier: 6){ingredients{ name }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+    List<String> ingredients =
+        ((List<Map<String, String>>) ((Map<String, Object>) data.get("beer")).get("ingredients")).stream()
+            .map(entry -> entry.get("name"))
+            .collect(Collectors.toList());
+
+    assertThat(ingredients, is(equalTo(expected)));
   }
 }

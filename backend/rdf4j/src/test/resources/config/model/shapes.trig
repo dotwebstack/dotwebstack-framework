@@ -43,6 +43,7 @@
       beer_sh:Brewery_localName ,
       beer_sh:Brewery_address ,
       beer_sh:Brewery_founded ,
+      beer_sh:Brewery_owners ,
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,

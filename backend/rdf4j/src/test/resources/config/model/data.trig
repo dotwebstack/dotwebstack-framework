@@ -63,6 +63,7 @@ beer_brewery:1 a beer_def:Brewery ;
   beer_def:localName "Heineken Nederland"@nl;
   beer_def:localName "Heineken Niederlande"@de;
   beer_def:localName "Heineken Netherlands"@en;
+  beer_def:owners "L. du Clou", "Z. v. Marke", "J. v. Hees" , "J. v. Jansen", "I. Verhoef" , "M. Kuijpers", "A. de Bruijn" ;
   beer_def:founded "1864-02-15T12:00:00+02:00"^^xsd:dateTime
 .
 
