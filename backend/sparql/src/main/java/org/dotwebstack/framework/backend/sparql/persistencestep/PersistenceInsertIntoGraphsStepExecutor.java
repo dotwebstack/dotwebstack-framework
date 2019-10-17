@@ -37,7 +37,7 @@ public class PersistenceInsertIntoGraphsStepExecutor extends PersistenceInsertIn
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
     try {
-      queryEvaluator.add(backend.getConnection(), transactionModel, null);
+      queryEvaluator.addToGraphs(backend.getConnection(), transactionModel);
     } catch (Exception e) {
       throw new StepFailureException(
           String.format("Got an error for persistence step {%s}", step.getIdentifier()));
