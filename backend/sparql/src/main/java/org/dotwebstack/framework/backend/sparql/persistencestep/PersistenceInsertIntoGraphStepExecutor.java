@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor<PersistenceStep> {
+public class PersistenceInsertIntoGraphStepExecutor extends PersistenceInsertIntoStepExecutor {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(PersistenceInsertIntoGraphStepExecutor.class);
