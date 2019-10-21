@@ -10,6 +10,7 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 
 public class TypeHelper {
   private TypeHelper() {}
@@ -83,6 +84,11 @@ public class TypeHelper {
     }
   }
 
+  private static String getTypeName(GraphQLTypeReference reference) {
+    return reference.getName()
+        .replaceAll("[^_0-9A-Za-z]", "");
+  }
+
   public static String getTypeName(GraphQLType type) {
     if (type instanceof GraphQLList) {
       return getTypeName(((GraphQLList) type).getWrappedType());
@@ -94,6 +100,8 @@ public class TypeHelper {
       return type.getName();
     } else if (type instanceof GraphQLScalarType) {
       return type.getName();
+    } else if (type instanceof GraphQLTypeReference) {
+      return getTypeName((GraphQLTypeReference) type);
     } else {
       throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
