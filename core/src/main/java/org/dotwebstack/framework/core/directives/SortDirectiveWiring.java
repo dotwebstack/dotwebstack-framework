@@ -8,7 +8,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,7 +47,7 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
       validateSortFieldList(sortType, unpackedSortType.getName(), typeName, fieldName, argumentName);
-      Map<String, String> defaultSortValue = (LinkedHashMap<String, String>) defaultSortValues.get(0);
+      Map<String, String> defaultSortValue = (Map<String, String>) defaultSortValues.get(0);
       validateFieldArgumentDoesNotExist(defaultSortValue, typeName, argumentName);
     } else {
       SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());

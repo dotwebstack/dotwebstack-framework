@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
@@ -31,7 +32,8 @@ public class CompareHelper {
     };
   }
 
-  public static Comparator<Value> getComparator(boolean asc, Model model, String field, NodeShape nodeShape) {
+  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull String field,
+      @NonNull NodeShape nodeShape) {
     return new Comparator<Value>() {
       @Override
       public int compare(Value value1, Value value2) {
@@ -53,8 +55,8 @@ public class CompareHelper {
     }
 
     Value childValue = Models.getProperty(model, (Resource) value, iri)
-        .orElseThrow(() -> invalidConfigurationException("Not possible to sort on property {} on object of type {}",
-            field, nodeShape.getIdentifier()));
+        .orElseThrow(() -> invalidConfigurationException(
+            "Not possible to sort on nonexistent property {} on object of type {}", field, nodeShape.getIdentifier()));
     if (!fields.isEmpty()) {
       return resolveValue(childValue, model, String.join(".", field), propertyShape.getNode());
     }
@@ -94,9 +96,9 @@ public class CompareHelper {
 
   private static int compareDecimalLiteral(SimpleLiteral integerLiteral1, SimpleLiteral integerLiteral2, boolean asc) {
     if (asc) {
-      return integerLiteral1.floatValue() > integerLiteral2.floatValue() ? 1 : -1;
+      return Float.compare(integerLiteral1.floatValue(), integerLiteral2.floatValue());
     }
-    return integerLiteral2.floatValue() > integerLiteral1.floatValue() ? 1 : -1;
+    return Float.compare(integerLiteral2.floatValue(), integerLiteral1.floatValue());
   }
 
   private static boolean isInteger(IRI datatype) {

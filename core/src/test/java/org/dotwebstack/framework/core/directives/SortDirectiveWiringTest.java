@@ -1,24 +1,65 @@
 package org.dotwebstack.framework.core.directives;
 
+import static graphql.Scalars.GraphQLString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
+import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-
+@ExtendWith(MockitoExtension.class)
 class SortDirectiveWiringTest {
 
   private SortDirectiveWiring sortDirectiveWiring;
 
+  @Mock
+  private SchemaDirectiveWiringEnvironment<GraphQLArgument> environment;
+
+  @Mock
+  private GraphQLFieldsContainer fieldsContainer;
+
+  @Mock
+  private GraphQLFieldDefinition fieldDefinition;
+
+  @Mock
+  private GraphQLArgument argument;
+
   @BeforeEach
   void doBefore() {
     sortDirectiveWiring = new SortDirectiveWiring(null);
+  }
+
+  @Test
+  void validate_onArgument_withValidScalar() {
+    // Arrange
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn("Beer");
+    when(fieldDefinition.getType()).thenReturn(GraphQLList.list(GraphQLString));
+    when(environment.getFieldsContainer()).thenReturn(fieldsContainer);
+    when(fieldsContainer.getName()).thenReturn("brewery");
+    when(environment.getElement()).thenReturn(argument);
+    when(argument.getName()).thenReturn("sort");
+    when(argument.getDefaultValue()).thenReturn(List.of(Map.of("order", "ASC")));
+    when(argument.getType()).thenReturn(GraphQLList.list(GraphQLInputObjectType.newInputObject()
+        .name("SortField")
+        .build()));
+
+    // Act & Assert
+    assertDoesNotThrow(() -> sortDirectiveWiring.onArgument(environment));
   }
 
   @Test
@@ -28,7 +69,7 @@ class SortDirectiveWiringTest {
   }
 
   @Test
-  void validateListSize_throwsError_WithListSizeGreaterThenOne() {
+  void validateListSize_throwsError_withListSizeGreaterThenOne() {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
         () -> sortDirectiveWiring.validateListSize(List.of("1", "2"), "Beer", "brewery"));

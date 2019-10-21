@@ -149,7 +149,19 @@ class SortFieldValidatorTest {
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_validateSortFieldList_withInvalidvalue() {
+  public void validate_validateSortField_withIllegalValue() {
+    // Arrange
+    List<String> sortArgument = List.of("order", "ASC", "field", "field1");
+    when(fieldDefinition1.getType()).thenReturn(listType);
+
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class,
+        () -> sortFieldValidator.validateSortField(Scalars.GraphQLString, sortArgument, "fallback"));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_validateSortFieldList_withInvalidValue() {
     // Arrange
     List<Map<String, String>> sortArgument = List.of(Map.of("order", "ASC"), Map.of("order", "ASC"));
     when(fieldDefinition1.getType()).thenReturn(listType);
@@ -157,6 +169,39 @@ class SortFieldValidatorTest {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> sortFieldValidator
         .validateSortFieldList(Scalars.GraphQLString, sortArgument, "fallback", Scalars.GraphQLString));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withMap() {
+    // Arrange
+    Map<String, String> sortArgument = Map.of("order", "ASC", "field", "name");
+
+    // Act
+    Optional<String> optional = sortFieldValidator.getSortFieldValue(sortArgument, "fallback");
+
+    // Assert
+    assertEquals(optional, (Optional.of("name")));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withNullMap() {
+    // Act
+    Optional<String> optional = sortFieldValidator.getSortFieldValue(null, "fallback");
+
+    // Assert
+    assertEquals(optional, (Optional.empty()));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withInvalidType() {
+    // Arrange
+    List<String> sortArgument = List.of("field");
+
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class, () -> sortFieldValidator.getSortFieldValue(sortArgument, "fallback"));
   }
 
   @Test
