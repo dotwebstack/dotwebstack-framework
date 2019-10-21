@@ -39,7 +39,7 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
     String argumentName = environment.getElement()
         .getName();
 
-    validateListType(rawType, fieldName, typeName);
+    validateListType(rawType, typeName, fieldName);
     if (GraphQLTypeUtil.isScalar(unpackedType)) {
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
@@ -47,7 +47,7 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
       GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
-      validateSortFieldList(sortType, unpackedSortType.getName(), fieldName, typeName, argumentName);
+      validateSortFieldList(sortType, unpackedSortType.getName(), typeName, fieldName, argumentName);
       Map<String, String> defaultSortValue = (LinkedHashMap<String, String>) defaultSortValues.get(0);
       validateFieldArgumentDoesNotExist(defaultSortValue, typeName, argumentName);
     } else {

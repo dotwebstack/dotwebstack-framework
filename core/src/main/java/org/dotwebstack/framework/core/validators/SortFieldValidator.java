@@ -79,8 +79,7 @@ public class SortFieldValidator implements QueryValidator {
         .getSimpleName());
   }
 
-  private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, String fallback,
-      GraphQLInputType type) {
+  void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, String fallback, GraphQLInputType type) {
     if (!(value instanceof List)) {
       throw illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
@@ -88,7 +87,7 @@ public class SortFieldValidator implements QueryValidator {
     valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue, fallback));
   }
 
-  private void validateSortField(GraphQLType fieldDefinitionType, Object value, String fallback) {
+  void validateSortField(GraphQLType fieldDefinitionType, Object value, String fallback) {
     Optional<String> sortFieldValue = getSortFieldValue(value, fallback);
     if (!sortFieldValue.isPresent()) {
       throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinitionType.getName(),
@@ -97,7 +96,7 @@ public class SortFieldValidator implements QueryValidator {
     this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
   }
 
-  private Optional<String> getSortFieldValue(Object sortArgument, String fallback) {
+  Optional<String> getSortFieldValue(Object sortArgument, String fallback) {
     if (sortArgument == null) {
       return Optional.empty();
     } else if (!(sortArgument instanceof Map)) {
