@@ -43,6 +43,7 @@
       beer_sh:Brewery_localName ,
       beer_sh:Brewery_founded ,
       beer_sh:Brewery_owners ,
+      beer_sh:Brewery_years ,
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
@@ -74,6 +75,14 @@
     sh:minCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_years a sh:PropertyShape ;
+    sh:name "years" ;
+    sh:path beer_def:years ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:float
   .
 
   beer_sh:Brewery_founded a sh:PropertyShape ;

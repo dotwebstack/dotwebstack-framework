@@ -152,7 +152,40 @@ The filter directive (@filter) allows the user to apply a filter on a field. The
   name: [String] @filter(field: "name")): [Brewery!]!
 ```
 
-## 1.7 Jexl Functions
+## 1.7 Sort Directive
+It is possible to declare a `sort` directive on a field or an argument. The argument of this parameter needs to 
+be one or any array of objects containing a `field` and an `order` parameter:
+* `field`: A `string` that contains the field to sort by, this can also be a path of fields with '.' as separator. The field(s)
+should be present in the query output type and may only refer to unmodified scalar types.
+* `order`: An `enum` representing the sort order with values `ASC` for ascending and `DESC` for descending.
+
+For example, the following query will sort by `MyOutputType.field1.field2`:
+```graphql
+myQuery(sort: [SortField!] = [{ field: "field1.field2", order: ASC }] @sort):[MyOutputType!]
+```
+
+In the same way it is possible to order the values on a field with type list:
+```graphql
+type Brewery {
+  ...
+  beerNames(sort = [SortField!] = [{ order: ASC }]): [String!]
+  ...
+}
+```
+
+Notice that the `field` argument is missing. It is not possible to provide a field on a list consisting of Scalar types.
+When the sort directive is applied on a field with a nonscalar type, the `field` can be ommited, in that case the argument
+name is used as value: 
+
+```graphql
+type Brewery {
+  ...
+  beers(sort= [SortField!] = [{ order: ASC }]): [Beer!]
+  ...
+}
+```
+
+## 1.8 Jexl Functions
 When using the JexlEngine provided by `org.dotwebstack.framework.core.CoreConfiguration.jexlBuilder`, it is possible to add custom functions to allow for more readable Jexl expressions. Custom functions can be added by creating a POJO class that implements the `org.dotwebstack.framework.core.jexl.JexlFunction` interface. Any class implementing this interface will be picked up by Spring and added to the Jexl engine under its provided namespace.
 ```java
 public class MyFunction implements JexlFunction {

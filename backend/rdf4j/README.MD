@@ -133,22 +133,7 @@ these parameters are treated as [jexl](http://commons.apache.org/proper/commons-
 to an integer. The resulting limit should be greater than 1 and the resulting offset should be greater than 0. The 
 resulting values of these parameters are used as paging parameters in the resulting sparql query.  
 
-## 1.5 Sorting
-
-Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
-be one or any array of objects containing a `field` and an `order` parameter:
-* `field`: A `string` that contains the field to sort by, this can also be a path of fields with '.' as separator. The field(s)
-should be present in the query output type and may only refer to unmodified scalar types.
-* `order`: An `enum` representing the sort order with values `ASC` for ascending and `DESC` for descending.
-
-The resulting values of these parameters are used in the `order by` clause in the resulting sparql query. 
-
-For example, the following query will sort by `MyOutputType.field1.field2`:
-```graphql
-myQuery(sort: [SortField!] = [{ field: "field1.field2", order: ASC }]):[MyOutputType!]
-```
-
-## 1.6 Property paths
+## 1.5 Property paths
 
 [W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)
 
@@ -156,7 +141,7 @@ While it's possible to query object fields directly, SHACL property paths allows
 For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibilities 
 in the following paragraphs. 
 
-### 1.6.1 Predicate paths
+### 1.5.1 Predicate paths
 The *predicate path* is the simplest of the paths. These are the building blocks for each property path. It describes one predicate 
 to retrieve and object from the current subject. 
  
@@ -186,7 +171,7 @@ beer:shapes {
 }
 ``` 
 
-### 1.6.2 Alternative paths
+### 1.5.2 Alternative paths
 The *alternative path* describes the option get either the object from this predicate `OR` the object from that predicate.
 You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions. 
    
@@ -215,7 +200,7 @@ beer:shapes {
 ``` 
 
    
-### 1.6.3 Sequence paths
+### 1.5.3 Sequence paths
 The *sequence path* describes the possibility to chain multiple predicates. You can use this to access the properties of 
 underlying objects. For example when you are not interested in the parent per se, but more in his or her name you can use:
 
@@ -253,7 +238,7 @@ Again, this is the simple example. You can also use any of the other property pa
 ([sh:alternativePath (ex:father ex:mother)] ex:firstname)
 ```
 
-### 1.6.4 Inverse paths
+### 1.5.4 Inverse paths
 The *inverse path* traverses the predicate in the opposite direction. This can be useful when you only have an explicit relation
 in one direction, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
  but not from a parent to a child. In that case you can use the following inverse path to obtain the name of the child:
@@ -286,7 +271,7 @@ beer:shapes {
 In the previous example a couple of constructions are used. Again it is possible to use the other paths within an inverse path
 as well.  
 
-### 1.6.5 OneOrMore path
+### 1.5.5 OneOrMore path
 The *one or more* path finds a connection between subjects and objects using the predicate, and matching the pattern one or more times.
 For example, finding the names of all people a person knows either directly, or through another person using the `ex:knows` predicate:
 
@@ -315,7 +300,7 @@ beer:shapes {
 }
 ```
 
-### 1.6.6 ZeroOrMore path
+### 1.5.6 ZeroOrMore path
 The *zero or more* path works in the same way as the 'one or more' path and allows paths of
 length 0.
 
@@ -344,7 +329,7 @@ beer:shapes {
 }
 ```
 
-### 1.6.7 ZeroOrOne path
+### 1.5.7 ZeroOrOne path
 The *zero or one* path works in the same way as the 'zero or more' path, but allows paths of
 length 0 or 1.
 
@@ -373,7 +358,7 @@ beer:shapes {
 }
 ```
 
-## 1.7 Filter directive
+## 1.6 Filter directive
 It is possible to filter results by setting a *filter* directive on a GraphQL query. 
 You can do this by adding the `@filter` keyword to an argument on a GraphQL Query. For example: 
 
@@ -424,7 +409,7 @@ type Query {
 The names that are provided in the `nameIn` argument are used in a filter where the arguments are combined with `OR`'s; the resulting query will
 return all the breweries that match one of the provided names. 
 
-### 1.7.1 Nested filters
+### 1.6.1 Nested filters
 In the examples in the previous paragraph the filtering was done on the root level of the query. The filters were 
 applied to direct fields of a brewery and they only had effect on the breweries that were returned. It is, however, 
 also possible to query on and filter indirect properties of the root element. 
@@ -464,7 +449,7 @@ type Beer {
 }
 ```
 
-### 1.7.2 Language filters
+### 1.6.2 Language filters
 Filtering can be applied to all sorts of datatypes. One special case is the language string, a string with a certain
 language applied to it:
 
@@ -485,7 +470,7 @@ dotwebstack:
       language: nl
 ``` 
 
-## 1.8 sh:or 
+## 1.7 sh:or 
 It is possible to have objects of multiple classes connected to the same subject with the same predicate. 
 A `beer` can have both `ingredients` and `supplements` as objects of the `ingredient` predicate:
 
@@ -530,7 +515,7 @@ sh:property [
 This construct makes it possible to have two property shapes with the same `sh:path` and each pointing to different node shape. 
 Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
 
-## 1.9 NodeShape Inheritance
+## 1.8 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
 
 ```shacl

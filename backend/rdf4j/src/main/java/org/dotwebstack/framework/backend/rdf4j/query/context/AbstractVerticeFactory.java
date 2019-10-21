@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getSubjectForField;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
@@ -27,7 +28,6 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -73,7 +73,8 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
-  Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields) {
+  Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields,
+      String directiveName) {
     return fields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
@@ -82,7 +83,7 @@ abstract class AbstractVerticeFactory {
         .flatMap(field -> field.getFieldDefinition()
             .getArguments()
             .stream()
-            .filter(argument -> argument.getDirective(CoreDirectives.FILTER_NAME) != null)
+            .filter(argument -> argument.getDirective(directiveName) != null)
             .map(argument -> new AbstractMap.SimpleEntry<>(argument, field)))
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
   }
@@ -107,6 +108,21 @@ abstract class AbstractVerticeFactory {
         .collect(Collectors.toList());
   }
 
+  @SuppressWarnings({"unchecked"})
+  void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
+      SelectedField field) {
+    Object orderByList = Objects.nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
+    Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
+
+    String fieldName = orderMap.getOrDefault("field", argument.getName())
+        .toString();
+
+    if (Objects.nonNull(fieldName)) {
+      findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
+          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), true, true);
+    }
+  }
+
   void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
       SelectedField field) {
     Object filterValue = field.getArguments()
@@ -124,7 +140,7 @@ abstract class AbstractVerticeFactory {
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true);
+    Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
 
     List<Filter> filters = Objects.nonNull(match.getObject()
         .getFilters()) ? match.getObject()
@@ -169,8 +185,8 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths,
-      boolean required) {
-    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths.get(0)), vertice, required);
+      boolean required, boolean isVisible) {
+    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths.get(0)), vertice, required, isVisible);
     if (required) {
       match.setOptional(false);
     }
@@ -180,14 +196,16 @@ abstract class AbstractVerticeFactory {
     }
 
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-    return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required);
+    return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required,
+        isVisible);
   }
 
   /*
    * Find the edge belonging to the given propertyshape. In case no propertyshape is found, create a
    * new one
    */
-  private Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice, boolean required) {
+  private Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice, boolean required,
+      boolean isVisible) {
     List<Edge> childEdges = vertice.getEdges();
 
     Optional<Edge> optional = Optional.empty();
@@ -205,7 +223,7 @@ abstract class AbstractVerticeFactory {
     }
 
     return optional.orElseGet(() -> {
-      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), required, false);
+      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), required, isVisible);
       vertice.getEdges()
           .add(edge);
       return edge;
@@ -251,7 +269,7 @@ abstract class AbstractVerticeFactory {
     Edge match;
     Variable subject;
     if (nodeShape.equals(childShape)) {
-      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false);
+      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
       subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {
       Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths.get(0))
@@ -261,7 +279,7 @@ abstract class AbstractVerticeFactory {
       vertice.getEdges()
           .add(edge);
 
-      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false);
+      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false, false);
       subject = getSubjectForField(match, childShape, fieldPaths);
     }
 

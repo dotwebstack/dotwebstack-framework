@@ -8,7 +8,7 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
-  breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
+  breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
@@ -18,7 +18,6 @@ type Query {
       repository: "local"
       limit: "pageSize"
       offset: "(page - 1) * pageSize"
-      orderBy: "sort"
     )
 
   default_breweries : [Brewery!]!
@@ -26,10 +25,9 @@ type Query {
       repository: "local"
     )
 
-  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }]):[Brewery!]
+  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }] @sort):[Brewery!]
    @sparql(
       repository: "local"
-      orderBy: "sort"
    )
 
   breweries_paging_input(input: PageQueryInput): [Brewery!]!
@@ -46,16 +44,9 @@ type Query {
      offset: "(input.page - 1) * input.pageSize"
    )
 
-  breweries_sort_input(input: SortQueryInput): [Brewery!]!
+  beers(sort: [SortField!] =[{field: "name", order: ASC}] @sort): [Beer!]!
     @sparql(
       repository: "local"
-      orderBy: "input.sort"
-    )
-
-  beers(sort: [SortField!] =[{field: "name", order: ASC}]): [Beer!]!
-    @sparql(
-      repository: "local"
-      orderBy: "sort"
     )
 }
 
@@ -63,15 +54,16 @@ type Brewery {
   identifier: ID!
   name: String!
   localName: String
+  years(sort: [SortField] = [{order: DESC}]  @sort): [Float]!
   founded: Int!
     @transform(expr: "founded.getYear()")
   openinghours: String
-  owners: [String]
+  owners(sort: [SortField!] = [{order: ASC}] @sort): [String]
   url: String!
     @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
-  beers(ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
+  beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
 type Address {
@@ -95,10 +87,6 @@ type Ingredient {
 
 type Supplement {
   name: String
-}
-
-input SortQueryInput {
-  sort: [SortField!] = [{ field: "name", order: ASC }]
 }
 
 input PageQueryInput {

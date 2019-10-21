@@ -1,21 +1,24 @@
-package org.dotwebstack.framework.core.arguments;
+package org.dotwebstack.framework.core.validators;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import graphql.Scalars;
 import graphql.language.FieldDefinition;
 import graphql.language.ListType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
-import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -129,5 +132,88 @@ class SortFieldValidatorTest {
     // Assert
     assertTrue(thrown.getMessage()
         .contains("is a List"));
+  }
+
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_validateSortField_withInvalidValue() {
+    // Arrange
+    Map<String, String> sortArgument = Map.of("order", "ASC");
+    when(fieldDefinition1.getType()).thenReturn(listType);
+
+    // Act & Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> sortFieldValidator.validateSortField(Scalars.GraphQLString, sortArgument, "fallback"));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_validateSortField_withIllegalValue() {
+    // Arrange
+    List<String> sortArgument = List.of("order", "ASC", "field", "field1");
+    when(fieldDefinition1.getType()).thenReturn(listType);
+
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class,
+        () -> sortFieldValidator.validateSortField(Scalars.GraphQLString, sortArgument, "fallback"));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_validateSortFieldList_withInvalidValue() {
+    // Arrange
+    List<Map<String, String>> sortArgument = List.of(Map.of("order", "ASC"), Map.of("order", "ASC"));
+    when(fieldDefinition1.getType()).thenReturn(listType);
+
+    // Act & Assert
+    assertThrows(InvalidConfigurationException.class, () -> sortFieldValidator
+        .validateSortFieldList(Scalars.GraphQLString, sortArgument, "fallback", Scalars.GraphQLString));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withMap() {
+    // Arrange
+    Map<String, String> sortArgument = Map.of("order", "ASC", "field", "name");
+
+    // Act
+    Optional<String> optional = sortFieldValidator.getSortFieldValue(sortArgument, "fallback");
+
+    // Assert
+    assertEquals(optional, (Optional.of("name")));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withNullMap() {
+    // Act
+    Optional<String> optional = sortFieldValidator.getSortFieldValue(null, "fallback");
+
+    // Assert
+    assertEquals(optional, (Optional.empty()));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withInvalidType() {
+    // Arrange
+    List<String> sortArgument = List.of("field");
+
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class, () -> sortFieldValidator.getSortFieldValue(sortArgument, "fallback"));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_getSortFieldValue_withFallback() {
+    // Arrange
+    Map<String, String> sortArgument = Map.of("order", "ASC");
+
+    // Act
+    Optional<String> optional = sortFieldValidator.getSortFieldValue(sortArgument, "fallback");
+
+    // Assert
+    assertEquals(optional, (Optional.of("fallback")));
   }
 }

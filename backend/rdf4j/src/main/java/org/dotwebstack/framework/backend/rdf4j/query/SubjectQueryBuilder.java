@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,13 +51,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      List<DirectiveContainerTuple> filterMapping) {
+      List<DirectiveContainerTuple> filterMapping, List<Object> orderByObject) {
     final MapContext context = new MapContext(arguments);
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    List<Object> orderByObject =
-        jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class)
-            .orElse(new ArrayList());
 
     List<FilterRule> filterRules = filterMapping.stream()
         .map(filterRule -> FilterRule.builder()

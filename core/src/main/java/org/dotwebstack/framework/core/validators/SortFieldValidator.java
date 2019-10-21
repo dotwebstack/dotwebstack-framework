@@ -27,7 +27,9 @@ import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SortFieldValidator implements QueryValidator {
 
   private final CoreTraverser coreTraverser;
@@ -50,9 +52,9 @@ public class SortFieldValidator implements QueryValidator {
     if (isSortField(getInputValueDefinition(directiveContainer))) {
       GraphQLInputType inputType = getInputType(directiveContainer);
       if (inputType instanceof GraphQLList) {
-        validateSortFieldList(fieldDefinitionType, value, inputType);
+        validateSortFieldList(fieldDefinitionType, value, directiveContainer.getName(), inputType);
       } else {
-        validateSortField(fieldDefinitionType, value);
+        validateSortField(fieldDefinitionType, value, directiveContainer.getName());
       }
     }
   }
@@ -77,16 +79,16 @@ public class SortFieldValidator implements QueryValidator {
         .getSimpleName());
   }
 
-  private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, GraphQLInputType type) {
+  void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, String fallback, GraphQLInputType type) {
     if (!(value instanceof List)) {
       throw illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
     List<?> valueList = (List) value;
-    valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue));
+    valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue, fallback));
   }
 
-  private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
-    Optional<String> sortFieldValue = getSortFieldValue(value);
+  void validateSortField(GraphQLType fieldDefinitionType, Object value, String fallback) {
+    Optional<String> sortFieldValue = getSortFieldValue(value, fallback);
     if (!sortFieldValue.isPresent()) {
       throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinitionType.getName(),
           CoreInputTypes.SORT_FIELD_FIELD);
@@ -94,13 +96,16 @@ public class SortFieldValidator implements QueryValidator {
     this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
   }
 
-  private Optional<String> getSortFieldValue(Object sortArgument) {
+  Optional<String> getSortFieldValue(Object sortArgument, String fallback) {
     if (sortArgument == null) {
       return Optional.empty();
     } else if (!(sortArgument instanceof Map)) {
       throw illegalArgumentException("Sort container '{}' should be a map.", sortArgument);
     } else {
-      return Optional.of((String) ((Map) sortArgument).get(CoreInputTypes.SORT_FIELD_FIELD));
+      if (((Map) sortArgument).containsKey(CoreInputTypes.SORT_FIELD_FIELD)) {
+        return Optional.of((String) ((Map) sortArgument).get(CoreInputTypes.SORT_FIELD_FIELD));
+      }
+      return Optional.of(fallback);
     }
   }
 
@@ -131,8 +136,8 @@ public class SortFieldValidator implements QueryValidator {
           .getType();
       if (hasListType(matchedType)) {
         throw invalidConfigurationException(
-            "Type '{}' of Field '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", type,
-            field, fieldPath);
+            "Field '{}' in type '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", field,
+            type, fieldPath);
       }
 
       if (fields.length > 1) {

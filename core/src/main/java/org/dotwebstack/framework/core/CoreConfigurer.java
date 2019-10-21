@@ -32,6 +32,7 @@ import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterDirectiveWiring;
+import org.dotwebstack.framework.core.directives.SortDirectiveWiring;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -46,9 +47,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
 
-  private static final NonNullType requiredSortEnum = NonNullType
-      .newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
-          .build())
+  private static final TypeName optionalSortEnum = TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
+      .build();
+
+  private static final NonNullType requiredSortEnum = NonNullType.newNonNullType(optionalSortEnum)
       .build();
 
   private final TransformDirectiveWiring transformDirectiveWiring;
@@ -61,13 +63,17 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private final FilterDirectiveWiring filterDirectiveWiring;
 
+  private final SortDirectiveWiring sortDirectiveWiring;
+
   public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
       final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher,
-      FilterDirectiveWiring filterDirectiveWiring, TypeDefinitionRegistry typeDefinitionRegistry) {
+      FilterDirectiveWiring filterDirectiveWiring, SortDirectiveWiring sortDirectiveWiring,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
     this.transformDirectiveWiring = transformDirectiveWiring;
     this.constraintDirectiveWiring = constraintDirectiveWiring;
     this.dataFetcher = dataFetcher;
     this.filterDirectiveWiring = filterDirectiveWiring;
+    this.sortDirectiveWiring = sortDirectiveWiring;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
@@ -80,6 +86,17 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createTransformDefinition());
     typeDefinitionRegistry.add(createConstraintDefinition());
     typeDefinitionRegistry.add(createFilterDefinition());
+    typeDefinitionRegistry.add(createSortDefinition());
+  }
+
+  private DirectiveDefinition createSortDefinition() {
+    return newDirectiveDefinition().name(CoreDirectives.SORT_NAME)
+        .directiveLocations(ImmutableList.of(
+            newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+                .build(),
+            newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
+                .build()))
+        .build();
   }
 
   private DirectiveDefinition createFilterDefinition() {
@@ -166,7 +183,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
         .scalar(CoreScalars.DATETIME)
         .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
         .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring)
-        .directive(CoreDirectives.FILTER_NAME, filterDirectiveWiring);
+        .directive(CoreDirectives.FILTER_NAME, filterDirectiveWiring)
+        .directive(CoreDirectives.SORT_NAME, sortDirectiveWiring);
   }
 
   private GraphQLCodeRegistry registerDataFetchers() {
