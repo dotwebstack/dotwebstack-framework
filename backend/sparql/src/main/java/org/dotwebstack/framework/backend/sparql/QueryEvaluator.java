@@ -2,14 +2,12 @@ package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.Query;
@@ -18,7 +16,6 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -60,7 +57,7 @@ public class QueryEvaluator {
         String.format("Query type '%s' not supported.", preparedQuery.getClass()));
   }
 
-  public void addToGraph(@NonNull RepositoryConnection repositoryConnection,
+  public void   addToGraph(@NonNull RepositoryConnection repositoryConnection,
       @NonNull Model transactionModel,
       @NonNull IRI targetGraph) {
     try {
