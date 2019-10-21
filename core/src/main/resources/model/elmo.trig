@@ -585,6 +585,11 @@ elmo-sp:InsertIntoGraph a elmo:PersistenceStrategy;
 	rdfs:label "Insert into graph";
 	rdfs:comment "Inserts the content of the transaction repository in the target graph, without deleting any triples in the target graph";
 .
+elmo-sp:InsertIntoGraphs a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Insert into graphs";
+	rdfs:comment "Inserts the content of the transaction repository in the target graphs";
+.
 elmo-sp:InsertOrReplaceResourceInGraph a elmo:PersistenceStrategy;
 	skos:inScheme elmo-schemes:persistence-strategy;
 	rdfs:label "Insert or replace resource in graph";
