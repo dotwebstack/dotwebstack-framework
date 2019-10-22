@@ -82,18 +82,6 @@ public class ConfigurationIntegrationTest {
     assertThat(stageResourceProvider.get(DBEERPEDIA.STAGE), notNullValue());
     assertThat(backendResourceProvider.getAll().entrySet(), hasSize(2));
     assertThat(backendResourceProvider.get(DBEERPEDIA.BACKEND), instanceOf(SparqlBackend.class));
-    assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(4));
-    assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
-    assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
-    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(2));
-    assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
-    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(9));
-    assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
-        notNullValue());
-    assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
-        notNullValue());
-    assertThat(representationResourceProvider.get(DBEERPEDIA.BREWERY_REPRESENTATION),
-        notNullValue());
     assertThat(parameterMapperResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(parameterMapperResourceProvider.get(DBEERPEDIA.SUBJECT_FROM_URL), notNullValue());
     assertThat(layoutResourceProvider.getAll().entrySet(), hasSize(2));
@@ -102,21 +90,52 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
-    assertThat(directEndpointResourceProvider.getAll().entrySet(), hasSize(11));
+    assertThat(directEndpointResourceProvider.getAll().entrySet(), hasSize(12));
+    assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(4));
+    assertThat(rmlMappingResourceProvider.get(DBEERPEDIA.RML_MAPPING), notNullValue());
+  }
+
+  @Test
+  public void resources_ConfigurationLoaded_WhenApplicationStarted_HasCorrectTransactions() {
+    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(3));
+    assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
+  }
+
+  @Test
+  public void resources_ConfigurationLoaded_WhenApplicationStarted_HasCorrectInformationProducts() {
+    assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(5));
+    assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
+    assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
+  }
+
+  @Test
+  public void resources_ConfigurationLoaded_WhenApplicationStarted_HasCorrectDynamicEndpoints() {
     assertThat(dynamicEndpointResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
     assertThat(dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
     assertThat(directEndpointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
-    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(9));
+  }
+
+  @Test
+  public void resources_ConfigurationLoaded_HasCorrectStepResourceProviders() {
+    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(11));
     assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
-    assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(3));
     assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_EXIST_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_NOT_EXIST_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.PRE_UPDATE_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.POST_UPDATE_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.VALIDATION_STEP), notNullValue());
-    assertThat(rmlMappingResourceProvider.get(DBEERPEDIA.RML_MAPPING), notNullValue());
   }
 
+  @Test
+  public void resources_ConfigurationLoaded_HasCorrectRepresentationResourceProviders() {
+    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(10));
+    assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
+        notNullValue());
+    assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
+        notNullValue());
+    assertThat(representationResourceProvider.get(DBEERPEDIA.BREWERY_REPRESENTATION),
+        notNullValue());
+  }
 }

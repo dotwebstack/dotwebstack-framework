@@ -86,6 +86,7 @@ GRAPH dbeerpedia:Theatre {
     elmo:informationProduct dbeerpedia:TupleBrewery;
   .
 
+
   dbeerpedia:ResourceEndpoint a elmo:Endpoint;
       elmo:stage dbeerpedia:Stage;
       elmo:pathPattern "/doc/{reference}";
@@ -137,4 +138,23 @@ GRAPH dbeerpedia:Theatre {
     elmo:stage dbeerpedia:Stage;
     elmo:transaction dbeerpedia:InsertConcept;
   .
+
+  dbeerpedia:InsertIntoGraphsEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/add-enschede-breweries";
+    elmo:postService dbeerpedia:InsertIntoGraphsPostService;
+    elmo:getRepresentation dbeerpedia:EnschedeBreweriesTuple;
+  .
+
+  dbeerpedia:EnschedeBreweriesTuple a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:IPEnschedeBreweries;
+  .
+
+  dbeerpedia:InsertIntoGraphsPostService a elmo:Service;
+    elmo:stage dbeerpedia:Stage;
+    elmo:transaction dbeerpedia:InsertConcept3;
+  .
+
+
 }
