@@ -119,7 +119,7 @@ abstract class AbstractVerticeFactory {
 
     if (Objects.nonNull(fieldName)) {
       findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
-          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), true, true);
+          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true);
     }
   }
 
