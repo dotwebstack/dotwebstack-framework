@@ -74,4 +74,19 @@ GRAPH dbeerpedia:Theatre {
       }
     ''';
   .
+
+  dbeerpedia:IPEnschedeBreweries a elmo:InformationProduct;
+    rdfs:label "All breweries located in enschede graph";
+    elmo:backend dbeerpedia:Backend;
+    elmo:resultType elmo-resulttype:Tuple;
+    elmo:query """
+      SELECT ?naam ?graph
+      WHERE {
+        BIND(<http://dotwebstack.org/brouwerijen-uit-enschede> as ?graph)
+        GRAPH ?graph {
+          ?s <http://www.w3.org/2000/01/rdf-schema#label> ?naam .
+        }
+      }
+    """;
+  .
 }
