@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiring;
@@ -29,7 +30,11 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldDefinition()
         .getType());
-    GraphQLUnmodifiedType unpackedType = GraphQLTypeUtil.unwrapAll(rawType);
+
+    GraphQLType unwrappedType = rawType;
+    while (GraphQLTypeUtil.isWrapped(unwrappedType)) {
+      unwrappedType = GraphQLTypeUtil.unwrapOne(unwrappedType);
+    }
 
     String fieldName = environment.getFieldsContainer()
         .getName();
@@ -39,7 +44,7 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
         .getName();
 
     validateListType(rawType, typeName, fieldName);
-    if (GraphQLTypeUtil.isScalar(unpackedType)) {
+    if (!(rawType instanceof GraphQLTypeReference) && GraphQLTypeUtil.isScalar(unwrappedType)) {
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
       validateListSize(defaultSortValues, fieldName, typeName);
