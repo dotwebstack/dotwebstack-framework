@@ -223,7 +223,7 @@ abstract class AbstractVerticeFactory {
     }
 
     return optional.orElseGet(() -> {
-      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), required, isVisible);
+      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), !required, isVisible);
       vertice.getEdges()
           .add(edge);
       return edge;
