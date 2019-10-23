@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor<PersistenceStep> {
+public class PersistenceInsertIntoGraphStepExecutor extends PersistenceInsertIntoStepExecutor {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(PersistenceInsertIntoGraphStepExecutor.class);
@@ -45,13 +45,13 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
       if (step.getTargetGraph() != null) {
         LOG.debug("Execute persistence step {} with targetGraph {}", step.getIdentifier(),
             step.getTargetGraph());
-        queryEvaluator.add(backend.getConnection(), transactionModel, step.getTargetGraph());
+        queryEvaluator.addToGraph(backend.getConnection(), transactionModel, step.getTargetGraph());
         LOG.debug("Added data into backend {} with graph {} by persistence step {}",
             backend.getIdentifier(), step.getTargetGraph(), step.getIdentifier());
       } else {
         LOG.debug("Execute persistence step {} with systemGraph {}", step.getIdentifier(),
             applicationProperties.getSystemGraph());
-        queryEvaluator.add(backend.getConnection(), transactionModel,
+        queryEvaluator.addToGraph(backend.getConnection(), transactionModel,
             applicationProperties.getSystemGraph());
         LOG.debug("Added data into backend {} with graph {} by persistence step {}",
             backend.getIdentifier(), applicationProperties.getSystemGraph(), step.getIdentifier());

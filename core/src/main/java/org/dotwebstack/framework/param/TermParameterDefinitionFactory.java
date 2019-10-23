@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
   private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
+    Object[] args = new Object[3];
+    System.arraycopy(arguments, 0, args, 0, args.length);
     return () -> new ConfigurationException(
-        String.format("No <%s> property found for <%s> of type <%s>", arguments));
+        String.format("No <%s> property found for <%s> of type <%s>", args[0], args[1], args[2]));
   }
 
   @Override

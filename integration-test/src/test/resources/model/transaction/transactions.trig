@@ -97,6 +97,30 @@ GRAPH dbeerpedia:Theatre {
       elmo:targetGraph <http://dotwebstack.org/all-concepts>;
     ])
   .
+  # Transaction: (test reading list with blank nodes)
+  dbeerpedia:InsertConcept3 a elmo:Transaction;
+    elmo:sequentialFlow (
+    [ a elmo:UpdateStep;
+      elmo:backend elmo:TransactionRepository;
+      elmo:query """
+        INSERT DATA
+        {
+          GRAPH <http://dotwebstack.org/all-concepts> {
+            <http://dbeerpedia.org#Brewskovitch> <http://www.w3.org/2000/01/rdf-schema#label>
+            \"Stanislaus Brewskovitch Stadsbrouwerij\"
+          }
+          GRAPH <http://dotwebstack.org/brouwerijen-uit-enschede> {
+            <http://dbeerpedia.org#eanske> <http://www.w3.org/2000/01/rdf-schema#label>
+            \"Brouwerij Eanske\"
+          }
+        };
+      """
+    ]
+    [ a elmo:PersistenceStep;
+      elmo:persistenceStrategy elmo-sp:InsertIntoGraphs;
+      elmo:backend dbeerpedia:Backend;
+    ])
+  .
   dbeerpedia:RmlMapping a rr:TriplesMap ;
       rml:logicalSource [
         rml:source [

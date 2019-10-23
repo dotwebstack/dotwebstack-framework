@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
@@ -47,7 +48,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
   private Map<String, String> parameterValues = new HashMap<>();
 
   @Test
-  public void execute_AddModelIntoGraph_WithValidData() {
+  public void execute_AddModelIntoSystemGraph_WithValidData() {
     // Arrange
     persistenceInsertIntoGraphStepExecutor = new PersistenceInsertIntoGraphStepExecutor(
         persistenceStep, transactionModel, sparqlBackend, queryEvaluator, applicationProperties);
@@ -56,7 +57,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
     persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
 
     // Assert
-    verify(queryEvaluator, times(1)).add(any(), any(), any());
+    verify(queryEvaluator, times(1)).addToGraph(any(), any(), any());
   }
 
   @Test
@@ -70,7 +71,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
     persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
 
     // Assert
-    verify(queryEvaluator, times(1)).add(any(), any(), any());
+    verify(queryEvaluator, times(1)).addToGraph(any(), any(), any());
   }
 
 }

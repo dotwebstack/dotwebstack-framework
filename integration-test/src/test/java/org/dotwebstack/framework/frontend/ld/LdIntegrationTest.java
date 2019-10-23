@@ -133,8 +133,8 @@ public class LdIntegrationTest {
   @Test
   public void get_GetRedirection_ThroughLdApi() {
     // Act
-    Response response = target.path("/dbp/ld/v1/id/breweries").request()
-            .accept("image/gif", "image/jpeg").get();
+    Response response =
+        target.path("/dbp/ld/v1/id/breweries").request().accept("image/gif", "image/jpeg").get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
@@ -145,8 +145,9 @@ public class LdIntegrationTest {
   @Test
   public void get_GetHttpsRedirection_ThroughLdApi() {
     // Act
-    Response response = target.path("/dbp/ld/v1/id/breweries").request()
-        .accept("image/gif", "image/jpeg").header("x-forwarded-proto", "https").get();
+    Response response =
+        target.path("/dbp/ld/v1/id/breweries").request().accept("image/gif", "image/jpeg").header(
+            "x-forwarded-proto", "https").get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
@@ -337,6 +338,42 @@ public class LdIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
   }
 
+  @Test
+  public void it_Inserts_Data_Into_Graphs() {
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_OK);
+    String rdf = "<?xml version=\"1.0\"?>\n" + "\n" + "<rdf:RDF\n"
+        + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
+        + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n" + "\n"
+        + "</rdf:RDF> ";
+    Response response = target.path("/dbp/ld/v1/add-enschede-breweries").request().post(
+        Entity.entity(rdf, MediaTypes.RDFXML));
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+  }
+
+  @Test
+  public void it_TestsThe_Data() {
+    arrangeEnschedeModel();
+    MediaType mediaType = MediaType.valueOf("application/sparql-results+json");
+
+    Response getResponse =
+        target.path("/dbp/ld/v1/add-enschede-breweries").request().accept(mediaType).get();
+
+    // Assert
+    assertThat(getResponse.getStatus(), equalTo(Status.OK.getStatusCode()));
+
+    assertThat(getResponse.readEntity(String.class),
+        containsString("Brouwerij Eanske"));
+  }
+
+  private void arrangeEnschedeModel() {
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "graph").resultSet(
+            "Brouwerij Eanske", "http://dotwebstack.org/brouwerijen-uit-enschede");
+    SparqlHttpStub.returnTuple(builder);
+  }
+
   private void arrangeGraphModel() {
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
@@ -349,8 +386,8 @@ public class LdIntegrationTest {
             DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
             DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
             DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
-            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
     SparqlHttpStub.returnTuple(builder);
   }
 

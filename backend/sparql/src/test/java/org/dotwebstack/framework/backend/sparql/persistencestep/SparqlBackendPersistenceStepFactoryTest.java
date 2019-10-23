@@ -63,7 +63,7 @@ public class SparqlBackendPersistenceStepFactoryTest {
   }
 
   @Test
-  public void create_GetPersistenceStepExecutor_WhenSupported() {
+  public void create_GetPersistenceStepExecutor_ForGraphPersistence() {
     // Arrange
     persistenceStep =
         new PersistenceStep.Builder(identifier, backendResourceProvider).persistenceStrategy(
@@ -71,13 +71,31 @@ public class SparqlBackendPersistenceStepFactoryTest {
                 targetGraph).build();
 
     // Act
-    PersistenceInsertIntoGraphStepExecutor persistenceInsertIntoGraphStepExecutor =
+    PersistenceInsertIntoStepExecutor persistenceInsertIntoGraphStepExecutor =
         sparqlBackendPersistenceStepFactory.create(persistenceStep, transactionModel,
             sparqlBackend);
 
     // Assert
     assertThat(persistenceInsertIntoGraphStepExecutor,
         IsInstanceOf.instanceOf(PersistenceInsertIntoGraphStepExecutor.class));
+  }
+
+  @Test
+  public void create_GetPersistenceStepExecutor_ForGraphsPersistence() {
+    // Arrange
+    persistenceStep =
+        new PersistenceStep.Builder(identifier, backendResourceProvider).persistenceStrategy(
+            ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPHS).backend(backend).targetGraph(
+                targetGraph).build();
+
+    // Act
+    PersistenceInsertIntoStepExecutor persistenceInsertIntoGraphStepExecutor =
+        sparqlBackendPersistenceStepFactory.create(persistenceStep, transactionModel,
+            sparqlBackend);
+
+    // Assert
+    assertThat(persistenceInsertIntoGraphStepExecutor,
+        IsInstanceOf.instanceOf(PersistenceInsertIntoGraphsStepExecutor.class));
   }
 
   @Test
