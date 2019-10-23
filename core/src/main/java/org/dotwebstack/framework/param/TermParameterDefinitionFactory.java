@@ -26,7 +26,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     Object[] args = new Object[3];
     System.arraycopy(arguments, 0, args, 0, args.length);
     return () -> new ConfigurationException(
-        String.format("No <%s> property found for <%s> of type <%s>", args));
+        String.format("No <%s> property found for <%s> of type <%s>", args[0], args[1], args[2]));
   }
 
   @Override

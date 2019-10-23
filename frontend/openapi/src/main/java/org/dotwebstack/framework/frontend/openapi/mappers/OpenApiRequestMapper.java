@@ -61,9 +61,9 @@ public class OpenApiRequestMapper {
 
   @Autowired
   public OpenApiRequestMapper(@NonNull OpenAPIV3Parser openApiParser,
-                              @NonNull ApplicationProperties applicationProperties,
-                              @NonNull List<RequestMapper> requestMappers,
-                              @NonNull Environment environment) {
+      @NonNull ApplicationProperties applicationProperties,
+      @NonNull List<RequestMapper> requestMappers,
+      @NonNull Environment environment) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
@@ -76,27 +76,23 @@ public class OpenApiRequestMapper {
     LOG.info("Looking for OA3 specs in: {}", openApiPath);
 
     List<Path> openApiFiles;
-
-    try {
-      openApiFiles = Files.find(Paths.get(openApiPath), 2,
-          (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
-          .collect(Collectors.toList());
+    final Path startPath = Paths.get(openApiPath);
+    try (Stream<Path> pathStream = Files.find(startPath, 2,
+        (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml"))) {
+      openApiFiles = pathStream.collect(Collectors.toList());
     } catch (IOException ioe) {
       throw new ConfigurationException("No compatible OAS3 files found", ioe);
     }
 
     for (Path path : openApiFiles) {
-      @Cleanup
-      BufferedReader reader = Files.newBufferedReader(path);
-
-      String yamlContent = reader.lines() //
-          .filter(Objects::nonNull) //
-          .map(resolver::replaceWithEnvVar) //
-          .collect(Collectors.joining("\n"));
-
-      OpenAPI openApi = resolver.resolve(getOpenApi(path));
-      mapOpenApiDefinition(openApi, httpConfiguration);
-      addSpecResource(yamlContent, openApi, httpConfiguration);
+      try (BufferedReader reader = Files.newBufferedReader(path)) {
+        String yamlContent =
+            reader.lines().filter(Objects::nonNull).map(resolver::replaceWithEnvVar).collect(
+                Collectors.joining("\n"));
+        OpenAPI openApi = resolver.resolve(getOpenApi(path));
+        mapOpenApiDefinition(openApi, httpConfiguration);
+        addSpecResource(yamlContent, openApi, httpConfiguration);
+      }
     }
   }
 
