@@ -17,11 +17,11 @@ public class AlternativePath extends BasePath {
 
   @Override
   public RdfPredicate toPredicate() {
-    return () -> String.join("|", this.getChildren()
+    return () -> String.format("(%s)", this.getChildren()
         .stream()
         .map(child -> child.toPredicate()
             .getQueryString())
-        .collect(Collectors.toList()));
+        .collect(Collectors.joining("|")));
   }
 
   // Return the direct children of the underlying SequencePath
