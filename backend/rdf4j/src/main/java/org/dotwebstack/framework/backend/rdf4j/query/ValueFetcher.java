@@ -98,7 +98,7 @@ public final class ValueFetcher extends SourceDataFetcher {
         .getArgument(CoreDirectives.SORT_NAME);
     if (Objects.nonNull(sortArgument)
         && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      boolean asc = Objects.equals("ASC", ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("order")
+      boolean asc = Objects.equals("ASC", ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(CoreDirectives.SORT_ORDER)
           .toString());
 
       if (GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(environment.getFieldType()))) {

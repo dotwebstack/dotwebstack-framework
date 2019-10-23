@@ -94,11 +94,16 @@ public class CompareHelper {
         .compareTo(integerLiteral1.integerValue());
   }
 
-  private static int compareDecimalLiteral(SimpleLiteral integerLiteral1, SimpleLiteral integerLiteral2, boolean asc) {
+  private static int compareDecimalLiteral(SimpleLiteral decimalLiteral1, SimpleLiteral decimalLiteral2, boolean asc) {
     if (asc) {
-      return Float.compare(integerLiteral1.floatValue(), integerLiteral2.floatValue());
+      if (Objects.nonNull(decimalLiteral1.decimalValue())) {
+        return decimalLiteral1.decimalValue().compareTo(decimalLiteral2.decimalValue());
+      }
     }
-    return Float.compare(integerLiteral2.floatValue(), integerLiteral1.floatValue());
+    if (Objects.nonNull(decimalLiteral2.decimalValue())) {
+      return decimalLiteral2.decimalValue().compareTo(decimalLiteral1.decimalValue());
+    }
+    return -1;
   }
 
   private static boolean isInteger(IRI datatype) {
