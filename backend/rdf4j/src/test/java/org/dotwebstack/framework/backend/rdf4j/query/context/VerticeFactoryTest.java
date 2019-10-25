@@ -37,7 +37,6 @@ import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
-import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,11 +120,14 @@ public class VerticeFactoryTest {
 
     // Assert
     assertThat(vertice.getOrderables()
-        .size(), is(1));
-    Orderable orderable = vertice.getOrderables()
-        .get(0);
+        .size(), is(2));
 
-    assertThat(orderable.getQueryString(), is("DESC( ?x1 )"));
+    assertThat(vertice.getOrderables()
+        .get(0)
+        .getQueryString(), is("( !( BOUND( ?x1 ) ) )"));
+    assertThat(vertice.getOrderables()
+        .get(1)
+        .getQueryString(), is("DESC( ?x1 )"));
   }
 
   @Test

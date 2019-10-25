@@ -1,12 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.helper;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -54,26 +53,33 @@ public class CompareHelper {
       iri = ((PredicatePath) propertyShape.getPath()).getIri();
     }
 
-    Value childValue = Models.getProperty(model, (Resource) value, iri)
-        .orElseThrow(() -> invalidConfigurationException(
-            "Not possible to sort on nonexistent property {} on object of type {}", field, nodeShape.getIdentifier()));
-    if (!fields.isEmpty()) {
-      return resolveValue(childValue, model, String.join(".", field), propertyShape.getNode());
+    Optional<Value> childOptional = Models.getProperty(model, (Resource) value, iri);
+    if (childOptional.isPresent()) {
+      Value childValue = childOptional.get();
+      if (!fields.isEmpty()) {
+        return resolveValue(childValue, model, String.join(".", field), propertyShape.getNode());
+      }
+      return childValue;
     }
-    return childValue;
+
+    return null;
   }
 
   private static int compareValue(Value value1, Value value2, boolean asc) {
-    IRI datatype = ((SimpleLiteral) value1).getDatatype();
-    if (isInteger(datatype)) {
-      return compareIntegerLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
+    if (Objects.nonNull(value1) && Objects.nonNull(value2)) {
+      IRI datatype = ((SimpleLiteral) value1).getDatatype();
+      if (isInteger(datatype)) {
+        return compareIntegerLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
+      }
+
+      if (isDecimal(datatype)) {
+        return compareDecimalLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
+      }
+      return compareStringValue(value1, value2, asc);
     }
 
-    if (isDecimal(datatype)) {
-      return compareDecimalLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
-    }
-
-    return compareStringValue(value1, value2, asc);
+    // sort in comparison to null values
+    return Objects.isNull(value1) ? 1 : -1;
   }
 
   private static int compareStringValue(Value value1, Value value2, boolean asc) {
@@ -94,17 +100,13 @@ public class CompareHelper {
         .compareTo(integerLiteral1.integerValue());
   }
 
-  private static int compareDecimalLiteral(SimpleLiteral decimalLiteral1, SimpleLiteral decimalLiteral2, boolean asc) {
+  private static int compareDecimalLiteral(SimpleLiteral integerLiteral1, SimpleLiteral integerLiteral2, boolean asc) {
     if (asc) {
-      if (Objects.nonNull(decimalLiteral1.decimalValue())) {
-        return decimalLiteral1.decimalValue().compareTo(decimalLiteral2.decimalValue());
-      }
+      return Float.compare(integerLiteral1.floatValue(), integerLiteral2.floatValue());
     }
-    if (Objects.nonNull(decimalLiteral2.decimalValue())) {
-      return decimalLiteral2.decimalValue().compareTo(decimalLiteral1.decimalValue());
-    }
-    return -1;
+    return Float.compare(integerLiteral2.floatValue(), integerLiteral1.floatValue());
   }
+
 
   private static boolean isInteger(IRI datatype) {
     return Objects.equals(datatype, XMLSchema.INT) || Objects.equals(datatype, XMLSchema.INTEGER);

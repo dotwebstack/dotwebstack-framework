@@ -137,7 +137,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -173,7 +172,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(fieldType);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -202,7 +200,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -242,7 +239,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(fieldType);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -275,7 +271,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -305,7 +300,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(CoreScalars.DATETIME);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -332,7 +326,6 @@ class ValueFetcherTest {
     Model model = new TreeModel();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -359,7 +352,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -387,7 +379,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
@@ -417,9 +408,7 @@ class ValueFetcherTest {
 
     Model model3 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
-
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
 
     // Act
     when(environment.getFieldType()).thenReturn(GraphQLString);
@@ -453,7 +442,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 
@@ -483,7 +471,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 
@@ -510,7 +497,6 @@ class ValueFetcherTest {
         .build();
 
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(fieldDefinition.getArgument(any())).thenReturn(null);
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLString);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
 

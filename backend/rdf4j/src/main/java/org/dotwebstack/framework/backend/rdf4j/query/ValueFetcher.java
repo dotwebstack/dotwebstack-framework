@@ -3,6 +3,9 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static org.dotwebstack.framework.backend.rdf4j.helper.CompareHelper.getComparator;
 import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER_ASC;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -12,6 +15,7 @@ import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,22 +98,26 @@ public final class ValueFetcher extends SourceDataFetcher {
           return true;
         });
 
-    GraphQLArgument sortArgument = environment.getFieldDefinition()
-        .getArgument(CoreDirectives.SORT_NAME);
-    if (Objects.nonNull(sortArgument)
+    Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> argument.getDirective(CoreDirectives.SORT_NAME) != null)
+        .findFirst();
+    if (sortArgumentOptional.isPresent()
         && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      boolean asc = Objects.equals("ASC", ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(CoreDirectives.SORT_ORDER)
-          .toString());
+      GraphQLArgument sortArgument = sortArgumentOptional.get();
+      boolean asc = Objects.equals(SORT_FIELD_ORDER_ASC,
+          ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_ORDER)
+              .toString());
 
       if (GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(environment.getFieldType()))) {
         return stream.sorted(getComparator(asc));
       }
 
       if (Objects.nonNull(propertyShape.getNode())) {
-        String field = environment.getFieldDefinition()
-            .getName();
-        if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("field"))) {
-          field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("field")
+        String field = sortArgument.getName();
+        if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD))) {
+          field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD)
               .toString();
         }
         return stream.sorted(getComparator(asc, source.getModel(), field, propertyShape.getNode()));
