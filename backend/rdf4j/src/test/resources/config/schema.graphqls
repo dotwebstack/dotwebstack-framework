@@ -47,6 +47,7 @@ input NestedNestedInput {
 type Brewery {
   identifier: ID!
   name: String!
+  number: Int
   localName: String
   founded: DateTime!
   owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
