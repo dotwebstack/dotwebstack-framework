@@ -101,7 +101,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()
         .stream()
-        .filter(argument -> argument.getDirective(CoreDirectives.SORT_NAME) != null)
+        .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
         .findFirst();
     if (sortArgumentOptional.isPresent()
         && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {

@@ -23,26 +23,16 @@ public class CompareHelper {
   private CompareHelper() {}
 
   public static Comparator<Value> getComparator(boolean asc) {
-    return new Comparator<Value>() {
-      @Override
-      public int compare(Value value1, Value value2) {
-        return compareValue(value1, value2, asc);
-      }
-    };
+    return (value1, value2) -> compareValue(value1, value2, asc);
   }
 
   public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull String field,
       @NonNull NodeShape nodeShape) {
-    return new Comparator<Value>() {
-      @Override
-      public int compare(Value value1, Value value2) {
-        return compareValue(resolveValue(value1, model, field, nodeShape),
-            resolveValue(value2, model, field, nodeShape), asc);
-      }
-    };
+    return (value1, value2) -> compareOptional(resolveValue(value1, model, field, nodeShape),
+        resolveValue(value2, model, field, nodeShape), asc);
   }
 
-  private static Value resolveValue(Value value, Model model, String path, NodeShape nodeShape) {
+  private static Optional<Value> resolveValue(Value value, Model model, String path, NodeShape nodeShape) {
     List<String> fields = new ArrayList<>(Arrays.asList(path.split("\\.")));
     String field = fields.remove(0);
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
@@ -55,31 +45,37 @@ public class CompareHelper {
 
     Optional<Value> childOptional = Models.getProperty(model, (Resource) value, iri);
     if (childOptional.isPresent()) {
-      Value childValue = childOptional.get();
-      if (!fields.isEmpty()) {
-        return resolveValue(childValue, model, String.join(".", field), propertyShape.getNode());
+      if (fields.isEmpty()) {
+        return childOptional;
+      } else {
+        return childOptional
+            .flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), propertyShape.getNode()));
       }
-      return childValue;
     }
 
-    return null;
+    return Optional.empty();
   }
 
-  private static int compareValue(Value value1, Value value2, boolean asc) {
-    if (Objects.nonNull(value1) && Objects.nonNull(value2)) {
-      IRI datatype = ((SimpleLiteral) value1).getDatatype();
-      if (isInteger(datatype)) {
-        return compareIntegerLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
-      }
-
-      if (isDecimal(datatype)) {
-        return compareDecimalLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
-      }
-      return compareStringValue(value1, value2, asc);
+  private static int compareOptional(Optional<Value> optional1, Optional<Value> optional2, boolean asc) {
+    if (optional1.isPresent() && optional2.isPresent()) {
+      return compareValue(optional1.get(), optional2.get(), asc);
     }
 
     // sort in comparison to null values
-    return Objects.isNull(value1) ? 1 : -1;
+    return optional1.isEmpty() ? 1 : -1;
+  }
+
+  private static int compareValue(@NonNull Value value1, @NonNull Value value2, boolean asc) {
+
+    IRI datatype = ((SimpleLiteral) value1).getDatatype();
+    if (isInteger(datatype)) {
+      return compareIntegerLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
+    }
+
+    if (isDecimal(datatype)) {
+      return compareDecimalLiteral((SimpleLiteral) value1, (SimpleLiteral) value2, asc);
+    }
+    return compareStringValue(value1, value2, asc);
   }
 
   private static int compareStringValue(Value value1, Value value2, boolean asc) {
