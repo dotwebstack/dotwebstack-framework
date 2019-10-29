@@ -47,6 +47,7 @@ input NestedNestedInput {
 type Brewery {
   identifier: ID!
   name: String!
+  number: Int
   localName: String
   founded: DateTime!
   owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
@@ -66,7 +67,7 @@ type Beer {
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
-  ingredients(sort: [SortField!] = [{field: "name", order: DESC}], ingredientName: [String!] @filter(field: "name")): [Ingredient!]
+  ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
   supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
 }
 

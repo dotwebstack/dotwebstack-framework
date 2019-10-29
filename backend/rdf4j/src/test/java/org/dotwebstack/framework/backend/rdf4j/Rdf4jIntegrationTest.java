@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -121,6 +122,8 @@ class Rdf4jIntegrationTest {
   void graphqlQuery_ReturnsResult_forQueryWithNesting() {
     // Arrange
     String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients { name }}}}";
+    Map<String, Object> nullMap = new HashMap<>();
+    nullMap.put(INGREDIENTS_NAME_FIELD, null);
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -130,13 +133,14 @@ class Rdf4jIntegrationTest {
         .isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
 
+
     assertThat(data,
         IsMapContaining.hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), nullMap)))))));
   }
 
 
@@ -471,8 +475,6 @@ class Rdf4jIntegrationTest {
   @Test
   @SuppressWarnings("unchecked")
   void graphQlQuery_ReturnIngredients_WithDescSortAnnotation() {
-    List<String> expected = List.of("Sinasappel", "Hop", "Gerst");
-
     // Arrange
     String query = "{beer(identifier: 6){ingredients{ name }}}";
 
@@ -488,6 +490,58 @@ class Rdf4jIntegrationTest {
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients, is(equalTo(expected)));
+    assertThat(ingredients.size(), is(4));
+    assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
+    assertThat(ingredients.get(1), is(equalTo("Hop")));
+    assertThat(ingredients.get(2), is(equalTo("Gerst")));
+    assertThat(ingredients.get(3), is(equalTo(null)));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void graphQlQuery_ReturnBreweries_WithNullValuesInAscSort() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"number\", order:ASC}]){number}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+    List<Integer> numbers = ((List<Map<String, Integer>>) data.get("breweries")).stream()
+        .map(map -> map.get("number"))
+        .collect(Collectors.toList());
+    assertThat(numbers.size(), is(5));
+    assertThat(numbers.get(0), is(1));
+    assertThat(numbers.get(1), is(2));
+    assertThat(numbers.get(2), is(20));
+    assertThat(numbers.get(3), is(100));
+    assertThat(numbers.get(4), is(equalTo(null)));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void graphQlQuery_ReturnBreweries_WithNullValuesInDescSort() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"number\", order:DESC}]){number}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+    List<Integer> numbers = ((List<Map<String, Integer>>) data.get("breweries")).stream()
+        .map(map -> map.get("number"))
+        .collect(Collectors.toList());
+    assertThat(numbers.size(), is(5));
+    assertThat(numbers.get(0), is(100));
+    assertThat(numbers.get(1), is(20));
+    assertThat(numbers.get(2), is(2));
+    assertThat(numbers.get(3), is(1));
+    assertThat(numbers.get(4), is(equalTo(null)));
   }
 }

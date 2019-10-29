@@ -9,6 +9,10 @@ public class CoreInputTypes {
 
   public static final String SORT_FIELD_ORDER;
 
+  public static final String SORT_FIELD_ORDER_ASC;
+
+  public static final String SORT_FIELD_ORDER_DESC;
+
   public static final String SORT_FIELD_FIELD;
 
   private CoreInputTypes() {}
@@ -16,7 +20,9 @@ public class CoreInputTypes {
   static {
     SORT_FIELD = "SortField";
     SORT_ORDER = "SortOrder";
-    SORT_FIELD_FIELD = "field";
     SORT_FIELD_ORDER = "order";
+    SORT_FIELD_ORDER_ASC = "ASC";
+    SORT_FIELD_ORDER_DESC = "DESC";
+    SORT_FIELD_FIELD = "field";
   }
 }

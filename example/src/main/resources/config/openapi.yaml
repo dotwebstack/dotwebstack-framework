@@ -63,7 +63,6 @@ components:
         - name
         - localName
         - owners
-        - years
       properties:
         identifier:
           type: string
@@ -80,10 +79,6 @@ components:
           type: array
           items:
             type: string
-        years:
-          type: array
-          items:
-            type: number
         beers:
           type: array
           items:
@@ -163,7 +158,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', '-founded']
+              enum: ['name', 'localName', '-founded']
       responses:
         200:
           description: OK

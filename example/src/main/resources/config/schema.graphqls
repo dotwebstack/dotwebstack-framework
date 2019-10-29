@@ -54,7 +54,6 @@ type Brewery {
   identifier: ID!
   name: String!
   localName: String
-  years(sort: [SortField] = [{order: DESC}]  @sort): [Float]!
   founded: Int!
     @transform(expr: "founded.getYear()")
   openinghours: String
@@ -63,7 +62,7 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
-  beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
+  beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
 type Address {

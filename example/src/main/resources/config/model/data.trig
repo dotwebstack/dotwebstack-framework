@@ -17,7 +17,6 @@
     beer_def:group "Onafhankelijk" ;
     beer_def:label "1923 Brouwerij";
     beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
-    beer_def:years 1.3, 1.4, 2.21, 20, 12, 2020, 1995 ;
     schema:state "Zuid-Holland" ;
     schema:address address_id:1 ;
     schema:email "bier@brouwerij1923.nl" ;

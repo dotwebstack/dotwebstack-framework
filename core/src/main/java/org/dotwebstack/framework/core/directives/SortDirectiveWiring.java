@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLType;
@@ -66,7 +67,7 @@ public class SortDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   void validateFieldArgumentDoesNotExist(Map<String, String> defaultSortValue, String typeName, String fieldName) {
-    if (defaultSortValue.containsKey("field")) {
+    if (defaultSortValue.containsKey(SORT_FIELD_FIELD)) {
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
               + "argument 'field'",

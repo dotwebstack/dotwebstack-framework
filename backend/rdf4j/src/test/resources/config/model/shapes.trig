@@ -42,6 +42,7 @@
     sh:property
       beer_sh:Brewery_localName ,
       beer_sh:Brewery_address ,
+      beer_sh:Brewery_number ,
       beer_sh:Brewery_founded ,
       beer_sh:Brewery_owners ,
       beer_sh:Brewery_openinghours ,
@@ -88,6 +89,15 @@
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_number a sh:PropertyShape ;
+    sh:name "number" ;
+    sh:path beer_def:number;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:integer
   .
 
   beer_sh:Brewery_localName a sh:PropertyShape ;

@@ -30,6 +30,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -119,7 +120,7 @@ abstract class AbstractVerticeFactory {
 
     if (Objects.nonNull(fieldName)) {
       findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
-          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), true, true);
+          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true);
     }
   }
 
@@ -223,7 +224,7 @@ abstract class AbstractVerticeFactory {
     }
 
     return optional.orElseGet(() -> {
-      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), required, isVisible);
+      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), !required, isVisible);
       vertice.getEdges()
           .add(edge);
       return edge;
@@ -284,6 +285,7 @@ abstract class AbstractVerticeFactory {
     }
 
     List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
+    orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(subject))));
     orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc());
     vertice.setOrderables(orderables);
   }
