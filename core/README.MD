@@ -185,6 +185,8 @@ type Brewery {
 }
 ```
 
+When the sort encounters a `null` this entry is always sorted last, both with `ASC` and `DESC` sorting.
+
 ## 1.8 Jexl Functions
 When using the JexlEngine provided by `org.dotwebstack.framework.core.CoreConfiguration.jexlBuilder`, it is possible to add custom functions to allow for more readable Jexl expressions. Custom functions can be added by creating a POJO class that implements the `org.dotwebstack.framework.core.jexl.JexlFunction` interface. Any class implementing this interface will be picked up by Spring and added to the Jexl engine under its provided namespace.
 ```java
