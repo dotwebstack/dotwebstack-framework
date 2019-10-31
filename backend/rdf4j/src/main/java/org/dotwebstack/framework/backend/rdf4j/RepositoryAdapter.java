@@ -12,6 +12,4 @@ public interface RepositoryAdapter {
       List<String> subjectIris);
 
   boolean supports(String repositoryId);
-
-  boolean addGraphQueryValuesBlock();
 }
