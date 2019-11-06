@@ -38,6 +38,12 @@ public class VerticeHelper {
           .getSubject())) {
         triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getSubject()));
+      } else {
+        edge.getObject()
+            .getIris()
+            .forEach(iri -> {
+              triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), iri));
+            });
       }
     }
 

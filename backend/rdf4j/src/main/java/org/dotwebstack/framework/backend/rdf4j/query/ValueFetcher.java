@@ -89,7 +89,8 @@ public final class ValueFetcher extends SourceDataFetcher {
         .filter(result -> {
           if (propertyShape.getNode() != null) {
             if (result instanceof SimpleIRI) {
-              return true;
+              return resultIsOfType((SimpleIRI) result, source.getModel(), propertyShape.getNode()
+                  .getTargetClasses());
             }
 
             return resultIsOfType(result, propertyShape.getNode()
@@ -125,6 +126,16 @@ public final class ValueFetcher extends SourceDataFetcher {
     }
 
     return stream;
+  }
+
+  private boolean resultIsOfType(SimpleIRI iri, Model model, Set<IRI> types) {
+    return model.filter(iri, null, null)
+        .stream()
+        .anyMatch(statement -> statement.getPredicate()
+            .equals(RDF.TYPE)
+            && types.stream()
+                .anyMatch(type -> statement.getObject()
+                    .equals(type)));
   }
 
   private boolean resultIsOfType(Value value, Set<IRI> types) {
