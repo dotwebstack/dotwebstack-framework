@@ -129,11 +129,9 @@ public final class ValueFetcher extends SourceDataFetcher {
   }
 
   private boolean resultIsOfType(SimpleIRI iri, Model model, Set<IRI> types) {
-    return model.filter(iri, null, null)
+    return model.filter(iri, RDF.TYPE, null)
         .stream()
-        .anyMatch(statement -> statement.getPredicate()
-            .equals(RDF.TYPE)
-            && types.stream()
+        .anyMatch(statement -> types.stream()
                 .anyMatch(type -> statement.getObject()
                     .equals(type)));
   }
