@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJE
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
@@ -86,6 +87,12 @@ public class ResponseMapper {
           if (summary.isEnvelope()) {
             return mapEnvelopeObjectToResponse(writeContext, newPath);
           }
+          if (!writeContext.getResponseObject()
+              .getSummary()
+              .getComposedOf()
+              .isEmpty()) {
+            return mapComposedDataToResponse(writeContext, newPath);
+          }
           return mapObjectDataToResponse(writeContext, newPath);
         }
         return null;
@@ -96,6 +103,30 @@ public class ResponseMapper {
         }
         return null;
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Object mapComposedDataToResponse(ResponseWriteContext parentContext, String path) {
+    if (Objects.isNull(parentContext.getData())) {
+      return null;
+    }
+
+    String generatedPath = path.contains(".") ? path.substring(0, path.lastIndexOf(".")) : "";
+
+    Map<String, Object> results = new HashMap<>();
+    parentContext.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .stream()
+        .map(composedSchema -> {
+          ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
+
+          return ((HashMap<String, Object>) mapDataToResponse(writeContext, generatedPath));
+        })
+        .filter(Objects::nonNull)
+        .forEach(map -> map.forEach(results::put));
+
+    return results;
   }
 
   private String removeRoot(String path) {

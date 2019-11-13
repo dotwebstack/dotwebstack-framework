@@ -52,7 +52,6 @@ public class ResponseContextHelper {
         .findFirst()
         .orElse(graphQlField);
 
-
     SchemaSummary summary = responseObject.getSummary();
     boolean skip = skipPath;
     if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE)) {
@@ -75,6 +74,22 @@ public class ResponseContextHelper {
             .flatMap(child -> getRequiredResponseObject(joiner.toString(), child, childField, inputParams, finalSkip)
                 .entrySet()
                 .stream())
+            .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
+      }
+
+      if (!summary.getComposedOf()
+          .isEmpty()) {
+        String joinString = joiner.toString()
+            .contains(".")
+                ? joiner.toString()
+                    .substring(0, joiner.toString()
+                        .lastIndexOf("."))
+                : "";
+        summary.getComposedOf()
+            .stream()
+            .flatMap(
+                child -> getRequiredResponseObject(joinString, child, childField, inputParams, finalSkip).entrySet()
+                    .stream())
             .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
       }
 

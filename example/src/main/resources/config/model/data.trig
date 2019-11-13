@@ -5,6 +5,7 @@
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 @prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
+@prefix sponsorship_id: <https://github.com/dotwebstack/beer/id/sponsorship/> .
 @prefix ingredient_id: <https://github.com/dotwebstack/beer/id/ingredient/> .
 @prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
 @prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
@@ -22,6 +23,7 @@
     schema:email "bier@brouwerij1923.nl" ;
     schema:taxID "61195251" ;
     schema:telephone "06-10816700" ;
+    beer_def:sponsorship sponsorship_id:1 ;
     schema:url <http://www.brouwerij1923.nl>
   .
 
@@ -91,6 +93,7 @@
     beer_def:localName "Ambrass Brauerei"@de ;
     beer_def:localName "Ambrass Bierbrouwerij"@nl ;
     schema:taxID "52966534" ;
+    beer_def:sponsorship sponsorship_id:2 ;
     schema:telephone "046-4009300" ;
     schema:url <http://www.ambrass.nl>
   .
@@ -168,4 +171,20 @@
     beer_def:identifier "2" ;
     schema:name "Gerst"
   .
+
+  sponsorship_id:1 a beer_def:Sponsorship ;
+    beer_def:identifier "1" ;
+    beer_def:label "Formula 1" ;
+    beer_def:number 102 ;
+    beer_def:number 100
+  .
+
+  sponsorship_id:2 a beer_def:Sponsorship ;
+    beer_def:identifier "2" ;
+    beer_def:label "Women's Rugby" ;
+    beer_def:number 1 ;
+    beer_def:number 12 ;
+    beer_def:number 10
+  .
+
 }

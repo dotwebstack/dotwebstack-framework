@@ -31,6 +31,10 @@ public class SchemaSummary {
 
   @Builder.Default
   @Setter
+  private List<ResponseObject> composedOf = new ArrayList<>();
+
+  @Builder.Default
+  @Setter
   private List<ResponseObject> items = new ArrayList<>();
 
   private String dwsExpr;
