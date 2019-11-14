@@ -216,6 +216,25 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
 
+# 1.1.9 AllOf
+It is possible to define an `allOf` property, the resulting property is the combined result of all underlying schema's:
+
+```yaml
+brewery:
+    type: object
+    allOf: 
+      - $ref: '#/composed/schema/beer'
+      - type: object
+        required:
+          - identifier
+        properties:
+          identifier:
+            type: string
+```  
+
+The response of brewery contains the combined set of required properties of both schema's defined under the `allOf` property. 
+Currently `anyOf` and `oneOf` are not supported.  
+
 # 1.2 OpenApi specification on basepath
 The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
 anyone with access to your API can lookup specification used to generate the API.

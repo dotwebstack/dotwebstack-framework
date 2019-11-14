@@ -47,6 +47,7 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_sponsorship ,
       beer_sh:Brewery_url ,
       beer_sh:Brewery_address
   .
@@ -116,6 +117,12 @@
     sh:name "beers" ;
     sh:path [ sh:inversePath beer_def:brewery ] ;
     sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_sponsorship a sh:PropertyShape ;
+    sh:name "sponsorship" ;
+    sh:path beer_def:sponsorship;
+    sh:node beer_sh:Sponsorship
   .
 
   beer_sh:Beer a sh:NodeShape ;
@@ -196,6 +203,22 @@
     sh:targetClass beer_def:Ingredient ;
     sh:nodeKind sh:IRI
   .
+
+  beer_sh:Sponsorship a sh:NodeShape ;
+    sh:name "Sponsorship";
+    dws:inherits beer_sh:Identifiable ;
+    sh:property beer_sh:Numbers ;
+    sh:targetClass beer_def:Sponsorship ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Numbers a sh:PropertyShape ;
+    sh:name "numbers" ;
+    sh:path beer_def:number ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:name "Supplement";

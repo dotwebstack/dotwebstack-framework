@@ -85,6 +85,15 @@ public class ResponseWriteContextHelper {
         parentContext.getUri());
   }
 
+  public static ResponseWriteContext copyResponseContext(@NonNull ResponseWriteContext parentContext,
+      ResponseObject composedSchema) {
+    Object data = parentContext.getData();
+    Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
+
+    return createNewResponseWriteContext(composedSchema, data, parentContext.getParameters(), dataStack,
+        parentContext.getUri());
+  }
+
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());

@@ -62,6 +62,7 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
+  sponsorship: Sponsorship
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
@@ -91,6 +92,12 @@ type Supplement {
 input PageQueryInput {
   page: Int = 1 @constraint(min: 1)
   pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])
+}
+
+type Sponsorship {
+  identifier: ID!
+  name: String!
+  numbers: [Int]
 }
 
 input FilterQueryInput {

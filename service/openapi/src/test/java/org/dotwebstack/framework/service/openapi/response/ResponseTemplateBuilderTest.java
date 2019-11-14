@@ -166,6 +166,20 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
+  public void build_resolvesAllOfTemplate_forValidSchema() {
+    // Act
+    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query5", HttpMethod.GET);
+
+    // Assert
+    assertEquals(1, templates.size());
+    ResponseTemplate responseTemplate = templates.get(0);
+    assertEquals(2, responseTemplate.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .size());
+  }
+
+  @Test
   public void build_throwsException_InvalidXdwsTemplateType() {
     // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()
