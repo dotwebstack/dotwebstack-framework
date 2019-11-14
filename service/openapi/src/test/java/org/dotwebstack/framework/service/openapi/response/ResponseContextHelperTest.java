@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
@@ -89,6 +92,27 @@ class ResponseContextHelperTest {
   }
 
   @Test
+  void validate_getRequiredResponseObject_withMultiPathComposedOfFields() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true);
+    ResponseObject child = buildResponseObject("child", "string", true);
+    root.getSummary()
+        .setComposedOf(List.of(child));
+
+    GraphQlField rootField = buildGraphQlField("root", List.of("child"));
+
+    // Act
+    Map<String, SchemaSummary> responseObject =
+        ResponseContextHelper.getRequiredResponseObject("root.root", root, rootField, ImmutableMap.of("child", "value"), false);
+
+    // Assert
+    assertEquals(2, responseObject.entrySet()
+        .size());
+    assertThat(responseObject.get("root.root.root"), is(equalTo(root.getSummary())));
+    assertThat(responseObject.get("root.root.child"), is(equalTo(child.getSummary())));
+  }
+
+  @Test
   void validate_getRequiredResponseObject_withItems() {
     // Arrange
     ResponseObject root = buildResponseObject("root", "object", true);
@@ -107,6 +131,16 @@ class ResponseContextHelperTest {
         .size());
     assertThat(responseObject.get("root"), is(equalTo(root.getSummary())));
     assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
+  }
+
+  @Test
+  public void validate_isExpanded_withExpandedParameter() {
+    assertTrue(ResponseContextHelper.isExpanded(ImmutableMap.of(X_DWS_EXPANDED_PARAMS, List.of("test")), "test"));
+  }
+
+  @Test
+  public void validate_isExpanded_withUnExpandedParameter() {
+    assertFalse(ResponseContextHelper.isExpanded(Collections.emptyMap(), ""));
   }
 
   private ResponseObject buildResponseObject(String name, String type, boolean required) {
