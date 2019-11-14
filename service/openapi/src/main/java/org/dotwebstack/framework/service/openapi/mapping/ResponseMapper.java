@@ -130,14 +130,10 @@ public class ResponseMapper {
         .getSummary()
         .getComposedOf()
         .stream()
-        .map(composedSchema -> {
-          ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
-
-          return ((Map<String, Object>) mapDataToResponse(writeContext, generatedPath));
-        })
+        .map(composedSchema -> ((Map<String, Object>) mapDataToResponse(
+            copyResponseContext(parentContext, composedSchema), generatedPath)))
         .filter(Objects::nonNull)
         .forEach(map -> map.forEach(results::put));
-
     return results;
   }
 

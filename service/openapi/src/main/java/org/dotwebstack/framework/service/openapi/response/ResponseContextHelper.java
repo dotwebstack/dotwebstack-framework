@@ -53,24 +53,12 @@ public class ResponseContextHelper {
         .orElse(graphQlField);
 
     SchemaSummary summary = responseObject.getSummary();
-    boolean skip = skipPath;
-    if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE)) {
-      if (!skipPath || !Objects.equals(summary.getType(), OasConstants.OBJECT_TYPE)) {
-        joiner.add(responseObject.getIdentifier());
-        if (summary.isRequired()) {
-          responseObjects.put(joiner.toString(), summary);
-        }
-      }
-      skip = false;
-    }
-
-    final boolean finalSkip = skip;
+    boolean skip = determineSkip(responseObject, skipPath, responseObjects, joiner, summary);
     if (summary.isRequired() || summary.isEnvelope()
         || isExpanded(inputParams, getPathString(prefix, responseObject))) {
       if (!summary.getChildren()
           .isEmpty()) {
-
-        extractResponseObjects(inputParams, responseObjects, childField, finalSkip, summary.getChildren(),
+        extractResponseObjects(inputParams, responseObjects, childField, skip, summary.getChildren(),
             joiner.toString());
       }
 
@@ -82,17 +70,30 @@ public class ResponseContextHelper {
                     .substring(0, joiner.toString()
                         .lastIndexOf('.'))
                 : "";
-        extractResponseObjects(inputParams, responseObjects, childField, finalSkip, summary.getComposedOf(),
-            joinString);
+        extractResponseObjects(inputParams, responseObjects, childField, skip, summary.getComposedOf(), joinString);
       }
 
       if (!summary.getItems()
           .isEmpty()) {
-        extractResponseObjects(inputParams, responseObjects, graphQlField, finalSkip, summary.getItems(),
-            joiner.toString());
+        extractResponseObjects(inputParams, responseObjects, graphQlField, skip, summary.getItems(), joiner.toString());
       }
     }
     return responseObjects;
+  }
+
+  private static boolean determineSkip(ResponseObject responseObject, boolean skipPath,
+      Map<String, SchemaSummary> responseObjects, StringJoiner joiner, SchemaSummary summary) {
+    boolean skip = skipPath;
+    if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE)) {
+      if (!skipPath || !Objects.equals(summary.getType(), OasConstants.OBJECT_TYPE)) {
+        joiner.add(responseObject.getIdentifier());
+        if (summary.isRequired()) {
+          responseObjects.put(joiner.toString(), summary);
+        }
+      }
+      skip = false;
+    }
+    return skip;
   }
 
   private static void extractResponseObjects(Map<String, Object> inputParams,
