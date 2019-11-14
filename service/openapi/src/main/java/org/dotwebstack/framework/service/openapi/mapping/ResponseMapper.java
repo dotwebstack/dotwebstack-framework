@@ -76,20 +76,20 @@ public class ResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-        return processArray(writeContext, responseObject, summary, newPath);
+        if (summary.isRequired()
+            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
+          return mapArrayDataToResponse(writeContext, newPath);
+        }
+        return new ArrayList<>();
       case OBJECT_TYPE:
         return processObject(writeContext, summary, newPath);
       default:
-        return processDefault(writeContext, summary, newPath);
+        if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
+            || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+          return mapScalarDataToResponse(writeContext);
+        }
+        return null;
     }
-  }
-
-  private Object processDefault(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
-    if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
-        || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-      return mapScalarDataToResponse(writeContext);
-    }
-    return null;
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
@@ -108,36 +108,28 @@ public class ResponseMapper {
     return null;
   }
 
-  private Object processArray(@NonNull ResponseWriteContext writeContext, ResponseObject responseObject,
-      SchemaSummary summary, String newPath) {
-    if (summary.isRequired()
-        || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
-      return mapArrayDataToResponse(writeContext, newPath);
-    }
-    return new ArrayList<>();
-  }
-
   @SuppressWarnings("unchecked")
   private Object mapComposedDataToResponse(ResponseWriteContext parentContext, String path) {
     if (Objects.isNull(parentContext.getData())) {
       return null;
     }
 
-    String generatedPath = path.contains(".") ? path.substring(0, path.lastIndexOf('.')) : "";
-
     Map<String, Object> results = new HashMap<>();
     parentContext.getResponseObject()
         .getSummary()
         .getComposedOf()
         .stream()
-        .map(composedSchema -> ((Map<String, Object>) mapDataToResponse(
-            copyResponseContext(parentContext, composedSchema), generatedPath)))
+        .map(composedSchema -> {
+          ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
+          return ((Map<String, Object>) mapDataToResponse(writeContext, path));
+        })
         .filter(Objects::nonNull)
         .forEach(map -> map.forEach(results::put));
+
     return results;
   }
 
-  private String removeRoot(String path) {
+  String removeRoot(String path) {
     if (path.contains(".")) {
       return path.substring(path.indexOf('.') + 1);
     }

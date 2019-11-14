@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createFieldContext;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -290,6 +291,42 @@ class ResponseMapperTest {
 
     // Assert
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
+  }
+
+  @Test
+  public void validate_removeRoot_withDoubleValuePath() {
+    // Arrange
+    String testString = "test.test";
+
+    // Act
+    String resultString = responseMapper.removeRoot(testString);
+
+    // Assert
+    assertEquals("test", resultString);
+  }
+
+  @Test
+  public void validate_removeRoot_withMultivaluePath() {
+    // Arrange
+    String testString = "test.test.test";
+
+    // Act
+    String resultString = responseMapper.removeRoot(testString);
+
+    // Assert
+    assertEquals("test.test", resultString);
+  }
+
+  @Test
+  public void validate_removeRoot_withSinleValuePath() {
+    // Arrange
+    String testString = "test";
+
+    // Act
+    String resultString = responseMapper.removeRoot(testString);
+
+    // Assert
+    assertEquals("", resultString);
   }
 
   private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
