@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
+import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -50,6 +51,11 @@ public final class ValueFetcher extends SourceDataFetcher {
   public Object get(DataFetchingEnvironment environment) {
     GraphQLType fieldType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     QuerySolution source = environment.getSource();
+
+    if (Rdf4jScalars.IRI.getName()
+        .equals(fieldType.getName())) {
+      return source.getSubject();
+    }
 
     PropertyShape propertyShape = getPropertyShape(environment);
 

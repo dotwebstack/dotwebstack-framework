@@ -19,9 +19,12 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
+import org.eclipse.rdf4j.model.IRI;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -543,5 +547,31 @@ class Rdf4jIntegrationTest {
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(1));
     assertThat(numbers.get(4), is(equalTo(null)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnBreweries_WithSubject() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"identifier\", order:ASC}]) { identifier, subject }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+    System.out.println(result);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+    Map<String, List<Map<String, IRI>>> data = result.getData();
+    List<String> subjects = data.get("breweries")
+        .stream()
+        .map(map -> map.get("subject"))
+        .map(IRI::stringValue)
+        .collect(Collectors.toList());
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects,
+        allOf(hasItem("https://github.com/dotwebstack/beer/id/brewery/1"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/123"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/2"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/456"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/789")));
   }
 }

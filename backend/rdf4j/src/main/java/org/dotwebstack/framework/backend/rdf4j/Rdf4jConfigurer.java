@@ -7,11 +7,13 @@ import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.NonNullType;
+import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.directives.ResourceDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
@@ -22,8 +24,11 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   private final SparqlDirectiveWiring sparqlDirectiveWiring;
 
-  public Rdf4jConfigurer(SparqlDirectiveWiring sparqlDirectiveWiring) {
+  private final ResourceDirectiveWiring resourceDirectiveWiring;
+
+  public Rdf4jConfigurer(SparqlDirectiveWiring sparqlDirectiveWiring, ResourceDirectiveWiring resourceDirectiveWiring) {
     this.sparqlDirectiveWiring = sparqlDirectiveWiring;
+    this.resourceDirectiveWiring = resourceDirectiveWiring;
   }
 
   @Override
@@ -56,11 +61,20 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.OBJECT.name())
             .build())
         .build());
+
+    registry.add(DirectiveDefinition.newDirectiveDefinition()
+        .name(Rdf4jDirectives.RESOURCE_NAME)
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
+            .build())
+        .build());
+
+    registry.add(new ScalarTypeDefinition(Rdf4jScalars.IRI.getName()));
   }
 
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
     builder.scalar(Rdf4jScalars.IRI)
-        .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring);
+        .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring)
+        .directive(Rdf4jDirectives.RESOURCE_NAME, resourceDirectiveWiring);
   }
 }

@@ -47,6 +47,7 @@ input NestedNestedInput {
 type Brewery {
   identifier: ID!
   name: String!
+  subject: IRI! @resource
   number: Int
   localName: String
   founded: DateTime!

@@ -14,6 +14,8 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_OFFSET = "offset";
 
+  public static final String RESOURCE_NAME = "resource";
+
   private Rdf4jDirectives() {}
 
 }

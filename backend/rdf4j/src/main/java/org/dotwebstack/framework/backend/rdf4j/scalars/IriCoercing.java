@@ -14,6 +14,10 @@ public class IriCoercing implements Coercing<IRI, IRI> {
 
   @Override
   public IRI serialize(@NonNull Object value) {
+    if (value instanceof IRI) {
+      return (IRI) value;
+    }
+
     throw new UnsupportedOperationException();
   }
 

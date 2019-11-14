@@ -17,10 +17,12 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
@@ -291,6 +293,7 @@ public class VerticeFactoryTest {
 
     when(selectedField.getName()).thenReturn(BREWERY_NAME_FIELD);
     when(selectedField.getQualifiedName()).thenReturn(BREWERY_NAME_FIELD);
+    when(selectedField.getFieldDefinition()).thenReturn(mock(GraphQLFieldDefinition.class));
     ImmutableList<SelectedField> fields = ImmutableList.of(selectedField);
 
     // Act

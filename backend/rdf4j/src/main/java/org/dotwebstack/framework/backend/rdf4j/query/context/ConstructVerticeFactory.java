@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -35,7 +36,13 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
   private Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<SelectedField> fields) {
-    List<Edge> edges = fields.stream()
+
+    List<SelectedField> filteredFields = fields.stream()
+        .filter(field -> Objects.isNull(field.getFieldDefinition()
+            .getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+        .collect(Collectors.toList());
+
+    List<Edge> edges = filteredFields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
         .map(field -> {
@@ -64,11 +71,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
-    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.FILTER_NAME)
+    getArgumentFieldMapping(nodeShape, filteredFields, CoreDirectives.FILTER_NAME)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
             .forEach(edge -> processEdge(edge.getObject(), argument, query, nodeShape, field)));
 
-    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.SORT_NAME)
+    getArgumentFieldMapping(nodeShape, filteredFields, CoreDirectives.SORT_NAME)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
             .forEach(edge -> processEdgeSort(edge.getObject(), argument, query, nodeShape, field)));
 
