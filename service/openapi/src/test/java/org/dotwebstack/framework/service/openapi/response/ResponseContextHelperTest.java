@@ -102,8 +102,8 @@ class ResponseContextHelperTest {
     GraphQlField rootField = buildGraphQlField("root", List.of("child"));
 
     // Act
-    Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("root.root", root, rootField, ImmutableMap.of("child", "value"), false);
+    Map<String, SchemaSummary> responseObject = ResponseContextHelper.getRequiredResponseObject("root.root", root,
+        rootField, ImmutableMap.of("child", "value"), false);
 
     // Assert
     assertEquals(2, responseObject.entrySet()
