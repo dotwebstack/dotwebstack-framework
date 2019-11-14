@@ -40,7 +40,7 @@ public class ResponseContextHelper {
             .collect(Collectors.toSet());
   }
 
-  private static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
+  static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
       GraphQlField graphQlField, Map<String, Object> inputParams, boolean skipPath) {
     Map<String, SchemaSummary> responseObjects = new HashMap<>();
     StringJoiner joiner = getStringJoiner(prefix);
