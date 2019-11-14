@@ -69,12 +69,9 @@ public class ResponseContextHelper {
         || isExpanded(inputParams, getPathString(prefix, responseObject))) {
       if (!summary.getChildren()
           .isEmpty()) {
-        summary.getChildren()
-            .stream()
-            .flatMap(child -> getRequiredResponseObject(joiner.toString(), child, childField, inputParams, finalSkip)
-                .entrySet()
-                .stream())
-            .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
+
+        extractResponseObjects(inputParams, responseObjects, childField, finalSkip, summary.getChildren(),
+            joiner.toString());
       }
 
       if (!summary.getComposedOf()
@@ -83,27 +80,28 @@ public class ResponseContextHelper {
             .contains(".")
                 ? joiner.toString()
                     .substring(0, joiner.toString()
-                        .lastIndexOf("."))
+                        .lastIndexOf('.'))
                 : "";
-        summary.getComposedOf()
-            .stream()
-            .flatMap(
-                child -> getRequiredResponseObject(joinString, child, childField, inputParams, finalSkip).entrySet()
-                    .stream())
-            .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
+        extractResponseObjects(inputParams, responseObjects, childField, finalSkip, summary.getComposedOf(),
+            joinString);
       }
 
       if (!summary.getItems()
           .isEmpty()) {
-        summary.getItems()
-            .stream()
-            .flatMap(item -> getRequiredResponseObject(joiner.toString(), item, graphQlField, inputParams, finalSkip)
-                .entrySet()
-                .stream())
-            .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
+        extractResponseObjects(inputParams, responseObjects, graphQlField, finalSkip, summary.getItems(),
+            joiner.toString());
       }
     }
     return responseObjects;
+  }
+
+  private static void extractResponseObjects(Map<String, Object> inputParams,
+      Map<String, SchemaSummary> responseObjects, GraphQlField childField, boolean finalSkip,
+      List<ResponseObject> children, String prefix) {
+    children.stream()
+        .flatMap(child -> getRequiredResponseObject(prefix, child, childField, inputParams, finalSkip).entrySet()
+            .stream())
+        .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
   }
 
   public static String getPathString(String prefix, ResponseObject responseObject) {

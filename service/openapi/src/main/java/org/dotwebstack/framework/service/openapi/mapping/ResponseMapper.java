@@ -76,33 +76,45 @@ public class ResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-        if (summary.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
-          return mapArrayDataToResponse(writeContext, newPath);
-        }
-        return new ArrayList<>();
+        return processArray(writeContext, responseObject, summary, newPath);
       case OBJECT_TYPE:
-        if (summary.isRequired() || summary.isEnvelope()
-            || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-          if (summary.isEnvelope()) {
-            return mapEnvelopeObjectToResponse(writeContext, newPath);
-          }
-          if (!writeContext.getResponseObject()
-              .getSummary()
-              .getComposedOf()
-              .isEmpty()) {
-            return mapComposedDataToResponse(writeContext, newPath);
-          }
-          return mapObjectDataToResponse(writeContext, newPath);
-        }
-        return null;
+        return processObject(writeContext, summary, newPath);
       default:
-        if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
-            || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-          return mapScalarDataToResponse(writeContext);
-        }
-        return null;
+        return processDefault(writeContext, summary, newPath);
     }
+  }
+
+  private Object processDefault(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
+    if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
+        || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+      return mapScalarDataToResponse(writeContext);
+    }
+    return null;
+  }
+
+  private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
+    if (summary.isRequired() || summary.isEnvelope() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+      if (summary.isEnvelope()) {
+        return mapEnvelopeObjectToResponse(writeContext, newPath);
+      }
+      if (!writeContext.getResponseObject()
+          .getSummary()
+          .getComposedOf()
+          .isEmpty()) {
+        return mapComposedDataToResponse(writeContext, newPath);
+      }
+      return mapObjectDataToResponse(writeContext, newPath);
+    }
+    return null;
+  }
+
+  private Object processArray(@NonNull ResponseWriteContext writeContext, ResponseObject responseObject,
+      SchemaSummary summary, String newPath) {
+    if (summary.isRequired()
+        || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
+      return mapArrayDataToResponse(writeContext, newPath);
+    }
+    return new ArrayList<>();
   }
 
   @SuppressWarnings("unchecked")
