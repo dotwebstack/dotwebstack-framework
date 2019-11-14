@@ -48,6 +48,16 @@ components:
           type: array
           items:
             type: string
+    Object4:
+      type: object
+      allOf:
+        - $ref: 'components/schemas/Object3'
+        - type: object
+          required:
+            - o3_prop1
+          properties:
+            o3_prop1:
+              type: string
 
 paths:
   /query1:
@@ -139,3 +149,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Object2'
 
+  /query5:
+    get:
+      x-dws-query: query5
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object4'
