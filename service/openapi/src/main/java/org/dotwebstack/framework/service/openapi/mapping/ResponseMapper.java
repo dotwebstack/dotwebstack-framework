@@ -111,7 +111,7 @@ public class ResponseMapper {
       return null;
     }
 
-    String generatedPath = path.contains(".") ? path.substring(0, path.lastIndexOf(".")) : "";
+    String generatedPath = path.contains(".") ? path.substring(0, path.lastIndexOf('.')) : "";
 
     Map<String, Object> results = new HashMap<>();
     parentContext.getResponseObject()
@@ -121,7 +121,7 @@ public class ResponseMapper {
         .map(composedSchema -> {
           ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
 
-          return ((HashMap<String, Object>) mapDataToResponse(writeContext, generatedPath));
+          return ((Map<String, Object>) mapDataToResponse(writeContext, generatedPath));
         })
         .filter(Objects::nonNull)
         .forEach(map -> map.forEach(results::put));
@@ -242,10 +242,7 @@ public class ResponseMapper {
     StringBuilder fieldsBuilder = new StringBuilder("fields.");
     StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getParameters()
-        .entrySet()
-        .forEach(entry -> {
-          context.set("input." + entry.getKey(), entry.getValue());
-        });
+        .forEach((key1, value1) -> context.set("input." + key1, value1));
     writeContext.getDataStack()
         .forEach(fieldContext -> {
           Object data = fieldContext.getData();

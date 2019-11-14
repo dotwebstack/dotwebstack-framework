@@ -163,7 +163,7 @@ public class ResponseTemplateBuilder {
 
           if (!"object".equals(schema.getType())) {
             throw ExceptionHelper.invalidConfigurationException(
-                "Field '{}' is configured incorrectly, allOf schema's can only contain object schema's",
+                "Field '{}' is configured incorrectly, allOf schema's only support object schema's",
                 responseObject.getIdentifier());
           }
 

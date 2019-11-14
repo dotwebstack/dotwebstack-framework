@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -143,7 +144,7 @@ class ResponseMapperTest {
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2));
+    ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(embedded));
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
 
@@ -172,8 +173,10 @@ class ResponseMapperTest {
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject embedded1 = getObject("_embedded", "object", true, null, ImmutableList.of(child2));
-    ResponseObject embedded2 = getObject("_embedded", "object", true, null, ImmutableList.of(embedded1));
+    ResponseObject embedded1 =
+        getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
+    ResponseObject embedded2 =
+        getObject("_embedded", "object", true, null, ImmutableList.of(embedded1), new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(embedded2));
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
 
@@ -198,11 +201,42 @@ class ResponseMapperTest {
   }
 
   @Test
+  public void map_returnsValue_forResponseWithComposedSchema() throws NoResultFoundException, JsonProcessingException {
+    // Arrange
+    ResponseObject child1 =
+        getObject("child1", "object", false, null, null, ImmutableList.of(REQUIRED_NILLABLE_STRING));
+    ResponseObject child2 =
+        getObject("child2", "object", false, null, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject responseObject =
+        getObject("response", "object", false, null, null, ImmutableList.of(child1, child2));
+
+    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1",
+        ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3"), "child2",
+        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2"));
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = responseMapper.toJson(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"prop2\":\"v1\",\"child2\":{\"prop2\":\"v2\"},\"child1\":{\"prop1\":\"v3\"}}"));
+  }
+
+  @Test
   public void map_returnsValue_forResponseWithArray() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 = getObject("array1", "array", false, ImmutableList.of(arrayObject1, arrayObject2), null);
+    ResponseObject array1 =
+        getObject("array1", "array", false, ImmutableList.of(arrayObject1, arrayObject2), null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
 
@@ -259,11 +293,11 @@ class ResponseMapperTest {
   }
 
   private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
-    return getObject(identifier, "object", false, null, children);
+    return getObject(identifier, "object", false, null, children, new ArrayList<>());
   }
 
   private static ResponseObject getObject(String identifier, String type, boolean envelop, List<ResponseObject> items,
-      List<ResponseObject> children) {
+      List<ResponseObject> children, List<ResponseObject> composedOf) {
     return ResponseObject.builder()
         .identifier(identifier)
         .summary(SchemaSummary.builder()
@@ -271,6 +305,7 @@ class ResponseMapperTest {
             .required(true)
             .children(children)
             .items(items)
+            .composedOf(composedOf)
             .isEnvelope(envelop)
             .build())
         .build();
