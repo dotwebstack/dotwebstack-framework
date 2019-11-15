@@ -1,6 +1,6 @@
 # DotWebStack Framework
 
-An extensible full-stack framework which offers the foundation and building blocks for developing RESTful API’s.
+An extensible full-stack framework which offers the foundation and building blocks for developing (Linked) Data services, including URI dereferencing, RESTful API’s, and much more.
 
 [![Build Status](https://travis-ci.org/dotwebstack/dotwebstack-framework.svg?branch=master)](https://travis-ci.org/dotwebstack/dotwebstack-framework)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dotwebstack.framework/dotwebstack-core/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/org.dotwebstack.framework/dotwebstack-core/)
