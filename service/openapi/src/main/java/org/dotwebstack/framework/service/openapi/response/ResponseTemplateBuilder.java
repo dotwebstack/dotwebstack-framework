@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
@@ -29,6 +28,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -50,9 +50,7 @@ public class ResponseTemplateBuilder {
                 .name(),
             resolveRequestBody(openApi, httpMethodOperation.getOperation()
                 .getRequestBody()),
-            (String) httpMethodOperation.getOperation()
-                .getExtensions()
-                .get(X_DWS_QUERY)).stream())
+            DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation())).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
