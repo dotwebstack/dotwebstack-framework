@@ -2,11 +2,14 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
@@ -54,4 +57,14 @@ public class DwsExtensionHelper {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
     return (Objects.nonNull(isEnvelope) && isEnvelope) || isExpr(schema);
   }
+
+  public static String getDwsQueryName(@NonNull Operation operation) {
+    Object dwsQueryName = operation.getExtensions()
+        .get(X_DWS_QUERY);
+    if (dwsQueryName instanceof HashMap) {
+      return (String) ((HashMap) dwsQueryName).get("field");
+    }
+    return (String) dwsQueryName;
+  }
+
 }
