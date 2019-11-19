@@ -81,7 +81,8 @@ paths:
                 $ref: '#/components/schemas/Object1'
   /query2:
     get:
-      x-dws-query: query2
+      x-dws-query:
+        field: query2
       responses:
         200:
           description: OK

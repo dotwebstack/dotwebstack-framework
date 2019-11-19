@@ -141,11 +141,7 @@ components:
 paths:
   /breweries:
     get:
-      x-dws-query:
-        field: breweries
-        parameters:
-          - name: iri
-            valueExpr: request.uriBuilder().scheme('http').build()
+      x-dws-query: breweries
       parameters:
         - name: expand
           x-dws-type: expand
