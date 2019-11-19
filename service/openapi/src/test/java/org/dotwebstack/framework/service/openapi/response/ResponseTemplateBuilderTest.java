@@ -21,6 +21,8 @@ import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpMethod;
 
 public class ResponseTemplateBuilderTest {
@@ -32,7 +34,8 @@ public class ResponseTemplateBuilderTest {
     this.openApi = TestResources.openApi();
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(strings = {"/query1", "/query2"})
   public void build_returnsTemplates_ForValidSpec() {
     // Arrange / Act
     List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
