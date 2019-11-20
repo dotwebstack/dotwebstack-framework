@@ -556,7 +556,6 @@ class Rdf4jIntegrationTest {
 
     // Act
     ExecutionResult result = graphQL.execute(query);
-    System.out.println(result);
 
     // Assert
     assertThat(result.getErrors(), hasSize(0));

@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORD
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
-import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -51,9 +52,9 @@ public final class ValueFetcher extends SourceDataFetcher {
   public Object get(DataFetchingEnvironment environment) {
     GraphQLType fieldType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     QuerySolution source = environment.getSource();
+    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
 
-    if (Rdf4jScalars.IRI.getName()
-        .equals(fieldType.getName())) {
+    if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
       return source.getSubject();
     }
 
