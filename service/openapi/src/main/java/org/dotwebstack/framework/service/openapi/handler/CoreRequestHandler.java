@@ -31,13 +31,17 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -76,9 +80,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final String pathName;
 
+  private final JexlHelper jexlHelper;
+
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -87,6 +93,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
+    this.jexlHelper = jexlHelper;
     validateSchema();
   }
 
@@ -174,6 +181,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private String getResponse(ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
+    JexlContext jexlContext = buildJexlContext(request, inputParams);
+    responseSchemaContext.getDwsParameters()
+        .forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
+            .ifPresent(value -> inputParams.put(name, value)));
 
     String query = buildQueryString(inputParams);
 
@@ -199,6 +210,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
+    MapContext mapContext = new MapContext();
+    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
+    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
+    return mapContext;
   }
 
   private void logInputRequest(ServerRequest request) {

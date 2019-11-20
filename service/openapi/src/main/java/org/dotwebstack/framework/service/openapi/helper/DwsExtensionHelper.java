@@ -3,18 +3,28 @@ package org.dotwebstack.framework.service.openapi.helper;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_FIELD;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_NAME;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_VALUEEXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
 
 public class DwsExtensionHelper {
+
+  public static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
+
+  public static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
 
   private DwsExtensionHelper() {}
 
@@ -61,10 +71,23 @@ public class DwsExtensionHelper {
   public static String getDwsQueryName(@NonNull Operation operation) {
     Object dwsQueryName = operation.getExtensions()
         .get(X_DWS_QUERY);
-    if (dwsQueryName instanceof HashMap) {
-      return (String) ((HashMap) dwsQueryName).get("field");
+    if (dwsQueryName instanceof Map) {
+      return (String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD);
     }
     return (String) dwsQueryName;
   }
 
+  public static Map<String, String> getDwsQueryParameters(@NonNull Operation operation) {
+    Map<String, String> result = new HashMap<>();
+    Object dwsQuery = operation.getExtensions()
+        .get(X_DWS_QUERY);
+    if (dwsQuery instanceof Map) {
+      List<?> dwsParameters =
+          Objects.requireNonNullElse((List<?>) ((Map) dwsQuery).get(X_DWS_QUERY_PARAMETERS), Collections.emptyList());
+      dwsParameters.stream()
+          .forEach(o -> result.put((String) ((Map) o).get(X_DWS_QUERY_PARAMETER_NAME),
+              (String) ((Map) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
+    }
+    return result;
+  }
 }
