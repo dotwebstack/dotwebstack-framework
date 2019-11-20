@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.StringValue;
 import graphql.schema.CoercingParseLiteralException;
+import graphql.schema.CoercingParseValueException;
 import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ class IriCoercingTest {
   @Test
   void parseValue_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> coercing.parseValue(new Object()));
+    assertThrows(CoercingParseValueException.class, () -> coercing.parseValue(new Object()));
   }
 
   @Test

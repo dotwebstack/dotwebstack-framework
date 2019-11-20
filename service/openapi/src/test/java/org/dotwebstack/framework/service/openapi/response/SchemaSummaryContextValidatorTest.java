@@ -164,6 +164,6 @@ public class SchemaSummaryContextValidatorTest {
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem.getGet());
 
-    return new ResponseSchemaContext(field, responses, Collections.emptyList(), null);
+    return new ResponseSchemaContext(field, responses, Collections.emptyList(), Collections.emptyMap(), null);
   }
 }

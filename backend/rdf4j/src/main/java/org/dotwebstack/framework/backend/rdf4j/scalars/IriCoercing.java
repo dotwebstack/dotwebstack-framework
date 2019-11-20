@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.rdf4j.scalars;
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingParseLiteralException;
+import graphql.schema.CoercingParseValueException;
+import java.net.URI;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -19,7 +21,11 @@ public class IriCoercing implements Coercing<IRI, IRI> {
 
   @Override
   public IRI parseValue(@NonNull Object value) {
-    throw new UnsupportedOperationException();
+    if (value instanceof URI) {
+      return VF.createIRI(((URI) value).toString());
+    }
+    throw new CoercingParseValueException(String.format("Unable to parse IRI from '%s' type.", value.getClass()
+        .getName()));
   }
 
   @Override
