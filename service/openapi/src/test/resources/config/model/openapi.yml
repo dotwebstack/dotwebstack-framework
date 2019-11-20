@@ -58,6 +58,12 @@ components:
           properties:
             o3_prop1:
               type: string
+    Object5:
+      type: object
+      x-dws-type: 'customType'
+      oneOf:
+        - $ref: 'components/schemas/Object3'
+        - $ref: 'components/schemas/Object4'
 
 paths:
   /query1:
@@ -148,7 +154,6 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object2'
-
   /query5:
     get:
       x-dws-query: query5
@@ -159,3 +164,13 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object4'
+  /query6:
+    get:
+      x-dws-query: query6
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object5'

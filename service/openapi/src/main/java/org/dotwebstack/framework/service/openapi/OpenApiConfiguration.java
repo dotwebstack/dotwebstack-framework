@@ -61,9 +61,12 @@ public class OpenApiConfiguration {
 
   private QueryFieldHelper queryFieldHelper;
 
+  private OpenApiProperties openApiProperties;
+
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
+      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
+      OpenApiProperties openApiProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -75,6 +78,7 @@ public class OpenApiConfiguration {
         .build();
     this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
+    this.openApiProperties = openApiProperties;
   }
 
   @Bean
@@ -83,6 +87,7 @@ public class OpenApiConfiguration {
 
     ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
+        .xdwsStringTypes(openApiProperties.getXdwsStringTypes())
         .build();
     RequestBodyContextBuilder requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
     openApi.getPaths()
