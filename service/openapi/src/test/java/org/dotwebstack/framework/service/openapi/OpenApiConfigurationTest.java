@@ -69,9 +69,11 @@ public class OpenApiConfigurationTest {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiStream = TestResources.openApiStream();
+    OpenApiProperties openApiProperties = new OpenApiProperties();
+    openApiProperties.setXdwsStringTypes(List.of("customType"));
     this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
         new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, responseContextValidator,
-        requestBodyHandlerRouter));
+        requestBodyHandlerRouter, openApiProperties));
   }
 
   @Test
@@ -90,14 +92,14 @@ public class OpenApiConfigurationTest {
     openApiConfiguration.route(openApi);
 
     // Assert
-    assertEquals(5, optionsAnswer.getResults()
+    assertEquals(6, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(6)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(7)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         any(RequestBodyContextBuilder.class), argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
-    assertEquals(6, actualHttpMethodOperations.size());
+    assertEquals(7, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
         .getHttpMethod());
@@ -127,6 +129,11 @@ public class OpenApiConfigurationTest {
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(5)
         .getHttpMethod());
     assertEquals("/query5", actualHttpMethodOperations.get(5)
+        .getName());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(6)
+        .getHttpMethod());
+    assertEquals("/query6", actualHttpMethodOperations.get(6)
         .getName());
   }
 

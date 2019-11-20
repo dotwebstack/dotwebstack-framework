@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,6 +37,8 @@ import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 public class ResponseTemplateBuilder {
 
   private final OpenAPI openApi;
+
+  private final List<String> xdwsStringTypes;
 
   private static boolean isRequired(Schema<?> schema, String property) {
     return schema == null || (Objects.nonNull(schema.getRequired()) && schema.getRequired()
@@ -256,6 +261,13 @@ public class ResponseTemplateBuilder {
 
   private ResponseObject createResponseObject(String identifier, Schema<?> schema, String ref, boolean isRequired,
       boolean isNillable) {
+    Optional<String> xdwsType = getXdwsType(schema);
+    if (xdwsType.isPresent() && this.xdwsStringTypes.contains(xdwsType.get())) {
+      return ResponseObject.builder()
+          .identifier(identifier)
+          .summary(createResponseObject(new StringSchema(), ref, isRequired, isNillable))
+          .build();
+    }
     return ResponseObject.builder()
         .identifier(identifier)
         .summary(createResponseObject(schema, ref, isRequired, isNillable))
@@ -294,5 +306,16 @@ public class ResponseTemplateBuilder {
     }
 
     return (String) result;
+  }
+
+  protected static Optional<String> getXdwsType(Schema<?> schema) {
+    if (Objects.nonNull(schema.getExtensions())) {
+      Object type = schema.getExtensions()
+          .get(X_DWS_TYPE);
+      if (Objects.nonNull(type) || (type instanceof String)) {
+        return Optional.of((String) type);
+      }
+    }
+    return Optional.empty();
   }
 }

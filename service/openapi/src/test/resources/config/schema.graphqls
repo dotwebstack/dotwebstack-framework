@@ -12,6 +12,8 @@ type Query {
     query4(object3: Object3): Object2!
 
     query5: Object4!
+
+    query6: String
 }
 
 type Object1 {

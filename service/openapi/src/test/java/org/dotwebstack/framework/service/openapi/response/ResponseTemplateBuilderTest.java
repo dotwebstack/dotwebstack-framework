@@ -2,14 +2,19 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
@@ -194,8 +199,63 @@ public class ResponseTemplateBuilderTest {
         () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
+  @Test
+  public void build_throwsException_without_configuredXdwsStringType() {
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, ImmutableList.of("unknown type"), "/query6", HttpMethod.GET));
+  }
+
+  @Test
+  public void build_succeeds_with_configuredXdwsStringType() {
+    // Act / Assert
+    List<ResponseTemplate> responseTemplates =
+        getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
+
+    assertEquals(1, responseTemplates.size());
+    assertEquals("string", responseTemplates.get(0)
+        .getResponseObject()
+        .getSummary()
+        .getType());
+    assertTrue(responseTemplates.get(0)
+        .getResponseObject()
+        .getSummary()
+        .getSchema() instanceof StringSchema);
+  }
+
+  @Test
+  public void getXdwsType_returns_expectedValue() {
+    // Arrange
+    Schema<?> schema = this.openApi.getComponents()
+        .getSchemas()
+        .get("Object5");
+
+    // Act
+    Optional<String> xdwsType = ResponseTemplateBuilder.getXdwsType(schema);
+
+    // Assert
+    assertTrue(xdwsType.isPresent());
+    assertEquals("customType", xdwsType.get());
+  }
+
+  @Test
+  public void getXdwsType_returns_empty() {
+    // Arrange
+    Schema<?> schema = this.openApi.getComponents()
+        .getSchemas()
+        .get("Object4");
+
+    // Assert
+    assertTrue(ResponseTemplateBuilder.getXdwsType(schema)
+        .isEmpty());
+  }
 
   public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, String path, HttpMethod httpMethod) {
+    return getResponseTemplates(openApi, Collections.emptyList(), path, httpMethod);
+  }
+
+  public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, List<String> xdwsStringTypes, String path,
+      HttpMethod httpMethod) {
     Operation operation;
     switch (httpMethod) {
       case GET:
@@ -211,7 +271,7 @@ public class ResponseTemplateBuilderTest {
       default:
         throw ExceptionHelper.unsupportedOperationException("method '{}' not yet supported.", httpMethod);
     }
-    return new ResponseTemplateBuilder(openApi).buildResponseTemplates(HttpMethodOperation.builder()
+    return new ResponseTemplateBuilder(openApi, xdwsStringTypes).buildResponseTemplates(HttpMethodOperation.builder()
         .name(path)
         .httpMethod(httpMethod)
         .operation(operation)
