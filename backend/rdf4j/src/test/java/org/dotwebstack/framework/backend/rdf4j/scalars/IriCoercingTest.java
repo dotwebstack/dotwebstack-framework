@@ -3,11 +3,14 @@ package org.dotwebstack.framework.backend.rdf4j.scalars;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.StringValue;
 import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
@@ -23,9 +26,22 @@ class IriCoercingTest {
   }
 
   @Test
-  void parseValue_ThrowsException() {
+  void parseValue_ThrowsException_whenNotUri() {
     // Act / Assert
     assertThrows(CoercingParseValueException.class, () -> coercing.parseValue(new Object()));
+  }
+
+  @Test
+  void parseValue_ReturnsIri_ForUriValue() throws URISyntaxException {
+    // Arrange
+    String uriString = "http://myUri/path";
+    URI uri = new URI(uriString);
+
+    // Act
+    IRI result = coercing.parseValue(uri);
+
+    // Assert
+    assertEquals(result.toString(), uriString);
   }
 
   @Test

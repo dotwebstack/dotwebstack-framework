@@ -181,10 +181,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private String getResponse(ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
-    JexlContext jexlContext = buildJexlContext(request, inputParams);
-    responseSchemaContext.getDwsParameters()
-        .forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
-            .ifPresent(value -> inputParams.put(name, value)));
 
     String query = buildQueryString(inputParams);
 
@@ -210,6 +206,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private void addEvaluatedDwsQueryJexlParameters(JexlContext jexlContext, Map<String, Object> inputParams) {
+    responseSchemaContext.getDwsParameters()
+        .forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
+            .ifPresent(value -> inputParams.put(name, value)));
   }
 
   private JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
@@ -302,6 +304,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     } else {
       validateRequestBodyNonexistent(request);
     }
+
+    JexlContext jexlContext = buildJexlContext(request, result);
+    addEvaluatedDwsQueryJexlParameters(jexlContext, result);
+
     return result;
   }
 

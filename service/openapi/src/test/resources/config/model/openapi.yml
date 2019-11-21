@@ -152,7 +152,11 @@ paths:
 
   /query5:
     get:
-      x-dws-query: query5
+      x-dws-query:
+        field: query5
+        parameters:
+          - name: someJexlParameter
+            valueExpr: someJexlExpression
       responses:
         200:
           description: OK
