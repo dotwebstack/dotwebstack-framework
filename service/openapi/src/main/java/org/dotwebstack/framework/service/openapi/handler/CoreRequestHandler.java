@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
@@ -31,8 +32,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -41,7 +40,6 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
-import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -208,19 +206,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  private void addEvaluatedDwsQueryJexlParameters(JexlContext jexlContext, Map<String, Object> inputParams) {
-    responseSchemaContext.getDwsParameters()
-        .forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
-            .ifPresent(value -> inputParams.put(name, value)));
-  }
-
-  private JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
-    MapContext mapContext = new MapContext();
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
-    return mapContext;
-  }
-
   private void logInputRequest(ServerRequest request) {
     LOG.debug("Request received at: {}", request);
 
@@ -305,10 +290,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       validateRequestBodyNonexistent(request);
     }
 
-    JexlContext jexlContext = buildJexlContext(request, result);
-    addEvaluatedDwsQueryJexlParameters(jexlContext, result);
-
-    return result;
+    return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
