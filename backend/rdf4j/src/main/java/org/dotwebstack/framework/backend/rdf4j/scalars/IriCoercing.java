@@ -8,8 +8,6 @@ import java.net.URI;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class IriCoercing implements Coercing<IRI, IRI> {
 

@@ -1,5 +1,3 @@
-scalar IRI
-
 schema {
   query: Query
 }
@@ -14,9 +12,8 @@ type Query {
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
-            naampje: [String] @filter(field: "name"),
-            beerName: String @filter(field: "beers.name"),
-            iri: IRI @filter(field: "url")): [Brewery!]!
+            name: [String] @filter(field: "name"),
+            beerName: String @filter(field: "beers.name")): [Brewery!]!
     @sparql(
       repository: "local"
       limit: "pageSize"

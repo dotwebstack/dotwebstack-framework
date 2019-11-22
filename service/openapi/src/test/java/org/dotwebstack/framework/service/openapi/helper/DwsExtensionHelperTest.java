@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_NAME;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_VALUEEXPR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.swagger.v3.oas.models.Operation;
@@ -15,65 +13,65 @@ public class DwsExtensionHelperTest {
 
   @Test
   public void getDwsQueryName_returnsQueryName_whenShortForm() {
-    //Arrange
+    // Arrange
     Operation getShortForm = TestResources.openApi()
         .getPaths()
         .get("/query1")
         .getGet();
 
-    //Act / Assert
+    // Act / Assert
     assertEquals(DwsExtensionHelper.getDwsQueryName(getShortForm), "query1");
   }
 
   @Test
   public void getDwsQueryName_returnsField_whenAdvancedForm() {
-    //Arrange
+    // Arrange
     Operation getAdvancedForm = TestResources.openApi()
         .getPaths()
         .get("/query2")
         .getGet();
 
-    //Act / Assert
+    // Act / Assert
     assertEquals(DwsExtensionHelper.getDwsQueryName(getAdvancedForm), "query2");
   }
 
   @Test
   public void getDwsQueryParameters_returnsParameters_whenSpecified() {
-    //Arrange
-    Operation getWithDwsParameters= TestResources.openApi()
+    // Arrange
+    Operation getWithDwsParameters = TestResources.openApi()
         .getPaths()
         .get("/query5")
         .getGet();
 
-    //Act
+    // Act
     Map<String, String> dwsParameters = DwsExtensionHelper.getDwsQueryParameters(getWithDwsParameters);
 
-    //Assert
+    // Assert
     assertEquals(dwsParameters.size(), 1);
     assertEquals(dwsParameters.get("someJexlParameter"), "someJexlExpression");
   }
 
   @Test
   public void getDwsQueryParameters_empty_whenNotSpecified() {
-    //Arrange
+    // Arrange
     Operation getWithoutDwsParameters = TestResources.openApi()
         .getPaths()
         .get("/query2")
         .getGet();
 
-    //Act / Assert
+    // Act / Assert
     assertEquals(DwsExtensionHelper.getDwsQueryParameters(getWithoutDwsParameters), Collections.emptyMap());
   }
 
   @Test
   public void getDwsQueryParameters_empty_whenShortForm() {
-    //Arrange
+    // Arrange
     Operation getShortForm = TestResources.openApi()
         .getPaths()
         .get("/query1")
         .getGet();
 
-    //Act / Assert
+    // Act / Assert
     assertEquals(DwsExtensionHelper.getDwsQueryParameters(getShortForm), Collections.emptyMap());
   }
 }
