@@ -141,7 +141,11 @@ components:
 paths:
   /breweries:
     get:
-      x-dws-query: breweries
+      x-dws-query:
+        field: breweries
+        parameters:
+          - name: iri
+            valueExpr: request.uriBuilder().scheme('http').build().toUri()
       parameters:
         - name: expand
           x-dws-type: expand
@@ -152,7 +156,7 @@ paths:
             items:
               type: string
               enum: ['beers', 'beers.ingredients', 'beers.supplements']
-        - name: name
+        - name: naampje
           in: query
           explode: false
           required: false

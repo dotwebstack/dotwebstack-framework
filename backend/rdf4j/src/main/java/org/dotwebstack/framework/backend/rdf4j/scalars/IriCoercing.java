@@ -6,13 +6,12 @@ import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
 import java.net.URI;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class IriCoercing implements Coercing<IRI, IRI> {
-
-  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   @Override
   public IRI serialize(@NonNull Object value) {
@@ -22,7 +21,7 @@ public class IriCoercing implements Coercing<IRI, IRI> {
   @Override
   public IRI parseValue(@NonNull Object value) {
     if (value instanceof URI) {
-      return VF.createIRI(((URI) value).toString());
+      return IriHelper.createIri(((URI) value).toString());
     }
     throw new CoercingParseValueException(String.format("Unable to parse IRI from '%s' type.", value.getClass()
         .getName()));
@@ -42,7 +41,7 @@ public class IriCoercing implements Coercing<IRI, IRI> {
     String valueStr = ((StringValue) value).getValue();
 
     try {
-      return VF.createIRI(valueStr);
+      return IriHelper.createIri(valueStr);
     } catch (IllegalArgumentException e) {
       throw new CoercingParseLiteralException(String.format("Unable to parse IRI from string value '%s'.", valueStr),
           e);
