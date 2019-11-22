@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -76,9 +78,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final String pathName;
 
+  private final JexlHelper jexlHelper;
+
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -87,6 +91,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
+    this.jexlHelper = jexlHelper;
     validateSchema();
   }
 
@@ -284,7 +289,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     } else {
       validateRequestBodyNonexistent(request);
     }
-    return result;
+
+    return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {

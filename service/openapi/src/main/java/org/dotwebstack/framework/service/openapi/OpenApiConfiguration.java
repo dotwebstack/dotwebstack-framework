@@ -17,11 +17,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.handler.CoreRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -59,6 +62,8 @@ public class OpenApiConfiguration {
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
+  private final JexlHelper jexlHelper;
+
   private QueryFieldHelper queryFieldHelper;
 
   private OpenApiProperties openApiProperties;
@@ -66,7 +71,7 @@ public class OpenApiConfiguration {
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties) {
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -79,6 +84,7 @@ public class OpenApiConfiguration {
     this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.openApiProperties = openApiProperties;
+    this.jexlHelper = new JexlHelper(jexlEngine);
   }
 
   @Bean
@@ -152,7 +158,7 @@ public class OpenApiConfiguration {
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
                 .getParameters() : Collections.emptyList(),
-        requestBodyContext);
+        DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()), requestBodyContext);
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()))
@@ -160,7 +166,7 @@ public class OpenApiConfiguration {
 
     return RouterFunctions.route(requestPredicate,
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
-            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter));
+            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper));
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
