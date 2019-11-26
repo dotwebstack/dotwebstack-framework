@@ -155,12 +155,12 @@ public class NodeShapeFactory {
     }
 
     builder.identifier(usedShape)
-        .minCount(Models.getPropertyLiteral(shapeModel, usedShape, SHACL.MIN_COUNT)
+        .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
             .map(Literal::intValue)
-            .orElse(0))
-        .maxCount(Models.getPropertyLiteral(shapeModel, usedShape, SHACL.MAX_COUNT)
+            .orElse(null))
+        .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
             .map(Literal::intValue)
-            .orElse(Integer.MAX_VALUE));
+            .orElse(null));
 
     return builder.build();
   }

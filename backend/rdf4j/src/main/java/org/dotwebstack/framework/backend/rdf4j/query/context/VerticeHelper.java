@@ -5,12 +5,15 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
+import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
@@ -52,18 +55,18 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
-  public static List<GraphPattern> getWherePatterns(Vertice vertice) {
+  public static List<GraphPattern> getWherePatterns(Vertice vertice, boolean addSelectClause) {
 
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
     return edges.stream()
-        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
+        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject(), addSelectClause).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
+  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject, boolean addSelectClause) {
     GraphPattern graphPattern = (Objects.nonNull(edge.getObject()
         .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
             edge.getObject()
@@ -81,12 +84,47 @@ public class VerticeHelper {
                   .getSubject() : subject))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
+
     }
 
-    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
+    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject(), addSelectClause);
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
+    if (!isLeaf(edge) && addSelectClause) {
+      if (Objects.nonNull(edge.getMaxCount())) {
+        graphPattern = GraphPatterns.select(getSelected(subject, edge).toArray(new Projectable[] {}))
+            .where(graphPattern)
+            .limit(edge.getMaxCount());
+      } else {
+        graphPattern = GraphPatterns.select(getSelected(subject, edge).toArray(new Projectable[] {}))
+            .where(graphPattern);
+      }
+    }
     return singletonList(graphPattern);
+  }
+
+  private static Set<Projectable> getSelected(Variable subject, Edge edge) {
+    Set<Projectable> result = new HashSet<>();
+    result.add(subject);
+    result.add(edge.getObject()
+        .getSubject());
+    result.addAll(edge.getObject()
+        .getEdges()
+        .stream()
+        .filter(VerticeHelper::isLeaf)
+        .filter(e -> Objects.nonNull(e.getObject()
+            .getSubject()))
+        .map(e -> e.getObject()
+            .getSubject())
+        .collect(Collectors.toSet()));
+    result.addAll(edge.getObject()
+        .getEdges()
+        .stream()
+        .filter(e -> !isLeaf(e))
+        .flatMap(e -> getSelected(e.getObject()
+            .getSubject(), e).stream())
+        .collect(Collectors.toSet()));
+    return result;
   }
 
   private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {
@@ -114,5 +152,11 @@ public class VerticeHelper {
         .map(operand -> FilterHelper.getExpressionFromOperator(subject, filter.getOperator(), operand))
         .collect(Collectors.toList());
     return FilterHelper.joinExpressions(FilterJoinType.OR, null, expressions);
+  }
+
+  private static boolean isLeaf(Edge edge) {
+    return edge.getObject()
+        .getEdges()
+        .isEmpty();
   }
 }
