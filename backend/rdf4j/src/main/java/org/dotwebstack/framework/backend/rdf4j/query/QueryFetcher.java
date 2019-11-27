@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.core.helpers.FormatHelper.formatQuery;
+import static org.dotwebstack.framework.backend.rdf4j.helper.FormatHelper.formatQuery;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
 import com.google.common.collect.ImmutableList;
