@@ -6,7 +6,7 @@ public class FormatHelper {
 
   private FormatHelper() {}
 
-  private static String INDENTCHAR = "  ";
+  private static final String INDENTCHAR = "  ";
 
   public static String formatQuery(@NonNull String query) {
     int indents = 0;
