@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,13 +135,9 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
 
-    assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), nullMap)))))));
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
+        ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
+            .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
 
 
@@ -411,6 +408,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
   void graphqlQuery_ReturnsMap_WithFiltersOnShOrField() {
     // Arrange
     String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: [\"Hop\", \"Gerst\"], supplement: "
@@ -431,6 +429,13 @@ class Rdf4jIntegrationTest {
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
                     SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+
+    List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
+    Map<String, Object> edelPils =
+        (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
+    List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
+
+    assertThat(ingredients, IsCollectionWithSize.hasSize(2));
   }
 
   @Test
@@ -490,11 +495,9 @@ class Rdf4jIntegrationTest {
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients.size(), is(4));
-    assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
-    assertThat(ingredients.get(1), is(equalTo("Hop")));
-    assertThat(ingredients.get(2), is(equalTo("Gerst")));
-    assertThat(ingredients.get(3), is(equalTo(null)));
+    assertThat(ingredients.size(), is(2));
+    assertThat(ingredients.get(0), is(equalTo("Hop")));
+    assertThat(ingredients.get(1), is(equalTo("Gerst")));
   }
 
   @Test

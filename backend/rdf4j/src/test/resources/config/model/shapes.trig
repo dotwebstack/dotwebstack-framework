@@ -175,6 +175,7 @@
         [
           sh:name "ingredients" ;
           sh:node beer_sh:Ingredient ;
+          sh:maxCount 2 ;
         ]
         [
           sh:name "supplements" ;
