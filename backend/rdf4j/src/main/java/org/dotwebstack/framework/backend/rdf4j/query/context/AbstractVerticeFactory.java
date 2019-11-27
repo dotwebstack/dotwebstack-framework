@@ -262,14 +262,26 @@ abstract class AbstractVerticeFactory {
         .toString();
     String order = orderMap.get("order")
         .toString();
+    Boolean isResource = Boolean.parseBoolean((String) orderMap.get("isResource"));
 
     List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-
+    NodeShape childShape = null;
+    if (!isResource) {
+      childShape = getNextNodeShape(nodeShape, fieldPaths);
+    }
     // add missing edges
     Edge match;
     Variable subject;
-    if (nodeShape.equals(childShape)) {
+    if (isResource) {
+      if (fieldName.contains(".")) {
+        fieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
+        match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
+        subject = getSubjectForField(match, nodeShape, fieldPaths);
+      } else {
+        subject = vertice.getSubject();
+      }
+
+    } else if (nodeShape.equals(childShape)) {
       match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
       subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {

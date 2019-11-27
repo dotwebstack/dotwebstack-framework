@@ -7,10 +7,12 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +122,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
-    List<Object> orderByObject = getOrderByObject(environment, arguments);
+    List<Object> orderByObject = getOrderByObject(environment, arguments, queryEnvironment);
 
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
@@ -150,7 +152,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments,
+      QueryEnvironment queryEnvironment) {
     Optional<GraphQLArgument> sortOptional = environment.getFieldDefinition()
         .getArguments()
         .stream()
@@ -161,7 +164,21 @@ public final class QueryFetcher implements DataFetcher<Object> {
     if (sortOptional.isPresent()) {
       GraphQLArgument sortArgument = sortOptional.get();
       if (Objects.nonNull(arguments.get(sortArgument.getName()))) {
-        orderByObject = (List<Object>) arguments.get(sortArgument.getName());
+        List<Map<String, String>> sortArgsMap = (List<Map<String, String>>) arguments.get(sortArgument.getName());
+
+        orderByObject = sortArgsMap.stream()
+            .peek(sortArgs -> {
+              Optional<GraphQLFieldDefinition> field =
+                  Optional.ofNullable(getField(environment.getFieldDefinition(), sortArgs.get("field").split("\\.")));
+              Optional<GraphQLDirective> resourceOptional = Optional.empty();
+
+              if (field.isPresent()) {
+                resourceOptional = Optional.ofNullable(field.get()
+                    .getDirective(Rdf4jDirectives.RESOURCE_NAME));
+              }
+
+              resourceOptional.ifPresent(directive -> sortArgs.put("isResource", "true")); })
+            .collect(Collectors.toList());
       } else {
         orderByObject = (List<Object>) sortArgument.getDefaultValue();
       }
@@ -169,6 +186,16 @@ public final class QueryFetcher implements DataFetcher<Object> {
       orderByObject = Collections.emptyList();
     }
     return orderByObject;
+  }
+
+  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
+    GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType()))
+        .getFieldDefinition(path[0]);
+
+    if (path.length > 1) {
+      return getField(environment, Arrays.copyOfRange(path, 1, path.length));
+    }
+    return fieldDefinition;
   }
 
   private Model fetchGraph(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<IRI> subjects,

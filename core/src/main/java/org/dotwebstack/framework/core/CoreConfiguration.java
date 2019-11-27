@@ -21,6 +21,7 @@ import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 
 @Slf4j
@@ -43,6 +44,7 @@ public class CoreConfiguration {
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }
 
+  @Profile("!test")
   @Bean
   public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader,
       @NonNull CoreProperties coreProperties) throws IOException {

@@ -20,8 +20,6 @@ public class ResourceDirectiveWiring implements SchemaDirectiveWiring {
 
   private static final String DIRECTIVE_NAME = Rdf4jDirectives.RESOURCE_NAME;
 
-  public ResourceDirectiveWiring() {}
-
   @Override
   public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
