@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
@@ -55,8 +57,7 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
-  public static List<GraphPattern> getWherePatterns(Vertice vertice, boolean addSelectClause) {
-
+  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice, boolean addSelectClause) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
@@ -84,7 +85,6 @@ public class VerticeHelper {
                   .getSubject() : subject))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
-
     }
 
     List<GraphPattern> childPatterns = getWherePatterns(edge.getObject(), addSelectClause);
