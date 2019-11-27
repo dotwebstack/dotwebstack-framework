@@ -553,6 +553,7 @@ relation with `Animal` also a name and an owner.
 
 ## 1.9 PropertyShape sh:maxCount
 The value set for `sh:maxCount` on a property shape will be translated to a SPARQL `LIMIT` clause withing the construct query.
+The `LIMIT` clause can be used by the backend to optimize query times. The data should conform to the value of `sh:maxCount` to avoid issues with nested lists which are sorted by the application and not by the backend. 
 For example, the property shape
 ```schacl
   beer_sh:Brewery_beers a sh:PropertyShape ;
@@ -562,5 +563,5 @@ For example, the property shape
     sh:node beer_sh:Beer
   .
 ```
-will limit the number of beers returned for each brewery to 10.
+will limit the number of beers returned for each brewery to 10. If the data contains more than 10 beers, only 10 beers will be retrieved from the backend and then sorted.
  
