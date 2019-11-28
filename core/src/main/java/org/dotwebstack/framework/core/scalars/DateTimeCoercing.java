@@ -3,6 +3,8 @@ package org.dotwebstack.framework.core.scalars;
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
@@ -43,6 +45,7 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
       if (Objects.equals("NOW", stringValue.getValue())) {
         return ZonedDateTime.now();
       }
+      return ZonedDateTime.of(LocalDateTime.parse(stringValue.getValue()), ZoneId.systemDefault());
     }
 
     throw new UnsupportedOperationException();
