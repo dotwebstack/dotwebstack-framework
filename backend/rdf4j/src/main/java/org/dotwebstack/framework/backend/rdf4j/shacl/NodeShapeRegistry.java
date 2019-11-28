@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import graphql.schema.GraphQLObjectType;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -41,7 +43,10 @@ public class NodeShapeRegistry {
   }
 
   public NodeShape get(GraphQLObjectType objectType) {
-    return get(VF.createIRI(shapePrefix, objectType.getName()));
+    IRI iri = VF.createIRI(shapePrefix, objectType.getName());
+    return Optional.ofNullable(iri)
+        .map(this::get)
+        .orElseThrow(() -> invalidConfigurationException("No nodeshape found for {}", iri));
   }
 
   public NodeShape getByShaclName(String shaclName) throws UnsupportedOperationException {
