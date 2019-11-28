@@ -49,6 +49,9 @@ class NodeShapeRegistryTest {
 
   @Test
   void get_returnsNodeShape_ForGivenObjectType() {
+    // Act
+    nodeShapeRegistry.register(BREWERY_SHAPE, nodeShape);
+
     // Arrange
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
         .name(BREWERY_TYPE)
