@@ -43,11 +43,13 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))
-        .where(VerticeHelper.getWherePatterns(root, true)
+        .where(VerticeHelper.getWherePatterns(root, subjects, true)
             .toArray(new GraphPattern[] {}));
 
     return query.getQueryString()
-        .replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
+        .replaceFirst("WHERE \\{", "WHEREFIRST {")
+        .replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable))
+        .replace("WHEREFIRST {", "WHERE {");
   }
 
   private String createValuesBlock(List<IRI> subjects, Variable subjectVariable) {
