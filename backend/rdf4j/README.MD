@@ -549,19 +549,4 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
 In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://www.dotwebstack.org/\>) to inherit the 
 properties of `Pet`. This means that besides the `fetchesBall` property (whether or not it likes to fetch a ball) an 
 instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
-relation with `Animal` also a name and an owner.
-
-## 1.9 PropertyShape sh:maxCount
-The value set for `sh:maxCount` on a property shape will be translated to a SPARQL `LIMIT` clause withing the construct query.
-The `LIMIT` clause can be used by the backend to optimize query times. The data should conform to the value of `sh:maxCount` to avoid unexpected results. 
-For example, the property shape
-```schacl
-  beer_sh:Brewery_beers a sh:PropertyShape ;
-    sh:name "beers" ;
-    sh:path [ sh:inversePath beer_def:brewery ] ;
-    sh:maxCount 10 ;
-    sh:node beer_sh:Beer
-  .
-```
-will limit the number of beers returned for each brewery to 10, even if the data contains more than 10 beers.
- 
+relation with `Animal` also a name and an owner. 

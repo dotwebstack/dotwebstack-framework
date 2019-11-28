@@ -147,7 +147,6 @@
   beer_sh:Brewery_beers a sh:PropertyShape ;
     sh:name "beers" ;
     sh:path [ sh:inversePath beer_def:brewery ] ;
-    sh:maxCount 10 ;
     sh:node beer_sh:Beer
   .
 
@@ -175,7 +174,6 @@
         [
           sh:name "ingredients" ;
           sh:node beer_sh:Ingredient ;
-          sh:maxCount 2 ;
         ]
         [
           sh:name "supplements" ;

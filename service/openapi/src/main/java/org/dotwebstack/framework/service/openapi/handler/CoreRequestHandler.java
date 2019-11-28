@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.FormatHelper.formatGraphQlQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -225,6 +224,35 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (Objects.nonNull(value)) {
       LOG.debug("Request contains the following body: {}", value);
     }
+  }
+
+  private String formatGraphQlQuery(String query) {
+    int indents = 0;
+    StringBuilder builder = new StringBuilder();
+    for (String character : query.split("")) {
+      switch (character) {
+        case "{":
+          builder.append(" {\n");
+          indents++;
+          builder.append("\t".repeat(Math.max(0, indents)));
+          break;
+        case "}":
+          builder.append("\n");
+          indents--;
+          builder.append("\t".repeat(Math.max(0, indents)));
+          builder.append("}");
+          break;
+        case ",":
+          builder.append(",\n");
+          builder.append("\t".repeat(Math.max(0, indents)));
+          break;
+        default:
+          builder.append(character);
+          break;
+      }
+    }
+
+    return builder.toString();
   }
 
   private ResponseTemplate getResponseTemplate() {

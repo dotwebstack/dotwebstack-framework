@@ -6,7 +6,6 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 
-
 @Builder
 @Getter
 public final class PropertyShape {
@@ -17,9 +16,9 @@ public final class PropertyShape {
 
   private final BasePath path;
 
-  private final Integer minCount;
+  private final int minCount;
 
-  private final Integer maxCount;
+  private final int maxCount;
 
   private final IRI nodeKind;
 

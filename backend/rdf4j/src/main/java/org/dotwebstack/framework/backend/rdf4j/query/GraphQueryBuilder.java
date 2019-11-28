@@ -43,7 +43,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))
-        .where(VerticeHelper.getWherePatterns(root, true)
+        .where(VerticeHelper.getWherePatterns(root)
             .toArray(new GraphPattern[] {}));
 
     return query.getQueryString()

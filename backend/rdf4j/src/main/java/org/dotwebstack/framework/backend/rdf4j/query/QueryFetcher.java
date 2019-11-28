@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.helper.FormatHelper.formatQuery;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
 import com.google.common.collect.ImmutableList;
@@ -136,7 +135,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
         .getQueryString(arguments, sparqlDirective, filterMapping, orderByObject);
 
-    LOG.debug("Executing query for subjects:\n{}", formatQuery(subjectQuery));
+    LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 
     String repositoryId =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
@@ -182,7 +181,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
         .getQueryString();
 
-    LOG.debug("Executing query for graph:\n{}", formatQuery(graphQuery));
+    LOG.debug("Executing query for graph:\n{}", graphQuery);
 
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
