@@ -42,7 +42,6 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
       if (Objects.equals("NOW", stringValue.getValue())) {
         return LocalDate.now();
       }
-      return LocalDate.parse(stringValue.getValue());
     }
     throw new UnsupportedOperationException();
   }
