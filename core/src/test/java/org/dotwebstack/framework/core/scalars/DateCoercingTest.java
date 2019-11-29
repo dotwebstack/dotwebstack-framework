@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import graphql.language.StringValue;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,20 @@ class DateCoercingTest {
   void parseLiteral_ThrowsException() {
     // Act / Assert
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
+  }
+
+  @Test
+  void parseLiteral_ReturnsDateTime_ForNowLiteral() {
+    // Act
+    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"));
+
+    // Assert
+    assertThat(localDate.getYear(), equalTo(LocalDate.now()
+        .getYear()));
+    assertThat(localDate.getMonth(), equalTo(LocalDate.now()
+        .getMonth()));
+    assertThat(localDate.getDayOfMonth(), equalTo(LocalDate.now()
+        .getDayOfMonth()));
   }
 
 }

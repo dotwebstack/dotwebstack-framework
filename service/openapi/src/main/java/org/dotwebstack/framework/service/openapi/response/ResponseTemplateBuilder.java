@@ -217,6 +217,11 @@ public class ResponseTemplateBuilder {
   private void resolveObjectSchema(ResponseObject responseObject, OpenAPI openApi,
       Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema) {
     SchemaSummary responseSummary = responseObject.getSummary();
+
+    if (Objects.isNull(oasSchema.getProperties())) {
+      return;
+    }
+
     List<ResponseObject> children = oasSchema.getProperties()
         .entrySet()
         .stream()
