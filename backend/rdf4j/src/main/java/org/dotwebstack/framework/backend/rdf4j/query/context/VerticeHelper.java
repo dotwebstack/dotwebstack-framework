@@ -90,10 +90,8 @@ public class VerticeHelper {
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
     if (!isLeaf(edge) && addSelectClause) {
-      if (Objects.equals(edge.getMaxCount(), 1)) {
         graphPattern = GraphPatterns.select(getSelected(subject, subject, edge).toArray(new Projectable[] {}))
             .where(graphPattern);
-      }
     }
     return singletonList(graphPattern);
   }

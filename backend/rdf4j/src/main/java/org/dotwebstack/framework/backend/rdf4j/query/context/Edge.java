@@ -20,8 +20,6 @@ class Edge implements Comparable<Edge> {
 
   private boolean isVisible;
 
-  private Integer maxCount;
-
   RdfPredicate getConstructPredicate() {
     if (Objects.nonNull(constructPredicate)) {
       return constructPredicate;

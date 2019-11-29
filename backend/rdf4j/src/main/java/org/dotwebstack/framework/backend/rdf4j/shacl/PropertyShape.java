@@ -6,7 +6,6 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 
-
 @Builder
 @Getter
 public final class PropertyShape {

@@ -92,7 +92,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             .getFields()))
         .isOptional(true)
         .isVisible(true)
-        .maxCount(propertyShape.getMaxCount())
         .build();
   }
 
