@@ -9,6 +9,8 @@ import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 @Component
 class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
@@ -45,6 +47,6 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
       }
     }
 
-    throw new UnsupportedOperationException();
+    throw unsupportedOperationException("Parsing of literal {} is not supported!",value);
   }
 }
