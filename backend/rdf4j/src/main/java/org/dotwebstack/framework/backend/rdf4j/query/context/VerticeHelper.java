@@ -58,17 +58,17 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
-  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice, List<IRI> subjects, boolean addSelectClause) {
+  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice, boolean addSelectClause) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
     return edges.stream()
-        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject(), subjects, addSelectClause).stream())
+        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject(), addSelectClause).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject, List<IRI> subjects, boolean addSelectClause) {
+  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject, boolean addSelectClause) {
     GraphPattern graphPattern = (Objects.nonNull(edge.getObject()
         .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
             edge.getObject()
@@ -88,15 +88,13 @@ public class VerticeHelper {
       graphPattern = graphPattern.filter(expression);
     }
 
-    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject(), subjects, addSelectClause);
+    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject(), addSelectClause);
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
     if (!isLeaf(edge) && addSelectClause) {
       if (Objects.equals(edge.getMaxCount(), 1)) {
         graphPattern = GraphPatterns.select(getSelected(subject, subject, edge).toArray(new Projectable[] {}))
-//            .distinct()
-            .where(graphPattern)
-            .limit(edge.getMaxCount() * subjects.size());
+            .where(graphPattern);
       }
     }
     return singletonList(graphPattern);
