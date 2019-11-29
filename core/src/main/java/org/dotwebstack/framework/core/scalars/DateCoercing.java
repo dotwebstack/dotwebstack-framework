@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.scalars;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
@@ -7,10 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.stereotype.Component;
-
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 @Component
 public class DateCoercing implements Coercing<LocalDate, LocalDate> {
@@ -46,7 +45,7 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
         return LocalDate.now();
       }
     }
-    throw unsupportedOperationException("Parsing of literal {} is not supported!",value);
+    throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
   }
 
 }
