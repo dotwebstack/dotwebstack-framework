@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -111,7 +109,8 @@ public class VerticeHelper {
     result.addAll(edge.getObject()
         .getEdges()
         .stream()
-        .filter(e -> e.getObject().getSubject() != root)
+        .filter(e -> e.getObject()
+            .getSubject() != root)
         .filter(VerticeHelper::isLeaf)
         .filter(e -> Objects.nonNull(e.getObject()
             .getSubject()))

@@ -135,9 +135,13 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
-        ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
-            .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), nullMap)))))));
   }
 
 
@@ -495,9 +499,11 @@ class Rdf4jIntegrationTest {
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients.size(), is(2));
-    assertThat(ingredients.get(0), is(equalTo("Hop")));
-    assertThat(ingredients.get(1), is(equalTo("Gerst")));
+    assertThat(ingredients.size(), is(4));
+    assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
+    assertThat(ingredients.get(1), is(equalTo("Hop")));
+    assertThat(ingredients.get(2), is(equalTo("Gerst")));
+    assertThat(ingredients.get(3), is(equalTo(null)));
   }
 
   @Test
