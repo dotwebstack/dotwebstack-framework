@@ -82,16 +82,14 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
    * A complex edge is an edge with filters vertices/filters added to it
    */
   private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field) {
-    BasePath path = nodeShape.getPropertyShape(field.getName())
-        .getPath();
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
+    BasePath path = propertyShape.getPath();
 
     return Edge.builder()
         .predicate(path.toPredicate())
         .constructPredicate(path.toConstructPredicate())
-        .object(createVertice(query.var(), query, nodeShape.getPropertyShape(field.getName())
-            .getNode(),
-            field.getSelectionSet()
-                .getFields()))
+        .object(createVertice(query.var(), query, propertyShape.getNode(), field.getSelectionSet()
+            .getFields()))
         .isOptional(true)
         .isVisible(true)
         .build();

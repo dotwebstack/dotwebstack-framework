@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
@@ -43,11 +44,19 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))
-        .where(VerticeHelper.getWherePatterns(root)
+        .where(VerticeHelper.getWherePatterns(root, true)
             .toArray(new GraphPattern[] {}));
 
-    return query.getQueryString()
-        .replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
+    String queryString = query.getQueryString();
+    if (queryString.contains("SELECT")) {
+      String[] splitted = queryString.split("WHERE \\{");
+      Stream.iterate(2, index -> index < splitted.length, index -> index + 1)
+          .forEach(index -> {
+            splitted[index] = createValuesBlock(subjects, subjectVariable) + splitted[index];
+          });
+      return String.join("WHERE {", splitted);
+    }
+    return queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
   }
 
   private String createValuesBlock(List<IRI> subjects, Variable subjectVariable) {

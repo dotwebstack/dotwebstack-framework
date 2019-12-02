@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -411,6 +412,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
   void graphqlQuery_ReturnsMap_WithFiltersOnShOrField() {
     // Arrange
     String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: [\"Hop\", \"Gerst\"], supplement: "
@@ -431,6 +433,13 @@ class Rdf4jIntegrationTest {
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
                     SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+
+    List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
+    Map<String, Object> edelPils =
+        (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
+    List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
+
+    assertThat(ingredients, IsCollectionWithSize.hasSize(2));
   }
 
   @Test
