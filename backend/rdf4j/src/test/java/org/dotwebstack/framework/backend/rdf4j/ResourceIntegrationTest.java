@@ -25,11 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(classes = TestApplication.class)
 @ActiveProfiles("test")
@@ -41,15 +39,14 @@ class ResourceIntegrationTest {
   @Test
   void graphQlQuery_ReturnBreweriesSorted_WithSubject() {
     // Arrange
-     String query = "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, "
-      + "beers{ identifier, subject, ingredients { subject } }}}";
+    String query = "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, "
+        + "beers{ identifier, subject, ingredients { subject } }}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
-    System.out.println(result);
 
     // Assert
-    assertThat(result.getErrors(), hasSize(0));
+    assertResultHasNoErrors(result);
     Map<String, List<Map<String, IRI>>> data = result.getData();
     List<String> subjects = data.get("breweries")
         .stream()
@@ -68,14 +65,14 @@ class ResourceIntegrationTest {
   @Test
   void graphQlQuery_ReturnBreweriesSorted_WithIngredientTestSubject() {
     // Arrange
-     String query = "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, beers{ identifier, subject, brewery, ingredients { subject , test { subject } } }}}";
+    String query =
+        "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, beers{ identifier, subject, brewery, ingredients { subject , test { subject } } }}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
-    System.out.println(result);
 
     // Assert
-    assertThat(result.getErrors(), hasSize(0));
+    assertResultHasNoErrors(result);
     Map<String, List<Map<String, IRI>>> data = result.getData();
     List<String> subjects = data.get("breweries")
         .stream()
@@ -99,10 +96,9 @@ class ResourceIntegrationTest {
 
     // Act
     ExecutionResult result = graphQL.execute(query);
-    System.out.println(result);
 
     // Assert
-    assertThat(result.getErrors(), hasSize(0));
+    assertResultHasNoErrors(result);
     Map<String, List<Map<String, IRI>>> data = result.getData();
     List<String> subjects = data.get("breweries")
         .stream()
@@ -126,13 +122,18 @@ class ResourceIntegrationTest {
 
     // Act
     ExecutionResult result = graphQL.execute(query);
-    System.out.println(result);
 
     // Assert
-    assertThat(result.getErrors(), hasSize(0));
+    assertResultHasNoErrors(result);
     Map<String, Map<String, IRI>> data = result.getData();
-    String subject = data.get("filterBreweriesSubject").get("subject").stringValue();
+    String subject = data.get("filterBreweriesSubject")
+        .get("subject")
+        .stringValue();
     assertThat(subject, is("https://github.com/dotwebstack/beer/id/brewery/789"));
+  }
+
+  private void assertResultHasNoErrors(ExecutionResult result) {
+    assertThat(result.getErrors(), hasSize(0));
   }
 
   @Configuration
@@ -140,8 +141,8 @@ class ResourceIntegrationTest {
 
     @Profile("test")
     @Bean
-    public TypeDefinitionRegistry testTypeDefinitionRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
-      System.out.println("scheme1.graphqls");
+    public TypeDefinitionRegistry testTypeDefinitionRegistry(@NonNull ResourceLoader resourceLoader)
+        throws IOException {
       Reader reader = new InputStreamReader(resourceLoader.getResource(URI.create("classpath:/config/")
           .resolve("resourceSchema.graphqls")
           .toString())
@@ -151,4 +152,3 @@ class ResourceIntegrationTest {
     }
   }
 }
-

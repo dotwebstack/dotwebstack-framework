@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static org.dotwebstack.framework.backend.rdf4j.helper.CompareHelper.getComparator;
 import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER_ASC;
 
@@ -61,14 +60,12 @@ public final class ValueFetcher extends SourceDataFetcher {
     PropertyShape propertyShape = getPropertyShape(environment);
 
     if (GraphQLTypeUtil.isList(fieldType)) {
-      return resolve(environment, propertyShape, source)
-          .map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
           .collect(Collectors.toList());
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(environment, propertyShape, source)
-          .map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
           .findFirst()
           .orElse(null);
     }

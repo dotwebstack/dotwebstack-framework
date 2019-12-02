@@ -36,7 +36,7 @@ public class CoreTraverser {
   }
 
   public List<DirectiveContainerObject> getTuples(@NonNull DataFetchingEnvironment environment,
-                                                  @NonNull TraverserFilter filter) {
+      @NonNull TraverserFilter filter) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
 
     return fieldDefinition.getArguments()
@@ -62,7 +62,7 @@ public class CoreTraverser {
   }
 
   private List<DirectiveContainerObject> getInputObjectFieldsFromArgument(GraphQLArgument container,
-                                                                          Map<String, Object> arguments) {
+      Map<String, Object> arguments) {
     if (container.getType() instanceof GraphQLInputObjectType) {
       List<DirectiveContainerObject> result = new ArrayList<>();
 
@@ -88,7 +88,7 @@ public class CoreTraverser {
    * object type
    */
   private List<DirectiveContainerObject> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType,
-                                                                            Map<String, Object> arguments) {
+      Map<String, Object> arguments) {
     return inputObjectType.getFields()
         .stream()
         .flatMap(field -> {

@@ -19,12 +19,10 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.*;
 
@@ -38,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -269,13 +266,10 @@ class Rdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data,
-        hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
+    assertThat(data, hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"), ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
 
   }
 

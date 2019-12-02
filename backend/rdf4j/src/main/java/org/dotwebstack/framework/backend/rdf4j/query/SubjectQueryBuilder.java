@@ -51,7 +51,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-                        List<DirectiveContainerObject> filterMapping, List<Object> orderByObject) {
+      List<DirectiveContainerObject> filterMapping, List<Object> orderByObject) {
     final MapContext context = new MapContext(arguments);
 
     List<FilterRule> filterRules = filterMapping.stream()

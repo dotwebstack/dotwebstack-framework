@@ -28,7 +28,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-                            List<Object> orderByList) {
+      List<Object> orderByList) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
     orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
@@ -36,7 +36,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-                               List<FilterRule> filterRules) {
+      List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {

@@ -81,7 +81,7 @@ abstract class AbstractVerticeFactory {
   }
 
   Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields,
-                                                              String directiveName) {
+      String directiveName) {
     return fields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
@@ -117,7 +117,7 @@ abstract class AbstractVerticeFactory {
 
   @SuppressWarnings({"unchecked"})
   void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
-                       SelectedField field) {
+      SelectedField field) {
     Object orderByList = Objects.nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
     Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
 
@@ -142,8 +142,8 @@ abstract class AbstractVerticeFactory {
   }
 
   private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
-    GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType()))
-        .getFieldDefinition(path[0]);
+    GraphQLFieldDefinition fieldDefinition =
+        ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path[0]);
 
     if (path.length > 1) {
       return getField(environment, Arrays.copyOfRange(path, 1, path.length));
@@ -152,7 +152,7 @@ abstract class AbstractVerticeFactory {
   }
 
   void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
-                   SelectedField field) {
+      SelectedField field) {
     Object filterValue = field.getArguments()
         .get(argument.getName());
     if (Objects.nonNull(filterValue)) {
@@ -170,7 +170,11 @@ abstract class AbstractVerticeFactory {
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
     Vertice usedVertice;
     if (filterRule.isResource()) {
-      usedVertice = vertice.getEdges().stream().map(Edge::getObject).findFirst().orElse(vertice);
+      usedVertice = vertice.getEdges()
+          .stream()
+          .map(Edge::getObject)
+          .findFirst()
+          .orElse(vertice);
     } else {
       Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
       usedVertice = match.getObject();
@@ -180,7 +184,8 @@ abstract class AbstractVerticeFactory {
 
     Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
         .get(filterRule.getPath()
-            .size() - 1), filterRule.isResource());
+            .size() - 1),
+        filterRule.isResource());
 
     filters.add(filter);
 
@@ -190,7 +195,8 @@ abstract class AbstractVerticeFactory {
   /*
    * Create a new filter with either one argument or a list of arguments
    */
-  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName, boolean isResource) {
+  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName,
+      boolean isResource) {
     List<Object> filterArguments;
     if (filterValue instanceof List) {
       filterArguments = castToList(filterValue);

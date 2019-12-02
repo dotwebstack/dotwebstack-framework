@@ -21,7 +21,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 
 public class CompareHelper {
 
@@ -31,8 +30,8 @@ public class CompareHelper {
     return (value1, value2) -> compareValue(value1, value2, asc);
   }
 
-  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull GraphQLArgument sortArgument,
-      @NonNull NodeShape nodeShape) {
+  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model,
+      @NonNull GraphQLArgument sortArgument, @NonNull NodeShape nodeShape) {
     String field;
     boolean isResource;
     if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD))) {
@@ -47,7 +46,8 @@ public class CompareHelper {
         resolveValue(value2, model, field, isResource, nodeShape), asc);
   }
 
-  private static Optional<Value> resolveValue(Value value, Model model, String path, boolean isResource, NodeShape nodeShape) {
+  private static Optional<Value> resolveValue(Value value, Model model, String path, boolean isResource,
+      NodeShape nodeShape) {
     List<String> fields = new ArrayList<>(Arrays.asList(path.split("\\.")));
     if (isResource && fields.size() == 1) {
       return Optional.of(value);
@@ -67,8 +67,8 @@ public class CompareHelper {
       if (fields.isEmpty()) {
         return childOptional;
       } else {
-        return childOptional
-            .flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), isResource, propertyShape.getNode()));
+        return childOptional.flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), isResource,
+            propertyShape.getNode()));
       }
     }
 
