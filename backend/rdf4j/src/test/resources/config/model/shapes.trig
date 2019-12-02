@@ -265,7 +265,23 @@
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
     dws:inherits beer_sh:Identifiable ;
+    sh:property beer_sh:ingredient_test;
     sh:name "Ingredient" ;
+    sh:nodeKind sh:IRI ;
+  .
+
+  beer_sh:ingredient_test a sh:PropertyShape ;
+    sh:name "test" ;
+    sh:path beer_def:test ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:node beer_sh:Ingredient_test ;
+  .
+
+  beer_sh:Ingredient_test a sh:NodeShape ;
+    dws:inherits beer_sh:Identifiable ;
+    sh:name "Test" ;
+    sh:targetClass beer_def:Test ;
     sh:nodeKind sh:IRI ;
   .
 

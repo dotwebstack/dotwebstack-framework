@@ -61,12 +61,14 @@ public final class ValueFetcher extends SourceDataFetcher {
     PropertyShape propertyShape = getPropertyShape(environment);
 
     if (GraphQLTypeUtil.isList(fieldType)) {
-      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(environment, propertyShape, source)
+          .map(value -> convert(source.getModel(), propertyShape, value))
           .collect(Collectors.toList());
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(environment, propertyShape, source)
+          .map(value -> convert(source.getModel(), propertyShape, value))
           .findFirst()
           .orElse(null);
     }
@@ -123,12 +125,7 @@ public final class ValueFetcher extends SourceDataFetcher {
       }
 
       if (Objects.nonNull(propertyShape.getNode())) {
-        String field = sortArgument.getName();
-        if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD))) {
-          field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD)
-              .toString();
-        }
-        return stream.sorted(getComparator(asc, source.getModel(), field, propertyShape.getNode()));
+        return stream.sorted(getComparator(asc, source.getModel(), sortArgument, propertyShape.getNode()));
       }
     }
 

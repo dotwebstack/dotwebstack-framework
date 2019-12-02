@@ -1,9 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.helper;
 
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
+
+import graphql.schema.GraphQLArgument;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
@@ -17,6 +21,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 
 public class CompareHelper {
 
@@ -26,15 +31,29 @@ public class CompareHelper {
     return (value1, value2) -> compareValue(value1, value2, asc);
   }
 
-  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull String field,
+  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull GraphQLArgument sortArgument,
       @NonNull NodeShape nodeShape) {
-    return (value1, value2) -> compareOptional(resolveValue(value1, model, field, nodeShape),
-        resolveValue(value2, model, field, nodeShape), asc);
+    String field;
+    boolean isResource;
+    if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD))) {
+      field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD)
+          .toString();
+      isResource = (boolean) ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("isResource");
+    } else {
+      field = sortArgument.getName();
+      isResource = false;
+    }
+    return (value1, value2) -> compareOptional(resolveValue(value1, model, field, isResource, nodeShape),
+        resolveValue(value2, model, field, isResource, nodeShape), asc);
   }
 
-  private static Optional<Value> resolveValue(Value value, Model model, String path, NodeShape nodeShape) {
+  private static Optional<Value> resolveValue(Value value, Model model, String path, boolean isResource, NodeShape nodeShape) {
     List<String> fields = new ArrayList<>(Arrays.asList(path.split("\\.")));
+    if (isResource && fields.size() == 1) {
+      return Optional.of(value);
+    }
     String field = fields.remove(0);
+
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
     IRI iri = propertyShape.getPath()
@@ -49,7 +68,7 @@ public class CompareHelper {
         return childOptional;
       } else {
         return childOptional
-            .flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), propertyShape.getNode()));
+            .flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), isResource, propertyShape.getNode()));
       }
     }
 
@@ -66,6 +85,9 @@ public class CompareHelper {
   }
 
   private static int compareValue(@NonNull Value value1, @NonNull Value value2, boolean asc) {
+    if (value1 instanceof IRI) {
+      return compareStringValue(value1, value2, asc);
+    }
 
     IRI datatype = ((SimpleLiteral) value1).getDatatype();
     if (isInteger(datatype)) {

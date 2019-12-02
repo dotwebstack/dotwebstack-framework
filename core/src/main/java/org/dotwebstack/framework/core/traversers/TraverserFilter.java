@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public interface TraverserFilter {
 
-  boolean apply(DirectiveContainerTuple tuple);
+  boolean apply(DirectiveContainerObject tuple);
 
   static TraverserFilter directiveFilter(String directiveName) {
     return tuple -> Objects.nonNull(tuple.getContainer()

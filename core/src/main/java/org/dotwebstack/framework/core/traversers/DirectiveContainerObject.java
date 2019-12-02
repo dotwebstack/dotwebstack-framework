@@ -6,10 +6,12 @@ import lombok.Data;
 
 @Data
 @Builder
-public class DirectiveContainerTuple {
+public class DirectiveContainerObject {
 
   private GraphQLDirectiveContainer container;
 
   private Object value;
+
+  private boolean isResource;
 
 }

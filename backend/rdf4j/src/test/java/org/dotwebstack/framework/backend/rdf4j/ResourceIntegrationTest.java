@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -41,7 +42,33 @@ class ResourceIntegrationTest {
   void graphQlQuery_ReturnBreweriesSorted_WithSubject() {
     // Arrange
      String query = "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, "
-      + "beers{ identifier, subject }}}";
+      + "beers{ identifier, subject, ingredients { subject } }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+    System.out.println(result);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+    Map<String, List<Map<String, IRI>>> data = result.getData();
+    List<String> subjects = data.get("breweries")
+        .stream()
+        .map(map -> map.get("subject"))
+        .map(IRI::stringValue)
+        .collect(Collectors.toList());
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects,
+        allOf(hasItem("https://github.com/dotwebstack/beer/id/brewery/1"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/123"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/2"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/456"),
+            hasItem("https://github.com/dotwebstack/beer/id/brewery/789")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnBreweriesSorted_WithIngredientTestSubject() {
+    // Arrange
+     String query = "{ breweries(sort: [{field: \"subject\", order:DESC}]) { identifier, subject, beers{ identifier, subject, brewery, ingredients { subject , test { subject } } }}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -89,6 +116,23 @@ class ResourceIntegrationTest {
             hasItem("https://github.com/dotwebstack/beer/id/brewery/2"),
             hasItem("https://github.com/dotwebstack/beer/id/brewery/456"),
             hasItem("https://github.com/dotwebstack/beer/id/brewery/789")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnBreweriesFiltered_OnSubject() {
+    // Arrange
+    String query =
+        "{ filterBreweriesSubject(subject: \"https://github.com/dotwebstack/beer/id/brewery/789\" ) { subject } }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+    System.out.println(result);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+    Map<String, Map<String, IRI>> data = result.getData();
+    String subject = data.get("filterBreweriesSubject").get("subject").stringValue();
+    assertThat(subject, is("https://github.com/dotwebstack/beer/id/brewery/789"));
   }
 
   @Configuration

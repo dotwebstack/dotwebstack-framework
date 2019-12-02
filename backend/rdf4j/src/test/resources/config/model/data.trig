@@ -9,6 +9,7 @@
 @prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
 @prefix ingredient_id: <https://github.com/dotwebstack/beer/id/ingredient/> .
+@prefix test_id: <https://github.com/dotwebstack/beer/id/test/> .
 @prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 
@@ -90,19 +91,39 @@ beer_id:6 a beer_def:Beer ;
 .
 
 ingredient_id:1 a beer_def:Ingredient ;
+  beer_def:test test_id:1 ;
   schema:name "Hop"
 .
 
 ingredient_id:2 a beer_def:Ingredient ;
+  beer_def:test test_id:2 ;
   schema:name "Gerst"
 .
 
 ingredient_id:3 a beer_def:Ingredient ;
+  beer_def:test test_id:3 ;
   schema:name "Sinasappel"
 .
 
 ingredient_id:4 a beer_def:Ingredient ;
+  beer_def:test test_id:4 ;
   beer_def:identifier "4";
+.
+
+test_id:1 a beer_def:Test ;
+  beer_def:identifier test_id:1 ;
+.
+
+test_id:2 a beer_def:Test ;
+  beer_def:identifier test_id:2 ;
+.
+
+test_id:3 a beer_def:Test ;
+  beer_def:identifier test_id:3 ;
+.
+
+test_id:4 a beer_def:Test ;
+  beer_def:identifier test_id:4 ;
 .
 
 supplement_id:1 a beer_def:Supplement ;

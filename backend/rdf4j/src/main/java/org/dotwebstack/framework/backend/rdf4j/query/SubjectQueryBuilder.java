@@ -19,7 +19,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
@@ -51,7 +51,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      List<DirectiveContainerTuple> filterMapping, List<Object> orderByObject) {
+                        List<DirectiveContainerObject> filterMapping, List<Object> orderByObject) {
     final MapContext context = new MapContext(arguments);
 
     List<FilterRule> filterRules = filterMapping.stream()
@@ -62,6 +62,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
                 .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
                 .getValue())
             .value(filterRule.getValue())
+            .isResource(filterRule.isResource())
             .build())
         .collect(Collectors.toList());
 

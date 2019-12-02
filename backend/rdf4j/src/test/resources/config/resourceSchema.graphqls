@@ -24,6 +24,11 @@ type Query {
   ) : [Brewery!]!
     @sparql(repository: "local")
 
+  filterBreweriesSubject (
+    subject: String @filter
+  ): Brewery!
+    @sparql(repository: "local")
+
   beer(identifier: ID!): Beer!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
 
@@ -69,12 +74,18 @@ type Beer {
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
-  ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
+  ingredients(sort: [SortField!] = [{field: "test.subject", order: ASC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
   supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
 }
 
 type Ingredient {
   name: String
+  subject: IRI! @resource
+  test: Test!
+}
+
+type Test {
+  subject: IRI! @resource
 }
 
 type Supplement {

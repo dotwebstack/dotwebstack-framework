@@ -37,8 +37,8 @@ class TraverserFilterTest {
     assertThat(noFilter().apply(null)).isTrue();
   }
 
-  private DirectiveContainerTuple testTuple(String directiveName, Object value) {
-    return DirectiveContainerTuple.builder()
+  private DirectiveContainerObject testTuple(String directiveName, Object value) {
+    return DirectiveContainerObject.builder()
         .container(GraphQLArgument.newArgument()
             .name("arg")
             .withDirective(GraphQLDirective.newDirective()

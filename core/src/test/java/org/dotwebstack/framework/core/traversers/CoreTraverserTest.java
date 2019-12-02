@@ -58,7 +58,7 @@ class CoreTraverserTest {
 
     // Act & Assert
     assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
-        .contains(DirectiveContainerTuple.builder()
+        .contains(DirectiveContainerObject.builder()
             .container(argument)
             .value(1)
             .build());
@@ -88,7 +88,7 @@ class CoreTraverserTest {
 
     // Act & Assert
     assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
-        .contains(DirectiveContainerTuple.builder()
+        .contains(DirectiveContainerObject.builder()
             .container(field)
             .value(1)
             .build());

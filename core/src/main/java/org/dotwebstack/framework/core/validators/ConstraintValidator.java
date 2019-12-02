@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,12 +34,12 @@ public class ConstraintValidator implements QueryValidator {
     this.coreTraverser = coreTraverser;
   }
 
-  public void validateSchema(@NonNull DirectiveContainerTuple directiveContainerTuple) {
-    validate(directiveContainerTuple, false);
+  public void validateSchema(@NonNull DirectiveContainerObject directiveContainerObject) {
+    validate(directiveContainerObject, false);
   }
 
-  private void validateRequest(@NonNull DirectiveContainerTuple directiveContainerTuple) {
-    validate(directiveContainerTuple, true);
+  private void validateRequest(@NonNull DirectiveContainerObject directiveContainerObject) {
+    validate(directiveContainerObject, true);
   }
 
   public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
@@ -47,21 +47,21 @@ public class ConstraintValidator implements QueryValidator {
         .forEach(this::validateRequest);
   }
 
-  private void validate(DirectiveContainerTuple directiveContainerTuple, boolean isRequest) {
-    if (Objects.isNull(directiveContainerTuple.getValue())) {
+  private void validate(DirectiveContainerObject directiveContainerObject, boolean isRequest) {
+    if (Objects.isNull(directiveContainerObject.getValue())) {
       if (isRequest) {
-        validateRequiredValue(directiveContainerTuple.getContainer());
+        validateRequiredValue(directiveContainerObject.getContainer());
       }
       return;
     }
 
-    Stream.of(directiveContainerTuple)
-        .map(container -> directiveContainerTuple.getContainer()
+    Stream.of(directiveContainerObject)
+        .map(container -> directiveContainerObject.getContainer()
             .getDirective(CONSTRAINT_NAME))
         .flatMap(directive -> directive.getArguments()
             .stream())
-        .forEach(argument -> validate(argument, directiveContainerTuple.getContainer()
-            .getName(), directiveContainerTuple.getValue()));
+        .forEach(argument -> validate(argument, directiveContainerObject.getContainer()
+            .getName(), directiveContainerObject.getValue()));
   }
 
   void validate(GraphQLArgument argument, String name, Object value) {

@@ -11,6 +11,9 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
@@ -23,7 +26,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -39,6 +44,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
+@Slf4j
 abstract class AbstractVerticeFactory {
 
   private SerializerRouter serializerRouter;
@@ -75,7 +81,7 @@ abstract class AbstractVerticeFactory {
   }
 
   Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields,
-      String directiveName) {
+                                                              String directiveName) {
     return fields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
@@ -111,21 +117,42 @@ abstract class AbstractVerticeFactory {
 
   @SuppressWarnings({"unchecked"})
   void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
-      SelectedField field) {
+                       SelectedField field) {
     Object orderByList = Objects.nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
     Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
 
     String fieldName = orderMap.getOrDefault("field", argument.getName())
         .toString();
+    orderMap.put("isResource", false);
+    Optional<GraphQLFieldDefinition> resourceOptional =
+        Optional.ofNullable(getField(field.getFieldDefinition(), fieldName.split("\\.")));
+    Optional<GraphQLDirective> resourceDirectiveOptional = Optional.empty();
 
-    if (Objects.nonNull(fieldName)) {
+    if (resourceOptional.isPresent()) {
+      resourceDirectiveOptional = Optional.ofNullable(resourceOptional.get()
+          .getDirective(Rdf4jDirectives.RESOURCE_NAME));
+    }
+
+    resourceDirectiveOptional.ifPresent(directive -> orderMap.put("isResource", true));
+
+    if (!(boolean) orderMap.get("isResource")) {
       findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
           .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true);
     }
   }
 
+  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
+    GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType()))
+        .getFieldDefinition(path[0]);
+
+    if (path.length > 1) {
+      return getField(environment, Arrays.copyOfRange(path, 1, path.length));
+    }
+    return fieldDefinition;
+  }
+
   void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
-      SelectedField field) {
+                   SelectedField field) {
     Object filterValue = field.getArguments()
         .get(argument.getName());
     if (Objects.nonNull(filterValue)) {
@@ -141,26 +168,29 @@ abstract class AbstractVerticeFactory {
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
+    Vertice usedVertice;
+    if (filterRule.isResource()) {
+      usedVertice = vertice.getEdges().stream().map(Edge::getObject).findFirst().orElse(vertice);
+    } else {
+      Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
+      usedVertice = match.getObject();
+    }
 
-    List<Filter> filters = Objects.nonNull(match.getObject()
-        .getFilters()) ? match.getObject()
-            .getFilters() : new ArrayList<>();
+    List<Filter> filters = Objects.nonNull(usedVertice.getFilters()) ? usedVertice.getFilters() : new ArrayList<>();
 
     Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
         .get(filterRule.getPath()
-            .size() - 1));
+            .size() - 1), filterRule.isResource());
 
     filters.add(filter);
 
-    match.getObject()
-        .setFilters(filters);
+    usedVertice.setFilters(filters);
   }
 
   /*
    * Create a new filter with either one argument or a list of arguments
    */
-  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName) {
+  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName, boolean isResource) {
     List<Object> filterArguments;
     if (filterValue instanceof List) {
       filterArguments = castToList(filterValue);
@@ -169,9 +199,14 @@ abstract class AbstractVerticeFactory {
     }
 
     List<Operand> operands = filterArguments.stream()
-        .map(filterArgument -> getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument),
-            rdf4jProperties.getShape()
-                .getLanguage()))
+        .map(filterArgument -> {
+          if (isResource) {
+            return Rdf.iri(serializerRouter.serialize(filterArgument));
+          }
+          return getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument),
+              rdf4jProperties.getShape()
+                  .getLanguage());
+        })
         .collect(Collectors.toList());
 
     return Filter.builder()

@@ -31,7 +31,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -96,8 +96,22 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .fieldDefinition(environment.getFieldDefinition())
         .build();
 
-    List<DirectiveContainerTuple> filterMapping =
-        coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
+    List<DirectiveContainerObject> filterMapping =
+        coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME))
+            .stream()
+            .peek(dco -> {
+              GraphQLArgument filterArgument = dco.getContainer()
+                  .getDirective(CoreDirectives.FILTER_NAME)
+                  .getArgument(CoreDirectives.FILTER_ARG_FIELD);
+
+              String name = Objects.nonNull(filterArgument.getValue()) ? filterArgument.getName() : dco.getContainer()
+                  .getName();
+
+              Optional.ofNullable(getField(environment.getFieldDefinition(), name.split("\\.")))
+                  .ifPresent(definition -> determineIsResource(dco, definition));
+
+            })
+            .collect(Collectors.toList());
 
     List<IRI> subjects =
         fetchSubjects(environment, queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
@@ -116,8 +130,14 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
+  private void determineIsResource(DirectiveContainerObject directiveContainerObject, GraphQLFieldDefinition definition) {
+    directiveContainerObject.setResource(false);
+    Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
+        .ifPresent(directive -> directiveContainerObject.setResource(true));
+  }
+
   private List<IRI> fetchSubjects(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
-      List<DirectiveContainerTuple> filterMapping, Map<String, Object> arguments, RepositoryAdapter repositoryAdapter) {
+      List<DirectiveContainerObject> filterMapping, Map<String, Object> arguments, RepositoryAdapter repositoryAdapter) {
 
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);

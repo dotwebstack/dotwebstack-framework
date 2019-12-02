@@ -28,7 +28,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<Object> orderByList) {
+                            List<Object> orderByList) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
     orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
@@ -36,50 +36,54 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<FilterRule> filterRules) {
+                               List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
-      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
-
-      if (nodeShape.equals(childShape)) {
+      if (filter.isResource()) {
         addFilterToVertice(vertice, query, nodeShape, filter);
       } else {
-        Variable edgeSubject = query.var();
-        Edge edge;
+        NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
-        if (filter.getPath()
-            .size() == 1) {
-          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(filter.getPath()
-              .get(0))
-              .getPath()
-              .toPredicate(), false);
-
-          addFilterToVertice(edge.getObject(), query, childShape, filter);
+        if (nodeShape.equals(childShape)) {
+          addFilterToVertice(vertice, query, nodeShape, filter);
         } else {
-          FilterRule childFilterRule = FilterRule.builder()
-              .path(filter.getPath()
-                  .subList(1, filter.getPath()
-                      .size()))
-              .value(filter.getValue())
-              .operator(filter.getOperator())
-              .build();
-          Vertice childVertice =
-              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
+          Variable edgeSubject = query.var();
+          Edge edge;
 
-          edge = Edge.builder()
-              .predicate(nodeShape.getPropertyShape(filter.getPath()
-                  .get(0))
-                  .getPath()
-                  .toPredicate())
-              .object(childVertice)
-              .isVisible(false)
-              .isOptional(false)
-              .build();
+          if (filter.getPath()
+              .size() == 1) {
+            edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(filter.getPath()
+                .get(0))
+                .getPath()
+                .toPredicate(), false);
 
+            addFilterToVertice(edge.getObject(), query, childShape, filter);
+          } else {
+            FilterRule childFilterRule = FilterRule.builder()
+                .path(filter.getPath()
+                    .subList(1, filter.getPath()
+                        .size()))
+                .value(filter.getValue())
+                .operator(filter.getOperator())
+                .build();
+            Vertice childVertice =
+                createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
+
+            edge = Edge.builder()
+                .predicate(nodeShape.getPropertyShape(filter.getPath()
+                    .get(0))
+                    .getPath()
+                    .toPredicate())
+                .object(childVertice)
+                .isVisible(false)
+                .isOptional(false)
+                .build();
+
+          }
+          vertice.getEdges()
+              .add(edge);
         }
-        vertice.getEdges()
-            .add(edge);
       }
     });
     return vertice;

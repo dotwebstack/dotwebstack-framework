@@ -12,4 +12,6 @@ public class FilterRule {
   private String operator;
 
   private Object value;
+
+  private boolean isResource;
 }
