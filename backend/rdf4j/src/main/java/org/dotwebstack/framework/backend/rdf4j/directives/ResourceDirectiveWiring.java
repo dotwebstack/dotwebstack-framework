@@ -23,28 +23,33 @@ public class ResourceDirectiveWiring implements SchemaDirectiveWiring {
   @Override
   public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
-    String fieldName = fieldDefinition.getName();
-
     GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
-    String typeName = fieldsContainer.getName();
+    GraphQLFieldDefinition element = environment.getElement();
 
-    validateOnlyOnIri(typeName, fieldName, GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+    try {
+      validateOnlyOnIri(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+      validateOnlyOncePerType(fieldsContainer.getFieldDefinitions());
+      validateOnlyRequired(element);
 
-    validateOnlyOncePerType(typeName, fieldName, fieldsContainer.getFieldDefinitions());
+    } catch (ValidationException vex) {
+      String typeName = fieldsContainer.getName();
+      String fieldName = fieldDefinition.getName();
 
-    validateOnlyRequired(typeName, fieldName, environment.getElement());
+      throw invalidConfigurationException("[GraphQL] Found an error on @{} directive defined on {}.{}: {} ",
+          DIRECTIVE_NAME, typeName, fieldName, vex);
+    }
 
-    return environment.getElement();
+    return element;
   }
 
-  private void validateOnlyOnIri(String typename, String fieldname, GraphQLType rawType) {
+  private void validateOnlyOnIri(GraphQLType rawType) throws ValidationException {
     if (!(rawType.getName()
         .equals(Rdf4jScalars.IRI.getName()))) {
-      invalidConfigurationFor(typename, fieldname, "can only be defined on a IRI field");
+      throw new ValidationException("can only be defined on a IRI field");
     }
   }
 
-  private void validateOnlyOncePerType(String typeName, String fieldName, List<GraphQLFieldDefinition> fields) {
+  private void validateOnlyOncePerType(List<GraphQLFieldDefinition> fields) throws ValidationException {
     long directiveCount = fields.stream()
         .map(GraphQLFieldDefinition::getDirectives)
         .flatMap(Collection::stream)
@@ -52,19 +57,20 @@ public class ResourceDirectiveWiring implements SchemaDirectiveWiring {
         .filter(DIRECTIVE_NAME::equals)
         .count();
     if (directiveCount > 1) {
-      invalidConfigurationFor(typeName, fieldName, "can only be defined once per type");
+      throw new ValidationException("can only be defined once per type");
     }
   }
 
-  private void validateOnlyRequired(String typeName, String fieldName, GraphQLFieldDefinition argument) {
+  private void validateOnlyRequired(GraphQLFieldDefinition argument) throws ValidationException {
     if (!(argument.getDefinition()
         .getType() instanceof NonNullType)) {
-      invalidConfigurationFor(typeName, fieldName, "can only be defined on non-nullable field");
+      throw new ValidationException("can only be defined on non-nullable field");
     }
   }
 
-  private void invalidConfigurationFor(String typeName, String fieldName, String reason) {
-    throw invalidConfigurationException("[GraphQL] Found an error on @{} directive defined on {}.{}: {} ",
-        DIRECTIVE_NAME, typeName, fieldName, reason);
+  private static class ValidationException extends Throwable {
+    ValidationException(String message) {
+      super(message);
+    }
   }
 }
