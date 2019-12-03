@@ -154,17 +154,19 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
-    List<Object> orderByObject = getOrderByObject(environment, arguments, queryEnvironment);
-
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
-    if (subjectTemplate != null) {
-      StringSubstitutor substitutor = new StringSubstitutor(arguments);
-      IRI subject = VF.createIRI(substitutor.replace(subjectTemplate));
+    return Objects.nonNull(subjectTemplate)
+        ? ImmutableList.of(VF.createIRI(new StringSubstitutor(arguments).replace(subjectTemplate)))
+        : fetchSubjectsFromDatabase(environment, queryEnvironment, filterMapping, arguments, repositoryAdapter,
+            sparqlDirective);
+  }
 
-      return ImmutableList.of(subject);
-    }
+  private List<IRI> fetchSubjectsFromDatabase(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
+      List<DirectiveContainerObject> filterMapping, Map<String, Object> arguments, RepositoryAdapter repositoryAdapter,
+      GraphQLDirective sparqlDirective) {
+    List<Object> orderByObject = getOrderByObject(environment, arguments);
 
     String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
         .getQueryString(arguments, sparqlDirective, filterMapping, orderByObject);
@@ -183,31 +185,24 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("unchecked")
-  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments,
-      QueryEnvironment queryEnvironment) {
-    Optional<GraphQLArgument> sortOptional = environment.getFieldDefinition()
+  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+    return environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
-        .findFirst();
+        .findFirst()
+        .map(getGraphQLSortAguments(environment, arguments))
+        .orElse(Collections.emptyList());
+  }
 
-    List<Object> orderByObject;
-    if (sortOptional.isPresent()) {
-      GraphQLArgument sortArgument = sortOptional.get();
-      if (Objects.nonNull(arguments.get(sortArgument.getName()))) {
-        List<Map<String, String>> sortArgsMap = (List<Map<String, String>>) arguments.get(sortArgument.getName());
-
-        orderByObject = sortArgsMap.stream()
+  @SuppressWarnings("unchecked")
+  private Function<GraphQLArgument, List<Object>> getGraphQLSortAguments(DataFetchingEnvironment environment,
+      Map<String, Object> arguments) {
+    return sortArgument -> Optional.ofNullable(arguments.get(sortArgument.getName()))
+        .<List<Object>>map(o -> ((List<Map<String, String>>) o).stream()
             .map(determineOrderableIsResource(environment))
-            .collect(Collectors.toList());
-      } else {
-        orderByObject = (List<Object>) sortArgument.getDefaultValue();
-      }
-    } else {
-      orderByObject = Collections.emptyList();
-    }
-    return orderByObject;
+            .collect(Collectors.toList()))
+        .orElseGet(() -> (List<Object>) sortArgument.getDefaultValue());
   }
 
   private Function<Map<String, String>, Map<String, String>> determineOrderableIsResource(
