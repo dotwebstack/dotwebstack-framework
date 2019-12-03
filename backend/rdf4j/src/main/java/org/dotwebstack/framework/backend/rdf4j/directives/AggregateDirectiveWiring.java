@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
@@ -9,10 +9,20 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Objects;
+import java.util.Optional;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.SchemaAutoRegisteredDirectiveWiring;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+
+  private final NodeShapeRegistry nodeShapeRegistry;
+
+  public AggregateDirectiveWiring(NodeShapeRegistry nodeShapeRegistry) {
+    this.nodeShapeRegistry = nodeShapeRegistry;
+  }
 
   @Override
   public String getDirectiveName() {
@@ -31,11 +41,15 @@ public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWi
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     validate(environment.getFieldsContainer()
         .getName(), environment.getFieldDefinition());
-
     return environment.getElement();
   }
 
   private void validate(String typeName, GraphQLFieldDefinition fieldDefinition) {
+    validateDataType(typeName, fieldDefinition);
+    validateMax(typeName, fieldDefinition);
+  }
+
+  private void validateDataType(String typeName, GraphQLFieldDefinition fieldDefinition) {
     GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
     boolean hasTransformDirective = Objects.isNull(fieldDefinition.getDirective(CoreDirectives.TRANSFORM_NAME));
@@ -45,5 +59,18 @@ public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWi
           "Found an error on @aggregate directive defined on field {}.{}: expected output type is Int but got {}",
           typeName, fieldDefinition.getName(), rawType.getName());
     }
+  }
+
+  private void validateMax(String typeName, GraphQLFieldDefinition fieldDefinition) {
+    Optional.ofNullable(nodeShapeRegistry.getByShaclName(typeName))
+        .map(nodeShape -> nodeShape.getPropertyShape(fieldDefinition.getName()))
+        .filter(propertyShape -> Objects.nonNull(propertyShape.getMaxCount()) && propertyShape.getMaxCount() == 1)
+        .ifPresent(propertyShape -> {
+          throw invalidConfigurationException(
+              "An @aggregate directive on field '{}.{}' using propertyShape with sh:name '{}': sh:maxCount of 1 is invalid!",
+              typeName, fieldDefinition.getName(), propertyShape.getName());
+        });
+
+
   }
 }
