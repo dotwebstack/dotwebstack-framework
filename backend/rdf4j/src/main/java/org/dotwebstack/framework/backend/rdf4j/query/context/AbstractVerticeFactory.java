@@ -144,21 +144,28 @@ abstract class AbstractVerticeFactory {
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule,
       List<SelectedField> fields) {
-    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false, fields).ifPresent(match -> {
-      List<Filter> filters = Objects.nonNull(match.getObject()
-          .getFilters()) ? match.getObject()
-              .getFilters() : new ArrayList<>();
-
-      Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
-          .get(filterRule.getPath()
-              .size() - 1));
-
-      filters.add(filter);
-
-      match.getObject()
-          .setFilters(filters);
-    });
+    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false, fields)
+        .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
   }
+
+  void addFilterToVertice(NodeShape nodeShape, Edge edge, FilterRule filterRule) {
+    addFilterToVertice(nodeShape, edge.getObject(), filterRule, null);
+  }
+
+  void addFilterToVertice(NodeShape nodeShape, Vertice vertice, FilterRule filterRule, Edge referredEdge) {
+    List<Filter> filters = Objects.nonNull(vertice.getFilters()) ? vertice.getFilters() : new ArrayList<>();
+
+    Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
+        .get(filterRule.getPath()
+            .size() - 1));
+
+    filter.setEdge(referredEdge);
+
+    filters.add(filter);
+
+    vertice.setFilters(filters);
+  }
+
 
   /*
    * Create a new filter with either one argument or a list of arguments

@@ -4,16 +4,20 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
+import graphql.schema.GraphQLDirective;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -56,7 +60,27 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .getPath()
               .toPredicate(), false);
 
-          addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
+          fields.stream()
+              .filter(field -> Objects.equals(field.getName(), filter.getPath()
+                  .get(0)))
+              .forEach(field -> {
+                GraphQLDirective directive = field.getFieldDefinition()
+                    .getDirective(CoreDirectives.AGGREGATE_NAME);
+
+                if (Objects.isNull(directive)) {
+                  addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
+                } else {
+                  edge.setOptional(true);
+                  edge.setAggregate(Aggregate.builder()
+                      .type(directive.getArgument(CoreInputTypes.AGGREGATE_TYPE)
+                          .getValue()
+                          .toString())
+                      .variable(query.var())
+                      .build());
+                  addFilterToVertice(nodeShape, vertice, filter, edge);
+                }
+
+              });
         } else {
           FilterRule childFilterRule = FilterRule.builder()
               .path(filter.getPath()

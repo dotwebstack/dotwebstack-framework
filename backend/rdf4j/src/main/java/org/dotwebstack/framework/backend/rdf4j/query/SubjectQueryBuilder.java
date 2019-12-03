@@ -69,6 +69,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         environment.getSelectionSet()
             .getFields());
 
+
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)
             .toArray(new GraphPattern[] {}));

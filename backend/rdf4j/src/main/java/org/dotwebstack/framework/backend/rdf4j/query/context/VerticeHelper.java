@@ -21,8 +21,10 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 @Slf4j
 public class VerticeHelper {
@@ -67,10 +69,32 @@ public class VerticeHelper {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
-    return edges.stream()
+    List<GraphPattern> result = new ArrayList<>();
+
+    result.addAll(edges.stream()
         .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+        .collect(Collectors.toList()));
+
+    if (vertice.getFilters()
+        .stream()
+        .anyMatch(filter -> Objects.nonNull(filter.getEdge()))) {
+      GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
+
+      vertice.getFilters()
+          .stream()
+          .filter(filter -> Objects.nonNull(filter.getEdge()))
+          .forEach(filter -> {
+            graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
+                .getAggregate()
+                .getVariable(), Rdf.literalOf(0)), filter.getOperands()
+                    .get(0)));
+          });
+
+      return singletonList(graphPatternNotTriples);
+    }
+
+    return result;
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
@@ -86,9 +110,21 @@ public class VerticeHelper {
       Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
-          .map(filter -> getFilterExpression(filter, Objects.nonNull(edge.getObject()
-              .getSubject()) ? edge.getObject()
-                  .getSubject() : subject))
+          .map(filter -> {
+            Variable variable;
+            if (Objects.nonNull(edge.getAggregate())) {
+              variable = edge.getAggregate()
+                  .getVariable();
+            } else if (Objects.nonNull(edge.getObject()
+                .getSubject())) {
+              variable = edge.getObject()
+                  .getSubject();
+            } else {
+              variable = subject;
+            }
+
+            return getFilterExpression(filter, variable);
+          })
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }

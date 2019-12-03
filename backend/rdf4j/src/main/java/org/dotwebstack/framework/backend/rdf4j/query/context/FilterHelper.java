@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
@@ -79,24 +80,24 @@ public class FilterHelper {
   }
 
   static Operand getOperand(NodeShape nodeShape, String field, String filterString, String tagLanguage) {
-    if (Objects.isNull(nodeShape.getPropertyShape(field))) {
-      throw unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'", field,
-          nodeShape);
-    }
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
-    if (nodeShape.getPropertyShape(field)
-        .getNodeKind()
-        .equals(SHACL.IRI)) {
+    if (Optional.of(nodeShape.getPropertyShape(field))
+        .stream()
+        .map(PropertyShape::getNodeKind)
+        .anyMatch(SHACL.IRI::equals)) {
       return Rdf.iri(filterString);
     }
 
-    if (Objects.equals(RDF.LANGSTRING, nodeShape.getPropertyShape(field)
-        .getDatatype())) {
+    if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
       return Rdf.literalOfLanguage(filterString, tagLanguage);
     }
 
-    return Rdf.literalOfType(filterString, Rdf.iri(nodeShape.getPropertyShape(field)
-        .getDatatype()
+    if (propertyShape.getDatatype() == null) {
+      return Rdf.literalOf((Integer.parseInt(filterString)));
+    }
+
+    return Rdf.literalOfType(filterString, Rdf.iri(propertyShape.getDatatype()
         .stringValue()));
   }
 
