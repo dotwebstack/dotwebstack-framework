@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -14,6 +15,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -81,17 +84,26 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
   /*
    * A complex edge is an edge with filters vertices/filters added to it
    */
-  private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field) {
-    PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
+  private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField selectedField) {
+    PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     BasePath path = propertyShape.getPath();
+
+    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(), CoreDirectives.AGGREGATE_NAME,
+        CoreInputTypes.AGGREGATE_TYPE, String.class);
 
     return Edge.builder()
         .predicate(path.toPredicate())
         .constructPredicate(path.toConstructPredicate())
-        .object(createVertice(query.var(), query, propertyShape.getNode(), field.getSelectionSet()
+        .object(createVertice(query.var(), query, propertyShape.getNode(), selectedField.getSelectionSet()
             .getFields()))
         .isOptional(true)
         .isVisible(true)
+        .aggregate(Optional.ofNullable(aggregateType)
+            .map(type -> Aggregate.builder()
+                .type(aggregateType)
+                .variable(query.var())
+                .build())
+            .orElse(null))
         .build();
   }
 

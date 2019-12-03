@@ -8,7 +8,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
-import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +17,17 @@ import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SortDirectiveWiring implements SchemaDirectiveWiring {
+public class SortDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
 
   private CoreTraverser coreTraverser;
 
   public SortDirectiveWiring(CoreTraverser coreTraverser) {
     this.coreTraverser = coreTraverser;
+  }
+
+  @Override
+  public String getDirectiveName() {
+    return CoreDirectives.SORT_NAME;
   }
 
   @Override

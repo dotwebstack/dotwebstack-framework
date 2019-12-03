@@ -64,6 +64,8 @@ components:
         - localName
         - owners
         - sponsorship
+        - beerCount
+        - hasBeers
       properties:
         identifier:
           type: string
@@ -84,6 +86,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
+        beerCount:
+          type: integer
+        hasBeers:
+          type: boolean
         sponsorship:
           type: object
           nullable: true
@@ -182,7 +188,42 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded']
+              enum: ['name', 'localName', '-founded', '-beerCount','beerCount']
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+        400:
+          description: error
+          content:
+            application/hal+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /breweries_sort_nested:
+    get:
+      x-dws-query: breweries_sort_nested
+      parameters:
+        - name: "X-Api-Key"
+          description: "Geldige API Key om deze request uit te kunnen voeren."
+          in: "header"
+          required: true
+          x-dws-transient: true
+          x-dws-validate: false
+          schema:
+            type: "string"
+        - name: sort
+          in: header
+          x-dws-type: sort
+          required: true
+          schema:
+            type: array
+            default: ['name']
+            items:
+              type: string
+              enum: ['name','address.postalCode']
       responses:
         200:
           description: OK

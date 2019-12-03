@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.directives;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -10,12 +9,17 @@ import org.dotwebstack.framework.core.validators.FilterValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FilterDirectiveWiring implements SchemaDirectiveWiring {
+public class FilterDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
 
   private final FilterValidator validator;
 
   public FilterDirectiveWiring(@NonNull FilterValidator validator) {
     this.validator = validator;
+  }
+
+  @Override
+  public String getDirectiveName() {
+    return CoreDirectives.FILTER_NAME;
   }
 
   @Override

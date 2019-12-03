@@ -65,10 +65,12 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject);
+    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject,
+        environment.getSelectionSet()
+            .getFields());
 
     query.select(root.getSubject())
-        .where(VerticeHelper.getWherePatterns(root, false)
+        .where(VerticeHelper.getWherePatterns(root)
             .toArray(new GraphPattern[] {}));
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);

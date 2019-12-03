@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
+import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,22 +29,22 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<Object> orderByList) {
-    Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
+      List<Object> orderByList, List<SelectedField> fields) {
+    Vertice vertice = createVertice(subject, query, nodeShape, filterRules, fields);
     makeEdgesUnique(vertice.getEdges());
-    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
+    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape, fields));
     return vertice;
   }
 
-  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<FilterRule> filterRules) {
+  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
+      List<SelectedField> fields) {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
       NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
       if (nodeShape.equals(childShape)) {
-        addFilterToVertice(vertice, query, nodeShape, filter);
+        addFilterToVertice(vertice, query, nodeShape, filter, fields);
       } else {
         Variable edgeSubject = query.var();
         Edge edge;
@@ -55,7 +56,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .getPath()
               .toPredicate(), false);
 
-          addFilterToVertice(edge.getObject(), query, childShape, filter);
+          addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
         } else {
           FilterRule childFilterRule = FilterRule.builder()
               .path(filter.getPath()
@@ -65,7 +66,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .operator(filter.getOperator())
               .build();
           Vertice childVertice =
-              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
+              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule), fields);
 
           edge = Edge.builder()
               .predicate(nodeShape.getPropertyShape(filter.getPath()

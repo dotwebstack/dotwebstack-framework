@@ -28,9 +28,11 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -120,7 +122,7 @@ abstract class AbstractVerticeFactory {
 
     if (Objects.nonNull(fieldName)) {
       findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
-          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true);
+          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true, singletonList(field));
     }
   }
 
@@ -136,25 +138,26 @@ abstract class AbstractVerticeFactory {
       addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterRule.builder()
           .path(startPath)
           .value(filterValue)
-          .build());
+          .build(), singletonList(field));
     }
   }
 
-  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
+  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule,
+      List<SelectedField> fields) {
+    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false, fields).ifPresent(match -> {
+      List<Filter> filters = Objects.nonNull(match.getObject()
+          .getFilters()) ? match.getObject()
+              .getFilters() : new ArrayList<>();
 
-    List<Filter> filters = Objects.nonNull(match.getObject()
-        .getFilters()) ? match.getObject()
-            .getFilters() : new ArrayList<>();
+      Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
+          .get(filterRule.getPath()
+              .size() - 1));
 
-    Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
-        .get(filterRule.getPath()
-            .size() - 1));
+      filters.add(filter);
 
-    filters.add(filter);
-
-    match.getObject()
-        .setFilters(filters);
+      match.getObject()
+          .setFilters(filters);
+    });
   }
 
   /*
@@ -185,20 +188,45 @@ abstract class AbstractVerticeFactory {
    * Find the path to apply the filter on. In case no or a only partial path is found, create the part
    * of the path that does not yet exist
    */
-  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths,
-      boolean required, boolean isVisible) {
-    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths.get(0)), vertice, required, isVisible);
+  private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
+      List<String> fieldPaths, boolean required, boolean isVisible, List<SelectedField> fields) {
+
+    if (fieldPaths.size() == 0) {
+      return Optional.empty();
+    }
+
+    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPaths.get(0));
+    Edge match = findOrCreateEdge(query, propertyShape, vertice, required, isVisible);
     if (required) {
       match.setOptional(false);
     }
 
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
+
     if (fieldPaths.size() == 1) {
-      return match;
+      Optional<SelectedField> selectedField = fields.stream()
+          .filter(field -> Objects.equals(field.getName(), fieldPaths.get(0)))
+          .findFirst();
+
+      return selectedField.filter(selectedField1 -> Objects.nonNull(selectedField1.getFieldDefinition()
+          .getDirective(CoreDirectives.AGGREGATE_NAME)))
+          .map(selectedField1 -> {
+            String aggregateType = DirectiveUtils.getArgument(selectedField1.getFieldDefinition(),
+                CoreDirectives.AGGREGATE_NAME, CoreInputTypes.AGGREGATE_TYPE, String.class);
+            match.setAggregate(Aggregate.builder()
+                .type(aggregateType)
+                .variable(query.var())
+                .build());
+
+            // findOrCreateEdge(query, childShape.getPropertyShapes().values().iterator().next(),
+            // match.getObject(), required, isVisible);
+            return match;
+          })
+          .or(() -> Optional.of(match));
     }
 
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
     return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required,
-        isVisible);
+        isVisible, fields);
   }
 
   /*
@@ -257,37 +285,45 @@ abstract class AbstractVerticeFactory {
     });
   }
 
-  void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap, NodeShape nodeShape) {
+  void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap, NodeShape nodeShape,
+      List<SelectedField> fields) {
     String fieldName = orderMap.get("field")
         .toString();
     String order = orderMap.get("order")
         .toString();
 
-    List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
+    final List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
 
     // add missing edges
-    Edge match;
-    Variable subject;
-    if (nodeShape.equals(childShape)) {
-      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
-      subject = getSubjectForField(match, nodeShape, fieldPaths);
+    Optional<Variable> subject;
+    if (nodeShape.equals(childShape) || fieldPaths.size() == 1) {
+      subject = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false, fields)
+          .map(edge -> getSubjectForField(edge, nodeShape, fieldPaths));
+
     } else {
       Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths.get(0))
           .getPath(), true, false);
-      fieldPaths = fieldPaths.subList(1, fieldPaths.size());
+      final List<String> subFieldPaths = fieldPaths.subList(1, fieldPaths.size());
 
       vertice.getEdges()
           .add(edge);
 
-      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false, false);
-      subject = getSubjectForField(match, childShape, fieldPaths);
+      subject = findOrCreatePath(edge.getObject(), query, childShape, subFieldPaths, false, false, fields)
+          .map(e -> getSubjectForField(e, childShape, subFieldPaths));
     }
 
-    List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-    orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(subject))));
-    orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc());
-    vertice.setOrderables(orderables);
+    subject.ifPresent(s -> {
+      List<Orderable> orderables =
+          Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
+
+      // TODO: Dit levert problemen op bij de SELECT. Moet conditioneel worden o.b.v SELECT of CONSTRUCT
+      // of aggregate
+      // orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(s))));
+
+      orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
+      vertice.setOrderables(orderables);
+    });
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {

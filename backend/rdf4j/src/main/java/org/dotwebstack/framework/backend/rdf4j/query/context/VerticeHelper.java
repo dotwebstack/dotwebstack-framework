@@ -13,8 +13,12 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Aggregate;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
+import org.eclipse.rdf4j.sparqlbuilder.core.Assignment;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
@@ -38,7 +42,10 @@ public class VerticeHelper {
     List<TriplePattern> triplePatterns = new ArrayList<>();
 
     if (edge.isVisible()) {
-      if (Objects.nonNull(edge.getObject()
+      if (Objects.nonNull(edge.getAggregate())) {
+        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getAggregate()
+            .getVariable()));
+      } else if (Objects.nonNull(edge.getObject()
           .getSubject())) {
         triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getSubject()));
@@ -56,17 +63,17 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
-  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice, boolean addSelectClause) {
+  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
     return edges.stream()
-        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject(), addSelectClause).stream())
+        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
-  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject, boolean addSelectClause) {
+  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
     GraphPattern graphPattern = (Objects.nonNull(edge.getObject()
         .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
             edge.getObject()
@@ -86,42 +93,35 @@ public class VerticeHelper {
       graphPattern = graphPattern.filter(expression);
     }
 
-    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject(), addSelectClause);
+    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
-    if (!isLeaf(edge) && addSelectClause) {
-      graphPattern = GraphPatterns.select(getSelected(subject, subject, edge).toArray(new Projectable[] {}))
-          .where(graphPattern);
+    if (Objects.nonNull(edge.getAggregate()) && Objects.equals("COUNT", edge.getAggregate()
+        .getType())) {
+      graphPattern = GraphPatterns.select(getSelectedForCount(subject, subject, edge).toArray(new Projectable[] {}))
+          .where(graphPattern)
+          .groupBy(subject)
+          .optional(true);
     }
     return singletonList(graphPattern);
   }
 
-  private static Set<Projectable> getSelected(Variable root, Variable subject, Edge edge) {
+
+  private static Set<Projectable> getSelectedForCount(Variable root, Variable subject, Edge edge) {
     Set<Projectable> result = new LinkedHashSet<>();
     if (!Objects.equals(root, subject)) {
       result.add(subject);
     }
     result.add(root);
-    result.add(edge.getObject()
+
+    Aggregate aggregate = Expressions.count(edge.getObject()
         .getSubject());
-    result.addAll(edge.getObject()
-        .getEdges()
-        .stream()
-        .filter(e -> e.getObject()
-            .getSubject() != root)
-        .filter(VerticeHelper::isLeaf)
-        .filter(e -> Objects.nonNull(e.getObject()
-            .getSubject()))
-        .map(e -> e.getObject()
-            .getSubject())
-        .collect(Collectors.toSet()));
-    result.addAll(edge.getObject()
-        .getEdges()
-        .stream()
-        .filter(e -> !isLeaf(e))
-        .flatMap(e -> getSelected(root, e.getObject()
-            .getSubject(), e).stream())
-        .collect(Collectors.toSet()));
+
+    Assignment assignable = SparqlBuilder.as(aggregate, edge.getAggregate()
+        .getVariable());
+
+    result.add(assignable);
+
     return result;
   }
 
@@ -150,11 +150,5 @@ public class VerticeHelper {
         .map(operand -> FilterHelper.getExpressionFromOperator(subject, filter.getOperator(), operand))
         .collect(Collectors.toList());
     return FilterHelper.joinExpressions(FilterJoinType.OR, null, expressions);
-  }
-
-  private static boolean isLeaf(Edge edge) {
-    return edge.getObject()
-        .getEdges()
-        .isEmpty();
   }
 }
