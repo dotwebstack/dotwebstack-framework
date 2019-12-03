@@ -12,12 +12,14 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -99,19 +101,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     List<DirectiveContainerObject> filterMapping =
         coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME))
             .stream()
-            .peek(dco -> {
-              GraphQLArgument filterArgument = dco.getContainer()
-                  .getDirective(CoreDirectives.FILTER_NAME)
-                  .getArgument(CoreDirectives.FILTER_ARG_FIELD);
-
-              String name = Objects.nonNull(filterArgument.getValue()) ? filterArgument.getName()
-                  : dco.getContainer()
-                      .getName();
-
-              Optional.ofNullable(getField(environment.getFieldDefinition(), name.split("\\.")))
-                  .ifPresent(definition -> determineIsResource(dco, definition));
-
-            })
+            .map(determineIsResource(environment))
             .collect(Collectors.toList());
 
     List<IRI> subjects =
@@ -131,11 +121,30 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
-  private void determineIsResource(DirectiveContainerObject directiveContainerObject,
-      GraphQLFieldDefinition definition) {
-    directiveContainerObject.setResource(false);
-    Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
-        .ifPresent(directive -> directiveContainerObject.setResource(true));
+  private Function<DirectiveContainerObject, DirectiveContainerObject> determineIsResource(
+      @NonNull DataFetchingEnvironment environment) {
+    return directiveContainerObject -> {
+      GraphQLArgument filterArgument = getFilterArgument(directiveContainerObject);
+      String name = getPropertyName(directiveContainerObject, filterArgument);
+
+      Optional.ofNullable(getField(environment.getFieldDefinition(), name))
+          .flatMap(definition -> Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+          .ifPresent(directive -> directiveContainerObject.setResource(true));
+
+      return directiveContainerObject;
+    };
+  }
+
+  private String getPropertyName(DirectiveContainerObject dco, GraphQLArgument filterArgument) {
+    return Objects.nonNull(filterArgument.getValue()) ? filterArgument.getName()
+        : dco.getContainer()
+            .getName();
+  }
+
+  private GraphQLArgument getFilterArgument(DirectiveContainerObject dco) {
+    return dco.getContainer()
+        .getDirective(CoreDirectives.FILTER_NAME)
+        .getArgument(CoreDirectives.FILTER_ARG_FIELD);
   }
 
   private List<IRI> fetchSubjects(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
@@ -190,19 +199,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         List<Map<String, String>> sortArgsMap = (List<Map<String, String>>) arguments.get(sortArgument.getName());
 
         orderByObject = sortArgsMap.stream()
-            .peek(sortArgs -> {
-              Optional<GraphQLFieldDefinition> field =
-                  Optional.ofNullable(getField(environment.getFieldDefinition(), sortArgs.get("field")
-                      .split("\\.")));
-              Optional<GraphQLDirective> resourceOptional = Optional.empty();
-
-              if (field.isPresent()) {
-                resourceOptional = Optional.ofNullable(field.get()
-                    .getDirective(Rdf4jDirectives.RESOURCE_NAME));
-              }
-
-              resourceOptional.ifPresent(directive -> sortArgs.put("isResource", "true"));
-            })
+            .map(determineOrderableIsResource(environment))
             .collect(Collectors.toList());
       } else {
         orderByObject = (List<Object>) sortArgument.getDefaultValue();
@@ -213,12 +210,26 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return orderByObject;
   }
 
-  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
-    GraphQLFieldDefinition fieldDefinition =
-        ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path[0]);
+  private Function<Map<String, String>, Map<String, String>> determineOrderableIsResource(
+      DataFetchingEnvironment environment) {
+    return sortArgs -> {
+      Optional.ofNullable(getField(environment.getFieldDefinition(), sortArgs.get("field")))
+          .flatMap(definition -> Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+          .ifPresent(directive -> sortArgs.put("isResource", "true"));
+      return sortArgs;
+    };
+  }
 
-    if (path.length > 1) {
-      return getField(environment, Arrays.copyOfRange(path, 1, path.length));
+  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String pad) {
+
+    List<String> path = new ArrayList<>(Arrays.asList(pad.split("\\.")));
+
+    GraphQLFieldDefinition fieldDefinition =
+        ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path.get(0));
+
+    if (path.size() > 1) {
+      path.remove(0);
+      return getField(environment, String.join(".", path));
     }
     return fieldDefinition;
   }
