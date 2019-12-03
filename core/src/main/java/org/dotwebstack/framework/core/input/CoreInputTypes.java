@@ -15,6 +15,8 @@ public class CoreInputTypes {
 
   public static final String SORT_FIELD_FIELD;
 
+  public static final String SORT_FIELD_IS_RESOURCE;
+
   private CoreInputTypes() {}
 
   static {
@@ -24,5 +26,6 @@ public class CoreInputTypes {
     SORT_FIELD_ORDER_ASC = "ASC";
     SORT_FIELD_ORDER_DESC = "DESC";
     SORT_FIELD_FIELD = "field";
+    SORT_FIELD_IS_RESOURCE = "isResource";
   }
 }

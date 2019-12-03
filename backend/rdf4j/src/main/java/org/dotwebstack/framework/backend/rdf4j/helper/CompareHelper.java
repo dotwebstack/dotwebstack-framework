@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.helper;
 
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
 
 import graphql.schema.GraphQLArgument;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -32,47 +34,41 @@ public class CompareHelper {
 
   public static Comparator<Value> getComparator(boolean asc, @NonNull Model model,
       @NonNull GraphQLArgument sortArgument, @NonNull NodeShape nodeShape) {
-    String field;
-    boolean isResource;
-    if (Objects.nonNull(((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD))) {
-      field = ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_FIELD)
-          .toString();
-      isResource = (boolean) ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get("isResource");
-    } else {
-      field = sortArgument.getName();
-      isResource = false;
-    }
+    Map sortArguments = (Map) ((List) sortArgument.getDefaultValue()).get(0);
+
+    Object sortResource = sortArguments.get(SORT_FIELD_IS_RESOURCE);
+    Object sortField = sortArguments.get(SORT_FIELD_FIELD);
+
+    boolean isResource = (boolean) (Objects.nonNull(sortResource) ? sortResource : false);
+    String field = Objects.nonNull(sortField) ? sortField.toString() : sortArgument.getName();
+
     return (value1, value2) -> compareOptional(resolveValue(value1, model, field, isResource, nodeShape),
         resolveValue(value2, model, field, isResource, nodeShape), asc);
   }
 
-  private static Optional<Value> resolveValue(Value value, Model model, String path, boolean isResource,
+  private static Optional<Value> resolveValue(Value value, Model model, String fields, boolean isResource,
       NodeShape nodeShape) {
-    List<String> fields = new ArrayList<>(Arrays.asList(path.split("\\.")));
-    if (isResource && fields.size() == 1) {
-      return Optional.of(value);
-    }
-    String field = fields.remove(0);
+
+    List<String> path = new ArrayList<>(Arrays.asList(fields.split("\\.")));
+
+    return isResource && path.size() == 1 ? Optional.of(value)
+        : resolveOtherValue((Resource) value, model, isResource, nodeShape, path);
+  }
+
+  private static Optional<Value> resolveOtherValue(Resource value, Model model, boolean isResource, NodeShape nodeShape,
+      List<String> path) {
+    String field = path.remove(0);
 
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
+    BasePath basePath = propertyShape.getPath();
 
-    IRI iri = propertyShape.getPath()
-        .getBaseIri();
-    if (propertyShape.getPath() instanceof PredicatePath) {
-      iri = ((PredicatePath) propertyShape.getPath()).getIri();
-    }
+    IRI iri = basePath instanceof PredicatePath ? ((PredicatePath) basePath).getIri() : basePath.getBaseIri();
 
-    Optional<Value> childOptional = Models.getProperty(model, (Resource) value, iri);
-    if (childOptional.isPresent()) {
-      if (fields.isEmpty()) {
-        return childOptional;
-      } else {
-        return childOptional.flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), isResource,
-            propertyShape.getNode()));
-      }
-    }
+    Optional<Value> childOptional = Models.getProperty(model, value, iri);
 
-    return Optional.empty();
+    return path.isEmpty() ? childOptional
+        : childOptional
+            .flatMap(child -> resolveValue(child, model, String.join(".", field), isResource, propertyShape.getNode()));
   }
 
   private static int compareOptional(Optional<Value> optional1, Optional<Value> optional2, boolean asc) {
