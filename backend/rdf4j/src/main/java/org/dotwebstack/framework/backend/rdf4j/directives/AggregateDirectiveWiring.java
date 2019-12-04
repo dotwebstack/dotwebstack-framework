@@ -67,10 +67,9 @@ public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWi
         .filter(propertyShape -> Objects.nonNull(propertyShape.getMaxCount()) && propertyShape.getMaxCount() == 1)
         .ifPresent(propertyShape -> {
           throw invalidConfigurationException(
-              "An @aggregate directive on field '{}.{}' using propertyShape with sh:name '{}': sh:maxCount of 1 is invalid!",
+              "An @aggregate directive on field '{}.{}' using propertyShape with sh:name '{}':"
+                  + " sh:maxCount of 1 is invalid!",
               typeName, fieldDefinition.getName(), propertyShape.getName());
         });
-
-
   }
 }

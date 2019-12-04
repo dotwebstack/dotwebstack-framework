@@ -33,6 +33,7 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -323,10 +324,7 @@ abstract class AbstractVerticeFactory {
     subject.ifPresent(s -> {
       List<Orderable> orderables =
           Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-
-      // TODO: Dit levert problemen op bij de SELECT. Moet conditioneel worden o.b.v SELECT of CONSTRUCT
-      // of aggregate
-      // orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(s))));
+      orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(s))));
 
       orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
       vertice.setOrderables(orderables);
