@@ -62,13 +62,10 @@ class VerticeFactoryHelper {
 
   static Variable getSubjectForField(Edge match, NodeShape nodeShape, List<String> fieldPaths) {
     if (fieldPaths.size() == 1) {
-      if (Objects.nonNull(match.getAggregate())) {
-        return match.getAggregate()
-            .getVariable();
-      }
-
-      return match.getObject()
-          .getSubject();
+      return Objects.nonNull(match.getAggregate()) ? match.getAggregate()
+          .getVariable()
+          : match.getObject()
+              .getSubject();
     }
 
     PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPaths.get(0));

@@ -76,20 +76,16 @@ public class VerticeHelper {
         .filter(Objects::nonNull)
         .collect(Collectors.toList()));
 
-    if (vertice.getFilters()
-        .stream()
-        .anyMatch(filter -> Objects.nonNull(filter.getEdge()))) {
+    List<Filter> filtersWithEdge = getFiltersWithEdge(vertice);
+    if (!filtersWithEdge.isEmpty()) {
       GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
 
-      vertice.getFilters()
-          .stream()
-          .filter(filter -> Objects.nonNull(filter.getEdge()))
-          .forEach(filter -> {
-            graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
-                .getAggregate()
-                .getVariable(), Rdf.literalOf(0)), filter.getOperands()
-                    .get(0)));
-          });
+      filtersWithEdge.forEach(filter -> {
+        graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
+            .getAggregate()
+            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
+                .get(0)));
+      });
 
       return singletonList(graphPatternNotTriples);
     }
@@ -110,21 +106,7 @@ public class VerticeHelper {
       Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
-          .map(filter -> {
-            Variable variable;
-            if (Objects.nonNull(edge.getAggregate())) {
-              variable = edge.getAggregate()
-                  .getVariable();
-            } else if (Objects.nonNull(edge.getObject()
-                .getSubject())) {
-              variable = edge.getObject()
-                  .getSubject();
-            } else {
-              variable = subject;
-            }
-
-            return getFilterExpression(filter, variable);
-          })
+          .map(filter -> getFilterExpression(filter, resolveVariable(edge, subject)))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }
@@ -142,7 +124,6 @@ public class VerticeHelper {
     return singletonList(graphPattern);
   }
 
-
   private static Set<Projectable> getSelectedForCount(Variable root, Variable subject, Edge edge) {
     Set<Projectable> result = new LinkedHashSet<>();
     if (!Objects.equals(root, subject)) {
@@ -159,6 +140,26 @@ public class VerticeHelper {
     result.add(assignable);
 
     return result;
+  }
+
+  private static List<Filter> getFiltersWithEdge(@NonNull Vertice vertice) {
+    return vertice.getFilters()
+        .stream()
+        .filter(filter -> Objects.nonNull(filter.getEdge()))
+        .collect(Collectors.toList());
+  }
+
+  private static Variable resolveVariable(Edge edge, Variable subject) {
+    if (Objects.nonNull(edge.getAggregate())) {
+      return edge.getAggregate()
+          .getVariable();
+    } else if (Objects.nonNull(edge.getObject()
+        .getSubject())) {
+      return edge.getObject()
+          .getSubject();
+    } else {
+      return subject;
+    }
   }
 
   private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {
