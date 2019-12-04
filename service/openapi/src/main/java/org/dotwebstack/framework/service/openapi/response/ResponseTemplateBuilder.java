@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 
@@ -133,7 +132,7 @@ public class ResponseTemplateBuilder {
     parents.add(responseObject.getIdentifier());
 
     if (Objects.isNull(oasSchema.getType())) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidConfigurationException(
           "Found invalid schema for OAS response object '{}' for responseCode '{}': schema's cannot have type 'null'",
           responseObject.getIdentifier(), responseCode);
     }
@@ -151,8 +150,7 @@ public class ResponseTemplateBuilder {
   private void resolveComposedSchema(ResponseObject responseObject, OpenAPI openApi,
       Map<String, SchemaSummary> referenceMap, List<String> parents, ComposedSchema oasSchema, String responseCode) {
     if (Objects.nonNull(oasSchema.getOneOf()) || Objects.nonNull(oasSchema.getAnyOf())) {
-      throw ExceptionHelper
-          .invalidConfigurationException("The use of oneOf and anyOf schema's is currently not supported");
+      throw invalidConfigurationException("The use of oneOf and anyOf schema's is currently not supported");
     }
 
     List<ResponseObject> composedSchemas = oasSchema.getAllOf()
@@ -165,9 +163,8 @@ public class ResponseTemplateBuilder {
           }
 
           if (!"object".equals(schema.getType())) {
-            throw ExceptionHelper
-                .invalidConfigurationException("Field '{}' for response code '{}' is configured incorrectly,"
-                    + " allOf schema's only support object schema's", responseObject.getIdentifier(), responseCode);
+            throw invalidConfigurationException("Field '{}' for response code '{}' is configured incorrectly,"
+                + " allOf schema's only support object schema's", responseObject.getIdentifier(), responseCode);
           }
 
           if (referenceMap.containsKey(schema.get$ref())) {
