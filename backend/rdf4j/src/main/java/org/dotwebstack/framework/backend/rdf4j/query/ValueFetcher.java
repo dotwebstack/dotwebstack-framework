@@ -49,28 +49,34 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
-    GraphQLType fieldType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     QuerySolution source = environment.getSource();
-    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
 
-    if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+    if (isResource(environment.getFieldDefinition())) {
       return source.getSubject();
     }
 
+    GraphQLType fieldType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     PropertyShape propertyShape = getPropertyShape(environment);
 
     if (GraphQLTypeUtil.isList(fieldType)) {
-      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
-          .collect(Collectors.toList());
+      return getResolvedValues(environment, source, propertyShape).collect(Collectors.toList());
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
-          .findFirst()
+      return getResolvedValues(environment, source, propertyShape).findFirst()
           .orElse(null);
     }
 
     throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
+  }
+
+  private boolean isResource(GraphQLFieldDefinition fieldDefinition) {
+    return Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME));
+  }
+
+  private Stream<Object> getResolvedValues(DataFetchingEnvironment environment, QuerySolution source,
+      PropertyShape propertyShape) {
+    return resolve(environment, propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value));
   }
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
@@ -89,44 +95,41 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private Stream<Value> resolve(DataFetchingEnvironment environment, PropertyShape propertyShape,
       QuerySolution source) {
+    NodeShape nodeShape = propertyShape.getNode();
     Stream<Value> stream = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject())
         .stream()
-        .filter(result -> {
-          if (propertyShape.getNode() != null) {
-            if (result instanceof SimpleIRI) {
-              return resultIsOfType((SimpleIRI) result, source.getModel(), propertyShape.getNode()
-                  .getTargetClasses());
-            }
-
-            return resultIsOfType(result, propertyShape.getNode()
-                .getTargetClasses());
-          }
-          return true;
-        });
+        .filter(result -> nodeShape == null || (result instanceof SimpleIRI
+            ? resultIsOfType((SimpleIRI) result, source.getModel(), nodeShape.getTargetClasses())
+            : resultIsOfType(result, nodeShape.getTargetClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
         .findFirst();
-    if (sortArgumentOptional.isPresent()
-        && GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+
+    if (GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))
+        && sortArgumentOptional.isPresent()) {
       GraphQLArgument sortArgument = sortArgumentOptional.get();
-      boolean asc = Objects.equals(SORT_FIELD_ORDER_ASC,
-          ((Map) ((List) sortArgument.getDefaultValue()).get(0)).get(SORT_FIELD_ORDER)
-              .toString());
+      boolean asc = getSortOrder(sortArgument);
 
       if (GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(environment.getFieldType()))) {
         return stream.sorted(getComparator(asc));
       }
 
-      if (Objects.nonNull(propertyShape.getNode())) {
-        return stream.sorted(getComparator(asc, source.getModel(), sortArgument, propertyShape.getNode()));
+      if (Objects.nonNull(nodeShape)) {
+        return stream.sorted(getComparator(asc, source.getModel(), sortArgument, nodeShape));
       }
     }
 
     return stream;
+  }
+
+  private Boolean getSortOrder(GraphQLArgument sortArgument) {
+    Map orderables = (Map) ((List) sortArgument.getDefaultValue()).get(0);
+    Object fieldOrder = orderables.get(SORT_FIELD_ORDER);
+    return Objects.equals(SORT_FIELD_ORDER_ASC, fieldOrder.toString());
   }
 
   private boolean resultIsOfType(SimpleIRI iri, Model model, Set<IRI> types) {

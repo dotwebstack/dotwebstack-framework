@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getOperand;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
@@ -8,10 +7,12 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER;
 
 import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
@@ -25,7 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -37,6 +42,7 @@ import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
+import org.eclipse.rdf4j.sparqlbuilder.core.OrderCondition;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -97,12 +103,7 @@ abstract class AbstractVerticeFactory {
 
   List<Edge> findEdgesToBeProcessed(NodeShape nodeShape, SelectedField field, List<Edge> edges) {
     return edges.stream()
-        .filter(edge -> edge.getPredicate()
-            .getQueryString()
-            .equals(nodeShape.getPropertyShape(field.getName())
-                .getPath()
-                .toPredicate()
-                .getQueryString()))
+        .filter(hasEqualQueryString(nodeShape.getPropertyShape(field.getName())))
         .filter(edge -> {
           if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
               .getType()))) {
@@ -121,24 +122,21 @@ abstract class AbstractVerticeFactory {
     Object orderByList = Objects.nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
     Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
 
-    String fieldName = orderMap.getOrDefault("field", argument.getName())
+    String fieldName = orderMap.getOrDefault(SORT_FIELD_FIELD, argument.getName())
         .toString();
-    orderMap.put("isResource", false);
-    Optional<GraphQLFieldDefinition> resourceOptional =
-        Optional.ofNullable(getField(field.getFieldDefinition(), fieldName.split("\\.")));
-    Optional<GraphQLDirective> resourceDirectiveOptional = Optional.empty();
 
-    if (resourceOptional.isPresent()) {
-      resourceDirectiveOptional = Optional.ofNullable(resourceOptional.get()
-          .getDirective(Rdf4jDirectives.RESOURCE_NAME));
-    }
+    orderMap.put(SORT_FIELD_IS_RESOURCE, isResource(field, fieldName));
 
-    resourceDirectiveOptional.ifPresent(directive -> orderMap.put("isResource", true));
-
-    if (!(boolean) orderMap.get("isResource")) {
+    if (!(boolean) orderMap.get(SORT_FIELD_IS_RESOURCE)) {
       findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
           .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true);
     }
+  }
+
+  private boolean isResource(SelectedField field, String fieldName) {
+    return Optional.ofNullable(getField(field.getFieldDefinition(), fieldName.split("\\.")))
+        .flatMap(definition -> Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+        .isPresent();
   }
 
   private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
@@ -168,58 +166,65 @@ abstract class AbstractVerticeFactory {
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    Vertice usedVertice;
+    Vertice usedVertice = getVertice(vertice, query, nodeShape, filterRule);
+
+    List<Filter> filters = Objects.nonNull(usedVertice.getFilters()) ? usedVertice.getFilters() : new ArrayList<>();
+    filters.add(createFilter(nodeShape, filterRule));
+
+    usedVertice.setFilters(filters);
+  }
+
+  private Vertice getVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
     if (filterRule.isResource()) {
-      usedVertice = vertice.getEdges()
+      return vertice.getEdges()
           .stream()
           .map(Edge::getObject)
           .findFirst()
           .orElse(vertice);
     } else {
       Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
-      usedVertice = match.getObject();
+      return match.getObject();
     }
-
-    List<Filter> filters = Objects.nonNull(usedVertice.getFilters()) ? usedVertice.getFilters() : new ArrayList<>();
-
-    Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
-        .get(filterRule.getPath()
-            .size() - 1),
-        filterRule.isResource());
-
-    filters.add(filter);
-
-    usedVertice.setFilters(filters);
   }
 
   /*
    * Create a new filter with either one argument or a list of arguments
    */
-  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName,
-      boolean isResource) {
-    List<Object> filterArguments;
-    if (filterValue instanceof List) {
-      filterArguments = castToList(filterValue);
-    } else {
-      filterArguments = singletonList(filterValue);
-    }
+  private Filter createFilter(NodeShape nodeShape, FilterRule filterRule) {
+    List<Operand> operands = getOperands(nodeShape, filterRule);
 
-    List<Operand> operands = filterArguments.stream()
-        .map(filterArgument -> {
-          if (isResource) {
-            return Rdf.iri(serializerRouter.serialize(filterArgument));
-          }
-          return getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument),
-              rdf4jProperties.getShape()
-                  .getLanguage());
-        })
-        .collect(Collectors.toList());
+    FilterOperator operator = FilterOperator.getByValue(filterRule.getOperator())
+        .orElse(FilterOperator.EQ);
 
     return Filter.builder()
-        .operator(FilterOperator.getByValue(filterOperator)
-            .orElse(FilterOperator.EQ))
+        .operator(operator)
         .operands(operands)
         .build();
+  }
+
+  private List<Operand> getOperands(NodeShape nodeShape, FilterRule filterRule) {
+    String field = filterRule.getPath()
+        .get(filterRule.getPath()
+            .size() - 1);
+    String language = rdf4jProperties.getShape()
+        .getLanguage();
+
+    return getFilterArguments(filterRule.getValue()).map(argumentToOperand(nodeShape, filterRule, field, language))
+        .collect(Collectors.toList());
+  }
+
+  private Function<Object, Operand> argumentToOperand(NodeShape nodeShape, FilterRule filterRule, String field,
+      String language) {
+    return filterArgument -> filterRule.isResource() ? Rdf.iri(serializerRouter.serialize(filterArgument))
+        : getOperand(nodeShape, field, serializerRouter.serialize(filterArgument), language);
+  }
+
+  private Stream<Object> getFilterArguments(Object filterValue) {
+    if (filterValue instanceof List) {
+      return castToList(filterValue).stream();
+    } else {
+      return Stream.of(filterValue);
+    }
   }
 
   /*
@@ -253,11 +258,7 @@ abstract class AbstractVerticeFactory {
     Optional<Edge> optional = Optional.empty();
     if (Objects.nonNull(childEdges)) {
       optional = childEdges.stream()
-          .filter(childEdge -> childEdge.getPredicate()
-              .getQueryString()
-              .equals(propertyShape.getPath()
-                  .toPredicate()
-                  .getQueryString()))
+          .filter(hasEqualQueryString(propertyShape))
           .filter(childEdge -> Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(childEdge,
               propertyShape.getNode()
                   .getTargetClasses()))
@@ -272,6 +273,17 @@ abstract class AbstractVerticeFactory {
     });
   }
 
+  private Predicate<Edge> hasEqualQueryString(PropertyShape propertyShape) {
+    return childEdge -> {
+      String queryString = propertyShape.getPath()
+          .toPredicate()
+          .getQueryString();
+      return childEdge.getPredicate()
+          .getQueryString()
+          .equals(queryString);
+    };
+  }
+
   /*
    * It can happen that the same path is used twice, we want to overcome this problem, by looking at
    * the edges, if we find more edges with the same predicate, we place the child edges of the latter
@@ -279,68 +291,72 @@ abstract class AbstractVerticeFactory {
    */
   void makeEdgesUnique(List<Edge> edges) {
     List<Edge> uniqueEdges = new ArrayList<>();
-    edges.forEach(edge -> {
-      Edge duplicate = uniqueEdges.stream()
-          .filter(uniqueEdge -> uniqueEdge.getPredicate()
-              .equals(edge.getPredicate()))
-          .findFirst()
-          .orElse(null);
+    edges.forEach(edge -> uniqueEdges.stream()
+        .filter(uniqueEdge -> uniqueEdge.getPredicate()
+            .equals(edge.getPredicate()))
+        .findFirst()
+        .ifPresentOrElse(addToDuplicate(edge), () -> uniqueEdges.add(edge)));
+  }
 
-      if (Objects.nonNull(duplicate)) {
-        List<Edge> childEdges = edge.getObject()
-            .getEdges();
-        duplicate.getObject()
-            .getEdges()
-            .addAll(childEdges);
-      } else {
-        uniqueEdges.add(edge);
-      }
-    });
+  private Consumer<Edge> addToDuplicate(Edge edge) {
+    List<Edge> childEdges = edge.getObject()
+        .getEdges();
+
+    return duplicate -> duplicate.getObject()
+        .getEdges()
+        .addAll(childEdges);
   }
 
   void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap, NodeShape nodeShape) {
-    String fieldName = orderMap.get("field")
-        .toString();
-    String order = orderMap.get("order")
-        .toString();
-    Boolean isResource = Boolean.parseBoolean((String) orderMap.get("isResource"));
+    String fieldName = getSortProperty(orderMap, SORT_FIELD_FIELD);
+    String order = getSortProperty(orderMap, SORT_FIELD_ORDER);
+    boolean isResource = Boolean.parseBoolean(getSortProperty(orderMap, SORT_FIELD_IS_RESOURCE));
 
     List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
-    NodeShape childShape = null;
-    if (!isResource) {
-      childShape = getNextNodeShape(nodeShape, fieldPaths);
-    }
     // add missing edges
-    Edge match;
-    Variable subject;
-    if (isResource) {
-      if (fieldName.contains(".")) {
-        fieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
-        match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
-        subject = getSubjectForField(match, nodeShape, fieldPaths);
-      } else {
-        subject = vertice.getSubject();
-      }
+    Variable subject = isResource ? getSubjectForResource(vertice, query, nodeShape, fieldName, fieldPaths)
+        : getSubject(vertice, query, nodeShape, fieldPaths);
+    List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
+    OrderCondition orderCondition =
+        (Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc();
 
-    } else if (nodeShape.equals(childShape)) {
-      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
-      subject = getSubjectForField(match, nodeShape, fieldPaths);
-    } else {
-      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths.get(0))
-          .getPath(), true, false);
-      fieldPaths = fieldPaths.subList(1, fieldPaths.size());
+    orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(subject))));
+    orderables.add(orderCondition);
+    vertice.setOrderables(orderables);
+  }
 
-      vertice.getEdges()
-          .add(edge);
+  private Variable getSubjectForResource(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String fieldName,
+      List<String> fieldPaths) {
+    if (fieldName.contains(".")) {
+      fieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
+      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
+      return getSubjectForField(match, nodeShape, fieldPaths);
+    }
+    return vertice.getSubject();
+  }
 
-      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false, false);
-      subject = getSubjectForField(match, childShape, fieldPaths);
+  private Variable getSubject(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths) {
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
+    if (nodeShape.equals(childShape)) {
+      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
+      return getSubjectForField(match, nodeShape, fieldPaths);
     }
 
-    List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-    orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(subject))));
-    orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc());
-    vertice.setOrderables(orderables);
+    BasePath path = nodeShape.getPropertyShape(fieldPaths.get(0))
+        .getPath();
+    Edge edge = createSimpleEdge(query.var(), path, true, false);
+
+    vertice.getEdges()
+        .add(edge);
+
+    fieldPaths = fieldPaths.subList(1, fieldPaths.size());
+    Edge match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false, false);
+
+    return getSubjectForField(match, childShape, fieldPaths);
+  }
+
+  private String getSortProperty(Map<String, Object> orderMap, String sortFieldField) {
+    return (String) orderMap.get(sortFieldField);
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {

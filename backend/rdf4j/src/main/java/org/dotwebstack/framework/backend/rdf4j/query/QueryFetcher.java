@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
 import com.google.common.collect.ImmutableList;
@@ -200,33 +201,31 @@ public final class QueryFetcher implements DataFetcher<Object> {
       Map<String, Object> arguments) {
     return sortArgument -> Optional.ofNullable(arguments.get(sortArgument.getName()))
         .<List<Object>>map(o -> ((List<Map<String, String>>) o).stream()
-            .map(determineOrderableIsResource(environment))
+            .map(determineSortArgumentIsResource(environment))
             .collect(Collectors.toList()))
         .orElseGet(() -> (List<Object>) sortArgument.getDefaultValue());
   }
 
-  private Function<Map<String, String>, Map<String, String>> determineOrderableIsResource(
+  private Function<Map<String, String>, Map<String, String>> determineSortArgumentIsResource(
       DataFetchingEnvironment environment) {
     return sortArgs -> {
-      Optional.ofNullable(getField(environment.getFieldDefinition(), sortArgs.get("field")))
+      boolean isResource = Optional.ofNullable(getField(environment.getFieldDefinition(), sortArgs.get("field")))
           .flatMap(definition -> Optional.ofNullable(definition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
-          .ifPresent(directive -> sortArgs.put("isResource", "true"));
+          .isPresent();
+      sortArgs.put(SORT_FIELD_IS_RESOURCE, String.valueOf(isResource));
       return sortArgs;
     };
   }
 
-  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String pad) {
+  private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String pathString) {
 
-    List<String> path = new ArrayList<>(Arrays.asList(pad.split("\\.")));
-
-    GraphQLFieldDefinition fieldDefinition =
-        ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path.get(0));
+    List<String> path = new ArrayList<>(Arrays.asList(pathString.split("\\.")));
 
     if (path.size() > 1) {
       path.remove(0);
       return getField(environment, String.join(".", path));
     }
-    return fieldDefinition;
+    return ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path.get(0));
   }
 
   private Model fetchGraph(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<IRI> subjects,
