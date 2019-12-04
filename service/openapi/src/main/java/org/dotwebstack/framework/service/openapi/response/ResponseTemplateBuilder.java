@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 
@@ -116,7 +115,7 @@ public class ResponseTemplateBuilder {
       referenceMap.put(ref, root.getSummary());
     }
 
-    fillResponseObject(root, openApi, referenceMap, new ArrayList<>());
+    fillResponseObject(root, openApi, referenceMap, new ArrayList<>(), responseCode);
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
@@ -127,32 +126,31 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void fillResponseObject(ResponseObject responseObject, OpenAPI openApi,
-      Map<String, SchemaSummary> referenceMap, List<String> parents) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, String responseCode) {
     Schema<?> oasSchema = responseObject.getSummary()
         .getSchema();
     parents.add(responseObject.getIdentifier());
 
     if (Objects.isNull(oasSchema.getType())) {
-      throw ExceptionHelper.invalidConfigurationException(
-          "Found invalid schema for OAS object {}: schema's cannot have type 'null'", responseObject.getIdentifier(),
-          oasSchema.get$ref());
+      throw invalidConfigurationException(
+          "Found invalid schema for OAS response object '{}' for responseCode '{}': schema's cannot have type 'null'",
+          responseObject.getIdentifier(), responseCode);
     }
 
     if (oasSchema instanceof ObjectSchema) {
-      resolveObjectSchema(responseObject, openApi, referenceMap, parents, oasSchema);
+      resolveObjectSchema(responseObject, openApi, referenceMap, parents, oasSchema, responseCode);
     } else if (oasSchema instanceof ArraySchema) {
-      resolveArraySchema(responseObject, openApi, referenceMap, parents, oasSchema);
+      resolveArraySchema(responseObject, openApi, referenceMap, parents, oasSchema, responseCode);
     } else if (oasSchema instanceof ComposedSchema) {
-      resolveComposedSchema(responseObject, openApi, referenceMap, parents, (ComposedSchema) oasSchema);
+      resolveComposedSchema(responseObject, openApi, referenceMap, parents, (ComposedSchema) oasSchema, responseCode);
     }
   }
 
   @SuppressWarnings("rawtypes")
   private void resolveComposedSchema(ResponseObject responseObject, OpenAPI openApi,
-      Map<String, SchemaSummary> referenceMap, List<String> parents, ComposedSchema oasSchema) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, ComposedSchema oasSchema, String responseCode) {
     if (Objects.nonNull(oasSchema.getOneOf()) || Objects.nonNull(oasSchema.getAnyOf())) {
-      throw ExceptionHelper
-          .invalidConfigurationException("The use of oneOf and anyOf schema's is currently not supported");
+      throw invalidConfigurationException("The use of oneOf and anyOf schema's is currently not supported");
     }
 
     List<ResponseObject> composedSchemas = oasSchema.getAllOf()
@@ -165,9 +163,8 @@ public class ResponseTemplateBuilder {
           }
 
           if (!"object".equals(schema.getType())) {
-            throw ExceptionHelper.invalidConfigurationException(
-                "Field '{}' is configured incorrectly, allOf schema's only support object schema's",
-                responseObject.getIdentifier());
+            throw invalidConfigurationException("Field '{}' for response code '{}' is configured incorrectly,"
+                + " allOf schema's only support object schema's", responseObject.getIdentifier(), responseCode);
           }
 
           if (referenceMap.containsKey(schema.get$ref())) {
@@ -181,7 +178,7 @@ public class ResponseTemplateBuilder {
             referenceMap.put(schema.get$ref(), composedSchema.getSummary());
           }
 
-          fillResponseObject(composedSchema, openApi, referenceMap, new ArrayList<>(parents));
+          fillResponseObject(composedSchema, openApi, referenceMap, new ArrayList<>(parents), responseCode);
           return composedSchema;
         })
         .collect(Collectors.toList());
@@ -192,7 +189,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void resolveArraySchema(ResponseObject responseObject, OpenAPI openApi,
-      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
     String ref = ((ArraySchema) oasSchema).getItems()
         .get$ref();
     Schema<?> usedSchema =
@@ -206,7 +203,7 @@ public class ResponseTemplateBuilder {
       if (Objects.nonNull(ref)) {
         referenceMap.put(ref, item.getSummary());
       }
-      fillResponseObject(item, openApi, referenceMap, new ArrayList<>(parents));
+      fillResponseObject(item, openApi, referenceMap, new ArrayList<>(parents), responseCode);
     }
 
     responseObject.getSummary()
@@ -215,7 +212,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void resolveObjectSchema(ResponseObject responseObject, OpenAPI openApi,
-      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
     SchemaSummary responseSummary = responseObject.getSummary();
 
     if (Objects.isNull(oasSchema.getProperties())) {
@@ -246,7 +243,7 @@ public class ResponseTemplateBuilder {
             referenceMap.put(propSchema.get$ref(), child.getSummary());
           }
 
-          fillResponseObject(child, openApi, referenceMap, new ArrayList<>(parents));
+          fillResponseObject(child, openApi, referenceMap, new ArrayList<>(parents), responseCode);
           return child;
         })
         .collect(Collectors.toList());
