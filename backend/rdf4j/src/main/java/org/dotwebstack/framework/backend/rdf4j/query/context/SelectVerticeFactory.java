@@ -71,15 +71,9 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
                   addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
                 } else {
                   edge.setOptional(true);
-                  edge.setAggregate(Aggregate.builder()
-                      .type(directive.getArgument(CoreInputTypes.AGGREGATE_TYPE)
-                          .getValue()
-                          .toString())
-                      .variable(query.var())
-                      .build());
+                  edge.setAggregate(createAggregate(query, directive));
                   addFilterToVertice(nodeShape, vertice, filter, edge);
                 }
-
               });
         } else {
           FilterRule childFilterRule = FilterRule.builder()
@@ -92,15 +86,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
           Vertice childVertice =
               createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule), fields);
 
-          edge = Edge.builder()
-              .predicate(nodeShape.getPropertyShape(filter.getPath()
-                  .get(0))
-                  .getPath()
-                  .toPredicate())
-              .object(childVertice)
-              .isVisible(false)
-              .isOptional(false)
-              .build();
+          edge = createEdge(nodeShape, filter, childVertice);
 
         }
         vertice.getEdges()
@@ -123,6 +109,27 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return Vertice.builder()
         .subject(subject)
         .edges(edges)
+        .build();
+  }
+
+  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
+    return Edge.builder()
+        .predicate(nodeShape.getPropertyShape(filter.getPath()
+            .get(0))
+            .getPath()
+            .toPredicate())
+        .object(childVertice)
+        .isVisible(false)
+        .isOptional(false)
+        .build();
+  }
+
+  private Aggregate createAggregate(OuterQuery<?> query, GraphQLDirective directive) {
+    return Aggregate.builder()
+        .type(directive.getArgument(CoreInputTypes.AGGREGATE_TYPE)
+            .getValue()
+            .toString())
+        .variable(query.var())
         .build();
   }
 }

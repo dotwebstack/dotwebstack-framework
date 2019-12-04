@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Objects.isNull;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
@@ -65,7 +66,7 @@ public class FilterHelper {
     Expression<?> current = expressions.remove(0);
     Expression<?> usedExpression;
 
-    if (Objects.isNull(joinedExpression)) {
+    if (isNull(joinedExpression)) {
       usedExpression = current;
     } else {
       Operand[] operands = new Expression<?>[] {current, joinedExpression};
@@ -93,7 +94,7 @@ public class FilterHelper {
       return Rdf.literalOfLanguage(filterString, tagLanguage);
     }
 
-    if (propertyShape.getDatatype() == null) {
+    if (isNull(propertyShape.getDatatype())) {
       return Rdf.literalOf((Integer.parseInt(filterString)));
     }
 
