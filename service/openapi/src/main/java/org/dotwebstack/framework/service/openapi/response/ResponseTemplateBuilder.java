@@ -167,7 +167,7 @@ public class ResponseTemplateBuilder {
           if (!"object".equals(schema.getType())) {
             throw ExceptionHelper
                 .invalidConfigurationException("Field '{}' for response code '{}' is configured incorrectly,"
-                    + " allOf schema's only support object schema's", responseObject.getIdentifier());
+                    + " allOf schema's only support object schema's", responseObject.getIdentifier(), responseCode);
           }
 
           if (referenceMap.containsKey(schema.get$ref())) {
