@@ -114,7 +114,7 @@ public class VerticeHelper {
     List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
-    if (Objects.nonNull(edge.getAggregate()) && Objects.equals("COUNT", edge.getAggregate()
+    if (Objects.nonNull(edge.getAggregate()) && Objects.equals(AggregateType.COUNT, edge.getAggregate()
         .getType())) {
       graphPattern = GraphPatterns.select(getSelectedForCount(subject, subject, edge).toArray(new Projectable[] {}))
           .where(graphPattern)

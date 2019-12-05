@@ -70,7 +70,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
     }
 
     String repositoryId =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(), String.class);
+        DirectiveUtils.getArgument(environment.getDirective(), Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
 
     RepositoryAdapter supportedAdapter = repositoryAdapters.stream()
         .filter(repositoryAdapter -> repositoryAdapter.supports(repositoryId))

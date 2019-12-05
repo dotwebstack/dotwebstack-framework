@@ -17,7 +17,6 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -40,8 +39,8 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return vertice;
   }
 
-  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<SelectedField> fields) {
+  private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+      List<FilterRule> filterRules, List<SelectedField> fields) {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
@@ -71,7 +70,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
                   addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
                 } else {
                   edge.setOptional(true);
-                  edge.setAggregate(createAggregate(query, directive));
+                  edge.setAggregate(createAggregate(directive, query.var()));
                   addFilterToVertice(nodeShape, vertice, filter, edge);
                 }
               });
@@ -124,12 +123,4 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .build();
   }
 
-  private Aggregate createAggregate(OuterQuery<?> query, GraphQLDirective directive) {
-    return Aggregate.builder()
-        .type(directive.getArgument(CoreInputTypes.AGGREGATE_TYPE)
-            .getValue()
-            .toString())
-        .variable(query.var())
-        .build();
-  }
 }

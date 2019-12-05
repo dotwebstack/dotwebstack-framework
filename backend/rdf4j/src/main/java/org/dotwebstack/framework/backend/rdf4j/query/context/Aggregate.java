@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 @Data
 @Builder
 public class Aggregate {
-  private String type;
+  private AggregateType type;
 
   private Variable variable;
 }

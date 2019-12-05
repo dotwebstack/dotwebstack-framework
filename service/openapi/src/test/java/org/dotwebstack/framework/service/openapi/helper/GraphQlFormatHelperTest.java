@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
-import static org.dotwebstack.framework.service.openapi.helper.FormatHelper.formatGraphQlQuery;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class FormatHelperTest {
+class GraphQlFormatHelperTest {
 
   @Test
   public void formatQuery_returnsFormattedQuery_forGraphQlQuery() {
@@ -14,7 +14,7 @@ class FormatHelperTest {
     String expected = " {\n" + "\t brewery(identifier: \"123\")  {\n" + "\t\t identifier,\n" + "\t\t name,\n"
         + "\t\t founded \n" + "\t}\n" + "}";
     // Act
-    String result = formatGraphQlQuery(unformatted);
+    String result = formatQuery(unformatted);
 
     // Assert
     assertEquals(expected, result);
@@ -27,7 +27,7 @@ class FormatHelperTest {
     String expected = " {\n" + "\t brewery(identifier: \"123\")  {\n" + "\t\t identifier,\n" + "\t\t name,\n"
         + "\t\t address  {\n" + "\t\t\t postalCode \n" + "\t\t}\n" + "\t}\n" + "}";
     // Act
-    String result = formatGraphQlQuery(unformatted);
+    String result = formatQuery(unformatted);
 
     // Assert
     assertEquals(expected, result);
@@ -44,7 +44,7 @@ class FormatHelperTest {
         + "\t\t\t\t \"Brouwerij De Leckere\"]\n" + "\t\t\t},\n" + "\t\t\tfoundedAfter: \"1800-01-01T00:00:00+02:00\"\n"
         + "\t\t}\n" + "\t})  {\n" + "\t\t identifier,\n" + "\t\t name \n" + "\t}\n" + "}";
     // Act
-    String result = formatGraphQlQuery(unformatted);
+    String result = formatQuery(unformatted);
 
     // Assert
     assertEquals(expected, result);

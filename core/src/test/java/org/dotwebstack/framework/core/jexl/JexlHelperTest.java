@@ -34,7 +34,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateDirectiveArgument("directiveArg1", directive, context, String.class);
+        this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, String.class);
 
     // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
@@ -51,7 +51,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateDirectiveArgument("directiveArg2", directive, context, String.class);
+        this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg2", context, String.class);
 
     // Assert
     assertThat("expected empty optional", !evaluated.isPresent());
@@ -66,7 +66,7 @@ public class JexlHelperTest {
 
     // Act / Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.jexlHelper.evaluateDirectiveArgument("directiveArg1", directive, context, Integer.class));
+        () -> this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, Integer.class));
   }
 
   @Test

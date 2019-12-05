@@ -14,6 +14,7 @@ import static org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions.custom;
 
 import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
@@ -32,7 +33,6 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
-import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -195,15 +195,6 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
-  private void getEdgeFromField(OuterQuery<?> query, Edge edge, SelectedField selectedField) {
-    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(),
-        Rdf4jDirectives.AGGREGATE_NAME, CoreInputTypes.AGGREGATE_TYPE, String.class);
-    edge.setAggregate(Aggregate.builder()
-        .type(aggregateType)
-        .variable(query.var())
-        .build());
-  }
-
   /*
    * Find the edge belonging to the given propertyshape. In case no propertyshape is found, create a
    * new one
@@ -305,7 +296,7 @@ abstract class AbstractVerticeFactory {
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
       List<String> fieldPaths, boolean required, boolean isVisible, List<SelectedField> fields) {
 
-    if (fieldPaths.size() == 0) {
+    if (fieldPaths.isEmpty()) {
       return Optional.empty();
     }
 
@@ -318,11 +309,8 @@ abstract class AbstractVerticeFactory {
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
 
     if (fieldPaths.size() == 1) {
-      Optional<SelectedField> fieldWithAggregate = fields.stream()
-          .filter(field -> Objects.equals(field.getName(), fieldPaths.get(0)) && nonNull(field.getFieldDefinition()
-              .getDirective(Rdf4jDirectives.AGGREGATE_NAME)))
-          .findFirst();
-      fieldWithAggregate.ifPresent(field -> getEdgeFromField(query, match, field));
+      match.setAggregate(createAggregate(fields, query, fieldPaths.get(0)));
+
       return Optional.of(match);
     }
 
@@ -343,6 +331,28 @@ abstract class AbstractVerticeFactory {
         .operator(FilterOperator.LANGUAGE)
         .operands(ImmutableList.of(Rdf.literalOf(rdf4jProperties.getShape()
             .getLanguage())))
+        .build();
+  }
+
+  private Aggregate createAggregate(List<SelectedField> fields, OuterQuery<?> query, String fieldName) {
+    return fields.stream()
+        .filter(field -> Objects.equals(field.getName(), fieldName))
+        .map(field -> field.getFieldDefinition()
+            .getDirective(Rdf4jDirectives.AGGREGATE_NAME))
+        .map(directive -> createAggregate(directive, query.var()))
+        .findFirst()
+        .orElse(null);
+  }
+
+  Aggregate createAggregate(GraphQLDirective directive, Variable variable) {
+    return Aggregate.builder()
+        .type(Optional.of(directive)
+            .map(dir -> dir.getArgument(CoreInputTypes.AGGREGATE_TYPE))
+            .map(argument -> argument.getValue()
+                .toString())
+            .map(AggregateType::valueOf)
+            .orElse(null))
+        .variable(variable)
         .build();
   }
 }

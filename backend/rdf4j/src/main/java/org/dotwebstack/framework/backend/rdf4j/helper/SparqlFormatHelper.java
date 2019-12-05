@@ -6,7 +6,7 @@ public class SparqlFormatHelper {
 
   private SparqlFormatHelper() {}
 
-  private static final String INDENTCHAR = "  ";
+  private static final String INDENT = "  ";
 
   public static String formatQuery(@NonNull String query) {
     int indents = 0;
@@ -23,18 +23,18 @@ public class SparqlFormatHelper {
         case '{':
           builder.append("{\n");
           indents++;
-          builder.append(INDENTCHAR.repeat(Math.max(0, indents)));
+          builder.append(INDENT.repeat(Math.max(0, indents)));
           break;
         case '}':
           builder.append("\n");
           indents--;
-          builder.append(INDENTCHAR.repeat(Math.max(0, indents)));
+          builder.append(INDENT.repeat(Math.max(0, indents)));
           builder.append("}\n");
-          builder.append(INDENTCHAR.repeat(Math.max(0, indents)));
+          builder.append(INDENT.repeat(Math.max(0, indents)));
           break;
         case '\n':
           builder.append("\n");
-          builder.append(INDENTCHAR.repeat(Math.max(0, indents)));
+          builder.append(INDENT.repeat(Math.max(0, indents)));
           break;
         default:
           builder.append(character);

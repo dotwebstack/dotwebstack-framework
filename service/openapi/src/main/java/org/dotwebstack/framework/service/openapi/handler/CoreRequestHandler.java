@@ -8,7 +8,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.FormatHelper.formatGraphQlQuery;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -185,7 +185,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     if (LOG.isDebugEnabled()) {
       logInputRequest(request);
-      LOG.debug("GraphQL query is:\n\n{}\n", formatGraphQlQuery(query));
+      LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
     }
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()

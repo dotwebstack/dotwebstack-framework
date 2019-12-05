@@ -89,9 +89,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     BasePath path = propertyShape.getPath();
 
-    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(),
-        Rdf4jDirectives.AGGREGATE_NAME, CoreInputTypes.AGGREGATE_TYPE, String.class);
-
     return Edge.builder()
         .predicate(path.toPredicate())
         .constructPredicate(path.toConstructPredicate())
@@ -99,9 +96,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             .getFields()))
         .isOptional(true)
         .isVisible(true)
-        .aggregate(Optional.ofNullable(aggregateType)
+        .aggregate(Optional
+            .ofNullable(DirectiveUtils.getArgument(selectedField.getFieldDefinition(), Rdf4jDirectives.AGGREGATE_NAME,
+                CoreInputTypes.AGGREGATE_TYPE, String.class))
             .map(type -> Aggregate.builder()
-                .type(aggregateType)
+                .type(AggregateType.valueOf(type))
                 .variable(query.var())
                 .build())
             .orElse(null))

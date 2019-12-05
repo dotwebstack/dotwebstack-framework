@@ -94,8 +94,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> limitOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT,
-        sparqlDirective, context, Integer.class);
+    Optional<Integer> limitOptional = this.jexlHelper.evaluateDirectiveArgument(sparqlDirective,
+        Rdf4jDirectives.SPARQL_ARG_LIMIT, context, Integer.class);
     limitOptional.ifPresent(limit -> {
       if (limit < 1) {
         throw illegalArgumentException("An error occured in the limit expression evaluation");
@@ -105,8 +105,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   Optional<Integer> getOffsetFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> offsetOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET,
-        sparqlDirective, context, Integer.class);
+    Optional<Integer> offsetOptional = this.jexlHelper.evaluateDirectiveArgument(sparqlDirective,
+        Rdf4jDirectives.SPARQL_ARG_OFFSET, context, Integer.class);
 
     offsetOptional.ifPresent(offset -> {
       if (offset < 0) {

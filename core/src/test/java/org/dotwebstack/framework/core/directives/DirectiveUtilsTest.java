@@ -26,7 +26,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act
-    String value = DirectiveUtils.getArgument("foo", directive, String.class);
+    String value = DirectiveUtils.getArgument(directive, "foo", String.class);
 
     // Assert
     assertThat(value, is(equalTo("bar")));
@@ -40,7 +40,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act
-    String value = DirectiveUtils.getArgument("foo", directive, String.class);
+    String value = DirectiveUtils.getArgument(directive, "foo", String.class);
 
     // Assert
     assertThat(value, is(nullValue()));
@@ -57,7 +57,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act
-    String value = DirectiveUtils.getArgument("foo", directive, String.class);
+    String value = DirectiveUtils.getArgument(directive, "foo", String.class);
 
     // Assert
     assertThat(value, is(nullValue()));
@@ -75,7 +75,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> DirectiveUtils.getArgument("foo", directive, String.class));
+    assertThrows(InvalidConfigurationException.class, () -> DirectiveUtils.getArgument(directive, "foo", String.class));
   }
 
 }

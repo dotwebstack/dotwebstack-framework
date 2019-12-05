@@ -2,13 +2,13 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import lombok.NonNull;
 
-public class FormatHelper {
+public class GraphQlFormatHelper {
 
   private static final String INDENTCHAR = "\t";
 
-  private FormatHelper() {}
+  private GraphQlFormatHelper() {}
 
-  public static String formatGraphQlQuery(@NonNull String query) {
+  public static String formatQuery(@NonNull String query) {
     int indents = 0;
     StringBuilder builder = new StringBuilder();
     for (String character : query.split("")) {

@@ -128,7 +128,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     List<Object> orderByObject = getOrderByObject(environment, arguments);
 
     String subjectTemplate =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
 
     if (subjectTemplate != null) {
       StringSubstitutor substitutor = new StringSubstitutor(arguments);
@@ -143,7 +143,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     logQuery(SUBJECTS, subjectQuery);
 
     String repositoryId =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
 
     TupleQueryResult queryResult = repositoryAdapter.prepareTupleQuery(repositoryId, environment, subjectQuery)
         .evaluate();
@@ -192,7 +192,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
     String repositoryId =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
 
     GraphQueryResult queryResult = repositoryAdapter
         .prepareGraphQuery(repositoryId, environment, graphQuery, subjects.stream()

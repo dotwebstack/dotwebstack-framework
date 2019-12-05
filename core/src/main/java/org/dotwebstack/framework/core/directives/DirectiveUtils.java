@@ -18,10 +18,10 @@ public final class DirectiveUtils {
     if (Objects.isNull(directive)) {
       return null;
     }
-    return getArgument(argumentName, directive, clazz);
+    return getArgument(directive, argumentName, clazz);
   }
 
-  public static <T> T getArgument(@NonNull String argName, @NonNull GraphQLDirective directive,
+  public static <T> T getArgument(@NonNull GraphQLDirective directive, @NonNull String argName,
       @NonNull Class<T> clazz) {
     final GraphQLArgument argument = directive.getArgument(argName);
 
