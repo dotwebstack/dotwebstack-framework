@@ -6,6 +6,7 @@ import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
@@ -20,6 +21,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,41 +38,73 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
   private Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<SelectedField> fields) {
+    List<Edge> edges = transformFieldsToEdges(query, nodeShape, fields);
 
-    List<SelectedField> filteredFields = fields.stream()
+    return Vertice.builder()
+        .subject(subject)
+        .edges(edges)
+        .build();
+  }
+
+  private List<Edge> transformFieldsToEdges(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> fields) {
+    List<SelectedField> filteredFields = filterFields(fields);
+
+    List<Edge> edges = getUniqueEdges(query, nodeShape, filteredFields);
+
+    edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
+
+    doArgumentMapping(query, nodeShape, filteredFields, edges);
+    return edges;
+  }
+
+  private List<SelectedField> filterFields(List<SelectedField> fields) {
+    return fields.stream()
         .filter(field -> Objects.isNull(field.getFieldDefinition()
             .getDirective(Rdf4jDirectives.RESOURCE_NAME)))
         .collect(Collectors.toList());
+  }
 
+  private List<Edge> getUniqueEdges(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> filteredFields) {
     List<Edge> edges = filteredFields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
-        .map(field -> {
-          PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
-          NodeShape childShape = propertyShape.getNode();
-
-          Edge edge;
-          if (Objects.isNull(childShape)) {
-            edge = createSimpleEdge(query.var(), propertyShape.getPath(), true, true);
-          } else {
-            edge = createComplexEdge(query, nodeShape, field);
-          }
-
-          addLanguageFilter(edge, propertyShape);
-
-          return edge;
-        })
+        .map(toEdge(query, nodeShape))
         .collect(Collectors.toList());
-
     makeEdgesUnique(edges);
+    return edges;
+  }
 
-    Set<Iri> iris = nodeShape.getTargetClasses()
+  private Function<SelectedField, Edge> toEdge(OuterQuery<?> query, NodeShape nodeShape) {
+    return field -> {
+      PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
+      NodeShape childShape = propertyShape.getNode();
+
+      return getEdge(query, nodeShape, field, propertyShape, childShape);
+    };
+  }
+
+  private Edge getEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field, PropertyShape propertyShape,
+      NodeShape childShape) {
+    Edge edge;
+    if (Objects.isNull(childShape)) {
+      edge = createSimpleEdge(query.var(), propertyShape.getPath(), true, true);
+    } else {
+      edge = createComplexEdge(query, nodeShape, field);
+    }
+
+    addLanguageFilter(edge, propertyShape);
+    return edge;
+  }
+
+  private Set<Iri> getTargetClassIris(NodeShape nodeShape) {
+    return nodeShape.getTargetClasses()
         .stream()
         .map(targetClass -> Rdf.iri(targetClass.stringValue()))
         .collect(Collectors.toSet());
+  }
 
-    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
-
+  private void doArgumentMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> filteredFields,
+      List<Edge> edges) {
     getArgumentFieldMapping(nodeShape, filteredFields, CoreDirectives.FILTER_NAME)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
             .forEach(edge -> processEdge(edge.getObject(), argument, query, nodeShape, field)));
@@ -78,11 +112,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     getArgumentFieldMapping(nodeShape, filteredFields, CoreDirectives.SORT_NAME)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
             .forEach(edge -> processEdgeSort(edge.getObject(), argument, query, nodeShape, field)));
-
-    return Vertice.builder()
-        .subject(subject)
-        .edges(edges)
-        .build();
   }
 
   /*
@@ -91,14 +120,18 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
   private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field) {
     BasePath path = nodeShape.getPropertyShape(field.getName())
         .getPath();
+    Vertice object = createVertice(query.var(), query, nodeShape.getPropertyShape(field.getName())
+        .getNode(),
+        field.getSelectionSet()
+            .getFields());
+
+    RdfPredicate predicate = path.toPredicate();
+    RdfPredicate constructPredicate = path.toConstructPredicate();
 
     return Edge.builder()
-        .predicate(path.toPredicate())
-        .constructPredicate(path.toConstructPredicate())
-        .object(createVertice(query.var(), query, nodeShape.getPropertyShape(field.getName())
-            .getNode(),
-            field.getSelectionSet()
-                .getFields()))
+        .predicate(predicate)
+        .constructPredicate(constructPredicate)
+        .object(object)
         .isOptional(true)
         .isVisible(true)
         .build();

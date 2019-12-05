@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -63,36 +65,37 @@ abstract class AbstractVerticeFactory {
   }
 
   Edge createSimpleEdge(Variable subject, BasePath basePath, boolean isOptional, boolean isVisible) {
+    return buildEdge(basePath.toPredicate(), basePath.toConstructPredicate(), buildObject(subject, new HashSet<>()),
+        isVisible, isOptional);
+  }
+
+  Edge createSimpleEdge(Variable subject, Set<Iri> iris, RdfPredicate predicate, boolean isVisible) {
+    return buildEdge(predicate, null, buildObject(subject, iris), isVisible, false);
+  }
+
+  Edge buildEdge(RdfPredicate predicate, RdfPredicate constructPredicate, Vertice object, boolean isVisible,
+      boolean isOptional) {
     return Edge.builder()
-        .predicate(basePath.toPredicate())
-        .constructPredicate(basePath.toConstructPredicate())
-        .object(Vertice.builder()
-            .subject(subject)
-            .build())
+        .predicate(predicate)
+        .constructPredicate(constructPredicate)
+        .object(object)
         .isVisible(isVisible)
         .isOptional(isOptional)
         .build();
   }
 
-  Edge createSimpleEdge(Variable subject, Set<Iri> iris, RdfPredicate predicate, boolean isVisible) {
-    return Edge.builder()
-        .predicate(predicate)
-        .object(Vertice.builder()
-            .subject(subject)
-            .iris(iris)
-            .build())
-        .isVisible(isVisible)
-        .isOptional(false)
+  private Vertice buildObject(Variable subject, Set<Iri> iris) {
+    return Vertice.builder()
+        .subject(subject)
+        .iris(iris)
         .build();
   }
 
   Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields,
       String directiveName) {
     return fields.stream()
-        .filter(field -> !field.getQualifiedName()
-            .contains("/"))
-        .filter(field -> Objects.nonNull(nodeShape.getPropertyShape(field.getName())
-            .getNode()))
+        .filter(isFieldNotPath())
+        .filter(hasDeclaredProperyShape(nodeShape))
         .flatMap(field -> field.getFieldDefinition()
             .getArguments()
             .stream()
@@ -101,19 +104,28 @@ abstract class AbstractVerticeFactory {
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
   }
 
+  private Predicate<SelectedField> hasDeclaredProperyShape(NodeShape nodeShape) {
+    return field -> Objects.nonNull(nodeShape.getPropertyShape(field.getName())
+        .getNode());
+  }
+
+  private Predicate<SelectedField> isFieldNotPath() {
+    return field -> !field.getQualifiedName()
+        .contains("/");
+  }
+
   List<Edge> findEdgesToBeProcessed(NodeShape nodeShape, SelectedField field, List<Edge> edges) {
     return edges.stream()
         .filter(hasEqualQueryString(nodeShape.getPropertyShape(field.getName())))
-        .filter(edge -> {
-          if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
-              .getType()))) {
-            return hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
-                .getNode()
-                .getTargetClasses());
-          }
-          return true;
-        })
+        .filter(isScalarOrHasChildOfType(nodeShape, field))
         .collect(Collectors.toList());
+  }
+
+  private Predicate<Edge> isScalarOrHasChildOfType(NodeShape nodeShape, SelectedField field) {
+    return edge -> GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
+        .getType())) || hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
+            .getNode()
+            .getTargetClasses());
   }
 
   @SuppressWarnings({"unchecked"})
@@ -140,29 +152,28 @@ abstract class AbstractVerticeFactory {
   }
 
   private GraphQLFieldDefinition getField(GraphQLFieldDefinition environment, String[] path) {
-    GraphQLFieldDefinition fieldDefinition =
-        ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path[0]);
-
-    if (path.length > 1) {
-      return getField(environment, Arrays.copyOfRange(path, 1, path.length));
-    }
-    return fieldDefinition;
+    return path.length > 1 ? getField(environment, Arrays.copyOfRange(path, 1, path.length))
+        : ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getType())).getFieldDefinition(path[0]);
   }
 
   void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
       SelectedField field) {
-    Object filterValue = field.getArguments()
-        .get(argument.getName());
-    if (Objects.nonNull(filterValue)) {
-      List<String> startPath = getFilterRulePath(argument);
-      String[] fieldPath = field.getName()
-          .split("\\.");
+    List<String> fieldPath = Arrays.asList(field.getName()
+        .split("\\."));
 
-      addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterRule.builder()
-          .path(startPath)
-          .value(filterValue)
-          .build());
-    }
+    Optional.ofNullable(field.getArguments()
+        .get(argument.getName()))
+        .map(filterValue -> getFilterRule(argument, filterValue))
+        .ifPresent(filter -> addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, fieldPath), filter));
+  }
+
+  private FilterRule getFilterRule(GraphQLArgument argument, Object filterValue) {
+    List<String> startPath = getFilterRulePath(argument);
+
+    return FilterRule.builder()
+        .path(startPath)
+        .value(filterValue)
+        .build();
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
@@ -182,8 +193,7 @@ abstract class AbstractVerticeFactory {
           .findFirst()
           .orElse(vertice);
     } else {
-      Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false);
-      return match.getObject();
+      return findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false).getObject();
     }
   }
 
@@ -203,28 +213,31 @@ abstract class AbstractVerticeFactory {
   }
 
   private List<Operand> getOperands(NodeShape nodeShape, FilterRule filterRule) {
-    String field = filterRule.getPath()
-        .get(filterRule.getPath()
-            .size() - 1);
     String language = rdf4jProperties.getShape()
         .getLanguage();
 
-    return getFilterArguments(filterRule.getValue()).map(argumentToOperand(nodeShape, filterRule, field, language))
+    return getFilterArguments(filterRule.getValue()).map(argumentToOperand(nodeShape, filterRule, language))
         .collect(Collectors.toList());
   }
 
-  private Function<Object, Operand> argumentToOperand(NodeShape nodeShape, FilterRule filterRule, String field,
-      String language) {
+  private Function<Object, Operand> argumentToOperand(NodeShape nodeShape, FilterRule filterRule, String language) {
+    String field = filterRule.getPath()
+        .get(filterRule.getPath()
+            .size() - 1);
     return filterArgument -> filterRule.isResource() ? Rdf.iri(serializerRouter.serialize(filterArgument))
         : getOperand(nodeShape, field, serializerRouter.serialize(filterArgument), language);
   }
 
   private Stream<Object> getFilterArguments(Object filterValue) {
-    if (filterValue instanceof List) {
-      return castToList(filterValue).stream();
-    } else {
-      return Stream.of(filterValue);
-    }
+    return filterValue instanceof List ? castToList(filterValue).stream() : Stream.of(filterValue);
+  }
+
+  /*
+   * Find the path to apply the filter on. In case no or a only partial path is found, create the part
+   * of the path that does not yet exist
+   */
+  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths) {
+    return findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
   }
 
   /*
@@ -234,17 +247,10 @@ abstract class AbstractVerticeFactory {
   private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths,
       boolean required, boolean isVisible) {
     Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths.get(0)), vertice, required, isVisible);
-    if (required) {
-      match.setOptional(false);
-    }
 
-    if (fieldPaths.size() == 1) {
-      return match;
-    }
-
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-    return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required,
-        isVisible);
+    return fieldPaths.size() == 1 ? match
+        : findOrCreatePath(match.getObject(), query, getNextNodeShape(nodeShape, fieldPaths),
+            fieldPaths.subList(1, fieldPaths.size()), required, isVisible);
   }
 
   /*
@@ -253,24 +259,17 @@ abstract class AbstractVerticeFactory {
    */
   private Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice, boolean required,
       boolean isVisible) {
-    List<Edge> childEdges = vertice.getEdges();
+    List<Edge> childEdges = Objects.nonNull(vertice.getEdges()) ? vertice.getEdges() : new ArrayList<>();
 
-    Optional<Edge> optional = Optional.empty();
-    if (Objects.nonNull(childEdges)) {
-      optional = childEdges.stream()
-          .filter(hasEqualQueryString(propertyShape))
-          .filter(childEdge -> Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(childEdge,
-              propertyShape.getNode()
-                  .getTargetClasses()))
-          .findFirst();
+    Edge edge = childEdges.stream()
+        .filter(hasEqualQueryString(propertyShape))
+        .filter(hasEqualTargetClass(propertyShape))
+        .findFirst()
+        .orElseGet(getNewEdge(query, propertyShape, vertice, required, isVisible));
+    if (required) {
+      edge.setOptional(false);
     }
-
-    return optional.orElseGet(() -> {
-      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), !required, isVisible);
-      vertice.getEdges()
-          .add(edge);
-      return edge;
-    });
+    return edge;
   }
 
   private Predicate<Edge> hasEqualQueryString(PropertyShape propertyShape) {
@@ -284,6 +283,19 @@ abstract class AbstractVerticeFactory {
     };
   }
 
+  private Predicate<Edge> hasEqualTargetClass(PropertyShape propertyShape) {
+    return childEdge -> Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(childEdge, propertyShape.getNode()
+        .getTargetClasses());
+  }
+
+  private Supplier<Edge> getNewEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice, boolean required,
+      boolean isVisible) {
+    Edge newEdge = createSimpleEdge(query.var(), propertyShape.getPath(), !required, isVisible);
+    List<Edge> edges = vertice.getEdges();
+    edges.add(newEdge);
+    return () -> newEdge;
+  }
+
   /*
    * It can happen that the same path is used twice, we want to overcome this problem, by looking at
    * the edges, if we find more edges with the same predicate, we place the child edges of the latter
@@ -292,10 +304,14 @@ abstract class AbstractVerticeFactory {
   void makeEdgesUnique(List<Edge> edges) {
     List<Edge> uniqueEdges = new ArrayList<>();
     edges.forEach(edge -> uniqueEdges.stream()
-        .filter(uniqueEdge -> uniqueEdge.getPredicate()
-            .equals(edge.getPredicate()))
+        .filter(hasEqualPredicate(edge))
         .findFirst()
         .ifPresentOrElse(addToDuplicate(edge), () -> uniqueEdges.add(edge)));
+  }
+
+  private Predicate<Edge> hasEqualPredicate(Edge edge) {
+    return uniqueEdge -> uniqueEdge.getPredicate()
+        .equals(edge.getPredicate());
   }
 
   private Consumer<Edge> addToDuplicate(Edge edge) {
@@ -313,12 +329,13 @@ abstract class AbstractVerticeFactory {
     boolean isResource = Boolean.parseBoolean(getSortProperty(orderMap, SORT_FIELD_IS_RESOURCE));
 
     List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
-    // add missing edges
+
     Variable subject = isResource ? getSubjectForResource(vertice, query, nodeShape, fieldName, fieldPaths)
         : getSubject(vertice, query, nodeShape, fieldPaths);
-    List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
     OrderCondition orderCondition =
         (Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc();
+
+    List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
 
     orderables.add(Expressions.custom(() -> "", Expressions.not(Expressions.bound(subject))));
     orderables.add(orderCondition);
@@ -329,7 +346,7 @@ abstract class AbstractVerticeFactory {
       List<String> fieldPaths) {
     if (fieldName.contains(".")) {
       fieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
-      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
+      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
       return getSubjectForField(match, nodeShape, fieldPaths);
     }
     return vertice.getSubject();
@@ -338,7 +355,7 @@ abstract class AbstractVerticeFactory {
   private Variable getSubject(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths) {
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
     if (nodeShape.equals(childShape)) {
-      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false);
+      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
       return getSubjectForField(match, nodeShape, fieldPaths);
     }
 
@@ -350,7 +367,7 @@ abstract class AbstractVerticeFactory {
         .add(edge);
 
     fieldPaths = fieldPaths.subList(1, fieldPaths.size());
-    Edge match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false, false);
+    Edge match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths);
 
     return getSubjectForField(match, childShape, fieldPaths);
   }
@@ -368,10 +385,12 @@ abstract class AbstractVerticeFactory {
   }
 
   private Filter createLanguageFilter() {
+    ImmutableList<Operand> operands = ImmutableList.of(Rdf.literalOf(rdf4jProperties.getShape()
+        .getLanguage()));
+
     return Filter.builder()
         .operator(FilterOperator.LANGUAGE)
-        .operands(ImmutableList.of(Rdf.literalOf(rdf4jProperties.getShape()
-            .getLanguage())))
+        .operands(operands)
         .build();
   }
 }
