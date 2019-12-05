@@ -30,13 +30,13 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
       List<Object> orderByList) {
-    Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
+    Vertice vertice = getNewVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
     orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
     return vertice;
   }
 
-  private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+  private Vertice getNewVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
@@ -71,10 +71,10 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     filterRules.stream()
         .filter(filterRule -> !filterRule.isResource())
         .filter(filterRule -> !nodeShape.equals(getNextNodeShape(nodeShape, filterRule.getPath())))
-        .forEach(filterRule -> processVertice(vertice, query, nodeShape, filterRule));
+        .forEach(filterRule -> addEdgeToVertice(vertice, query, nodeShape, filterRule));
   }
 
-  private void processVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
+  private void addEdgeToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
     vertice.getEdges()
         .add(getEdge(query, nodeShape, filterRule));
   }
@@ -94,7 +94,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
       RdfPredicate predicate) {
     FilterRule childFilterRule = getFilterRule(filterRule);
 
-    Vertice childVertice = createVertice(query.var(), query, childShape, Collections.singletonList(childFilterRule));
+    Vertice childVertice = getNewVertice(query.var(), query, childShape, Collections.singletonList(childFilterRule));
 
     return buildEdge(predicate, null, childVertice, false, false);
   }

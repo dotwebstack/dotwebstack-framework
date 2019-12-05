@@ -345,9 +345,9 @@ abstract class AbstractVerticeFactory {
   private Variable getSubjectForResource(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String fieldName,
       List<String> fieldPaths) {
     if (fieldName.contains(".")) {
-      fieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
-      Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
-      return getSubjectForField(match, nodeShape, fieldPaths);
+      List<String> newFieldPaths = fieldPaths.subList(0, fieldPaths.size() - 1);
+      Edge match = findOrCreatePath(vertice, query, nodeShape, newFieldPaths);
+      return getSubjectForField(match, nodeShape, newFieldPaths);
     }
     return vertice.getSubject();
   }
