@@ -48,6 +48,8 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_beerCount ,
+      beer_sh:Brewery_hasBeers ,
       beer_sh:Brewery_beerNames ,
       beer_sh:Brewery_url ;
     sh:or (
@@ -150,6 +152,18 @@
     sh:maxCount 10 ;
     sh:node beer_sh:Beer
   .
+
+   beer_sh:Brewery_beerCount a sh:PropertyShape ;
+      sh:name "beerCount" ;
+      sh:path [ sh:inversePath beer_def:brewery ] ;
+      sh:node beer_sh:Beer
+   .
+
+   beer_sh:Brewery_hasBeers a sh:PropertyShape ;
+      sh:name "hasBeers" ;
+      sh:path [ sh:inversePath beer_def:brewery ] ;
+      sh:node beer_sh:Beer
+   .
 
   beer_sh:Brewery_beerNames a sh:PropertyShape ;
     sh:name "beerNames" ;
