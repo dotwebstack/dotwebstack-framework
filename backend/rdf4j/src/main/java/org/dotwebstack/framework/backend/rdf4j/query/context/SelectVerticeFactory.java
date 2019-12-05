@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
-import graphql.schema.GraphQLDirective;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,14 +62,12 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .filter(field -> Objects.equals(field.getName(), filter.getPath()
                   .get(0)))
               .forEach(field -> {
-                GraphQLDirective directive = field.getFieldDefinition()
-                    .getDirective(Rdf4jDirectives.AGGREGATE_NAME);
-
-                if (Objects.isNull(directive)) {
+                if (Objects.isNull(field.getFieldDefinition()
+                    .getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
                   addFilterToVertice(edge.getObject(), query, childShape, filter, fields);
                 } else {
                   edge.setOptional(true);
-                  edge.setAggregate(createAggregate(directive, query.var()));
+                  createAggregate(field, query.var()).ifPresent(edge::setAggregate);
                   addFilterToVertice(nodeShape, vertice, filter, edge);
                 }
               });

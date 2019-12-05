@@ -14,7 +14,6 @@ import static org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions.custom;
 
 import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
@@ -337,22 +336,22 @@ abstract class AbstractVerticeFactory {
   private Aggregate createAggregate(List<SelectedField> fields, OuterQuery<?> query, String fieldName) {
     return fields.stream()
         .filter(field -> Objects.equals(field.getName(), fieldName))
-        .map(field -> field.getFieldDefinition()
-            .getDirective(Rdf4jDirectives.AGGREGATE_NAME))
-        .map(directive -> createAggregate(directive, query.var()))
         .findFirst()
+        .flatMap(field -> createAggregate(field, query.var()))
         .orElse(null);
   }
 
-  Aggregate createAggregate(GraphQLDirective directive, Variable variable) {
-    return Aggregate.builder()
-        .type(Optional.of(directive)
-            .map(dir -> dir.getArgument(CoreInputTypes.AGGREGATE_TYPE))
-            .map(argument -> argument.getValue()
-                .toString())
-            .map(AggregateType::valueOf)
-            .orElse(null))
-        .variable(variable)
-        .build();
+  Optional<Aggregate> createAggregate(SelectedField selectedField, Variable variable) {
+    return Optional.ofNullable(selectedField)
+        .map(field -> field.getFieldDefinition()
+            .getDirective(Rdf4jDirectives.AGGREGATE_NAME))
+        .map(dir -> dir.getArgument(CoreInputTypes.AGGREGATE_TYPE))
+        .map(argument -> argument.getValue()
+            .toString())
+        .map(AggregateType::valueOf)
+        .map(aggregateType -> Aggregate.builder()
+            .type(aggregateType)
+            .variable(variable)
+            .build());
   }
 }

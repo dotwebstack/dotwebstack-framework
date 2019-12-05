@@ -17,8 +17,6 @@ public class CoreInputTypes {
 
   public static final String AGGREGATE_TYPE;
 
-  public static final String AGGREGATE_TYPE_COUNT;
-
   private CoreInputTypes() {}
 
   static {
@@ -29,6 +27,5 @@ public class CoreInputTypes {
     SORT_FIELD_ORDER_DESC = "DESC";
     SORT_FIELD_FIELD = "field";
     AGGREGATE_TYPE = "type";
-    AGGREGATE_TYPE_COUNT = "COUNT";
   }
 }
