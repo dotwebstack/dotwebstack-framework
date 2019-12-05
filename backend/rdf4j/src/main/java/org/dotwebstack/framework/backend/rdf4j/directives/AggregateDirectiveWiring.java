@@ -11,12 +11,12 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Objects;
 import java.util.Optional;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.directives.SchemaAutoRegisteredDirectiveWiring;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+public class AggregateDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
@@ -26,7 +26,7 @@ public class AggregateDirectiveWiring implements SchemaAutoRegisteredDirectiveWi
 
   @Override
   public String getDirectiveName() {
-    return CoreDirectives.AGGREGATE_NAME;
+    return Rdf4jDirectives.AGGREGATE_NAME;
   }
 
   @Override

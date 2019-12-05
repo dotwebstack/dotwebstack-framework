@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.helper;
 
-import static org.dotwebstack.framework.backend.rdf4j.helper.FormatHelper.formatQuery;
+import static org.dotwebstack.framework.backend.rdf4j.helper.SparqlFormatHelper.formatQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-class FormatHelperTest {
+class SparqlFormatHelperTest {
 
   @Test
   public void formatQuery_returnsFormattedQuery_forSelectQuery() {

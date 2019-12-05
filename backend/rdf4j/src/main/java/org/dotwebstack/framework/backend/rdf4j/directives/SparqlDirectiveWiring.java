@@ -7,7 +7,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFac
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
@@ -27,7 +27,7 @@ import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
+public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private final List<RepositoryAdapter> repositoryAdapters;
 
@@ -88,5 +88,10 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
 
     return fieldDefinition;
+  }
+
+  @Override
+  public String getDirectiveName() {
+    return Rdf4jDirectives.SPARQL_NAME;
   }
 }

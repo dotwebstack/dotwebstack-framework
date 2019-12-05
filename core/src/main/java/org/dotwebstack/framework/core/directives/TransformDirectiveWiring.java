@@ -7,7 +7,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class TransformDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+public final class TransformDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   @Override
   public String getDirectiveName() {

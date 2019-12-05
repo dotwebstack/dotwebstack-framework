@@ -17,7 +17,7 @@ import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SortDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private CoreTraverser coreTraverser;
 

@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
-import graphql.language.DirectiveLocation;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
@@ -31,8 +30,8 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
+import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.directives.SchemaAutoRegisteredDirectiveWiring;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
@@ -52,22 +51,17 @@ public class CoreConfigurer implements GraphqlConfigurer {
   private static final NonNullType requiredSortEnum = NonNullType.newNonNullType(optionalSortEnum)
       .build();
 
-  private static final NonNullType aggregateTypeEnum = NonNullType
-      .newNonNullType(TypeName.newTypeName(CoreInputTypes.AGGREGATE_TYPE)
-          .build())
-      .build();
-
   private final DataFetcherRouter dataFetcher;
 
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  private List<SchemaAutoRegisteredDirectiveWiring> schemaAutoRegisteredDirectiveWirings;
+  private List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings;
 
   public CoreConfigurer(final DataFetcherRouter dataFetcher,
-      final List<SchemaAutoRegisteredDirectiveWiring> schemaAutoRegisteredDirectiveWirings,
+      final List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     this.dataFetcher = dataFetcher;
-    this.schemaAutoRegisteredDirectiveWirings = schemaAutoRegisteredDirectiveWirings;
+    this.autoRegisteredSchemaDirectiveWirings = autoRegisteredSchemaDirectiveWirings;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
@@ -81,8 +75,6 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createConstraintDefinition());
     typeDefinitionRegistry.add(createFilterDefinition());
     typeDefinitionRegistry.add(createSortDefinition());
-    typeDefinitionRegistry.add(createAggregateTypeEnumDefinition());
-    typeDefinitionRegistry.add(createAggregateDefinition());
   }
 
   private DirectiveDefinition createSortDefinition() {
@@ -172,40 +164,13 @@ public class CoreConfigurer implements GraphqlConfigurer {
         .build();
   }
 
-  private DirectiveDefinition createAggregateDefinition() {
-    return DirectiveDefinition.newDirectiveDefinition()
-        .name(CoreDirectives.AGGREGATE_NAME)
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(CoreDirectives.AGGREGATE_TYPE)
-            .type(TypeName.newTypeName(CoreInputTypes.AGGREGATE_TYPE)
-                .build())
-            .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
-            .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.OBJECT.name())
-            .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
-            .build())
-        .build();
-  }
-
-  private EnumTypeDefinition createAggregateTypeEnumDefinition() {
-    return newEnumTypeDefinition().name(CoreInputTypes.AGGREGATE_TYPE)
-        .enumValueDefinition(newEnumValueDefinition().name("COUNT")
-            .build())
-        .build();
-  }
-
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder.codeRegistry(registerDataFetchers())
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME);
 
-    schemaAutoRegisteredDirectiveWirings.forEach(wiring -> builder.directive(wiring.getDirectiveName(), wiring));
+    autoRegisteredSchemaDirectiveWirings.forEach(wiring -> builder.directive(wiring.getDirectiveName(), wiring));
   }
 
   private GraphQLCodeRegistry registerDataFetchers() {

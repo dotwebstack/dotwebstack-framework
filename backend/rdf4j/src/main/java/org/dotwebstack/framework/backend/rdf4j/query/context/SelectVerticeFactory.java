@@ -14,9 +14,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -65,7 +65,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
                   .get(0)))
               .forEach(field -> {
                 GraphQLDirective directive = field.getFieldDefinition()
-                    .getDirective(CoreDirectives.AGGREGATE_NAME);
+                    .getDirective(Rdf4jDirectives.AGGREGATE_NAME);
 
                 if (Objects.isNull(directive)) {
                   addFilterToVertice(edge.getObject(), query, childShape, filter, fields);

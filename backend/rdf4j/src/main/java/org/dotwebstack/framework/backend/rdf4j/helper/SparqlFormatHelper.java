@@ -2,9 +2,9 @@ package org.dotwebstack.framework.backend.rdf4j.helper;
 
 import lombok.NonNull;
 
-public class FormatHelper {
+public class SparqlFormatHelper {
 
-  private FormatHelper() {}
+  private SparqlFormatHelper() {}
 
   private static final String INDENTCHAR = "  ";
 

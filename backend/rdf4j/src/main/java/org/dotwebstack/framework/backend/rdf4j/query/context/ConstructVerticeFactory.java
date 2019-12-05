@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -88,8 +89,8 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     BasePath path = propertyShape.getPath();
 
-    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(), CoreDirectives.AGGREGATE_NAME,
-        CoreInputTypes.AGGREGATE_TYPE, String.class);
+    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(),
+        Rdf4jDirectives.AGGREGATE_NAME, CoreInputTypes.AGGREGATE_TYPE, String.class);
 
     return Edge.builder()
         .predicate(path.toPredicate())

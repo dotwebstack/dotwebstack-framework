@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class ConstraintDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+public class ConstraintDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private ConstraintValidator constraintValidator;
 

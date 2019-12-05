@@ -27,11 +27,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
@@ -196,8 +196,8 @@ abstract class AbstractVerticeFactory {
   }
 
   private void getEdgeFromField(OuterQuery<?> query, Edge edge, SelectedField selectedField) {
-    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(), CoreDirectives.AGGREGATE_NAME,
-        CoreInputTypes.AGGREGATE_TYPE, String.class);
+    String aggregateType = DirectiveUtils.getArgument(selectedField.getFieldDefinition(),
+        Rdf4jDirectives.AGGREGATE_NAME, CoreInputTypes.AGGREGATE_TYPE, String.class);
     edge.setAggregate(Aggregate.builder()
         .type(aggregateType)
         .variable(query.var())
@@ -320,7 +320,7 @@ abstract class AbstractVerticeFactory {
     if (fieldPaths.size() == 1) {
       Optional<SelectedField> fieldWithAggregate = fields.stream()
           .filter(field -> Objects.equals(field.getName(), fieldPaths.get(0)) && nonNull(field.getFieldDefinition()
-              .getDirective(CoreDirectives.AGGREGATE_NAME)))
+              .getDirective(Rdf4jDirectives.AGGREGATE_NAME)))
           .findFirst();
       fieldWithAggregate.ifPresent(field -> getEdgeFromField(query, match, field));
       return Optional.of(match);

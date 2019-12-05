@@ -9,7 +9,7 @@ import org.dotwebstack.framework.core.validators.FilterValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FilterDirectiveWiring implements SchemaAutoRegisteredDirectiveWiring {
+public class FilterDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private final FilterValidator validator;
 
