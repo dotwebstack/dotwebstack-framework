@@ -69,11 +69,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
     getArgumentFieldMapping(nodeShape, fields, CoreDirectives.FILTER_NAME).forEach((argument,
-        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processEdge(edge.getObject(),
+        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processFilters(edge.getObject(),
             argument, query, nodeShape.getPropertyShape(field.getName()), field)));
 
     getArgumentFieldMapping(nodeShape, fields, CoreDirectives.SORT_NAME).forEach((argument,
-        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processEdgeSort(edge.getObject(),
+        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processSort(edge.getObject(),
             argument, query, nodeShape.getPropertyShape(field.getName()), fields)));
 
     return Vertice.builder()

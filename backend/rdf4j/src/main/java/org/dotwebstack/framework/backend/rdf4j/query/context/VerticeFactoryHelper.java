@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFirstName;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
@@ -78,8 +79,7 @@ class VerticeFactoryHelper {
               .getSubject();
     }
 
-    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.get(0)
-        .getName());
+    PropertyShape propertyShape = nodeShape.getPropertyShape(getFirstName(fieldPath));
     Edge next = match.getObject()
         .getEdges()
         .stream()

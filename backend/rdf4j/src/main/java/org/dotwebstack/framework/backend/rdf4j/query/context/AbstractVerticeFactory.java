@@ -17,11 +17,13 @@ import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,9 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 abstract class AbstractVerticeFactory {
+
+  private static List<GraphQLScalarType> NUMERIC_TYPES = Arrays.asList(Scalars.GraphQLInt, Scalars.GraphQLFloat,
+      Scalars.GraphQLBigDecimal, Scalars.GraphQLBigDecimal, Scalars.GraphQLLong, Scalars.GraphQLBigInteger);
 
   private SerializerRouter serializerRouter;
 
@@ -119,7 +124,7 @@ abstract class AbstractVerticeFactory {
   }
 
   @SuppressWarnings({"unchecked"})
-  void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
+  void processSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
       List<SelectedField> selectedFields) {
     Object orderByList = nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
     Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
@@ -146,7 +151,7 @@ abstract class AbstractVerticeFactory {
         .orElse(null);
   }
 
-  void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
+  void processFilters(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
       SelectedField field) {
     Object filterValue = field.getArguments()
         .get(argument.getName());
@@ -285,7 +290,7 @@ abstract class AbstractVerticeFactory {
     // add missing edges
     Optional<Variable> subject = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
 
-    subject.map(s -> Expressions.coalesce(s, getDefaultValue(fieldPaths.get(fieldPaths.size() - 1))))
+    subject.map(s -> Expressions.coalesce(s, getDefaultOrderByValue(fieldPaths.get(fieldPaths.size() - 1))))
         .ifPresent(s -> {
           List<Orderable> orderables = nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
           orderables.add((order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
@@ -294,10 +299,11 @@ abstract class AbstractVerticeFactory {
   }
 
 
-  private RdfValue getDefaultValue(GraphQLFieldDefinition fieldDefinition) {
+  private RdfValue getDefaultOrderByValue(GraphQLFieldDefinition fieldDefinition) {
     GraphQLType type = GraphQLTypeUtil.unwrapOne(fieldDefinition.getType());
 
-    if (Objects.equals(Scalars.GraphQLInt.getName(), type.getName())) {
+    if (NUMERIC_TYPES.stream()
+        .anyMatch(numericType -> numericType.equals(type))) {
       return Rdf.literalOf(0);
     }
 

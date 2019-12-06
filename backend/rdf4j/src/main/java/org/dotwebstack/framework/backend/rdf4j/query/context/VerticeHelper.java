@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,28 +70,32 @@ public class VerticeHelper {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
-    List<GraphPattern> result = new ArrayList<>();
-
-    result.addAll(edges.stream()
+    List<GraphPattern> result = edges.stream()
         .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
 
     List<Filter> filtersWithEdge = getFiltersWithEdge(vertice);
     if (!filtersWithEdge.isEmpty()) {
-      GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
-
-      filtersWithEdge.forEach(filter -> {
-        graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
-            .getAggregate()
-            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
-                .get(0)));
-      });
-
-      return singletonList(graphPatternNotTriples);
+      return getWherePatternsWithFilter(result, filtersWithEdge);
     }
 
     return result;
+  }
+
+  private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
+      List<Filter> filtersWithEdge) {
+    GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
+
+    filtersWithEdge
+        .forEach(filter -> graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
+            .getAggregate()
+            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
+
+    return singletonList(graphPatternNotTriples);
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
@@ -153,13 +158,15 @@ public class VerticeHelper {
     if (Objects.nonNull(edge.getAggregate())) {
       return edge.getAggregate()
           .getVariable();
-    } else if (Objects.nonNull(edge.getObject()
+    }
+
+    if (Objects.nonNull(edge.getObject()
         .getSubject())) {
       return edge.getObject()
           .getSubject();
-    } else {
-      return subject;
     }
+
+    return subject;
   }
 
   private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {

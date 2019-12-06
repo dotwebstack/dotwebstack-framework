@@ -67,7 +67,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
             addFilterToVertice(nodeShape, vertice, filter, edge);
           }
-          addFilterToVertice(edge.getObject(), query, nodeShape, filter);
 
         } else {
           FilterRule childFilterRule = FilterRule.builder()

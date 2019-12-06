@@ -552,7 +552,7 @@ instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed 
 relation with `Animal` also a name and an owner. 
 
 ## 1.9 Aggregate directive
-It is possible to aggregate results by setting a `@aggregate` directive on a GraphQL field.
+It is possible to aggregate results by setting an `@aggregate` directive on a GraphQL field.
 The `@aggregate` directive takes one argument, the `type` argument. The following types are currently supported: `COUNT`  For example: 
 
 ```graphql

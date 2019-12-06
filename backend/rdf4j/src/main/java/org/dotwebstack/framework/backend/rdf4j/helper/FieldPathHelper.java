@@ -61,4 +61,11 @@ public class FieldPathHelper {
     }
     return emptyList();
   }
+
+  public static String getFirstName(List<GraphQLFieldDefinition> fieldPath) {
+    return fieldPath.stream()
+        .findFirst()
+        .map(GraphQLFieldDefinition::getName)
+        .orElseThrow(() -> illegalArgumentException("No firstname found for {}", fieldPath));
+  }
 }
