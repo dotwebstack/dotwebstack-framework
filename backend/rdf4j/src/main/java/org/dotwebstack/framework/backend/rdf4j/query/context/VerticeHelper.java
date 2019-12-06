@@ -66,6 +66,21 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
+  private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
+      List<Filter> filtersWithEdge) {
+    GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
+
+    filtersWithEdge
+        .forEach(filter -> graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
+            .getAggregate()
+            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
+
+    return singletonList(graphPatternNotTriples);
+  }
+
   public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
@@ -81,21 +96,6 @@ public class VerticeHelper {
     }
 
     return result;
-  }
-
-  private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
-      List<Filter> filtersWithEdge) {
-    GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
-
-    filtersWithEdge
-        .forEach(filter -> graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
-            .getAggregate()
-            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
-
-    return singletonList(graphPatternNotTriples);
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
