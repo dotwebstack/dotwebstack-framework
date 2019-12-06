@@ -47,7 +47,9 @@ class CoreTraverserTest {
         .type(GraphQLNonNull.nonNull(Scalars.GraphQLID))
         .build();
 
-    GraphQLObjectType objectType = GraphQLObjectType.newObject().name("Brewery").build();
+    GraphQLObjectType objectType = GraphQLObjectType.newObject()
+        .name("Brewery")
+        .build();
     GraphQLFieldDefinition fieldDefinition = newFieldDefinition().name("brewery")
         .type(objectType)
         .argument(argument)
