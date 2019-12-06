@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Objects.isNull;
+import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFieldDefinitions;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
@@ -13,7 +14,8 @@ import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirectiveContainer;
-import java.util.Arrays;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,13 +104,14 @@ public class FilterHelper {
         .stringValue()));
   }
 
-  public static List<String> getFilterRulePath(GraphQLDirectiveContainer container) {
+  public static List<GraphQLFieldDefinition> getFilterRulePath(GraphQLObjectType objectType,
+      GraphQLDirectiveContainer container) {
     String path = Optional.of(container)
         .map(con -> container.getDirective(CoreDirectives.FILTER_NAME))
         .map(dc -> dc.getArgument(CoreDirectives.FILTER_ARG_FIELD))
         .map(arg -> (String) arg.getValue())
         .orElse(container.getName());
 
-    return Arrays.asList(path.split("\\."));
+    return getFieldDefinitions(objectType, path);
   }
 }

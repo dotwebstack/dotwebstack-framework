@@ -4,6 +4,8 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,20 +57,21 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     final MapContext context = new MapContext(arguments);
 
     List<FilterRule> filterRules = filterMapping.stream()
-        .map(filterRule -> FilterRule.builder()
-            .path(getFilterRulePath(filterRule.getContainer()))
-            .operator((String) filterRule.getContainer()
+        .map(tuple -> FilterRule.builder()
+            .path(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
+            .operator((String) tuple.getContainer()
                 .getDirective(CoreDirectives.FILTER_NAME)
                 .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
                 .getValue())
-            .value(filterRule.getValue())
+            .objectType(tuple.getObjectType())
+            .value(tuple.getValue())
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject,
-        environment.getSelectionSet()
-            .getFields());
+    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getObjectType());
 
+    Vertice root =
+        selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject, objectType);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)

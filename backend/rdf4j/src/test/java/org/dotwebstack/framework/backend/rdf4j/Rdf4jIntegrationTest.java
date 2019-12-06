@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -526,11 +525,12 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("number"))
         .collect(Collectors.toList());
     assertThat(numbers.size(), is(5));
-    assertThat(numbers.get(0), is(1));
-    assertThat(numbers.get(1), is(2));
-    assertThat(numbers.get(2), is(20));
-    assertThat(numbers.get(3), is(100));
-    assertThat(numbers.get(4), is(equalTo(null)));
+    assertThat(numbers.get(0), is(equalTo(null)));
+    assertThat(numbers.get(1), is(1));
+    assertThat(numbers.get(2), is(2));
+    assertThat(numbers.get(3), is(20));
+    assertThat(numbers.get(4), is(100));
+
   }
 
   @Test
@@ -593,7 +593,6 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_SortedByBeerCountAsc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"beerCount\", order: ASC}]){beerCount}}";
@@ -652,7 +651,6 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2MissingEdge() {
     // Arrange
     String query = "{breweries(beerCount: 2){name}}";

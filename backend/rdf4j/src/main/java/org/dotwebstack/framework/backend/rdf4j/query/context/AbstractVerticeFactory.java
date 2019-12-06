@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFieldDefinitions;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getOperand;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
@@ -10,15 +11,17 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
-import static org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions.custom;
 
 import com.google.common.collect.ImmutableList;
+import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 abstract class AbstractVerticeFactory {
 
@@ -115,39 +119,57 @@ abstract class AbstractVerticeFactory {
   }
 
   @SuppressWarnings({"unchecked"})
-  void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
-      SelectedField field) {
+  void processEdgeSort(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
+      List<SelectedField> selectedFields) {
     Object orderByList = nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
     Map<String, Object> orderMap = castToMap(((List<Object>) orderByList).get(0));
 
     String fieldName = orderMap.getOrDefault("field", argument.getName())
         .toString();
 
+    SelectedField selectedField = getSelectedField(selectedFields, fieldName);
+
     if (nonNull(fieldName)) {
-      findOrCreatePath(vertice, query, nodeShape.getPropertyShape(field.getName())
-          .getNode(), new ArrayList<>(Arrays.asList(fieldName.split("\\."))), false, true, singletonList(field));
+      NodeShape nodeShape = null;
+      if (Objects.nonNull(propertyShape.getNode())) {
+        nodeShape = propertyShape.getNode();
+      }
+
+      findOrCreatePath(vertice, query, nodeShape, getFieldDefinitions(selectedField, fieldName), false, true);
     }
   }
 
-  void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, NodeShape nodeShape,
+  private SelectedField getSelectedField(List<SelectedField> selectedFields, String fieldName) {
+    return selectedFields.stream()
+        .filter(selectedField -> Objects.equals(selectedField.getName(), fieldName))
+        .findFirst()
+        .orElse(null);
+  }
+
+  void processEdge(Vertice vertice, GraphQLArgument argument, OuterQuery<?> query, PropertyShape propertyShape,
       SelectedField field) {
     Object filterValue = field.getArguments()
         .get(argument.getName());
     if (nonNull(filterValue)) {
-      List<String> startPath = getFilterRulePath(argument);
-      String[] fieldPath = field.getName()
-          .split("\\.");
+      GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
+          .getType());
 
-      addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterRule.builder()
-          .path(startPath)
+      List<GraphQLFieldDefinition> fieldPath = getFilterRulePath(objectType, argument);
+
+      NodeShape nodeShape = null;
+      if (Objects.nonNull(propertyShape.getNode())) {
+        nodeShape = propertyShape.getNode();
+      }
+
+      addFilterToVertice(vertice, query, nodeShape, FilterRule.builder()
+          .path(fieldPath)
           .value(filterValue)
-          .build(), singletonList(field));
+          .build());
     }
   }
 
-  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule,
-      List<SelectedField> fields) {
-    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false, fields)
+  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
+    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false)
         .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
   }
 
@@ -160,7 +182,8 @@ abstract class AbstractVerticeFactory {
 
     Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
         .get(filterRule.getPath()
-            .size() - 1));
+            .size() - 1)
+        .getName());
 
     filter.setEdge(referredEdge);
 
@@ -250,41 +273,53 @@ abstract class AbstractVerticeFactory {
   }
 
   void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap, NodeShape nodeShape,
-      List<SelectedField> fields) {
+      GraphQLObjectType objectType) {
     String fieldName = orderMap.get("field")
         .toString();
     String order = orderMap.get("order")
         .toString();
 
-    final List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
+
+    final List<GraphQLFieldDefinition> fieldPaths = getFieldDefinitions(objectType, fieldName);
 
     // add missing edges
-    Optional<Variable> subject = findOrCreatePath(vertice, query, nodeShape, fields, fieldPaths);
+    Optional<Variable> subject = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
 
-    subject.ifPresent(s -> {
-      List<Orderable> orderables = nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-      orderables.add(custom(() -> "", Expressions.not(Expressions.bound(s))));
+    subject.map(s -> Expressions.coalesce(s, getDefaultValue(fieldPaths.get(fieldPaths.size() - 1))))
+        .ifPresent(s -> {
+          List<Orderable> orderables = nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
+          orderables.add((order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
+          vertice.setOrderables(orderables);
+        });
+  }
 
-      orderables.add((isNull(order) || order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
-      vertice.setOrderables(orderables);
-    });
+
+  private RdfValue getDefaultValue(GraphQLFieldDefinition fieldDefinition) {
+    GraphQLType type = GraphQLTypeUtil.unwrapOne(fieldDefinition.getType());
+
+    if (Objects.equals(Scalars.GraphQLInt.getName(), type.getName())) {
+      return Rdf.literalOf(0);
+    }
+
+    return Rdf.literalOf("");
   }
 
   private Optional<Variable> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      List<SelectedField> fields, List<String> fieldPaths) {
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-    if (nodeShape.equals(childShape) || fieldPaths.size() == 1) {
-      return findOrCreatePath(vertice, query, nodeShape, fieldPaths, false, false, fields)
-          .map(edge -> getSubjectForField(edge, nodeShape, fieldPaths));
+      List<GraphQLFieldDefinition> fieldPath) {
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPath);
+    if (nodeShape.equals(childShape) || fieldPath.size() == 1) {
+      return findOrCreatePath(vertice, query, nodeShape, fieldPath, false, false)
+          .map(edge -> getSubjectForField(edge, nodeShape, fieldPath));
 
     } else {
-      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths.get(0))
+      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPath.get(0)
+          .getName())
           .getPath(), true, false);
       vertice.getEdges()
           .add(edge);
-      final List<String> subFieldPaths = fieldPaths.subList(1, fieldPaths.size());
-      return findOrCreatePath(edge.getObject(), query, childShape, subFieldPaths, false, false, fields)
-          .map(e -> getSubjectForField(e, childShape, subFieldPaths));
+      final List<GraphQLFieldDefinition> subFieldPath = fieldPath.subList(1, fieldPath.size());
+      return findOrCreatePath(edge.getObject(), query, childShape, subFieldPath, false, false)
+          .map(e -> getSubjectForField(e, childShape, subFieldPath));
     }
   }
 
@@ -293,28 +328,29 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      List<String> fieldPaths, boolean required, boolean isVisible, List<SelectedField> fields) {
+      List<GraphQLFieldDefinition> fieldPath, boolean required, boolean isVisible) {
 
-    if (fieldPaths.isEmpty()) {
+    if (fieldPath.isEmpty()) {
       return Optional.empty();
     }
 
-    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPaths.get(0));
+    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.get(0)
+        .getName());
     Edge match = findOrCreateEdge(query, propertyShape, vertice, required, isVisible);
     if (required) {
       match.setOptional(false);
     }
 
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPath);
 
-    if (fieldPaths.size() == 1) {
-      match.setAggregate(createAggregate(fields, query, fieldPaths.get(0)));
+    if (fieldPath.size() == 1) {
+      createAggregate(fieldPath.get(0), query.var()).ifPresent(match::setAggregate);
 
       return Optional.of(match);
     }
 
-    return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required,
-        isVisible, fields);
+    return findOrCreatePath(match.getObject(), query, childShape, fieldPath.subList(1, fieldPath.size()), required,
+        isVisible);
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {
@@ -333,18 +369,9 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
-  private Aggregate createAggregate(List<SelectedField> fields, OuterQuery<?> query, String fieldName) {
-    return fields.stream()
-        .filter(field -> Objects.equals(field.getName(), fieldName))
-        .findFirst()
-        .flatMap(field -> createAggregate(field, query.var()))
-        .orElse(null);
-  }
-
-  Optional<Aggregate> createAggregate(SelectedField selectedField, Variable variable) {
-    return Optional.ofNullable(selectedField)
-        .map(field -> field.getFieldDefinition()
-            .getDirective(Rdf4jDirectives.AGGREGATE_NAME))
+  Optional<Aggregate> createAggregate(GraphQLFieldDefinition fieldDefinition, Variable variable) {
+    return Optional.ofNullable(fieldDefinition)
+        .map(field -> field.getDirective(Rdf4jDirectives.AGGREGATE_NAME))
         .map(dir -> dir.getArgument(CoreInputTypes.AGGREGATE_TYPE))
         .map(argument -> argument.getValue()
             .toString())

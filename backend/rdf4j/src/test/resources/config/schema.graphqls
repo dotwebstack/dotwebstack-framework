@@ -16,7 +16,7 @@ type Query {
     foundedBefore: String 
       @filter(field: "founded", operator: "<"),
     sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
-    beerCount: Int @filter
+    beerCount: Int @filter(field: "beerCount")
   ): [Brewery!]!
     @sparql(repository: "local")
 
