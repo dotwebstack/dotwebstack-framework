@@ -21,6 +21,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.Scalars;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,8 +48,40 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 @ExtendWith(MockitoExtension.class)
 public class VerticeFactoryTest {
+
+  private static GraphQLFieldDefinition NAME = GraphQLFieldDefinition.newFieldDefinition()
+      .name("name")
+      .type(Scalars.GraphQLString)
+      .build();
+
+  private static GraphQLObjectType INGREDIENTS_TYPE = GraphQLObjectType.newObject()
+      .name("Ingredient")
+      .field(NAME)
+      .build();
+
+  private static GraphQLFieldDefinition INGREDIENTS = GraphQLFieldDefinition.newFieldDefinition()
+      .name("ingredients")
+      .type(INGREDIENTS_TYPE)
+      .build();
+
+  private static GraphQLObjectType BEERS_TYPE = GraphQLObjectType.newObject()
+      .name("Beer")
+      .field(INGREDIENTS)
+      .build();
+
+  private static GraphQLFieldDefinition BEERS = GraphQLFieldDefinition.newFieldDefinition()
+      .name("beers")
+      .type(BEERS_TYPE)
+      .build();
+
+  private static GraphQLObjectType BREWERY_TYPE = GraphQLObjectType.newObject()
+      .name("Brewery")
+      .field(BEERS)
+      .field(NAME)
+      .build();
 
   @Mock
   private NodeShape nodeShape;
@@ -81,7 +116,7 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
-        Collections.emptyList());
+        Collections.emptyList(), BREWERY_TYPE);
 
     // Assert
     assertThat(vertice.getEdges()
@@ -116,18 +151,15 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
-        ImmutableList.of(ImmutableMap.of("field", "name", "order", "DESC")));
+        ImmutableList.of(ImmutableMap.of("field", "name", "order", "DESC")), BREWERY_TYPE);
 
     // Assert
     assertThat(vertice.getOrderables()
-        .size(), is(2));
+        .size(), is(1));
 
     assertThat(vertice.getOrderables()
         .get(0)
-        .getQueryString(), is("( !( BOUND( ?x1 ) ) )"));
-    assertThat(vertice.getOrderables()
-        .get(1)
-        .getQueryString(), is("DESC( ?x1 )"));
+        .getQueryString(), is("DESC( COALESCE( ?x1, \" \" ) )"));
   }
 
   @Test
@@ -184,9 +216,9 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
-        .path(Arrays.asList("beers", "ingredients", "name"))
+        .path(Arrays.asList(BEERS, INGREDIENTS, NAME))
         .value("Hop")
-        .build()), Collections.emptyList());
+        .build()), Collections.emptyList(), BREWERY_TYPE);
 
     // Assert
     assertThat(vertice.getEdges()
@@ -245,9 +277,9 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
-        .path(singletonList("name"))
+        .path(singletonList(NAME))
         .value("Alfa Brouwerij")
-        .build()), Collections.emptyList());
+        .build()), Collections.emptyList(), BREWERY_TYPE);
 
     // Assert
     assertThat(vertice.getEdges()

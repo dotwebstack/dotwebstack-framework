@@ -550,3 +550,42 @@ In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://ww
 properties of `Pet`. This means that besides the `fetchesBall` property (whether or not it likes to fetch a ball) an 
 instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
 relation with `Animal` also a name and an owner. 
+
+## 1.9 Aggregate directive
+It is possible to aggregate results by setting an `@aggregate` directive on a GraphQL field.
+The `@aggregate` directive takes one argument, the `type` argument. The following types are currently supported: `COUNT`  For example: 
+
+```graphql
+type Brewery {
+  identifier: ID!
+  name: String!
+  beerCount: Int! @aggregate(type: COUNT)
+}
+```
+
+The `@aggregate` directive can also be used in combination with the `@transform` directive. 
+
+```graphql
+type Brewery {
+  identifier: ID!
+  name: String!
+  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
+}
+```
+
+and in combination with the `@filter` directive
+
+```graphql
+type Brewery {
+  identifier: ID!
+  name: String!
+  beerCount: Int! @aggregate(type: COUNT)
+}
+
+type Query { 
+  breweries(withBeerCount: Int = 0 @filter(field: "beerCount")): [Brewery!]!
+    @sparql(
+      repository: "local"
+    )
+}
+```

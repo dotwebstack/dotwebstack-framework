@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.SparqlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
 import com.google.common.collect.ImmutableList;
@@ -44,6 +45,10 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 public final class QueryFetcher implements DataFetcher<Object> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
+
+  private static final String SUBJECTS = "subjects";
+
+  private static final String GRAPH = "graph";
 
   private final RepositoryAdapter repositoryAdapter;
 
@@ -123,7 +128,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     List<Object> orderByObject = getOrderByObject(environment, arguments);
 
     String subjectTemplate =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
 
     if (subjectTemplate != null) {
       StringSubstitutor substitutor = new StringSubstitutor(arguments);
@@ -135,10 +140,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
         .getQueryString(arguments, sparqlDirective, filterMapping, orderByObject);
 
-    LOG.debug("Executing query for subjects:\n{}", subjectQuery);
+    logQuery(SUBJECTS, subjectQuery);
 
     String repositoryId =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
 
     TupleQueryResult queryResult = repositoryAdapter.prepareTupleQuery(repositoryId, environment, subjectQuery)
         .evaluate();
@@ -181,13 +186,13 @@ public final class QueryFetcher implements DataFetcher<Object> {
     String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
         .getQueryString();
 
-    LOG.debug("Executing query for graph:\n{}", graphQuery);
+    logQuery(GRAPH, graphQuery);
 
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
     String repositoryId =
-        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
 
     GraphQueryResult queryResult = repositoryAdapter
         .prepareGraphQuery(repositoryId, environment, graphQuery, subjects.stream()
@@ -198,5 +203,11 @@ public final class QueryFetcher implements DataFetcher<Object> {
     Model result = QueryResults.asModel(queryResult);
     LOG.debug("Fetched [{}] triples", result.size());
     return result;
+  }
+
+  private void logQuery(String type, String query) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Executing query for {}:\n{}", type, formatQuery(query));
+    }
   }
 }

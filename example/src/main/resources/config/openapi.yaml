@@ -64,6 +64,7 @@ components:
         - localName
         - owners
         - sponsorship
+        - beerCount
       properties:
         identifier:
           type: string
@@ -84,6 +85,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
+        beerCount:
+          type: integer
         sponsorship:
           type: object
           nullable: true
@@ -182,7 +185,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded']
+              enum: ['name', 'localName', '-founded', '-beerCount','beerCount']
       responses:
         200:
           description: OK

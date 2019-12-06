@@ -5,15 +5,19 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -64,13 +68,13 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
-    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.FILTER_NAME)
-        .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
-            .forEach(edge -> processEdge(edge.getObject(), argument, query, nodeShape, field)));
+    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.FILTER_NAME).forEach((argument,
+        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processFilters(edge.getObject(),
+            argument, query, nodeShape.getPropertyShape(field.getName()), field)));
 
-    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.SORT_NAME)
-        .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
-            .forEach(edge -> processEdgeSort(edge.getObject(), argument, query, nodeShape, field)));
+    getArgumentFieldMapping(nodeShape, fields, CoreDirectives.SORT_NAME).forEach((argument,
+        field) -> findEdgesToBeProcessed(nodeShape, field, edges).forEach(edge -> processSort(edge.getObject(),
+            argument, query, nodeShape.getPropertyShape(field.getName()), fields)));
 
     return Vertice.builder()
         .subject(subject)
@@ -81,19 +85,25 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
   /*
    * A complex edge is an edge with filters vertices/filters added to it
    */
-  private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field) {
-    BasePath path = nodeShape.getPropertyShape(field.getName())
-        .getPath();
+  private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField selectedField) {
+    PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
+    BasePath path = propertyShape.getPath();
 
     return Edge.builder()
         .predicate(path.toPredicate())
         .constructPredicate(path.toConstructPredicate())
-        .object(createVertice(query.var(), query, nodeShape.getPropertyShape(field.getName())
-            .getNode(),
-            field.getSelectionSet()
-                .getFields()))
+        .object(createVertice(query.var(), query, propertyShape.getNode(), selectedField.getSelectionSet()
+            .getFields()))
         .isOptional(true)
         .isVisible(true)
+        .aggregate(Optional
+            .ofNullable(DirectiveUtils.getArgument(selectedField.getFieldDefinition(), Rdf4jDirectives.AGGREGATE_NAME,
+                CoreInputTypes.AGGREGATE_TYPE, String.class))
+            .map(type -> Aggregate.builder()
+                .type(AggregateType.valueOf(type))
+                .variable(query.var())
+                .build())
+            .orElse(null))
         .build();
   }
 

@@ -15,7 +15,8 @@ type Query {
       @filter(field: "founded", operator: ">"),
     foundedBefore: String 
       @filter(field: "founded", operator: "<"),
-    sort: [SortField!] = [{ field: "name", order: ASC }] @sort
+    sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
+    beerCount: Int @filter(field: "beerCount")
   ): [Brewery!]!
     @sparql(repository: "local")
 
@@ -54,6 +55,8 @@ type Brewery {
   address: Address
   beerNames: [String!]
   beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
+  beerCount: Int! @aggregate(type: COUNT)
+  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
   url: String
 }
 

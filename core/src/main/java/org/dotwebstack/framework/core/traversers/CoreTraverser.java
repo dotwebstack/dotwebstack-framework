@@ -13,6 +13,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -41,7 +42,8 @@ public class CoreTraverser {
 
     return fieldDefinition.getArguments()
         .stream()
-        .flatMap(argument -> getInputObjectFieldsFromArgument(argument, environment.getArguments()).stream())
+        .flatMap(argument -> getInputObjectFieldsFromArgument(fieldDefinition, argument, environment.getArguments())
+            .stream())
         .filter(filter::apply)
         .collect(Collectors.toList());
   }
@@ -61,13 +63,19 @@ public class CoreTraverser {
         .collect(Collectors.toList());
   }
 
-  private List<DirectiveContainerTuple> getInputObjectFieldsFromArgument(GraphQLArgument container,
-      Map<String, Object> arguments) {
+  private List<DirectiveContainerTuple> getInputObjectFieldsFromArgument(GraphQLFieldDefinition fieldDefinition,
+      GraphQLArgument container, Map<String, Object> arguments) {
+    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
     if (container.getType() instanceof GraphQLInputObjectType) {
       List<DirectiveContainerTuple> result = new ArrayList<>();
 
       Map<String, Object> nestedArguments = getNestedMap(arguments, container.getName());
-      result.add(new DirectiveContainerTuple(container, nestedArguments));
+
+      result.add(DirectiveContainerTuple.builder()
+          .container(container)
+          .objectType(objectType)
+          .value(nestedArguments)
+          .build());
 
       result.addAll(getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(), nestedArguments));
 
@@ -76,6 +84,7 @@ public class CoreTraverser {
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
       return singletonList(DirectiveContainerTuple.builder()
           .container(container)
+          .objectType(objectType)
           .value(arguments.getOrDefault(container.getName(), null))
           .build());
     }

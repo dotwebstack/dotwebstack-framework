@@ -28,10 +28,12 @@ import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.springframework.stereotype.Component;
@@ -81,7 +83,7 @@ public final class ValueFetcher extends SourceDataFetcher {
             .getSimpleName());
   }
 
-  private Stream<Value> resolve(DataFetchingEnvironment environment, PropertyShape propertyShape,
+  private Stream<Value> resolve(final DataFetchingEnvironment environment, PropertyShape propertyShape,
       QuerySolution source) {
     Stream<Value> stream = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject())
@@ -91,6 +93,10 @@ public final class ValueFetcher extends SourceDataFetcher {
             if (result instanceof SimpleIRI) {
               return resultIsOfType((SimpleIRI) result, source.getModel(), propertyShape.getNode()
                   .getTargetClasses());
+            }
+
+            if (result instanceof SimpleLiteral) {
+              return true;
             }
 
             return resultIsOfType(result, propertyShape.getNode()
@@ -128,8 +134,8 @@ public final class ValueFetcher extends SourceDataFetcher {
     return stream;
   }
 
-  private boolean resultIsOfType(SimpleIRI iri, Model model, Set<IRI> types) {
-    return model.filter(iri, RDF.TYPE, null)
+  private boolean resultIsOfType(Resource resource, Model model, Set<IRI> types) {
+    return model.filter(resource, RDF.TYPE, null)
         .stream()
         .anyMatch(statement -> types.stream()
             .anyMatch(type -> statement.getObject()
@@ -146,7 +152,8 @@ public final class ValueFetcher extends SourceDataFetcher {
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
-    if (propertyShape.getNode() != null || BNode.class.isAssignableFrom(value.getClass())) {
+    if ((propertyShape.getNode() != null || BNode.class.isAssignableFrom(value.getClass()))
+        && !(value instanceof Literal)) {
       return new QuerySolution(model, (Resource) value);
     }
 

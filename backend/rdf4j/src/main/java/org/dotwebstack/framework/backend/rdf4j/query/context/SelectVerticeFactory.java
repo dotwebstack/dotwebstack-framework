@@ -4,13 +4,17 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -28,14 +32,14 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<Object> orderByList) {
+      List<Object> orderByList, GraphQLObjectType objectType) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
-    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
+    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape, objectType));
     return vertice;
   }
 
-  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+  private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
@@ -50,12 +54,20 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
         if (filter.getPath()
             .size() == 1) {
-          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(filter.getPath()
-              .get(0))
+          GraphQLFieldDefinition fieldDefinition = filter.getPath()
+              .get(0);
+          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
               .getPath()
               .toPredicate(), false);
 
-          addFilterToVertice(edge.getObject(), query, childShape, filter);
+          if (Objects.isNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
+            addFilterToVertice(edge.getObject(), query, childShape, filter);
+          } else {
+            edge.setOptional(true);
+            createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
+            addFilterToVertice(nodeShape, vertice, filter, edge);
+          }
+
         } else {
           FilterRule childFilterRule = FilterRule.builder()
               .path(filter.getPath()
@@ -67,15 +79,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
           Vertice childVertice =
               createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
 
-          edge = Edge.builder()
-              .predicate(nodeShape.getPropertyShape(filter.getPath()
-                  .get(0))
-                  .getPath()
-                  .toPredicate())
-              .object(childVertice)
-              .isVisible(false)
-              .isOptional(false)
-              .build();
+          edge = createEdge(nodeShape, filter, childVertice);
 
         }
         vertice.getEdges()
@@ -100,4 +104,18 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .edges(edges)
         .build();
   }
+
+  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
+    return Edge.builder()
+        .predicate(nodeShape.getPropertyShape(filter.getPath()
+            .get(0)
+            .getName())
+            .getPath()
+            .toPredicate())
+        .object(childVertice)
+        .isVisible(false)
+        .isOptional(false)
+        .build();
+  }
+
 }

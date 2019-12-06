@@ -47,6 +47,7 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_beerCount ,
       beer_sh:Brewery_sponsorship ,
       beer_sh:Brewery_url ,
       beer_sh:Brewery_address
@@ -115,6 +116,12 @@
 
   beer_sh:Brewery_beers a sh:PropertyShape ;
     sh:name "beers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_beerCount a sh:PropertyShape ;
+    sh:name "beerCount" ;
     sh:path [ sh:inversePath beer_def:brewery ] ;
     sh:node beer_sh:Beer
   .

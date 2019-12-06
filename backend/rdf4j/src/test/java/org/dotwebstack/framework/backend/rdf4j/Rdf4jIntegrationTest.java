@@ -22,6 +22,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -33,11 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
 class Rdf4jIntegrationTest {
 
@@ -411,6 +414,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
   void graphqlQuery_ReturnsMap_WithFiltersOnShOrField() {
     // Arrange
     String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: [\"Hop\", \"Gerst\"], supplement: "
@@ -431,6 +435,13 @@ class Rdf4jIntegrationTest {
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
                     SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+
+    List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
+    Map<String, Object> edelPils =
+        (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
+    List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
+
+    assertThat(ingredients, IsCollectionWithSize.hasSize(2));
   }
 
   @Test
@@ -514,11 +525,12 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("number"))
         .collect(Collectors.toList());
     assertThat(numbers.size(), is(5));
-    assertThat(numbers.get(0), is(1));
-    assertThat(numbers.get(1), is(2));
-    assertThat(numbers.get(2), is(20));
-    assertThat(numbers.get(3), is(100));
-    assertThat(numbers.get(4), is(equalTo(null)));
+    assertThat(numbers.get(0), is(equalTo(null)));
+    assertThat(numbers.get(1), is(1));
+    assertThat(numbers.get(2), is(2));
+    assertThat(numbers.get(3), is(20));
+    assertThat(numbers.get(4), is(100));
+
   }
 
   @Test
@@ -543,5 +555,136 @@ class Rdf4jIntegrationTest {
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(1));
     assertThat(numbers.get(4), is(equalTo(null)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_WithCount() {
+    // Arrange
+    String query = "{breweries(name: \"Brouwerij 1923\"){beerCount}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    Map<String, Object> brewery = ((List<Map<String, Object>>) data.get("breweries")).get(0);
+    assertThat(brewery.get("beerCount"), is(2));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_SortedByBeerCountDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"beerCount\", order: DESC}]){beerCount}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<Integer> beerCounts = ((List<Map<String, Integer>>) data.get("breweries")).stream()
+        .map(map -> map.get("beerCount"))
+        .collect(Collectors.toList());
+
+    assertThat(beerCounts, is(ImmutableList.of(2, 1, 0, 0, 0)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_SortedByBeerCountAsc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"beerCount\", order: ASC}]){beerCount}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<Integer> beerCounts = ((List<Map<String, Integer>>) data.get("breweries")).stream()
+        .map(map -> map.get("beerCount"))
+        .collect(Collectors.toList());
+
+    assertThat(beerCounts, is(ImmutableList.of(0, 0, 0, 1, 2)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2() {
+    // Arrange
+    String query = "{breweries(beerCount: 2){name, beerCount}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<String> names = ((List<Map<String, String>>) data.get("breweries")).stream()
+        .map(map -> map.get("name"))
+        .collect(Collectors.toList());
+
+    assertThat(names, is(ImmutableList.of("Brouwerij 1923")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_FilteredByBeerCount0() {
+    // Arrange
+    String query = "{breweries(beerCount: 0){name, beerCount}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<String> names = ((List<Map<String, String>>) data.get("breweries")).stream()
+        .map(map -> map.get("name"))
+        .collect(Collectors.toList());
+
+    assertThat(names,
+        is(ImmutableList.of("Brouwerij De Leckere", "Brouwerij Het 58e Genot i.o.", "Heineken Nederland")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2MissingEdge() {
+    // Arrange
+    String query = "{breweries(beerCount: 2){name}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<String> names = ((List<Map<String, String>>) data.get("breweries")).stream()
+        .map(map -> map.get("name"))
+        .collect(Collectors.toList());
+
+    assertThat(names, is(ImmutableList.of("Brouwerij 1923")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnesBreweries_WithTransformedAggregate() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"name\", order: ASC}]){name, beerCount, hasBeers}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    List<Boolean> hasBeers = ((List<Map<String, Boolean>>) data.get("breweries")).stream()
+        .map(map -> map.get("hasBeers"))
+        .collect(Collectors.toList());
+
+    assertThat(hasBeers, is(ImmutableList.of(true, true, false, false, false)));
   }
 }
