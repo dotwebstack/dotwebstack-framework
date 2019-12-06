@@ -13,7 +13,7 @@ type Query {
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
             name: [String] @filter(field: "name"),
-            onlyBeerCounts: Int = 0 @filter(field: "beerCount"),
+            beerCount: Int @filter,
             beerName: String @filter(field: "beers.name")): [Brewery!]!
     @sparql(
       repository: "local"
@@ -26,7 +26,7 @@ type Query {
       repository: "local"
     )
 
-  breweries_sort_nested(sort: [SortField!] = [{ field: "identifier", order: ASC }] @sort):[Brewery!]
+  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }] @sort):[Brewery!]
    @sparql(
       repository: "local"
    )
@@ -66,7 +66,6 @@ type Brewery {
   sponsorship: Sponsorship
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
   beerCount: Int! @aggregate(type: COUNT)
-  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
 }
 
 type Address {
