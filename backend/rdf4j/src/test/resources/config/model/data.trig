@@ -90,6 +90,21 @@ beer_id:6 a beer_def:Beer ;
   beer_def:beertype beer_type_id:1, beer_type_id:2
 .
 
+beer_id:7 a beer_def:Beer ;
+  beer_def:identifier "2";
+  beer_def:brewery brewery_id:123;
+  schema:name "Straffe Hendrik";
+  beer_def:beertype beer_type_id:1
+.
+
+beer_id:8 a beer_def:Beer ;
+  beer_def:identifier "3";
+  beer_def:brewery brewery_id:123;
+  schema:name "Brugse zot";
+  beer_def:beertype beer_type_id:1
+.
+
+
 ingredient_id:1 a beer_def:Ingredient ;
   beer_def:test test_id:1 ;
   schema:name "Hop"

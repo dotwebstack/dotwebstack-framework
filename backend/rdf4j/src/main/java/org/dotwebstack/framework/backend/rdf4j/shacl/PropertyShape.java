@@ -16,9 +16,9 @@ public final class PropertyShape {
 
   private final BasePath path;
 
-  private final int minCount;
+  private final Integer minCount;
 
-  private final int maxCount;
+  private final Integer maxCount;
 
   private final IRI nodeKind;
 

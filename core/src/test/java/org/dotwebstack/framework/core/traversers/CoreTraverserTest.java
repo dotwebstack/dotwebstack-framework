@@ -47,9 +47,11 @@ class CoreTraverserTest {
         .type(GraphQLNonNull.nonNull(Scalars.GraphQLID))
         .build();
 
+    GraphQLObjectType objectType = GraphQLObjectType.newObject()
+        .name("Brewery")
+        .build();
     GraphQLFieldDefinition fieldDefinition = newFieldDefinition().name("brewery")
-        .type(GraphQLObjectType.newObject()
-            .name("Brewery"))
+        .type(objectType)
         .argument(argument)
         .build();
 
@@ -60,6 +62,7 @@ class CoreTraverserTest {
     assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
         .contains(DirectiveContainerObject.builder()
             .container(argument)
+            .objectType(objectType)
             .value(1)
             .build());
   }

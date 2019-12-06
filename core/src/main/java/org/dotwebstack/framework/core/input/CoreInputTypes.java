@@ -15,6 +15,8 @@ public class CoreInputTypes {
 
   public static final String SORT_FIELD_FIELD;
 
+  public static final String AGGREGATE_TYPE;
+
   public static final String SORT_FIELD_IS_RESOURCE;
 
   private CoreInputTypes() {}
@@ -26,6 +28,7 @@ public class CoreInputTypes {
     SORT_FIELD_ORDER_ASC = "ASC";
     SORT_FIELD_ORDER_DESC = "DESC";
     SORT_FIELD_FIELD = "field";
+    AGGREGATE_TYPE = "type";
     SORT_FIELD_IS_RESOURCE = "isResource";
   }
 }

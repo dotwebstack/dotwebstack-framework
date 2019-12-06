@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJE
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
@@ -81,14 +82,7 @@ public class ResponseMapper {
         }
         return new ArrayList<>();
       case OBJECT_TYPE:
-        if (summary.isRequired() || summary.isEnvelope()
-            || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-          if (summary.isEnvelope()) {
-            return mapEnvelopeObjectToResponse(writeContext, newPath);
-          }
-          return mapObjectDataToResponse(writeContext, newPath);
-        }
-        return null;
+        return processObject(writeContext, summary, newPath);
       default:
         if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
             || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
@@ -98,7 +92,44 @@ public class ResponseMapper {
     }
   }
 
-  private String removeRoot(String path) {
+  private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
+    if (summary.isRequired() || summary.isEnvelope() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+      if (summary.isEnvelope()) {
+        return mapEnvelopeObjectToResponse(writeContext, newPath);
+      }
+      if (!writeContext.getResponseObject()
+          .getSummary()
+          .getComposedOf()
+          .isEmpty()) {
+        return mapComposedDataToResponse(writeContext, newPath);
+      }
+      return mapObjectDataToResponse(writeContext, newPath);
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private Object mapComposedDataToResponse(ResponseWriteContext parentContext, String path) {
+    if (Objects.isNull(parentContext.getData())) {
+      return null;
+    }
+
+    Map<String, Object> results = new HashMap<>();
+    parentContext.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .stream()
+        .map(composedSchema -> {
+          ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
+          return ((Map<String, Object>) mapDataToResponse(writeContext, path));
+        })
+        .filter(Objects::nonNull)
+        .forEach(map -> map.forEach(results::put));
+
+    return results;
+  }
+
+  String removeRoot(String path) {
     if (path.contains(".")) {
       return path.substring(path.indexOf('.') + 1);
     }
@@ -211,10 +242,7 @@ public class ResponseMapper {
     StringBuilder fieldsBuilder = new StringBuilder("fields.");
     StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getParameters()
-        .entrySet()
-        .forEach(entry -> {
-          context.set("input." + entry.getKey(), entry.getValue());
-        });
+        .forEach((key1, value1) -> context.set("input." + key1, value1));
     writeContext.getDataStack()
         .forEach(fieldContext -> {
           Object data = fieldContext.getData();

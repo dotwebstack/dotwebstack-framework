@@ -16,6 +16,10 @@ public final class Rdf4jDirectives {
 
   public static final String RESOURCE_NAME = "resource";
 
+  public static final String AGGREGATE_NAME = "aggregate";
+
+  public static final String AGGREGATE_TYPE = "type";
+
   private Rdf4jDirectives() {}
 
 }

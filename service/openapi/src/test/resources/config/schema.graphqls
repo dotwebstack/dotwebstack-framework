@@ -10,6 +10,10 @@ type Query {
     query3(query3_param1: [String], query3_param2: String, query3_param3: String, query3_param4: String): Object2!
 
     query4(object3: Object3): Object2!
+
+    query5: Object4!
+
+    query6: String
 }
 
 type Object1 {
@@ -28,4 +32,9 @@ type Object2 {
 input Object3 {
     o3_prop1: String
     o3_prop2: [String]!
+}
+
+type Object4 {
+   o4_prop1: String
+   o4_prop2: String
 }

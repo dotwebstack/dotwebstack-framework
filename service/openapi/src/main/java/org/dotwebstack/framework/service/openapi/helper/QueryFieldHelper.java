@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -21,8 +20,7 @@ public class QueryFieldHelper {
   private GraphQlFieldBuilder graphQlFieldBuilder;
 
   public GraphQlField resolveGraphQlField(@NonNull Operation operation) {
-    String dwsQuery = (String) operation.getExtensions()
-        .get(X_DWS_QUERY);
+    String dwsQuery = DwsExtensionHelper.getDwsQueryName(operation);
     FieldDefinition queryFieldDefinition = getQueryFieldDefinition(dwsQuery);
 
     return this.graphQlFieldBuilder.toGraphQlField(queryFieldDefinition, new HashMap<>());

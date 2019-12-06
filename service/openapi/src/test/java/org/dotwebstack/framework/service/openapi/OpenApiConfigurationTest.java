@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -64,14 +65,19 @@ public class OpenApiConfigurationTest {
   @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
 
+  @Mock
+  private JexlEngine jexlEngine;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiStream = TestResources.openApiStream();
+    OpenApiProperties openApiProperties = new OpenApiProperties();
+    openApiProperties.setXdwsStringTypes(List.of("customType"));
     this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
         new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, responseContextValidator,
-        requestBodyHandlerRouter));
+        requestBodyHandlerRouter, openApiProperties, jexlEngine));
   }
 
   @Test
@@ -90,14 +96,14 @@ public class OpenApiConfigurationTest {
     openApiConfiguration.route(openApi);
 
     // Assert
-    assertEquals(4, optionsAnswer.getResults()
+    assertEquals(6, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(5)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(7)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         any(RequestBodyContextBuilder.class), argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
-    assertEquals(5, actualHttpMethodOperations.size());
+    assertEquals(7, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
         .getHttpMethod());
@@ -122,6 +128,16 @@ public class OpenApiConfigurationTest {
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(4)
         .getHttpMethod());
     assertEquals("/query4", actualHttpMethodOperations.get(4)
+        .getName());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(5)
+        .getHttpMethod());
+    assertEquals("/query5", actualHttpMethodOperations.get(5)
+        .getName());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(6)
+        .getHttpMethod());
+    assertEquals("/query6", actualHttpMethodOperations.get(6)
         .getName());
   }
 

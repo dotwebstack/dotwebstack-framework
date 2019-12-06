@@ -1,9 +1,13 @@
 package org.dotwebstack.framework.core.scalars;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
+import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +40,13 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
   @Override
   public ZonedDateTime parseLiteral(@NonNull Object value) {
-    throw new UnsupportedOperationException();
+    if (value instanceof StringValue) {
+      StringValue stringValue = (StringValue) value;
+      if (Objects.equals("NOW", stringValue.getValue())) {
+        return ZonedDateTime.now();
+      }
+    }
+
+    throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
   }
 }

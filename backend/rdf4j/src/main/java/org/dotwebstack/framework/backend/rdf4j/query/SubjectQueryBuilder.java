@@ -4,6 +4,8 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,18 +57,22 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     final MapContext context = new MapContext(arguments);
 
     List<FilterRule> filterRules = filterMapping.stream()
-        .map(filterRule -> FilterRule.builder()
-            .path(getFilterRulePath(filterRule.getContainer()))
-            .operator((String) filterRule.getContainer()
+        .map(tuple -> FilterRule.builder()
+            .path(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
+            .operator((String) tuple.getContainer()
                 .getDirective(CoreDirectives.FILTER_NAME)
                 .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
                 .getValue())
-            .value(filterRule.getValue())
-            .isResource(filterRule.isResource())
+            .objectType(tuple.getObjectType())
+            .value(tuple.getValue())
+            .isResource(tuple.isResource())
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject);
+    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getObjectType());
+
+    Vertice root =
+        selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject, objectType);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)
@@ -92,8 +98,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> limitOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT,
-        sparqlDirective, context, Integer.class);
+    Optional<Integer> limitOptional = this.jexlHelper.evaluateDirectiveArgument(sparqlDirective,
+        Rdf4jDirectives.SPARQL_ARG_LIMIT, context, Integer.class);
     limitOptional.ifPresent(limit -> {
       if (limit < 1) {
         throw illegalArgumentException("An error occured in the limit expression evaluation");
@@ -103,8 +109,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   Optional<Integer> getOffsetFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> offsetOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET,
-        sparqlDirective, context, Integer.class);
+    Optional<Integer> offsetOptional = this.jexlHelper.evaluateDirectiveArgument(sparqlDirective,
+        Rdf4jDirectives.SPARQL_ARG_OFFSET, context, Integer.class);
 
     offsetOptional.ifPresent(offset -> {
       if (offset < 0) {

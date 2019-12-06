@@ -3,10 +3,15 @@ package org.dotwebstack.framework.service.openapi.helper;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -39,5 +44,22 @@ public class CoreRequestHelper {
       throw invalidConfigurationException("A request body is not allowed for this request");
     }
   }
+
+  public static Map<String, Object> addEvaluatedDwsParameters(Map<String, Object> inputParams,
+      Map<String, String> dwsParameters, ServerRequest request, JexlHelper jexlHelper) {
+    JexlContext jexlContext = buildJexlContext(request, inputParams);
+    Map<String, Object> allParams = new HashMap<>(inputParams);
+    dwsParameters.forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
+        .ifPresent(value -> allParams.put(name, value)));
+    return allParams;
+  }
+
+  private static JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
+    MapContext mapContext = new MapContext();
+    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
+    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
+    return mapContext;
+  }
+
 
 }

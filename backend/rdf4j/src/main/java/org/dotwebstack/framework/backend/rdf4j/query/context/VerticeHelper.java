@@ -2,19 +2,30 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Aggregate;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
+import org.eclipse.rdf4j.sparqlbuilder.core.Assignment;
+import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 @Slf4j
 public class VerticeHelper {
@@ -34,7 +45,10 @@ public class VerticeHelper {
     List<TriplePattern> triplePatterns = new ArrayList<>();
 
     if (edge.isVisible()) {
-      if (Objects.nonNull(edge.getObject()
+      if (Objects.nonNull(edge.getAggregate())) {
+        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getAggregate()
+            .getVariable()));
+      } else if (Objects.nonNull(edge.getObject()
           .getSubject())) {
         triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getSubject()));
@@ -52,15 +66,36 @@ public class VerticeHelper {
     return triplePatterns;
   }
 
-  public static List<GraphPattern> getWherePatterns(Vertice vertice) {
+  private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
+      List<Filter> filtersWithEdge) {
+    GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
 
+    filtersWithEdge
+        .forEach(filter -> graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
+            .getAggregate()
+            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
+
+    return singletonList(graphPatternNotTriples);
+  }
+
+  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
-    return edges.stream()
+    List<GraphPattern> result = edges.stream()
         .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+
+    List<Filter> filtersWithEdge = getFiltersWithEdge(vertice);
+    if (!filtersWithEdge.isEmpty()) {
+      return getWherePatternsWithFilter(result, filtersWithEdge);
+    }
+
+    return result;
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
@@ -76,9 +111,7 @@ public class VerticeHelper {
       Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
-          .map(filter -> getFilterExpression(filter, Objects.nonNull(edge.getObject()
-              .getSubject()) ? edge.getObject()
-                  .getSubject() : subject))
+          .map(filter -> getFilterExpression(filter, resolveVariable(edge, subject)))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }
@@ -86,7 +119,54 @@ public class VerticeHelper {
     List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
+    if (Objects.nonNull(edge.getAggregate()) && Objects.equals(AggregateType.COUNT, edge.getAggregate()
+        .getType())) {
+      graphPattern = GraphPatterns.select(getSelectedForCount(subject, subject, edge).toArray(new Projectable[] {}))
+          .where(graphPattern)
+          .groupBy(subject)
+          .optional(true);
+    }
     return singletonList(graphPattern);
+  }
+
+  private static Set<Projectable> getSelectedForCount(Variable root, Variable subject, Edge edge) {
+    Set<Projectable> result = new LinkedHashSet<>();
+    if (!Objects.equals(root, subject)) {
+      result.add(subject);
+    }
+    result.add(root);
+
+    Aggregate aggregate = Expressions.count(edge.getObject()
+        .getSubject());
+
+    Assignment assignable = SparqlBuilder.as(aggregate, edge.getAggregate()
+        .getVariable());
+
+    result.add(assignable);
+
+    return result;
+  }
+
+  private static List<Filter> getFiltersWithEdge(@NonNull Vertice vertice) {
+    return vertice.getFilters()
+        .stream()
+        .filter(filter -> Objects.nonNull(filter.getEdge()))
+        .collect(Collectors.toList());
+  }
+
+  private static Variable resolveVariable(Edge edge, Variable subject) {
+    if (Objects.nonNull(edge.getAggregate())) {
+      return edge.getAggregate()
+          .getVariable();
+    }
+
+    if (Objects.nonNull(edge.getObject()
+        .getSubject())) {
+      return edge.getObject()
+          .getSubject();
+    }
+
+    return subject;
   }
 
   private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {

@@ -16,4 +16,6 @@ public class Filter {
   @Builder.Default
   private List<Operand> operands = new ArrayList<>();
 
+  private Edge edge;
+
 }

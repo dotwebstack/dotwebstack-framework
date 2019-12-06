@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import graphql.language.StringValue;
 import graphql.schema.CoercingSerializeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -59,6 +60,20 @@ class DateTimeCoercingTest {
   void parseLiteral_ThrowsException() {
     // Act / Assert
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
+  }
+
+  @Test
+  void parseLiteral_ReturnsDateTime_ForNowLiteral() {
+    // Act
+    ZonedDateTime dateTime = coercing.parseLiteral(new StringValue("NOW"));
+
+    // Assert
+    assertThat(dateTime.getYear(), equalTo(ZonedDateTime.now()
+        .getYear()));
+    assertThat(dateTime.getMonth(), equalTo(ZonedDateTime.now()
+        .getMonth()));
+    assertThat(dateTime.getDayOfMonth(), equalTo(ZonedDateTime.now()
+        .getDayOfMonth()));
   }
 
 }

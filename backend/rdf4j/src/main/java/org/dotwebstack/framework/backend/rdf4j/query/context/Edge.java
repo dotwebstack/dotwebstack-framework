@@ -20,6 +20,8 @@ class Edge implements Comparable<Edge> {
 
   private boolean isVisible;
 
+  private Aggregate aggregate;
+
   RdfPredicate getConstructPredicate() {
     return Objects.nonNull(constructPredicate) ? constructPredicate : predicate;
   }

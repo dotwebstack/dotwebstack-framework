@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.traversers;
 
 import graphql.schema.GraphQLDirectiveContainer;
+import graphql.schema.GraphQLObjectType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,6 +10,8 @@ import lombok.Data;
 public class DirectiveContainerObject {
 
   private GraphQLDirectiveContainer container;
+
+  private GraphQLObjectType objectType;
 
   private Object value;
 

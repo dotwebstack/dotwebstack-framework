@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Objects.isNull;
+import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFieldDefinitions;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
@@ -12,12 +14,14 @@ import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirectiveContainer;
-import java.util.Arrays;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
@@ -64,7 +68,7 @@ public class FilterHelper {
     Expression<?> current = expressions.remove(0);
     Expression<?> usedExpression;
 
-    if (Objects.isNull(joinedExpression)) {
+    if (isNull(joinedExpression)) {
       usedExpression = current;
     } else {
       Operand[] operands = new Expression<?>[] {current, joinedExpression};
@@ -79,34 +83,35 @@ public class FilterHelper {
   }
 
   static Operand getOperand(NodeShape nodeShape, String field, String filterString, String tagLanguage) {
-    if (Objects.isNull(nodeShape.getPropertyShape(field))) {
-      throw unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'", field,
-          nodeShape);
-    }
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
-    if (nodeShape.getPropertyShape(field)
-        .getNodeKind()
-        .equals(SHACL.IRI)) {
+    if (Optional.of(nodeShape.getPropertyShape(field))
+        .stream()
+        .map(PropertyShape::getNodeKind)
+        .anyMatch(SHACL.IRI::equals)) {
       return Rdf.iri(filterString);
     }
 
-    if (Objects.equals(RDF.LANGSTRING, nodeShape.getPropertyShape(field)
-        .getDatatype())) {
+    if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
       return Rdf.literalOfLanguage(filterString, tagLanguage);
     }
 
-    return Rdf.literalOfType(filterString, Rdf.iri(nodeShape.getPropertyShape(field)
-        .getDatatype()
+    if (isNull(propertyShape.getDatatype())) {
+      return Rdf.literalOf((Integer.parseInt(filterString)));
+    }
+
+    return Rdf.literalOfType(filterString, Rdf.iri(propertyShape.getDatatype()
         .stringValue()));
   }
 
-  public static List<String> getFilterRulePath(GraphQLDirectiveContainer container) {
+  public static List<GraphQLFieldDefinition> getFilterRulePath(GraphQLObjectType objectType,
+      GraphQLDirectiveContainer container) {
     String path = Optional.of(container)
         .map(con -> container.getDirective(CoreDirectives.FILTER_NAME))
         .map(dc -> dc.getArgument(CoreDirectives.FILTER_ARG_FIELD))
         .map(arg -> (String) arg.getValue())
         .orElse(container.getName());
 
-    return Arrays.asList(path.split("\\."));
+    return getFieldDefinitions(objectType, path);
   }
 }
