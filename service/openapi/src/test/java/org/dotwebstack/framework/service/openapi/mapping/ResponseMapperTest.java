@@ -14,6 +14,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -265,6 +266,121 @@ class ResponseMapperTest {
   }
 
   @Test
+  public void map_returnsNoElement_forNonRequiredNonNillableEmptyArray()
+      throws NoResultFoundException, JsonProcessingException {
+    // Arrange
+    ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .responseObject(responseObject)
+        .parameters(Collections.emptyMap())
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = responseMapper.toJson(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{}"));
+  }
+
+  @Test
+  public void map_returnsNoElement_forNonRequiredNullableEmptyArray()
+      throws NoResultFoundException, JsonProcessingException {
+    // Arrange
+    ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .responseObject(responseObject)
+        .parameters(Collections.emptyMap())
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = responseMapper.toJson(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{}}"));
+  }
+
+  @Test
+  public void map_returnsEmptyList_forRequiredNonNullableEmptyArray()
+      throws NoResultFoundException, JsonProcessingException {
+    // Arrange
+    ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .responseObject(responseObject)
+        .parameters(Collections.emptyMap())
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = responseMapper.toJson(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"array1\":[]}}"));
+  }
+
+  @Test
+  public void map_returnsNull_forRequiredNullableEmptyArray() throws NoResultFoundException, JsonProcessingException {
+    // Arrange
+    ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .responseObject(responseObject)
+        .parameters(Collections.emptyMap())
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = responseMapper.toJson(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{}}"));
+  }
+
+  @Test
   public void map_returnsValue_forResponseWithObject() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -329,23 +445,39 @@ class ResponseMapperTest {
     assertEquals("", resultString);
   }
 
-  private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
-    return getObject(identifier, "object", false, null, children, new ArrayList<>());
+  @Test
+  public void myTest() {
+    //
   }
 
-  private static ResponseObject getObject(String identifier, String type, boolean envelop, List<ResponseObject> items,
-      List<ResponseObject> children, List<ResponseObject> composedOf) {
+  private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
+    return getObject(identifier, "object", true, false, null, children, new ArrayList<>());
+  }
+
+  private static ResponseObject getObject(String identifier, String type, boolean required, boolean nullable,
+      boolean envelop, List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf) {
     return ResponseObject.builder()
         .identifier(identifier)
         .summary(SchemaSummary.builder()
             .type(type)
-            .required(true)
+            .required(required)
+            .nillable(nullable)
             .children(children)
             .items(items)
             .composedOf(composedOf)
             .isEnvelope(envelop)
             .build())
         .build();
+  }
+
+  private static ResponseObject getObject(String identifier, String type, boolean envelop, List<ResponseObject> items,
+      List<ResponseObject> children, List<ResponseObject> composedOf) {
+    return getObject(identifier, type, true, envelop, items, children, composedOf);
+  }
+
+  private static ResponseObject getObject(String identifier, String type, boolean required, boolean envelop,
+      List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf) {
+    return getObject(identifier, type, required, true, envelop, items, children, composedOf);
   }
 
   private static ResponseObject getProperty(String identifier, String type, boolean required, boolean nillable,

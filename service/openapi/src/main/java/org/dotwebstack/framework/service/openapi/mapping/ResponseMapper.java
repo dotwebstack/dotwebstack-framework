@@ -15,7 +15,6 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +79,7 @@ public class ResponseMapper {
             || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
           return mapArrayDataToResponse(writeContext, newPath);
         }
-        return new ArrayList<>();
+        return null;
       case OBJECT_TYPE:
         return processObject(writeContext, summary, newPath);
       default:
@@ -138,11 +137,13 @@ public class ResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    if (Objects.isNull(parentContext.getData())) {
+    if (Objects.isNull(parentContext.getData()) && parentContext.getResponseObject()
+        .getSummary()
+        .isNillable()) {
+      return null;
+    } else if (Objects.isNull(parentContext.getData())) {
       return Collections.emptyList();
-    }
-
-    if (parentContext.getData() instanceof List) {
+    } else if (parentContext.getData() instanceof List) {
       return ((List<Object>) parentContext.getData()).stream()
           .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData), path))
           .collect(Collectors.toList());
@@ -168,7 +169,9 @@ public class ResponseMapper {
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
           Object object = mapObject(writeContext, mapDataToResponse(writeContext, path));
-          result.put(childSchema.getIdentifier(), convertType(writeContext, object));
+          if (Objects.nonNull(object) || writeContext.isSchemaRequiredNonNillable()) {
+            result.put(childSchema.getIdentifier(), convertType(writeContext, object));
+          }
         });
     return result;
   }
