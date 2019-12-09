@@ -266,7 +266,7 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_returnsNoElement_forNonRequiredNonNillableEmptyArray()
+  public void toJson_returnsNoElement_forNonRequiredNonNillableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
@@ -295,7 +295,7 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_returnsNoElement_forNonRequiredNullableEmptyArray()
+  public void toJson_returnsNoElement_forNonRequiredNullableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
@@ -324,7 +324,7 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_returnsEmptyList_forRequiredNonNullableEmptyArray()
+  public void toJson_returnsEmptyList_forRequiredNonNullableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
@@ -353,7 +353,8 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_returnsNull_forRequiredNullableEmptyArray() throws NoResultFoundException, JsonProcessingException {
+  public void toJson_returnsNull_forRequiredNullableEmptyArray()
+      throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -443,11 +444,6 @@ class ResponseMapperTest {
 
     // Assert
     assertEquals("", resultString);
-  }
-
-  @Test
-  public void myTest() {
-    //
   }
 
   private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
