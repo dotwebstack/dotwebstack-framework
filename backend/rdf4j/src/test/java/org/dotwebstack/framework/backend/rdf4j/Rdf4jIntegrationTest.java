@@ -782,7 +782,8 @@ class Rdf4jIntegrationTest {
   @Test
   void graphQlQuery_returnsBreweries_FilterOnAddressSubject() {
     // Arrange
-    String query = "{breweries{address(subject : \"https://github.com/dotwebstack/beer/id/address/1\") { subject, resource }}}";
+    String query =
+        "{breweries{address(subject : \"https://github.com/dotwebstack/beer/id/address/1\") { subject, resource }}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
