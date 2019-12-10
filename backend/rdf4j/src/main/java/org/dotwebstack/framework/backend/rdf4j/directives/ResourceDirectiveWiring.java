@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import graphql.Scalars;
 import graphql.language.NonNullType;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
@@ -11,7 +12,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Collection;
 import java.util.List;
-import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +32,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
     GraphQLFieldDefinition element = environment.getElement();
 
     try {
-      validateOnlyOnIri(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+      validateOnlyOnString(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
       validateOnlyOncePerType(fieldsContainer.getFieldDefinitions());
       validateOnlyRequired(element);
 
@@ -47,10 +47,10 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
     return element;
   }
 
-  private void validateOnlyOnIri(GraphQLType rawType) throws ValidationException {
+  private void validateOnlyOnString(GraphQLType rawType) throws ValidationException {
     if (!(rawType.getName()
-        .equals(Rdf4jScalars.IRI.getName()))) {
-      throw new ValidationException("can only be defined on a IRI field");
+        .equals(Scalars.GraphQLString.getName()))) {
+      throw new ValidationException("can only be defined on a String field");
     }
   }
 

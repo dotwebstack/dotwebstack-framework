@@ -197,12 +197,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
         .findFirst()
-        .map(getGraphQLSortAguments(environment, arguments))
+        .map(getGraphQlSortArguments(environment, arguments))
         .orElse(Collections.emptyList());
   }
 
   @SuppressWarnings("unchecked")
-  private Function<GraphQLArgument, List<Object>> getGraphQLSortAguments(DataFetchingEnvironment environment,
+  private Function<GraphQLArgument, List<Object>> getGraphQlSortArguments(DataFetchingEnvironment environment,
       Map<String, Object> arguments) {
     return sortArgument -> Optional.ofNullable(arguments.get(sortArgument.getName()))
         .<List<Object>>map(o -> ((List<Map<String, String>>) o).stream()

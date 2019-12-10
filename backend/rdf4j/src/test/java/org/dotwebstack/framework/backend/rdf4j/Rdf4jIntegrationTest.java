@@ -14,6 +14,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFI
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
@@ -52,7 +54,7 @@ class Rdf4jIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
     // Arrange
-    String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, subject, founded }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -63,8 +65,8 @@ class Rdf4jIntegrationTest {
     assertThat(data,
         hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_FOUNDED_FIELD,
-                ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1,
+                BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
   }
 
   @Test
@@ -649,7 +651,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_ReturnesBreweries_WithTransformedAggregate() {
+  void graphQlQuery_ReturnsBreweries_WithTransformedAggregate() {
     // Arrange
     String query = "{breweries(sort: [{field: \"name\", order: ASC}]){name, beerCount, hasBeers}}";
 
@@ -666,4 +668,70 @@ class Rdf4jIntegrationTest {
 
     assertThat(hasBeers, is(ImmutableList.of(true, true, false, false, false)));
   }
+
+  @Test
+  void graphqlQuery_ReturnsBrewery_FilteredBySubject() {
+    // Arrange
+    String query =
+        "{ brewery_with_subject(subject: \"https://github.com/dotwebstack/beer/id/brewery/123\") { subject }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+    assertThat(data,
+        hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_SortedOnSubjectAsc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"subject\", order: ASC}]){subject}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
+        .map(entry -> entry.get("subject"))
+        .collect(Collectors.toList());
+
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects.get(0), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/1")));
+    assertThat(subjects.get(1), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/123")));
+    assertThat(subjects.get(2), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/2")));
+    assertThat(subjects.get(3), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/456")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_SortedOnSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"subject\", order: DESC}]){subject}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
+        .map(entry -> entry.get("subject"))
+        .collect(Collectors.toList());
+
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects.get(0), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/789")));
+    assertThat(subjects.get(1), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/456")));
+    assertThat(subjects.get(2), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/2")));
+    assertThat(subjects.get(3), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/123")));
+  }
+
+
 }

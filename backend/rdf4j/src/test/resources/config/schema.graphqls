@@ -6,6 +6,9 @@ type Query {
   brewery(identifier: ID!): Brewery!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
+  brewery_with_subject(subject: String! @filter) : Brewery!
+    @sparql(repository: "local")
+
   breweries(
     name: String 
       @filter,
@@ -48,7 +51,7 @@ input NestedNestedInput {
 type Brewery {
   identifier: ID!
   name: String!
-  subject: IRI! @resource
+  subject: String! @resource
   number: Int
   localName: String
   founded: DateTime!

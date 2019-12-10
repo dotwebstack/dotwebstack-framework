@@ -44,11 +44,13 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
-      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
       if (filter.isResource()) {
+        addFilterToVertice(nodeShape, vertice, filter, vertice.getSubject());
         return;
       }
+
+      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
       if (nodeShape.equals(childShape)) {
         addFilterToVertice(vertice, query, nodeShape, filter);
@@ -69,7 +71,8 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
           } else {
             edge.setOptional(true);
             createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
-            addFilterToVertice(nodeShape, vertice, filter, edge);
+            addFilterToVertice(nodeShape, vertice, filter, edge.getAggregate()
+                .getVariable());
           }
 
         } else {
@@ -92,19 +95,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return vertice;
   }
 
-  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
-    return Edge.builder()
-        .predicate(nodeShape.getPropertyShape(filter.getPath()
-            .get(0)
-            .getName())
-            .getPath()
-            .toPredicate())
-        .object(childVertice)
-        .isVisible(false)
-        .isOptional(false)
-        .build();
-  }
-
   private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
     List<Edge> edges = new ArrayList<>();
 
@@ -118,6 +108,19 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return Vertice.builder()
         .subject(subject)
         .edges(edges)
+        .build();
+  }
+
+  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
+    return Edge.builder()
+        .predicate(nodeShape.getPropertyShape(filter.getPath()
+            .get(0)
+            .getName())
+            .getPath()
+            .toPredicate())
+        .object(childVertice)
+        .isVisible(false)
+        .isOptional(false)
         .build();
   }
 }

@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -11,6 +10,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getSubjectForField;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
@@ -53,6 +53,7 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
@@ -135,41 +136,42 @@ abstract class AbstractVerticeFactory {
   }
 
   private String getFieldName(GraphQLArgument argument, String directiveName) {
-    Object objectList = nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
+    if (CoreDirectives.SORT_NAME.equals(directiveName)) {
+      Object fieldValue = nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();
+      Map<String, Object> map = nonNull(fieldValue) ? castToMap(((List<Object>) fieldValue).get(0)) : emptyMap();
 
-    if (isNull(objectList)) {
-      GraphQLDirective directive = argument.getDirective(directiveName);
-      if (nonNull(directive)) {
-        String fieldName = DirectiveUtils.getArgument(directive, "field", String.class);
-
-        if (isNotBlank(fieldName)) {
-          return fieldName;
-        }
-
-        return argument.getName();
-      }
+      return map.getOrDefault("field", argument.getName())
+          .toString();
     }
 
-    Map<String, Object> orderMap = nonNull(objectList) ? castToMap(((List<Object>) objectList).get(0)) : emptyMap();
+    GraphQLDirective directive = argument.getDirective(directiveName);
+    if (nonNull(directive)) {
+      String fieldName = DirectiveUtils.getArgument(directive, "field", String.class);
 
-    String fieldName = orderMap.getOrDefault("field", argument.getName()).toString();
+      if (isNotBlank(fieldName)) {
+        return fieldName;
+      }
 
-    return fieldName;
+      return argument.getName();
+    }
+
+    throw illegalStateException("Could not find directive for argument {} and directiveName {}", argument.getName(),
+        directiveName);
   }
 
   private List<GraphQLFieldDefinition> getFieldPath(SelectedField selectedField, GraphQLArgument argument,
       String directiveName) {
-    GraphQLUnmodifiedType graphQLUnmodifiedType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+    GraphQLUnmodifiedType unmodifiedType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
         .getType());
     String fieldName = getFieldName(argument, directiveName);
 
-    if (graphQLUnmodifiedType instanceof GraphQLObjectType) {
-      GraphQLObjectType objectType = (GraphQLObjectType) graphQLUnmodifiedType;
+    if (unmodifiedType instanceof GraphQLObjectType) {
+      GraphQLObjectType objectType = (GraphQLObjectType) unmodifiedType;
 
       return getFieldDefinitions(objectType, fieldName);
     }
 
-    if (graphQLUnmodifiedType instanceof GraphQLScalarType) {
+    if (unmodifiedType instanceof GraphQLScalarType) {
       return singletonList(selectedField.getFieldDefinition());
     }
 
@@ -233,28 +235,13 @@ abstract class AbstractVerticeFactory {
     addFilterToVertice(nodeShape, edge.getObject(), filterRule, null);
   }
 
-  void addFilterToVertice(NodeShape nodeShape, Vertice vertice, FilterRule filterRule, Edge referredEdge) {
-    List<Filter> filters = nonNull(vertice.getFilters()) ? vertice.getFilters() : new ArrayList<>();
+  void addFilterToVertice(NodeShape nodeShape, Vertice vertice, FilterRule filterRule, Variable variable) {
+    List<Filter> filters = vertice.getFilters();
 
     Filter filter = createFilter(nodeShape, filterRule);
-    filter.setEdge(referredEdge);
+    filter.setVariable(variable);
 
     filters.add(filter);
-
-    vertice.setFilters(filters);
-  }
-
-  private Optional<Vertice> getVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      FilterRule filterRule) {
-    if (filterRule.isResource()) {
-      return vertice.getEdges()
-          .stream()
-          .map(Edge::getObject)
-          .findFirst()
-          .or(() -> of(vertice));
-    } else {
-      return findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false).map(Edge::getObject);
-    }
   }
 
   /*
