@@ -8,17 +8,22 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Collection;
 import java.util.List;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
+import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResourceDirectiveWiring implements SchemaDirectiveWiring {
+public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private static final String DIRECTIVE_NAME = Rdf4jDirectives.RESOURCE_NAME;
+
+  @Override
+  public String getDirectiveName() {
+    return Rdf4jDirectives.RESOURCE_NAME;
+  }
 
   @Override
   public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {

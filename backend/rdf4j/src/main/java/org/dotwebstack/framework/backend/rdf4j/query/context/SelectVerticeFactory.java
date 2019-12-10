@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,105 +33,75 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
       List<Object> orderByList, GraphQLObjectType objectType) {
-    Vertice vertice = getNewVertice(subject, query, nodeShape, filterRules);
+    Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
     orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape, objectType));
     return vertice;
   }
 
-  private Vertice getNewVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+  private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
-    processVertice(vertice, nodeShape, filterRules, query);
+    filterRules.forEach(filter -> {
+      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
+      if (filter.isResource()) {
+        return;
+      }
+
+      if (nodeShape.equals(childShape)) {
+        addFilterToVertice(vertice, query, nodeShape, filter);
+      } else {
+        Variable edgeSubject = query.var();
+        Edge edge;
+
+        if (filter.getPath()
+            .size() == 1) {
+          GraphQLFieldDefinition fieldDefinition = filter.getPath()
+              .get(0);
+          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
+              .getPath()
+              .toPredicate(), false);
+
+          if (Objects.isNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
+            addFilterToVertice(edge.getObject(), query, childShape, filter);
+          } else {
+            edge.setOptional(true);
+            createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
+            addFilterToVertice(nodeShape, vertice, filter, edge);
+          }
+
+        } else {
+          FilterRule childFilterRule = FilterRule.builder()
+              .path(filter.getPath()
+                  .subList(1, filter.getPath()
+                      .size()))
+              .value(filter.getValue())
+              .operator(filter.getOperator())
+              .build();
+          Vertice childVertice =
+              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
+
+          edge = createEdge(nodeShape, filter, childVertice);
+        }
+        vertice.getEdges()
+            .add(edge);
+      }
+    });
     return vertice;
   }
 
-  private void processVertice(Vertice vertice, NodeShape nodeShape, List<FilterRule> filterRules, OuterQuery<?> query) {
-    processResourceVertice(vertice, nodeShape, filterRules, query);
-    processChildVertice(vertice, nodeShape, filterRules, query);
-    processNestedVertice(vertice, nodeShape, filterRules, query);
-  }
-
-  private void processResourceVertice(Vertice vertice, NodeShape nodeShape, List<FilterRule> filterRules,
-      OuterQuery<?> query) {
-    filterRules.stream()
-        .filter(FilterRule::isResource)
-        .forEach(filterRule -> addFilterToVertice(vertice, query, nodeShape, filterRule));
-  }
-
-  private void processChildVertice(Vertice vertice, NodeShape nodeShape, List<FilterRule> filterRules,
-      OuterQuery<?> query) {
-    filterRules.stream()
-        .filter(filterRule -> !filterRule.isResource())
-        .filter(filterRule -> nodeShape.equals(getNextNodeShape(nodeShape, filterRule.getPath())))
-        .forEach(filterRule -> addFilterToVertice(vertice, query, nodeShape, filterRule));
-
-//    if (Objects.isNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
-//      addFilterToVertice(edge.getObject(), query, childShape, filter);
-//    } else {
-//      edge.setOptional(true);
-//      createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
-//      addFilterToVertice(nodeShape, vertice, filter, edge);
-//    }
-  }
-
-  private void processNestedVertice(Vertice vertice, NodeShape nodeShape, List<FilterRule> filterRules,
-      OuterQuery<?> query) {
-    filterRules.stream()
-        .filter(filterRule -> !filterRule.isResource())
-        .filter(filterRule -> !nodeShape.equals(getNextNodeShape(nodeShape, filterRule.getPath())))
-        .forEach(filterRule -> addEdgeToVertice(vertice, query, nodeShape, filterRule));
-  }
-
-  private void addEdgeToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    vertice.getEdges()
-        .add(getEdge(query, nodeShape, filterRule));
-  }
-
-  private Edge getEdge(OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    boolean isNested = filterRule.getPath()
-        .size() != 1;
-
-    NodeShape childShape = getNextNodeShape(nodeShape, filterRule.getPath());
-    RdfPredicate predicate = getPredicate(nodeShape, filterRule);
-
-    return isNested ? processNestedEdge(query, filterRule, childShape, predicate)
-        : processEdge(query, filterRule, childShape, predicate);
-  }
-
-  private Edge processNestedEdge(OuterQuery<?> query, FilterRule filterRule, NodeShape childShape,
-      RdfPredicate predicate) {
-    FilterRule childFilterRule = getFilterRule(filterRule);
-
-    Vertice childVertice = getNewVertice(query.var(), query, childShape, Collections.singletonList(childFilterRule));
-
-    return buildEdge(predicate, null, childVertice, false, false);
-  }
-
-  private Edge processEdge(OuterQuery<?> query, FilterRule filterRule, NodeShape childShape, RdfPredicate predicate) {
-    Edge edge = createSimpleEdge(query.var(), null, predicate, false);
-
-    addFilterToVertice(edge.getObject(), query, childShape, filterRule);
-    return edge;
-  }
-
-  private RdfPredicate getPredicate(NodeShape nodeShape, FilterRule filterRule) {
-    return nodeShape.getPropertyShape(filterRule.getPath()
-        .get(0))
-        .getPath()
-        .toPredicate();
-  }
-
-  private FilterRule getFilterRule(FilterRule filter) {
-    List<String> path = filter.getPath()
-        .subList(1, filter.getPath()
-            .size());
-    return FilterRule.builder()
-        .path(path)
-        .value(filter.getValue())
-        .operator(filter.getOperator())
+  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
+    return Edge.builder()
+        .predicate(nodeShape.getPropertyShape(filter.getPath()
+            .get(0)
+            .getName())
+            .getPath()
+            .toPredicate())
+        .object(childVertice)
+        .isVisible(false)
+        .isOptional(false)
         .build();
   }
 
@@ -151,18 +120,4 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .edges(edges)
         .build();
   }
-
-  private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
-    return Edge.builder()
-        .predicate(nodeShape.getPropertyShape(filter.getPath()
-            .get(0)
-            .getName())
-            .getPath()
-            .toPredicate())
-        .object(childVertice)
-        .isVisible(false)
-        .isOptional(false)
-        .build();
-  }
-
 }

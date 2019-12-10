@@ -32,6 +32,8 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
     registry.add(createAggregateTypeEnumDefinition());
     registry.add(createAggregateDefinition());
     registry.add(createResourceDefinition());
+
+    registry.add(new ScalarTypeDefinition(Rdf4jScalars.IRI.getName()));
   }
 
   private DirectiveDefinition createSparqlDefinition() {
@@ -62,7 +64,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
             .build())
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.OBJECT.name())
             .build())
-        .build());
+        .build();
   }
 
   private DirectiveDefinition createResourceDefinition() {

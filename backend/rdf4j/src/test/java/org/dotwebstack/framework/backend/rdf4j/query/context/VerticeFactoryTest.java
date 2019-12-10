@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
