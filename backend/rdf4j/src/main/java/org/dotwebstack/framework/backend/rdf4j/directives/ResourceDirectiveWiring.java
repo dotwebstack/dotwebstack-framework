@@ -4,14 +4,11 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import graphql.Scalars;
 import graphql.language.NonNullType;
-import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import java.util.Collection;
-import java.util.List;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +31,6 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
     String typeName = fieldsContainer.getName();
     String fieldName = fieldDefinition.getName();
     validateOnlyOnString(typeName, fieldName, GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
-    validateOnlyOncePerType(typeName, fieldName, fieldsContainer.getFieldDefinitions());
     validateOnlyRequired(typeName, fieldName, element);
 
     return element;
@@ -45,18 +41,6 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
         .equals(Scalars.GraphQLString.getName()))) {
       throw invalidConfigurationException("{}.{} should be of type String for @resource directive", typeName,
           fieldName);
-    }
-  }
-
-  private void validateOnlyOncePerType(String typeName, String fieldName, List<GraphQLFieldDefinition> fields) {
-    long directiveCount = fields.stream()
-        .map(GraphQLFieldDefinition::getDirectives)
-        .flatMap(Collection::stream)
-        .map(GraphQLDirective::getName)
-        .filter(DIRECTIVE_NAME::equals)
-        .count();
-    if (directiveCount > 1) {
-      throw invalidConfigurationException("{}.{} should have only one @resource directive", typeName, fieldName);
     }
   }
 
