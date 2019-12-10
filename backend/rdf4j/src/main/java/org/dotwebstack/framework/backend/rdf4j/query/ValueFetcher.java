@@ -122,7 +122,9 @@ public final class ValueFetcher extends SourceDataFetcher {
       }
 
       if (Objects.nonNull(nodeShape)) {
-        return stream.sorted(getComparator(asc, source.getModel(), sortArgument, nodeShape));
+        GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldDefinition()
+            .getType());
+        return stream.sorted(getComparator(asc, source.getModel(), sortArgument, nodeShape, objectType));
       }
     }
 

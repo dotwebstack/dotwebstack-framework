@@ -4,8 +4,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +13,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.context.FilterRule;
+import org.dotwebstack.framework.backend.rdf4j.query.context.OrderBy;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
@@ -53,7 +52,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      List<DirectiveContainerObject> filterMapping, List<Object> orderByObject) {
+      List<DirectiveContainerObject> filterMapping, List<OrderBy> orderBys) {
     final MapContext context = new MapContext(arguments);
 
     List<FilterRule> filterRules = filterMapping.stream()
@@ -65,14 +64,10 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
                 .getValue())
             .objectType(tuple.getObjectType())
             .value(tuple.getValue())
-            .isResource(tuple.isResource())
             .build())
         .collect(Collectors.toList());
 
-    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getObjectType());
-
-    Vertice root =
-        selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject, objectType);
+    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderBys);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)

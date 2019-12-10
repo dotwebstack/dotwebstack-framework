@@ -2,20 +2,30 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 
 @Builder
 @Getter
 public class FilterRule {
-  private List<GraphQLFieldDefinition> path;
+  @Builder.Default
+  private List<GraphQLFieldDefinition> path = new ArrayList<>();
 
   private String operator;
 
   private Object value;
 
-  private boolean isResource;
-
   private GraphQLObjectType objectType;
+
+  public boolean isResource() {
+    if (path.size() > 0) {
+      return Objects.nonNull(path.get(path.size() - 1)
+          .getDirective(Rdf4jDirectives.RESOURCE_NAME));
+    }
+    return false;
+  }
 }

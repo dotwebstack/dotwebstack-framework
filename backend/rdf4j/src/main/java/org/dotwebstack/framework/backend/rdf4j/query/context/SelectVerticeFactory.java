@@ -2,10 +2,8 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
-import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLObjectType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +30,10 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<Object> orderByList, GraphQLObjectType objectType) {
+      List<OrderBy> orderBys) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
-    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape, objectType));
+    orderBys.forEach(orderBy -> addOrderables(vertice, query, orderBy, nodeShape));
     return vertice;
   }
 

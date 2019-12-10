@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.SparqlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
@@ -29,11 +30,15 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.context.OrderBy;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.dotwebstack.framework.core.validators.QueryValidator;
@@ -172,10 +177,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private List<IRI> fetchSubjectsFromDatabase(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
       List<DirectiveContainerObject> filterMapping, Map<String, Object> arguments, RepositoryAdapter repositoryAdapter,
       GraphQLDirective sparqlDirective) {
-    List<Object> orderByObject = getOrderByObject(environment, arguments);
+    List<OrderBy> orderBys = getOrderByObject(environment, arguments);
 
     String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
-        .getQueryString(arguments, sparqlDirective, filterMapping, orderByObject);
+        .getQueryString(arguments, sparqlDirective, filterMapping, orderBys);
 
     logQuery(SUBJECTS, subjectQuery);
 
@@ -191,14 +196,41 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .collect(Collectors.toList());
   }
 
-  private List<Object> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+  private List<OrderBy> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldDefinition()
+        .getType());
     return environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDirective(CoreDirectives.SORT_NAME)))
         .findFirst()
         .map(getGraphQlSortArguments(environment, arguments))
+        .map(foo -> foo.stream()
+            .map(ObjectHelper::castToMap)
+            .map(item -> OrderBy.builder()
+                .fieldPath(FieldPathHelper.getFieldDefinitions(objectType, item.get(CoreInputTypes.SORT_FIELD_FIELD)
+                    .toString()))
+                .order(item.get(CoreInputTypes.SORT_FIELD_ORDER)
+                    .toString())
+                .build())
+            .map(this::validateOrderBy)
+            .collect(Collectors.toList()))
         .orElse(Collections.emptyList());
+  }
+
+  private OrderBy validateOrderBy(OrderBy orderBy) {
+    if (orderBy.getFieldPath()
+        .stream()
+        .map(GraphQLFieldDefinition::getType)
+        .map(GraphQLTypeUtil::unwrapNonNull)
+        .anyMatch(GraphQLTypeUtil::isList)) {
+      throw illegalArgumentException("Unable to sort on fieldPath {} which contains a list type", orderBy.getFieldPath()
+          .stream()
+          .map(GraphQLFieldDefinition::getName)
+          .collect(Collectors.joining(".")));
+    }
+
+    return orderBy;
   }
 
   @SuppressWarnings("unchecked")

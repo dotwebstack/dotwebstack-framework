@@ -24,9 +24,12 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -37,7 +40,9 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
@@ -733,5 +738,69 @@ class Rdf4jIntegrationTest {
     assertThat(subjects.get(3), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/123")));
   }
 
+  @Test
+  void graphQlQuery_throwsException_SortedOnListBeerSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"beers.subject\", order: DESC}]){beers { subject }}}";
 
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertFalse(result.getErrors()
+        .isEmpty());
+    assertEquals(1, result.getErrors()
+        .size());
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_SortedOnAddressSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"address.subject\", order: DESC}]){address { subject }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> subjects = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("address"))
+        .filter(Objects::nonNull)
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("subject")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    assertEquals(3, subjects.size());
+    assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/address/3",
+        "https://github.com/dotwebstack/beer/id/address/2", "https://github.com/dotwebstack/beer/id/address/1"));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_FilterOnAddressSubject() {
+    // Arrange
+    String query = "{breweries{address(subject : \"https://github.com/dotwebstack/beer/id/address/1\") { subject }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> subjects = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("address"))
+        .filter(Objects::nonNull)
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("subject")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    assertEquals(1, subjects.size());
+    assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/address/1"));
+  }
 }

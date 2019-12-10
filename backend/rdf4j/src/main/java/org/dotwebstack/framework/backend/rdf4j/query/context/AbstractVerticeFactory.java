@@ -14,9 +14,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
-import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
-import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
-import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER;
 
 import com.google.common.collect.ImmutableList;
 import graphql.Scalars;
@@ -228,6 +225,13 @@ abstract class AbstractVerticeFactory {
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
+    if (Objects.nonNull(filterRule.getPath()
+        .get(filterRule.getPath()
+            .size() - 1)
+        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+      addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
+      return;
+    }
     findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false)
         .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
   }
@@ -296,6 +300,11 @@ abstract class AbstractVerticeFactory {
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
       List<GraphQLFieldDefinition> fieldPath, boolean required, boolean isVisible) {
+    if (Objects.nonNull(fieldPath.get(fieldPath.size() - 1)
+        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+      return Optional.empty();
+    }
+
     Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath)), vertice,
         required, isVisible);
 
@@ -378,16 +387,12 @@ abstract class AbstractVerticeFactory {
         .addAll(childEdges);
   }
 
-  void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap, NodeShape nodeShape,
-      GraphQLObjectType objectType) {
-    String fieldName = getSortProperty(orderMap, SORT_FIELD_FIELD);
-    String order = getSortProperty(orderMap, SORT_FIELD_ORDER);
-    boolean isResource = Boolean.parseBoolean(getSortProperty(orderMap, SORT_FIELD_IS_RESOURCE));
-
-    final List<GraphQLFieldDefinition> fieldPath = getFieldDefinitions(objectType, fieldName);
-
+  void addOrderables(Vertice vertice, OuterQuery<?> query, OrderBy orderBy, NodeShape nodeShape) {
     Optional<Variable> subject;
-    if (isResource) {
+
+    List<GraphQLFieldDefinition> fieldPath = orderBy.getFieldPath();
+    if (Objects.nonNull(fieldPath.get(fieldPath.size() - 1)
+        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
       subject = getSubjectForResource(vertice, query, nodeShape, fieldPath);
     } else {
       subject = getSubject(vertice, query, nodeShape, fieldPath);
@@ -396,7 +401,8 @@ abstract class AbstractVerticeFactory {
     subject.map(s -> Expressions.coalesce(s, getDefaultOrderByValue(fieldPath.get(fieldPath.size() - 1))))
         .ifPresent(s -> {
           List<Orderable> orderables = nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-          orderables.add((order.equalsIgnoreCase("desc")) ? s.desc() : s.asc());
+          orderables.add((orderBy.getOrder()
+              .equalsIgnoreCase("desc")) ? s.desc() : s.asc());
           vertice.setOrderables(orderables);
         });
   }
