@@ -135,6 +135,7 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
+  @SuppressWarnings("unchecked")
   private String getFieldName(GraphQLArgument argument, String directiveName) {
     if (CoreDirectives.SORT_NAME.equals(directiveName)) {
       Object fieldValue = nonNull(argument.getValue()) ? argument.getValue() : argument.getDefaultValue();

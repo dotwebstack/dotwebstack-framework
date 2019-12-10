@@ -31,30 +31,24 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
     GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
     GraphQLFieldDefinition element = environment.getElement();
 
-    try {
-      validateOnlyOnString(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
-      validateOnlyOncePerType(fieldsContainer.getFieldDefinitions());
-      validateOnlyRequired(element);
-
-    } catch (ValidationException vex) {
-      String typeName = fieldsContainer.getName();
-      String fieldName = fieldDefinition.getName();
-
-      throw invalidConfigurationException("[GraphQL] Found an error on @{} directive defined on {}.{}: {} ",
-          DIRECTIVE_NAME, typeName, fieldName, vex);
-    }
+    String typeName = fieldsContainer.getName();
+    String fieldName = fieldDefinition.getName();
+    validateOnlyOnString(typeName, fieldName, GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+    validateOnlyOncePerType(typeName, fieldName, fieldsContainer.getFieldDefinitions());
+    validateOnlyRequired(typeName, fieldName, element);
 
     return element;
   }
 
-  private void validateOnlyOnString(GraphQLType rawType) throws ValidationException {
+  private void validateOnlyOnString(String typeName, String fieldName, GraphQLType rawType) {
     if (!(rawType.getName()
         .equals(Scalars.GraphQLString.getName()))) {
-      throw new ValidationException("can only be defined on a String field");
+      throw invalidConfigurationException("{}.{} should be of type String for @resource directive", typeName,
+          fieldName);
     }
   }
 
-  private void validateOnlyOncePerType(List<GraphQLFieldDefinition> fields) throws ValidationException {
+  private void validateOnlyOncePerType(String typeName, String fieldName, List<GraphQLFieldDefinition> fields) {
     long directiveCount = fields.stream()
         .map(GraphQLFieldDefinition::getDirectives)
         .flatMap(Collection::stream)
@@ -62,20 +56,15 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
         .filter(DIRECTIVE_NAME::equals)
         .count();
     if (directiveCount > 1) {
-      throw new ValidationException("can only be defined once per type");
+      throw invalidConfigurationException("{}.{} should have only one @resource directive", typeName, fieldName);
     }
   }
 
-  private void validateOnlyRequired(GraphQLFieldDefinition argument) throws ValidationException {
+  private void validateOnlyRequired(String typeName, String fieldName, GraphQLFieldDefinition argument) {
     if (!(argument.getDefinition()
         .getType() instanceof NonNullType)) {
-      throw new ValidationException("can only be defined on non-nullable field");
-    }
-  }
-
-  private static class ValidationException extends Throwable {
-    ValidationException(String message) {
-      super(message);
+      throw invalidConfigurationException("{}.{} should be an non-nullable field for @resource directive", typeName,
+          fieldName);
     }
   }
 }

@@ -32,6 +32,7 @@ public class CompareHelper {
     return (value1, value2) -> compareValue(value1, value2, asc);
   }
 
+  @SuppressWarnings("rawtypes")
   public static Comparator<Value> getComparator(boolean asc, @NonNull Model model,
       @NonNull GraphQLArgument sortArgument, @NonNull NodeShape nodeShape) {
     Map sortArguments = (Map) ((List) sortArgument.getDefaultValue()).get(0);

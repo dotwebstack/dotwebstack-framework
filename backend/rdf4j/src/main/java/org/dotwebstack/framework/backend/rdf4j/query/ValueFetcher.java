@@ -129,6 +129,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     return stream;
   }
 
+  @SuppressWarnings("rawtypes")
   private Boolean getSortOrder(GraphQLArgument sortArgument) {
     Map orderables = (Map) ((List) sortArgument.getDefaultValue()).get(0);
     Object fieldOrder = orderables.get(SORT_FIELD_ORDER);
