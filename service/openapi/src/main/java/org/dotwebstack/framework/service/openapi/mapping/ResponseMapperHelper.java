@@ -10,12 +10,13 @@ class ResponseMapperHelper {
 
   private ResponseMapperHelper() {}
 
-  static boolean isRequiredAndNullOrEmpty(@NonNull ResponseWriteContext writeContext, Object object) {
-    return writeContext.getResponseObject()
+  static boolean isRequiredOrExpandedAndNullOrEmpty(@NonNull ResponseWriteContext writeContext, Object object,
+      boolean expanded) {
+    return (writeContext.getResponseObject()
         .getSummary()
-        .isRequired()
-        && ((Objects.isNull(object)) || isEmptyList(writeContext.getResponseObject()
-            .getSummary(), object));
+        .isRequired() || expanded) && ((Objects.isNull(object))
+            || isEmptyList(writeContext.getResponseObject()
+                .getSummary(), object));
   }
 
   private static boolean isEmptyList(SchemaSummary summary, Object object) {

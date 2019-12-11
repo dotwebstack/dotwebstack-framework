@@ -4,7 +4,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
-import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredAndNullOrEmpty;
+import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
@@ -168,12 +168,20 @@ public class ResponseMapper {
         .getChildren()
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
-          Object object = mapObject(writeContext, mapDataToResponse(writeContext, path));
-          if (Objects.nonNull(object) || writeContext.isSchemaRequiredNonNillable()) {
+
+          boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, childSchema.getIdentifier()));
+          Object object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
+
+          if (Objects.nonNull(object) || writeContext.isSchemaRequiredNillable() || isExpanded) {
             result.put(childSchema.getIdentifier(), convertType(writeContext, object));
           }
         });
     return result;
+  }
+
+  private String childPath(String path, String identifier) {
+    String newPath = removeRoot(path);
+    return newPath.length() > 0 ? newPath + "." + identifier : identifier;
   }
 
   private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
@@ -220,8 +228,8 @@ public class ResponseMapper {
   }
 
 
-  private Object mapObject(ResponseWriteContext writeContext, Object object) {
-    if (isRequiredAndNullOrEmpty(writeContext, object)) {
+  private Object mapObject(ResponseWriteContext writeContext, Object object, boolean isExpanded) {
+    if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded)) {
       if (writeContext.getResponseObject()
           .getSummary()
           .isNillable()) {

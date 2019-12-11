@@ -138,7 +138,10 @@ public class ResponseContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static boolean isExpanded(@NonNull Map<String, Object> inputParams, @NonNull String path) {
+  public static boolean isExpanded(Map<String, Object> inputParams, @NonNull String path) {
+    if (Objects.isNull(inputParams)) {
+      return false;
+    }
     List<String> expandVariables = (List<String>) inputParams.get(X_DWS_EXPANDED_PARAMS);
     if (Objects.nonNull(expandVariables)) {
       return expandVariables.stream()
