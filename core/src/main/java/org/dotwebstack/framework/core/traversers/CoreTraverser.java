@@ -36,7 +36,7 @@ public class CoreTraverser {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  public List<DirectiveContainerTuple> getTuples(@NonNull DataFetchingEnvironment environment,
+  public List<DirectiveContainerObject> getTuples(@NonNull DataFetchingEnvironment environment,
       @NonNull TraverserFilter filter) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
 
@@ -63,15 +63,15 @@ public class CoreTraverser {
         .collect(Collectors.toList());
   }
 
-  private List<DirectiveContainerTuple> getInputObjectFieldsFromArgument(GraphQLFieldDefinition fieldDefinition,
+  private List<DirectiveContainerObject> getInputObjectFieldsFromArgument(GraphQLFieldDefinition fieldDefinition,
       GraphQLArgument container, Map<String, Object> arguments) {
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
     if (container.getType() instanceof GraphQLInputObjectType) {
-      List<DirectiveContainerTuple> result = new ArrayList<>();
+      List<DirectiveContainerObject> result = new ArrayList<>();
 
       Map<String, Object> nestedArguments = getNestedMap(arguments, container.getName());
 
-      result.add(DirectiveContainerTuple.builder()
+      result.add(DirectiveContainerObject.builder()
           .container(container)
           .objectType(objectType)
           .value(nestedArguments)
@@ -82,7 +82,7 @@ public class CoreTraverser {
       return result;
 
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
-      return singletonList(DirectiveContainerTuple.builder()
+      return singletonList(DirectiveContainerObject.builder()
           .container(container)
           .objectType(objectType)
           .value(arguments.getOrDefault(container.getName(), null))
@@ -96,7 +96,7 @@ public class CoreTraverser {
    * return a list containing the input object types that can be reached top down from a given input
    * object type
    */
-  private List<DirectiveContainerTuple> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType,
+  private List<DirectiveContainerObject> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType,
       Map<String, Object> arguments) {
     return inputObjectType.getFields()
         .stream()
@@ -105,7 +105,7 @@ public class CoreTraverser {
             return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType(),
                 getNestedMap(arguments, field.getName())).stream();
           } else if (GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType) {
-            return Stream.of(DirectiveContainerTuple.builder()
+            return Stream.of(DirectiveContainerObject.builder()
                 .container(field)
                 .value(arguments.getOrDefault(field.getName(), null))
                 .build());

@@ -60,6 +60,7 @@ components:
       type: object
       required:
         - identifier
+        - subject
         - name
         - localName
         - owners
@@ -67,6 +68,8 @@ components:
         - beerCount
       properties:
         identifier:
+          type: string
+        subject:
           type: string
         name:
           type: string
@@ -185,7 +188,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded', '-beerCount','beerCount']
+              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
       responses:
         200:
           description: OK
@@ -199,6 +202,31 @@ paths:
             application/hal+json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /brewery_with_subject:
+    get:
+      x-dws-query: brewery_with_subject
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+        - name: subject
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
   /brewery/{identifier}:
     get:
       x-dws-query: brewery

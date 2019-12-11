@@ -9,7 +9,7 @@ import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,7 @@ class ConstraintDirectiveWiringTest {
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
     // Assert
-    verify(constraintValidator).validateSchema(DirectiveContainerTuple.builder()
+    verify(constraintValidator).validateSchema(DirectiveContainerObject.builder()
         .container(argument)
         .value(argument.getDefaultValue())
         .build());
@@ -82,7 +82,7 @@ class ConstraintDirectiveWiringTest {
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
     // Assert
-    verify(constraintValidator).validateSchema(DirectiveContainerTuple.builder()
+    verify(constraintValidator).validateSchema(DirectiveContainerObject.builder()
         .container(field)
         .value(field.getDefaultValue())
         .build());

@@ -14,6 +14,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFI
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
@@ -22,6 +24,12 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -32,10 +40,11 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,20 +59,19 @@ class Rdf4jIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
     // Arrange
-    String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, subject, founded }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(equalTo(true)));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERY_FIELD,
+        hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_FOUNDED_FIELD,
-                ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1,
+                BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
   }
 
   @Test
@@ -75,11 +83,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(equalTo(true)));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     assertThat(data,
-        IsMapContaining.hasEntry(BEER_FIELD,
+        hasEntry(BEER_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BEER_IDENTIFIER_EXAMPLE_1.stringValue(), BEERTYPES_RAW_FIELD,
                 ImmutableList.of(ImmutableMap.of(SCHEMA_NAME.getLocalName(), "Bitter"),
                     ImmutableMap.of(SCHEMA_NAME.getLocalName(), "Ale")))));
@@ -94,11 +101,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(equalTo(true)));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERY_FIELD,
+        hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_ADDRESS_FIELD,
                 ImmutableMap.of("postalCode", "2841 XB"))));
@@ -113,11 +119,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList.of(
         ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 
@@ -132,13 +137,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(equalTo(true)));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD,
+        hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
@@ -156,11 +159,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList.of(
         ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 
@@ -175,12 +177,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD,
+        hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456", BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."))));
   }
@@ -196,12 +197,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweriesWithInputObject",
+        hasEntry("breweriesWithInputObject",
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1", BREWERY_NAME_FIELD, "Heineken Nederland"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
   }
@@ -215,12 +215,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries",
+        hasEntry("breweries",
             ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"),
                 ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
                 ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
@@ -237,12 +236,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries",
+        hasEntry("breweries",
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"))));
@@ -257,8 +255,7 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .size(), is(1));
+    assertThat(result.getErrors(), hasSize(1));
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
@@ -276,17 +273,13 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data,
-        IsMapContaining.hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
+    assertThat(data, hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"), ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
 
   }
 
@@ -299,12 +292,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries",
+        hasEntry("breweries",
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"))));
@@ -320,12 +312,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries",
+        hasEntry("breweries",
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"))));
@@ -340,8 +331,7 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .size(), is(1));
+    assertThat(result.getErrors(), hasSize(1));
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
@@ -358,8 +348,7 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .size(), is(1));
+    assertThat(result.getErrors(), hasSize(1));
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
@@ -378,11 +367,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
+    assertThat(data, hasEntry(BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
             .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
@@ -402,12 +390,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD,
+        hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
@@ -424,12 +411,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD,
+        hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
@@ -453,11 +439,10 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
+    assertThat(data, hasEntry(BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of("name", "Heineken Nederland", "localName", "Heineken Niederlande"))));
   }
 
@@ -474,8 +459,7 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     List<String> owners = (List<String>) ((List<Map<String, Object>>) data.get("breweries")).get(0)
         .get("owners");
@@ -493,15 +477,14 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     List<String> ingredients =
         ((List<Map<String, String>>) ((Map<String, Object>) data.get("beer")).get("ingredients")).stream()
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients.size(), is(4));
+    assertThat(ingredients, hasSize(4));
     assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
@@ -518,13 +501,12 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     List<Integer> numbers = ((List<Map<String, Integer>>) data.get("breweries")).stream()
         .map(map -> map.get("number"))
         .collect(Collectors.toList());
-    assertThat(numbers.size(), is(5));
+    assertThat(numbers, hasSize(5));
     assertThat(numbers.get(0), is(equalTo(null)));
     assertThat(numbers.get(1), is(1));
     assertThat(numbers.get(2), is(2));
@@ -543,19 +525,23 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors()
-        .isEmpty(), is(true));
+    assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     List<Integer> numbers = ((List<Map<String, Integer>>) data.get("breweries")).stream()
         .map(map -> map.get("number"))
         .collect(Collectors.toList());
-    assertThat(numbers.size(), is(5));
+    assertThat(numbers, hasSize(5));
     assertThat(numbers.get(0), is(100));
     assertThat(numbers.get(1), is(20));
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(1));
     assertThat(numbers.get(4), is(equalTo(null)));
   }
+
+  private void assertResultHasNoErrors(ExecutionResult result) {
+    assertThat(result.getErrors(), is(empty()));
+  }
+
 
   @Test
   void graphQlQuery_ReturnsBreweries_WithCount() {
@@ -670,7 +656,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_ReturnesBreweries_WithTransformedAggregate() {
+  void graphQlQuery_ReturnsBreweries_WithTransformedAggregate() {
     // Arrange
     String query = "{breweries(sort: [{field: \"name\", order: ASC}]){name, beerCount, hasBeers}}";
 
@@ -686,5 +672,136 @@ class Rdf4jIntegrationTest {
         .collect(Collectors.toList());
 
     assertThat(hasBeers, is(ImmutableList.of(true, true, false, false, false)));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsBrewery_FilteredBySubject() {
+    // Arrange
+    String query =
+        "{ brewery_with_subject(subject: \"https://github.com/dotwebstack/beer/id/brewery/123\") { subject }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+    assertThat(data,
+        hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1)));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_SortedOnSubjectAsc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"subject\", order: ASC}]){subject}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
+        .map(entry -> entry.get("subject"))
+        .collect(Collectors.toList());
+
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects.get(0), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/1")));
+    assertThat(subjects.get(1), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/123")));
+    assertThat(subjects.get(2), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/2")));
+    assertThat(subjects.get(3), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/456")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_SortedOnSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"subject\", order: DESC}]){subject}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
+        .map(entry -> entry.get("subject"))
+        .collect(Collectors.toList());
+
+    assertThat(subjects, hasSize(5));
+    assertThat(subjects.get(0), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/789")));
+    assertThat(subjects.get(1), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/456")));
+    assertThat(subjects.get(2), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/2")));
+    assertThat(subjects.get(3), is(equalTo("https://github.com/dotwebstack/beer/id/brewery/123")));
+  }
+
+  @Test
+  void graphQlQuery_throwsException_SortedOnListBeerSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"beers.subject\", order: DESC}]){beers { subject }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertFalse(result.getErrors()
+        .isEmpty());
+    assertEquals(1, result.getErrors()
+        .size());
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_SortedOnAddressSubjectDesc() {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"address.subject\", order: DESC}]){address { subject }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> subjects = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("address"))
+        .filter(Objects::nonNull)
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("subject")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    assertEquals(3, subjects.size());
+    assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/address/3",
+        "https://github.com/dotwebstack/beer/id/address/2", "https://github.com/dotwebstack/beer/id/address/1"));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_FilterOnAddressSubject() {
+    // Arrange
+    String query =
+        "{breweries{address(subject : \"https://github.com/dotwebstack/beer/id/address/1\") { subject, resource }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> subjects = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("address"))
+        .filter(Objects::nonNull)
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("subject")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    assertEquals(1, subjects.size());
+    assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/address/1"));
   }
 }

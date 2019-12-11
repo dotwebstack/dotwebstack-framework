@@ -23,10 +23,7 @@ class Edge implements Comparable<Edge> {
   private Aggregate aggregate;
 
   RdfPredicate getConstructPredicate() {
-    if (Objects.nonNull(constructPredicate)) {
-      return constructPredicate;
-    }
-    return predicate;
+    return Objects.nonNull(constructPredicate) ? constructPredicate : predicate;
   }
 
   @Override

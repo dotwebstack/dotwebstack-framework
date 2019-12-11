@@ -67,16 +67,16 @@ public class VerticeHelper {
   }
 
   private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
-      List<Filter> filtersWithEdge) {
+      List<Filter> filtersWithVariables) {
     GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
 
-    filtersWithEdge
-        .forEach(filter -> graphPatternNotTriples.filter(Expressions.equals(Expressions.coalesce(filter.getEdge()
-            .getAggregate()
-            .getVariable(), Rdf.literalOf(0)), filter.getOperands()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
+    filtersWithVariables
+        .forEach(filter -> graphPatternNotTriples
+            .filter(Expressions.equals(Expressions.coalesce(filter.getVariable(), Rdf.literalOf(0)),
+                filter.getOperands()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> illegalArgumentException("No operand found for filter!")))));
 
     return singletonList(graphPatternNotTriples);
   }
@@ -90,7 +90,7 @@ public class VerticeHelper {
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
-    List<Filter> filtersWithEdge = getFiltersWithEdge(vertice);
+    List<Filter> filtersWithEdge = getFilters(vertice);
     if (!filtersWithEdge.isEmpty()) {
       return getWherePatternsWithFilter(result, filtersWithEdge);
     }
@@ -147,10 +147,10 @@ public class VerticeHelper {
     return result;
   }
 
-  private static List<Filter> getFiltersWithEdge(@NonNull Vertice vertice) {
+  private static List<Filter> getFilters(@NonNull Vertice vertice) {
     return vertice.getFilters()
         .stream()
-        .filter(filter -> Objects.nonNull(filter.getEdge()))
+        .filter(filter -> Objects.nonNull(filter.getVariable()))
         .collect(Collectors.toList());
   }
 

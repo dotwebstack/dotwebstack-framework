@@ -8,6 +8,9 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
+  brewery_with_subject(subject: String! @filter) : Brewery
+    @sparql(repository: "local")
+
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: Date @filter(field: "founded", operator: ">"),
@@ -53,6 +56,7 @@ type Query {
 
 type Brewery {
   identifier: ID!
+  subject: String! @resource
   name: String!
   localName: String
   founded: Int!

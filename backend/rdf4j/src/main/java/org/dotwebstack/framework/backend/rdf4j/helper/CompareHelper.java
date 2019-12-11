@@ -1,14 +1,22 @@
 package org.dotwebstack.framework.backend.rdf4j.helper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
+import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
+
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -26,34 +34,48 @@ public class CompareHelper {
     return (value1, value2) -> compareValue(value1, value2, asc);
   }
 
-  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model, @NonNull String field,
-      @NonNull NodeShape nodeShape) {
-    return (value1, value2) -> compareOptional(resolveValue(value1, model, field, nodeShape),
-        resolveValue(value2, model, field, nodeShape), asc);
+  @SuppressWarnings("rawtypes")
+  public static Comparator<Value> getComparator(boolean asc, @NonNull Model model,
+      @NonNull GraphQLArgument sortArgument, @NonNull NodeShape nodeShape, @Nonnull GraphQLObjectType objectType) {
+    Map sortArguments = (Map) ((List) sortArgument.getDefaultValue()).get(0);
+
+    Object sortResource = sortArguments.get(SORT_FIELD_IS_RESOURCE);
+    Object sortField = sortArguments.get(SORT_FIELD_FIELD);
+
+    boolean isResource = (boolean) (Objects.nonNull(sortResource) ? sortResource : false);
+    String field = Objects.nonNull(sortField) ? sortField.toString() : sortArgument.getName();
+
+    List<GraphQLFieldDefinition> fieldPath = FieldPathHelper.getFieldDefinitions(objectType, field);
+
+    return (value1, value2) -> compareOptional(resolveValue(value1, model, fieldPath, isResource, nodeShape),
+        resolveValue(value2, model, fieldPath, isResource, nodeShape), asc);
   }
 
-  private static Optional<Value> resolveValue(Value value, Model model, String path, NodeShape nodeShape) {
-    List<String> fields = new ArrayList<>(Arrays.asList(path.split("\\.")));
-    String field = fields.remove(0);
-    PropertyShape propertyShape = nodeShape.getPropertyShape(field);
+  private static Optional<Value> resolveValue(Value value, Model model, List<GraphQLFieldDefinition> fieldPath,
+      boolean isResource, NodeShape nodeShape) {
 
-    IRI iri = propertyShape.getPath()
-        .getBaseIri();
-    if (propertyShape.getPath() instanceof PredicatePath) {
-      iri = ((PredicatePath) propertyShape.getPath()).getIri();
+    return isResource && fieldPath.size() == 1 ? Optional.of(value)
+        : resolveOtherValue((Resource) value, model, isResource, nodeShape, fieldPath);
+  }
+
+  private static Optional<Value> resolveOtherValue(Resource value, Model model, boolean isResource, NodeShape nodeShape,
+      List<GraphQLFieldDefinition> fieldPath) {
+    GraphQLFieldDefinition fieldDefinition = fieldPath.get(0);
+
+    if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+      return Optional.of(value);
     }
 
-    Optional<Value> childOptional = Models.getProperty(model, (Resource) value, iri);
-    if (childOptional.isPresent()) {
-      if (fields.isEmpty()) {
-        return childOptional;
-      } else {
-        return childOptional
-            .flatMap(childValue -> resolveValue(childValue, model, String.join(".", field), propertyShape.getNode()));
-      }
-    }
+    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldDefinition.getName());
+    BasePath basePath = propertyShape.getPath();
 
-    return Optional.empty();
+    IRI iri = basePath instanceof PredicatePath ? ((PredicatePath) basePath).getIri() : basePath.getBaseIri();
+
+    Optional<Value> childOptional = Models.getProperty(model, value, iri);
+
+    return fieldPath.size() == 1 ? childOptional
+        : childOptional.flatMap(child -> resolveValue(child, model, fieldPath.subList(1, fieldPath.size()), isResource,
+            propertyShape.getNode()));
   }
 
   private static int compareOptional(Optional<Value> optional1, Optional<Value> optional2, boolean asc) {
@@ -66,6 +88,9 @@ public class CompareHelper {
   }
 
   private static int compareValue(@NonNull Value value1, @NonNull Value value2, boolean asc) {
+    if (value1 instanceof IRI) {
+      return compareStringValue(value1, value2, asc);
+    }
 
     IRI datatype = ((SimpleLiteral) value1).getDatatype();
     if (isInteger(datatype)) {

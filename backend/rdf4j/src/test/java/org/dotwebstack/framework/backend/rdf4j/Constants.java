@@ -78,6 +78,11 @@ public final class Constants {
 
   public static final Literal BREWERY_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
 
+  // Brewery.subject
+  public static final String BREWERY_SUBJECT_FIELD = "subject";
+
+  public static final String BREWERY_SUBJECT_EXAMPLE_1 = "https://github.com/dotwebstack/beer/id/brewery/123";
+
   // Brewery.name
 
   public static final String BREWERY_NAME_FIELD = "name";

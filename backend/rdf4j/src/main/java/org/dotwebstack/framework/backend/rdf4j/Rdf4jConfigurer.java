@@ -12,6 +12,7 @@ import graphql.language.DirectiveLocation;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
+import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -30,6 +31,9 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
     registry.add(createSparqlDefinition());
     registry.add(createAggregateTypeEnumDefinition());
     registry.add(createAggregateDefinition());
+    registry.add(createResourceDefinition());
+
+    registry.add(new ScalarTypeDefinition(Rdf4jScalars.IRI.getName()));
   }
 
   private DirectiveDefinition createSparqlDefinition() {
@@ -59,6 +63,14 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.OBJECT.name())
+            .build())
+        .build();
+  }
+
+  private DirectiveDefinition createResourceDefinition() {
+    return DirectiveDefinition.newDirectiveDefinition()
+        .name(Rdf4jDirectives.RESOURCE_NAME)
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
         .build();
   }
