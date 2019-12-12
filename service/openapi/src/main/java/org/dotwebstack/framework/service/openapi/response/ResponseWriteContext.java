@@ -28,4 +28,11 @@ public class ResponseWriteContext {
         && !getResponseObject().getSummary()
             .isNillable();
   }
+
+  public boolean isSchemaRequiredNillable() {
+    return getResponseObject().getSummary()
+        .isRequired()
+        && getResponseObject().getSummary()
+            .isNillable();
+  }
 }
