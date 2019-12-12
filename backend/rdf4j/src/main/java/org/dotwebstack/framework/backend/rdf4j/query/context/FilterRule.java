@@ -22,10 +22,7 @@ public class FilterRule {
   private GraphQLObjectType objectType;
 
   public boolean isResource() {
-    if (path.size() > 0) {
-      return Objects.nonNull(path.get(path.size() - 1)
-          .getDirective(Rdf4jDirectives.RESOURCE_NAME));
-    }
-    return false;
+    return path.size() == 1 && Objects.nonNull(path.get(0)
+        .getDirective(Rdf4jDirectives.RESOURCE_NAME));
   }
 }
