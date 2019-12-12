@@ -808,7 +808,6 @@ class Rdf4jIntegrationTest {
   @Test
   void graphQlQuery_returnsBreweries_FilterOnAddressSubjectNested() {
     // Arrange
-
     String query = "{ breweries(withAddressSubject: \"https://github.com/dotwebstack/beer/id/address/1\") { subject }}";
 
     // Act
@@ -822,9 +821,8 @@ class Rdf4jIntegrationTest {
             .toString())
         .collect(Collectors.toList());
 
-    assertTrue(result.getErrors()
-        .isEmpty());
-    assertEquals(1, subjects.size());
+    assertThat(result.getErrors(), hasSize(0));
+    assertThat(subjects, hasSize(1));
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
   }
 }
