@@ -65,28 +65,26 @@ class SortDirectiveWiringTest {
   @Test
   void validateListSize_doesNotThrowError_WithListSizeExactlyOne() {
     // Act & Assert
-    assertDoesNotThrow(() -> sortDirectiveWiring.validateListSize(List.of("1"), "Beer", "brewery"));
+    assertDoesNotThrow(() -> sortDirectiveWiring.validateListSize(List.of("1")));
   }
 
   @Test
   void validateListSize_throwsError_withListSizeGreaterThenOne() {
     // Act & Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> sortDirectiveWiring.validateListSize(List.of("1", "2"), "Beer", "brewery"));
+    assertThrows(InvalidConfigurationException.class, () -> sortDirectiveWiring.validateListSize(List.of("1", "2")));
   }
 
   @Test
   void validateSortFieldField_doesNotThrowError_whenPresent() {
     // Act & Assert
-    assertDoesNotThrow(
-        () -> sortDirectiveWiring.validateFieldArgumentDoesNotExist(Map.of("test", "beer"), "Beer", "brewery"));
+    assertDoesNotThrow(() -> sortDirectiveWiring.validateFieldArgumentDoesNotExist(Map.of("test", "beer")));
   }
 
   @Test
   void validateSortFieldField_ThrowsError_whenMissing() {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
-        () -> sortDirectiveWiring.validateFieldArgumentDoesNotExist(Map.of("field", "beer"), "Beer", "brewery"));
+        () -> sortDirectiveWiring.validateFieldArgumentDoesNotExist(Map.of("field", "beer")));
 
   }
 
@@ -94,34 +92,33 @@ class SortDirectiveWiringTest {
   void validateListType_throwsError_whenNotList() {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
-        () -> sortDirectiveWiring.validateListType(Scalars.GraphQLString, "Beer", "brewery"));
+        () -> sortDirectiveWiring.validateListType(Scalars.GraphQLString));
   }
 
   @Test
   void validateListType_doesNotThrowError_whenList() {
     // Act & Assert
-    assertDoesNotThrow(
-        () -> sortDirectiveWiring.validateListType(GraphQLList.list(Scalars.GraphQLString), "Beer", "brewery"));
+    assertDoesNotThrow(() -> sortDirectiveWiring.validateListType(GraphQLList.list(Scalars.GraphQLString)));
   }
 
   @Test
   void validateSortFieldList_throwsError_whenNotList() {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
-        () -> sortDirectiveWiring.validateSortFieldList(Scalars.GraphQLString, "SortField", "Beer", "brewery", "sort"));
+        () -> sortDirectiveWiring.validateSortFieldList(Scalars.GraphQLString, "SortField", "sort"));
   }
 
   @Test
   void validateSortFieldList_throwsError_whenNotSortField() {
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
-        () -> sortDirectiveWiring.validateSortFieldList(Scalars.GraphQLString, "Beer", "Beer", "brewery", "sort"));
+        () -> sortDirectiveWiring.validateSortFieldList(Scalars.GraphQLString, "Beer", "sort"));
   }
 
   @Test
   void validateSortFieldList_doesNothrowError_whenSortFieldList() {
     // Act & Assert
-    assertDoesNotThrow(() -> sortDirectiveWiring.validateSortFieldList(GraphQLList.list(Scalars.GraphQLString),
-        "SortField", "Beer", "brewery", "sort"));
+    assertDoesNotThrow(
+        () -> sortDirectiveWiring.validateSortFieldList(GraphQLList.list(Scalars.GraphQLString), "SortField", "sort"));
   }
 }

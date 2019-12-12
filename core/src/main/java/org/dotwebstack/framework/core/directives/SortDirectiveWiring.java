@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.core.directives;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_FIELD;
 
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLTypeUtil;
@@ -11,13 +12,12 @@ import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
+public class SortDirectiveWiring extends ValidatingDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private CoreTraverser coreTraverser;
 
@@ -33,76 +33,56 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
   @Override
   @SuppressWarnings("unchecked")
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
-    GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldDefinition()
-        .getType());
+    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
+    GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
-    GraphQLType unwrappedType = rawType;
-    while (GraphQLTypeUtil.isWrapped(unwrappedType)) {
-      unwrappedType = GraphQLTypeUtil.unwrapOne(unwrappedType);
-    }
+    GraphQLType type = GraphQLTypeUtil.unwrapAll(rawType);
+    GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
 
-    String fieldName = environment.getFieldsContainer()
-        .getName();
-    String typeName = environment.getFieldDefinition()
-        .getName();
-    String argumentName = environment.getElement()
-        .getName();
+    GraphQLArgument element = environment.getElement();
+    String argumentName = element.getName();
+    validate(getDirectiveName(), fieldDefinition, fieldsContainer, () -> {
+      validateListType(rawType);
+      if (!(rawType instanceof GraphQLTypeReference) && GraphQLTypeUtil.isScalar(type)) {
+        List<Object> defaultSortValues = (List<Object>) element.getDefaultValue();
+        validateListSize(defaultSortValues);
 
-    validateListType(rawType, typeName, fieldName);
-    if (!(rawType instanceof GraphQLTypeReference) && GraphQLTypeUtil.isScalar(unwrappedType)) {
-      List<Object> defaultSortValues = (List<Object>) environment.getElement()
-          .getDefaultValue();
-      validateListSize(defaultSortValues, fieldName, typeName);
-      GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
-          .getType());
-      GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
-      validateSortFieldList(sortType, unpackedSortType.getName(), typeName, fieldName, argumentName);
-      Map<String, String> defaultSortValue = (Map<String, String>) defaultSortValues.get(0);
-      validateFieldArgumentDoesNotExist(defaultSortValue, typeName, argumentName);
-    } else {
-      SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
-      GraphQLArgument sortArgument = environment.getElement();
-      if (sortArgument != null && sortArgument.getDefaultValue() != null) {
-        sortFieldValidator.validate(environment.getFieldDefinition()
-            .getType(), sortArgument, sortArgument.getDefaultValue());
+        GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(element.getType());
+        GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
+        validateSortFieldList(sortType, unpackedSortType.getName(), argumentName);
+
+        Map<String, String> defaultSortValue = getDefaultSortValue(defaultSortValues);
+        validateFieldArgumentDoesNotExist(defaultSortValue);
+      } else {
+        SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
+        if (element.getDefaultValue() != null) {
+          sortFieldValidator.validate(fieldDefinition.getType(), element, element.getDefaultValue());
+        }
       }
-    }
-    return environment.getElement();
+    });
+
+    return element;
   }
 
-  void validateFieldArgumentDoesNotExist(Map<String, String> defaultSortValue, String typeName, String fieldName) {
-    if (defaultSortValue.containsKey(SORT_FIELD_FIELD)) {
-      throw invalidConfigurationException(
-          "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
-              + "argument 'field'",
-          typeName, fieldName);
-    }
+  @SuppressWarnings("unchecked")
+  private Map<String, String> getDefaultSortValue(List<Object> defaultSortValues) {
+    return (Map<String, String>) defaultSortValues.get(0);
   }
 
-  void validateListSize(List<Object> sortFields, String typeName, String fieldName) {
-    if (sortFields.size() != 1) {
-      throw invalidConfigurationException(
-          "Found an error on @sort directive defined on field {}.{}: @sort directive defined on scalar list fields "
-              + "should have a size of exactly one",
-          typeName, fieldName);
-    }
+  void validateListType(GraphQLType rawType) {
+    assert GraphQLTypeUtil.isList(rawType) : "can only be defined on a list field";
   }
 
-  void validateSortFieldList(GraphQLType sortType, String sortfieldTypeName, String typeName, String fieldName,
-      String argumentName) {
-    if (!(GraphQLTypeUtil.isList(sortType) && Objects.equals(sortfieldTypeName, "SortField"))) {
-      throw invalidConfigurationException(
-          "Found an error on @sort directive defined on field {}.{}: @sort directive argument '{}' should be of "
-              + "type [SortField]",
-          typeName, fieldName, argumentName);
-    }
+  void validateListSize(List<Object> sortFields) {
+    assert sortFields.size() == 1 : "directive defined on scalar list fields should have a size of exactly one";
   }
 
-  void validateListType(GraphQLType rawType, String typename, String fieldname) {
-    if (!(GraphQLTypeUtil.isList(rawType))) {
-      throw invalidConfigurationException(
-          "Found an error on @sort directive defined on field {}.{}: @sort can only be defined on a list fields",
-          typename, fieldname);
-    }
+  void validateSortFieldList(GraphQLType sortType, String sortfieldTypeName, String argumentName) {
+    assert GraphQLTypeUtil.isList(sortType) && "SortField".equals(sortfieldTypeName) : String
+        .format("argument '%s' should be of type [SortField]", argumentName);
+  }
+
+  void validateFieldArgumentDoesNotExist(Map<String, String> defaultSortValue) {
+    assert !defaultSortValue.containsKey(SORT_FIELD_FIELD) : "directive on scalar list cannot have argument 'field'";
   }
 }

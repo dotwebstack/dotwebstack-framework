@@ -2,12 +2,13 @@ package org.dotwebstack.framework.core.directives;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class TransformDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
+public final class TransformDirectiveWiring extends ValidatingDirectiveWiring
+    implements AutoRegisteredSchemaDirectiveWiring {
 
   @Override
   public String getDirectiveName() {
@@ -16,12 +17,15 @@ public final class TransformDirectiveWiring implements AutoRegisteredSchemaDirec
 
   @Override
   public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
-    GraphQLFieldDefinition fieldDefinition = environment.getElement();
+    GraphQLFieldDefinition element = environment.getElement();
 
-    if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()))) {
-      throw new InvalidConfigurationException("Directive @transform can only be used with (a list of) scalar fields.");
-    }
+    validate(getDirectiveName(), element, environment.getFieldsContainer(), () -> validateTypeIsScalar(element));
 
-    return fieldDefinition;
+    return element;
+  }
+
+  private void validateTypeIsScalar(GraphQLFieldDefinition fieldDefinition) {
+    GraphQLUnmodifiedType type = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+    assert GraphQLTypeUtil.isScalar(type) : "can only be used with (a list of) scalar fields.";
   }
 }
