@@ -46,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper;
+import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -201,7 +202,9 @@ abstract class AbstractVerticeFactory {
           .get(argumentResultWrapper.getFieldPath()
               .size() - 1)).map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
                   .isEmpty()) {
-        findOrCreatePath(vertice, query, propertyShape.getNode(), argumentResultWrapper.getFieldPath(), false, true);
+        findOrCreatePath(vertice, query, propertyShape.getNode(), FieldPath.builder()
+            .fieldDefinitions(argumentResultWrapper.getFieldPath())
+            .build(), true);
       }
     }
   }
@@ -232,8 +235,9 @@ abstract class AbstractVerticeFactory {
       addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
       return;
     }
-    findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true, false)
-        .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
+    findOrCreatePath(vertice, query, nodeShape, FieldPath.builder()
+        .fieldDefinitions(filterRule.getPath())
+        .build(), false).ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
   }
 
   void addFilterToVertice(NodeShape nodeShape, Edge edge, FilterRule filterRule) {
@@ -290,8 +294,8 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      List<GraphQLFieldDefinition> fieldPath) {
-    return findOrCreatePath(vertice, query, nodeShape, fieldPath, false, false);
+      FieldPath fieldPath) {
+    return findOrCreatePath(vertice, query, nodeShape, fieldPath, false);
   }
 
   /*
@@ -299,22 +303,26 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      List<GraphQLFieldDefinition> fieldPath, boolean required, boolean isVisible) {
-    if (Objects.nonNull(fieldPath.get(fieldPath.size() - 1)
-        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+      FieldPath fieldPath, boolean isVisible) {
+    if (fieldPath.leaf()
+        .map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
+        .isPresent()) {
       return Optional.empty();
     }
 
-    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath)), vertice,
-        required, isVisible);
+    Edge match = findOrCreateEdge(query,
+        nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath.getFieldDefinitions())), vertice,
+        fieldPath.isRequired(), isVisible);
 
-    if (fieldPath.size() == 1) {
-      createAggregate(fieldPath.get(0), query.var()).ifPresent(match::setAggregate);
+    if (fieldPath.isSingleton()) {
+      createAggregate(fieldPath.current(), query.var()).ifPresent(match::setAggregate);
       return of(match);
     }
 
-    return findOrCreatePath(match.getObject(), query, getNextNodeShape(nodeShape, fieldPath),
-        fieldPath.subList(1, fieldPath.size()), required, isVisible);
+    return findOrCreatePath(match.getObject(), query, getNextNodeShape(nodeShape, fieldPath.getFieldDefinitions()),
+        fieldPath.remainder()
+            .orElseThrow(() -> illegalStateException("Remainder expected but got nothing!")),
+        isVisible);
   }
 
   /*
@@ -390,15 +398,20 @@ abstract class AbstractVerticeFactory {
   void addOrderables(Vertice vertice, OuterQuery<?> query, OrderBy orderBy, NodeShape nodeShape) {
     Optional<Variable> subject;
 
-    List<GraphQLFieldDefinition> fieldPath = orderBy.getFieldPath();
-    if (Objects.nonNull(fieldPath.get(fieldPath.size() - 1)
-        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
-      subject = getSubjectForResource(vertice, query, nodeShape, fieldPath);
+    if (orderBy.getFieldPath()
+        .leaf()
+        .filter(leaf -> Objects.nonNull(leaf.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+        .isPresent()) {
+      subject = getSubjectForResource(vertice, query, nodeShape, orderBy.getFieldPath());
     } else {
-      subject = getSubject(vertice, query, nodeShape, fieldPath);
+      subject = getSubject(vertice, query, nodeShape, orderBy.getFieldPath());
     }
 
-    subject.map(s -> Expressions.coalesce(s, getDefaultOrderByValue(fieldPath.get(fieldPath.size() - 1))))
+    subject.map(s -> Optional.of(orderBy.getFieldPath())
+        .filter(fieldPath -> !fieldPath.isRequired())
+        .flatMap(FieldPath::leaf)
+        .map(fieldDefinition -> (Orderable) Expressions.coalesce(s, getDefaultOrderByValue(fieldDefinition)))
+        .orElse(s))
         .ifPresent(s -> {
           List<Orderable> orderables = nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
           orderables.add((orderBy.getOrder()
@@ -419,37 +432,32 @@ abstract class AbstractVerticeFactory {
   }
 
   private Optional<Variable> getSubjectForResource(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      List<GraphQLFieldDefinition> fieldPath) {
-    if (fieldPath.size() > 1) {
-      List<GraphQLFieldDefinition> newFieldPath = fieldPath.subList(0, fieldPath.size() - 1);
-      return findOrCreatePath(vertice, query, nodeShape, newFieldPath)
-          .map(edge -> getSubjectForField(edge, nodeShape, newFieldPath));
-    }
-    return of(vertice.getSubject());
+      FieldPath fieldPath) {
+    return fieldPath.remainder()
+        .flatMap(remainder -> findOrCreatePath(vertice, query, nodeShape, remainder)
+            .map(edge -> getSubjectForField(edge, nodeShape, remainder)))
+        .or(() -> Optional.of(vertice.getSubject()));
   }
 
   private Optional<Variable> getSubject(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
-      final List<GraphQLFieldDefinition> fieldPath) {
-    NodeShape childShape = getNextNodeShape(nodeShape, fieldPath);
-    if (nodeShape.equals(childShape) || fieldPath.size() == 1) {
+      final FieldPath fieldPath) {
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPath.getFieldDefinitions());
+    if (nodeShape.equals(childShape) || fieldPath.isSingleton()) {
       return findOrCreatePath(vertice, query, nodeShape, fieldPath)
           .map(edge -> getSubjectForField(edge, nodeShape, fieldPath));
     }
 
-    BasePath path = nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath))
+    BasePath path = nodeShape.getPropertyShape(fieldPath.current()
+        .getName())
         .getPath();
-    Edge simpleEdge = createSimpleEdge(query.var(), path, true, false);
+    Edge simpleEdge = createSimpleEdge(query.var(), path, !fieldPath.isRequired(), false);
 
     vertice.getEdges()
         .add(simpleEdge);
 
-    List<GraphQLFieldDefinition> childFieldPath = fieldPath.subList(1, fieldPath.size());
-    return findOrCreatePath(simpleEdge.getObject(), query, childShape, childFieldPath)
-        .map(edge -> getSubjectForField(edge, childShape, childFieldPath));
-  }
-
-  private String getSortProperty(Map<String, Object> orderMap, String sortFieldField) {
-    return (String) orderMap.get(sortFieldField);
+    return fieldPath.remainder()
+        .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), query, childShape, remainder)
+            .map(edge -> getSubjectForField(edge, childShape, remainder)));
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {

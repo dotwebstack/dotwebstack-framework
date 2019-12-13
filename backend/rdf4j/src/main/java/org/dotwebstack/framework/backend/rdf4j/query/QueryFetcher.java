@@ -208,8 +208,11 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .map(foo -> foo.stream()
             .map(ObjectHelper::castToMap)
             .map(item -> OrderBy.builder()
-                .fieldPath(FieldPathHelper.getFieldDefinitions(objectType, item.get(CoreInputTypes.SORT_FIELD_FIELD)
-                    .toString()))
+                .fieldPath(FieldPath.builder()
+                    .fieldDefinitions(FieldPathHelper.getFieldDefinitions(objectType,
+                        item.get(CoreInputTypes.SORT_FIELD_FIELD)
+                            .toString()))
+                    .build())
                 .order(item.get(CoreInputTypes.SORT_FIELD_ORDER)
                     .toString())
                 .build())
@@ -220,11 +223,13 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private OrderBy validateOrderBy(OrderBy orderBy) {
     if (orderBy.getFieldPath()
+        .getFieldDefinitions()
         .stream()
         .map(GraphQLFieldDefinition::getType)
         .map(GraphQLTypeUtil::unwrapNonNull)
         .anyMatch(GraphQLTypeUtil::isList)) {
       throw illegalArgumentException("Unable to sort on fieldPath {} which contains a list type", orderBy.getFieldPath()
+          .getFieldDefinitions()
           .stream()
           .map(GraphQLFieldDefinition::getName)
           .collect(Collectors.joining(".")));

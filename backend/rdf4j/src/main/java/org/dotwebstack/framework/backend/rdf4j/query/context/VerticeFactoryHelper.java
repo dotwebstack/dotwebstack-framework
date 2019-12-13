@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFirstName;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.List;
@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
@@ -71,15 +72,16 @@ class VerticeFactoryHelper {
   }
 
 
-  static Variable getSubjectForField(Edge match, NodeShape nodeShape, List<GraphQLFieldDefinition> fieldPath) {
-    if (fieldPath.size() == 1) {
+  static Variable getSubjectForField(Edge match, NodeShape nodeShape, FieldPath fieldPath) {
+    if (fieldPath.isSingleton()) {
       return Objects.nonNull(match.getAggregate()) ? match.getAggregate()
           .getVariable()
           : match.getObject()
               .getSubject();
     }
 
-    PropertyShape propertyShape = nodeShape.getPropertyShape(getFirstName(fieldPath));
+    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.current()
+        .getName());
     Edge next = match.getObject()
         .getEdges()
         .stream()
@@ -93,6 +95,7 @@ class VerticeFactoryHelper {
             match.getObject()
                 .getSubject()));
 
-    return getSubjectForField(next, propertyShape.getNode(), fieldPath.subList(1, fieldPath.size()));
+    return getSubjectForField(next, propertyShape.getNode(), fieldPath.remainder()
+        .orElseThrow(() -> illegalStateException("Expected a remainder but got nothing!")));
   }
 }
