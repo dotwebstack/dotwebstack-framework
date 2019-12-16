@@ -146,7 +146,7 @@ class Rdf4jIntegrationTest {
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), nullMap)))))));
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
 
 
@@ -484,11 +484,10 @@ class Rdf4jIntegrationTest {
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients, hasSize(4));
+    assertThat(ingredients, hasSize(3));
     assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
-    assertThat(ingredients.get(3), is(equalTo(null)));
   }
 
   @Test
