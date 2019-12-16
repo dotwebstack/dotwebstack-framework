@@ -826,4 +826,25 @@ class Rdf4jIntegrationTest {
     assertEquals(1, subjects.size());
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/address/1"));
   }
+
+  @Test
+  void graphQlQuery_returnsBreweries_FilterOnAddressSubjectNested() {
+    // Arrange
+    String query = "{ breweries(withAddressSubject: \"https://github.com/dotwebstack/beer/id/address/1\") { subject }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> subjects = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("subject")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertThat(result.getErrors(), hasSize(0));
+    assertThat(subjects, hasSize(1));
+    assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
+  }
 }
