@@ -358,6 +358,28 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter2() {
+    // Arrange
+    String query =
+        "{ breweries(name: \"Alfa Brouwerij\"){ beers(ingredient: [\"Hop\", \"Gerst\"]) { ingredients { name }}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+  }
+
+  @Test
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter() {
     // Arrange
     String query =
@@ -397,7 +419,9 @@ class Rdf4jIntegrationTest {
         hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
 
   @Test
@@ -415,19 +439,18 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
-                    SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
+                SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
 
     List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
     Map<String, Object> edelPils =
         (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
     List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
 
-    assertThat(ingredients, IsCollectionWithSize.hasSize(2));
+    assertThat(ingredients, IsCollectionWithSize.hasSize(3));
   }
 
   @Test

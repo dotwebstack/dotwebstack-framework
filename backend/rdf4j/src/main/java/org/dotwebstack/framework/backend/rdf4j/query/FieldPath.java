@@ -6,9 +6,11 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 
 @Builder
 @Getter
@@ -34,6 +36,11 @@ public class FieldPath {
   public boolean isRequired() {
     return fieldDefinitions.stream()
         .allMatch(fieldDefinition -> GraphQLTypeUtil.isNonNull(fieldDefinition.getType()));
+  }
+
+  public boolean isResource() {
+    return leaf().map(fieldDefinition -> Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+        .orElse(false);
   }
 
   public GraphQLFieldDefinition current() {

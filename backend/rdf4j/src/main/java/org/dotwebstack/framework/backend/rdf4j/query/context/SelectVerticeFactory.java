@@ -42,13 +42,14 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     Vertice vertice = createVertice(subject, nodeShape);
 
     filterRules.forEach(filter -> {
-
-      if (filter.isResource()) {
+      if (filter.getFieldPath()
+          .isResource()) {
         addFilterToVertice(nodeShape, vertice, filter, vertice.getSubject());
         return;
       }
 
-      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
+      NodeShape childShape = getNextNodeShape(nodeShape, filter.getFieldPath()
+          .getFieldDefinitions());
 
       if (nodeShape.equals(childShape)) {
         addFilterToVertice(vertice, query, nodeShape, filter);
@@ -56,9 +57,11 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         Variable edgeSubject = query.var();
         Edge edge;
 
-        if (filter.getPath()
+        if (filter.getFieldPath()
+            .getFieldDefinitions()
             .size() == 1) {
-          GraphQLFieldDefinition fieldDefinition = filter.getPath()
+          GraphQLFieldDefinition fieldDefinition = filter.getFieldPath()
+              .getFieldDefinitions()
               .get(0);
           edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
               .getPath()
@@ -73,21 +76,24 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
                 .getVariable());
           }
 
-        } else {
-          FilterRule childFilterRule = FilterRule.builder()
-              .path(filter.getPath()
-                  .subList(1, filter.getPath()
-                      .size()))
-              .value(filter.getValue())
-              .operator(filter.getOperator())
-              .build();
-          Vertice childVertice =
-              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule));
+          vertice.getEdges()
+              .add(edge);
 
-          edge = createEdge(nodeShape, filter, childVertice);
+        } else {
+          filter.getFieldPath()
+              .remainder()
+              .map(remainder -> FilterRule.builder()
+                  .fieldPath(remainder)
+                  .value(filter.getValue())
+                  .operator(filter.getOperator())
+                  .build())
+              .map(childFilterRule -> createVertice(edgeSubject, query, childShape,
+                  Collections.singletonList(childFilterRule)))
+              .map(childVertice -> createEdge(nodeShape, filter, childVertice))
+              .ifPresent(edgje -> vertice.getEdges()
+                  .add(edgje));
+
         }
-        vertice.getEdges()
-            .add(edge);
       }
     });
     return vertice;
@@ -111,7 +117,8 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
   private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
     return Edge.builder()
-        .predicate(nodeShape.getPropertyShape(filter.getPath()
+        .predicate(nodeShape.getPropertyShape(filter.getFieldPath()
+            .getFieldDefinitions()
             .get(0)
             .getName())
             .getPath()

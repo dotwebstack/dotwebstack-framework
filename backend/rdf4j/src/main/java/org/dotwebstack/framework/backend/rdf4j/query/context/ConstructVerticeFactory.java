@@ -3,11 +3,9 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 
 import graphql.schema.SelectedField;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -45,50 +43,33 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .build();
   }
 
-  private List<Edge> transformFieldsToEdges(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> fields) {
-    List<SelectedField> filteredFields = filterFields(fields);
+  private List<Edge> transformFieldsToEdges(OuterQuery<?> query, NodeShape nodeShape,
+      List<SelectedField> selectedFields) {
+    List<Edge> edges = selectedFields.stream()
+        .filter(field -> Objects.isNull(field.getFieldDefinition()
+            .getDirective(Rdf4jDirectives.RESOURCE_NAME)))
+        .filter(field -> !field.getQualifiedName()
+            .contains("/"))
+        .map(selectedField -> getEdge(query, nodeShape, selectedField))
+        .collect(Collectors.toList());
 
-    List<Edge> edges = getUniqueEdges(query, nodeShape, filteredFields);
+    makeEdgesUnique(edges);
 
     edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
 
-    doArgumentMapping(query, nodeShape, filteredFields, edges);
+    edges.addAll(doArgumentMapping(query, nodeShape, selectedFields, edges));
+
     return edges;
   }
 
-  private List<SelectedField> filterFields(List<SelectedField> fields) {
-    return fields.stream()
-        .filter(field -> Objects.isNull(field.getFieldDefinition()
-            .getDirective(Rdf4jDirectives.RESOURCE_NAME)))
-        .collect(Collectors.toList());
-  }
-
-  private List<Edge> getUniqueEdges(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> filteredFields) {
-    List<Edge> edges = filteredFields.stream()
-        .filter(field -> !field.getQualifiedName()
-            .contains("/"))
-        .map(toEdge(query, nodeShape))
-        .collect(Collectors.toList());
-    makeEdgesUnique(edges);
-    return edges;
-  }
-
-  private Function<SelectedField, Edge> toEdge(OuterQuery<?> query, NodeShape nodeShape) {
-    return field -> {
-      PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
-      NodeShape childShape = propertyShape.getNode();
-
-      return getEdge(query, nodeShape, field, propertyShape, childShape);
-    };
-  }
-
-  private Edge getEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field, PropertyShape propertyShape,
-      NodeShape childShape) {
+  private Edge getEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField selectedField) {
+    PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
+    NodeShape childShape = propertyShape.getNode();
     Edge edge;
     if (Objects.isNull(childShape)) {
       edge = createSimpleEdge(query.var(), propertyShape.getPath(), true, true);
     } else {
-      edge = createComplexEdge(query, nodeShape, field);
+      edge = createComplexEdge(query, nodeShape, selectedField);
     }
 
     addLanguageFilter(edge, propertyShape);
@@ -102,21 +83,44 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .collect(Collectors.toSet());
   }
 
-  private void doArgumentMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,
-      List<Edge> edges) {
-    getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.FILTER_NAME).forEach((argument,
-        argumentResultWrapper) -> findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), edges)
-            .forEach(edge -> processFilters(edge.getObject(), query,
-                nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
-                    .getName()),
-                argumentResultWrapper)));
+  private List<Edge> doArgumentMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,
+      List<Edge> selectionEdges) {
+    List<Edge> result = getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.FILTER_NAME).stream()
+        .flatMap(argumentResultWrapper -> {
+          List<Edge> edges;
+          if (argumentResultWrapper.getFieldPath()
+              .isSingleton()) {
+            edges = findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), selectionEdges);
+          } else {
+            edges = Collections.singletonList(getEdge(query, nodeShape, argumentResultWrapper.getSelectedField()));
+            deepList(edges).forEach(edge -> edge.setVisible(false));
+          }
 
-    getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.SORT_NAME).forEach((argument,
-        argumentResultWrapper) -> findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), edges)
-            .forEach(edge -> processSort(edge.getObject(), query,
-                nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
-                    .getName()),
-                argumentResultWrapper)));
+          return edges.stream()
+              .map(edge -> processFilters(edge, query,
+                  nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
+                      .getName()),
+                  argumentResultWrapper));
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+
+    getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.SORT_NAME)
+        .forEach(argumentResultWrapper -> findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(),
+            selectionEdges)
+                .forEach(edge -> processSort(edge.getObject(), query,
+                    nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
+                        .getName()),
+                    argumentResultWrapper)));
+
+    return result;
+  }
+
+  private List<Edge> deepList(List<Edge> edges) {
+    return edges.stream()
+        .flatMap(edge -> Stream.concat(Stream.of(edge), deepList(edge.getObject()
+            .getEdges()).stream()))
+        .collect(Collectors.toList());
   }
 
   /*

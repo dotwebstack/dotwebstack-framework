@@ -261,7 +261,9 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
-        .path(Arrays.asList(BEERS, INGREDIENTS, NAME))
+        .fieldPath(FieldPath.builder()
+            .fieldDefinitions(Arrays.asList(BEERS, INGREDIENTS, NAME))
+            .build())
         .value("Hop")
         .build()), Collections.emptyList());
 
@@ -322,7 +324,9 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
-        .path(singletonList(NAME))
+        .fieldPath(FieldPath.builder()
+            .fieldDefinitions(singletonList(NAME))
+            .build())
         .value("Alfa Brouwerij")
         .build()), Collections.emptyList());
 

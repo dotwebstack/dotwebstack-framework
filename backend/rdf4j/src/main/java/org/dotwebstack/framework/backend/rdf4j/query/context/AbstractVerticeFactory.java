@@ -26,16 +26,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -108,20 +99,18 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
-  Map<GraphQLArgument, ArgumentResultWrapper> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> fields,
+  List<ArgumentResultWrapper> getArgumentFieldMapping(NodeShape nodeShape, List<SelectedField> selectedFields,
       String directiveName) {
-    return fields.stream()
-        .filter(field -> !field.getQualifiedName()
+    return selectedFields.stream()
+        .filter(selectedField -> !selectedField.getQualifiedName()
             .contains("/"))
-        .filter(field -> nonNull(nodeShape.getPropertyShape(field.getName())
-            .getNode()))
-        .flatMap(field -> field.getFieldDefinition()
+        // .filter(selectedField -> nonNull(nodeShape.getPropertyShape(selectedField.getName()).getNode()))
+        .flatMap(selectedField -> selectedField.getFieldDefinition()
             .getArguments()
             .stream()
             .filter(argument -> argument.getDirective(directiveName) != null)
-            .map(argument -> new AbstractMap.SimpleEntry<>(argument,
-                getArgumentResultWrapper(field, argument, directiveName))))
-        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+            .map(argument -> getArgumentResultWrapper(selectedField, argument, directiveName)))
+        .collect(Collectors.toList());
   }
 
   private ArgumentResultWrapper getArgumentResultWrapper(SelectedField selectedField, GraphQLArgument argument,
@@ -158,8 +147,7 @@ abstract class AbstractVerticeFactory {
         directiveName);
   }
 
-  private List<GraphQLFieldDefinition> getFieldPath(SelectedField selectedField, GraphQLArgument argument,
-      String directiveName) {
+  private FieldPath getFieldPath(SelectedField selectedField, GraphQLArgument argument, String directiveName) {
     GraphQLUnmodifiedType unmodifiedType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
         .getType());
     String fieldName = getFieldName(argument, directiveName);
@@ -167,11 +155,15 @@ abstract class AbstractVerticeFactory {
     if (unmodifiedType instanceof GraphQLObjectType) {
       GraphQLObjectType objectType = (GraphQLObjectType) unmodifiedType;
 
-      return getFieldDefinitions(objectType, fieldName);
+      return FieldPath.builder()
+          .fieldDefinitions(getFieldDefinitions(objectType, fieldName))
+          .build();
     }
 
     if (unmodifiedType instanceof GraphQLScalarType) {
-      return singletonList(selectedField.getFieldDefinition());
+      return FieldPath.builder()
+          .fieldDefinitions(singletonList(selectedField.getFieldDefinition()))
+          .build();
     }
 
     throw unsupportedOperationException("Unable to determine fieldDefinition for argument {}", argument);
@@ -195,22 +187,17 @@ abstract class AbstractVerticeFactory {
   void processSort(Vertice vertice, OuterQuery<?> query, PropertyShape propertyShape,
       ArgumentResultWrapper argumentResultWrapper) {
 
-    if (argumentResultWrapper.getFieldPath()
-        .size() > 0) {
-
-      if (of(argumentResultWrapper.getFieldPath()
-          .get(argumentResultWrapper.getFieldPath()
-              .size() - 1)).map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
-                  .isEmpty()) {
-        findOrCreatePath(vertice, query, propertyShape.getNode(), FieldPath.builder()
-            .fieldDefinitions(argumentResultWrapper.getFieldPath())
-            .build(), true);
-      }
+    FieldPath fieldPath = argumentResultWrapper.getFieldPath();
+    if (!fieldPath.isResource()) {
+      findOrCreatePath(vertice, query, propertyShape.getNode(), fieldPath, true);
     }
   }
 
-  void processFilters(Vertice vertice, OuterQuery<?> query, PropertyShape propertyShape,
+  Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
       ArgumentResultWrapper argumentResultWrapper) {
+
+    edge.setOptional(false);
+    Vertice vertice = edge.getObject();
 
     Object value = argumentResultWrapper.getSelectedField()
         .getArguments()
@@ -219,25 +206,26 @@ abstract class AbstractVerticeFactory {
 
     if (nonNull(value)) {
       FilterRule filterRule = FilterRule.builder()
-          .path(argumentResultWrapper.getFieldPath())
+          .fieldPath(argumentResultWrapper.getFieldPath())
           .value(value)
           .build();
 
       addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
+
+      return edge;
     }
+
+    return null;
   }
 
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
-    if (Objects.nonNull(filterRule.getPath()
-        .get(filterRule.getPath()
-            .size() - 1)
-        .getDirective(Rdf4jDirectives.RESOURCE_NAME))) {
+    if (filterRule.getFieldPath()
+        .isResource()) {
       addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
       return;
     }
-    findOrCreatePath(vertice, query, nodeShape, FieldPath.builder()
-        .fieldDefinitions(filterRule.getPath())
-        .build(), false).ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
+    findOrCreatePath(vertice, query, nodeShape, filterRule.getFieldPath(), false)
+        .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
   }
 
   void addFilterToVertice(NodeShape nodeShape, Edge edge, FilterRule filterRule) {
@@ -277,12 +265,13 @@ abstract class AbstractVerticeFactory {
   }
 
   private Function<Object, Operand> argumentToOperand(NodeShape nodeShape, FilterRule filterRule, String language) {
-    String field = filterRule.getPath()
-        .get(filterRule.getPath()
-            .size() - 1)
-        .getName();
-    return filterArgument -> filterRule.isResource() ? Rdf.iri(serializerRouter.serialize(filterArgument))
-        : getOperand(nodeShape, field, serializerRouter.serialize(filterArgument), language);
+    String field = filterRule.getFieldPath()
+        .leaf()
+        .map(GraphQLFieldDefinition::getName)
+        .orElse(null);
+    return filterArgument -> filterRule.getFieldPath()
+        .isResource() ? Rdf.iri(serializerRouter.serialize(filterArgument))
+            : getOperand(nodeShape, field, serializerRouter.serialize(filterArgument), language);
   }
 
   private Stream<Object> getFilterArguments(Object filterValue) {
@@ -304,9 +293,14 @@ abstract class AbstractVerticeFactory {
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
       FieldPath fieldPath, boolean isVisible) {
+
     if (fieldPath.leaf()
         .map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
         .isPresent()) {
+      return Optional.empty();
+    }
+
+    if (Objects.isNull(nodeShape)) {
       return Optional.empty();
     }
 
@@ -376,15 +370,45 @@ abstract class AbstractVerticeFactory {
   void makeEdgesUnique(List<Edge> edges) {
     List<Edge> uniqueEdges = new ArrayList<>();
     edges.forEach(edge -> uniqueEdges.stream()
-        .filter(hasEqualPredicate(edge))
+        .filter(uniqueEdge -> isEqualEdge(uniqueEdge, edge))
         .findFirst()
         .ifPresentOrElse(addToDuplicate(edge), () -> uniqueEdges.add(edge)));
   }
 
-  private Predicate<Edge> hasEqualPredicate(Edge edge) {
-    return uniqueEdge -> uniqueEdge.getPredicate()
-        .equals(edge.getPredicate());
+  private boolean isEqualEdge(Edge uniqueEdge, Edge edge) {
+    Set<Iri> uniqueEdgeIris = getIris(uniqueEdge);
+    Set<Iri> edgeIris = getIris(edge);
+
+    Integer sizeBefore = edgeIris.size();
+    edgeIris.retainAll(uniqueEdgeIris);
+    Integer sizeAfter = edgeIris.size();
+
+    return uniqueEdge.getPredicate()
+        .getQueryString()
+        .equals(edge.getPredicate()
+            .getQueryString())
+        && sizeBefore.equals(sizeAfter);
+
   }
+
+  public Set<Iri> getIris(Edge edge) {
+    Set<Iri> result = new HashSet<>();
+    if (Objects.nonNull(edge.getObject())) {
+      Vertice vertice = edge.getObject();
+
+      if (Objects.nonNull(vertice.getIris())) {
+        result.addAll(vertice.getIris());
+      }
+
+      result.addAll(vertice.getEdges()
+          .stream()
+          .flatMap(childEdge -> getIris(childEdge).stream())
+          .collect(Collectors.toCollection(HashSet::new)));
+    }
+
+    return result;
+  }
+
 
   private Consumer<Edge> addToDuplicate(Edge edge) {
     List<Edge> childEdges = edge.getObject()

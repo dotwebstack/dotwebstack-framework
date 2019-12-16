@@ -1,11 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 
 @Builder
 @Getter
@@ -14,5 +13,5 @@ public class ArgumentResultWrapper {
 
   private SelectedField selectedField;
 
-  private List<GraphQLFieldDefinition> fieldPath;
+  private FieldPath fieldPath;
 }
