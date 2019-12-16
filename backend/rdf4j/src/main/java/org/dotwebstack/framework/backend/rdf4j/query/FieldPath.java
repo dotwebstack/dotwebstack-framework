@@ -14,7 +14,7 @@ import lombok.Getter;
 @Getter
 public class FieldPath {
   @Builder.Default
-  private List<GraphQLFieldDefinition> fieldDefinitions = new ArrayList();
+  private List<GraphQLFieldDefinition> fieldDefinitions = new ArrayList<>();
 
   public boolean isSingleton() {
     return fieldDefinitions.size() == 1;
