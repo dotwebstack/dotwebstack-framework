@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -117,13 +116,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
                     argumentResultWrapper)));
 
     return result;
-  }
-
-  private List<Edge> deepList(List<Edge> edges) {
-    return edges.stream()
-        .flatMap(edge -> Stream.concat(Stream.of(edge), deepList(edge.getObject()
-            .getEdges()).stream()))
-        .collect(Collectors.toList());
   }
 
   /*

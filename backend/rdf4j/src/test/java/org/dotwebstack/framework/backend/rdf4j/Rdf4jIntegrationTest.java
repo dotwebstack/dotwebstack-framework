@@ -53,6 +53,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(classes = TestApplication.class)
 class Rdf4jIntegrationTest {
 
+  private static final Map<String, Object> NAME_NULL_MAP = new HashMap<>();
+
+  static {
+    NAME_NULL_MAP.put("name", null);
+  }
+
   @Autowired
   private GraphQL graphQL;
 
@@ -146,7 +152,7 @@ class Rdf4jIntegrationTest {
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
   }
 
 
@@ -376,7 +382,7 @@ class Rdf4jIntegrationTest {
                 ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
   }
 
   @Test
@@ -421,7 +427,7 @@ class Rdf4jIntegrationTest {
                 ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
   }
 
   @Test
@@ -439,18 +445,20 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
-                SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+        hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP),
+                    SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
 
     List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
     Map<String, Object> edelPils =
         (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
     List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
 
-    assertThat(ingredients, IsCollectionWithSize.hasSize(3));
+    assertThat(ingredients, IsCollectionWithSize.hasSize(4));
   }
 
   @Test
@@ -507,10 +515,12 @@ class Rdf4jIntegrationTest {
             .map(entry -> entry.get("name"))
             .collect(Collectors.toList());
 
-    assertThat(ingredients, hasSize(3));
+    assertThat(ingredients, hasSize(4));
     assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
+    assertThat(ingredients.get(3), is(equalTo(null)));
+
   }
 
   @Test

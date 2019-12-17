@@ -203,7 +203,6 @@ abstract class AbstractVerticeFactory {
   Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
       ArgumentResultWrapper argumentResultWrapper) {
 
-    edge.setOptional(false);
     Vertice vertice = edge.getObject();
 
     Object value = argumentResultWrapper.getSelectedField()
@@ -218,6 +217,8 @@ abstract class AbstractVerticeFactory {
           .build();
 
       addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
+
+      deepList(singletonList(edge)).forEach(e -> e.setOptional(false));
 
       return edge;
     }
@@ -520,5 +521,12 @@ abstract class AbstractVerticeFactory {
             .type(aggregateType)
             .variable(variable)
             .build());
+  }
+
+  List<Edge> deepList(List<Edge> edges) {
+    return edges.stream()
+        .flatMap(edge -> Stream.concat(Stream.of(edge), deepList(edge.getObject()
+            .getEdges()).stream()))
+        .collect(Collectors.toList());
   }
 }

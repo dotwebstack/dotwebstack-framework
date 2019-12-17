@@ -83,7 +83,7 @@ type Beer {
 }
 
 type Ingredient {
-  name: String!
+  name: String
 }
 
 type Supplement {
