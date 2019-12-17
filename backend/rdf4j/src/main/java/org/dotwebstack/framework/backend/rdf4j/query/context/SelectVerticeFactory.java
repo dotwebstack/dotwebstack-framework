@@ -81,7 +81,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
         } else {
           filter.getFieldPath()
-              .remainder()
+              .rest()
               .map(remainder -> FilterRule.builder()
                   .fieldPath(remainder)
                   .value(filter.getValue())

@@ -15,6 +15,7 @@ import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 @Builder
 @Getter
 public class FieldPath {
+
   @Builder.Default
   private List<GraphQLFieldDefinition> fieldDefinitions = new ArrayList<>();
 
@@ -22,8 +23,8 @@ public class FieldPath {
     return fieldDefinitions.size() == 1;
   }
 
-  public Optional<FieldPath> remainder() {
-    List<GraphQLFieldDefinition> fieldDefinitions = new ArrayList<>();
+  public Optional<FieldPath> rest() {
+    List<GraphQLFieldDefinition> fieldDefinitions;
     if (this.fieldDefinitions.size() > 1) {
       fieldDefinitions = this.fieldDefinitions.subList(1, this.fieldDefinitions.size());
       return Optional.of(FieldPath.builder()
@@ -46,15 +47,15 @@ public class FieldPath {
     return false;
   }
 
-  public GraphQLFieldDefinition current() {
-    if (fieldDefinitions.size() > 0) {
+  public GraphQLFieldDefinition first() {
+    if (!fieldDefinitions.isEmpty()) {
       return fieldDefinitions.get(0);
     }
     throw illegalStateException("No current fieldDefinition!");
   }
 
-  public Optional<GraphQLFieldDefinition> leaf() {
-    if (fieldDefinitions.size() > 0) {
+  public Optional<GraphQLFieldDefinition> last() {
+    if (!fieldDefinitions.isEmpty()) {
       return Optional.of(fieldDefinitions.get(fieldDefinitions.size() - 1));
     }
     return Optional.empty();

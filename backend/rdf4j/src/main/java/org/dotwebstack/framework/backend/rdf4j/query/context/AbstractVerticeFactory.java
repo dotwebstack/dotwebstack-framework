@@ -274,7 +274,7 @@ abstract class AbstractVerticeFactory {
 
   private Function<Object, Operand> argumentToOperand(NodeShape nodeShape, FilterRule filterRule, String language) {
     String field = filterRule.getFieldPath()
-        .leaf()
+        .last()
         .map(GraphQLFieldDefinition::getName)
         .orElse(null);
     return filterArgument -> filterRule.getFieldPath()
@@ -302,7 +302,7 @@ abstract class AbstractVerticeFactory {
   private Optional<Edge> findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
       FieldPath fieldPath, boolean isVisible) {
 
-    if (fieldPath.leaf()
+    if (fieldPath.last()
         .map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
         .isPresent()) {
       return Optional.empty();
@@ -317,12 +317,12 @@ abstract class AbstractVerticeFactory {
         fieldPath.isRequired(), isVisible);
 
     if (fieldPath.isSingleton()) {
-      createAggregate(fieldPath.current(), query.var()).ifPresent(match::setAggregate);
+      createAggregate(fieldPath.first(), query.var()).ifPresent(match::setAggregate);
       return of(match);
     }
 
     return findOrCreatePath(match.getObject(), query, getNextNodeShape(nodeShape, fieldPath.getFieldDefinitions()),
-        fieldPath.remainder()
+        fieldPath.rest()
             .orElseThrow(() -> illegalStateException("Remainder expected but got nothing!")),
         isVisible);
   }
@@ -384,39 +384,9 @@ abstract class AbstractVerticeFactory {
   }
 
   private boolean isEqualEdge(Edge uniqueEdge, Edge edge) {
-    Set<Iri> uniqueEdgeIris = getIris(uniqueEdge);
-    Set<Iri> edgeIris = getIris(edge);
-
-    Integer sizeBefore = edgeIris.size();
-    edgeIris.retainAll(uniqueEdgeIris);
-    Integer sizeAfter = edgeIris.size();
-
     return uniqueEdge.getPredicate()
-        .getQueryString()
-        .equals(edge.getPredicate()
-            .getQueryString())
-        && sizeBefore.equals(sizeAfter);
-
+        .equals(edge.getPredicate());
   }
-
-  public Set<Iri> getIris(Edge edge) {
-    Set<Iri> result = new HashSet<>();
-    if (Objects.nonNull(edge.getObject())) {
-      Vertice vertice = edge.getObject();
-
-      if (Objects.nonNull(vertice.getIris())) {
-        result.addAll(vertice.getIris());
-      }
-
-      result.addAll(vertice.getEdges()
-          .stream()
-          .flatMap(childEdge -> getIris(childEdge).stream())
-          .collect(Collectors.toCollection(HashSet::new)));
-    }
-
-    return result;
-  }
-
 
   private Consumer<Edge> addToDuplicate(Edge edge) {
     List<Edge> childEdges = edge.getObject()
@@ -431,7 +401,7 @@ abstract class AbstractVerticeFactory {
     Optional<Variable> subject;
 
     if (orderBy.getFieldPath()
-        .leaf()
+        .last()
         .filter(leaf -> Objects.nonNull(leaf.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
         .isPresent()) {
       subject = getSubjectForResource(vertice, query, nodeShape, orderBy.getFieldPath());
@@ -441,7 +411,7 @@ abstract class AbstractVerticeFactory {
 
     subject.map(s -> Optional.of(orderBy.getFieldPath())
         .filter(fieldPath -> !fieldPath.isRequired())
-        .flatMap(FieldPath::leaf)
+        .flatMap(FieldPath::last)
         .map(fieldDefinition -> (Orderable) Expressions.coalesce(s, getDefaultOrderByValue(fieldDefinition)))
         .orElse(s))
         .ifPresent(s -> {
@@ -465,7 +435,7 @@ abstract class AbstractVerticeFactory {
 
   private Optional<Variable> getSubjectForResource(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape,
       FieldPath fieldPath) {
-    return fieldPath.remainder()
+    return fieldPath.rest()
         .flatMap(remainder -> findOrCreatePath(vertice, query, nodeShape, remainder)
             .map(edge -> getSubjectForField(edge, nodeShape, remainder)))
         .or(() -> Optional.of(vertice.getSubject()));
@@ -479,7 +449,7 @@ abstract class AbstractVerticeFactory {
           .map(edge -> getSubjectForField(edge, nodeShape, fieldPath));
     }
 
-    BasePath path = nodeShape.getPropertyShape(fieldPath.current()
+    BasePath path = nodeShape.getPropertyShape(fieldPath.first()
         .getName())
         .getPath();
     Edge simpleEdge = createSimpleEdge(query.var(), path, !fieldPath.isRequired(), false);
@@ -487,7 +457,7 @@ abstract class AbstractVerticeFactory {
     vertice.getEdges()
         .add(simpleEdge);
 
-    return fieldPath.remainder()
+    return fieldPath.rest()
         .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), query, childShape, remainder)
             .map(edge -> getSubjectForField(edge, childShape, remainder)));
   }

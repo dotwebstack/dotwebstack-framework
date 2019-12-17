@@ -80,7 +80,7 @@ class VerticeFactoryHelper {
               .getSubject();
     }
 
-    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.current()
+    PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.first()
         .getName());
     Edge next = match.getObject()
         .getEdges()
@@ -95,7 +95,7 @@ class VerticeFactoryHelper {
             match.getObject()
                 .getSubject()));
 
-    return getSubjectForField(next, propertyShape.getNode(), fieldPath.remainder()
+    return getSubjectForField(next, propertyShape.getNode(), fieldPath.rest()
         .orElseThrow(() -> illegalStateException("Expected a remainder but got nothing!")));
   }
 }
