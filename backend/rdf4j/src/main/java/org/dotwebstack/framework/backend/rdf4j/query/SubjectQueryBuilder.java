@@ -57,7 +57,9 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     List<FilterRule> filterRules = filterMapping.stream()
         .map(tuple -> FilterRule.builder()
-            .path(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
+            .fieldPath(FieldPath.builder()
+                .fieldDefinitions(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
+                .build())
             .operator((String) tuple.getContainer()
                 .getDirective(CoreDirectives.FILTER_NAME)
                 .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
@@ -67,7 +69,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderBys);
+    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, nodeShape, filterRules, orderBys, query);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)
