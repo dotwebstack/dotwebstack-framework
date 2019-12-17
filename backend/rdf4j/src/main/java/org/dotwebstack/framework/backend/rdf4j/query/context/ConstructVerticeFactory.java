@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 
 import graphql.schema.SelectedField;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -88,28 +87,38 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .collect(Collectors.toSet());
   }
 
+  private Edge doFilterMapping(ArgumentResultWrapper argumentResultWrapper, Edge edge, NodeShape nodeShape,
+      OuterQuery<?> query) {
+    return processFilters(edge, query, nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
+        .getName()), argumentResultWrapper);
+  }
+
   private List<Edge> doFilterMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,
       List<Edge> selectionEdges) {
-    return getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.FILTER_NAME).stream()
-        .flatMap(argumentResultWrapper -> {
-          List<Edge> edges;
-          if (argumentResultWrapper.getFieldPath()
-              .isSingleton()) {
-            edges = findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), selectionEdges);
-          } else {
-            edges = Collections.singletonList(getEdge(nodeShape, argumentResultWrapper.getSelectedField(),
-                argumentResultWrapper.getFieldPath(), query));
-            deepList(edges).forEach(edge -> edge.setVisible(false));
-          }
 
-          return edges.stream()
-              .map(edge -> processFilters(edge, query,
-                  nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
-                      .getName()),
-                  argumentResultWrapper));
-        })
+    List<ArgumentResultWrapper> argumentResults =
+        getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.FILTER_NAME);
+
+    argumentResults.stream()
+        .filter(argumentResultWrapper -> argumentResultWrapper.getFieldPath()
+            .isSingleton())
+        .forEach(argumentResultWrapper -> findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(),
+            selectionEdges).forEach(edge -> doFilterMapping(argumentResultWrapper, edge, nodeShape, query)));
+
+    List<Edge> result = argumentResults.stream()
+        .filter(argumentResultWrapper -> !argumentResultWrapper.getFieldPath()
+            .isSingleton())
+        .map(
+            argumentResultWrapper -> doFilterMapping(argumentResultWrapper,
+                getEdge(nodeShape, argumentResultWrapper.getSelectedField(), argumentResultWrapper.getFieldPath(),
+                    query),
+                nodeShape, query))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+
+    deepList(result).forEach(edge -> edge.setVisible(false));
+
+    return result;
   }
 
   private void doSortMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,

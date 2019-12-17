@@ -29,8 +29,8 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     super(serializerRouter, rdf4jProperties);
   }
 
-  public Vertice createRoot(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
-      List<OrderBy> orderBys) {
+  public Vertice createRoot(Variable subject, NodeShape nodeShape, List<FilterRule> filterRules, List<OrderBy> orderBys,
+      OuterQuery<?> query) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
     makeEdgesUnique(vertice.getEdges());
     orderBys.forEach(orderBy -> addOrderables(vertice, query, orderBy, nodeShape));
@@ -41,61 +41,63 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
       List<FilterRule> filterRules) {
     Vertice vertice = createVertice(subject, nodeShape);
 
-    filterRules.forEach(filter -> {
-      if (filter.getFieldPath()
+    filterRules.forEach(filter -> applyFilter(vertice, nodeShape, filter, query));
+    return vertice;
+  }
+
+  private void applyFilter(Vertice vertice, NodeShape nodeShape, FilterRule filterRule, OuterQuery<?> query) {
+    {
+      if (filterRule.getFieldPath()
           .isResource()) {
-        addFilterToVertice(nodeShape, vertice, filter, vertice.getSubject());
+        addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
         return;
       }
 
-      NodeShape childShape = getNextNodeShape(nodeShape, filter.getFieldPath()
+      NodeShape childShape = getNextNodeShape(nodeShape, filterRule.getFieldPath()
           .getFieldDefinitions());
 
       if (nodeShape.equals(childShape)) {
-        addFilterToVertice(vertice, query, nodeShape, filter);
+        addFilterToVertice(vertice, query, nodeShape, filterRule);
       } else {
         Variable edgeSubject = query.var();
         Edge edge;
 
-        if (filter.getFieldPath()
-            .getFieldDefinitions()
-            .size() == 1) {
-          GraphQLFieldDefinition fieldDefinition = filter.getFieldPath()
+        if (filterRule.getFieldPath()
+            .rest()
+            .isEmpty()) {
+          GraphQLFieldDefinition fieldDefinition = filterRule.getFieldPath()
               .first();
           edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
               .getPath()
               .toPredicate(), false);
 
-          if (Objects.isNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
-            addFilterToVertice(edge.getObject(), query, childShape, filter);
-          } else {
+          if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
             edge.setOptional(true);
             createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
-            addFilterToVertice(nodeShape, vertice, filter, edge.getAggregate()
+            addFilterToVertice(nodeShape, vertice, filterRule, edge.getAggregate()
                 .getVariable());
+          } else {
+            addFilterToVertice(edge.getObject(), query, childShape, filterRule);
           }
 
           vertice.getEdges()
               .add(edge);
-
-        } else {
-          filter.getFieldPath()
-              .rest()
-              .map(remainder -> FilterRule.builder()
-                  .fieldPath(remainder)
-                  .value(filter.getValue())
-                  .operator(filter.getOperator())
-                  .build())
-              .map(childFilterRule -> createVertice(edgeSubject, query, childShape,
-                  Collections.singletonList(childFilterRule)))
-              .map(childVertice -> createEdge(nodeShape, filter, childVertice))
-              .ifPresent(edgje -> vertice.getEdges()
-                  .add(edgje));
-
         }
+
+        filterRule.getFieldPath()
+            .rest()
+            .map(rest -> FilterRule.builder()
+                .fieldPath(rest)
+                .value(filterRule.getValue())
+                .operator(filterRule.getOperator())
+                .build())
+            .map(childFilterRule -> createVertice(edgeSubject, query, childShape,
+                Collections.singletonList(childFilterRule)))
+            .map(childVertice -> createEdge(nodeShape, filterRule, childVertice))
+            .ifPresent(edge1 -> vertice.getEdges()
+                .add(edge1));
       }
-    });
-    return vertice;
+    }
   }
 
   private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {

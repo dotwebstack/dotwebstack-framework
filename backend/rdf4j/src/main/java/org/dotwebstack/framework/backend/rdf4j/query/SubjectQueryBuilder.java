@@ -69,7 +69,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, query, nodeShape, filterRules, orderBys);
+    Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, nodeShape, filterRules, orderBys, query);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)

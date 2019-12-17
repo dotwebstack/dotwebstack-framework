@@ -121,8 +121,8 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
-        Collections.emptyList());
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
+        Collections.emptyList(), query);
 
     // Assert
     assertThat(vertice.getEdges()
@@ -156,13 +156,14 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
         ImmutableList.of(OrderBy.builder()
             .fieldPath(FieldPath.builder()
                 .fieldDefinitions(singletonList(NAME))
                 .build())
             .order("DESC")
-            .build()));
+            .build()),
+        query);
 
     // Assert
     assertThat(vertice.getOrderables()
@@ -190,13 +191,14 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, Collections.emptyList(),
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
         ImmutableList.of(OrderBy.builder()
             .fieldPath(FieldPath.builder()
                 .fieldDefinitions(singletonList(NONNULL_NAME))
                 .build())
             .order("DESC")
-            .build()));
+            .build()),
+        query);
 
     // Assert
     assertThat(vertice.getOrderables()
@@ -260,12 +262,12 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, singletonList(FilterRule.builder()
         .fieldPath(FieldPath.builder()
             .fieldDefinitions(Arrays.asList(BEERS, INGREDIENTS, NAME))
             .build())
         .value("Hop")
-        .build()), Collections.emptyList());
+        .build()), Collections.emptyList(), query);
 
     // Assert
     assertThat(vertice.getEdges()
@@ -323,12 +325,12 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), query, nodeShape, singletonList(FilterRule.builder()
+    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, singletonList(FilterRule.builder()
         .fieldPath(FieldPath.builder()
             .fieldDefinitions(singletonList(NAME))
             .build())
         .value("Alfa Brouwerij")
-        .build()), Collections.emptyList());
+        .build()), Collections.emptyList(), query);
 
     // Assert
     assertThat(vertice.getEdges()
