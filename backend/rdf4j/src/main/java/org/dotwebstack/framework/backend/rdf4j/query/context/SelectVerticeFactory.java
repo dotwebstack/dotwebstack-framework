@@ -45,6 +45,22 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return vertice;
   }
 
+  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
+    List<Edge> edges = new ArrayList<>();
+
+    Set<Iri> iris = nodeShape.getTargetClasses()
+        .stream()
+        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
+        .collect(Collectors.toSet());
+
+    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
+
+    return Vertice.builder()
+        .subject(subject)
+        .edges(edges)
+        .build();
+  }
+
   private void applyFilter(Vertice vertice, NodeShape nodeShape, FilterRule filterRule, OuterQuery<?> query) {
     {
       if (filterRule.getFieldPath()
@@ -98,22 +114,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
                 .add(edge1));
       }
     }
-  }
-
-  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
-    List<Edge> edges = new ArrayList<>();
-
-    Set<Iri> iris = nodeShape.getTargetClasses()
-        .stream()
-        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
-        .collect(Collectors.toSet());
-
-    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
-
-    return Vertice.builder()
-        .subject(subject)
-        .edges(edges)
-        .build();
   }
 
   private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {

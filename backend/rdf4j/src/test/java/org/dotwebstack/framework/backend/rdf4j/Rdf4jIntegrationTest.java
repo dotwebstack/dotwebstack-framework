@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_RAW_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
@@ -149,10 +150,13 @@ class Rdf4jIntegrationTest {
     assertThat(data,
         hasEntry(BREWERIES_FIELD,
             ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
+                ImmutableList.of(
+                    ImmutableMap.of(INGREDIENTS_FIELD,
+                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)),
+                    ImmutableMap.of(INGREDIENTS_FIELD,
+                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"), NAME_NULL_MAP)))))));
   }
 
 
@@ -386,6 +390,22 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter3() {
+    // Arrange
+    String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers(ingredient: [\"Hop\", \"Gerst\"]) { name }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList
+        .of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_NAME_FIELD, "Alfa Edel Pils"))))));
+  }
+
+  @Test
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter() {
     // Arrange
     String query =
@@ -607,7 +627,7 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("beerCount"))
         .collect(Collectors.toList());
 
-    assertThat(beerCounts, is(ImmutableList.of(2, 1, 0, 0, 0)));
+    assertThat(beerCounts, is(ImmutableList.of(2, 2, 0, 0, 0)));
   }
 
   @Test
@@ -626,7 +646,7 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("beerCount"))
         .collect(Collectors.toList());
 
-    assertThat(beerCounts, is(ImmutableList.of(0, 0, 0, 1, 2)));
+    assertThat(beerCounts, is(ImmutableList.of(0, 0, 0, 2, 2)));
   }
 
   @Test
@@ -645,7 +665,7 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("name"))
         .collect(Collectors.toList());
 
-    assertThat(names, is(ImmutableList.of("Brouwerij 1923")));
+    assertThat(names, is(ImmutableList.of("Alfa Brouwerij", "Brouwerij 1923")));
   }
 
   @Test
@@ -684,7 +704,7 @@ class Rdf4jIntegrationTest {
         .map(map -> map.get("name"))
         .collect(Collectors.toList());
 
-    assertThat(names, is(ImmutableList.of("Brouwerij 1923")));
+    assertThat(names, is(ImmutableList.of("Alfa Brouwerij", "Brouwerij 1923")));
   }
 
   @Test

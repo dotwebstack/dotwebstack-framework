@@ -90,6 +90,15 @@ beer_id:6 a beer_def:Beer ;
   beer_def:beertype beer_type_id:1, beer_type_id:2
 .
 
+beer_id:9 a beer_def:Beer ;
+  beer_def:identifier "4";
+  beer_def:brewery brewery_id:789;
+  schema:name "Alfa Krachtig Dort";
+  beer_def:ingredient ingredient_id:3 ;
+  beer_def:ingredient ingredient_id:4 ;
+  beer_def:beertype beer_type_id:1, beer_type_id:
+.
+
 beer_id:7 a beer_def:Beer ;
   beer_def:identifier "2";
   beer_def:brewery brewery_id:123;

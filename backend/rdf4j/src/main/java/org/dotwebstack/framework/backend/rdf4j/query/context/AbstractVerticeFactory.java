@@ -201,7 +201,7 @@ abstract class AbstractVerticeFactory {
   }
 
   Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
-      ArgumentResultWrapper argumentResultWrapper) {
+      ArgumentResultWrapper argumentResultWrapper, FieldPath fieldPath) {
 
     Vertice vertice = edge.getObject();
 
@@ -212,7 +212,7 @@ abstract class AbstractVerticeFactory {
 
     if (nonNull(value)) {
       FilterRule filterRule = FilterRule.builder()
-          .fieldPath(argumentResultWrapper.getFieldPath())
+          .fieldPath(fieldPath)
           .value(value)
           .build();
 

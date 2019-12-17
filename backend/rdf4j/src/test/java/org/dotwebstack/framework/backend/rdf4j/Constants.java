@@ -141,6 +141,8 @@ public final class Constants {
 
   public static final String BEER_NAMES_FIELD = "beerNames";
 
+  public static final String BEERS_NAME_FIELD = "name";
+
   public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
 
   public static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
