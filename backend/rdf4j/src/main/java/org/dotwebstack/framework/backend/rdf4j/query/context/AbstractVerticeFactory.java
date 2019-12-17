@@ -112,7 +112,6 @@ abstract class AbstractVerticeFactory {
     return selectedFields.stream()
         .filter(selectedField -> !selectedField.getQualifiedName()
             .contains("/"))
-        // .filter(selectedField -> nonNull(nodeShape.getPropertyShape(selectedField.getName()).getNode()))
         .flatMap(selectedField -> selectedField.getFieldDefinition()
             .getArguments()
             .stream()
