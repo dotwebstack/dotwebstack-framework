@@ -24,11 +24,10 @@ public class FieldPath {
   }
 
   public Optional<FieldPath> rest() {
-    List<GraphQLFieldDefinition> fieldDefinitions;
     if (this.fieldDefinitions.size() > 1) {
-      fieldDefinitions = this.fieldDefinitions.subList(1, this.fieldDefinitions.size());
+      List<GraphQLFieldDefinition> rest = this.fieldDefinitions.subList(1, this.fieldDefinitions.size());
       return Optional.of(FieldPath.builder()
-          .fieldDefinitions(fieldDefinitions)
+          .fieldDefinitions(rest)
           .build());
     }
     return Optional.empty();
@@ -40,7 +39,7 @@ public class FieldPath {
   }
 
   public boolean isResource() {
-    if (fieldDefinitions.size() == 1) {
+    if (isSingleton()) {
       return Objects.nonNull(fieldDefinitions.get(0)
           .getDirective(Rdf4jDirectives.RESOURCE_NAME));
     }
