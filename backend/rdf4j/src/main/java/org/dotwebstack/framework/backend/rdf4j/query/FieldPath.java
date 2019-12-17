@@ -39,8 +39,11 @@ public class FieldPath {
   }
 
   public boolean isResource() {
-    return leaf().map(fieldDefinition -> Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
-        .orElse(false);
+    if (fieldDefinitions.size() == 1) {
+      return Objects.nonNull(fieldDefinitions.get(0)
+          .getDirective(Rdf4jDirectives.RESOURCE_NAME));
+    }
+    return false;
   }
 
   public GraphQLFieldDefinition current() {
