@@ -28,6 +28,7 @@ import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -232,8 +233,10 @@ abstract class AbstractVerticeFactory {
       addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
       return;
     }
-    findOrCreatePath(vertice, query, nodeShape, filterRule.getFieldPath(), false)
-        .ifPresent(match -> addFilterToVertice(nodeShape, match, filterRule));
+    findOrCreatePath(vertice, query, nodeShape, filterRule.getFieldPath(), false).ifPresent(match -> {
+      deepList(Collections.singletonList(match)).forEach(edge -> edge.setOptional(false));
+      addFilterToVertice(nodeShape, match, filterRule);
+    });
   }
 
   void addFilterToVertice(NodeShape nodeShape, Edge edge, FilterRule filterRule) {

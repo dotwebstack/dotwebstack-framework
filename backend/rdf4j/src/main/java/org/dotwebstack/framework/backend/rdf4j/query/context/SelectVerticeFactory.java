@@ -61,8 +61,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             .getFieldDefinitions()
             .size() == 1) {
           GraphQLFieldDefinition fieldDefinition = filter.getFieldPath()
-              .getFieldDefinitions()
-              .get(0);
+              .first();
           edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
               .getPath()
               .toPredicate(), false);
@@ -118,8 +117,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   private Edge createEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice) {
     return Edge.builder()
         .predicate(nodeShape.getPropertyShape(filter.getFieldPath()
-            .getFieldDefinitions()
-            .get(0)
+            .first()
             .getName())
             .getPath()
             .toPredicate())
