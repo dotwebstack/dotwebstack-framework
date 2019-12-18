@@ -48,7 +48,7 @@ class ResourceDirectiveWiringTest {
     private FieldDefinition fieldDefinition;
 
     @Mock
-    private GraphQLFieldDefinition graphQLFieldDefinition;
+    private GraphQLFieldDefinition graphQlFieldDefinition;
 
     @Mock
     private GraphQLScalarType scalarType;
@@ -59,8 +59,8 @@ class ResourceDirectiveWiringTest {
       when(element.getDefinition()).thenReturn(fieldDefinition);
       when(fieldDefinition.getType()).thenReturn(mock(NonNullType.class));
 
-      when(environment.getFieldDefinition()).thenReturn(graphQLFieldDefinition);
-      when(graphQLFieldDefinition.getType()).thenReturn(scalarType);
+      when(environment.getFieldDefinition()).thenReturn(graphQlFieldDefinition);
+      when(graphQlFieldDefinition.getType()).thenReturn(scalarType);
     }
 
     @Test
@@ -77,9 +77,9 @@ class ResourceDirectiveWiringTest {
     @DisplayName("Invalid type declaration")
     void withInValidScalar() {
       // Used for exception message
-      GraphQLFieldsContainer graphQLFieldsContainer = mock(GraphQLFieldsContainer.class);
-      when(environment.getFieldsContainer()).thenReturn(graphQLFieldsContainer);
-      when(graphQLFieldsContainer.getName()).thenReturn("Brewery");
+      GraphQLFieldsContainer graphQlFieldsContainer = mock(GraphQLFieldsContainer.class);
+      when(environment.getFieldsContainer()).thenReturn(graphQlFieldsContainer);
+      when(graphQlFieldsContainer.getName()).thenReturn("Brewery");
 
       // Arrange
       when(scalarType.getName()).thenReturn("!String");

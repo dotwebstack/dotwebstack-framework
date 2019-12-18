@@ -5,7 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 
-abstract public class ValidatingDirectiveWiring {
+public abstract class ValidatingDirectiveWiring {
 
   public void validate(String directiveName, GraphQLFieldDefinition fieldDefinition,
       GraphQLFieldsContainer fieldsContainer, Runnable validationActions) {

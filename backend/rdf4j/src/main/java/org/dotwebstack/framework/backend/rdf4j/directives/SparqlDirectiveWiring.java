@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
-
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
