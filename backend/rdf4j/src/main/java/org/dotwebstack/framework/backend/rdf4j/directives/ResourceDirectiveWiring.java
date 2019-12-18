@@ -25,14 +25,22 @@ public class ResourceDirectiveWiring extends ValidatingDirectiveWiring implement
     GraphQLFieldDefinition element = environment.getElement();
 
     validate(getDirectiveName(), fieldDefinition, fieldsContainer, () -> {
-      assert GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType())
-          .getName()
-          .equals(Scalars.GraphQLString.getName()) : "can only be defined on a String field";
-      assert element.getDefinition()
-          .getType() instanceof NonNullType : "can only be defined on non-nullable field";
+      validateNonNullableField(element);
+      validateOnStringField(fieldDefinition);
     });
 
     return element;
+  }
+
+  void validateNonNullableField(GraphQLFieldDefinition element) {
+    assert element.getDefinition()
+        .getType() instanceof NonNullType : "can only be defined on non-nullable field";
+  }
+
+  void validateOnStringField(GraphQLFieldDefinition fieldDefinition) {
+    assert GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType())
+        .getName()
+        .equals(Scalars.GraphQLString.getName()) : "can only be defined on a String field";
   }
 
 }
