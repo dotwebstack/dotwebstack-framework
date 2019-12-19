@@ -1,94 +1,57 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.stream.Stream;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import org.dotwebstack.framework.core.converters.CoreConverter;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.BooleanLiteral;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.sail.memory.model.CalendarMemLiteral;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.TestFactory;
 
 class ConverterTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new DateConverter(),
-      new DateTimeConverter(), new IriConverter(), new LongConverter());
+  @TestFactory
+  Stream<DynamicContainer> converterTest() throws DatatypeConfigurationException {
+    CalendarMemLiteral dateLiteral = new CalendarMemLiteral(null, DatatypeFactory.newInstance()
+        .newXMLGregorianCalendar("2000-01-01"));
 
-  @Test
-  void convert_booleanLiteral_toBoolean() {
-    // Arrange
-    BooleanLiteral boolLiteral = BooleanLiteral.TRUE;
+    CalendarMemLiteral dateTimeLiteral = new CalendarMemLiteral(null, DatatypeFactory.newInstance()
+        .newXMLGregorianCalendar("2000-01-01T20:18:00.000+02:00"));
 
-    // Act
-    CoreConverter<Value, ?> converter = getConverter(boolLiteral);
-
-    // Assert
-    assertThat(converter, instanceOf(BooleanConverter.class));
-    assertThat(((BooleanConverter) converter).convertLiteral(boolLiteral), is(true));
+    return Stream.of(getTestCases(new BooleanConverter(), BooleanLiteral.TRUE, true),
+        getTestCases(new ByteConverter(), VF.createLiteral(Byte.parseByte("2")), Byte.parseByte("2")),
+        getTestCases(new DateConverter(), dateLiteral, LocalDate.parse("2000-01-01")),
+        getTestCases(new DateTimeConverter(), dateTimeLiteral, ZonedDateTime.parse("2000-01-01T20:18:00.000+02:00")),
+        getTestCases(new DecimalConverter(), VF.createLiteral(new BigDecimal("3.5")), new BigDecimal("3.5")),
+        getTestCases(new DoubleConverter(), VF.createLiteral(3.5D), 3.5D),
+        getTestCases(new FloatConverter(), VF.createLiteral(15F), 15F),
+        getTestCases(new IntConverter(), VF.createLiteral(1024), 1024),
+        getTestCases(new IntegerConverter(), VF.createLiteral(new BigInteger("1024")), new BigInteger("1024")),
+        getTestCases(new IriConverter(), VF.createIRI("http://brewery.com"), VF.createIRI("http://brewery.com")),
+        getTestCases(new LongConverter(), VF.createLiteral(1024L), 1024L),
+        getTestCases(new ShortConverter(), VF.createLiteral((short) 2), (short) 2));
   }
 
-  @Test
-  void convert_dateLiteral_toLocalDate() throws DatatypeConfigurationException {
-    // Arrange
-    XMLGregorianCalendar calender = DatatypeFactory.newInstance()
-        .newXMLGregorianCalendar("2000-01-01");
-    CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
-
-    // Act
-    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
-
-    // Assert
-    assertThat(converter, instanceOf(DateConverter.class));
-    assertThat(((DateConverter) converter).convertLiteral(calenderLiteral), is(LocalDate.parse("2000-01-01")));
-  }
-
-
-  @Test
-  void convert_datetimeLiteral_toZonedDateTime() throws DatatypeConfigurationException {
-    // Arrange
-    XMLGregorianCalendar calender = DatatypeFactory.newInstance()
-        .newXMLGregorianCalendar("2000-01-01T20:18:00.000+02:00");
-    CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
-
-    // Act
-    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
-
-    // Assert
-    assertThat(converter, instanceOf(DateTimeConverter.class));
-    assertThat(((DateTimeConverter) converter).convertLiteral(calenderLiteral),
-        is(ZonedDateTime.parse("2000-01-01T20:18:00.000+02:00")));
-  }
-
-  @Test
-  void convert_iri_toIri() {
-    // Arrange
-    IRI iri = VF.createIRI("http://www.brewery.com");
-
-    // Act
-    CoreConverter<Value, ?> converter = getConverter(iri);
-
-    // Assert
-    assertThat(converter, instanceOf(IriConverter.class));
-    assertThat(((IriConverter) converter).convert(iri), is(iri));
-  }
-
-  private CoreConverter<Value, ?> getConverter(Value value) {
-    return converters.stream()
-        .filter(converter -> converter.supports(value))
-        .findFirst()
-        .orElse(null);
+  private DynamicContainer getTestCases(CoreConverter<Value, ?> converter, Value value, Object expected) {
+    String className = converter.getClass()
+        .getSimpleName();
+    return dynamicContainer(className, Stream.of(
+        dynamicTest("supports " + value, () -> assertThat(converter.supports(value), is(true))),
+        dynamicTest("converts to " + expected.getClass(), () -> assertThat(converter.convert(value), is(expected)))));
   }
 }

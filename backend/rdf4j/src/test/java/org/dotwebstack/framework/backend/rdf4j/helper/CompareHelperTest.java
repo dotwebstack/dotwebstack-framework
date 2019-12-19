@@ -3,126 +3,70 @@ package org.dotwebstack.framework.backend.rdf4j.helper;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.sail.memory.model.DecimalMemLiteral;
 import org.eclipse.rdf4j.sail.memory.model.IntegerMemLiteral;
 import org.eclipse.rdf4j.sail.memory.model.MemLiteral;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 class CompareHelperTest {
-
-  @Test
-  void compareHelper_sortsListAsc_withSimpleStringValue() {
-    // Arrange
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(new MemLiteral(null, "a"), new MemLiteral(null, "z"),
-        new MemLiteral(null, "g"), new MemLiteral(null, "d"), new MemLiteral(null, "b")));
-
-    List<SimpleLiteral> ascending = List.of(new MemLiteral(null, "a"), new MemLiteral(null, "b"),
-        new MemLiteral(null, "d"), new MemLiteral(null, "g"), new MemLiteral(null, "z"));
-
-    // Act
-    labels.sort(CompareHelper.getComparator(true));
-
-    // Assert
-    assertThat(labels, is(equalTo(ascending)));
+  @TestFactory
+  Stream<DynamicContainer> compare() {
+    return Stream.of(getTestCases("String", stringListProvider(), "a", "b", "d", "g", "z"),
+        getTestCases("BigInteger", intListProvider(), "1", "5", "54", "102", "1230"),
+        getTestCases("BigDecimal", decimalListProvider(), "1.02", "5.4", "54.102", "123.0", "1230."));
   }
 
-  @Test
-  void compareHelper_sortsListDesc_withSimpleStringValue() {
-    // Arrange
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(new MemLiteral(null, "a"), new MemLiteral(null, "z"),
-        new MemLiteral(null, "g"), new MemLiteral(null, "d"), new MemLiteral(null, "b")));
+  private DynamicContainer getTestCases(String type, Function<List<String>, ArrayList<SimpleLiteral>> provider,
+      String first, String second, String third, String fourth, String fifth) {
+    List<String> unsorted = List.of(second, fifth, fourth, third, first);
 
-    List<SimpleLiteral> descending = List.of(new MemLiteral(null, "z"), new MemLiteral(null, "g"),
-        new MemLiteral(null, "d"), new MemLiteral(null, "b"), new MemLiteral(null, "a"));
-
-    // Act
-    labels.sort(CompareHelper.getComparator(false));
-
-    // Assert
-    assertThat(labels, is(equalTo(descending)));
+    return dynamicContainer("With " + type + " values",
+        Stream.of(getTestCase(provider, unsorted, true, List.of(first, second, third, fourth, fifth)),
+            getTestCase(provider, unsorted, false, List.of(fifth, fourth, third, second, first))));
   }
 
-  @Test
-  void compareHelper_sortsListAsc_withSimpleIntValue() {
-    // Arrange
-    IntegerMemLiteral int1 = new IntegerMemLiteral(null, new BigInteger("1"));
-    IntegerMemLiteral int5 = new IntegerMemLiteral(null, new BigInteger("5"));
-    IntegerMemLiteral int54 = new IntegerMemLiteral(null, new BigInteger("54"));
-    IntegerMemLiteral int102 = new IntegerMemLiteral(null, new BigInteger("102"));
-    IntegerMemLiteral int1230 = new IntegerMemLiteral(null, new BigInteger("1230"));
-
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(int54, int1, int1230, int5, int102));
-    List<SimpleLiteral> ascending = List.of(int1, int5, int54, int102, int1230);
-
-    // Act
-    labels.sort(CompareHelper.getComparator(true));
-
-    // Assert
-    assertThat(labels, is(equalTo(ascending)));
+  private DynamicTest getTestCase(Function<List<String>, ArrayList<SimpleLiteral>> provider, List<String> labels,
+      boolean ascending, List<String> sorted) {
+    return dynamicTest("Sorts list " + (ascending ? "ascending" : "descending"), () -> {
+      // Arrange
+      List<SimpleLiteral> unsorted = provider.apply(labels);
+      // Act
+      unsorted.sort(CompareHelper.getComparator(ascending));
+      // Assert
+      assertThat(unsorted, is(equalTo(provider.apply(sorted))));
+    });
   }
 
-  @Test
-  void compareHelper_sortsListDesc_withSimpleIntValue() {
-    // Arrange
-    IntegerMemLiteral int1 = new IntegerMemLiteral(null, new BigInteger("1"));
-    IntegerMemLiteral int5 = new IntegerMemLiteral(null, new BigInteger("5"));
-    IntegerMemLiteral int54 = new IntegerMemLiteral(null, new BigInteger("54"));
-    IntegerMemLiteral int102 = new IntegerMemLiteral(null, new BigInteger("102"));
-    IntegerMemLiteral int1230 = new IntegerMemLiteral(null, new BigInteger("1230"));
-
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(int54, int1, int1230, int5, int102));
-    List<SimpleLiteral> descending = List.of(int1230, int102, int54, int5, int1);
-
-    // Act
-    labels.sort(CompareHelper.getComparator(false));
-
-    // Assert
-    assertThat(labels, is(equalTo(descending)));
+  private Function<List<String>, ArrayList<SimpleLiteral>> stringListProvider() {
+    return labels -> labels.stream()
+        .map(label -> new MemLiteral(null, label))
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  @Test
-  void compareHelper_sortsListAsc_withSimpleDecimalValue() {
-    // Arrange
-    DecimalMemLiteral int1 = new DecimalMemLiteral(null, new BigDecimal("1.02"));
-    DecimalMemLiteral int503 = new DecimalMemLiteral(null, new BigDecimal("5.03"));
-    DecimalMemLiteral int5 = new DecimalMemLiteral(null, new BigDecimal("5.4"));
-    DecimalMemLiteral int54 = new DecimalMemLiteral(null, new BigDecimal("54.102"));
-    DecimalMemLiteral int123 = new DecimalMemLiteral(null, new BigDecimal("123.0"));
-    DecimalMemLiteral int1230 = new DecimalMemLiteral(null, new BigDecimal("1230."));
-
-    List<SimpleLiteral> ascending = List.of(int1, int503, int5, int54, int123, int1230);
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(int54, int1, int1230, int5, int123, int503));
-
-    // Act
-    labels.sort(CompareHelper.getComparator(true));
-
-    // Assert
-    assertThat(labels, is(equalTo(ascending)));
+  private Function<List<String>, ArrayList<SimpleLiteral>> intListProvider() {
+    return labels -> labels.stream()
+        .map(BigInteger::new)
+        .map(label -> new IntegerMemLiteral(null, label))
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  @Test
-  void compareHelper_sortsListDesc_withSimpleDecimalValue() {
-    // Arrange
-    DecimalMemLiteral int1 = new DecimalMemLiteral(null, new BigDecimal("1.02"));
-    DecimalMemLiteral int503 = new DecimalMemLiteral(null, new BigDecimal("5.03"));
-    DecimalMemLiteral int5 = new DecimalMemLiteral(null, new BigDecimal("5.4"));
-    DecimalMemLiteral int54 = new DecimalMemLiteral(null, new BigDecimal("54.102"));
-    DecimalMemLiteral int123 = new DecimalMemLiteral(null, new BigDecimal("123.0"));
-    DecimalMemLiteral int1230 = new DecimalMemLiteral(null, new BigDecimal("1230."));
-
-    List<SimpleLiteral> descending = List.of(int1230, int123, int54, int5, int503, int1);
-    List<SimpleLiteral> labels = new ArrayList<>(List.of(int54, int1, int1230, int5, int123, int503));
-
-    // Act
-    labels.sort(CompareHelper.getComparator(false));
-
-    // Assert
-    assertThat(labels, is(equalTo(descending)));
+  private Function<List<String>, ArrayList<SimpleLiteral>> decimalListProvider() {
+    return labels -> labels.stream()
+        .map(BigDecimal::new)
+        .map(label -> new DecimalMemLiteral(null, label))
+        .collect(Collectors.toCollection(ArrayList::new));
   }
 }
