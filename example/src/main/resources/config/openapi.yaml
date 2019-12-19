@@ -189,6 +189,10 @@ paths:
             items:
               type: string
               enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
+        - name: pageSize
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: OK
@@ -196,6 +200,19 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
+          headers:
+            X-Pagination-Limit:
+              schema:
+                type: integer
+                x-dws-expr: '`${argument.pageSize}`'
+            X-Pagination-Page:
+              schema:
+                type: integer
+                x-dws-expr: '`${argument.page}`'
+            API-version:
+              schema:
+                type: string
+                x-dws-expr: '`v1`'
         400:
           description: error
           content:

@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -33,6 +34,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -48,6 +51,7 @@ import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
@@ -62,6 +66,8 @@ import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
+
+  private static final String ARGUMENT_PREFIX = "argument.";
 
   private OpenAPI openApi;
 
@@ -118,9 +124,35 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
                 HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
-    return ServerResponse.ok()
-        .contentType(MediaType.parseMediaType(template.getMediaType()))
-        .body(fromPublisher(bodyPublisher, String.class));
+    Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+    ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
+        .contentType(MediaType.parseMediaType(template.getMediaType()));
+    responseHeaders.forEach(bodyBuilder::header);
+    return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
+  }
+
+  private Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate,
+      Map<String, Object> inputParams) {
+    Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
+    JexlContext jexlContext = new MapContext();
+    this.responseSchemaContext.getGraphQlField()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
+        .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
+            getStringValue(argument.getDefaultValue())));
+    inputParams.forEach((key, value) -> jexlContext.set("argument." + key, value.toString()));
+
+    return responseHeaders.keySet()
+        .stream()
+        .collect(Collectors.toMap(key -> key, key -> {
+          String jexlExpression = responseHeaders.get(key)
+              .getJexlExpression();
+          return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
+              .orElseThrow(() -> invalidConfigurationException(
+                  "Jexl expression '{}' for parameter '{}' " + "did not return any value", jexlExpression, key));
+        }));
   }
 
   private void validateSchema() {
@@ -160,7 +192,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
       String pathName) {
-    if (argument.isRequired() && !argument.isHasDefault() && parameters.stream()
+    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName()))) {
       throw invalidConfigurationException(
@@ -236,6 +268,21 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
+    Map<String, Object> result = resolveUrlAndHeaderParameters(request);
+    RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
+    if (Objects.nonNull(requestBodyContext)) {
+      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
+          .getValue(request, requestBody, result)
+          .ifPresent(value -> result.put(requestBodyContext.getName(), value));
+    } else {
+      validateRequestBodyNonexistent(request);
+    }
+
+    return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
+  }
+
+  private Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
 
@@ -252,17 +299,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
       }
     }
-    RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
-    if (Objects.nonNull(requestBodyContext)) {
-      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
-          .getValue(request, requestBody, result)
-          .ifPresent(value -> result.put(requestBodyContext.getName(), value));
-    } else {
-      validateRequestBodyNonexistent(request);
-    }
-
-    return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
+    return result;
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
