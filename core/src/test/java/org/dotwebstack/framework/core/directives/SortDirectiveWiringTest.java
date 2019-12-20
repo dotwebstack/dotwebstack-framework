@@ -122,9 +122,7 @@ class SortDirectiveWiringTest {
         // Act & Assert
         assertThrows(ASSERTION_ERROR,
             () -> sortDirectiveWiring.validateFieldArgumentDoesNotExist(Map.of("field", "beer")));
-
       }
-
     }
 
     @Nested

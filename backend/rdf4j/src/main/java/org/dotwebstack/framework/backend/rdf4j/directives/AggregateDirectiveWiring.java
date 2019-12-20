@@ -54,7 +54,7 @@ public class AggregateDirectiveWiring extends ValidatingDirectiveWiring implemen
     });
   }
 
-  private void validateDataType(GraphQLFieldDefinition fieldDefinition) {
+  void validateDataType(GraphQLFieldDefinition fieldDefinition) {
     GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
     boolean hasTransformDirective = Objects.nonNull(fieldDefinition.getDirective(CoreDirectives.TRANSFORM_NAME));
@@ -63,7 +63,7 @@ public class AggregateDirectiveWiring extends ValidatingDirectiveWiring implemen
         + rawType.getName();
   }
 
-  private void validateMax(String typeName, GraphQLFieldDefinition fieldDefinition) {
+  void validateMax(String typeName, GraphQLFieldDefinition fieldDefinition) {
     Optional<PropertyShape> shapeOptional = Optional.ofNullable(nodeShapeRegistry.getByShaclName(typeName))
         .map(nodeShape -> nodeShape.getPropertyShape(fieldDefinition.getName()))
         .filter(propertyShape -> Objects.nonNull(propertyShape.getMaxCount()))
