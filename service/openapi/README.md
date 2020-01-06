@@ -235,6 +235,24 @@ brewery:
 The response of brewery contains the combined set of required properties of both schema's defined under the `allOf` property. 
 Currently `anyOf` and `oneOf` are not supported.  
 
+# 1.1.10 Response headers
+It is possible to return response headers in a DotWebStack response. This can be configured similar to response properties: 
+```graphql
+  /breweries:
+    get:
+      x-dws-query: breweries
+      responses:
+        200:
+          ...
+          headers:
+            X-Pagination-Page:
+              schema:
+                type: string
+                x-dws-expr: '`args.pageSize`'
+```
+This configuration adds a header to the response called X-Pagination-Page. It is possible to set a value for this header 
+in multiple ways. One of them is to use the x-dws-expr. This works the same way as for the response properties. 
+
 # 1.2 OpenApi specification on basepath
 The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
 anyone with access to your API can lookup specification used to generate the API.
