@@ -204,11 +204,15 @@ paths:
             X-Pagination-Limit:
               schema:
                 type: integer
-                x-dws-expr: '`${argument.pageSize}`'
+                x-dws-expr: args.pageSize
             X-Pagination-Page:
               schema:
                 type: integer
-                x-dws-expr: '`${argument.page}`'
+                x-dws-expr: args.page
+            OS:
+              schema:
+                type: string
+                x-dws-expr: env.OS
             API-version:
               schema:
                 type: string

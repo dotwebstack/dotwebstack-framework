@@ -114,16 +114,22 @@ public class ResponseTemplateBuilder {
 
     return headers.entrySet()
         .stream()
-        .map(e -> ResponseHeader.builder()
-            .name(e.getKey())
-            .type(e.getValue()
-                .getSchema()
-                .getType())
-            .jexlExpression((String) e.getValue()
-                .getSchema()
-                .getExtensions()
-                .get(X_DWS_EXPR))
-            .build())
+        .map(e -> {
+          Schema<?> schema = Objects.nonNull(e.getValue()
+              .get$ref()) ? resolveSchema(openApi,
+                  e.getValue()
+                      .getSchema(),
+                  e.getValue()
+                      .get$ref())
+                  : e.getValue()
+                      .getSchema();
+          return ResponseHeader.builder()
+              .name(e.getKey())
+              .type(schema.getType())
+              .jexlExpression((String) schema.getExtensions()
+                  .get(X_DWS_EXPR))
+              .build();
+        })
         .collect(Collectors.toMap(ResponseHeader::getName, responseHeader -> responseHeader));
   }
 

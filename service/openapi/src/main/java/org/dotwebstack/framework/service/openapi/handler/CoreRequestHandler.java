@@ -44,6 +44,7 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -67,7 +68,7 @@ import reactor.core.scheduler.Schedulers;
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private static final String ARGUMENT_PREFIX = "argument.";
+  private static final String ARGUMENT_PREFIX = "args.";
 
   private OpenAPI openApi;
 
@@ -87,9 +88,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JexlHelper jexlHelper;
 
+  private EnvironmentProperties properties;
+
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
+      EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -99,6 +103,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.jexlHelper = jexlHelper;
+    this.properties = properties;
     validateSchema();
   }
 
@@ -134,15 +139,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate,
       Map<String, Object> inputParams) {
-    Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
     JexlContext jexlContext = new MapContext();
+
+    this.properties.getAllProperties()
+        .forEach((key, value) -> jexlContext.set("env." + key, value));
+
     this.responseSchemaContext.getGraphQlField()
         .getArguments()
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
         .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
             getStringValue(argument.getDefaultValue())));
-    inputParams.forEach((key, value) -> jexlContext.set("argument." + key, value.toString()));
+    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+
+    Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
     return responseHeaders.keySet()
         .stream()
