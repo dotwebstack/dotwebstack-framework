@@ -251,7 +251,7 @@ It is possible to return response headers in a DotWebStack response. This can be
                 x-dws-expr: '`args.pageSize`'
 ```
 This configuration adds a header to the response called X-Pagination-Page. It is possible to set a value for this header 
-in multiple ways. One of them is to use the x-dws-expr. This works the same way as for the response properties. 
+by using the x-dws-expr. This works the same way as for the response properties. 
 
 # 1.2 OpenApi specification on basepath
 The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
