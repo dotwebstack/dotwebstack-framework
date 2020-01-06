@@ -85,9 +85,8 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"), false);
 
     // Assert
-    assertEquals(2, responseObject.entrySet()
+    assertEquals(1, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("root"), is(equalTo(root.getSummary())));
     assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
@@ -106,10 +105,9 @@ class ResponseContextHelperTest {
         rootField, ImmutableMap.of("child", "value"), false);
 
     // Assert
-    assertEquals(2, responseObject.entrySet()
+    assertEquals(1, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("root.root.root"), is(equalTo(root.getSummary())));
-    assertThat(responseObject.get("root.root.child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
   }
 
   @Test

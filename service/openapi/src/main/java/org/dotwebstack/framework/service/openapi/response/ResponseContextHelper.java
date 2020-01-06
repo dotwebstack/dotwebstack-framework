@@ -47,7 +47,8 @@ public class ResponseContextHelper {
 
     SchemaSummary summary = responseObject.getSummary();
     boolean skip = skipPath;
-    if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE)) {
+    if (!summary.isEnvelope() && !Objects.equals(summary.getType(), OasConstants.ARRAY_TYPE) && summary.getComposedOf()
+        .isEmpty()) {
       if (!skipPath || !Objects.equals(summary.getType(), OasConstants.OBJECT_TYPE)) {
         joiner.add(responseObject.getIdentifier());
         if (summary.isRequired()) {
