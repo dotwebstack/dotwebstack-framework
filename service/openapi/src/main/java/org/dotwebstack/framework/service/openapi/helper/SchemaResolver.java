@@ -55,7 +55,8 @@ public class SchemaResolver {
     return schema;
   }
 
-  public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, @NonNull String ref) {
+  @SuppressWarnings("rawtypes")
+  public static Schema resolveSchema(@NonNull OpenAPI openApi, @NonNull String ref) {
     String[] path = StringUtils.substringAfter(ref, "components/")
         .split("/");
     if (path.length != 2) {
