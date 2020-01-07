@@ -104,7 +104,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.jexlHelper = jexlHelper;
     this.properties = properties;
-    validateSchema();
   }
 
   @Override
@@ -137,7 +136,27 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
   }
 
-  private Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate,
+  public void validateSchema() {
+    GraphQlField field = responseSchemaContext.getGraphQlField();
+    if (responseSchemaContext.getResponses()
+        .stream()
+        .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
+      throw unsupportedOperationException("No response in the 200 range found.");
+    }
+    validateParameters(field, responseSchemaContext.getParameters(), pathName);
+    RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
+    if (Objects.nonNull(requestBodyContext)) {
+      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
+          .validate(field, requestBody, pathName);
+    }
+    responseSchemaContext.getResponses()
+        .stream()
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
+        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
+  }
+
+  protected Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate,
       Map<String, Object> inputParams) {
     JexlContext jexlContext = new MapContext();
 
@@ -161,31 +180,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
               .getJexlExpression();
           return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
               .orElseThrow(() -> invalidConfigurationException(
-                  "Jexl expression '{}' for parameter '{}' " + "did not return any value", jexlExpression, key));
+                  "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
         }));
   }
 
-  private void validateSchema() {
-    GraphQlField field = responseSchemaContext.getGraphQlField();
-    if (responseSchemaContext.getResponses()
-        .stream()
-        .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
-      throw unsupportedOperationException("No response in the 200 range found.");
-    }
-    validateParameters(field, responseSchemaContext.getParameters(), pathName);
-    RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
-    if (Objects.nonNull(requestBodyContext)) {
-      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
-          .validate(field, requestBody, pathName);
-    }
-    responseSchemaContext.getResponses()
-        .stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
-  }
-
-  private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+  protected void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
             .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
@@ -200,26 +199,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-      String pathName) {
-    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
-        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-            .equals(argument.getName()))) {
-      throw invalidConfigurationException(
-          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
-          argument.getName(), pathName);
-    }
-    if (argument.isRequired()) {
-      argument.getChildren()
-          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
-    }
-  }
-
-  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
-    return Mono.error(new ResponseStatusException(statusCode, message));
-  }
-
-  private String getResponse(ServerRequest request)
+  protected String getResponse(ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
 
@@ -249,6 +229,34 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
+  protected ResponseTemplate getResponseTemplate() {
+    return responseSchemaContext.getResponses()
+        .stream()
+        .filter(response -> response.isApplicable(200, 299))
+        .findFirst()
+        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
+  }
+
+  protected Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
+    Map<String, Object> result = new HashMap<>();
+    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+
+      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
+          request.queryParams()
+              .keySet());
+      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
+          request.pathVariables()
+              .keySet());
+
+      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
+        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
+        handler.getValue(request, parameter, responseSchemaContext)
+            .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
+      }
+    }
+    return result;
+  }
+
   private void logInputRequest(ServerRequest request) {
     LOG.debug("Request received at: {}", request);
 
@@ -269,14 +277,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private ResponseTemplate getResponseTemplate() {
-    return responseSchemaContext.getResponses()
-        .stream()
-        .filter(response -> response.isApplicable(200, 299))
-        .findFirst()
-        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
-  }
-
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = resolveUrlAndHeaderParameters(request);
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
@@ -292,24 +292,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
   }
 
-  private Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
-    Map<String, Object> result = new HashMap<>();
-    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
-
-      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
-          request.queryParams()
-              .keySet());
-      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
-          request.pathVariables()
-              .keySet());
-
-      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
-        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
-        handler.getValue(request, parameter, responseSchemaContext)
-            .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
-      }
+  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
+      String pathName) {
+    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
+        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
+            .equals(argument.getName()))) {
+      throw invalidConfigurationException(
+          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
+          argument.getName(), pathName);
     }
-    return result;
+    if (argument.isRequired()) {
+      argument.getChildren()
+          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
+    }
+  }
+
+  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
+    return Mono.error(new ResponseStatusException(statusCode, message));
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {

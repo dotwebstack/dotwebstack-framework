@@ -168,9 +168,11 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    return RouterFunctions.route(requestPredicate,
+    CoreRequestHandler coreRequestHandler =
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
-            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties));
+            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    coreRequestHandler.validateSchema();
+    return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(

@@ -38,3 +38,7 @@ type Object4 {
    o4_prop1: String
    o4_prop2: String
 }
+
+type Object5 {
+   o5_prop1: String
+}
