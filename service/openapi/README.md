@@ -236,7 +236,7 @@ The response of brewery contains the combined set of required properties of both
 Currently `anyOf` and `oneOf` are not supported.  
 
 # 1.1.10 Response headers
-It is possible to return response headers in a DotWebStack response. This can be configured similar to response properties: 
+It is possible to return response headers in a DotWebStack response. Their configuration is similar to response properties: 
 ```graphql
   /breweries:
     get:
