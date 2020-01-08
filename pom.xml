@@ -273,8 +273,8 @@
             <excludes>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
-              <exclude>org/dotwebstack/framework/service/openapi/helper/GraphQlValueHelper.class</exclude>
-              <exclude>org/dotwebstack/framework/service/openapi/helper/SchemaResolver.class</exclude>
+              <exclude>org/dotwebstack/framework/service/openapi/helper/GraphQlValueHelper*</exclude>
+              <exclude>org/dotwebstack/framework/service/openapi/helper/SchemaResolver*</exclude>
             </excludes>
           </configuration>
           <executions>
