@@ -120,22 +120,6 @@ public class CoreRequestHandlerTest {
         .get("X-Response-Header"));
   }
 
-  @Disabled
-  @Test
-  public void handle_ReturnsHeaders_throwsException()
-      throws BadRequestException, GraphQlErrorException, NoResultFoundException, JsonProcessingException {
-    // Arrange
-    doThrow(NoResultFoundException.class).when(this.coreRequestHandler)
-        .getResponse(any(ServerRequest.class));
-
-    // Act
-    ServerResponse response = coreRequestHandler.handle(getServerRequest())
-        .block();
-
-    // Assert
-    assertEquals(HttpStatus.NOT_FOUND, response.statusCode());
-  }
-
   @Test
   public void createResponseHeaders_returnsValue_forStaticJexlValue() {
     // Arrange
