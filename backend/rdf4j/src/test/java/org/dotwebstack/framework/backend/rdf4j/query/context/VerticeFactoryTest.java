@@ -376,7 +376,7 @@ public class VerticeFactoryTest {
     ImmutableList<SelectedField> fields = ImmutableList.of(selectedField);
 
     // Act
-    Vertice vertice = constructVerticeFactory.createRoot(query.var(), query, nodeShape, fields);
+    Vertice vertice = constructVerticeFactory.createRoot(nodeShape, fields, query);
 
     // Assert
     assertThat(vertice.getEdges()
