@@ -1,6 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
 import java.util.Collections;
@@ -33,9 +38,9 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     super(serializerRouter, rdf4jProperties);
   }
 
-  public Vertice createRoot(@NonNull final Variable subject, @NonNull OuterQuery<?> query, @NonNull NodeShape nodeShape,
-      @NonNull List<SelectedField> fields) {
-    return createVertice(nodeShape, fields, null, subject, query);
+  public Vertice createRoot(@NonNull NodeShape nodeShape, @NonNull List<SelectedField> fields,
+      @NonNull OuterQuery<?> query) {
+    return createVertice(nodeShape, fields, null, query.var(), query);
   }
 
   private Vertice createVertice(NodeShape nodeShape, List<SelectedField> fields, FieldPath fieldPath,
@@ -59,10 +64,10 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .collect(Collectors.toList());
 
     if (Objects.isNull(fieldPath)) {
-      doSortMapping(query, nodeShape, selectedFields, edges);
+      doSortMapping(nodeShape, selectedFields, edges, query);
       makeEdgesUnique(edges);
       edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
-      doFilterMapping(query, nodeShape, selectedFields, edges);
+      doFilterMapping(nodeShape, selectedFields, edges, query);
     }
 
     return edges;
@@ -89,18 +94,54 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .collect(Collectors.toSet());
   }
 
-  private Edge doFilterMapping(ArgumentResultWrapper argumentResultWrapper, Edge edge, NodeShape nodeShape,
+  private Optional<Edge> doFilterMapping(ArgumentResultWrapper argumentResultWrapper, Edge edge, NodeShape nodeShape,
       OuterQuery<?> query, SelectedField selectedField, FieldPath fieldPath) {
-    return processFilters(edge, query, nodeShape.getPropertyShape(selectedField.getName()), argumentResultWrapper,
-        fieldPath);
+    return Optional.ofNullable(processFilters(edge, query, nodeShape.getPropertyShape(selectedField.getName()),
+        argumentResultWrapper, fieldPath));
   }
 
-  private void doFilterMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,
-      List<Edge> selectionEdges) {
+  private void doFilterMapping(NodeShape nodeShape, List<SelectedField> selectedFields, List<Edge> selectionEdges,
+      OuterQuery<?> query) {
 
-    List<ArgumentResultWrapper> argumentResults =
-        getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.FILTER_NAME);
+    List<ArgumentResultWrapper> argumentResults = getArgumentFieldMapping(selectedFields, CoreDirectives.FILTER_NAME);
 
+    doFilterMappingLeaf(argumentResults, nodeShape, selectionEdges, query);
+
+    doFilterMappingNode(argumentResults, nodeShape, selectionEdges, query);
+  }
+
+  private void doFilterMappingNode(List<ArgumentResultWrapper> argumentResults, NodeShape nodeShape,
+      List<Edge> selectionEdges, OuterQuery<?> query) {
+    argumentResults.stream()
+        .filter(argumentResultWrapper -> !argumentResultWrapper.getFieldPath()
+            .isSingleton())
+        .forEach(argumentResultWrapper -> mapFilterNodeToEdge(argumentResultWrapper, nodeShape, selectionEdges, query));
+  }
+
+  private void mapFilterNodeToEdge(ArgumentResultWrapper argumentResultWrapper, NodeShape nodeShape,
+      List<Edge> selectionEdges, OuterQuery<?> query) {
+    Edge baseEdge = findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), selectionEdges).get(0);
+    NodeShape childShape = nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
+        .getName())
+        .getNode();
+    SelectedField filterField =
+        filteredFields(argumentResultWrapper.getSelectedField(), argumentResultWrapper.getFieldPath()).get(0);
+
+    doFilterMapping(argumentResultWrapper, getEdge(childShape, filterField, argumentResultWrapper.getFieldPath()
+        .rest()
+        .orElse(null), query), childShape, query, filterField, argumentResultWrapper.getFieldPath()
+            .rest()
+            .orElseThrow(() -> illegalStateException("Expected rest fieldPath but got nothing!")))
+                .ifPresent(filterEdge -> {
+                  deepList(Collections.singletonList(filterEdge)).forEach(edge -> edge.setVisible(false));
+                  baseEdge.getObject()
+                      .getEdges()
+                      .add(filterEdge);
+                });
+  }
+
+  private void doFilterMappingLeaf(List<ArgumentResultWrapper> argumentResults, NodeShape nodeShape,
+      List<Edge> selectionEdges, OuterQuery<?> query) {
     argumentResults.stream()
         .filter(argumentResultWrapper -> argumentResultWrapper.getFieldPath()
             .isSingleton())
@@ -108,39 +149,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             selectionEdges)
                 .forEach(edge -> doFilterMapping(argumentResultWrapper, edge, nodeShape, query,
                     argumentResultWrapper.getSelectedField(), argumentResultWrapper.getFieldPath())));
-
-    argumentResults.stream()
-        .filter(argumentResultWrapper -> !argumentResultWrapper.getFieldPath()
-            .isSingleton())
-        .forEach(argumentResultWrapper -> {
-          Edge baseEdge =
-              findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(), selectionEdges).get(0);
-          NodeShape childShape = nodeShape.getPropertyShape(argumentResultWrapper.getSelectedField()
-              .getName())
-              .getNode();
-          SelectedField filterField =
-              filteredFields(argumentResultWrapper.getSelectedField(), argumentResultWrapper.getFieldPath()).get(0);
-
-          Edge filterEdge = doFilterMapping(argumentResultWrapper,
-              getEdge(childShape, filterField, argumentResultWrapper.getFieldPath()
-                  .rest()
-                  .orElse(null), query),
-              childShape, query, filterField, argumentResultWrapper.getFieldPath()
-                  .rest()
-                  .get());
-
-          if (Objects.nonNull(filterEdge)) {
-            deepList(Collections.singletonList(filterEdge)).forEach(edge -> edge.setVisible(false));
-            baseEdge.getObject()
-                .getEdges()
-                .add(filterEdge);
-          }
-        });
   }
 
-  private void doSortMapping(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> selectedFields,
-      List<Edge> selectionEdges) {
-    getArgumentFieldMapping(nodeShape, selectedFields, CoreDirectives.SORT_NAME)
+  private void doSortMapping(NodeShape nodeShape, List<SelectedField> selectedFields, List<Edge> selectionEdges,
+      OuterQuery<?> query) {
+    getArgumentFieldMapping(selectedFields, CoreDirectives.SORT_NAME)
         .forEach(argumentResultWrapper -> findEdgesToBeProcessed(nodeShape, argumentResultWrapper.getSelectedField(),
             selectionEdges)
                 .forEach(edge -> processSort(edge.getObject(), query,
@@ -171,7 +184,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .build();
   }
 
-  @SuppressWarnings("unchecked")
   private List<SelectedField> filteredFields(SelectedField selectedField, FieldPath fieldPath) {
     if (Objects.isNull(fieldPath)) {
       return selectedField.getSelectionSet()

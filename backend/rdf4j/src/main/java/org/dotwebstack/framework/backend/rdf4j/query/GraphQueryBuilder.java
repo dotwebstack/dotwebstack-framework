@@ -37,11 +37,9 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     NodeShape nodeShape = environment.getNodeShapeRegistry()
         .get(environment.getObjectType());
 
-    Variable subjectVariable = query.var();
 
-    Vertice root = constructVerticeFactory.createRoot(subjectVariable, query, nodeShape, environment.getSelectionSet()
-        .getFields());
-
+    Vertice root = constructVerticeFactory.createRoot(nodeShape, environment.getSelectionSet()
+        .getFields(), query);
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))
         .where(VerticeHelper.getWherePatterns(root)
@@ -52,11 +50,11 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
       String[] splitted = queryString.split("WHERE \\{");
       Stream.iterate(2, index -> index < splitted.length, index -> index + 1)
           .forEach(index -> {
-            splitted[index] = createValuesBlock(subjects, subjectVariable) + splitted[index];
+            splitted[index] = createValuesBlock(subjects, root.getSubject()) + splitted[index];
           });
       return String.join("WHERE {", splitted);
     }
-    return queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
+    return queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, root.getSubject()));
   }
 
   private String createValuesBlock(List<IRI> subjects, Variable subjectVariable) {
