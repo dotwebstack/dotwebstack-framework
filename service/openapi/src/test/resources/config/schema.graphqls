@@ -13,7 +13,7 @@ type Query {
 
     query5: Object4!
 
-    query6: String
+    query6(query6_param1: String): String
 }
 
 type Object1 {
