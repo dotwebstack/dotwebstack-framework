@@ -254,7 +254,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       for (Parameter parameter : this.responseSchemaContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
         handler.getValue(request, parameter, responseSchemaContext)
-            .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
+            .ifPresent(value -> result.put(handler.getParameterName(parameter), value));
       }
     }
     return result;

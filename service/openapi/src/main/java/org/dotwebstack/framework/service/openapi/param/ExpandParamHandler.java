@@ -127,7 +127,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  public String getParameterName(String name) {
+  public String getParameterName(Parameter param) {
     return X_DWS_EXPANDED_PARAMS;
   }
 }
