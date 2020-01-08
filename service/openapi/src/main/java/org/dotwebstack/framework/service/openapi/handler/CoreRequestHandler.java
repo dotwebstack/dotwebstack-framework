@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -44,7 +45,6 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
-import org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
@@ -171,7 +171,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .stream()
         .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
         .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-            new GraphQlValueHelper().getStringValue(argument.getDefaultValue())));
+            getStringValue(argument.getDefaultValue())));
     inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();

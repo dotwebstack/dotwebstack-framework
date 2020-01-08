@@ -14,11 +14,10 @@ public class GraphQlValueHelperTest {
 
   @Test
   public void getStringValue_returnsValue_forSupportedTypes() {
-    GraphQlValueHelper graphQlValueHelper = new GraphQlValueHelper();
     // Arrange / Act / Assert
-    assertEquals("1", graphQlValueHelper.getStringValue(new IntValue(BigInteger.ONE)));
-    assertEquals("1", graphQlValueHelper.getStringValue(new StringValue("1")));
-    assertEquals("1", graphQlValueHelper.getStringValue(new FloatValue(BigDecimal.ONE)));
-    assertEquals("false", graphQlValueHelper.getStringValue(new BooleanValue(false)));
+    assertEquals("1", GraphQlValueHelper.getStringValue(new IntValue(BigInteger.ONE)));
+    assertEquals("1", GraphQlValueHelper.getStringValue(new StringValue("1")));
+    assertEquals("1", GraphQlValueHelper.getStringValue(new FloatValue(BigDecimal.ONE)));
+    assertEquals("false", GraphQlValueHelper.getStringValue(new BooleanValue(false)));
   }
 }
