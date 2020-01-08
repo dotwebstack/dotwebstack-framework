@@ -45,8 +45,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class CoreRequestHandlerTest {
 
-  private OpenAPI openApi = TestResources.openApi();
-
   @Mock
   private ResponseSchemaContext responseSchemaContext;
 
@@ -59,6 +57,14 @@ public class CoreRequestHandlerTest {
   @Mock
   private ResponseMapper responseMapper;
 
+  @Mock
+  private RequestBodyHandlerRouter requestBodyHandlerRouter;
+
+  @Mock
+  private EnvironmentProperties environmentProperties;
+
+  private OpenAPI openApi = TestResources.openApi();
+
   private ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
@@ -66,12 +72,6 @@ public class CoreRequestHandlerTest {
       .create();
 
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
-
-  @Mock
-  private RequestBodyHandlerRouter requestBodyHandlerRouter;
-
-  @Mock
-  private EnvironmentProperties environmentProperties;
 
   private CoreRequestHandler coreRequestHandler;
 
@@ -185,12 +185,14 @@ public class CoreRequestHandlerTest {
   }
 
   @Test
-  public void resolveUrlAndHeaderParameters_returnsValues() {
+  public void resolveUrlAndHeaderParameters_returnsValue() {
     // Arrange
     ServerRequest request = getServerRequest();
 
     // Act
     Map<String, Object> params = this.coreRequestHandler.resolveUrlAndHeaderParameters(request);
+
+    // Assert
     assertEquals(1, params.size());
   }
 
