@@ -13,9 +13,8 @@ import org.junit.jupiter.api.Test;
 public class GraphQlValueHelperTest {
 
   @Test
-  public void getStringValue_returnsValue() {
+  public void getStringValue_returnsValue_forSupportedTypes() {
     // Arrange / Act / Assert
-
     assertEquals("1", GraphQlValueHelper.getStringValue(new IntValue(BigInteger.ONE)));
     assertEquals("1", GraphQlValueHelper.getStringValue(new StringValue("1")));
     assertEquals("1", GraphQlValueHelper.getStringValue(new FloatValue(BigDecimal.ONE)));
