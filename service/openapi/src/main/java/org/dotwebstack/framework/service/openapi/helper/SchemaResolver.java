@@ -43,25 +43,49 @@ public class SchemaResolver {
     return resolveSchema(openApi, schema, schema.get$ref());
   }
 
-  public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, @NonNull Schema<?> schema, String ref) {
+  public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, Schema<?> schema, String ref) {
     if (Objects.nonNull(ref)) {
-      String refName = StringUtils.substringAfterLast(ref, "/");
+      return resolveSchema(openApi, ref);
+    }
 
-      if (StringUtils.isBlank(refName)) {
-        throw invalidOpenApiConfigurationException("Schema reference '{}' is invalid", ref);
-      }
-
-      Schema<?> result = openApi.getComponents()
-          .getSchemas()
-          .get(refName);
-
-      if (result == null) {
-        throw invalidOpenApiConfigurationException("Schema definition can't be found for reference '{}'", ref);
-      }
-
-      return result;
+    if (Objects.isNull(schema)) {
+      throw invalidOpenApiConfigurationException("Schema can't be null if ref is also null.");
     }
 
     return schema;
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static Schema resolveSchema(@NonNull OpenAPI openApi, @NonNull String ref) {
+    String[] path = StringUtils.substringAfter(ref, "components/")
+        .split("/");
+    if (path.length != 2) {
+      throw invalidOpenApiConfigurationException(
+          "Schema reference '{}' should start with #/components/headers or #/components/schemas", ref);
+    }
+
+    Schema<?> result;
+    switch (path[0]) {
+      case "schemas":
+        result = openApi.getComponents()
+            .getSchemas()
+            .get(path[1]);
+        break;
+      case "headers":
+        result = openApi.getComponents()
+            .getHeaders()
+            .get(path[1])
+            .getSchema();
+        break;
+      default:
+        throw invalidOpenApiConfigurationException(
+            "Schema reference '{}' should start with #/components/headers or #/components/schema", ref);
+    }
+
+    if (Objects.isNull(result)) {
+      throw invalidOpenApiConfigurationException("Schema definition can't be found for reference '{}'", ref);
+    }
+
+    return result;
   }
 }

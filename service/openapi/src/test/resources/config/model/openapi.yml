@@ -64,6 +64,13 @@ components:
       oneOf:
         - $ref: 'components/schemas/Object3'
         - $ref: 'components/schemas/Object4'
+  headers:
+    HeaderRef:
+      schema:
+        type: string
+        x-dws-expr: '`ref`'
+
+
 
 paths:
   /query1:
@@ -172,6 +179,12 @@ paths:
   /query6:
     get:
       x-dws-query: query6
+      parameters:
+        - name: query6_param1
+          in: query
+          schema:
+            type: string
+            default: "query6_param1"
       responses:
         200:
           description: OK
@@ -179,3 +192,11 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object5'
+          headers:
+            X-Response-Header:
+              schema:
+                type: string
+                x-dws-expr: '`value`'
+            X-Response-Header-Ref:
+              $ref: '#/components/headers/HeaderRef'
+
