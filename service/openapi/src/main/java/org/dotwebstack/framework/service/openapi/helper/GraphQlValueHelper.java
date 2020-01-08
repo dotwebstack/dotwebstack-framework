@@ -9,9 +9,9 @@ import lombok.NonNull;
 
 public class GraphQlValueHelper {
 
-  private GraphQlValueHelper() {}
+  public GraphQlValueHelper() {}
 
-  public static String getStringValue(@NonNull Value<?> value) {
+  public String getStringValue(@NonNull Value<?> value) {
     if (value instanceof IntValue) {
       return ((IntValue) value).getValue()
           .toString();
