@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -114,23 +115,25 @@ public class ResponseTemplateBuilder {
 
     return headers.entrySet()
         .stream()
-        .map(e -> {
-          Schema<?> schema = Objects.nonNull(e.getValue()
-              .get$ref()) ? resolveSchema(openApi,
-                  e.getValue()
-                      .getSchema(),
-                  e.getValue()
-                      .get$ref())
-                  : e.getValue()
-                      .getSchema();
-          return ResponseHeader.builder()
-              .name(e.getKey())
-              .type(schema.getType())
-              .jexlExpression((String) schema.getExtensions()
-                  .get(X_DWS_EXPR))
-              .build();
-        })
-        .collect(Collectors.toMap(ResponseHeader::getName, responseHeader -> responseHeader));
+        .map(this::mapHeader)
+        .collect(Collectors.toMap(ResponseHeader::getName, Function.identity()));
+  }
+
+  private ResponseHeader mapHeader(Map.Entry<String, Header> e) {
+    Schema<?> schema = Objects.nonNull(e.getValue()
+        .get$ref()) ? resolveSchema(openApi,
+            e.getValue()
+                .getSchema(),
+            e.getValue()
+                .get$ref())
+            : e.getValue()
+                .getSchema();
+    return ResponseHeader.builder()
+        .name(e.getKey())
+        .type(schema.getType())
+        .jexlExpression((String) schema.getExtensions()
+            .get(X_DWS_EXPR))
+        .build();
   }
 
   @SuppressWarnings("rawtypes")

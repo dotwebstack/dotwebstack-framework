@@ -179,6 +179,12 @@ paths:
   /query6:
     get:
       x-dws-query: query6
+      parameters:
+        - name: query6_param1
+          in: query
+          schema:
+            type: string
+            default: "query6_param1"
       responses:
         200:
           description: OK

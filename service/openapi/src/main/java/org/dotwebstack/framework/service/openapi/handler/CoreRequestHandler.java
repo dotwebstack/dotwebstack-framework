@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,8 @@ import reactor.core.scheduler.Schedulers;
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String ARGUMENT_PREFIX = "args.";
+
+  private static final String ENVIRONMENT_PREFIX = "env.";
 
   private OpenAPI openApi;
 
@@ -161,7 +164,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     JexlContext jexlContext = new MapContext();
 
     this.properties.getAllProperties()
-        .forEach((key, value) -> jexlContext.set("env." + key, value));
+        .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
 
     this.responseSchemaContext.getGraphQlField()
         .getArguments()
@@ -175,7 +178,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     return responseHeaders.keySet()
         .stream()
-        .collect(Collectors.toMap(key -> key, key -> {
+        .collect(Collectors.toMap(Function.identity(), key -> {
           String jexlExpression = responseHeaders.get(key)
               .getJexlExpression();
           return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
