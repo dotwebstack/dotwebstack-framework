@@ -197,6 +197,11 @@ paths:
               schema:
                 type: string
                 x-dws-expr: '`value`'
+            X-Response-Default:
+              schema:
+                default: 'defaultValue'
+                type: string
+                x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
 

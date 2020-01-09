@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
@@ -111,7 +110,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   @Override
-  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
+  public Mono<ServerResponse> handle(ServerRequest request) {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
@@ -160,8 +159,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
 
-  protected Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate,
-      Map<String, Object> inputParams) {
+  Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
     JexlContext jexlContext = new MapContext();
 
     this.properties.getAllProperties()
@@ -197,7 +195,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         }));
   }
 
-  protected void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+  private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
             .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
@@ -212,7 +210,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  protected String getResponse(ServerRequest request)
+  private String getResponse(ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
 
@@ -242,7 +240,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  protected ResponseTemplate getResponseTemplate() {
+  ResponseTemplate getResponseTemplate() {
     return responseSchemaContext.getResponses()
         .stream()
         .filter(response -> response.isApplicable(200, 299))
@@ -250,7 +248,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
   }
 
-  protected Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
+  Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
 

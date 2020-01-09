@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -182,6 +184,48 @@ public class CoreRequestHandlerTest {
 
     // Assert
     assertEquals("value1", responseHeaders.get("X-Response-Header"));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void createResponseHeaders_returnsValue_forDefault() {
+    // Arrange
+    when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
+
+    ResponseTemplate responseTemplate =
+        ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
+            .get(0);
+
+    // Act
+    Map<String, String> responseHeaders = coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>());
+
+    // Assert
+    assertEquals("defaultValue", responseHeaders.get("X-Response-Default"));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void createResponseHeaders_throwsException_whenNoValueFound() {
+    // Arrange
+    when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
+
+    this.openApi.getPaths()
+        .get("/query6")
+        .getGet()
+        .getResponses()
+        .get("200")
+        .getHeaders()
+        .get("X-Response-Default")
+        .getSchema()
+        .setDefault(null);
+
+    ResponseTemplate responseTemplate =
+        ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
+            .get(0);
+
+    // Act & Assert
+    assertThrows(JexlException.class,
+        () -> coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>()));
   }
 
   @Test
