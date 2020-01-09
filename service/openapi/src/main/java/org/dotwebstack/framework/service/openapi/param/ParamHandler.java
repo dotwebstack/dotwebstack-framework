@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -16,7 +19,14 @@ public interface ParamHandler {
 
   void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName);
 
-  default String getParameterName(String name) {
-    return name;
+  default String getParameterName(Parameter param) {
+    if (Objects.nonNull(param.getExtensions())) {
+      String dwsName = (String) param.getExtensions()
+          .get(X_DWS_NAME);
+      if (Objects.nonNull(dwsName)) {
+        return dwsName;
+      }
+    }
+    return param.getName();
   }
 }

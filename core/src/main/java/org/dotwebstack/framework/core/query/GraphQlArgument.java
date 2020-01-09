@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.query;
 
 import graphql.language.Type;
+import graphql.language.Value;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class GraphQlArgument {
 
   private boolean required;
 
-  private boolean hasDefault;
+  private final Value<?> defaultValue;
 
   @Builder.Default
   private List<GraphQlArgument> children = Collections.emptyList();

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -251,6 +252,44 @@ public class ResponseTemplateBuilderTest {
     // Assert
     assertTrue(ResponseTemplateBuilder.getXdwsType(schema)
         .isEmpty());
+  }
+
+  @Test
+  public void build_returnsResponseHeaders() {
+    // Arrange
+    ResponseHeader expectedResponseHeader = ResponseHeader.builder()
+        .name("X-Response-Header")
+        .jexlExpression("`value`")
+        .type("string")
+        .build();
+
+    // Act
+    List<ResponseTemplate> responseTemplates =
+        getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
+
+    // Assert
+    Map<String, ResponseHeader> responseHeaders = responseTemplates.get(0)
+        .getResponseHeaders();
+    assertEquals(expectedResponseHeader, responseHeaders.get("X-Response-Header"));
+  }
+
+  @Test
+  public void build_returnsResponseHeaders_forHeaderWithRef() {
+    // Arrange
+    ResponseHeader expectedResponseHeader = ResponseHeader.builder()
+        .name("X-Response-Header-Ref")
+        .jexlExpression("`ref`")
+        .type("string")
+        .build();
+
+    // Act
+    List<ResponseTemplate> responseTemplates =
+        getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
+
+    // Assert
+    Map<String, ResponseHeader> responseHeaders = responseTemplates.get(0)
+        .getResponseHeaders();
+    assertEquals(expectedResponseHeader, responseHeaders.get("X-Response-Header-Ref"));
   }
 
   public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, String path, HttpMethod httpMethod) {

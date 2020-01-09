@@ -13,7 +13,7 @@ type Query {
 
     query5: Object4!
 
-    query6: String
+    query6(query6_param1: String): String
 }
 
 type Object1 {
@@ -37,4 +37,8 @@ input Object3 {
 type Object4 {
    o4_prop1: String
    o4_prop2: String
+}
+
+type Object5 {
+   o5_prop1: String
 }

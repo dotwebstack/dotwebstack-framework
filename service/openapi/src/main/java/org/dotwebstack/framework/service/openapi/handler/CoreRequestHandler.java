@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
@@ -30,9 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlException;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -41,6 +45,7 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -48,6 +53,7 @@ import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
@@ -62,6 +68,10 @@ import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
+
+  private static final String ARGUMENT_PREFIX = "args.";
+
+  private static final String ENVIRONMENT_PREFIX = "env.";
 
   private OpenAPI openApi;
 
@@ -81,9 +91,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JexlHelper jexlHelper;
 
+  private EnvironmentProperties properties;
+
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
+      EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -93,11 +106,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.jexlHelper = jexlHelper;
-    validateSchema();
+    this.properties = properties;
   }
 
   @Override
-  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
+  public Mono<ServerResponse> handle(ServerRequest request) {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
@@ -118,12 +131,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
                 HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
-    return ServerResponse.ok()
-        .contentType(MediaType.parseMediaType(template.getMediaType()))
-        .body(fromPublisher(bodyPublisher, String.class));
+    Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+    ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
+        .contentType(MediaType.parseMediaType(template.getMediaType()));
+    responseHeaders.forEach(bodyBuilder::header);
+    return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
   }
 
-  private void validateSchema() {
+  public void validateSchema() {
     GraphQlField field = responseSchemaContext.getGraphQlField();
     if (responseSchemaContext.getResponses()
         .stream()
@@ -143,6 +159,42 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
 
+  Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
+    JexlContext jexlContext = new MapContext();
+
+    this.properties.getAllProperties()
+        .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
+
+    this.responseSchemaContext.getGraphQlField()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
+        .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
+            getStringValue(argument.getDefaultValue())));
+    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+
+    Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
+
+    return responseHeaders.keySet()
+        .stream()
+        .collect(Collectors.toMap(Function.identity(), key -> {
+          ResponseHeader header = responseHeaders.get(key);
+          String jexlExpression = header.getJexlExpression();
+
+          try {
+            return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
+                .orElseThrow(() -> invalidConfigurationException(
+                    "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
+          } catch (JexlException e) {
+            if (e.getMessage()
+                .contains("undefined variable") && Objects.nonNull(header.getDefaultValue())) {
+              return header.getDefaultValue();
+            }
+            throw e;
+          }
+        }));
+  }
+
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
@@ -156,25 +208,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .validate(field, parameter, pathName));
     field.getArguments()
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
-  }
-
-  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-      String pathName) {
-    if (argument.isRequired() && !argument.isHasDefault() && parameters.stream()
-        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-            .equals(argument.getName()))) {
-      throw invalidConfigurationException(
-          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
-          argument.getName(), pathName);
-    }
-    if (argument.isRequired()) {
-      argument.getChildren()
-          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
-    }
-  }
-
-  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
-    return Mono.error(new ResponseStatusException(statusCode, message));
   }
 
   private String getResponse(ServerRequest request)
@@ -207,6 +240,34 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
+  ResponseTemplate getResponseTemplate() {
+    return responseSchemaContext.getResponses()
+        .stream()
+        .filter(response -> response.isApplicable(200, 299))
+        .findFirst()
+        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
+  }
+
+  Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
+    Map<String, Object> result = new HashMap<>();
+    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+
+      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
+          request.queryParams()
+              .keySet());
+      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
+          request.pathVariables()
+              .keySet());
+
+      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
+        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
+        handler.getValue(request, parameter, responseSchemaContext)
+            .ifPresent(value -> result.put(handler.getParameterName(parameter), value));
+      }
+    }
+    return result;
+  }
+
   private void logInputRequest(ServerRequest request) {
     LOG.debug("Request received at: {}", request);
 
@@ -227,31 +288,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private ResponseTemplate getResponseTemplate() {
-    return responseSchemaContext.getResponses()
-        .stream()
-        .filter(response -> response.isApplicable(200, 299))
-        .findFirst()
-        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
-  }
-
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
-    Map<String, Object> result = new HashMap<>();
-    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
-
-      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
-          request.queryParams()
-              .keySet());
-      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
-          request.pathVariables()
-              .keySet());
-
-      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
-        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
-        handler.getValue(request, parameter, responseSchemaContext)
-            .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
-      }
-    }
+    Map<String, Object> result = resolveUrlAndHeaderParameters(request);
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
@@ -263,6 +301,25 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
+  }
+
+  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
+      String pathName) {
+    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
+        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
+            .equals(argument.getName()))) {
+      throw invalidConfigurationException(
+          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
+          argument.getName(), pathName);
+    }
+    if (argument.isRequired()) {
+      argument.getChildren()
+          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
+    }
+  }
+
+  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
+    return Mono.error(new ResponseStatusException(statusCode, message));
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {

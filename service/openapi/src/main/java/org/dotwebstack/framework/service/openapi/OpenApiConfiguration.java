@@ -26,6 +26,7 @@ import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
@@ -68,10 +69,12 @@ public class OpenApiConfiguration {
 
   private OpenApiProperties openApiProperties;
 
+  private EnvironmentProperties environmentProperties;
+
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine) {
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -85,6 +88,7 @@ public class OpenApiConfiguration {
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.openApiProperties = openApiProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
+    this.environmentProperties = environmentProperties;
   }
 
   @Bean
@@ -164,9 +168,11 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    return RouterFunctions.route(requestPredicate,
+    CoreRequestHandler coreRequestHandler =
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
-            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper));
+            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    coreRequestHandler.validateSchema();
+    return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(

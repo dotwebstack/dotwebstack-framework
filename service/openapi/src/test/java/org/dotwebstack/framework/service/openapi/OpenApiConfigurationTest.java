@@ -22,6 +22,7 @@ import java.util.Optional;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
@@ -68,6 +69,9 @@ public class OpenApiConfigurationTest {
   @Mock
   private JexlEngine jexlEngine;
 
+  @Mock
+  private EnvironmentProperties environmentProperties;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
@@ -77,7 +81,7 @@ public class OpenApiConfigurationTest {
     openApiProperties.setXdwsStringTypes(List.of("customType"));
     this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
         new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, responseContextValidator,
-        requestBodyHandlerRouter, openApiProperties, jexlEngine));
+        requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
   }
 
   @Test
