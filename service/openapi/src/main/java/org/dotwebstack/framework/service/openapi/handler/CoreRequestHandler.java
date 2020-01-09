@@ -131,12 +131,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
                 HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
-    Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 
-    ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
-        .contentType(MediaType.parseMediaType(template.getMediaType()));
-    responseHeaders.forEach(bodyBuilder::header);
-    return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
+    try {
+      Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+      ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
+          .contentType(MediaType.parseMediaType(template.getMediaType()));
+      responseHeaders.forEach(bodyBuilder::header);
+      return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
+    } catch (InvalidConfigurationException | ParameterValidationException exception) {
+      return ServerResponse.badRequest()
+          .syncBody(format("Error while obtaining response headers: %s", exception.getMessage()));
+    }
   }
 
   public void validateSchema() {
