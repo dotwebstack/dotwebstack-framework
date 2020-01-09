@@ -11,6 +11,8 @@ public class ResponseHeader {
 
   private String name;
 
+  private String defaultValue;
+
   private String type;
 
   private String jexlExpression;

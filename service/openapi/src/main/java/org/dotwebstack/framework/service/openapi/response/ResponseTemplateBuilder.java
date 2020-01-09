@@ -128,8 +128,10 @@ public class ResponseTemplateBuilder {
                 .get$ref())
             : e.getValue()
                 .getSchema();
+
     return ResponseHeader.builder()
         .name(e.getKey())
+        .defaultValue((String) schema.getDefault())
         .type(schema.getType())
         .jexlExpression((String) schema.getExtensions()
             .get(X_DWS_EXPR))

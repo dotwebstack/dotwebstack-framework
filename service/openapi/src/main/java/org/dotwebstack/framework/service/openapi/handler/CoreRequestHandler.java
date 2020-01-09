@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -179,11 +180,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return responseHeaders.keySet()
         .stream()
         .collect(Collectors.toMap(Function.identity(), key -> {
-          String jexlExpression = responseHeaders.get(key)
-              .getJexlExpression();
-          return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
-              .orElseThrow(() -> invalidConfigurationException(
-                  "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
+          ResponseHeader header = responseHeaders.get(key);
+          String jexlExpression = header.getJexlExpression();
+
+          try {
+            return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
+                .orElseThrow(() -> invalidConfigurationException(
+                    "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
+          } catch (JexlException e) {
+            if (e.getMessage()
+                .contains("undefined variable") && Objects.nonNull(header.getDefaultValue())) {
+              return header.getDefaultValue();
+            }
+            throw e;
+          }
         }));
   }
 
