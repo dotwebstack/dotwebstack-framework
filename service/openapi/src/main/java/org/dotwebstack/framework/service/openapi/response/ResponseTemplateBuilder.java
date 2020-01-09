@@ -12,20 +12,24 @@ import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.re
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -93,16 +97,50 @@ public class ResponseTemplateBuilder {
     if (requestBody != null) {
       validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
     }
+
+    Map<String, ResponseHeader> responseHeaders = createResponseHeaders(apiResponse.getHeaders());
+
     return apiResponse.getContent()
         .entrySet()
         .stream()
-        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName))
+        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName,
+            responseHeaders))
         .collect(Collectors.toList());
+  }
+
+  private Map<String, ResponseHeader> createResponseHeaders(Map<String, Header> headers) {
+    if (Objects.isNull(headers)) {
+      return Collections.emptyMap();
+    }
+
+    return headers.entrySet()
+        .stream()
+        .map(this::mapHeader)
+        .collect(Collectors.toMap(ResponseHeader::getName, Function.identity()));
+  }
+
+  private ResponseHeader mapHeader(Map.Entry<String, Header> e) {
+    Schema<?> schema = Objects.nonNull(e.getValue()
+        .get$ref()) ? resolveSchema(openApi,
+            e.getValue()
+                .getSchema(),
+            e.getValue()
+                .get$ref())
+            : e.getValue()
+                .getSchema();
+
+    return ResponseHeader.builder()
+        .name(e.getKey())
+        .defaultValue((String) schema.getDefault())
+        .type(schema.getType())
+        .jexlExpression((String) schema.getExtensions()
+            .get(X_DWS_EXPR))
+        .build();
   }
 
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
-      io.swagger.v3.oas.models.media.MediaType content, String queryName) {
+      MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
     String ref = content.getSchema()
         .get$ref();
 
@@ -121,6 +159,7 @@ public class ResponseTemplateBuilder {
         .responseCode(Integer.parseInt(responseCode))
         .mediaType(mediaType)
         .responseObject(root)
+        .responseHeaders(responseHeaders)
         .build();
   }
 

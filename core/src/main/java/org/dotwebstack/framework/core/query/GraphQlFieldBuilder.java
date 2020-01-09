@@ -98,7 +98,7 @@ public class GraphQlFieldBuilder {
 
     Type inputValueDefinitionType = inputValueDefinition.getType();
     builder.required(inputValueDefinitionType instanceof NonNullType);
-    builder.hasDefault(inputValueDefinition.getDefaultValue() != null);
+    builder.defaultValue(inputValueDefinition.getDefaultValue());
 
     Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
     String baseTypeName = TypeHelper.getTypeName(baseType);
