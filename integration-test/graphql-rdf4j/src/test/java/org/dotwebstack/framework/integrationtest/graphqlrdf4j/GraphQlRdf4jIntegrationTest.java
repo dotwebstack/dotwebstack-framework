@@ -1,27 +1,27 @@
-package org.dotwebstack.framework.backend.rdf4j;
+package org.dotwebstack.framework.integrationtest.graphqlrdf4j;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_NAME_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_RAW_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERIES_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERS_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERS_NAME_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERTYPES_RAW_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_NAME_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERIES_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_ADDRESS_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_NAME_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_SUBJECT_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.INGREDIENTS_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.INGREDIENTS_NAME_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SCHEMA_NAME;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SUPPLEMENTS_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,7 +52,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
-class Rdf4jIntegrationTest {
+public class GraphQlRdf4jIntegrationTest {
 
   private static final Map<String, Object> NAME_NULL_MAP = new HashMap<>();
 

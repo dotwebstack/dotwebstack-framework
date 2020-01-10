@@ -1,0 +1,96 @@
+schema {
+  query: Query
+}
+
+type Query {
+  brewery(identifier: ID!): Brewery!
+    @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
+
+  brewery_with_subject(subject: String! @filter) : Brewery!
+    @sparql(repository: "local")
+
+  breweries(
+    name: String 
+      @filter,
+    url: String
+      @filter,
+    foundedAfter: String 
+      @filter(field: "founded", operator: ">"),
+    foundedBefore: String 
+      @filter(field: "founded", operator: "<"),
+    withAddressSubject: String @filter(field: "address.subject")
+    sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
+    beerCount: Int @filter(field: "beerCount")
+  ): [Brewery!]!
+    @sparql(repository: "local")
+
+  breweriesWithInputObject(
+    input: QueryParameters
+  ) : [Brewery!]!
+    @sparql(repository: "local")
+
+  beer(identifier: ID!): Beer!
+    @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
+
+}
+
+input QueryParameters {
+  nestedInput: NestedInput
+}
+
+input NestedInput {
+  nestedNestedInput: NestedNestedInput
+  foundedAfter: String 
+    @filter(field: "founded", operator: ">")
+}
+
+input NestedNestedInput {
+  name: [String] 
+    @filter(field: "name", operator: "=")
+}
+
+type Brewery {
+  identifier: ID!
+  name: String!
+  subject: String! @resource
+  number: Int
+  localName: String
+  founded: DateTime!
+  owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
+  address(subject: String @filter): Address
+  beerNames: [String!]
+  beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
+  beerCount: Int! @aggregate(type: COUNT)
+  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
+  url: String
+}
+
+type Address {
+  subject: String! @resource
+  resource: String! @resource
+  postalCode: String!
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  subject: String! @resource
+  brewery: String!
+  beerTypes: [String]!
+  beerTypesRaw: [BeerType!]
+  ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
+  supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
+}
+
+type Ingredient {
+  name: String
+}
+
+type Supplement {
+  name: String
+}
+
+type BeerType {
+  name: String
+}
+

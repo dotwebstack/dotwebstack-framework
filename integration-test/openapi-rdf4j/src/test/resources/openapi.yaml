@@ -1,0 +1,275 @@
+openapi: 3.0.2
+
+info:
+  title: Breweries
+  version: 3.0.0
+
+components:
+  schemas:
+    Beer:
+      type: object
+      required:
+        - identifier
+        - name
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+          nullable: true
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+        link:
+          type: string
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
+    BreweryCollection:
+      type: object
+      x-dws-envelope: true
+      required:
+        - _embedded
+        - _links
+      properties:
+        _embedded:
+          x-dws-envelope: true
+          type: object
+          required:
+            - breweries
+          properties:
+            breweries:
+              type: array
+              items:
+               $ref: '#/components/schemas/Brewery'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+    Brewery:
+      type: object
+      required:
+        - identifier
+        - subject
+        - name
+        - localName
+        - owners
+        - sponsorship
+        - beerCount
+      properties:
+        identifier:
+          type: string
+        subject:
+          type: string
+        name:
+          type: string
+          nullable: true
+        localName:
+          type: string
+          nullable: true
+        openinghours:
+          type: string
+          nullable: true
+        owners:
+          type: array
+          items:
+            type: string
+        beers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beer'
+        beerCount:
+          type: integer
+        sponsorship:
+          type: object
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SponsorshipId'
+            - type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+        link:
+          type: string
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+    Ingredient:
+      type: object
+      required:
+        - name
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+          nullable: true
+    SponsorshipId:
+      type: object
+      required:
+        - identifier
+        - numbers
+      properties:
+        identifier:
+          type: string
+        numbers:
+          type: array
+          items:
+            type: number
+    SortField:
+      type: array
+      items:
+        type: object
+        properties:
+          field:
+            type: string
+          order:
+            type: string
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        errorCode:
+          type: string
+
+
+paths:
+  /breweries:
+    get:
+      x-dws-query: breweries
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+        - name: name
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sinceAfter
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: "X-Api-Key"
+          description: "Geldige API Key om deze request uit te kunnen voeren."
+          in: "header"
+          required: true
+          x-dws-transient: true
+          x-dws-validate: false
+          schema:
+            type: "string"
+        - name: sort
+          in: header
+          x-dws-type: sort
+          required: true
+          schema:
+            type: array
+            default: ['name']
+            items:
+              type: string
+              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
+        - name: pageSize
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+          headers:
+            X-Pagination-Limit:
+              schema:
+                type: integer
+                x-dws-expr: args.pageSize
+            X-Pagination-Page:
+              schema:
+                type: integer
+                x-dws-expr: args.page
+            OS:
+              schema:
+                type: string
+                x-dws-expr: env.OS
+            API-version:
+              schema:
+                type: string
+                x-dws-expr: '`v1`'
+        400:
+          description: error
+          content:
+            application/hal+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /brewery_with_subject:
+    get:
+      x-dws-query: brewery_with_subject
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+        - name: subject
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /brewery/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
