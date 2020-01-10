@@ -51,6 +51,7 @@
       beer_sh:Brewery_beerCount ,
       beer_sh:Brewery_hasBeers ,
       beer_sh:Brewery_beerNames ,
+      beer_sh:Brewery_sponsorship ,
       beer_sh:Brewery_url ;
     sh:or (
       [
@@ -64,6 +65,27 @@
         sh:node beer_sh:Supplement ;
       ]
     ) ;
+  .
+
+  beer_sh:Sponsorship a sh:NodeShape ;
+    sh:name "Sponsorship";
+    dws:inherits beer_sh:Identifiable ;
+    sh:property beer_sh:Numbers ;
+    sh:targetClass beer_def:Sponsorship ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Numbers a sh:PropertyShape ;
+    sh:name "numbers" ;
+    sh:path beer_def:number ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_sponsorship a sh:PropertyShape ;
+    sh:name "sponsorship" ;
+    sh:path beer_def:sponsorship;
+    sh:node beer_sh:Sponsorship
   .
 
   beer_sh:Brewery_postalCode a sh:PropertyShape ;
