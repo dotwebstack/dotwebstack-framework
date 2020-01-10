@@ -2,6 +2,7 @@ logging.level.root: DEBUG
 spring.main.banner-mode: 'off'
 
 dotwebstack:
+  base_url: /
   rdf4j:
     shape:
       language: de
