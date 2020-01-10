@@ -51,6 +51,7 @@
     <module>example</module>
     <module>service</module>
     <module>test</module>
+    <module>integration-test</module>
   </modules>
 
   <dependencyManagement>
