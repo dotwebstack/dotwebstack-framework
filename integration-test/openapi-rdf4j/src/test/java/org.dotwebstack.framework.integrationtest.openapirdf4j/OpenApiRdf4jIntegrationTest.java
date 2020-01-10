@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient
@@ -27,6 +31,15 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  public void openApiQuery_404_forUnknownUriWithParameter() {
+    this.webClient.get()
+        .uri("/unknown?nonexistent=nonexistent")
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
+
+  @Test
   public void openApiQuery_200_forProvidedRequiredParameter() {
     this.webClient.get()
         .uri("/breweries?expand=beers")
@@ -34,4 +47,54 @@ public class OpenApiRdf4jIntegrationTest {
         .expectStatus()
         .isOk();
   }
+
+  @Test
+  public void openApiQuery_returnsBadRequest_forNonexistentParam() {
+    this.webClient.get()
+        .uri("/breweries?nonexistent=nonexistent")
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
+  }
+
+  @Test
+  public void openApiQuery_200_forProvidedHeaderParameter() {
+    this.webClient.get()
+        .uri("/breweries")
+        .header("sort", "name")
+        .exchange()
+        .expectStatus()
+        .isOk();
+  }
+
+  @Test
+  public void openApiQuery_404_forUnknownOperation() {
+    this.webClient.post()
+        .uri("/breweries")
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
+
+  @Test
+  public void openApiQuery_returnsOpenApiSpec_forApi() {
+
+    FluxExchangeResult<String> result = this.webClient.get()
+        .uri("/")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .returnResult(String.class);
+
+    StringBuilder builder = new StringBuilder();
+    result.getResponseBody()
+        .toStream()
+        .forEach(builder::append);
+    String openApiSpec = builder.toString();
+
+    assertTrue(openApiSpec.contains("/breweries:"));
+    assertFalse(openApiSpec.contains("x-dws-expr"));
+    assertFalse(openApiSpec.contains("x-dws-envelope: true"));
+  }
+
 }
