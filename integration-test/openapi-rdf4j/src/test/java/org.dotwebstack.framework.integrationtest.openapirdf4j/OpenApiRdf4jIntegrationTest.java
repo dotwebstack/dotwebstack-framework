@@ -22,6 +22,43 @@ public class OpenApiRdf4jIntegrationTest {
   private WebTestClient webClient;
 
   @Test
+  public void openApiQuery_200_forProvidedPathParameter() {
+    this.webClient.get()
+        .uri("/breweries")
+        .exchange()
+        .expectStatus()
+        .isOk();
+  }
+
+  @Test
+  public void openApiQuery_200_forProvidedRequiredParameter() {
+    this.webClient.get()
+        .uri("/breweries?expand=beers")
+        .exchange()
+        .expectStatus()
+        .isOk();
+  }
+
+  @Test
+  public void openApiQuery_200_forProvidedHeaderParameter() {
+    this.webClient.get()
+        .uri("/breweries")
+        .header("sort", "name")
+        .exchange()
+        .expectStatus()
+        .isOk();
+  }
+
+  @Test
+  public void openApiQuery_404_forUnprovidedRequiredParameter() {
+    this.webClient.get()
+        .uri("/brewery_with_subject")
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
+  }
+
+  @Test
   public void openApiQuery_404_forUnknownUri() {
     this.webClient.get()
         .uri("/unknown")
@@ -40,15 +77,6 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_200_forProvidedRequiredParameter() {
-    this.webClient.get()
-        .uri("/breweries?expand=beers")
-        .exchange()
-        .expectStatus()
-        .isOk();
-  }
-
-  @Test
   public void openApiQuery_returnsBadRequest_forNonexistentParam() {
     this.webClient.get()
         .uri("/breweries?nonexistent=nonexistent")
@@ -57,15 +85,7 @@ public class OpenApiRdf4jIntegrationTest {
         .isBadRequest();
   }
 
-  @Test
-  public void openApiQuery_200_forProvidedHeaderParameter() {
-    this.webClient.get()
-        .uri("/breweries")
-        .header("sort", "name")
-        .exchange()
-        .expectStatus()
-        .isOk();
-  }
+
 
   @Test
   public void openApiQuery_404_forUnknownOperation() {
@@ -96,5 +116,4 @@ public class OpenApiRdf4jIntegrationTest {
     assertFalse(openApiSpec.contains("x-dws-expr"));
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
   }
-
 }
