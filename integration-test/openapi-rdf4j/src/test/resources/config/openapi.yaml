@@ -215,7 +215,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', '-postalCode', 'subject', '-subject']
+              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
         - name: pageSize
           in: query
           schema:
