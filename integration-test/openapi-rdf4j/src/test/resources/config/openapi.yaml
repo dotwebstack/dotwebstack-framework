@@ -223,6 +223,10 @@ paths:
           in: query
           schema:
             type: string
+        - name: beerCount
+          in: query
+          schema:
+            type: integer
       responses:
         200:
           description: OK

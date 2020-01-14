@@ -158,7 +158,7 @@ public class OpenApiRdf4jIntegrationTest {
 
   }
 
-    @Test
+  @Test
   public void openApiQuery_404_forUnknownUri() {
     this.webClient.get()
         .uri("/unknown")
@@ -232,6 +232,28 @@ public class OpenApiRdf4jIntegrationTest {
     assertTrue(openApiSpec.contains("/breweries:"));
     assertFalse(openApiSpec.contains("x-dws-expr"));
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount2MissingEdge() throws IOException {
+    // Arrange
+    String query = "{breweries(beerCount: 2){name}}";
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries?beerCount=2")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filtered_by_beercount_missingedge.json");
+
+
+
+    // assertThat(names, is(ImmutableList.of("Alfa Brouwerij", "Brouwerij 1923")));
   }
 
   @Test
