@@ -21,9 +21,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
+        beerTypesRaw:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
         link:
           type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
       x-dws-envelope: true
@@ -92,6 +101,10 @@ components:
             $ref: '#/components/schemas/Beer'
         beerCount:
           type: integer
+        postalCode:
+          type: string
+        founded:
+          type: string
         sponsorship:
           type: object
           nullable: true
@@ -172,7 +185,7 @@ paths:
             default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements', 'address']
+              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded']
         - name: name
           in: query
           explode: false
@@ -181,8 +194,13 @@ paths:
             type: array
             items:
               type: string
-        - name: sinceAfter
-          in: header
+        - name: foundedAfter
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: foundedBefore
+          in: query
           required: false
           schema:
             type: string
@@ -279,7 +297,7 @@ paths:
             default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['postalCode', 'beers', 'beers.ingredients', 'beers.supplements']
         - name: identifier
           in: path
           required: true

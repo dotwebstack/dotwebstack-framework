@@ -37,17 +37,12 @@ public class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream("/results/brewery_123.json"));
-    JsonNode actualObj = mapper.readTree(result);
-
     // Assert
-    assertEquals(expectedObj, actualObj);
+    assertResult(result, "/results/brewery_identifier.json");
   }
 
   @Test
   void graphqlQuery_ReturnsMap_ForNestedListNonNullQuery() throws IOException {
-    // String query = "{ beer(identifier: \"6\") { identifier, beerTypesRaw { name } }}";
-
     // Arrange & Act
     String result = webClient.get()
         .uri("/beers/6?expand=beerTypesRaw")
@@ -56,11 +51,8 @@ public class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream("/results/beer_6.json"));
-    JsonNode actualObj = mapper.readTree(result);
-
     // Assert
-    assertEquals(expectedObj, actualObj);
+    assertResult(result, "/results/beer_identifier.json");
   }
 
   @Test
