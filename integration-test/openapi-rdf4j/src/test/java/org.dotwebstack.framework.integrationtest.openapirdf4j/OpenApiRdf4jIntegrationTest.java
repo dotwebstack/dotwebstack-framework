@@ -235,9 +235,25 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount2MissingEdge() throws IOException {
+  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount0() throws IOException {
     // Arrange
-    String query = "{breweries(beerCount: 2){name}}";
+    String query = "{breweries(beerCount: 0){name, beerCount}}";
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries?beerCount=0")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filtered_by_beercount.json");
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount2MissingEdge() throws IOException {
     // Arrange / Act
     String result = this.webClient.get()
         .uri("/breweries?beerCount=2")
@@ -250,10 +266,6 @@ public class OpenApiRdf4jIntegrationTest {
 
     // Assert
     assertResult(result, "/results/breweries_filtered_by_beercount_missingedge.json");
-
-
-
-    // assertThat(names, is(ImmutableList.of("Alfa Brouwerij", "Brouwerij 1923")));
   }
 
   @Test
