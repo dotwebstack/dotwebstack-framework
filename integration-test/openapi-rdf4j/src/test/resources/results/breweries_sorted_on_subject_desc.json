@@ -6,18 +6,6 @@
         "localName": null,
         "beerCount": 2,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/789",
-        "beers": [
-          {
-            "identifier": "6",
-            "name": "Alfa Edel Pils",
-            "link": "https://github.com/dotwebstack/api/v1/beers/6"
-          },
-          {
-            "identifier": "9",
-            "name": "Alfa Krachtig Dort",
-            "link": "https://github.com/dotwebstack/api/v1/beers/9"
-          }
-        ],
         "name": "Alfa Brouwerij",
         "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/789",
@@ -28,7 +16,6 @@
         "localName": null,
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/456",
-        "beers": [],
         "name": "Brouwerij Het 58e Genot i.o.",
         "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/456",
@@ -39,7 +26,6 @@
         "localName": null,
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/2",
-        "beers": [],
         "name": "Brouwerij De Leckere",
         "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/2",
@@ -50,18 +36,6 @@
         "localName": null,
         "beerCount": 2,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
-        "beers": [
-          {
-            "identifier": "8",
-            "name": "Brugse zot",
-            "link": "https://github.com/dotwebstack/api/v1/beers/8"
-          },
-          {
-            "identifier": "7",
-            "name": "Straffe Hendrik",
-            "link": "https://github.com/dotwebstack/api/v1/beers/7"
-          }
-        ],
         "name": "Brouwerij 1923",
         "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/123",
@@ -72,7 +46,6 @@
         "localName": "Heineken Niederlande",
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/1",
-        "beers": [],
         "name": "Heineken Nederland",
         "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/1",

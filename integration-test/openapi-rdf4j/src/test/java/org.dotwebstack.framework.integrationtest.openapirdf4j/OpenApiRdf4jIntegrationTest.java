@@ -140,7 +140,25 @@ public class OpenApiRdf4jIntegrationTest {
     assertResult(result, "/results/breweries.json");
   }
 
+
   @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierAscSorting() throws IOException {
+    // Arrange
+    String result = webClient.get()
+        .uri("/breweries")
+        .header("sort", "identifier")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_sorted_on_identifier_asc.json");
+
+
+  }
+
+    @Test
   public void openApiQuery_404_forUnknownUri() {
     this.webClient.get()
         .uri("/unknown")

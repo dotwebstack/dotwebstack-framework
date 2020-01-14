@@ -203,14 +203,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: "X-Api-Key"
-          description: "Geldige API Key om deze request uit te kunnen voeren."
-          in: "header"
-          required: true
-          x-dws-transient: true
-          x-dws-validate: false
-          schema:
-            type: "string"
         - name: sort
           in: header
           x-dws-type: sort
@@ -220,7 +212,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject', '-address.subject', '-beers.subject']
+              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', 'subject', '-subject']
         - name: pageSize
           in: query
           schema:
@@ -245,14 +237,6 @@ paths:
               schema:
                 type: integer
                 x-dws-expr: args.page
-            OS:
-              schema:
-                type: string
-                x-dws-expr: env.OS
-            API-version:
-              schema:
-                type: string
-                x-dws-expr: '`v1`'
         400:
           description: error
           content:
