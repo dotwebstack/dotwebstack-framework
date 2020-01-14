@@ -84,6 +84,8 @@ components:
           type: array
           items:
             type: string
+        address:
+          $ref: '#/components/schemas/Address'
         beers:
           type: array
           items:
@@ -126,6 +128,19 @@ components:
           type: array
           items:
             type: number
+    Address:
+      type: object
+      nullable: true
+      required:
+        - subject
+        - streetAddress
+      properties:
+        subject:
+          type: string
+        postalCode:
+          type: string
+        streetAddress:
+          type: string
     SortField:
       type: array
       items:
@@ -157,7 +172,7 @@ paths:
             default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['beers', 'beers.ingredients', 'beers.supplements', 'address']
         - name: name
           in: query
           explode: false
@@ -188,7 +203,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
+              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject', '-address.subject']
         - name: pageSize
           in: query
           schema:

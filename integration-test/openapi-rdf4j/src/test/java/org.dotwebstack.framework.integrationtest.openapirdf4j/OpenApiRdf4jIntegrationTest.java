@@ -139,6 +139,22 @@ public class OpenApiRdf4jIntegrationTest {
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
   }
 
+  @Test
+  void graphQlQuery_returnsBreweries_SortedOnAddressSubjectDesc() throws IOException {
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries?expand=address")
+        .header("sort", "-address.subject")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_sorted_on_addresssubject_desc.json");
+  }
 
   @Test
   void graphQlQuery_returnsBreweries_FilterOnAddressSubjectNested() throws IOException {
@@ -153,7 +169,7 @@ public class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertResult(result, "/results/brewery_addressSubject.json");
+    assertResult(result, "/results/breweries_filter_on_addressSubjectNested.json");
   }
 
   private void assertResult(String result, String jsonResultPath) throws IOException {
