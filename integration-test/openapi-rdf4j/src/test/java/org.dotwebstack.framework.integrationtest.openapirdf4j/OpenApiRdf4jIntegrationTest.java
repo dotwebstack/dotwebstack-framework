@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.Matchers.containsString;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient
@@ -115,5 +116,27 @@ public class OpenApiRdf4jIntegrationTest {
     assertTrue(openApiSpec.contains("/breweries:"));
     assertFalse(openApiSpec.contains("x-dws-expr"));
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
+  }
+
+  @Test
+  void openApiQuery_ReturnsConfigurationException_ForInvalidPageSize() {
+    this.webClient.get()
+        .uri("/breweries?pageSize=1")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError()
+        .expectBody(String.class)
+        .value(containsString("Constraint 'oneOf' [10, 20, 50] violated on 'pageSize' with value '1'"));
+  }
+
+  @Test
+  void openApiQuery_ReturnsConfigurationException_ForInvalidPage() {
+    this.webClient.get()
+        .uri("/breweries?page=0")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError()
+        .expectBody(String.class)
+        .value(containsString("Constraint 'min' [1] violated on 'page' with value '0'"));
   }
 }

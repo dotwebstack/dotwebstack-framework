@@ -189,6 +189,11 @@ paths:
             items:
               type: string
               enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
         - name: pageSize
           in: query
           schema:
