@@ -235,6 +235,22 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void graphqlQuery_ReturnsBrewery_FilteredBySubject() throws IOException {
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/brewery_with_subject?subject=https://github.com/dotwebstack/beer/id/brewery/123")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/brewery_filtered_by_subject.json");
+  }
+
+  @Test
   void graphQlQuery_ReturnsBreweries_SortedOnSubjectAsc() throws IOException {
     // Arrange / Act
     String result = this.webClient.get()
