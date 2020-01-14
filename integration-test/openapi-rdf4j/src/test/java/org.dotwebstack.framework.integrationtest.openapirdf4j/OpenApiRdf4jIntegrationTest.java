@@ -235,9 +235,23 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2() throws IOException {
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries?beerCount=2")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filtered_by_beercount2.json");
+  }
+
+  @Test
   void graphQlQuery_ReturnsBreweries_FilteredByBeerCount0() throws IOException {
-    // Arrange
-    String query = "{breweries(beerCount: 0){name, beerCount}}";
     // Arrange / Act
     String result = this.webClient.get()
         .uri("/breweries?beerCount=0")
@@ -249,7 +263,7 @@ public class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertResult(result, "/results/breweries_filtered_by_beercount.json");
+    assertResult(result, "/results/breweries_filtered_by_beercount0.json");
   }
 
   @Test
