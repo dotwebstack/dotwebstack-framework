@@ -75,7 +75,6 @@ components:
         - owners
         - sponsorship
         - beerCount
-        - hasBeers
       properties:
         identifier:
           type: string

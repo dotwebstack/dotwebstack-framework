@@ -248,7 +248,7 @@ public class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertResult(result, "/results/brewery_filtered_by_subject.json");
+    assertResult(result, "/results/breweries_with_transformaggregate.json");
   }
 
   @Test
