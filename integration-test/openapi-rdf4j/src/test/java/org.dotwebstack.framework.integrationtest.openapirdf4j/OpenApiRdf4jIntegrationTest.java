@@ -203,6 +203,26 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_ReturnsBreweries_SortedOnSubjectDesc() throws IOException {
+    // Arrange
+    String query = "{breweries(sort: [{field: \"subject\", order: DESC}]){subject}}";
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries")
+        .header("sort", "-subject")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_sorted_on_subject_desc.json");
+
+  }
+
+  @Test
   void graphQlQuery_throwsException_SortedOnListBeerSubjectDesc() throws IOException {
     // Arrange / Act
     String result = this.webClient.get()

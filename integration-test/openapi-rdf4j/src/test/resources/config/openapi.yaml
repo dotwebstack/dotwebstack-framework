@@ -269,7 +269,6 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
               enum: ['beers', 'beers.ingredients', 'beers.supplements']
