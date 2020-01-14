@@ -1,0 +1,40 @@
+{
+  "_embedded" : {
+    "breweries" : [ {
+      "identifier" : "123",
+      "localName" : null,
+      "beerCount" : 2,
+      "subject" : "https://github.com/dotwebstack/beer/id/brewery/123",
+      "name" : "Brouwerij 1923",
+      "founded" : "2018-05-30T09:30:10+02:00",
+      "sponsorship" : null,
+      "link" : "https://github.com/dotwebstack/api/v1/brewery/123",
+      "owners" : [ ]
+    }, {
+      "identifier" : "2",
+      "localName" : null,
+      "beerCount" : 0,
+      "subject" : "https://github.com/dotwebstack/beer/id/brewery/2",
+      "name" : "Brouwerij De Leckere",
+      "founded" : "1997-01-01T00:00+02:00",
+      "sponsorship" : null,
+      "link" : "https://github.com/dotwebstack/api/v1/brewery/2",
+      "owners" : [ ]
+    }, {
+      "identifier" : "456",
+      "localName" : null,
+      "beerCount" : 0,
+      "subject" : "https://github.com/dotwebstack/beer/id/brewery/456",
+      "name" : "Brouwerij Het 58e Genot i.o.",
+      "founded" : "2010-05-10T09:30:10+02:00",
+      "sponsorship" : null,
+      "link" : "https://github.com/dotwebstack/api/v1/brewery/456",
+      "owners" : [ ]
+    } ]
+  },
+  "_links" : {
+    "self" : {
+      "href" : "https://github.com/dotwebstack/api/v1/breweries"
+    }
+  }
+}

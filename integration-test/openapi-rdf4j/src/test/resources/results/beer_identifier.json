@@ -1,0 +1,13 @@
+{
+  "identifier": "6",
+  "name": "Alfa Edel Pils",
+  "beerTypesRaw": [
+    {
+      "name": "Bitter"
+    },
+    {
+      "name": "Ale"
+    }
+  ],
+  "link": "https://github.com/dotwebstack/api/v1/beers/6"
+}

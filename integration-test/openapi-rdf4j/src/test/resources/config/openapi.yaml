@@ -21,9 +21,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
+        beerTypesRaw:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
         link:
           type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
       x-dws-envelope: true
@@ -84,12 +93,21 @@ components:
           type: array
           items:
             type: string
+        address:
+          $ref: '#/components/schemas/Address'
         beers:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
         beerCount:
           type: integer
+        hasBeers:
+          type: boolean
+        postalCode:
+          type: string
+          nullable: true
+        founded:
+          type: string
         sponsorship:
           type: object
           nullable: true
@@ -126,6 +144,19 @@ components:
           type: array
           items:
             type: number
+    Address:
+      type: object
+      nullable: true
+      required:
+        - subject
+        - streetAddress
+      properties:
+        subject:
+          type: string
+        postalCode:
+          type: string
+        streetAddress:
+          type: string
     SortField:
       type: array
       items:
@@ -154,10 +185,9 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded', 'hasBeers', 'postalCode']
         - name: name
           in: query
           explode: false
@@ -166,19 +196,16 @@ paths:
             type: array
             items:
               type: string
-        - name: sinceAfter
-          in: header
+        - name: foundedAfter
+          in: query
           required: false
           schema:
             type: string
-        - name: "X-Api-Key"
-          description: "Geldige API Key om deze request uit te kunnen voeren."
-          in: "header"
-          required: true
-          x-dws-transient: true
-          x-dws-validate: false
+        - name: foundedBefore
+          in: query
+          required: false
           schema:
-            type: "string"
+            type: string
         - name: sort
           in: header
           x-dws-type: sort
@@ -188,7 +215,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
+              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
         - name: page
           in: query
           required: false
@@ -198,6 +225,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: withAddressSubject
+          in: query
+          schema:
+            type: string
+        - name: beerCount
+          in: query
+          schema:
+            type: integer
       responses:
         200:
           description: OK
@@ -214,14 +249,6 @@ paths:
               schema:
                 type: integer
                 x-dws-expr: args.page
-            OS:
-              schema:
-                type: string
-                x-dws-expr: env.OS
-            API-version:
-              schema:
-                type: string
-                x-dws-expr: '`v1`'
         400:
           description: error
           content:
@@ -237,7 +264,6 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
               enum: ['beers', 'beers.ingredients', 'beers.supplements']
@@ -262,10 +288,9 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['postalCode', 'beers', 'beers.ingredients', 'beers.supplements']
         - name: identifier
           in: path
           required: true
@@ -278,3 +303,27 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /beers/{identifier}:
+    get:
+      x-dws-query: beer
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ['name', 'beerTypesRaw','supplements', 'ingredients', ]
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Beer'

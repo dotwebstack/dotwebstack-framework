@@ -13,11 +13,12 @@ type Query {
 
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
-            sinceAfter: Date @filter(field: "founded", operator: ">"),
-            sinceBefore: Date @filter(field: "founded", operator: "<")
+            foundedAfter: Date @filter(field: "founded", operator: ">"),
+            foundedBefore: Date @filter(field: "founded", operator: "<"),
             name: [String] @filter(field: "name"),
             beerCount: Int @filter,
-            beerName: String @filter(field: "beers.name")): [Brewery!]!
+            beerName: String @filter(field: "beers.name"),
+            withAddressSubject: String @filter(field: "address.subject")): [Brewery!]!
     @sparql(
       repository: "local"
       limit: "pageSize"
@@ -52,6 +53,11 @@ type Query {
     @sparql(
       repository: "local"
     )
+
+  beer(identifier: String @filter): Beer!
+    @sparql(
+      repository: "local"
+    )
 }
 
 type Brewery {
@@ -59,7 +65,8 @@ type Brewery {
   subject: String! @resource
   name: String!
   localName: String
-  founded: Int!
+  founded: String
+  year: Int!
     @transform(expr: "founded.getYear()")
   openinghours: String
   owners(sort: [SortField!] = [{order: ASC}] @sort): [String]
@@ -70,9 +77,11 @@ type Brewery {
   sponsorship: Sponsorship
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
   beerCount: Int! @aggregate(type: COUNT)
+  hasBeers: Boolean @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
 }
 
 type Address {
+  subject: String! @resource
   postalCode: String
   streetAddress: String!
 }
@@ -80,14 +89,16 @@ type Address {
 type Beer {
   identifier: ID!
   name: String!
+  subject: String! @resource
   brewery: String!
   beerTypes: [String]!
+  beerTypesRaw: [BeerType!]
   ingredients(name: [String] @filter(field: "name")): [Ingredient!]
   supplements: [Supplement!]
 }
 
 type Ingredient {
-  identifier: ID!
+  identifier: ID
   name: String
 }
 
@@ -104,6 +115,10 @@ type Sponsorship {
   identifier: ID!
   name: String!
   numbers: [Int]
+}
+
+type BeerType {
+  name: String
 }
 
 input FilterQueryInput {
