@@ -273,3 +273,28 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /beers/{identifier}:
+    get:
+      x-dws-query: beer
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            default: ['name']
+            items:
+              type: string
+              enum: ['name', 'beerTypesRaw','supplements', 'ingredients', ]
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Beer'

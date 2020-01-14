@@ -52,6 +52,11 @@ type Query {
     @sparql(
       repository: "local"
     )
+
+  beer(identifier: String @filter): Beer!
+    @sparql(
+      repository: "local"
+    )
 }
 
 type Brewery {
@@ -82,6 +87,7 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
+  beerTypesRaw: [BeerType!]
   ingredients(name: [String] @filter(field: "name")): [Ingredient!]
   supplements: [Supplement!]
 }
@@ -104,6 +110,10 @@ type Sponsorship {
   identifier: ID!
   name: String!
   numbers: [Int]
+}
+
+type BeerType {
+  name: String
 }
 
 input FilterQueryInput {
