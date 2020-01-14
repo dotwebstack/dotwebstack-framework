@@ -182,7 +182,6 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
               enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded']
@@ -293,7 +292,6 @@ paths:
           in: query
           schema:
             type: array
-            default: ['beers']
             items:
               type: string
               enum: ['postalCode', 'beers', 'beers.ingredients', 'beers.supplements']
@@ -318,7 +316,6 @@ paths:
           in: query
           schema:
             type: array
-            default: ['name']
             items:
               type: string
               enum: ['name', 'beerTypesRaw','supplements', 'ingredients', ]

@@ -3,18 +3,6 @@
   "localName": null,
   "beerCount": 2,
   "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
-  "beers": [
-    {
-      "identifier": "8",
-      "name": "Brugse zot",
-      "link": "https://github.com/dotwebstack/api/v1/beers/8"
-    },
-    {
-      "identifier": "7",
-      "name": "Straffe Hendrik",
-      "link": "https://github.com/dotwebstack/api/v1/beers/7"
-    }
-  ],
   "name": "Brouwerij 1923",
   "sponsorship": null,
   "link": "https://github.com/dotwebstack/api/v1/brewery/123",
