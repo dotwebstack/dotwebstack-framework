@@ -75,6 +75,7 @@ components:
         - owners
         - sponsorship
         - beerCount
+        - hasBeers
       properties:
         identifier:
           type: string
@@ -101,6 +102,8 @@ components:
             $ref: '#/components/schemas/Beer'
         beerCount:
           type: integer
+        hasBeers:
+          type: boolean
         postalCode:
           type: string
         founded:
@@ -184,7 +187,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded']
+              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded', 'hasBeers']
         - name: name
           in: query
           explode: false

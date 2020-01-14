@@ -77,6 +77,7 @@ type Brewery {
   sponsorship: Sponsorship
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
   beerCount: Int! @aggregate(type: COUNT)
+  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
 }
 
 type Address {
