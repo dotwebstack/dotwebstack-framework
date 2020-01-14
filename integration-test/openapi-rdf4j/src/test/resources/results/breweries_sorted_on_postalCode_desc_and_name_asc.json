@@ -8,7 +8,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/789",
         "postalCode": "4881 AZ",
         "name": "Alfa Brouwerij",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/789",
         "owners": []
       },
@@ -19,7 +18,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/456",
         "postalCode": "4881 AZ",
         "name": "Brouwerij Het 58e Genot i.o.",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/456",
         "owners": []
       },
@@ -30,7 +28,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
         "postalCode": "2841 XB",
         "name": "Brouwerij 1923",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/123",
         "owners": []
       },
@@ -41,7 +38,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/2",
         "postalCode": null,
         "name": "Brouwerij De Leckere",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/2",
         "owners": []
       },
@@ -52,7 +48,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/1",
         "postalCode": null,
         "name": "Heineken Nederland",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/1",
         "owners": [
           "A. de Bruijn",

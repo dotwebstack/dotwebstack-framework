@@ -7,7 +7,6 @@
         "beerCount": 2,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/789",
         "name": "Alfa Brouwerij",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/789",
         "owners": []
       },
@@ -17,7 +16,6 @@
         "beerCount": 2,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
         "name": "Brouwerij 1923",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/123",
         "owners": []
       }

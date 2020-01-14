@@ -158,7 +158,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForSortQueryWithInvalidSortingValue() {
+  void graphqlQuery_ReturnsMap_ForSortQueryWithNonExistentSortingValue() {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
@@ -177,7 +177,7 @@ public class OpenApiRdf4jIntegrationTest {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?expand=postalCode")
-        .header("sort", new String[] {"-postalCode", "name"})
+        .header("sort", "-postalCode", "name")
         .exchange()
         .expectBody(String.class)
         .returnResult()

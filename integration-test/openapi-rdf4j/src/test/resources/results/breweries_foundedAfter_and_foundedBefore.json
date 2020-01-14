@@ -8,7 +8,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/2",
         "name": "Brouwerij De Leckere",
         "founded": "1997-01-01T00:00+02:00",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/2",
         "owners": []
       },
@@ -19,7 +18,6 @@
         "subject": "https://github.com/dotwebstack/beer/id/brewery/456",
         "name": "Brouwerij Het 58e Genot i.o.",
         "founded": "2010-05-10T09:30:10+02:00",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/456",
         "owners": []
       }

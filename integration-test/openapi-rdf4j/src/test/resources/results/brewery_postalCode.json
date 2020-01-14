@@ -5,7 +5,6 @@
   "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
   "postalCode": "2841 XB",
   "name": "Brouwerij 1923",
-  "sponsorship": null,
   "link": "https://github.com/dotwebstack/api/v1/brewery/123",
   "owners": []
 }

@@ -7,7 +7,6 @@
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/2",
         "name": "Brouwerij De Leckere",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/2",
         "owners": []
       },
@@ -17,7 +16,6 @@
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/456",
         "name": "Brouwerij Het 58e Genot i.o.",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/456",
         "owners": []
       },
@@ -27,7 +25,6 @@
         "beerCount": 0,
         "subject": "https://github.com/dotwebstack/beer/id/brewery/1",
         "name": "Heineken Nederland",
-        "sponsorship": null,
         "link": "https://github.com/dotwebstack/api/v1/brewery/1",
         "owners": [
           "A. de Bruijn",
