@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -199,6 +200,23 @@ public class OpenApiRdf4jIntegrationTest {
     assertTrue(openApiSpec.contains("/breweries:"));
     assertFalse(openApiSpec.contains("x-dws-expr"));
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
+  }
+
+  @Test
+  void graphQlQuery_throwsException_SortedOnListBeerSubjectDesc() throws IOException {
+    // Arrange / Act
+    String result = this.webClient.get()
+        .uri("/breweries?expand=beers")
+        .header("sort", "-beers.subject")
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertTrue(result.contains("which contains a list"));
   }
 
   @Test

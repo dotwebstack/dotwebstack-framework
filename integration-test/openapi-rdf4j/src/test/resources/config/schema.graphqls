@@ -88,6 +88,7 @@ type Address {
 type Beer {
   identifier: ID!
   name: String!
+  subject: String! @resource
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
