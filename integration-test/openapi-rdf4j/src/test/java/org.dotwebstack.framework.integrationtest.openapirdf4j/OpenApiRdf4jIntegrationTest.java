@@ -143,7 +143,7 @@ public class OpenApiRdf4jIntegrationTest {
 
   @Test
   void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierAscSorting() throws IOException {
-    // Arrange
+    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
         .header("sort", "identifier")
@@ -154,8 +154,36 @@ public class OpenApiRdf4jIntegrationTest {
 
     // Assert
     assertResult(result, "/results/breweries_sorted_on_identifier_asc.json");
+  }
 
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithInvalidSortingValue() {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries")
+        .header("sort", "nonexistent")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
 
+    // Assert
+    assertTrue(result.contains("Parameter 'sort' has (an) invalid value(s)"));
+  }
+
+  @Test()
+  void graphqlQuery_ReturnsMap_ForSortQueryWithNameMultipleSorting() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?expand=postalCode")
+        .header("sort", new String[] {"-postalCode", "name"})
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_sorted_on_postalCode_desc_and_name_asc.json");
   }
 
   @Test

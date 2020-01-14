@@ -105,6 +105,7 @@ components:
           type: boolean
         postalCode:
           type: string
+          nullable: true
         founded:
           type: string
         sponsorship:
@@ -186,7 +187,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded', 'hasBeers']
+              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded', 'hasBeers', 'postalCode']
         - name: name
           in: query
           explode: false
@@ -214,7 +215,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', 'subject', '-subject']
+              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', '-postalCode', 'subject', '-subject']
         - name: pageSize
           in: query
           schema:

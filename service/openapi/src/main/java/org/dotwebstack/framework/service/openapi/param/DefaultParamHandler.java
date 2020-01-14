@@ -283,7 +283,10 @@ public class DefaultParamHandler implements ParamHandler {
   private Object getHeaderParam(Parameter parameter, ServerRequest request) {
     List<String> result = request.headers()
         .header(parameter.getName());
-    return !result.isEmpty() ? result.get(0) : null;
+    if (!result.isEmpty()) {
+      return String.join(",", result);
+    }
+    return null;
   }
 
   @SuppressWarnings("rawtypes")
