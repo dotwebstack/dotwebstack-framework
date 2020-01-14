@@ -12,7 +12,7 @@ type Query {
     @sparql(repository: "local")
 
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
-            page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
+            page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [1, 2, 5, 10]),
             foundedAfter: Date @filter(field: "founded", operator: ">"),
             foundedBefore: Date @filter(field: "founded", operator: "<"),
             name: [String] @filter(field: "name"),

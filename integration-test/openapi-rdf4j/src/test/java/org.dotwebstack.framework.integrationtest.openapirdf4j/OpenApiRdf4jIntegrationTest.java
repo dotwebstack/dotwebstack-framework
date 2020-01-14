@@ -30,7 +30,21 @@ public class OpenApiRdf4jIntegrationTest {
   private ObjectMapper mapper = new ObjectMapper();
 
   @Test
-  void graphqlQuery_ReturnsMap_ForObjectQueryField() throws IOException {
+  void openApiRequest_ReturnsBreweries_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsBrewery_withIdentifierFromPathParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/brewery/123")
@@ -44,21 +58,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForNestedListNonNullQuery() throws IOException {
-    // Arrange & Act
-    String result = webClient.get()
-        .uri("/beers/6?expand=beerTypesRaw")
-        .exchange()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/beer_identifier.json");
-  }
-
-  @Test
-  void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() throws IOException {
+  void openApiRequest_ReturnsBrewery_withExpandedPostalCode() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/brewery/123?expand=postalCode")
@@ -72,7 +72,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForQueryWithFilter() throws IOException {
+  void openApiRequest_ReturnsBrewery_withNameFromQueryParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?name=Brouwerij 1923")
@@ -86,7 +86,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsResult_forQueryWithNesting() throws IOException {
+  void openApiRequest_ReturnsBrewery_withNestedExpandedField() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?name=Alfa Brouwerij&expand=beers.ingredients")
@@ -100,7 +100,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() throws IOException {
+  void openApiRequest_returnsBreweries_forQueryWithFilterOnDateTimeField() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?foundedAfter=1970-05-29&expand=founded")
@@ -114,7 +114,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() throws IOException {
+  void openApiRequest_returnsBreweries_forQueryWithMultipleQueryParamFilters() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?foundedAfter=1990-01-01&foundedBefore=2011-01-01&expand=founded")
@@ -128,22 +128,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForSortQueryWithDefaultSorting() throws IOException {
-    // Arrange & Act
-    String result = webClient.get()
-        .uri("/breweries")
-        .exchange()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries.json");
-  }
-
-
-  @Test
-  void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierAscSorting() throws IOException {
+  void openApiRequest_returnsBreweries_forSortQueryWithIdentifierAscSorting() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
@@ -158,7 +143,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForSortQueryWithNonExistentSortingValue() {
+  void openApiRequest_returnsError_forSortQueryWithNonExistentSortingValue() {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
@@ -173,7 +158,7 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test()
-  void graphqlQuery_ReturnsMap_ForSortQueryWithNameMultipleSorting() throws IOException {
+  void openApiRequest_returnsBreweries_forSortQueryWithMultipleSorting() throws IOException {
     // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?expand=postalCode")
@@ -188,7 +173,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_200_forProvidedPathParameter() {
+  public void openApiRequest_200_forProvidedPathParameter() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries")
         .exchange()
@@ -197,7 +183,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_200_forProvidedRequiredParameter() {
+  public void openApiRequest_200_forProvidedRequiredParameter() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries?expand=beers")
         .exchange()
@@ -206,7 +193,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_200_forProvidedHeaderParameter() {
+  public void openApiRequest_200_forProvidedHeaderParameter() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries")
         .header("sort", "name")
@@ -216,7 +204,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_404_forUnprovidedRequiredParameter() {
+  public void openApiRequest_404_forUnprovidedRequiredParameter() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/brewery_with_subject")
         .exchange()
@@ -225,7 +214,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_404_forUnknownUri() {
+  public void openApiRequest_404_forUnknownUri() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/unknown")
         .exchange()
@@ -234,7 +224,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_404_forUnknownUriWithParameter() {
+  public void openApiRequest_404_forUnknownUriWithParameter() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/unknown?nonexistent=nonexistent")
         .exchange()
@@ -243,18 +234,18 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_returnsBadRequest_forNonexistentParam() {
+  public void openApiRequest_returnsBadRequest_forNonexistentParam() {
+    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries?nonexistent=nonexistent")
         .exchange()
         .expectStatus()
         .isBadRequest();
   }
-
-
-
+  
   @Test
-  public void openApiQuery_404_forUnknownOperation() {
+  public void openApiRequest_404_forUnknownOperation() {
+    // Arrange & Act & Assert
     this.webClient.post()
         .uri("/breweries")
         .exchange()
@@ -263,8 +254,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  public void openApiQuery_returnsOpenApiSpec_forApi() {
-
+  public void openApiRequest_returnsOpenApiSpec_forApi() {
+    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/")
         .exchange()
@@ -278,79 +269,15 @@ public class OpenApiRdf4jIntegrationTest {
         .forEach(builder::append);
     String openApiSpec = builder.toString();
 
+    // Assert
     assertTrue(openApiSpec.contains("/breweries:"));
     assertFalse(openApiSpec.contains("x-dws-expr"));
     assertFalse(openApiSpec.contains("x-dws-envelope: true"));
   }
 
   @Test
-  void graphQlQuery_ReturnsBreweries_SortedByBeerCountAsc() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries")
-        .header("sort", "beerCount")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_sorted_by_beercount_asc.json");
-  }
-
-  @Test
-  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount2() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries?beerCount=2")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_filtered_by_beercount2.json");
-  }
-
-  @Test
-  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount0() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries?beerCount=0")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_filtered_by_beercount0.json");
-  }
-
-  @Test
-  void graphQlQuery_ReturnsBreweries_FilteredByBeerCount2MissingEdge() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries?beerCount=2")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_filtered_by_beercount_missingedge.json");
-  }
-
-  @Test
-  void graphQlQuery_ReturnsBreweries_WithTransformedAggregate() throws IOException {
-    // Arrange / Act
+  void openApiRequest_ReturnsBreweries_WithTransformedAggregate() throws IOException {
+    // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?expand=hasBeers")
         .header("sort", "name")
@@ -366,8 +293,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsBrewery_FilteredBySubject() throws IOException {
-    // Arrange / Act
+  void openApiRequest_returnsBrewery_forFilteredOnSubjectIriFromQueryParam() throws IOException {
+    // Arrange & Act
     String result = this.webClient.get()
         .uri("/brewery_with_subject?subject=https://github.com/dotwebstack/beer/id/brewery/123")
         .exchange()
@@ -382,42 +309,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_ReturnsBreweries_SortedOnSubjectAsc() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries")
-        .header("sort", "subject")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_sorted_on_subject_asc.json");
-  }
-
-  @Test
-  void graphQlQuery_ReturnsBreweries_SortedOnSubjectDesc() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries")
-        .header("sort", "-subject")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_sorted_on_subject_desc.json");
-  }
-
-  @Test
-  void graphQlQuery_throwsException_SortedOnListBeerSubjectDesc() throws IOException {
-    // Arrange / Act
+  void openApiRequest_throwsException_SortedOnListBeerSubjectDesc() throws IOException {
+    // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?expand=beers")
         .header("sort", "-beers.subject")
@@ -433,25 +326,8 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_SortedOnAddressSubjectDesc() throws IOException {
-    // Arrange / Act
-    String result = this.webClient.get()
-        .uri("/breweries?expand=address")
-        .header("sort", "-address.subject")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_sorted_on_addresssubject_desc.json");
-  }
-
-  @Test
-  void graphQlQuery_returnsBreweries_FilterOnAddressSubjectNested() throws IOException {
-    // Arrange / Act
+  void openApiRequest_returnsBreweries_forFilterOnAddressSubjectNested() throws IOException {
+    // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?withAddressSubject=https://github.com/dotwebstack/beer/id/address/1")
         .exchange()
@@ -474,18 +350,18 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void openApiQuery_ReturnsConfigurationException_ForInvalidPageSize() {
+  void openApiRequest_ReturnsConfigurationException_ForInvalidPageSize() {
     this.webClient.get()
-        .uri("/breweries?pageSize=1")
+        .uri("/breweries?pageSize=3")
         .exchange()
         .expectStatus()
         .is5xxServerError()
         .expectBody(String.class)
-        .value(containsString("Constraint 'oneOf' [10, 20, 50] violated on 'pageSize' with value '1'"));
+        .value(containsString("Constraint 'oneOf' [1, 2, 5, 10] violated on 'pageSize' with value '3'"));
   }
 
   @Test
-  void openApiQuery_ReturnsConfigurationException_ForInvalidPage() {
+  void openApiRequest_ReturnsConfigurationException_ForInvalidPage() {
     this.webClient.get()
         .uri("/breweries?page=0")
         .exchange()
