@@ -56,6 +56,76 @@ public class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/brewery/123?expand=postalCode")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/brewery_postalCode.json");
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilter() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?name=Brouwerij 1923")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_name.json");
+  }
+
+  @Test
+  void graphqlQuery_ReturnsResult_forQueryWithNesting() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?name=Alfa Brouwerij&expand=beers.ingredients")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_name_expand.json");
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?foundedAfter=1970-05-29&expand=founded")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_foundedAfter.json");
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?foundedAfter=1990-01-01&foundedBefore=2011-01-01&expand=founded")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_foundedAfter_and_foundedBefore.json");
+  }
+
+  @Test
   public void openApiQuery_404_forUnknownUri() {
     this.webClient.get()
         .uri("/unknown")
