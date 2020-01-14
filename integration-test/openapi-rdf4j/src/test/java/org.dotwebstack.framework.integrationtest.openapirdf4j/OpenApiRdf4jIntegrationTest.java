@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.integrationtest.openapirdf4j;
 
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.Matchers.containsString;
+
 import org.dotwebstack.framework.test.TestApplication;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,10 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
-
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
-import static org.hamcrest.Matchers.containsString;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient
