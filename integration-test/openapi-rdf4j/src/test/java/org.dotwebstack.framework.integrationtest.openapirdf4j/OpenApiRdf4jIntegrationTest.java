@@ -331,7 +331,7 @@ class OpenApiRdf4jIntegrationTest {
         .expectStatus()
         .isBadRequest();
   }
-  
+
   @Test
   void openApiRequest_404_forUnknownOperation() {
     // Arrange & Act & Assert
@@ -376,8 +376,10 @@ class OpenApiRdf4jIntegrationTest {
 
     // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
-    assertEquals("1", responseHeaders.get("X-Pagination-Page").get(0));
-    assertEquals("10", responseHeaders.get("X-Pagination-Limit").get(0));
+    assertEquals("1", responseHeaders.get("X-Pagination-Page")
+        .get(0));
+    assertEquals("10", responseHeaders.get("X-Pagination-Limit")
+        .get(0));
   }
 
   @Test
@@ -392,8 +394,10 @@ class OpenApiRdf4jIntegrationTest {
 
     // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
-    assertEquals("2", responseHeaders.get("X-Pagination-Page").get(0));
-    assertEquals("2", responseHeaders.get("X-Pagination-Limit").get(0));
+    assertEquals("2", responseHeaders.get("X-Pagination-Page")
+        .get(0));
+    assertEquals("2", responseHeaders.get("X-Pagination-Limit")
+        .get(0));
   }
 
   private void assertResult(String result, String jsonResultPath) throws IOException {
