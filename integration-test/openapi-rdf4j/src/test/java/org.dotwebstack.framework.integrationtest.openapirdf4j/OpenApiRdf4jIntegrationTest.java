@@ -97,7 +97,7 @@ class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertResult(result, "/results/breweries_filter_name_expand.json");
+    assertResult(result, "/results/breweries_filter_name_expand_ingredients.json");
   }
 
   @Test
@@ -194,7 +194,7 @@ class OpenApiRdf4jIntegrationTest {
   void openApiRequest_returnsBrewery_forFilteredOnSubjectIriFromQueryParam() throws IOException {
     // Arrange & Act
     String result = this.webClient.get()
-        .uri("/brewery_with_subject?subject=https://github.com/dotwebstack/beer/id/brewery/123")
+        .uri("/brewery_with_subject?subject=https://github.com/dotwebstack/beer/id/brewery/123&expand=subject")
         .exchange()
         .expectStatus()
         .isOk()
@@ -227,7 +227,7 @@ class OpenApiRdf4jIntegrationTest {
   void openApiRequest_returnsBreweries_forFilterOnAddressSubjectNested() throws IOException {
     // Arrange & Act
     String result = this.webClient.get()
-        .uri("/breweries?withAddressSubject=https://github.com/dotwebstack/beer/id/address/1")
+        .uri("/breweries?expand=address&withAddressSubject=https://github.com/dotwebstack/beer/id/address/1")
         .exchange()
         .expectStatus()
         .isOk()
@@ -238,8 +238,6 @@ class OpenApiRdf4jIntegrationTest {
     // Assert
     assertResult(result, "/results/breweries_filter_on_addressSubjectNested.json");
   }
-
-
 
   @Test
   void openApiRequest_ReturnsConfigurationException_ForInvalidPageSize() {
@@ -368,6 +366,7 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnsDefaultXPaginationResponseHeader_whenNoParamsAreProvided() {
+    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/breweries")
         .exchange()
@@ -375,6 +374,7 @@ class OpenApiRdf4jIntegrationTest {
         .isOk()
         .returnResult(String.class);
 
+    // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
     assertEquals("1", responseHeaders.get("X-Pagination-Page").get(0));
     assertEquals("10", responseHeaders.get("X-Pagination-Limit").get(0));
@@ -382,6 +382,7 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
+    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/breweries?page=2&pageSize=2")
         .exchange()
@@ -389,6 +390,7 @@ class OpenApiRdf4jIntegrationTest {
         .isOk()
         .returnResult(String.class);
 
+    // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
     assertEquals("2", responseHeaders.get("X-Pagination-Page").get(0));
     assertEquals("2", responseHeaders.get("X-Pagination-Limit").get(0));

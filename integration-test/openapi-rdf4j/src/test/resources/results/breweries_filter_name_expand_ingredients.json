@@ -3,9 +3,6 @@
     "breweries": [
       {
         "identifier": "789",
-        "localName": null,
-        "beerCount": 2,
-        "subject": "https://github.com/dotwebstack/beer/id/brewery/789",
         "beers": [
           {
             "identifier": "6",
@@ -41,8 +38,7 @@
           }
         ],
         "name": "Alfa Brouwerij",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/789",
-        "owners": []
+        "link": "https://github.com/dotwebstack/api/v1/brewery/789"
       }
     ]
   },

@@ -21,15 +21,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
-        beerTypesRaw:
-          type: array
-          items:
-            type: object
-            required:
-              - name
-            properties:
-              name:
-                type: string
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
@@ -69,12 +60,7 @@ components:
       type: object
       required:
         - identifier
-        - subject
         - name
-        - localName
-        - owners
-        - sponsorship
-        - beerCount
       properties:
         identifier:
           type: string
@@ -83,24 +69,12 @@ components:
         name:
           type: string
           nullable: true
-        localName:
-          type: string
-          nullable: true
-        openinghours:
-          type: string
-          nullable: true
-        owners:
-          type: array
-          items:
-            type: string
         address:
           $ref: '#/components/schemas/Address'
         beers:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
-        beerCount:
-          type: integer
         hasBeers:
           type: boolean
         postalCode:
@@ -147,7 +121,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['address', 'beers', 'beers.ingredients', 'beers.supplements', 'founded', 'hasBeers', 'postalCode']
+              enum: ['address', 'beers', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode']
         - name: name
           in: query
           explode: false
@@ -189,10 +163,6 @@ paths:
           in: query
           schema:
             type: string
-        - name: beerCount
-          in: query
-          schema:
-            type: integer
       responses:
         200:
           description: OK
@@ -220,7 +190,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['beers', 'beers.ingredients', 'subject']
         - name: subject
           in: query
           required: true
@@ -244,7 +214,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['postalCode', 'beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['postalCode', 'beers', 'beers.ingredients']
         - name: identifier
           in: path
           required: true

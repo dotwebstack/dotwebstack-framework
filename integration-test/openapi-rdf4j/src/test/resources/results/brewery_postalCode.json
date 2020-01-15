@@ -1,10 +1,6 @@
 {
   "identifier": "123",
-  "localName": null,
-  "beerCount": 2,
-  "subject": "https://github.com/dotwebstack/beer/id/brewery/123",
   "postalCode": "2841 XB",
   "name": "Brouwerij 1923",
-  "link": "https://github.com/dotwebstack/api/v1/brewery/123",
-  "owners": []
+  "link": "https://github.com/dotwebstack/api/v1/brewery/123"
 }
