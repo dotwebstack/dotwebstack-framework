@@ -149,7 +149,7 @@ paths:
             default: ['name']
             items:
               type: string
-              enum: ['-address.subject', '-beers.subject', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
+              enum: ['-address.subject', '-beers.name', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
         - name: page
           in: query
           required: false

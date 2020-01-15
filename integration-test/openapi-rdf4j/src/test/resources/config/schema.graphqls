@@ -44,7 +44,6 @@ type Address {
 type Beer {
   identifier: ID!
   name: String!
-  subject: String! @resource
   ingredients(name: [String] @filter(field: "name")): [Ingredient!]
 }
 

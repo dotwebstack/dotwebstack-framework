@@ -211,7 +211,7 @@ class OpenApiRdf4jIntegrationTest {
     // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?expand=beers")
-        .header("sort", "-beers.subject")
+        .header("sort", "-beers.name")
         .exchange()
         .expectStatus()
         .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
