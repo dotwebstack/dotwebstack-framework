@@ -103,7 +103,7 @@ public class VerticeHelper {
         .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
             edge.getObject()
                 .getSubject())
-            .optional(edge.isOptional()) : getTriplePatternForIris(edge, subject);
+            .optional(!edge.graphContainsFilter() && edge.isOptional()) : getTriplePatternForIris(edge, subject);
 
     if (!edge.getObject()
         .getFilters()

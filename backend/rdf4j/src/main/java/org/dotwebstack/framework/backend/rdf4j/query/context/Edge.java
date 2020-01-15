@@ -26,6 +26,18 @@ class Edge implements Comparable<Edge> {
     return Objects.nonNull(constructPredicate) ? constructPredicate : predicate;
   }
 
+  public boolean graphContainsFilter() {
+    if (Objects.nonNull(object) && !object.getFilters()
+        .isEmpty()) {
+      return true;
+    } else if (Objects.nonNull(object)) {
+      return object.getEdges()
+          .stream()
+          .anyMatch(Edge::graphContainsFilter);
+    }
+    return false;
+  }
+
   @Override
   public int compareTo(Edge other) {
     return Boolean.compare(isOptional, other.isOptional);
