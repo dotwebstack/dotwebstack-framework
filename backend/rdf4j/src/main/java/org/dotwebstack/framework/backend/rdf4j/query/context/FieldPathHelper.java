@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -31,7 +33,7 @@ public class FieldPathHelper {
 
   private FieldPathHelper() {}
 
-  public static List<GraphQLFieldDefinition> getFieldDefinitions(GraphQLObjectType objectType, String fieldName) {
+  public static List<GraphQLFieldDefinition> getFieldDefinitions(@NonNull GraphQLObjectType objectType, @NonNull String fieldName) {
     List<String> splitted = Arrays.asList(fieldName.split("\\."));
 
     return getFieldDefinitions(objectType, splitted);
@@ -39,7 +41,7 @@ public class FieldPathHelper {
 
   private static List<GraphQLFieldDefinition> getFieldDefinitions(GraphQLObjectType objectType,
       List<String> fieldPath) {
-    if (!fieldPath.isEmpty()) {
+    if (!fieldPath.isEmpty() && !fieldPath.get(0).equals("")) {
       String fieldName = fieldPath.get(0);
       GraphQLFieldDefinition fieldDefinition = objectType.getFieldDefinition(fieldName);
       List<GraphQLFieldDefinition> result = new ArrayList<>();
