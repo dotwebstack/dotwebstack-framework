@@ -274,7 +274,6 @@
             <excludes>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
-              <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
             </excludes>
           </configuration>
           <executions>
@@ -285,11 +284,25 @@
               </goals>
             </execution>
             <execution>
-              <id>report</id>
-              <phase>test</phase>
+              <id>check</id>
               <goals>
-                <goal>report</goal>
+                <goal>check</goal>
               </goals>
+              <configuration>
+                <rules>
+                  <rule>
+                    <element>BUNDLE</element>
+                    <limits>
+                      <limit>
+                        <counter>INSTRUCTION</counter>
+                        <value>COVEREDRATIO</value>
+                        <minimum>0.7</minimum>
+                      </limit>
+                    </limits>
+                    <excludes/>
+                  </rule>
+                </rules>
+              </configuration>
             </execution>
           </executions>
         </plugin>
