@@ -26,31 +26,36 @@ public final class Constants {
 
   // Repository
 
-  static final String CUSTOM_REPOSITORY_ID = "repo";
+  public static final String CUSTOM_REPOSITORY_ID = "repo";
 
   // Properties
 
-  private static String RDF4J_PREFIX = "http://rdf4j.org/schema/rdf4j#";
+  public static String RDF4J_PREFIX = "http://rdf4j.org/schema/rdf4j#";
 
   public static IRI SHACH_SHAPE_GRAPH = VF.createIRI(RDF4J_PREFIX, "SHACLShapeGraph");
 
-  static final IRI SHAPE_GRAPH = VF.createIRI("https://github.com/dotwebstack/beer/shapes");
+  public static final IRI SHAPE_GRAPH = VF.createIRI("https://github.com/dotwebstack/beer/shapes");
 
   public static final String SHAPE_PREFIX = "https://github.com/dotwebstack/beer/shapes#";
 
-  private static final String SCHEMA_PREFIX = "http://schema.org/";
+  public static final String SCHEMA_PREFIX = "http://schema.org/";
 
-  private static final String XSD_PREFIX = "http://www.w3.org/2001/XMLSchema#";
+  public static final String XSD_PREFIX = "http://www.w3.org/2001/XMLSchema#";
 
-  private static final String SHACL_PREFIX = "http://www.w3.org/ns/shacl#";
+  public static final String SHACL_PREFIX = "http://www.w3.org/ns/shacl#";
 
-  private static final String BEER_DEF = "https://github.com/dotwebstack/beer/def#";
+  public static final String BEER_DEF = "https://github.com/dotwebstack/beer/def#";
 
+  public static final IRI BEER_3 = VF.createIRI(BEER_DEF.concat("3"));
   // Query
 
   public static final IRI XSD_STRING = VF.createIRI(XSD_PREFIX.concat("string"));
 
   public static final IRI SHACL_LITERAL = VF.createIRI(SHACL_PREFIX.concat("Literal"));
+
+  public static final String BREWERY_FIELD = "brewery";
+
+  public static final String BREWERIES_FIELD = "breweries";
 
   // Building
 
@@ -60,7 +65,7 @@ public final class Constants {
 
   public static final IRI BREWERY_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Brewery"));
 
-  static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
+  public static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
 
   public static final IRI BREWERY_EXAMPLE_1 =
       VF.createIRI("https://github.com/dotwebstack/beer/identifier/brewery/123");
@@ -73,11 +78,16 @@ public final class Constants {
 
   public static final Literal BREWERY_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
 
+  // Brewery.subject
+  public static final String BREWERY_SUBJECT_FIELD = "subject";
+
+  public static final String BREWERY_SUBJECT_EXAMPLE_1 = "https://github.com/dotwebstack/beer/id/brewery/123";
+
   // Brewery.name
 
   public static final String BREWERY_NAME_FIELD = "name";
 
-  private static final String BREWERY_NAME_TYPE = "Brewery_name";
+  public static final String BREWERY_NAME_TYPE = "Brewery_name";
 
   public static final IRI BREWERY_LABEL = VF.createIRI("https://github.com/dotwebstack/beer/def#label");
 
@@ -103,7 +113,7 @@ public final class Constants {
 
   public static final String BREWERY_FOUNDED_FIELD = "founded";
 
-  private static final String BREWERY_FOUNDED_TYPE = "Brewery_founded";
+  public static final String BREWERY_FOUNDED_TYPE = "Brewery_founded";
 
   public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#founded");
 
@@ -116,7 +126,7 @@ public final class Constants {
 
   public static final String POSTAL_CODE_FIELD = "postalCode";
 
-  private static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
+  public static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
 
   public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_POSTAL_CODE_TYPE));
 
@@ -127,9 +137,17 @@ public final class Constants {
 
   public static final IRI BEERS_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Beers"));
 
+  public static final String BEERS_FIELD = "beers";
+
   public static final String BEER_NAMES_FIELD = "beerNames";
 
-  private static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
+  public static final String BEERS_NAME_FIELD = "name";
+
+  public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
+
+  public static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
+
+  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
 
   public static final IRI BREWERY_BEERNAMES_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERNAMES_TYPE));
 
@@ -139,17 +157,28 @@ public final class Constants {
 
   public static final IRI BEER_EXAMPLE_2 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/beer/1");
 
+  public static final Literal BEER_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("1");
+
   public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
+
+  public static final String BEER_FIELD = "beer";
+
+  public static final String BEER_NAME_FIELD = "name";
+
 
   // Beer.beertypes
 
   public static final String BEERTYPES_FIELD = "beerTypes";
 
-  private static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
+  public static final String BEERTYPES_RAW_FIELD = "beerTypesRaw";
+
+  public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
 
   public static final String BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE = "Beer_beerTypesZeroOrMore";
 
   public static final String BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE = "Beer_beerTypesZeroOrOne";
+
+  public static final IRI BEER_BEERTYPE_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#beertype");
 
   public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
 
@@ -159,7 +188,11 @@ public final class Constants {
   public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE =
       VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
 
+  public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
+
   public static final String BEERTYPE_EXAMPLE_1_NAME = "Beertype1";
+
+  public static final BNode BEERTYPE_EXAMPLE_2 = VF.createBNode();
 
   public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
 
@@ -175,7 +208,7 @@ public final class Constants {
 
   // Brewery.address
 
-  private static final String ADDRESS_TYPE = "Brewery_Address";
+  public static final String ADDRESS_TYPE = "Brewery_Address";
 
   public static final IRI ADDRESS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(ADDRESS_TYPE));
 
@@ -189,6 +222,10 @@ public final class Constants {
 
   // Address.postalCode
 
+  public static final String POSTALCODE_TYPE = "Address_PostalCode";
+
+  public static final IRI POSTALCODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(POSTALCODE_TYPE));
+
   public static final IRI ADDRESS_POSTALCODE_PATH = VF.createIRI("http://schema.org/postalCode");
 
   public static final String ADDRESS_POSTALCODE_EXAMPLE_1 = "1234 AC";
@@ -197,7 +234,15 @@ public final class Constants {
 
   // Beer.ingredient
 
+  public static final String INGREDIENTS_FIELD = "ingredients";
+
   public static final String INGREDIENTS_NAME_FIELD = "name";
+
+  // Beer.supplement
+
+  public static final String SUPPLEMENTS_FIELD = "supplements";
+
+  public static final String SUPPLEMENTS_NAME_FIELD = "name";
 
   // Ingredients
 

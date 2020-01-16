@@ -37,7 +37,6 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     NodeShape nodeShape = environment.getNodeShapeRegistry()
         .get(environment.getObjectType());
 
-
     Vertice root = constructVerticeFactory.createRoot(nodeShape, environment.getSelectionSet()
         .getFields(), query);
     query.construct(VerticeHelper.getConstructPatterns(root)
