@@ -90,7 +90,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .toPredicate(), false);
 
           if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
-            edge.setOptional(true);
             createAggregate(fieldDefinition, query.var()).ifPresent(edge::setAggregate);
             addFilterToVertice(nodeShape, vertice, filterRule, edge.getAggregate()
                 .getVariable());

@@ -1,10 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.getNewEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.hasEqualQueryString;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.hasEqualTargetClass;
@@ -24,7 +22,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -109,8 +106,6 @@ abstract class AbstractVerticeFactory {
 
       addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
 
-      deepList(singletonList(edge)).forEach(e -> e.setOptional(false));
-
       return edge;
     }
 
@@ -124,7 +119,6 @@ abstract class AbstractVerticeFactory {
       return;
     }
     findOrCreatePath(vertice, nodeShape, filterRule.getFieldPath(), false, query).ifPresent(match -> {
-      deepList(Collections.singletonList(match)).forEach(edge -> edge.setOptional(false));
       addFilterToVertice(nodeShape, match, filterRule);
     });
   }

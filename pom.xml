@@ -274,6 +274,7 @@
             <excludes>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
+              <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
             </excludes>
           </configuration>
           <executions>
@@ -284,25 +285,11 @@
               </goals>
             </execution>
             <execution>
-              <id>check</id>
+              <id>report</id>
+              <phase>test</phase>
               <goals>
-                <goal>check</goal>
+                <goal>report</goal>
               </goals>
-              <configuration>
-                <rules>
-                  <rule>
-                    <element>BUNDLE</element>
-                    <limits>
-                      <limit>
-                        <counter>INSTRUCTION</counter>
-                        <value>COVEREDRATIO</value>
-                        <minimum>0.7</minimum>
-                      </limit>
-                    </limits>
-                    <excludes/>
-                  </rule>
-                </rules>
-              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -363,6 +350,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
