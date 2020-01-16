@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Objects.isNull;
-import static org.dotwebstack.framework.backend.rdf4j.helper.FieldPathHelper.getFieldDefinitions;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.FieldPathHelper.getFieldDefinitions;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;

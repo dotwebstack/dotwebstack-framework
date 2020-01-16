@@ -22,6 +22,8 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 class EdgeHelper {
 
+  private EdgeHelper() {}
+
   static boolean hasEqualQueryString(Edge edge, PropertyShape propertyShape) {
     String queryString = propertyShape.getPath()
         .toPredicate()
