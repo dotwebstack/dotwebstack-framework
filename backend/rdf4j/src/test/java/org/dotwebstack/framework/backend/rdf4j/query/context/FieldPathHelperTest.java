@@ -4,16 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.Scalars;
-import graphql.language.FieldDefinition;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
-
-import graphql.schema.GraphQLType;
-import graphql.schema.SelectedField;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.FilteredField;
 import org.junit.jupiter.api.Test;
@@ -95,9 +92,14 @@ class FieldPathHelperTest {
         .build();
 
     FieldPath result = FieldPathHelper.getFieldPath(selectedField, argument, "sort");
-    assertEquals(2, result.getFieldDefinitions().size());
-    assertEquals("ingredients", result.getFieldDefinitions().get(0).getName());
-    assertEquals("name", result.getFieldDefinitions().get(1).getName());
+    assertEquals(2, result.getFieldDefinitions()
+        .size());
+    assertEquals("ingredients", result.getFieldDefinitions()
+        .get(0)
+        .getName());
+    assertEquals("name", result.getFieldDefinitions()
+        .get(1)
+        .getName());
   }
 
   @Test
@@ -127,9 +129,14 @@ class FieldPathHelperTest {
         .build();
 
     FieldPath result = FieldPathHelper.getFieldPath(selectedField, argument, "filter");
-    assertEquals(2, result.getFieldDefinitions().size());
-    assertEquals("ingredients", result.getFieldDefinitions().get(0).getName());
-    assertEquals("name", result.getFieldDefinitions().get(1).getName());
+    assertEquals(2, result.getFieldDefinitions()
+        .size());
+    assertEquals("ingredients", result.getFieldDefinitions()
+        .get(0)
+        .getName());
+    assertEquals("name", result.getFieldDefinitions()
+        .get(1)
+        .getName());
   }
 
   @Test
@@ -154,7 +161,10 @@ class FieldPathHelperTest {
         .build();
 
     FieldPath result = FieldPathHelper.getFieldPath(selectedField, argument, "filter");
-    assertEquals(1, result.getFieldDefinitions().size());
-    assertEquals("name", result.getFieldDefinitions().get(0).getName());
+    assertEquals(1, result.getFieldDefinitions()
+        .size());
+    assertEquals("name", result.getFieldDefinitions()
+        .get(0)
+        .getName());
   }
 }
