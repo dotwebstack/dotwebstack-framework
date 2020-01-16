@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static graphql.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -7,11 +11,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Set;
-
-import static graphql.Assert.assertTrue;
 
 
 class EdgeHelperTest {
@@ -26,7 +25,9 @@ class EdgeHelperTest {
         .object(Vertice.builder()
             .edges(List.of(Edge.builder()
                 .predicate(() -> "<" + RDF.TYPE.stringValue() + ">")
-                .object(Vertice.builder().iris(Set.of(iri)).build())
+                .object(Vertice.builder()
+                    .iris(Set.of(iri))
+                    .build())
                 .build()))
             .build())
         .build();

@@ -274,6 +274,7 @@
             <excludes>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
+              <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
             </excludes>
           </configuration>
           <executions>
