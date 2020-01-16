@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -70,6 +71,35 @@ public class EdgeHelperTest {
   public void hasEqualTargetClass_returnsTrue_forNullPropertyShape() {
     // Arrange / Act / Assert
     assertTrue(EdgeHelper.hasEqualTargetClass(null, mock(PropertyShape.class)));
+  }
+
+  @Test
+  public void deepList_returns_listOfEdges() {
+    // Arrange
+    Edge edge1 = Edge.builder()
+        .object(Vertice.builder()
+            .edges(Collections.emptyList())
+            .build())
+        .build();
+    Edge edge2 = Edge.builder()
+        .object(Vertice.builder()
+            .edges(Collections.singletonList(edge1))
+            .build())
+        .build();
+    Edge edge3 = Edge.builder()
+        .object(Vertice.builder()
+            .edges(Collections.singletonList(edge2))
+            .build())
+        .build();
+
+    // Act
+    List<Edge> edges = EdgeHelper.deepList(Collections.singletonList(edge3));
+
+    // Assert
+    assertEquals(3, edges.size());
+    assertTrue(edges.contains(edge1));
+    assertTrue(edges.contains(edge2));
+    assertTrue(edges.contains(edge3));
   }
 
 
