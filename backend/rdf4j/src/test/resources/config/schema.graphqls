@@ -18,6 +18,7 @@ type Query {
       @filter(field: "founded", operator: ">"),
     foundedBefore: String 
       @filter(field: "founded", operator: "<"),
+    localName: String @filter(field: "localName")
     withAddressSubject: String @filter(field: "address.subject")
     sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
     beerCount: Int @filter(field: "beerCount")

@@ -19,6 +19,8 @@ public class FieldPath {
   @Builder.Default
   private List<GraphQLFieldDefinition> fieldDefinitions = new ArrayList<>();
 
+  private boolean required;
+
   public boolean isSingleton() {
     return fieldDefinitions.size() == 1;
   }
@@ -34,7 +36,7 @@ public class FieldPath {
   }
 
   public boolean isRequired() {
-    return fieldDefinitions.stream()
+    return required || fieldDefinitions.stream()
         .allMatch(fieldDefinition -> GraphQLTypeUtil.isNonNull(fieldDefinition.getType()));
   }
 
