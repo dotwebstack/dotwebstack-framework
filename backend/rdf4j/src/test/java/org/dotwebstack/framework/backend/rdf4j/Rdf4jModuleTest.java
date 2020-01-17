@@ -563,7 +563,6 @@ class Rdf4jModuleTest {
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(20));
     assertThat(numbers.get(4), is(100));
-
   }
 
   @Test
@@ -592,7 +591,6 @@ class Rdf4jModuleTest {
   private void assertResultHasNoErrors(ExecutionResult result) {
     assertThat(result.getErrors(), is(empty()));
   }
-
 
   @Test
   void graphQlQuery_ReturnsBreweries_WithCount() {
