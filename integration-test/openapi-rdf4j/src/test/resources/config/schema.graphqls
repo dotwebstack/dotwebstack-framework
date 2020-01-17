@@ -1,0 +1,53 @@
+schema {
+  query: Query
+}
+
+type Query {
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
+    @sparql(
+      repository: "local",
+      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
+
+  brewery_with_subject(subject: String! @filter) : Brewery
+    @sparql(repository: "local")
+
+  breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
+            page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [1, 2, 5, 10]),
+            foundedAfter: Date @filter(field: "founded", operator: ">"),
+            foundedBefore: Date @filter(field: "founded", operator: "<"),
+            name: [String] @filter(field: "name"),
+            withAddressSubject: String @filter(field: "address.subject")): [Brewery!]!
+    @sparql(
+      repository: "local"
+      limit: "pageSize"
+      offset: "(page - 1) * pageSize"
+    )
+}
+
+type Brewery {
+  identifier: ID!
+  subject: String! @resource
+  name: String!
+  founded: String
+  address: Address
+  postalCode: String
+  beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name")): [Beer!]
+  hasBeers: Boolean @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
+}
+
+type Address {
+  subject: String! @resource
+  postalCode: String
+  streetAddress: String!
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  ingredients(name: [String] @filter(field: "name")): [Ingredient!]
+}
+
+type Ingredient {
+  identifier: ID
+  name: String
+}

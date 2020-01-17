@@ -53,7 +53,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
-class Rdf4jIntegrationTest {
+class Rdf4jModuleTest {
 
   private static final Map<String, Object> NAME_NULL_MAP = new HashMap<>();
 
@@ -574,7 +574,6 @@ class Rdf4jIntegrationTest {
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
     assertThat(ingredients.get(3), is(equalTo(null)));
-
   }
 
   @Test
@@ -598,7 +597,6 @@ class Rdf4jIntegrationTest {
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(20));
     assertThat(numbers.get(4), is(100));
-
   }
 
   @Test
@@ -627,7 +625,6 @@ class Rdf4jIntegrationTest {
   private void assertResultHasNoErrors(ExecutionResult result) {
     assertThat(result.getErrors(), is(empty()));
   }
-
 
   @Test
   void graphQlQuery_ReturnsBreweries_WithCount() {

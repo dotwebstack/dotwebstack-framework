@@ -1,0 +1,10 @@
+logging.level.root: DEBUG
+spring.main.banner-mode: 'off'
+
+dotwebstack:
+  base_url: https://github.com/dotwebstack/api/v1
+  rdf4j:
+    shape:
+      language: de
+      graph: https://github.com/dotwebstack/beer/shapes
+      prefix: https://github.com/dotwebstack/beer/shapes#

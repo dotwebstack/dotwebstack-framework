@@ -1,0 +1,41 @@
+{
+  "_embedded": {
+    "breweries": [
+      {
+        "identifier": "789",
+        "name": "Alfa Brouwerij",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/789",
+        "hasBeers": true
+      },
+      {
+        "identifier": "123",
+        "name": "Brouwerij 1923",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/123",
+        "hasBeers": true
+      },
+      {
+        "identifier": "2",
+        "name": "Brouwerij De Leckere",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/2",
+        "hasBeers": false
+      },
+      {
+        "identifier": "456",
+        "name": "Brouwerij Het 58e Genot i.o.",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/456",
+        "hasBeers": false
+      },
+      {
+        "identifier": "1",
+        "name": "Heineken Nederland",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/1",
+        "hasBeers": false
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://github.com/dotwebstack/api/v1/breweries"
+    }
+  }
+}
