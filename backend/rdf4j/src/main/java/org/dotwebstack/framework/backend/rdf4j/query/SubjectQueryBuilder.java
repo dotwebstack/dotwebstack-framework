@@ -58,6 +58,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     List<FilterRule> filterRules = filterMapping.stream()
         .map(tuple -> FilterRule.builder()
             .fieldPath(FieldPath.builder()
+                .required(true)
                 .fieldDefinitions(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
                 .build())
             .operator((String) tuple.getContainer()

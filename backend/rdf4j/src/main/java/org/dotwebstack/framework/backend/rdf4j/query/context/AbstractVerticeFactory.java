@@ -199,30 +199,6 @@ abstract class AbstractVerticeFactory {
     }
   }
 
-  Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
-      ArgumentResultWrapper argumentResultWrapper, FieldPath fieldPath) {
-
-    Vertice vertice = edge.getObject();
-
-    Object value = argumentResultWrapper.getSelectedField()
-        .getArguments()
-        .get(argumentResultWrapper.getArgument()
-            .getName());
-
-    if (nonNull(value)) {
-      FilterRule filterRule = FilterRule.builder()
-          .fieldPath(fieldPath)
-          .value(value)
-          .build();
-
-      addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
-
-      return edge;
-    }
-
-    return null;
-  }
-
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
     if (filterRule.getFieldPath()
         .isResource()) {
