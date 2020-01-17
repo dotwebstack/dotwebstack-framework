@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -495,6 +496,39 @@ class Rdf4jIntegrationTest {
 
     assertThat(data, hasEntry(BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of("name", "Heineken Nederland", "localName", "Heineken Niederlande"))));
+  }
+
+  @Test
+  void graphQlQuery_ReturnNull_WithNonExistingFilter() {
+    // Arrange
+    String query = "{breweries(name: \"Brouwerij De Leckere\", localName: \"nonexisting\"){name, localName}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, hasEntry(BREWERIES_FIELD, Collections.emptyList()));
+  }
+
+  @Test
+  void graphQlQuery_ReturnNull_WithConfiguredLanguageWithoutLocalName() {
+    // Arrange
+    String query = "{breweries(name: \"Brouwerij De Leckere\"){name, localName}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    Map<String, String> breweriesMap = new HashMap<>();
+    breweriesMap.put("name", "Brouwerij De Leckere");
+    breweriesMap.put("localName", null);
+    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList.of(breweriesMap)));
   }
 
   @Test

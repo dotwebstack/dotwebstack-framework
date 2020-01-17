@@ -28,7 +28,6 @@ import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -200,32 +199,6 @@ abstract class AbstractVerticeFactory {
     }
   }
 
-  Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
-      ArgumentResultWrapper argumentResultWrapper, FieldPath fieldPath) {
-
-    Vertice vertice = edge.getObject();
-
-    Object value = argumentResultWrapper.getSelectedField()
-        .getArguments()
-        .get(argumentResultWrapper.getArgument()
-            .getName());
-
-    if (nonNull(value)) {
-      FilterRule filterRule = FilterRule.builder()
-          .fieldPath(fieldPath)
-          .value(value)
-          .build();
-
-      addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
-
-      deepList(singletonList(edge)).forEach(e -> e.setOptional(false));
-
-      return edge;
-    }
-
-    return null;
-  }
-
   void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
     if (filterRule.getFieldPath()
         .isResource()) {
@@ -233,7 +206,6 @@ abstract class AbstractVerticeFactory {
       return;
     }
     findOrCreatePath(vertice, query, nodeShape, filterRule.getFieldPath(), false).ifPresent(match -> {
-      deepList(Collections.singletonList(match)).forEach(edge -> edge.setOptional(false));
       addFilterToVertice(nodeShape, match, filterRule);
     });
   }

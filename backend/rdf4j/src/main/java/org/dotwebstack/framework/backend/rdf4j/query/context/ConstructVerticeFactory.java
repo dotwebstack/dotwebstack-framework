@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Collections.singletonList;
+import static java.util.Objects.nonNull;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 
 import graphql.schema.SelectedField;
@@ -87,6 +89,32 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .stream()
         .map(targetClass -> Rdf.iri(targetClass.stringValue()))
         .collect(Collectors.toSet());
+  }
+
+  private Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,
+      ArgumentResultWrapper argumentResultWrapper, FieldPath fieldPath) {
+
+    Vertice vertice = edge.getObject();
+
+    Object value = argumentResultWrapper.getSelectedField()
+        .getArguments()
+        .get(argumentResultWrapper.getArgument()
+            .getName());
+
+    if (nonNull(value)) {
+      FilterRule filterRule = FilterRule.builder()
+          .fieldPath(fieldPath)
+          .value(value)
+          .build();
+
+      addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
+
+      deepList(singletonList(edge)).forEach(e -> e.setOptional(false));
+
+      return edge;
+    }
+
+    return null;
   }
 
   private Edge doFilterMapping(ArgumentResultWrapper argumentResultWrapper, Edge edge, NodeShape nodeShape,
