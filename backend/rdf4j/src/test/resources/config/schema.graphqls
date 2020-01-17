@@ -81,6 +81,7 @@ type Beer {
   beerTypesRaw: [BeerType!]
   ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
   supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
+  inspiredBy: InspiredBy
 }
 
 type Ingredient {
@@ -93,5 +94,10 @@ type Supplement {
 
 type BeerType {
   name: String
+}
+
+type InspiredBy {
+  beer: Beer
+  person: String
 }
 

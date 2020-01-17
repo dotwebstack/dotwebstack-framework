@@ -101,7 +101,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     Stream<Value> stream = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject())
         .stream()
-        .filter(result -> nodeShape == null || result instanceof SimpleLiteral
+        .filter(result -> nodeShape == null || result instanceof BNode || result instanceof SimpleLiteral
             || (result instanceof SimpleIRI
                 ? resultIsOfType((SimpleIRI) result, source.getModel(), nodeShape.getTargetClasses())
                 : resultIsOfType(result, nodeShape.getTargetClasses())));

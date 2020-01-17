@@ -66,6 +66,35 @@
     ) ;
   .
 
+    beer_sh:Beer_inspiredBy a sh:PropertyShape ;
+      sh:name "inspiredBy" ;
+      sh:path beer_def:inspiredBy ;
+      sh:minCount 0 ;
+      sh:node beer_sh:InspiredBy ;
+    .
+
+    beer_sh:InspiredBy_person a sh:PropertyShape ;
+      sh:name "person" ;
+      sh:path beer_def:person ;
+      sh:minCount 0 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string
+    .
+
+   beer_sh:InspiredBy_beer a sh:PropertyShape ;
+     sh:name "beer" ;
+     sh:path beer_def:beer ;
+     sh:minCount 0 ;
+     sh:node beer_sh:Beer
+   .
+
+   beer_sh:InspiredBy a sh:NodeShape ;
+     sh:name "InspiredBy";
+     sh:property
+       beer_sh:InspiredBy_person ,
+       beer_sh:InspiredBy_beer
+   .
+
   beer_sh:Brewery_postalCode a sh:PropertyShape ;
     sh:name "postalCode" ;
     sh:path ( schema:address schema:postalCode ) ;
@@ -182,7 +211,8 @@
       beer_sh:Beer_beerTypes ,
       beer_sh:Beer_beerTypesZeroOrMore,
       beer_sh:Beer_beerTypesZeroOrOne,
-      beer_sh:Beer_beerTypesRaw ;
+      beer_sh:Beer_beerTypesRaw ,
+      beer_sh:Beer_inspiredBy ;
     sh:property [
       sh:path beer_def:ingredient ;
       sh:or (
