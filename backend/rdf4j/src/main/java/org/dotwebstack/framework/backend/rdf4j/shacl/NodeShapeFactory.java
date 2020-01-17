@@ -50,7 +50,7 @@ public class NodeShapeFactory {
     NodeShape nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
-        .targetClasses(findRequiredPropertyIris(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .targetClasses(Models.getPropertyIRIs(shapeModel, identifier, SHACL.TARGET_CLASS))
         .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS).orElse(null))
         .propertyShapes(propertyShapes)
         .build();
