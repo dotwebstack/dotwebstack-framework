@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
-import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIris;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;

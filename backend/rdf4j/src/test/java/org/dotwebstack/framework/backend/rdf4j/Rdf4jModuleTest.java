@@ -22,6 +22,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -138,9 +139,6 @@ class Rdf4jModuleTest {
   void graphqlQuery_ReturnsResult_forQueryWithNesting() {
     // Arrange
     String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients { name }}}}";
-    Map<String, Object> nullMap = new HashMap<>();
-    nullMap.put(INGREDIENTS_NAME_FIELD, null);
-
     // Act
     ExecutionResult result = graphQL.execute(query);
 
@@ -907,5 +905,24 @@ class Rdf4jModuleTest {
     assertThat(result.getErrors(), hasSize(0));
     assertThat(subjects, hasSize(1));
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeer_ForBlankNodeMapping() {
+    // Arrange
+    String query = "{ beer(identifier: \"6\") { inspiredBy {person} }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+
+    assertThat(result.getErrors(), hasSize(0));
+    assertThat(data.size(), equalTo(1));
+    assertThat(data.containsKey("beer"), equalTo(true));
+    assertThat(castToMap(data.get("beer")).containsKey("inspiredBy"), equalTo(true));
+    assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).containsKey("person"), equalTo(true));
+    assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).get("person"), equalTo("Erik Bierhof"));
   }
 }
