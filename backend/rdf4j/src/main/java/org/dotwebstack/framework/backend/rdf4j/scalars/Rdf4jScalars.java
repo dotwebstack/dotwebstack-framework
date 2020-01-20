@@ -10,6 +10,12 @@ public final class Rdf4jScalars {
       .coercing(new IriCoercing())
       .build();
 
+  public static final GraphQLScalarType MODEL = GraphQLScalarType.newScalar()
+      .name("Model")
+      .description("Model type")
+      .coercing(new ModelCoercing())
+      .build();
+
   private Rdf4jScalars() {}
 
 }

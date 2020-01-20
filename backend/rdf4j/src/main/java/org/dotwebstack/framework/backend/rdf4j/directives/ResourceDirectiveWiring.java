@@ -39,8 +39,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   }
 
   @Override
-  public GraphQLArgument onArgument(
-      SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+  public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
     GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
     GraphQLArgument element = environment.getElement();
@@ -54,7 +53,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   }
 
   private void validateOutputModel(String typeName, String fieldName, GraphQLType rawType) {
-    validateOnlyOnType(typeName, fieldName, rawType, "Model");
+    validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.MODEL.getName());
   }
 
   private void validateOnlyOnString(String typeName, String fieldName, GraphQLType rawType) {
@@ -68,7 +67,8 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   private void validateOnlyOnType(String typeName, String fieldName, GraphQLType rawType, String type) {
     if (!(rawType.getName()
         .equals(type))) {
-      throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName, type);
+      throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName,
+          type);
     }
   }
 

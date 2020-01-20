@@ -72,7 +72,8 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
         .name(Rdf4jDirectives.RESOURCE_NAME)
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
-        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name()).build())
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+            .build())
         .build();
   }
 
