@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -16,7 +19,11 @@ public class DateTimeConverter extends LiteralConverter<ZonedDateTime> {
 
   @Override
   public ZonedDateTime convertLiteral(@NonNull Literal literal) {
-    return ZonedDateTime.parse(literal.stringValue());
+    try {
+      return ZonedDateTime.parse(literal.stringValue());
+    } catch (DateTimeParseException ex) {
+      return ZonedDateTime.of(LocalDateTime.parse(literal.stringValue()), ZoneId.of("Europe/Amsterdam"));
+    }
   }
 
 }

@@ -55,7 +55,6 @@ class ConverterTest {
     assertThat(((DateConverter) converter).convertLiteral(calenderLiteral), is(LocalDate.parse("2000-01-01")));
   }
 
-
   @Test
   void convert_datetimeLiteral_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
@@ -70,6 +69,22 @@ class ConverterTest {
     assertThat(converter, instanceOf(DateTimeConverter.class));
     assertThat(((DateTimeConverter) converter).convertLiteral(calenderLiteral),
         is(ZonedDateTime.parse("2000-01-01T20:18:00.000+02:00")));
+  }
+
+  @Test
+  void convert_datetimeLiteralWithMs_toZonedDateTime() throws DatatypeConfigurationException {
+    // Arrange
+    XMLGregorianCalendar calender = DatatypeFactory.newInstance()
+        .newXMLGregorianCalendar("2019-04-10T16:47:49.789661");
+    CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
+
+    // Act
+    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
+
+    // Assert
+    assertThat(converter, instanceOf(DateTimeConverter.class));
+    assertThat(((DateTimeConverter) converter).convertLiteral(calenderLiteral),
+        is(ZonedDateTime.parse("2019-04-10T16:47:49.789661+02:00")));
   }
 
   @Test
