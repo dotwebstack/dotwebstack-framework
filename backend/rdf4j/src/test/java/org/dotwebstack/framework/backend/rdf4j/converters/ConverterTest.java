@@ -84,7 +84,7 @@ class ConverterTest {
     // Assert
     assertThat(converter, instanceOf(DateTimeConverter.class));
     assertThat(((DateTimeConverter) converter).convertLiteral(calenderLiteral),
-        is(ZonedDateTime.parse("2019-04-10T16:47:49.789661+02:00")));
+        is(ZonedDateTime.parse("2019-04-10T16:47:49.789661+02:00[Europe/Amsterdam]")));
   }
 
   @Test
