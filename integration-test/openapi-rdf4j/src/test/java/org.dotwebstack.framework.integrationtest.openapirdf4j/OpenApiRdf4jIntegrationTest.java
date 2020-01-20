@@ -220,7 +220,7 @@ class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertTrue(result.contains("which contains a list"));
+    assertTrue(result.contains("Unexpected error while executing request"));
   }
 
   @Test
@@ -240,25 +240,25 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void openApiRequest_ReturnsConfigurationException_ForInvalidPageSize() {
+  void openApiRequest_ReturnsUnexpectedError_ForInvalidPageSize() {
     this.webClient.get()
         .uri("/breweries?pageSize=3")
         .exchange()
         .expectStatus()
         .is5xxServerError()
         .expectBody(String.class)
-        .value(containsString("Constraint 'oneOf' [1, 2, 5, 10] violated on 'pageSize' with value '3'"));
+        .value(containsString("Unexpected error while executing request"));
   }
 
   @Test
-  void openApiRequest_ReturnsConfigurationException_ForInvalidPage() {
+  void openApiRequest_ReturnsUnexpectedError_ForInvalidPage() {
     this.webClient.get()
         .uri("/breweries?page=0")
         .exchange()
         .expectStatus()
         .is5xxServerError()
         .expectBody(String.class)
-        .value(containsString("Constraint 'min' [1] violated on 'page' with value '0'"));
+        .value(containsString("Unexpected error while executing request"));
   }
 
   @Test

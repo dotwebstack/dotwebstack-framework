@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContextValidat
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
@@ -72,6 +74,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private static final String ARGUMENT_PREFIX = "args.";
 
   private static final String ENVIRONMENT_PREFIX = "env.";
+
+  public static final String MDC_REQUEST_ID = "requestId";
 
   private OpenAPI openApi;
 
@@ -111,7 +115,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
+    String requestId = UUID.randomUUID()
+        .toString();
+    MDC.put(MDC_REQUEST_ID, requestId);
+    Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(requestId, request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
             exception -> getMonoError(format("Error while obtaining request parameters: %s", exception.getMessage()),
@@ -119,7 +126,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(JsonProcessingException.class,
             exception -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(GraphQlErrorException.class,
-            exception -> getMonoError(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
+            exception -> getMonoError(
+                format("Unexpected error while executing request [%s]. See the logs for details.", requestId),
+                HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(NoResultFoundException.class, exception -> getMonoError(null, HttpStatus.NOT_FOUND))
         .onErrorResume(UnsupportedMediaTypeException.class,
             exception -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
@@ -216,8 +225,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private String getResponse(ServerRequest request)
+  private String getResponse(String requestId, ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
+    MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
