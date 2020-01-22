@@ -1,18 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j.scalars;
 
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import graphql.language.StringValue;
 import graphql.schema.CoercingParseValueException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.rio.ParserConfig;
@@ -20,14 +16,12 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.BasicParserSettings;
 import org.eclipse.rdf4j.rio.helpers.ParseErrorLogger;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
 
 class ModelCoercingTest {
 
   private final ModelCoercing coercing = new ModelCoercing();
-
 
   @Test
   void serialize_ThrowsException() {

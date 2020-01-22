@@ -34,6 +34,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
     registry.add(createResourceDefinition());
 
     registry.add(new ScalarTypeDefinition(Rdf4jScalars.IRI.getName()));
+    registry.add(new ScalarTypeDefinition(Rdf4jScalars.MODEL.getName()));
   }
 
   private DirectiveDefinition createSparqlDefinition() {
@@ -107,5 +108,6 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
     builder.scalar(Rdf4jScalars.IRI);
+    builder.scalar(Rdf4jScalars.MODEL);
   }
 }
