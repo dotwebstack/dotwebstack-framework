@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
@@ -121,7 +120,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.properties = properties;
   }
 
-  @SneakyThrows
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
     String requestId = UUID.randomUUID()
@@ -231,7 +229,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     String query = buildQueryString(inputParams);
 
     if (LOG.isDebugEnabled()) {
-      // logInputRequest(request);
+      logInputRequest(request);
       LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
     }
 
