@@ -221,7 +221,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
+  protected ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
       JsonProcessingException, GraphQlErrorException, BadRequestException, NotAcceptableException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);

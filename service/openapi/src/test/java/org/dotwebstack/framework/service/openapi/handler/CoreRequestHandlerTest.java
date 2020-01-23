@@ -3,13 +3,17 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -19,20 +23,27 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
+import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
+import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilderTest;
+import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
+import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,10 +54,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -152,6 +166,41 @@ public class CoreRequestHandlerTest {
 
     // Assert
     assertEquals(responseTemplate.getMediaType(), "application/json");
+  }
+
+  @Test
+  public void getResponseTest()
+      throws BadRequestException, GraphQlErrorException, NoResultFoundException, JsonProcessingException {
+    // Mock
+    ServerRequest request = mock(ServerRequest.class);
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    HttpHeaders asHeaders = mock(HttpHeaders.class);
+    Mono mono = mock(Mono.class);
+    ExecutionResult executionResult = mock(ExecutionResult.class);
+
+    // Assign
+    String requestId = UUID.randomUUID()
+        .toString();
+    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    Map<Object, Object> data = new HashMap<>();
+    data.put("data", "{\"key\" : \"value\" }");
+
+    when(headers.asHttpHeaders()).thenReturn(asHeaders);
+    when(request.headers()).thenReturn(headers);
+    when(request.queryParams()).thenReturn(queryParams);
+    when(request.bodyToMono(String.class)).thenReturn(mono);
+    when(mono.block()).thenReturn(null);
+    when(executionResult.getErrors()).thenReturn(new ArrayList<>());
+    when(executionResult.getData()).thenReturn(data);
+
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+    when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+    ServerResponse serverResponse = coreRequestHandler.getResponse(requestId, request);
+
+    // Assert
+    serverResponse.statusCode()
+        .is2xxSuccessful();
   }
 
   @Test
@@ -308,15 +357,28 @@ public class CoreRequestHandlerTest {
     responseTemplates.add(ResponseTemplate.builder()
         .mediaType("application/json")
         .isDefault(true)
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
         .responseCode(200)
         .build());
 
     responseTemplates.add(ResponseTemplate.builder()
         .mediaType("application/xml")
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
         .responseCode(200)
         .build());
 
     return responseTemplates;
+  }
+
+  private SchemaSummary schemaSummaryBuilder() {
+    return SchemaSummary.builder()
+        .isEnvelope(false)
+        .required(false)
+        .build();
   }
 
 }
