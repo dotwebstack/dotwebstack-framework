@@ -45,7 +45,9 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
@@ -60,6 +62,8 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -67,9 +71,12 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import spark.utils.MimeParse;
 
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
+
+  private static final String DEFAULT_ACCEPT_HEADER_VALUE = "*/*";
 
   private static final String ARGUMENT_PREFIX = "args.";
 
@@ -118,8 +125,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     String requestId = UUID.randomUUID()
         .toString();
     MDC.put(MDC_REQUEST_ID, requestId);
-    Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(requestId, request))
+    return Mono.fromCallable(() -> getResponse(requestId, request))
         .publishOn(Schedulers.elastic())
+        .onErrorResume(NotAcceptableException.class,
+            exception -> getMonoError(format("Error while processing the request: %s", exception.getMessage()),
+                HttpStatus.NOT_ACCEPTABLE))
         .onErrorResume(ParameterValidationException.class,
             exception -> getMonoError(format("Error while obtaining request parameters: %s", exception.getMessage()),
                 HttpStatus.BAD_REQUEST))
@@ -138,20 +148,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(InvalidConfigurationException.class,
             exception -> getMonoError(format("Error while validating the request: %s", exception.getMessage()),
                 HttpStatus.BAD_REQUEST));
-
-    ResponseTemplate template = getResponseTemplate();
-
-    try {
-      Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
-
-      ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
-          .contentType(MediaType.parseMediaType(template.getMediaType()));
-      responseHeaders.forEach(bodyBuilder::header);
-      return bodyBuilder.body(fromPublisher(bodyPublisher, String.class));
-    } catch (InvalidConfigurationException | ParameterValidationException exception) {
-      return ServerResponse.badRequest()
-          .syncBody(format("Error while obtaining response headers: %s", exception.getMessage()));
-    }
   }
 
   public void validateSchema() {
@@ -225,15 +221,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private String getResponse(String requestId, ServerRequest request)
-      throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
+  private ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
+      JsonProcessingException, GraphQlErrorException, BadRequestException, NotAcceptableException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
 
     if (LOG.isDebugEnabled()) {
-      logInputRequest(request);
+      // logInputRequest(request);
       LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
     }
 
@@ -250,16 +246,54 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .next();
 
       URI uri = request.uri();
-      return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
+
+      String acceptHeaderAsString = getAcceptHeaderAsString(request);
+      ResponseTemplate template = getResponseTemplate(acceptHeaderAsString);
+
+      String body = responseMapper.toJson(createNewResponseWriteContext(template.getResponseObject(), data, inputParams,
+          createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
+
+      Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+      ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
+          .contentType(MediaType.parseMediaType(template.getMediaType()));
+      responseHeaders.forEach(bodyBuilder::header);
+
+      return bodyBuilder.body(fromPublisher(Mono.just(body), String.class))
+          .block();
     }
+
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  ResponseTemplate getResponseTemplate() {
-    return responseSchemaContext.getResponses()
-        .stream()
+  ResponseTemplate getResponseTemplate(String acceptHeader) throws NotAcceptableException {
+    List<ResponseTemplate> responseTemplates = responseSchemaContext.getResponses();
+
+    List<String> supportedMediaTypes = responseTemplates.stream()
         .filter(response -> response.isApplicable(200, 299))
+        .map(response -> response.getMediaType())
+        .collect(Collectors.toList());
+
+    CoreRequestHelper.validateResponseMediaTypesAreConfigured(supportedMediaTypes);
+
+    String responseContentType;
+    boolean acceptHeaderProvided =
+        !StringUtils.isEmpty(acceptHeader) && !acceptHeader.equals(DEFAULT_ACCEPT_HEADER_VALUE);
+
+    if (acceptHeaderProvided) {
+      responseContentType = MimeParse.bestMatch(supportedMediaTypes, acceptHeader);
+
+      CoreRequestHelper.validateAcceptHeaderIsSupported(responseContentType, acceptHeader);
+
+    } else {
+      responseContentType = getDefaultResponseType(responseTemplates, supportedMediaTypes);
+    }
+
+    final String responseMediaType = responseContentType;
+    return responseTemplates.stream()
+        .filter(response -> response.isApplicable(200, 299))
+        .filter(response -> response.getMediaType()
+            .equals(responseMediaType))
         .findFirst()
         .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
   }
@@ -307,8 +341,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = resolveUrlAndHeaderParameters(request);
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
+
     if (Objects.nonNull(requestBodyContext)) {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+
+
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValue(request, requestBody, result)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
@@ -334,11 +371,38 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
+  private Mono<ServerResponse> getMonoError(String message, HttpStatus statusCode) {
     return Mono.error(new ResponseStatusException(statusCode, message));
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
+  }
+
+  private String getDefaultResponseType(List<ResponseTemplate> responseTemplates, List<String> supportedMediaTypes) {
+    String responseContentType = responseTemplates.stream()
+        .filter(response -> response.isDefault())
+        .findFirst()
+        .map(response -> response.getMediaType())
+        .orElse(null);
+
+    if (StringUtils.isEmpty(responseContentType)) {
+      responseContentType = supportedMediaTypes.get(0);
+    }
+
+    return responseContentType;
+  }
+
+  private String getAcceptHeaderAsString(ServerRequest request) {
+    List<MediaType> acceptHeaders = request.headers()
+        .accept();
+    String acceptHeaderAsString = null;
+    if (acceptHeaders != null && !acceptHeaders.isEmpty()) {
+      acceptHeaderAsString = acceptHeaders.stream()
+          .map(MimeType::toString)
+          .collect(Collectors.joining(", "));
+    }
+
+    return acceptHeaderAsString;
   }
 }

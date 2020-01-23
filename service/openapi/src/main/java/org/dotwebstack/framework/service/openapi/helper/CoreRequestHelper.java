@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -45,6 +48,18 @@ public class CoreRequestHelper {
     }
   }
 
+  public static void validateResponseMediaTypesAreConfigured(List<?> responseTemplatesList) {
+    if (responseTemplatesList.isEmpty()) {
+      throw unsupportedOperationException("No configured responses with mediatypes found within the 200 range.");
+    }
+  }
+
+  public static void validateAcceptHeaderIsSupported(String responseContentType, String acceptHeader) {
+    if (StringUtils.isEmpty(responseContentType)) {
+      throw notAcceptableException("Unsupported Accept Header: %s.", acceptHeader);
+    }
+  }
+
   public static Map<String, Object> addEvaluatedDwsParameters(Map<String, Object> inputParams,
       Map<String, String> dwsParameters, ServerRequest request, JexlHelper jexlHelper) {
     JexlContext jexlContext = buildJexlContext(request, inputParams);
@@ -60,6 +75,4 @@ public class CoreRequestHelper {
     mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
     return mapContext;
   }
-
-
 }
