@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -39,6 +37,8 @@ import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 @Builder
 public class ResponseTemplateBuilder {
 
+  private static final String DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION = "x-dws-default";
+
   private final OpenAPI openApi;
 
   private final List<String> xdwsStringTypes;
@@ -49,7 +49,7 @@ public class ResponseTemplateBuilder {
   }
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
-    List<ResponseTemplate> responses = httpMethodOperation.getOperation()
+    return httpMethodOperation.getOperation()
         .getResponses()
         .entrySet()
         .stream()
@@ -60,43 +60,10 @@ public class ResponseTemplateBuilder {
                 .getRequestBody()),
             DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation())).stream())
         .collect(Collectors.toList());
-
-    long successResponseCount = responses.stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .count();
-    if (successResponseCount != 1) {
-      throw invalidConfigurationException(
-          "Expected exactly one response within the 200 range for path '{}' with method '{}'.",
-          httpMethodOperation.getName(), httpMethodOperation.getHttpMethod());
-    }
-    return responses;
-  }
-
-  private void validateMediaType(@NonNull String responseCode, @NonNull Content content, @NonNull String pathName,
-      @NonNull String methodName) {
-    if (content.keySet()
-        .size() != 1) {
-      throw invalidOpenApiConfigurationException(
-          "Expected exactly one MediaType for path '{}' with method '{}' and response code '{}'.", pathName, methodName,
-          responseCode);
-    }
-    List<String> unsupportedMediaTypes = content.keySet()
-        .stream()
-        .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
-        .collect(Collectors.toList());
-    if (!unsupportedMediaTypes.isEmpty()) {
-      throw invalidOpenApiConfigurationException(
-          "Unsupported MediaType(s) '{}' for path '{}' with method '{}' and response code '{}'.", unsupportedMediaTypes,
-          pathName, methodName, responseCode);
-    }
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
       String pathName, String methodName, RequestBody requestBody, String queryName) {
-    validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
-    if (requestBody != null) {
-      validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
-    }
 
     Map<String, ResponseHeader> responseHeaders = createResponseHeaders(apiResponse.getHeaders());
 
@@ -144,6 +111,10 @@ public class ResponseTemplateBuilder {
     String ref = content.getSchema()
         .get$ref();
 
+    Map<String, Object> extensions = content.getExtensions();
+    boolean isDefault = extensions != null && (boolean) content.getExtensions()
+        .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
+
     Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
     ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
 
@@ -159,6 +130,7 @@ public class ResponseTemplateBuilder {
         .responseCode(Integer.parseInt(responseCode))
         .mediaType(mediaType)
         .responseObject(root)
+        .isDefault(isDefault)
         .responseHeaders(responseHeaders)
         .build();
   }
