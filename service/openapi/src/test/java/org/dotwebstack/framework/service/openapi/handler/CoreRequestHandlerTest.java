@@ -168,35 +168,35 @@ public class CoreRequestHandlerTest {
     assertEquals(responseTemplate.getMediaType(), "application/json");
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void getResponseTest()
-      throws BadRequestException, GraphQlErrorException, NoResultFoundException, JsonProcessingException {
-    // Mock
-    ServerRequest request = mock(ServerRequest.class);
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
-    HttpHeaders asHeaders = mock(HttpHeaders.class);
-    Mono mono = mock(Mono.class);
-    ExecutionResult executionResult = mock(ExecutionResult.class);
-
-    // Assign
-    String requestId = UUID.randomUUID()
-        .toString();
+      throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    ServerRequest request = mock(ServerRequest.class);
+    when(request.queryParams()).thenReturn(queryParams);
+
     Map<Object, Object> data = new HashMap<>();
     data.put("data", "{\"key\" : \"value\" }");
 
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    HttpHeaders asHeaders = mock(HttpHeaders.class);
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
-    when(request.queryParams()).thenReturn(queryParams);
+
+    Mono<String> mono = mock(Mono.class);
     when(request.bodyToMono(String.class)).thenReturn(mono);
     when(mono.block()).thenReturn(null);
+
+    ExecutionResult executionResult = mock(ExecutionResult.class);
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
     when(executionResult.getData()).thenReturn(data);
 
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
-    ServerResponse serverResponse = coreRequestHandler.getResponse(requestId, request);
+    ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
+        .toString(), request);
 
     // Assert
     serverResponse.statusCode()
