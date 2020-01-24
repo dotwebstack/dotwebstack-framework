@@ -75,7 +75,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
               + "argument 'field'",
-              fieldName, typeName);
+          fieldName, typeName);
     }
   }
 
@@ -84,7 +84,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive defined on scalar list fields "
               + "should have a size of exactly one",
-              fieldName, typeName);
+          fieldName, typeName);
     }
   }
 
@@ -94,7 +94,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive argument '{}' should be of "
               + "type [SortField]",
-              fieldName, typeName, argumentName);
+          fieldName, typeName, argumentName);
     }
   }
 
