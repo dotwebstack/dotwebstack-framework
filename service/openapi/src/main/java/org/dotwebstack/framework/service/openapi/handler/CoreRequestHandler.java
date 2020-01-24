@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
@@ -62,8 +63,6 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -71,7 +70,6 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import spark.utils.MimeParse;
 
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
@@ -247,8 +245,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       URI uri = request.uri();
 
-      String acceptHeaderAsString = getAcceptHeaderAsString(request);
-      ResponseTemplate template = getResponseTemplate(acceptHeaderAsString);
+      List<MediaType> acceptHeaders = request.headers()
+          .accept();
+      ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
       String body = responseMapper.toJson(createNewResponseWriteContext(template.getResponseObject(), data, inputParams,
           createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
@@ -266,30 +265,25 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  ResponseTemplate getResponseTemplate(String acceptHeader) throws NotAcceptableException {
+  ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) throws NotAcceptableException {
     List<ResponseTemplate> responseTemplates = responseSchemaContext.getResponses();
 
-    List<String> supportedMediaTypes = responseTemplates.stream()
+    List<MediaType> supportedMediaTypes = responseTemplates.stream()
         .filter(response -> response.isApplicable(200, 299))
-        .map(response -> response.getMediaType())
+        .map(response -> MediaType.valueOf(response.getMediaType()))
         .collect(Collectors.toList());
 
     CoreRequestHelper.validateResponseMediaTypesAreConfigured(supportedMediaTypes);
 
-    String responseContentType;
-    boolean acceptHeaderProvided =
-        !StringUtils.isEmpty(acceptHeader) && !acceptHeader.equals(DEFAULT_ACCEPT_HEADER_VALUE);
-
-    if (acceptHeaderProvided) {
-      responseContentType = MimeParse.bestMatch(supportedMediaTypes, acceptHeader);
-
-      CoreRequestHelper.validateAcceptHeaderIsSupported(responseContentType, acceptHeader);
+    MediaType responseContentType;
+    if (isAcceptHeaderProvided(acceptHeaders)) {
+      responseContentType = getResponseContentType(acceptHeaders, supportedMediaTypes);
 
     } else {
       responseContentType = getDefaultResponseType(responseTemplates, supportedMediaTypes);
     }
 
-    final String responseMediaType = responseContentType;
+    final String responseMediaType = responseContentType.toString();
     return responseTemplates.stream()
         .filter(response -> response.isApplicable(200, 299))
         .filter(response -> response.getMediaType()
@@ -380,30 +374,44 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
 
-  private String getDefaultResponseType(List<ResponseTemplate> responseTemplates, List<String> supportedMediaTypes) {
-    String responseContentType = responseTemplates.stream()
+  private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,
+      List<MediaType> supportedMediaTypes) {
+    MediaType responseContentType = responseTemplates.stream()
         .filter(response -> response.isDefault())
         .findFirst()
-        .map(response -> response.getMediaType())
+        .map(response -> MediaType.valueOf(response.getMediaType()))
         .orElse(null);
 
-    if (StringUtils.isEmpty(responseContentType)) {
+    if (responseContentType == null) {
       responseContentType = supportedMediaTypes.get(0);
     }
 
     return responseContentType;
   }
 
-  private String getAcceptHeaderAsString(ServerRequest request) {
-    List<MediaType> acceptHeaders = request.headers()
-        .accept();
-    String acceptHeaderAsString = null;
-    if (acceptHeaders != null && !acceptHeaders.isEmpty()) {
-      acceptHeaderAsString = acceptHeaders.stream()
-          .map(MimeType::toString)
-          .collect(Collectors.joining(", "));
+  private MediaType getResponseContentType(List<MediaType> acceptHeaders, List<MediaType> supportedMediaTypes) {
+    MediaType.sortByQualityValue(acceptHeaders);
+
+    for (MediaType acceptHeader : acceptHeaders) {
+      for (MediaType supportedMediaType : supportedMediaTypes) {
+        if (acceptHeader.isCompatibleWith(supportedMediaType)) {
+          return supportedMediaType;
+        }
+      }
     }
 
-    return acceptHeaderAsString;
+    throw notAcceptableException("Unsupported Accept Header provided");
   }
+
+  private boolean isAcceptHeaderProvided(List<MediaType> acceptHeaders) {
+    if (!acceptHeaders.isEmpty()) {
+      if (!(acceptHeaders.size() == 1 && acceptHeaders.get(0)
+          .toString()
+          .equals(DEFAULT_ACCEPT_HEADER_VALUE))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

@@ -94,10 +94,12 @@ class OpenApiRdf4jIntegrationTest {
     // Arrange & Act
     webClient.get()
         .uri("/breweries?name=Brouwerij 1923")
-        .header("Accept", "application/xml")
+        .header("Accept", "application/xml;q=0.5,application/*+json")
         .exchange()
+        .expectStatus()
+        .isOk()
         .expectHeader()
-        .contentType("application/xml");
+        .contentType("application/hal+json");
   }
 
   @Test
