@@ -332,10 +332,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .collect(Collectors.toList()));
 
     Mono<String> mono = request.bodyToMono(String.class);
-    String value = mono.block();
-    if (Objects.nonNull(value)) {
-      LOG.debug("Request contains the following body: {}", value);
-    }
+    mono.doOnSuccess(value -> {
+      if (Objects.nonNull(value)) {
+        LOG.debug("Request contains the following body: {}", value);
+      }
+    });
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
