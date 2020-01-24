@@ -7,11 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,84 +50,6 @@ public class ResponseTemplateBuilderTest {
     assertEquals("object", okResponse.getResponseObject()
         .getSummary()
         .getType());
-  }
-
-  @Test
-  public void build_throwsException_MissingOkResponse() {
-    // Arrange
-    ApiResponse response = openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .get("200");
-    openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .remove("200");
-    openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .put("300", response);
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
-  }
-
-  @Test
-  public void build_throwsException_MultipleOkResponses() {
-    // Arrange
-    ApiResponse response = openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .get("200");
-    openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .put("205", response);
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
-  }
-
-  @Test
-  public void build_throwsException_UnsupportedMediaType() {
-    // Arrange
-    Content content = openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .get("200")
-        .getContent();
-    MediaType mediaType = content.get("application/hal+json");
-    content.remove("application/hal+json");
-    content.put("application/text", mediaType);
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
-  }
-
-  @Test
-  public void build_throwsException_MultipleMediaTypes() {
-    // Arrange
-    Content content = openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getResponses()
-        .get("200")
-        .getContent();
-    MediaType mediaType = content.get("application/hal+json");
-    content.put("application/hal2+json", mediaType);
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test

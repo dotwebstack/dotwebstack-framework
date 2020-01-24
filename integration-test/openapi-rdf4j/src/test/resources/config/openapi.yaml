@@ -170,6 +170,9 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
           headers:
             X-Pagination-Limit:
               schema:

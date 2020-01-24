@@ -3,45 +3,67 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
+import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
+import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilderTest;
+import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
+import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -78,7 +100,7 @@ public class CoreRequestHandlerTest {
   private CoreRequestHandler coreRequestHandler;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws NotAcceptableException {
     Operation operation = this.openApi.getPaths()
         .get("/query6")
         .getGet();
@@ -90,6 +112,7 @@ public class CoreRequestHandlerTest {
         .set$ref("#/components/schemas/Object4");
 
     when(this.responseSchemaContext.getParameters()).thenReturn(operation.getParameters());
+
     when(this.responseSchemaContext.getGraphQlField())
         .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
     coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
@@ -99,19 +122,104 @@ public class CoreRequestHandlerTest {
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
     doReturn(responseTemplate).when(this.coreRequestHandler)
-        .getResponseTemplate();
+        .getResponseTemplate(null);
   }
 
   @Test
   public void handle_ReturnsHeaders() {
     // Act
-    ServerResponse response = coreRequestHandler.handle(getServerRequest())
-        .block();
+    coreRequestHandler.handle(getServerRequest())
+        .doOnSuccess(response -> {
+
+          // Assert
+          assertNotNull(response.headers());
+          assertEquals(ImmutableList.of("value"), response.headers()
+              .get("X-Response-Header"));
+        });
+  }
+
+  @ParameterizedTest
+  @CsvSource({"application/xml, application/xml", "application/json, application/json"})
+  public void getResponseTemplateTest(String acceptHeader, String expected) {
+    // Act
+    getServerRequest();
+    List<MediaType> acceptHeaders = Arrays.asList(MediaType.valueOf(acceptHeader));
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
     // Assert
-    assertNotNull(response.headers());
-    assertEquals(ImmutableList.of("value"), response.headers()
-        .get("X-Response-Header"));
+    assertEquals(responseTemplate.getMediaType(), expected);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"application/xml;q=0.4,application/json", "application/*"})
+  public void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) {
+    // Act
+    getServerRequest();
+    List<MediaType> acceptHeaders = Arrays.asList(acceptHeader.split(","))
+        .stream()
+        .map(h -> MediaType.valueOf(h))
+        .collect(Collectors.toList());
+
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
+
+    // Assert
+    assertEquals(responseTemplate.getMediaType(), "application/json");
+  }
+
+  @Test
+  public void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() {
+    // Act
+    getServerRequest();
+    List<MediaType> acceptHeaders = Arrays.asList(MediaType.valueOf("*/*"));
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
+
+    // Assert
+    assertEquals(responseTemplate.getMediaType(), "application/json");
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getResponseTest()
+      throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
+    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    ServerRequest request = mock(ServerRequest.class);
+    when(request.queryParams()).thenReturn(queryParams);
+
+    Map<Object, Object> data = new HashMap<>();
+    data.put("data", "{\"key\" : \"value\" }");
+
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    HttpHeaders asHeaders = mock(HttpHeaders.class);
+    when(headers.asHttpHeaders()).thenReturn(asHeaders);
+    when(request.headers()).thenReturn(headers);
+
+    Mono<String> mono = mock(Mono.class);
+    when(request.bodyToMono(String.class)).thenReturn(mono);
+    when(mono.block()).thenReturn(null);
+
+    ExecutionResult executionResult = mock(ExecutionResult.class);
+    when(executionResult.getErrors()).thenReturn(new ArrayList<>());
+    when(executionResult.getData()).thenReturn(data);
+
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+    when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+    ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
+        .toString(), request);
+
+    // Assert
+    serverResponse.statusCode()
+        .is2xxSuccessful();
+  }
+
+  @Test
+  public void shouldThrowNotAcceptedExceptionTest() {
+    // Act
+    getServerRequest();
+    List<MediaType> acceptHeader = Arrays.asList(MediaType.valueOf("application/not_supported"));
+
+    // Assert
+    assertThrows(NotAcceptableException.class, () -> coreRequestHandler.getResponseTemplate(acceptHeader));
   }
 
   @Test
@@ -242,9 +350,46 @@ public class CoreRequestHandlerTest {
 
   protected ServerRequest getServerRequest() {
     ServerRequest request = mock(ServerRequest.class);
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     queryParams.put("query6_param1", ImmutableList.of("value1"));
+
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+    when(request.headers()).thenReturn(headers);
     when(request.queryParams()).thenReturn(queryParams);
     return request;
   }
+
+  private List<ResponseTemplate> getResponseTemplates() {
+    List<ResponseTemplate> responseTemplates = new ArrayList<>();
+
+    responseTemplates.add(ResponseTemplate.builder()
+        .mediaType("application/json")
+        .isDefault(true)
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
+        .responseCode(200)
+        .responseHeaders(new HashMap<>())
+        .build());
+
+    responseTemplates.add(ResponseTemplate.builder()
+        .mediaType("application/xml")
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
+        .responseCode(200)
+        .responseHeaders(new HashMap<>())
+        .build());
+
+    return responseTemplates;
+  }
+
+  private SchemaSummary schemaSummaryBuilder() {
+    return SchemaSummary.builder()
+        .isEnvelope(false)
+        .required(false)
+        .build();
+  }
+
 }
