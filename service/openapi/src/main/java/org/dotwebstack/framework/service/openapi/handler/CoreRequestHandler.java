@@ -219,7 +219,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  protected ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
+  ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
       JsonProcessingException, GraphQlErrorException, BadRequestException, NotAcceptableException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
@@ -339,7 +339,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     if (Objects.nonNull(requestBodyContext)) {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
-
 
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValue(request, requestBody, result)
