@@ -376,17 +376,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,
       List<MediaType> supportedMediaTypes) {
-    MediaType responseContentType = responseTemplates.stream()
-        .filter(response -> response.isDefault())
+    return responseTemplates.stream()
+        .filter(ResponseTemplate::isDefault)
         .findFirst()
-        .map(response -> MediaType.valueOf(response.getMediaType()))
-        .orElse(null);
-
-    if (responseContentType == null) {
-      responseContentType = supportedMediaTypes.get(0);
-    }
-
-    return responseContentType;
+        .map(ResponseTemplate::getMediaType)
+        .map(MediaType::valueOf)
+        .orElse(supportedMediaTypes.get(0));
   }
 
   private MediaType getResponseContentType(List<MediaType> acceptHeaders, List<MediaType> supportedMediaTypes) {
@@ -405,11 +400,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private boolean isAcceptHeaderProvided(List<MediaType> acceptHeaders) {
     if (!acceptHeaders.isEmpty()) {
-      if (!(acceptHeaders.size() == 1 && acceptHeaders.get(0)
+      return !(acceptHeaders.size() == 1 && acceptHeaders.get(0)
           .toString()
-          .equals(DEFAULT_ACCEPT_HEADER_VALUE))) {
-        return true;
-      }
+          .equals(DEFAULT_ACCEPT_HEADER_VALUE));
     }
     return false;
   }
