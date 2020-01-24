@@ -201,7 +201,7 @@ paths:
               x-dws-default: true
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
-            application/xml:
+            application/stream+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
           headers:

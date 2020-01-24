@@ -19,11 +19,13 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
@@ -56,6 +58,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -140,29 +143,35 @@ public class CoreRequestHandlerTest {
   public void getResponseTemplateTest(String acceptHeader, String expected) {
     // Act
     getServerRequest();
-    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeader);
+    List<MediaType> acceptHeaders = Arrays.asList(MediaType.valueOf(acceptHeader));
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
     // Assert
     assertEquals(responseTemplate.getMediaType(), expected);
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"application/json;q=0.9,application/xml", "application/*"})
+  @ValueSource(strings = {"application/xml;q=0.4,application/json", "application/*"})
   public void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) {
     // Act
     getServerRequest();
-    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeader);
+    List<MediaType> acceptHeaders = Arrays.asList(acceptHeader.split(","))
+        .stream()
+        .map(h -> MediaType.valueOf(h))
+        .collect(Collectors.toList());
+
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
     // Assert
-    assertEquals(responseTemplate.getMediaType(), "application/xml");
+    assertEquals(responseTemplate.getMediaType(), "application/json");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"*/*", ""})
-  public void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest(String acceptHeader) {
+  @Test
+  public void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() {
     // Act
     getServerRequest();
-    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeader);
+    List<MediaType> acceptHeaders = Arrays.asList(MediaType.valueOf("*/*"));
+    ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
     // Assert
     assertEquals(responseTemplate.getMediaType(), "application/json");
@@ -207,7 +216,7 @@ public class CoreRequestHandlerTest {
   public void shouldThrowNotAcceptedExceptionTest() {
     // Act
     getServerRequest();
-    String acceptHeader = "application/not_supported";
+    List<MediaType> acceptHeader = Arrays.asList(MediaType.valueOf("application/not_supported"));
 
     // Assert
     assertThrows(NotAcceptableException.class, () -> coreRequestHandler.getResponseTemplate(acceptHeader));
@@ -361,6 +370,7 @@ public class CoreRequestHandlerTest {
             .summary(schemaSummaryBuilder())
             .build())
         .responseCode(200)
+        .responseHeaders(new HashMap<>())
         .build());
 
     responseTemplates.add(ResponseTemplate.builder()
@@ -369,6 +379,7 @@ public class CoreRequestHandlerTest {
             .summary(schemaSummaryBuilder())
             .build())
         .responseCode(200)
+        .responseHeaders(new HashMap<>())
         .build());
 
     return responseTemplates;
