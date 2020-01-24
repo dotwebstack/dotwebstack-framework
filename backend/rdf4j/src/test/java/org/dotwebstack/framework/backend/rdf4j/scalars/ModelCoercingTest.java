@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.scalars;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

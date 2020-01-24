@@ -34,7 +34,7 @@ public class SchemaModelValidator implements SchemaValidator {
         .ifPresent(this::validateQuery);
   }
 
-  private void validateQuery(TypeDefinition typeDefinition) {
+  private void validateQuery(TypeDefinition<?> typeDefinition) {
     if (typeDefinition instanceof ObjectTypeDefinition) {
       getModelOutputTypes((ObjectTypeDefinition) typeDefinition).stream()
           .forEach(this::validateSparqlQueryDirectivePresent);
