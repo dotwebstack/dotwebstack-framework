@@ -4,7 +4,7 @@ import graphql.schema.Coercing;
 import graphql.schema.CoercingParseValueException;
 import org.eclipse.rdf4j.model.Model;
 
-public class ModelCoercing implements Coercing<String, String> {
+public class ModelCoercing implements Coercing<Model, String> {
   @Override
   public String serialize(Object model) {
     if (model instanceof Model) {
@@ -14,18 +14,18 @@ public class ModelCoercing implements Coercing<String, String> {
   }
 
   @Override
-  public String parseValue(Object model) {
+  public Model parseValue(Object model) {
     return parseModel(model);
   }
 
   @Override
-  public String parseLiteral(Object model) {
+  public Model parseLiteral(Object model) {
     return parseModel(model);
   }
 
-  private String parseModel(Object model) {
+  private Model parseModel(Object model) {
     if (model instanceof Model) {
-      return model.toString();
+      return (Model) model;
     }
     throw new CoercingParseValueException(String.format("Unable to parse Model from '%s' type.", model.getClass()
         .getName()));
