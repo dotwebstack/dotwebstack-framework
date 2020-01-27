@@ -37,8 +37,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   private void validateOnlyOnIri(String typeName, String fieldName, GraphQLType rawType) {
     if (!(rawType.getName()
         .equals(Rdf4jScalars.IRI.getName()))) {
-      throw invalidConfigurationException("{}.{} should be of type IRI for @resource directive", typeName,
-          fieldName);
+      throw invalidConfigurationException("{}.{} should be of type IRI for @resource directive", typeName, fieldName);
     }
   }
 
