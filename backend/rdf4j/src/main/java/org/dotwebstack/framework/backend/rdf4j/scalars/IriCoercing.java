@@ -10,16 +10,16 @@ import java.net.URI;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class IriCoercing implements Coercing<IRI, String> {
+public class IriCoercing implements Coercing<IRI, IRI> {
 
   @Override
-  public String serialize(@NonNull Object value) {
+  public IRI serialize(@NonNull Object value) {
     if (value instanceof IRI) {
-      return ((IRI) value).stringValue();
+      return (IRI) value;
     }
 
     if (value instanceof String) {
-      return createIri((String) value).stringValue();
+      return createIri((String) value);
     }
 
     throw new UnsupportedOperationException();
@@ -27,24 +27,15 @@ public class IriCoercing implements Coercing<IRI, String> {
 
   @Override
   public IRI parseValue(@NonNull Object value) {
-    if (value instanceof String) {
-      return createIri((String) value);
-    }
-
     if (value instanceof URI) {
       return createIri((value).toString());
     }
-
     throw new CoercingParseValueException(String.format("Unable to parse IRI from '%s' type.", value.getClass()
         .getName()));
   }
 
   @Override
   public IRI parseLiteral(@NonNull Object value) {
-    if (value instanceof String) {
-      return createIri((String) value);
-    }
-
     if (value instanceof IRI) {
       return (IRI) value;
     }
