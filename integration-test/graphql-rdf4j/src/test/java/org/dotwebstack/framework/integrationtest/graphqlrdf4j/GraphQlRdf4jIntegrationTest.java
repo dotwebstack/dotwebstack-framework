@@ -43,8 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
+import org.eclipse.rdf4j.model.IRI;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,12 +75,16 @@ public class GraphQlRdf4jIntegrationTest {
 
     // Assert
     assertResultHasNoErrors(result);
+
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1,
-                BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
+    Map<String, Object> resultMap = (Map<String, Object>) data.get(BREWERY_FIELD);
+
+    assertThat(resultMap, hasEntry(BREWERY_SUBJECT_FIELD, subject));
+    assertThat(resultMap, hasEntry(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
+    assertThat(resultMap, hasEntry(BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()));
+    assertThat(resultMap,
+        hasEntry(BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
   }
 
   @Test
@@ -738,8 +744,8 @@ public class GraphQlRdf4jIntegrationTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1)));
+    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
+    assertThat(data, hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, subject)));
   }
 
   @Test
@@ -755,8 +761,8 @@ public class GraphQlRdf4jIntegrationTest {
         .isEmpty());
     Map<String, Object> data = result.getData();
 
-    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
-        .map(entry -> entry.get("subject"))
+    List<String> subjects = ((List<Map<String, Object>>) (data.get("breweries"))).stream()
+        .map(entry -> ((IRI) entry.get("subject")).stringValue())
         .collect(Collectors.toList());
 
     assertThat(subjects, hasSize(5));
@@ -779,8 +785,8 @@ public class GraphQlRdf4jIntegrationTest {
         .isEmpty());
     Map<String, Object> data = result.getData();
 
-    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
-        .map(entry -> entry.get("subject"))
+    List<String> subjects = ((List<Map<String, Object>>) (data.get("breweries"))).stream()
+        .map(entry -> ((IRI) entry.get("subject")).stringValue())
         .collect(Collectors.toList());
 
     assertThat(subjects, hasSize(5));
