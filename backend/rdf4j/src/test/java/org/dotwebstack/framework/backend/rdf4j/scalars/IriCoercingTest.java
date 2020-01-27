@@ -26,7 +26,7 @@ class IriCoercingTest {
   }
 
   @Test
-  void parseValue_ThrowsException_whenNotUri() {
+  void parseValue_ThrowsException_whenNotStringOrUri() {
     // Act / Assert
     assertThrows(CoercingParseValueException.class, () -> coercing.parseValue(new Object()));
   }
@@ -64,6 +64,21 @@ class IriCoercingTest {
 
     // Assert
     assertThat(result, is(equalTo(Constants.BREWERY_SHAPE)));
+  }
+
+  @Test
+  void serializeIri_ReturnsString_ForValidIri() {
+    // Arrange
+    StringValue stringValue = StringValue.newStringValue(Constants.BREWERY_SHAPE.stringValue())
+        .build();
+
+    // Act
+    IRI iriFromString = coercing.parseLiteral(stringValue);
+
+    String result = coercing.serialize(iriFromString);
+
+    // Assert
+    assertThat(result, is(equalTo(stringValue.getValue())));
   }
 
   @Test
