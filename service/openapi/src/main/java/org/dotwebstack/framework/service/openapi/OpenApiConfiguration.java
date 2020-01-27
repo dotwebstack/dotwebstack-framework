@@ -165,8 +165,7 @@ public class OpenApiConfiguration {
         DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()), requestBodyContext);
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
-        .and(RequestPredicates.path(httpMethodOperation.getName()))
-        .and(accept(MediaType.APPLICATION_JSON));
+        .and(RequestPredicates.path(httpMethodOperation.getName()));
 
     CoreRequestHandler coreRequestHandler =
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
@@ -185,7 +184,7 @@ public class OpenApiConfiguration {
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
       @NonNull List<HttpMethodOperation> httpMethodOperations) {
-    if (httpMethodOperations.size() == 0) {
+    if (httpMethodOperations.isEmpty()) {
       return Optional.empty();
     }
 

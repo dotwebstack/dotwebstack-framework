@@ -198,6 +198,10 @@ paths:
           description: OK
           content:
             application/hal+json:
+              x-dws-default: true
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+            application/stream+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
           headers:

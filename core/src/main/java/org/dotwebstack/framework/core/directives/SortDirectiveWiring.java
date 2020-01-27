@@ -52,7 +52,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
     if (!(rawType instanceof GraphQLTypeReference) && GraphQLTypeUtil.isScalar(unwrappedType)) {
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
-      validateListSize(defaultSortValues, fieldName, typeName);
+      validateListSize(defaultSortValues, typeName, fieldName);
       GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
@@ -75,7 +75,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive on scalar list cannot have "
               + "argument 'field'",
-          typeName, fieldName);
+          fieldName, typeName);
     }
   }
 
@@ -84,7 +84,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive defined on scalar list fields "
               + "should have a size of exactly one",
-          typeName, fieldName);
+          fieldName, typeName);
     }
   }
 
@@ -94,7 +94,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort directive argument '{}' should be of "
               + "type [SortField]",
-          typeName, fieldName, argumentName);
+          fieldName, typeName, argumentName);
     }
   }
 
@@ -102,7 +102,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
     if (!(GraphQLTypeUtil.isList(rawType))) {
       throw invalidConfigurationException(
           "Found an error on @sort directive defined on field {}.{}: @sort can only be defined on a list fields",
-          typename, fieldname);
+          fieldname, typename);
     }
   }
 }

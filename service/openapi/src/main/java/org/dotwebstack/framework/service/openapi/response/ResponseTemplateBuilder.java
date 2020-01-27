@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -40,6 +38,8 @@ import org.springframework.http.HttpStatus;
 @Builder
 public class ResponseTemplateBuilder {
 
+  private static final String DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION = "x-dws-default";
+
   private final OpenAPI openApi;
 
   private final List<String> xdwsStringTypes;
@@ -50,7 +50,7 @@ public class ResponseTemplateBuilder {
   }
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
-    List<ResponseTemplate> responses = httpMethodOperation.getOperation()
+    return httpMethodOperation.getOperation()
         .getResponses()
         .entrySet()
         .stream()
@@ -61,55 +61,13 @@ public class ResponseTemplateBuilder {
                 .getRequestBody()),
             DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation())).stream())
         .collect(Collectors.toList());
-
-    long successOrRedirectResponseCount = responses.stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 399))
-        .count();
-
-    if (successOrRedirectResponseCount != 1) {
-      throw invalidConfigurationException(
-          "Expected exactly one response within the 200 or 300 range for path '{}' with method '{}'.",
-          httpMethodOperation.getName(), httpMethodOperation.getHttpMethod());
-    }
-
-    return responses;
-  }
-
-  private void validateMediaType(@NonNull String responseCode, Content content, @NonNull String pathName,
-                                 @NonNull String methodName) {
-    int parsedResponseCode = Integer.parseInt(responseCode);
-    HttpStatus httpStatus = HttpStatus.valueOf(parsedResponseCode);
-
-    if (httpStatus.series() != HttpStatus.Series.REDIRECTION) {
-      String templateErrorMsg = String.format("Exception occurred for path: '%s' with method '%s' and response code '%s': {}" , pathName, methodName, responseCode);
-
-      if(content == null) {
-        throw invalidOpenApiConfigurationException(templateErrorMsg, "Content can't be null");
-      }
-
-      if(content.keySet().size() != 1) {
-        throw invalidOpenApiConfigurationException(templateErrorMsg, "Expected exactly one MediaType");
-      }
-
-      List<String> unsupportedMediaTypes = content.keySet()
-          .stream()
-          .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
-          .collect(Collectors.toList());
-      if(!unsupportedMediaTypes.isEmpty()) {
-        throw invalidOpenApiConfigurationException(templateErrorMsg, "UnsupportedMediaTypes" + unsupportedMediaTypes);
-      }
-    }
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-                                                 String pathName, String methodName, RequestBody requestBody, String queryName) {
+      String pathName, String methodName, RequestBody requestBody, String queryName) {
+
     int parsedResponseCode = Integer.parseInt(responseCode);
     HttpStatus httpStatus = HttpStatus.valueOf(parsedResponseCode);
-
-    validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
-    if (requestBody != null) {
-      validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
-    }
 
     Map<String, ResponseHeader> responseHeaders = createResponseHeaders(apiResponse.getHeaders());
 
@@ -160,9 +118,13 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
-                                                        MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
+      MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
     String ref = content.getSchema()
         .get$ref();
+
+    Map<String, Object> extensions = content.getExtensions();
+    boolean isDefault = extensions != null && (boolean) content.getExtensions()
+        .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
 
     Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
     ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
@@ -179,13 +141,14 @@ public class ResponseTemplateBuilder {
         .responseCode(Integer.parseInt(responseCode))
         .mediaType(mediaType)
         .responseObject(root)
+        .isDefault(isDefault)
         .responseHeaders(responseHeaders)
         .build();
   }
 
   @SuppressWarnings("rawtypes")
   private void fillResponseObject(ResponseObject responseObject, OpenAPI openApi,
-                                  Map<String, SchemaSummary> referenceMap, List<String> parents, String responseCode) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, String responseCode) {
     Schema<?> oasSchema = responseObject.getSummary()
         .getSchema();
     parents.add(responseObject.getIdentifier());
@@ -207,7 +170,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void resolveComposedSchema(ResponseObject responseObject, OpenAPI openApi,
-                                     Map<String, SchemaSummary> referenceMap, List<String> parents, ComposedSchema oasSchema, String responseCode) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, ComposedSchema oasSchema, String responseCode) {
     if (Objects.nonNull(oasSchema.getOneOf()) || Objects.nonNull(oasSchema.getAnyOf())) {
       throw invalidConfigurationException("The use of oneOf and anyOf schema's is currently not supported");
     }
@@ -248,7 +211,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void resolveArraySchema(ResponseObject responseObject, OpenAPI openApi,
-                                  Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
     String ref = ((ArraySchema) oasSchema).getItems()
         .get$ref();
     Schema<?> usedSchema =
@@ -271,7 +234,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private void resolveObjectSchema(ResponseObject responseObject, OpenAPI openApi,
-                                   Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
+      Map<String, SchemaSummary> referenceMap, List<String> parents, Schema<?> oasSchema, String responseCode) {
     SchemaSummary responseSummary = responseObject.getSummary();
 
     if (Objects.isNull(oasSchema.getProperties())) {
@@ -319,7 +282,7 @@ public class ResponseTemplateBuilder {
   }
 
   private ResponseObject createResponseObject(String identifier, Schema<?> schema, String ref, boolean isRequired,
-                                              boolean isNillable) {
+      boolean isNillable) {
     Optional<String> xdwsType = getXdwsType(schema);
     if (xdwsType.isPresent() && this.xdwsStringTypes.contains(xdwsType.get())) {
       return ResponseObject.builder()

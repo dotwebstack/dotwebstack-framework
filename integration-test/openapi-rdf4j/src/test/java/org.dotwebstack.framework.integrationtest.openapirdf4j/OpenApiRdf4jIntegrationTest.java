@@ -3,6 +3,7 @@ package org.dotwebstack.framework.integrationtest.openapirdf4j;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,12 +79,38 @@ class OpenApiRdf4jIntegrationTest {
     String result = webClient.get()
         .uri("/breweries?name=Brouwerij 1923")
         .exchange()
+        .expectHeader()
+        .contentType("application/hal+json")
         .expectBody(String.class)
         .returnResult()
         .getResponseBody();
 
     // Assert
     assertResult(result, "/results/breweries_filter_name.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsBrewery_withNameFromQueryParamAndAcceptHeaderXml() {
+    // Arrange & Act
+    webClient.get()
+        .uri("/breweries?name=Brouwerij 1923")
+        .header("Accept", "application/xml;q=0.5,application/*+json")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectHeader()
+        .contentType("application/hal+json");
+  }
+
+  @Test
+  void openApiReques_ReturnsNotAcceptedTest() {
+    // Arrange & Act
+    webClient.get()
+        .uri("/breweries")
+        .header("Accept", "application/unsupported")
+        .exchange()
+        .expectStatus()
+        .value(equalTo(406));
   }
 
   @Test
