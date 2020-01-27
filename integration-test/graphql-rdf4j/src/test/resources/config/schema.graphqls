@@ -52,7 +52,7 @@ input NestedNestedInput {
 type Brewery {
   identifier: ID!
   name: String!
-  subject: String! @resource
+  subject: IRI! @resource
   number: Int
   localName: String
   founded: DateTime!
@@ -66,15 +66,15 @@ type Brewery {
 }
 
 type Address {
-  subject: String! @resource
-  resource: String! @resource
+  subject: IRI! @resource
+  resource: IRI! @resource
   postalCode: String!
 }
 
 type Beer {
   identifier: ID!
   name: String!
-  subject: String! @resource
+  subject: IRI! @resource
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]

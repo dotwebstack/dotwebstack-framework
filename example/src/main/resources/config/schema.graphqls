@@ -56,7 +56,7 @@ type Query {
 
 type Brewery {
   identifier: ID!
-  subject: String! @resource
+  subject: IRI! @resource
   name: String!
   localName: String
   founded: Int!
