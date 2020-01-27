@@ -16,6 +16,11 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -50,7 +55,8 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
+import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
@@ -90,7 +96,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final GraphQL graphQL;
 
-  private final ResponseMapper responseMapper;
+  private final JsonResponseMapper jsonResponseMapper;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
@@ -103,14 +109,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-      ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
+      ResponseContextValidator responseContextValidator, GraphQL graphQL, JsonResponseMapper jsonResponseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
       EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
-    this.responseMapper = responseMapper;
+    this.jsonResponseMapper = jsonResponseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
@@ -120,32 +126,30 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    String requestId = UUID.randomUUID()
-        .toString();
-    MDC.put(MDC_REQUEST_ID, requestId);
-    return Mono.fromCallable(() -> getResponse(requestId, request))
+
+    return Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(NotAcceptableException.class,
-            exception -> getMonoError(format("Error while processing the request: %s", exception.getMessage()),
-                HttpStatus.NOT_ACCEPTABLE))
+            getMonoError(NOT_ACCEPTABLE, "Error while processing the request."))
         .onErrorResume(ParameterValidationException.class,
-            exception -> getMonoError(format("Error while obtaining request parameters: %s", exception.getMessage()),
-                HttpStatus.BAD_REQUEST))
-        .onErrorResume(JsonProcessingException.class,
-            exception -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
+            getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
+        .onErrorResume(ResponseMapperException.class,
+            getMonoError(INTERNAL_SERVER_ERROR, "Error while serializing response."))
         .onErrorResume(GraphQlErrorException.class,
-            exception -> getMonoError(
-                format("Unexpected error while executing request [%s]. See the logs for details.", requestId),
-                HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(NoResultFoundException.class, exception -> getMonoError(null, HttpStatus.NOT_FOUND))
-        .onErrorResume(UnsupportedMediaTypeException.class,
-            exception -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
-        .onErrorResume(BadRequestException.class,
-            exception -> getMonoError(format("Error while processing the request: %s", exception.getMessage()),
-                HttpStatus.BAD_REQUEST))
+            getMonoError(INTERNAL_SERVER_ERROR, "Unexpected error while executing request."))
+        .onErrorResume(NoResultFoundException.class, getMonoError(NOT_FOUND, "No results found."))
+        .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
+        .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
         .onErrorResume(InvalidConfigurationException.class,
-            exception -> getMonoError(format("Error while validating the request: %s", exception.getMessage()),
-                HttpStatus.BAD_REQUEST));
+            getMonoError(BAD_REQUEST, "Error while validating the request."));
+  }
+
+  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
+    return exception -> {
+      String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason: %s",
+          exception.getMessage(), status.value(), reason);
+      return Mono.error(new ResponseStatusException(status, message));
+    };
   }
 
   public void validateSchema() {
@@ -219,9 +223,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  ServerResponse getResponse(String requestId, ServerRequest request) throws NoResultFoundException,
-      JsonProcessingException, GraphQlErrorException, BadRequestException, NotAcceptableException {
-    MDC.put(MDC_REQUEST_ID, requestId);
+  ServerResponse getResponse(ServerRequest request) throws NoResultFoundException, JsonProcessingException,
+      GraphQlErrorException, BadRequestException, NotAcceptableException {
+    MDC.put(MDC_REQUEST_ID, UUID.randomUUID()
+        .toString());
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
@@ -249,13 +254,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .accept();
       ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
-      String body = responseMapper.toJson(createNewResponseWriteContext(template.getResponseObject(), data, inputParams,
-          createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
+      String body = jsonResponseMapper.toResponse(createNewResponseWriteContext(template.getResponseObject(), data,
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 
       ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
-          .contentType(MediaType.parseMediaType(template.getMediaType()));
+          .contentType(template.getMediaType());
       responseHeaders.forEach(bodyBuilder::header);
 
       return bodyBuilder.body(fromPublisher(Mono.just(body), String.class))
@@ -270,24 +275,19 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     List<MediaType> supportedMediaTypes = responseTemplates.stream()
         .filter(response -> response.isApplicable(200, 299))
-        .map(response -> MediaType.valueOf(response.getMediaType()))
+        .map(ResponseTemplate::getMediaType)
         .collect(Collectors.toList());
 
     CoreRequestHelper.validateResponseMediaTypesAreConfigured(supportedMediaTypes);
 
-    MediaType responseContentType;
-    if (isAcceptHeaderProvided(acceptHeaders)) {
-      responseContentType = getResponseContentType(acceptHeaders, supportedMediaTypes);
+    MediaType responseContentType =
+        isAcceptHeaderProvided(acceptHeaders) ? getResponseContentType(acceptHeaders, supportedMediaTypes)
+            : getDefaultResponseType(responseTemplates, supportedMediaTypes);
 
-    } else {
-      responseContentType = getDefaultResponseType(responseTemplates, supportedMediaTypes);
-    }
-
-    final String responseMediaType = responseContentType.toString();
     return responseTemplates.stream()
         .filter(response -> response.isApplicable(200, 299))
         .filter(response -> response.getMediaType()
-            .equals(responseMediaType))
+            .equals(responseContentType))
         .findFirst()
         .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
   }
@@ -365,10 +365,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Mono<ServerResponse> getMonoError(String message, HttpStatus statusCode) {
-    return Mono.error(new ResponseStatusException(statusCode, message));
-  }
-
   private String buildQueryString(Map<String, Object> inputParams) {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
@@ -379,7 +375,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .filter(ResponseTemplate::isDefault)
         .findFirst()
         .map(ResponseTemplate::getMediaType)
-        .map(MediaType::valueOf)
         .orElse(supportedMediaTypes.get(0));
   }
 
