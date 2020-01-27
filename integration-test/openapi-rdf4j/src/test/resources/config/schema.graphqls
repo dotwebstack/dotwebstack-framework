@@ -26,7 +26,7 @@ type Query {
 
 type Brewery {
   identifier: ID!
-  subject: String! @resource
+  subject: IRI! @resource
   name: String!
   founded: String
   address: Address
@@ -36,7 +36,7 @@ type Brewery {
 }
 
 type Address {
-  subject: String! @resource
+  subject: IRI! @resource
   postalCode: String
   streetAddress: String!
 }
