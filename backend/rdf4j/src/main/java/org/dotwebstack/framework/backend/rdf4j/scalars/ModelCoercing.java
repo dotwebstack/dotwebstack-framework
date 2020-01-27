@@ -1,14 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.scalars;
 
 import graphql.schema.Coercing;
-import graphql.schema.CoercingParseLiteralException;
 import graphql.schema.CoercingParseValueException;
-import graphql.schema.CoercingSerializeException;
 import org.eclipse.rdf4j.model.Model;
 
 public class ModelCoercing implements Coercing<String, String> {
   @Override
-  public String serialize(Object model) throws CoercingSerializeException {
+  public String serialize(Object model) {
     if (model instanceof Model) {
       return model.toString();
     }
@@ -16,16 +14,16 @@ public class ModelCoercing implements Coercing<String, String> {
   }
 
   @Override
-  public String parseValue(Object model) throws CoercingParseValueException {
-    if (model instanceof Model) {
-      return model.toString();
-    }
-    throw new CoercingParseValueException(String.format("Unable to parse Model from '%s' type.", model.getClass()
-        .getName()));
+  public String parseValue(Object model) {
+    return parseModel(model);
   }
 
   @Override
-  public String parseLiteral(Object model) throws CoercingParseLiteralException {
+  public String parseLiteral(Object model) {
+    return parseModel(model);
+  }
+
+  private String parseModel(Object model) {
     if (model instanceof Model) {
       return model.toString();
     }

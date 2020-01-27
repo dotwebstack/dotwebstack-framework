@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.scalars;
 
+import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLScalarType;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class Rdf4jScalars {
 
@@ -18,12 +17,7 @@ public final class Rdf4jScalars {
       .coercing(new ModelCoercing())
       .build();
 
-  public static final List<GraphQLScalarType> SCALARS = new ArrayList<>() {
-    {
-      add(IRI);
-      add(MODEL);
-    }
-  };
+  public static final ImmutableList<GraphQLScalarType> SCALARS = ImmutableList.of(MODEL, IRI);
 
   private Rdf4jScalars() {}
 
