@@ -72,9 +72,9 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+                              ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+                              ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
+                              OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -149,7 +149,7 @@ public class OpenApiConfiguration {
   }
 
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
-      RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
+                                                             RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
     RequestBodyContext requestBodyContext =
         requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
             .getRequestBody());
@@ -161,7 +161,7 @@ public class OpenApiConfiguration {
     ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responseTemplates,
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList(),
+            .getParameters() : Collections.emptyList(),
         DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()), requestBodyContext);
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
@@ -172,6 +172,14 @@ public class OpenApiConfiguration {
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
             graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
     coreRequestHandler.validateSchema();
+
+//    for (ResponseTemplate responseTemplate : responseTemplates) {
+//      HttpStatus httpStatus = HttpStatus.valueOf(responseTemplate.getResponseCode());
+//      if (httpStatus.series() != HttpStatus.Series.REDIRECTION) {
+//        coreRequestHandler.validateSchema();
+//      }
+//    }
+
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }
 
