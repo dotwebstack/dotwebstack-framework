@@ -36,7 +36,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JsonResponseMapper implements responseMapper<Object> {
+public class JsonResponseMapper implements ResponseMapper {
 
   private final ObjectMapper objectMapper;
 
@@ -54,7 +54,21 @@ public class JsonResponseMapper implements responseMapper<Object> {
     this.typeConverterRouter = typeConverterRouter;
   }
 
-  private String toJson(@NonNull ResponseWriteContext writeContext) throws JsonProcessingException {
+  @Override
+  public boolean accept(MediaType mediaType) {
+    return MediaType.APPLICATION_JSON.equals(mediaType);
+  }
+
+  @Override
+  public String toResponse(@NonNull ResponseWriteContext responseWriteContext) throws ResponseMapperException {
+    try {
+      return toJson(responseWriteContext);
+    } catch (JsonProcessingException jpe) {
+      throw new ResponseMapperException("An exception occurred when serializing to JSON ", jpe);
+    }
+  }
+
+  private String toJson(ResponseWriteContext writeContext) throws JsonProcessingException {
     Object response = mapDataToResponse(writeContext, "");
     if (Objects.isNull(response)) {
       throw noResultFoundException("Did not find data for your response.");
@@ -298,23 +312,5 @@ public class JsonResponseMapper implements responseMapper<Object> {
       return getPathString(path, responseObject);
     }
     return path;
-  }
-
-  @Override
-  public boolean accept(MediaType mediaType) {
-    return MediaType.APPLICATION_JSON.equals(mediaType);
-  }
-
-  @Override
-  public String toResponse(Object input) throws ResponseMapperException {
-    try {
-      if (input instanceof ResponseWriteContext) {
-        return toJson((ResponseWriteContext) input);
-      } else {
-        return toJson(input);
-      }
-    } catch (JsonProcessingException jpe) {
-      throw new ResponseMapperException("An exception occurred when serializing to JSON ", jpe);
-    }
   }
 }

@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
@@ -23,7 +24,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
+import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -66,6 +67,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContextValidat
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -96,7 +98,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final GraphQL graphQL;
 
-  private final JsonResponseMapper jsonResponseMapper;
+  private final List<ResponseMapper> responseMappers;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
@@ -109,14 +111,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-      ResponseContextValidator responseContextValidator, GraphQL graphQL, JsonResponseMapper jsonResponseMapper,
+      ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
       EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
-    this.jsonResponseMapper = jsonResponseMapper;
+    this.responseMappers = responseMappers;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
@@ -223,8 +225,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  ServerResponse getResponse(ServerRequest request) throws NoResultFoundException, JsonProcessingException,
-      GraphQlErrorException, BadRequestException, NotAcceptableException {
+  ServerResponse getResponse(ServerRequest request)
+      throws NoResultFoundException, GraphQlErrorException, BadRequestException, NotAcceptableException {
     MDC.put(MDC_REQUEST_ID, UUID.randomUUID()
         .toString());
     Map<String, Object> inputParams = resolveParameters(request);
@@ -254,8 +256,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .accept();
       ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
-      String body = jsonResponseMapper.toResponse(createNewResponseWriteContext(template.getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
+      ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+      String body = getResponseMapper(template.getMediaType()).toResponse(responseWriteContext);
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 
@@ -268,6 +271,19 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private ResponseMapper getResponseMapper(MediaType mediaType) {
+    Optional<ResponseMapper> responseMapper = responseMappers.stream()
+        .filter(rm -> rm.accept(mediaType))
+        .reduce((element, otherElement) -> {
+          throw mappingException("Duplicate response mapper found for media type '{}'.", mediaType);
+        });
+    if (responseMapper.isPresent()) {
+      return responseMapper.get();
+    } else {
+      throw mappingException("No response mapper found for media type '{}'.", mediaType);
+    }
   }
 
   ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) throws NotAcceptableException {

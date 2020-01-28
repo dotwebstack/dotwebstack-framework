@@ -142,8 +142,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithEnvelopeObjectValue()
-      throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forResponseWithEnvelopeObjectValue() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
@@ -353,8 +352,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNull_forRequiredNullableEmptyArray()
-      throws NoResultFoundException, JsonProcessingException {
+  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
