@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import graphql.Scalars;
 import graphql.language.NonNullType;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
@@ -66,6 +67,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
         .equals(type))) {
       throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName,
           type);
+    }
   }
 
   private void validateOnlyRequired(String typeName, String fieldName, GraphQLFieldDefinition argument) {
