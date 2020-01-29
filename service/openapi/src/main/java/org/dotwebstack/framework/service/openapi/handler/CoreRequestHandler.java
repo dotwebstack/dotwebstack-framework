@@ -37,7 +37,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -88,7 +87,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String ENVIRONMENT_PREFIX = "env.";
 
-  public static final String MDC_REQUEST_ID = "requestId";
+  private static final String MDC_REQUEST_ID = "requestId";
 
   private OpenAPI openApi;
 
@@ -225,8 +224,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  ServerResponse getResponse(ServerRequest request)
-      throws NoResultFoundException, GraphQlErrorException, BadRequestException, NotAcceptableException {
+  ServerResponse getResponse(ServerRequest request) throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, UUID.randomUUID()
         .toString());
     Map<String, Object> inputParams = resolveParameters(request);
@@ -274,19 +272,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private ResponseMapper getResponseMapper(MediaType mediaType) {
-    Optional<ResponseMapper> responseMapper = responseMappers.stream()
+    return responseMappers.stream()
         .filter(rm -> rm.accept(mediaType))
         .reduce((element, otherElement) -> {
           throw mappingException("Duplicate response mapper found for media type '{}'.", mediaType);
-        });
-    if (responseMapper.isPresent()) {
-      return responseMapper.get();
-    } else {
-      throw mappingException("No response mapper found for media type '{}'.", mediaType);
-    }
+        })
+        .orElseThrow(() -> mappingException("No response mapper found for media type '{}'.", mediaType));
   }
 
-  ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) throws NotAcceptableException {
+  ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) {
     List<ResponseTemplate> responseTemplates = responseSchemaContext.getResponses();
 
     List<MediaType> supportedMediaTypes = responseTemplates.stream()
