@@ -103,9 +103,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-                            ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-                            ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
-                            EnvironmentProperties properties) {
+      ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
+      EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -148,9 +148,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
                 HttpStatus.BAD_REQUEST));
   }
 
-
-  //Hier nog iets aanpassen denk ik ivm range
-  //range
   public void validateSchema() {
     GraphQlField field = responseSchemaContext.getGraphQlField();
     if (responseSchemaContext.getResponses()
@@ -211,8 +208,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
             .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
-            parameter.getExtensions()
-                .get(X_DWS_TYPE)))
+                parameter.getExtensions()
+                    .get(X_DWS_TYPE)))
         .count() > 1) {
       throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
     }
@@ -226,6 +223,17 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       JsonProcessingException, GraphQlErrorException, BadRequestException, NotAcceptableException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
+
+    HttpStatus httpStatus = getHttpStatus();
+
+    if (httpStatus.is3xxRedirection()) {
+      URI location = getLocationHeaderUri();
+
+      return ServerResponse.status(httpStatus)
+          .location(location)
+          .build()
+          .block();
+    }
 
     String query = buildQueryString(inputParams);
 
@@ -266,6 +274,27 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private HttpStatus getHttpStatus() {
+    return responseSchemaContext.getResponses()
+        .stream()
+        .map(ResponseTemplate::getResponseCode)
+        .map(HttpStatus::valueOf)
+        .filter(httpStatus1 -> httpStatus1.is2xxSuccessful() || httpStatus1.is3xxRedirection())
+        .findFirst()
+        .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
+  }
+
+  private URI getLocationHeaderUri() {
+    return URI.create(responseSchemaContext.getResponses()
+        .stream()
+        .filter(response -> response.isApplicable(300, 399))
+        .findFirst()
+        .orElseThrow()
+        .getResponseHeaders()
+        .get("Location")
+        .getJexlExpression());
   }
 
   ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) throws NotAcceptableException {
@@ -354,7 +383,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-                                                    String pathName) {
+      String pathName) {
     if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName()))) {

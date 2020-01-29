@@ -25,7 +25,7 @@ public class ResponseContextValidator {
   }
 
   private void validate(ResponseObject responseObject, GraphQlField field, Set<String> validatedReferences,
-                        List<ResponseObject> parents, boolean isArrayRoot) {
+      List<ResponseObject> parents, boolean isArrayRoot) {
     String graphQlType = field.getType();
     SchemaSummary summary = responseObject.getSummary();
     String oasType = summary.getType();
@@ -40,7 +40,7 @@ public class ResponseContextValidator {
           if (item.getSummary()
               .isEnvelope()
               || !Objects.isNull(item.getSummary()
-              .getDwsExpr())) {
+                  .getDwsExpr())) {
             validate(item, field, validatedReferences, copy, isArrayRoot);
           } else {
             validate(item, getChildFieldWithName(isArrayRoot, field, responseObject, copy), validatedReferences, copy,
@@ -58,7 +58,7 @@ public class ResponseContextValidator {
             .filter(child -> Objects.isNull(child.getSummary()
                 .getDwsExpr())
                 && !validatedReferences.contains(child.getSummary()
-                .getRef()))
+                    .getRef()))
             .forEach(child -> {
               SchemaSummary childSummary = child.getSummary();
 
@@ -83,7 +83,7 @@ public class ResponseContextValidator {
   }
 
   private GraphQlField getChildFieldWithName(boolean isRoot, GraphQlField field, ResponseObject responseObject,
-                                             List<ResponseObject> parents) {
+      List<ResponseObject> parents) {
     if (isRoot && Objects.equals(responseObject.getSummary()
         .getType(), ARRAY_TYPE)) {
       return field;

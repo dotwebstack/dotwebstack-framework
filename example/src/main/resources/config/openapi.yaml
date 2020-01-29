@@ -281,34 +281,16 @@ paths:
     get:
       x-dws-query: brewery
       parameters:
-        - name: expand
-          x-dws-type: expand
-          in: query
-          schema:
-            type: array
-            default: ['beers']
-            items:
-              type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
         - name: identifier
           in: path
           required: true
           schema:
             type: string
-      #      responses:
-      #        300:
-      #          description: "300 response"
-      #          content:
-      #            application/hal+json:
-      #              schema:
-      #                $ref: '#/components/schemas/BreweryCollection'
       responses:
-        300:
+        303:
           description: "300 response"
           headers:
             Location:
               schema:
-                type: String
-                x-dws-expr: '`v1`'
-
-
+                type: string
+                x-dws-expr: 'https://www.google.nl'
