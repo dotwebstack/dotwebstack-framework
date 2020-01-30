@@ -3,17 +3,17 @@ package org.dotwebstack.framework.backend.rdf4j.mapping;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.springframework.util.MimeType;
 
-public class Notation3ResponseMapper extends BaseResponseMapper {
+public class JsonLdResponseMapper extends BaseResponseMapper {
 
-  static final MimeType N3_MEDIA_TYPE = MimeType.valueOf("text/n3");
+  static final MimeType JSON_LD_MEDIA_TYPE = MimeType.valueOf("application/ld+json");
 
   @Override
   MimeType supportedMimeType() {
-    return N3_MEDIA_TYPE;
+    return JSON_LD_MEDIA_TYPE;
   }
 
   @Override
   RDFFormat rdfFormat() {
-    return RDFFormat.N3;
+    return RDFFormat.JSONLD;
   }
 }
