@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -40,6 +41,7 @@ import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -179,7 +181,7 @@ public class CoreRequestHandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void getResponseTest()
+  public void getOkResponseTest()
       throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
@@ -210,6 +212,41 @@ public class CoreRequestHandlerTest {
     // Assert
     serverResponse.statusCode()
         .is2xxSuccessful();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getRedirectResponseTest() throws Exception {
+    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    ServerRequest request = mock(ServerRequest.class);
+    when(request.queryParams()).thenReturn(queryParams);
+
+    Map<Object, Object> data = new HashMap<>();
+    data.put("data", "{\"key\" : \"value\" }");
+
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    HttpHeaders asHeaders = mock(HttpHeaders.class);
+    when(headers.asHttpHeaders()).thenReturn(asHeaders);
+    when(request.headers()).thenReturn(headers);
+
+    Mono<String> mono = mock(Mono.class);
+    when(request.bodyToMono(String.class)).thenReturn(mono);
+    when(mono.block()).thenReturn(null);
+
+    ExecutionResult executionResult = mock(ExecutionResult.class);
+    when(executionResult.getErrors()).thenReturn(new ArrayList<>());
+    when(executionResult.getData()).thenReturn(data);
+
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
+    when(responseSchemaContext.getResponses()).thenReturn(getRedirectResponseTemplate());
+    when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+    ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
+        .toString(), request);
+
+    // Assert
+    assertTrue(serverResponse.statusCode()
+        .is3xxRedirection());
+
   }
 
   @Test
@@ -385,11 +422,38 @@ public class CoreRequestHandlerTest {
     return responseTemplates;
   }
 
+  private List<ResponseTemplate> getRedirectResponseTemplate() {
+    List<ResponseTemplate> responseTemplates = new ArrayList<>();
+
+    ResponseHeader responseHeader = ResponseHeader.builder()
+        .name("Location")
+        .type("string")
+        .jexlExpression("www.kadaster.nl")
+        .defaultValue("")
+        .build();
+
+    Map<String, ResponseHeader> responseHeaders = new HashMap<>();
+    responseHeaders.put("Location", responseHeader);
+
+    responseTemplates.add(ResponseTemplate.builder()
+        .mediaType("application/json")
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
+        .responseCode(303)
+        .responseHeaders(responseHeaders)
+        .build());
+
+    return responseTemplates;
+  }
+
   private SchemaSummary schemaSummaryBuilder() {
     return SchemaSummary.builder()
         .isEnvelope(false)
         .required(false)
         .build();
   }
+
+
 
 }
