@@ -178,6 +178,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
             getStringValue(argument.getDefaultValue())));
 
+    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
     return getJexlResults(jexlContext, responseHeaders);
@@ -188,7 +190,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     this.properties.getAllProperties()
         .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
-    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     return jexlContext;
   }
 
@@ -300,7 +301,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams) {
     JexlContext jexlContext = getBaseJexlContext(inputParams);
-
+    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
         .map(ResponseTemplate::getResponseHeaders)
