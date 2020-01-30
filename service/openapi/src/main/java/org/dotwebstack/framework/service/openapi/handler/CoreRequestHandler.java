@@ -46,6 +46,7 @@ import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -55,7 +56,6 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -248,15 +248,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .iterator()
           .next();
 
-      URI uri = request.uri();
-
       List<MediaType> acceptHeaders = request.headers()
           .accept();
       ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
+      URI uri = request.uri();
+
       ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
-      String body = getResponseMapper(template.getMediaType()).toResponse(responseWriteContext);
+      String body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(responseWriteContext);
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 
@@ -271,13 +271,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  private ResponseMapper getResponseMapper(MediaType mediaType) {
+  private ResponseMapper getResponseMapper(MediaType mediaType, Class dataObjectType) {
     return responseMappers.stream()
-        .filter(rm -> rm.accept(mediaType))
+        .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
+        .filter(rm -> rm.supportsOutputMimeType(mediaType))
         .reduce((element, otherElement) -> {
-          throw mappingException("Duplicate response mapper found for media type '{}'.", mediaType);
+          throw mappingException(
+              "Duplicate response mapper found for input data object type '{}' and output media type '{}'.",
+              dataObjectType, mediaType);
         })
-        .orElseThrow(() -> mappingException("No response mapper found for media type '{}'.", mediaType));
+        .orElseThrow(() -> mappingException(
+            "No response mapper found for input data object type '{}' and output media type '{}'.", dataObjectType,
+            mediaType));
   }
 
   ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) {

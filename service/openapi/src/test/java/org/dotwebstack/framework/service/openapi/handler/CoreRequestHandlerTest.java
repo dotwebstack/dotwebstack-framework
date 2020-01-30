@@ -206,7 +206,8 @@ class CoreRequestHandlerTest {
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
-    when(jsonResponseMapper.accept(eq(MediaType.APPLICATION_JSON))).thenReturn(true);
+    when(jsonResponseMapper.supportsInputObjectClass(eq(String.class))).thenReturn(true);
+    when(jsonResponseMapper.supportsOutputMimeType(eq(MediaType.APPLICATION_JSON))).thenReturn(true);
     ServerResponse serverResponse = coreRequestHandler.getResponse(request);
 
     // Assert
