@@ -2,12 +2,12 @@ package org.dotwebstack.framework.core.mapping;
 
 import org.springframework.util.MimeType;
 
-public interface ResponseMapper<T> {
+public interface ResponseMapper {
 
   boolean supportsOutputMimeType(MimeType mimeType);
 
-  boolean supportsInputObjectClass(Class clazz);
+  boolean supportsInputObjectClass(Class<?> clazz);
 
-  String toResponse(T input);
+  String toResponse(Object input);
 
 }

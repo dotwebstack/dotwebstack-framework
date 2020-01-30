@@ -256,6 +256,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+
       String body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(responseWriteContext);
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
@@ -271,7 +272,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
-  private ResponseMapper getResponseMapper(MediaType mediaType, Class dataObjectType) {
+  private ResponseMapper getResponseMapper(MediaType mediaType, Class<?> dataObjectType) {
     return responseMappers.stream()
         .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
         .filter(rm -> rm.supportsOutputMimeType(mediaType))

@@ -25,7 +25,7 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithInputObjectClass")
-  void shouldSupportsInputObjectClass(ResponseMapper<Model> responseMapper, Class<?> inputObjectClass) {
+  void shouldSupportsInputObjectClass(ResponseMapper responseMapper, Class<?> inputObjectClass) {
     boolean actualResult = responseMapper.supportsInputObjectClass(inputObjectClass);
 
     assertThat(actualResult, is(true));
@@ -40,7 +40,7 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithOutputMimeType")
-  void shouldSupportsOutputMimeType(ResponseMapper<Model> responseMapper, MimeType outputMimeType) {
+  void shouldSupportsOutputMimeType(ResponseMapper responseMapper, MimeType outputMimeType) {
     boolean actualResult = responseMapper.supportsOutputMimeType(outputMimeType);
 
     assertThat(actualResult, is(true));
@@ -57,7 +57,7 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithExpectedResultFileName")
-  void shouldMapModelTo(ResponseMapper<Model> responseMapper, String expectedResultFileName) throws IOException {
+  void shouldMapModelTo(ResponseMapper responseMapper, String expectedResultFileName) throws IOException {
     InputStream is = getFileInputStream("input-response-mapper.trig");
     Model model =
         Rio.parse(is, "", RDFFormat.TRIG, new ParserConfig(), SimpleValueFactory.getInstance(), new ParseErrorLogger());

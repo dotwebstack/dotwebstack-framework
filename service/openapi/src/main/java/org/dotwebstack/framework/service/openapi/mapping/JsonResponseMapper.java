@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.MimeType;
 
 @Component
-public class JsonResponseMapper implements ResponseMapper<ResponseWriteContext> {
+public class JsonResponseMapper implements ResponseMapper {
 
   private final ObjectMapper objectMapper;
 
@@ -62,16 +62,20 @@ public class JsonResponseMapper implements ResponseMapper<ResponseWriteContext> 
   }
 
   @Override
-  public boolean supportsInputObjectClass(Class clazz) {
+  public boolean supportsInputObjectClass(Class<?> clazz) {
     return String.class == clazz;
   }
 
   @Override
-  public String toResponse(@NonNull ResponseWriteContext responseWriteContext) {
-    try {
-      return toJson(responseWriteContext);
-    } catch (JsonProcessingException jpe) {
-      throw new ResponseMapperException("An exception occurred when serializing to JSON ", jpe);
+  public String toResponse(@NonNull Object input) {
+    if (input instanceof ResponseWriteContext) {
+      try {
+        return toJson((ResponseWriteContext) input);
+      } catch (JsonProcessingException jpe) {
+        throw new ResponseMapperException("An exception occurred when serializing to JSON ", jpe);
+      }
+    } else {
+      throw new IllegalArgumentException("Input can only be of the type ResponseWriteContext.");
     }
   }
 

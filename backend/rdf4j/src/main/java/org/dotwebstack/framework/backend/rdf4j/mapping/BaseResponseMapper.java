@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.util.MimeType;
 
-public abstract class BaseResponseMapper implements ResponseMapper<Model> {
+public abstract class BaseResponseMapper implements ResponseMapper {
 
   abstract MimeType supportedMimeType();
 
@@ -19,14 +19,18 @@ public abstract class BaseResponseMapper implements ResponseMapper<Model> {
   }
 
   @Override
-  public boolean supportsInputObjectClass(Class clazz) {
+  public boolean supportsInputObjectClass(Class<?> clazz) {
     return Model.class == clazz;
   }
 
   @Override
-  public String toResponse(Model model) {
-    StringWriter sw = new StringWriter();
-    Rio.write(model, sw, rdfFormat());
-    return sw.toString();
+  public String toResponse(Object input) {
+    if (input instanceof Model) {
+      StringWriter sw = new StringWriter();
+      Rio.write((Model) input, sw, rdfFormat());
+      return sw.toString();
+    } else {
+      throw new IllegalArgumentException("Input can only be of the type Model.");
+    }
   }
 }
