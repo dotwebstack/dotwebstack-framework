@@ -4,13 +4,13 @@ import graphql.schema.Coercing;
 import graphql.schema.CoercingParseValueException;
 import org.eclipse.rdf4j.model.Model;
 
-public class ModelCoercing implements Coercing<Model, String> {
+public class ModelCoercing implements Coercing<Model, Model> {
   @Override
-  public String serialize(Object model) {
+  public Model serialize(Object model) {
     if (model instanceof Model) {
-      return model.toString();
+      return (Model) model;
     }
-    throw new UnsupportedOperationException();
+    throw new IllegalArgumentException("Only supports RDF4j Model");
   }
 
   @Override

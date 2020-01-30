@@ -56,6 +56,7 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -944,10 +945,10 @@ class Rdf4jModuleTest {
     // Assert
     assertThat(result.getErrors(), hasSize(0));
 
-    String subjects = result.<Map<String, String>>getData()
+    Model model = result.<Map<String, Model>>getData()
         .get("breweriesModel");
 
-    assertThat(subjects, containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
   }
 
   @Test

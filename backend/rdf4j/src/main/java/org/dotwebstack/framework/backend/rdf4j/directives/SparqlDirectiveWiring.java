@@ -17,8 +17,8 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
-import org.dotwebstack.framework.backend.rdf4j.query.FixedQueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
+import org.dotwebstack.framework.backend.rdf4j.query.StaticQueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
@@ -71,15 +71,17 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
     GraphQLType outputType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
-    boolean outputIsModel = outputType.getName()
-        .equals(Rdf4jScalars.MODEL.getName());
+    validateOutputType(outputType);
 
-    if (!outputIsModel && !(outputType instanceof GraphQLObjectType)) {
-      throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
-    }
-
-    registerDataFetcher(environment, outputIsModel);
+    registerDataFetcher(environment);
     return fieldDefinition;
+  }
+
+  private void validateOutputType(GraphQLType outputType) {
+    if (!outputType.getName()
+        .equals(Rdf4jScalars.MODEL.getName()) && !(outputType instanceof GraphQLObjectType)) {
+      throw new IllegalArgumentException("Output types other than 'Model' or 'Object' are not yet supported.");
+    }
   }
 
   private RepositoryAdapter getRepositoryAdapter(String repositoryId) {
@@ -89,25 +91,27 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
         .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
   }
 
-  private void registerDataFetcher(@NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment,
-      boolean outputIsModel) {
+  private void registerDataFetcher(@NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLCodeRegistry.Builder codeRegistry = environment.getCodeRegistry();
 
     GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
-    GraphQLFieldDefinition element = environment.getElement();
+    GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
     RepositoryAdapter repositoryAdapter = getRepositoryAdapter(getRepositoryId(environment));
     List<QueryValidator> validators = getValidators(environment);
-    DataFetcher<?> queryFetcher = getDataFetcher(outputIsModel, repositoryAdapter, validators);
+    DataFetcher<?> queryFetcher = getDataFetcher(fieldDefinition, repositoryAdapter, validators);
 
-    codeRegistry.dataFetcher(fieldsContainer, element, queryFetcher);
+    codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, queryFetcher);
   }
 
-  private DataFetcher<?> getDataFetcher(boolean outputIsModel, RepositoryAdapter supportedAdapter,
+  private DataFetcher<?> getDataFetcher(GraphQLFieldDefinition fieldDefinition, RepositoryAdapter supportedAdapter,
       List<QueryValidator> validators) {
-    return outputIsModel ? new FixedQueryFetcher(supportedAdapter, validators)
-        : new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine, validators, coreTraverser,
-            selectVerticeFactory, constructVerticeFactory);
+    if (StaticQueryFetcher.supports(fieldDefinition)) {
+      return new StaticQueryFetcher(supportedAdapter, validators);
+    } else {
+      return new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine, validators, coreTraverser,
+          selectVerticeFactory, constructVerticeFactory);
+    }
   }
 
   private List<QueryValidator> getValidators(

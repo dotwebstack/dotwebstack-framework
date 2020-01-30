@@ -7,7 +7,6 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +23,7 @@ import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 
 @Slf4j
-public final class FixedQueryFetcher implements DataFetcher<Object> {
+public final class StaticQueryFetcher implements DataFetcher<Object> {
 
   private static final String GRAPH = "graph";
 
@@ -32,14 +31,13 @@ public final class FixedQueryFetcher implements DataFetcher<Object> {
 
   private final List<QueryValidator> validators;
 
-  public FixedQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators) {
+  public StaticQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators) {
     this.repositoryAdapter = repositoryAdapter;
     this.validators = validators;
   }
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
-    isSupported(environment.getFieldType());
 
     validators.forEach(validator -> validator.validate(environment));
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
@@ -57,12 +55,10 @@ public final class FixedQueryFetcher implements DataFetcher<Object> {
         .orElseGet(TreeModel::new);
   }
 
-  private void isSupported(GraphQLOutputType fieldType) {
-    if (!GraphQLTypeUtil.unwrapNonNull(fieldType)
-        .getName()
-        .equals(Rdf4jScalars.MODEL.getName())) {
-      throw new UnsupportedOperationException("Field output types other than Model aren't supported for fixed queries");
-    }
+  public static boolean supports(GraphQLFieldDefinition fieldDefinition) {
+    return Rdf4jScalars.MODEL.getName()
+        .equals(GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())
+            .getName());
   }
 
   private String getRepositoryId(GraphQLFieldDefinition fieldDefinition) {

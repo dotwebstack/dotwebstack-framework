@@ -29,7 +29,7 @@ class ModelCoercingTest {
   @Test
   void serialize_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> coercing.serialize(new Object()));
+    assertThrows(IllegalArgumentException.class, () -> coercing.serialize(new Object()));
   }
 
   @Test
