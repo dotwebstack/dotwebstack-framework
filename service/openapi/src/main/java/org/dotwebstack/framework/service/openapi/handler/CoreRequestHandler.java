@@ -27,13 +27,13 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
@@ -169,10 +169,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    JexlContext jexlContext = new MapContext();
-
-    this.properties.getAllProperties()
-        .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
+    JexlContext jexlContext = getBaseJexlContext(inputParams);
 
     this.responseSchemaContext.getGraphQlField()
         .getArguments()
@@ -180,28 +177,43 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
         .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
             getStringValue(argument.getDefaultValue())));
-    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
-    return responseHeaders.keySet()
-        .stream()
-        .collect(Collectors.toMap(Function.identity(), key -> {
-          ResponseHeader header = responseHeaders.get(key);
-          String jexlExpression = header.getJexlExpression();
+    return getJexlResults(jexlContext, responseHeaders);
+  }
 
-          try {
-            return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
-                .orElseThrow(() -> invalidConfigurationException(
-                    "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
-          } catch (JexlException e) {
-            if (e.getMessage()
-                .contains("undefined variable") && Objects.nonNull(header.getDefaultValue())) {
-              return header.getDefaultValue();
-            }
-            throw e;
-          }
-        }));
+  private JexlContext getBaseJexlContext(Map<String, Object> inputParams) {
+    JexlContext jexlContext = new MapContext();
+
+    this.properties.getAllProperties()
+        .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
+    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+    return jexlContext;
+  }
+
+  private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
+    Map<String, String> map = new HashMap<>();
+    for (String key : responseHeaders.keySet()) {
+      map.put(key, evaluateJexlExpression(jexlContext, key, responseHeaders));
+    }
+    return map;
+  }
+
+  private String evaluateJexlExpression(JexlContext jexlContext, String key, Map<String, ResponseHeader> headers) {
+    ResponseHeader header = headers.get(key);
+    String jexlExpression = header.getJexlExpression();
+    try {
+      return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
+          .orElseThrow(() -> invalidConfigurationException(
+              "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
+    } catch (JexlException e) {
+      if (e.getMessage()
+          .contains("undefined variable") && Objects.nonNull(header.getDefaultValue())) {
+        return header.getDefaultValue();
+      }
+      throw e;
+    }
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
@@ -227,7 +239,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     HttpStatus httpStatus = getHttpStatus();
 
     if (httpStatus.is3xxRedirection()) {
-      URI location = getLocationHeaderUri();
+      URI location = getLocationHeaderUri(inputParams);
 
       return ServerResponse.status(httpStatus)
           .location(location)
@@ -286,15 +298,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
   }
 
-  private URI getLocationHeaderUri() {
-    return URI.create(responseSchemaContext.getResponses()
+  private URI getLocationHeaderUri(Map<String, Object> inputParams) {
+    JexlContext jexlContext = getBaseJexlContext(inputParams);
+
+    Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
-        .filter(response -> response.isApplicable(300, 399))
-        .findFirst()
-        .orElseThrow()
-        .getResponseHeaders()
-        .get("Location")
-        .getJexlExpression());
+        .map(ResponseTemplate::getResponseHeaders)
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    String location = getJexlResults(jexlContext, responseHeaders).get("Location");
+    return URI.create(location);
   }
 
   ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) throws NotAcceptableException {

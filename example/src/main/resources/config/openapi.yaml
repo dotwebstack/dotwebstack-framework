@@ -293,4 +293,5 @@ paths:
             Location:
               schema:
                 type: string
-                x-dws-expr: 'https://www.google.nl'
+                x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
+
