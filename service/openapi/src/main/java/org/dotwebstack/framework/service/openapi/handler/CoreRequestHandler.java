@@ -341,7 +341,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
 
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
-          .getValue(request, requestBody, result)
+          .getValues(request, requestBodyContext, requestBody, result)
+          .forEach(result::put);
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     } else {
       validateRequestBodyNonexistent(request);

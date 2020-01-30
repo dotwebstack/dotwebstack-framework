@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
@@ -58,21 +60,20 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   }
 
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBody requestBody,
-      Map<String, Object> parameterMap) throws BadRequestException {
+  public Map<String, Object> getValues(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext, @NonNull RequestBody requestBody,
+                                       Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
 
     if (Objects.isNull(value) && Boolean.TRUE.equals(requestBody.getRequired())) {
       throw badRequestException("Request body required but not found.");
     } else if (Objects.isNull(value)) {
-      return Optional.empty();
+      return Collections.emptyMap();
     } else {
       validateContentType(request);
       try {
-        JsonNode node = objectMapper.reader()
-            .readTree(value);
-        return Optional.ofNullable(JsonNodeUtils.toObject(node));
+        JsonNode node = objectMapper.reader().readTree(value);
+        return (Objects.nonNull(node))?Map.of(requestBodyContext.getName(), JsonNodeUtils.toObject(node)):Collections.emptyMap();
       } catch (IOException e) {
         throw illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
       }

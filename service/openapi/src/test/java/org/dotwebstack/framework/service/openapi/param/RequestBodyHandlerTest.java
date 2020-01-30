@@ -139,7 +139,7 @@ public class RequestBodyHandlerTest {
 
     // Act
     Optional<Object> value =
-        this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null);
+        this.requestBodyHandler.getValues(serverRequest, requestBodyContext.getRequestBodySchema(), null);
 
     // Assert
     assertTrue(value.isPresent());
@@ -161,7 +161,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
+        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -171,7 +171,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(UnsupportedMediaTypeException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
+        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -181,7 +181,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(BadRequestException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
+        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -192,7 +192,7 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
     // Act
-    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null)
+    assertFalse(this.requestBodyHandler.getValues(serverRequest, requestBodyContext.getRequestBodySchema(), null)
         .isPresent());
   }
 
