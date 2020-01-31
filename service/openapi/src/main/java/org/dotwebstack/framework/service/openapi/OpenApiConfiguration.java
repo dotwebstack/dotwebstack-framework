@@ -28,6 +28,7 @@ import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
+import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
@@ -57,6 +58,8 @@ public class OpenApiConfiguration {
 
   private final List<ResponseMapper> responseMappers;
 
+  private final JsonResponseMapper jsonResponseMapper;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final ResponseContextValidator responseContextValidator;
@@ -72,13 +75,15 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      List<ResponseMapper> responseMappers, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
       OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
+    this.jsonResponseMapper = jsonResponseMapper;
     this.responseContextValidator = responseContextValidator;
     this.queryFieldHelper = QueryFieldHelper.builder()
         .typeDefinitionRegistry(typeDefinitionRegistry)
@@ -167,9 +172,9 @@ public class OpenApiConfiguration {
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
-    CoreRequestHandler coreRequestHandler =
-        new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
-            graphQl, responseMappers, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
+        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
+        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
     coreRequestHandler.validateSchema();
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }

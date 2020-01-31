@@ -26,19 +26,16 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
-import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MimeType;
 
 @Component
-public class JsonResponseMapper implements ResponseMapper {
+public class JsonResponseMapper {
 
   private final ObjectMapper objectMapper;
 
@@ -56,17 +53,6 @@ public class JsonResponseMapper implements ResponseMapper {
     this.typeConverterRouter = typeConverterRouter;
   }
 
-  @Override
-  public boolean supportsOutputMimeType(MimeType mimeType) {
-    return MediaType.APPLICATION_JSON.equals(mimeType);
-  }
-
-  @Override
-  public boolean supportsInputObjectClass(Class<?> clazz) {
-    return String.class == clazz;
-  }
-
-  @Override
   public String toResponse(@NonNull Object input) {
     if (input instanceof ResponseWriteContext) {
       try {

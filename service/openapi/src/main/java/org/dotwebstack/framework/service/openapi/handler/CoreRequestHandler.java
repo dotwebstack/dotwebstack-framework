@@ -56,6 +56,7 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
+import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -99,6 +100,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final List<ResponseMapper> responseMappers;
 
+  private final JsonResponseMapper jsonResponseMapper;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
@@ -111,13 +114,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
-      EnvironmentProperties properties) {
+      JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter,
+      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMappers = responseMappers;
+    this.jsonResponseMapper = jsonResponseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
@@ -257,7 +261,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
-      String body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(responseWriteContext);
+      String body;
+      if (responseWriteContext.hasSchema()) {
+        body = jsonResponseMapper.toResponse(responseWriteContext);
+
+      } else {
+        body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(responseWriteContext);
+      }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 

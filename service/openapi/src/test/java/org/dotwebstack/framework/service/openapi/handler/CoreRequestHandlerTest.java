@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -118,8 +117,8 @@ class CoreRequestHandlerTest {
     when(this.responseSchemaContext.getGraphQlField())
         .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
     coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
-        graphQl, Collections.singletonList(jsonResponseMapper), paramHandlerRouter, requestBodyHandlerRouter,
-        jexlHelper, environmentProperties));
+        graphQl, new ArrayList<>(), jsonResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
+        environmentProperties));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
@@ -206,8 +205,6 @@ class CoreRequestHandlerTest {
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
-    when(jsonResponseMapper.supportsInputObjectClass(eq(String.class))).thenReturn(true);
-    when(jsonResponseMapper.supportsOutputMimeType(eq(MediaType.APPLICATION_JSON))).thenReturn(true);
     ServerResponse serverResponse = coreRequestHandler.getResponse(request);
 
     // Assert
