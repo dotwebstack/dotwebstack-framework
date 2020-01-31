@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
-import graphql.Scalars;
 import graphql.language.NonNullType;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
@@ -52,10 +51,6 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
 
   private void validateOutputModel(String typeName, String fieldName, GraphQLType rawType) {
     validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.MODEL.getName());
-  }
-
-  private void validateOnlyOnString(String typeName, String fieldName, GraphQLType rawType) {
-    validateOnlyOnType(typeName, fieldName, rawType, Scalars.GraphQLString.getName());
   }
 
   private void validateOnlyOnIri(String typeName, String fieldName, GraphQLType rawType) {
