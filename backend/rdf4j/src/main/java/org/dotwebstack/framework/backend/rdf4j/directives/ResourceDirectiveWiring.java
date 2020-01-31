@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import graphql.language.NonNullType;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLType;
@@ -34,10 +35,33 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
     return element;
   }
 
+  @Override
+  public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
+    GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
+    GraphQLArgument element = environment.getElement();
+
+    String typeName = fieldsContainer.getName();
+    String fieldName = fieldDefinition.getName();
+    validateOnlyOnIri(typeName, fieldName, GraphQLTypeUtil.unwrapNonNull(element.getType()));
+    validateOutputModel(typeName, fieldName, GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+
+    return element;
+  }
+
+  private void validateOutputModel(String typeName, String fieldName, GraphQLType rawType) {
+    validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.MODEL.getName());
+  }
+
   private void validateOnlyOnIri(String typeName, String fieldName, GraphQLType rawType) {
+    validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.IRI.getName());
+  }
+
+  private void validateOnlyOnType(String typeName, String fieldName, GraphQLType rawType, String type) {
     if (!(rawType.getName()
-        .equals(Rdf4jScalars.IRI.getName()))) {
-      throw invalidConfigurationException("{}.{} should be of type IRI for @resource directive", typeName, fieldName);
+        .equals(type))) {
+      throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName,
+          type);
     }
   }
 

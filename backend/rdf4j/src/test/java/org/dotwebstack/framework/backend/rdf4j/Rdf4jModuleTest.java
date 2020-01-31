@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,6 +56,7 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -930,6 +932,23 @@ class Rdf4jModuleTest {
     assertThat(result.getErrors(), hasSize(0));
     assertThat(subjects, hasSize(1));
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
+  }
+
+  @Test
+  void graphQlQuery_returnsModel_FilterOnAddressSubjectNested() {
+    // Arrange
+    String query = "{ breweriesModel(subject: \"https://github.com/dotwebstack/beer/id/address/1\") }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("breweriesModel");
+
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
   }
 
   @Test
