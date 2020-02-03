@@ -35,7 +35,7 @@ public class ResponseMapperTest {
     return Stream.of(Arguments.of(new Notation3ResponseMapper(), Model.class),
         Arguments.of(new TurtleResponseMapper(), Model.class), Arguments.of(new RdfXmlResponseMapper(), Model.class),
         Arguments.of(new JsonLdResponseMapper(), Model.class), Arguments.of(new TrigResponseMapper(), Model.class),
-        Arguments.of(new NQuadsResponseMapper(), Model.class));
+        Arguments.of(new NQuadsResponseMapper(), Model.class), Arguments.of(new NTriplesResponseMapper(), Model.class));
   }
 
   @ParameterizedTest
@@ -52,7 +52,8 @@ public class ResponseMapperTest {
         Arguments.of(new RdfXmlResponseMapper(), RdfXmlResponseMapper.RDF_XML_MEDIA_TYPE),
         Arguments.of(new JsonLdResponseMapper(), JsonLdResponseMapper.JSON_LD_MEDIA_TYPE),
         Arguments.of(new TrigResponseMapper(), TrigResponseMapper.TRIG_MEDIA_TYPE),
-        Arguments.of(new NQuadsResponseMapper(), NQuadsResponseMapper.N_QUADS_MEDIA_TYPE));
+        Arguments.of(new NQuadsResponseMapper(), NQuadsResponseMapper.N_QUADS_MEDIA_TYPE),
+        Arguments.of(new NTriplesResponseMapper(), NTriplesResponseMapper.N_TRIPLES_MEDIA_TYPE));
   }
 
   @ParameterizedTest
@@ -74,7 +75,8 @@ public class ResponseMapperTest {
         Arguments.of(new RdfXmlResponseMapper(), "output-response-mapper-rdfxml.txt"),
         Arguments.of(new JsonLdResponseMapper(), "output-response-mapper-jsonld.txt"),
         Arguments.of(new TrigResponseMapper(), "output-response-mapper-trig.txt"),
-        Arguments.of(new NQuadsResponseMapper(), "output-response-mapper-nquads.txt"));
+        Arguments.of(new NQuadsResponseMapper(), "output-response-mapper-nquads.txt"),
+        Arguments.of(new NTriplesResponseMapper(), "output-response-mapper-ntriples.txt"));
   }
 
   private InputStream getFileInputStream(String filename) throws IOException {
