@@ -40,6 +40,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RequestPredicates;
@@ -175,7 +176,14 @@ public class OpenApiConfiguration {
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
         responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
         paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
-    coreRequestHandler.validateSchema();
+
+    responseTemplates.stream()
+        .map(ResponseTemplate::getResponseCode)
+        .map(HttpStatus::valueOf)
+        .filter(httpStatus -> !httpStatus.is3xxRedirection())
+        .findFirst()
+        .ifPresent(i -> coreRequestHandler.validateSchema());
+
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }
 

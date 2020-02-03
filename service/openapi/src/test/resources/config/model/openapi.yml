@@ -204,4 +204,3 @@ paths:
                 x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
-
