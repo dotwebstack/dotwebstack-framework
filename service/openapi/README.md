@@ -34,7 +34,7 @@ default_breweries : [Brewery!]!
 )
 ```
 
-Each operation response should have a reference to the return type using `content.<mediaType>.schema.$ref`. The following example specifies that the OK response (200) returns the `Breweries` type:
+Each OK operation response (2xx) should have a reference to the return type using `content.<mediaType>.schema.$ref`. The following example specifies that the OK response (200) returns the `Breweries` type:
 
 ```yaml
 responses:
@@ -46,7 +46,19 @@ responses:
         $ref: '#/components/schemas/Breweries'
 ```
 
-Currently, exactly one MediaType per response is supported and it should match `application/.*json`.
+A `Redirect` operation response (3xx) does not have a content but must have a `Location` header. The value of a the `Location` must be specified in the
+ in a `x-dws-expr` and should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. See [Response properties expression](#118-response-properties-expression) for more information over `x-dws-expr`.
+
+```yaml
+responses:
+    303:
+      description: REDIRECT
+      headers:
+        Location:
+          schema:
+            type: string
+            x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
+```
 
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
 
