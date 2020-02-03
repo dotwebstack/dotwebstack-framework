@@ -172,12 +172,11 @@ public class OpenApiConfiguration {
         new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
             graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
-    for (ResponseTemplate responseTemplate : responseTemplates) {
-      HttpStatus httpStatus = HttpStatus.valueOf(responseTemplate.getResponseCode());
-      if (!httpStatus.is3xxRedirection()) {
-        coreRequestHandler.validateSchema();
-      }
-    }
+    responseTemplates.stream()
+        .map(rt -> HttpStatus.valueOf(rt.getResponseCode()))
+        .filter(httpStatus -> !httpStatus.is3xxRedirection())
+        .findFirst()
+        .ifPresent(i -> coreRequestHandler.validateSchema());
 
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }

@@ -73,7 +73,7 @@ public class ResponseTemplateBuilder {
         .isDefault(true);
 
 
-    if (content == null) {
+    if (Objects.isNull(content)) {
       return Collections.singletonList(responseTemplateBuilder.build());
     }
 
@@ -121,7 +121,7 @@ public class ResponseTemplateBuilder {
   }
 
   private boolean isDefault(MediaType content, Map<String, Object> extensions) {
-    return extensions != null && (boolean) content.getExtensions()
+    return Objects.nonNull(extensions) && (boolean) content.getExtensions()
         .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
   }
 

@@ -204,16 +204,3 @@ paths:
                 x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
-#  /query7:
-#    get:
-#      x-dws-query: query7
-#      responses:
-#        303:
-#          description: "Redirect"
-#          headers:
-#            Location:
-#              schema:
-#                type: string
-#                x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
-
-

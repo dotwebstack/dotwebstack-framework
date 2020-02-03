@@ -152,7 +152,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     GraphQlField field = responseSchemaContext.getGraphQlField();
     if (responseSchemaContext.getResponses()
         .stream()
-        .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 399))) {
+        .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseSchemaContext.getParameters(), pathName);
@@ -164,12 +164,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     responseSchemaContext.getResponses()
         .stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 399))
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    JexlContext jexlContext = getBaseJexlContext(inputParams);
+    JexlContext jexlContext = getBaseJexlContext();
 
     this.responseSchemaContext.getGraphQlField()
         .getArguments()
@@ -185,7 +185,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return getJexlResults(jexlContext, responseHeaders);
   }
 
-  private JexlContext getBaseJexlContext(Map<String, Object> inputParams) {
+  private JexlContext getBaseJexlContext() {
     JexlContext jexlContext = new MapContext();
 
     this.properties.getAllProperties()
@@ -194,11 +194,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
-    Map<String, String> map = new HashMap<>();
-    for (String key : responseHeaders.keySet()) {
-      map.put(key, evaluateJexlExpression(jexlContext, key, responseHeaders));
-    }
-    return map;
+    return responseHeaders.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey,
+            entry -> evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders)));
   }
 
   private String evaluateJexlExpression(JexlContext jexlContext, String key, Map<String, ResponseHeader> headers) {
@@ -300,7 +299,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams) {
-    JexlContext jexlContext = getBaseJexlContext(inputParams);
+    JexlContext jexlContext = getBaseJexlContext();
     inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()

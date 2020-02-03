@@ -183,6 +183,7 @@ public class CoreRequestHandlerTest {
   @Test
   public void getOkResponseTest()
       throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
+    // Arrange
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
     when(request.queryParams()).thenReturn(queryParams);
@@ -195,9 +196,8 @@ public class CoreRequestHandlerTest {
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
 
-    Mono<String> mono = mock(Mono.class);
+    Mono<String> mono = Mono.empty();
     when(request.bodyToMono(String.class)).thenReturn(mono);
-    when(mono.block()).thenReturn(null);
 
     ExecutionResult executionResult = mock(ExecutionResult.class);
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
@@ -206,17 +206,20 @@ public class CoreRequestHandlerTest {
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+
+    // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
         .toString(), request);
 
     // Assert
-    serverResponse.statusCode()
-        .is2xxSuccessful();
+    assertTrue(serverResponse.statusCode()
+        .is2xxSuccessful());
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void getRedirectResponseTest() throws Exception {
+    // Arrange
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
     when(request.queryParams()).thenReturn(queryParams);
@@ -229,9 +232,8 @@ public class CoreRequestHandlerTest {
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
 
-    Mono<String> mono = mock(Mono.class);
+    Mono<String> mono = Mono.empty();
     when(request.bodyToMono(String.class)).thenReturn(mono);
-    when(mono.block()).thenReturn(null);
 
     ExecutionResult executionResult = mock(ExecutionResult.class);
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
@@ -240,13 +242,14 @@ public class CoreRequestHandlerTest {
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getRedirectResponseTemplate());
     when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+
+    // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
         .toString(), request);
 
     // Assert
     assertTrue(serverResponse.statusCode()
         .is3xxRedirection());
-
   }
 
   @Test
