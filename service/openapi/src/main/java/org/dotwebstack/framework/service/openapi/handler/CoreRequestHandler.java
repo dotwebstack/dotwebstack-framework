@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
@@ -306,23 +307,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private HttpStatus getHttpStatus() {
     return responseSchemaContext.getResponses()
-            .stream()
-            .map(ResponseTemplate::getResponseCode)
-            .map(HttpStatus::valueOf)
-            .filter(httpStatus1 -> httpStatus1.is2xxSuccessful() || httpStatus1.is3xxRedirection())
-            .findFirst()
-            .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
+        .stream()
+        .map(ResponseTemplate::getResponseCode)
+        .map(HttpStatus::valueOf)
+        .filter(httpStatus1 -> httpStatus1.is2xxSuccessful() || httpStatus1.is3xxRedirection())
+        .findFirst()
+        .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
   }
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams) {
     JexlContext jexlContext = getBaseJexlContext();
     inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
-            .stream()
-            .map(ResponseTemplate::getResponseHeaders)
-            .map(Map::entrySet)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .stream()
+        .map(ResponseTemplate::getResponseHeaders)
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     String location = getJexlResults(jexlContext, responseHeaders).get("Location");
     return URI.create(location);
@@ -330,16 +331,16 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private ResponseMapper getResponseMapper(MediaType mediaType, Class<?> dataObjectType) {
     return responseMappers.stream()
-            .filter(rm -> rm.supportsOutputMimeType(mediaType))
-            .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
-            .reduce((element, otherElement) -> {
-              throw mappingException(
-                      "Duplicate response mapper found for input data object type '{}' and output media type '{}'.",
-                      dataObjectType, mediaType);
-            })
-            .orElseThrow(() -> mappingException(
-                    "No response mapper found for input data object type '{}' and output media type '{}'.", dataObjectType,
-                    mediaType));
+        .filter(rm -> rm.supportsOutputMimeType(mediaType))
+        .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
+        .reduce((element, otherElement) -> {
+          throw mappingException(
+              "Duplicate response mapper found for input data object type '{}' and output media type '{}'.",
+              dataObjectType, mediaType);
+        })
+        .orElseThrow(() -> mappingException(
+            "No response mapper found for input data object type '{}' and output media type '{}'.", dataObjectType,
+            mediaType));
   }
 
   ResponseTemplate getResponseTemplate(List<MediaType> acceptHeaders) {

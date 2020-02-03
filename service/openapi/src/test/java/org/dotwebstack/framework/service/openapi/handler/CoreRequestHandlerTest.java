@@ -241,11 +241,10 @@ class CoreRequestHandlerTest {
 
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getRedirectResponseTemplate());
-    when(responseMapper.toJson(any(ResponseWriteContext.class))).thenReturn("{}");
+    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
 
     // Act
-    ServerResponse serverResponse = coreRequestHandler.getResponse(UUID.randomUUID()
-        .toString(), request);
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request);
 
     // Assert
     assertTrue(serverResponse.statusCode()
@@ -413,23 +412,23 @@ class CoreRequestHandlerTest {
     List<ResponseTemplate> responseTemplates = new ArrayList<>();
 
     ResponseHeader responseHeader = ResponseHeader.builder()
-            .name("Location")
-            .type("string")
-            .jexlExpression("www.kadaster.nl")
-            .defaultValue("")
-            .build();
+        .name("Location")
+        .type("string")
+        .jexlExpression("www.kadaster.nl")
+        .defaultValue("")
+        .build();
 
     Map<String, ResponseHeader> responseHeaders = new HashMap<>();
     responseHeaders.put("Location", responseHeader);
 
     responseTemplates.add(ResponseTemplate.builder()
-            .mediaType("application/json")
-            .responseObject(ResponseObject.builder()
-                    .summary(schemaSummaryBuilder())
-                    .build())
-            .responseCode(303)
-            .responseHeaders(responseHeaders)
-            .build());
+        .mediaType(MediaType.APPLICATION_JSON)
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
+        .responseCode(303)
+        .responseHeaders(responseHeaders)
+        .build());
 
     return responseTemplates;
   }

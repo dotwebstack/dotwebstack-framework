@@ -174,14 +174,14 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
-            responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
-            paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
+        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()
-            .map(rt -> HttpStatus.valueOf(rt.getResponseCode()))
-            .filter(httpStatus -> !httpStatus.is3xxRedirection())
-            .findFirst()
-            .ifPresent(i -> coreRequestHandler.validateSchema());
+        .map(rt -> HttpStatus.valueOf(rt.getResponseCode()))
+        .filter(httpStatus -> !httpStatus.is3xxRedirection())
+        .findFirst()
+        .ifPresent(i -> coreRequestHandler.validateSchema());
 
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }

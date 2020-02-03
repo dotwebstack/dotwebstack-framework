@@ -32,7 +32,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
-import org.springframework.util.MimeType;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -83,7 +82,7 @@ public class ResponseTemplateBuilder {
         .map(entry -> {
           MediaType mediaType = entry.getValue();
 
-          return responseTemplateBuilder.mediaType(entry.getKey())
+          return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
               .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
               .isDefault(isDefault(mediaType, mediaType.getExtensions()))
               .build();
