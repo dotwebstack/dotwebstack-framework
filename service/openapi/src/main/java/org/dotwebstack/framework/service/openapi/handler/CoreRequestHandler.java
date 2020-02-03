@@ -135,7 +135,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(NotAcceptableException.class,
-            getMonoError(NOT_ACCEPTABLE, "Error while processing the request."))
+            getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
         .onErrorResume(ParameterValidationException.class,
             getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
         .onErrorResume(ResponseMapperException.class,
@@ -404,18 +404,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .orElse(supportedMediaTypes.get(0));
   }
 
-  private MediaType getResponseContentType(List<MediaType> acceptHeaders, List<MediaType> supportedMediaTypes) {
-    MediaType.sortByQualityValue(acceptHeaders);
+  private MediaType getResponseContentType(List<MediaType> requestedMediaTypes, List<MediaType> supportedMediaTypes) {
+    MediaType.sortByQualityValue(requestedMediaTypes);
 
-    for (MediaType acceptHeader : acceptHeaders) {
+    for (MediaType requestedMediaType : requestedMediaTypes) {
       for (MediaType supportedMediaType : supportedMediaTypes) {
-        if (acceptHeader.isCompatibleWith(supportedMediaType)) {
+        if (requestedMediaType.isCompatibleWith(supportedMediaType)) {
           return supportedMediaType;
         }
       }
     }
 
-    throw notAcceptableException("Unsupported Accept Header provided");
+    throw notAcceptableException("Unsupported media type provided");
   }
 
   private boolean isAcceptHeaderProvided(List<MediaType> acceptHeaders) {
