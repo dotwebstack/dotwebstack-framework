@@ -284,8 +284,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private ResponseMapper getResponseMapper(MediaType mediaType, Class<?> dataObjectType) {
     return responseMappers.stream()
-        .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
         .filter(rm -> rm.supportsOutputMimeType(mediaType))
+        .filter(rm -> rm.supportsInputObjectClass(dataObjectType))
         .reduce((element, otherElement) -> {
           throw mappingException(
               "Duplicate response mapper found for input data object type '{}' and output media type '{}'.",
