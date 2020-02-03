@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.mapping;
 
 import java.io.StringWriter;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -14,17 +15,17 @@ public abstract class BaseResponseMapper implements ResponseMapper {
   abstract RDFFormat rdfFormat();
 
   @Override
-  public boolean supportsOutputMimeType(MimeType mimeType) {
+  public boolean supportsOutputMimeType(@NonNull MimeType mimeType) {
     return supportedMimeType().equals(mimeType);
   }
 
   @Override
-  public boolean supportsInputObjectClass(Class<?> clazz) {
+  public boolean supportsInputObjectClass(@NonNull Class<?> clazz) {
     return Model.class == clazz;
   }
 
   @Override
-  public String toResponse(Object input) {
+  public String toResponse(@NonNull Object input) {
     if (input instanceof Model) {
       StringWriter sw = new StringWriter();
       Rio.write((Model) input, sw, rdfFormat());
