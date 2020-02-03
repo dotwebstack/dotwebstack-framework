@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.matcher;
 
+import lombok.NonNull;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -9,12 +10,8 @@ public class IsEqualIgnoringLineBreaks extends TypeSafeMatcher<String> {
 
   private final String string;
 
-  public IsEqualIgnoringLineBreaks(String string) {
-    if (string == null) {
-      throw new IllegalArgumentException("Non-null value required by IsEqualIgnoringLineBreaks()");
-    } else {
-      this.string = string;
-    }
+  public IsEqualIgnoringLineBreaks(@NonNull String string) {
+    this.string = string;
   }
 
   public boolean matchesSafely(String item) {
