@@ -3,7 +3,10 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.DataFetcher;
+import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -15,14 +18,17 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
+import org.dotwebstack.framework.backend.rdf4j.query.StaticQueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
+import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.springframework.stereotype.Component;
 
@@ -65,29 +71,59 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
     GraphQLType outputType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
-    if (!(outputType instanceof GraphQLObjectType)) {
-      throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
+    validateOutputType(outputType);
+
+    registerDataFetcher(environment);
+    return fieldDefinition;
+  }
+
+  private void validateOutputType(GraphQLType outputType) {
+    if (!outputType.getName()
+        .equals(Rdf4jScalars.MODEL.getName()) && !(outputType instanceof GraphQLObjectType)) {
+      throw new IllegalArgumentException("Output types other than 'Model' or 'Object' are not yet supported.");
     }
+  }
 
-    String repositoryId =
-        DirectiveUtils.getArgument(environment.getDirective(), Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
-
-    RepositoryAdapter supportedAdapter = repositoryAdapters.stream()
+  private RepositoryAdapter getRepositoryAdapter(String repositoryId) {
+    return repositoryAdapters.stream()
         .filter(repositoryAdapter -> repositoryAdapter.supports(repositoryId))
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
+  }
 
+  private void registerDataFetcher(@NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+    GraphQLCodeRegistry.Builder codeRegistry = environment.getCodeRegistry();
+
+    GraphQLFieldsContainer fieldsContainer = environment.getFieldsContainer();
+    GraphQLFieldDefinition fieldDefinition = environment.getElement();
+
+    RepositoryAdapter repositoryAdapter = getRepositoryAdapter(getRepositoryId(environment));
+    List<QueryValidator> validators = getValidators(environment);
+    DataFetcher<?> queryFetcher = getDataFetcher(fieldDefinition, repositoryAdapter, validators);
+
+    codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, queryFetcher);
+  }
+
+  private DataFetcher<?> getDataFetcher(GraphQLFieldDefinition fieldDefinition, RepositoryAdapter supportedAdapter,
+      List<QueryValidator> validators) {
+    if (StaticQueryFetcher.supports(fieldDefinition)) {
+      return new StaticQueryFetcher(supportedAdapter, validators);
+    } else {
+      return new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine, validators, coreTraverser,
+          selectVerticeFactory, constructVerticeFactory);
+    }
+  }
+
+  private List<QueryValidator> getValidators(
+      @NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
 
-    QueryFetcher queryFetcher = new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine,
-        ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser, selectVerticeFactory,
-        constructVerticeFactory);
+    return ImmutableList.of(constraintValidator, sortFieldValidator);
+  }
 
-    environment.getCodeRegistry()
-        .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
-
-    return fieldDefinition;
+  private String getRepositoryId(@NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+    return DirectiveUtils.getArgument(environment.getDirective(), Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
   }
 
   @Override

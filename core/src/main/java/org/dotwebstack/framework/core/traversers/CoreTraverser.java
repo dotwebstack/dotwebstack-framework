@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.traversers;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.language.InputObjectTypeDefinition;
@@ -65,31 +64,35 @@ public class CoreTraverser {
 
   private List<DirectiveContainerObject> getInputObjectFieldsFromArgument(GraphQLFieldDefinition fieldDefinition,
       GraphQLArgument container, Map<String, Object> arguments) {
+    List<DirectiveContainerObject> result = new ArrayList<>();
+    if (GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())
+        .getName()
+        .equals("Model")) {
+      return result;
+    }
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
     if (container.getType() instanceof GraphQLInputObjectType) {
-      List<DirectiveContainerObject> result = new ArrayList<>();
-
       Map<String, Object> nestedArguments = getNestedMap(arguments, container.getName());
-
-      result.add(DirectiveContainerObject.builder()
-          .container(container)
-          .objectType(objectType)
-          .value(nestedArguments)
-          .build());
-
       result.addAll(getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(), nestedArguments));
 
-      return result;
+      result.add(getDirectiveontainerObject(container, objectType, nestedArguments));
 
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
-      return singletonList(DirectiveContainerObject.builder()
-          .container(container)
-          .objectType(objectType)
-          .value(arguments.getOrDefault(container.getName(), null))
-          .build());
+      Object nestedArguments = arguments.getOrDefault(container.getName(), null);
+
+      result.add(getDirectiveontainerObject(container, objectType, nestedArguments));
     }
 
-    return emptyList();
+    return result;
+  }
+
+  private DirectiveContainerObject getDirectiveontainerObject(GraphQLArgument container, GraphQLObjectType objectType,
+      Object nestedArguments) {
+    return DirectiveContainerObject.builder()
+        .container(container)
+        .objectType(objectType)
+        .value(nestedArguments)
+        .build();
   }
 
   /*

@@ -52,11 +52,16 @@ type Query {
     @sparql(
       repository: "local"
     )
+
+  voorkomen(
+      subject: IRI @resource
+    ): Model
+    @sparql(repository: "local")
 }
 
 type Brewery {
   identifier: ID!
-  subject: String! @resource
+  subject: IRI! @resource
   name: String!
   localName: String
   founded: Int!

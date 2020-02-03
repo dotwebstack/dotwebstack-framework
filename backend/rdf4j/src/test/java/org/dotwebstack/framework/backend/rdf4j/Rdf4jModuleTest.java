@@ -30,14 +30,20 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.language.StringValue;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,8 +51,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
+import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,11 +86,15 @@ class Rdf4jModuleTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1,
-                BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+
+    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
+    Map<String, Object> resultMap = (Map<String, Object>) data.get(BREWERY_FIELD);
+
+    assertThat(resultMap, hasEntry(BREWERY_SUBJECT_FIELD, subject));
+    assertThat(resultMap, hasEntry(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
+    assertThat(resultMap, hasEntry(BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()));
+    assertThat(resultMap,
+        hasEntry(BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
   }
 
   @Test
@@ -158,6 +172,18 @@ class Rdf4jModuleTest {
                         ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"), NAME_NULL_MAP)))))));
   }
 
+  @Test
+  void serializeIri_DoesNotThrowException() {
+    StringValue stringValue = StringValue.newStringValue(Constants.BREWERY_SHAPE.stringValue())
+        .build();
+
+    IRI iri = IriHelper.createIri(stringValue.toString());
+
+    Rdf4jStringSerializer rdf4jStringSerializer = new Rdf4jStringSerializer();
+    JsonGenerator jsonGenerator = mock(JsonGenerator.class);
+    SerializerProvider serializerProvider = mock(SerializerProvider.class);
+    assertDoesNotThrow(() -> rdf4jStringSerializer.serialize(iri, jsonGenerator, serializerProvider));
+  }
 
   @Test
   void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() {
@@ -767,8 +793,9 @@ class Rdf4jModuleTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, BREWERY_SUBJECT_EXAMPLE_1)));
+    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
+
+    assertThat(data, hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, subject)));
   }
 
   @Test
@@ -784,8 +811,8 @@ class Rdf4jModuleTest {
         .isEmpty());
     Map<String, Object> data = result.getData();
 
-    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
-        .map(entry -> entry.get("subject"))
+    List<String> subjects = ((List<Map<String, Object>>) (data.get("breweries"))).stream()
+        .map(entry -> ((IRI) entry.get("subject")).stringValue())
         .collect(Collectors.toList());
 
     assertThat(subjects, hasSize(5));
@@ -808,8 +835,8 @@ class Rdf4jModuleTest {
         .isEmpty());
     Map<String, Object> data = result.getData();
 
-    List<String> subjects = ((List<Map<String, String>>) (data.get("breweries"))).stream()
-        .map(entry -> entry.get("subject"))
+    List<String> subjects = ((List<Map<String, Object>>) (data.get("breweries"))).stream()
+        .map(entry -> ((IRI) entry.get("subject")).stringValue())
         .collect(Collectors.toList());
 
     assertThat(subjects, hasSize(5));
@@ -905,6 +932,23 @@ class Rdf4jModuleTest {
     assertThat(result.getErrors(), hasSize(0));
     assertThat(subjects, hasSize(1));
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
+  }
+
+  @Test
+  void graphQlQuery_returnsModel_FilterOnAddressSubjectNested() {
+    // Arrange
+    String query = "{ breweriesModel(subject: \"https://github.com/dotwebstack/beer/id/address/1\") }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("breweriesModel");
+
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
   }
 
   @Test

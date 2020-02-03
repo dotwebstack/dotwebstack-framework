@@ -589,3 +589,14 @@ type Query {
     )
 }
 ```
+
+## 1.10 Resource directive
+It is possible to return the value of a subject, by using `@resource` on an IRI field.
+```graphql
+type Beer {
+  identifier: ID!
+  name: String!
+  subject: IRI! @resource
+}
+```
+The `@resource` directive can only be used for an IRI field.

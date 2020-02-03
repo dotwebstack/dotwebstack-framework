@@ -252,6 +252,26 @@ It is possible to return response headers in a DotWebStack response. Their confi
 ```
 This configuration adds the `X-Pagination-Page` header to the response. Its value is set using an `x-dws-expr`, similar to response properties.
 
+# 1.1.11 Content negotiation
+It is possible to configure (multiple) contents to allow different response types:
+```graphql
+  /breweries:
+    get:
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              x-dws-default: true
+              schema:
+                ...
+            application/xml:
+              schema:
+                ...
+```
+This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
+The default is set by using `x-dws-default: true` on a content configuration. 
+
 # 1.2 OpenApi specification on basepath
 The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
 anyone with access to your API can lookup specification used to generate the API.
