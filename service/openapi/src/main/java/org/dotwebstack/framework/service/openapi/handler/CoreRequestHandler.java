@@ -134,8 +134,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     return Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
-        .onErrorResume(NotAcceptableException.class,
-            getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
+        .onErrorResume(NotAcceptableException.class, getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
         .onErrorResume(ParameterValidationException.class,
             getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
         .onErrorResume(ResponseMapperException.class,
