@@ -151,7 +151,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
     return exception -> {
-      String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason: %s",
+      String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason [%s]",
           exception.getMessage(), status.value(), reason);
       return Mono.error(new ResponseStatusException(status, message));
     };
