@@ -32,6 +32,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
+import org.springframework.util.MimeType;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -143,7 +144,6 @@ public class ResponseTemplateBuilder {
 
     return responseObject;
   }
-
 
   @SuppressWarnings("rawtypes")
   private void fillResponseObject(ResponseObject responseObject, OpenAPI openApi,

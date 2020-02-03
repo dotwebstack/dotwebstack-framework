@@ -27,7 +27,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
-import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
@@ -35,7 +35,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResponseMapper {
+public class JsonResponseMapper {
 
   private final ObjectMapper objectMapper;
 
@@ -45,7 +45,7 @@ public class ResponseMapper {
 
   private final TypeConverterRouter typeConverterRouter;
 
-  public ResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
+  public JsonResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
       EnvironmentProperties properties, TypeConverterRouter typeConverterRouter) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
@@ -53,8 +53,19 @@ public class ResponseMapper {
     this.typeConverterRouter = typeConverterRouter;
   }
 
-  public String toJson(@NonNull ResponseWriteContext writeContext)
-      throws JsonProcessingException, NoResultFoundException {
+  public String toResponse(@NonNull Object input) {
+    if (input instanceof ResponseWriteContext) {
+      try {
+        return toJson((ResponseWriteContext) input);
+      } catch (JsonProcessingException jpe) {
+        throw new ResponseMapperException("An exception occurred when serializing to JSON.", jpe);
+      }
+    } else {
+      throw new IllegalArgumentException("Input can only be of the type ResponseWriteContext.");
+    }
+  }
+
+  private String toJson(ResponseWriteContext writeContext) throws JsonProcessingException {
     Object response = mapDataToResponse(writeContext, "");
     if (Objects.isNull(response)) {
       throw noResultFoundException("Did not find data for your response.");
@@ -254,17 +265,23 @@ public class ResponseMapper {
     StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getParameters()
         .forEach((key1, value1) -> context.set("input." + key1, value1));
+
     writeContext.getDataStack()
-        .forEach(fieldContext -> {
-          Object data = fieldContext.getData();
+        .stream()
+        .map(FieldContext::getData)
+        .forEach(data -> {
           ((Map<String, Object>) data).entrySet()
               .stream()
               .filter(entry -> !(entry.getValue() instanceof Map))
               .forEach(entry -> context.set(fieldsBuilder.toString() + entry.getKey(), entry.getValue()));
-
-          Map<String, Object> input = fieldContext.getInput();
-          input.forEach((key, value) -> context.set(argsBuilder.toString() + key, value));
           fieldsBuilder.append("_parent.");
+
+        });
+    writeContext.getDataStack()
+        .stream()
+        .map(FieldContext::getInput)
+        .forEach(input -> {
+          input.forEach((key, value) -> context.set(argsBuilder.toString() + key, value));
           argsBuilder.append("_parent.");
         });
 
