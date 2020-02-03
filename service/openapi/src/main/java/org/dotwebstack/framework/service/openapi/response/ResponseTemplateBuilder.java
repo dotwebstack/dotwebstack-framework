@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
+import org.springframework.util.MimeType;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -70,8 +71,8 @@ public class ResponseTemplateBuilder {
     return apiResponse.getContent()
         .entrySet()
         .stream()
-        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName,
-            responseHeaders))
+        .map(entry -> createResponseObjectTemplate(openApi, responseCode, MimeType.valueOf(entry.getKey()),
+            entry.getValue(), queryName, responseHeaders))
         .collect(Collectors.toList());
   }
 
@@ -106,7 +107,7 @@ public class ResponseTemplateBuilder {
   }
 
   @SuppressWarnings("rawtypes")
-  private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
+  private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, MimeType mediaType,
       MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
     String ref = content.getSchema()
         .get$ref();
@@ -128,7 +129,7 @@ public class ResponseTemplateBuilder {
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
-        .mediaType(mediaType)
+        .mediaType(org.springframework.http.MediaType.asMediaType(mediaType))
         .responseObject(root)
         .isDefault(isDefault)
         .responseHeaders(responseHeaders)

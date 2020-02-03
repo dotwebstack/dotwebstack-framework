@@ -23,7 +23,7 @@ import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
@@ -61,7 +61,7 @@ public class OpenApiConfigurationTest {
   private ResponseContextValidator responseContextValidator;
 
   @Mock
-  private ResponseMapper responseMapper;
+  private JsonResponseMapper jsonResponseMapper;
 
   @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
@@ -79,9 +79,9 @@ public class OpenApiConfigurationTest {
     this.openApiStream = TestResources.openApiStream();
     OpenApiProperties openApiProperties = new OpenApiProperties();
     openApiProperties.setXdwsStringTypes(List.of("customType"));
-    this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
-        new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, responseContextValidator,
-        requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
+    this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        responseContextValidator, requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
   }
 
   @Test

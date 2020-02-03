@@ -1,0 +1,337 @@
+[ {
+  "@id" : "https://github.com/dotwebstack/beer/id/address/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Address" ],
+  "http://schema.org/addressLocality" : [ {
+    "@value" : "Moordrecht"
+  } ],
+  "http://schema.org/latitude" : [ {
+    "@value" : "51.98776545"
+  } ],
+  "http://schema.org/longitude" : [ {
+    "@value" : "4.67090183"
+  } ],
+  "http://schema.org/postalCode" : [ {
+    "@value" : "2841 XB"
+  } ],
+  "http://schema.org/streetAddress" : [ {
+    "@value" : "Burgemeester Brandtstraat 23"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/address/2",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Address" ],
+  "http://schema.org/addressLocality" : [ {
+    "@value" : "Zundert"
+  } ],
+  "http://schema.org/latitude" : [ {
+    "@value" : "51.46376967"
+  } ],
+  "http://schema.org/longitude" : [ {
+    "@value" : "4.60958924"
+  } ],
+  "http://schema.org/postalCode" : [ {
+    "@value" : "4881 AZ"
+  } ],
+  "http://schema.org/streetAddress" : [ {
+    "@value" : "Achtaalseweg 137A"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/address/3",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Address" ],
+  "http://schema.org/addressLocality" : [ {
+    "@value" : "Zundert"
+  } ],
+  "http://schema.org/latitude" : [ {
+    "@value" : "52.46376967"
+  } ],
+  "http://schema.org/longitude" : [ {
+    "@value" : "6.60958924"
+  } ],
+  "http://schema.org/postalCode" : [ {
+    "@value" : "4881 AZ"
+  } ],
+  "http://schema.org/streetAddress" : [ {
+    "@value" : "Achtaalseweg 137A"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beer/6",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Beer" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Alfa Edel Pils"
+  } ],
+  "https://github.com/dotwebstack/beer/def#beertype" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/1"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/2"
+  } ],
+  "https://github.com/dotwebstack/beer/def#brewery" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/brewery/789"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "1"
+  } ],
+  "https://github.com/dotwebstack/beer/def#ingredient" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/1"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/2"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/3"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/4"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/supplement/1"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beer/7",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Beer" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Straffe Hendrik"
+  } ],
+  "https://github.com/dotwebstack/beer/def#beertype" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/1"
+  } ],
+  "https://github.com/dotwebstack/beer/def#brewery" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/brewery/123"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "2"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beer/8",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Beer" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Brugse zot"
+  } ],
+  "https://github.com/dotwebstack/beer/def#beertype" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/1"
+  } ],
+  "https://github.com/dotwebstack/beer/def#brewery" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/brewery/123"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "3"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beer/9",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Beer" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Alfa Krachtig Dort"
+  } ],
+  "https://github.com/dotwebstack/beer/def#beertype" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/1"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/"
+  } ],
+  "https://github.com/dotwebstack/beer/def#brewery" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/brewery/789"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "4"
+  } ],
+  "https://github.com/dotwebstack/beer/def#ingredient" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/3"
+  }, {
+    "@id" : "https://github.com/dotwebstack/beer/id/ingredient/4"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beertype/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#BeerType" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Bitter"
+  } ],
+  "https://github.com/dotwebstack/beer/def#beertype" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/beertype/2"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "1"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/beertype/2",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#BeerType" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Ale"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "2"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/brewery/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Brewery" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Heineken Nederland"
+  } ],
+  "https://github.com/dotwebstack/beer/def#founded" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#dateTime",
+    "@value" : "1864-02-15T12:00:00+02:00"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "1"
+  } ],
+  "https://github.com/dotwebstack/beer/def#localName" : [ {
+    "@language" : "nl",
+    "@value" : "Heineken Nederland"
+  }, {
+    "@language" : "de",
+    "@value" : "Heineken Niederlande"
+  }, {
+    "@language" : "en",
+    "@value" : "Heineken Netherlands"
+  } ],
+  "https://github.com/dotwebstack/beer/def#number" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#integer",
+    "@value" : "100"
+  } ],
+  "https://github.com/dotwebstack/beer/def#owners" : [ {
+    "@value" : "L. du Clou"
+  }, {
+    "@value" : "Z. v. Marke"
+  }, {
+    "@value" : "J. v. Hees"
+  }, {
+    "@value" : "J. v. Jansen"
+  }, {
+    "@value" : "I. Verhoef"
+  }, {
+    "@value" : "M. Kuijpers"
+  }, {
+    "@value" : "A. de Bruijn"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/brewery/123",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Brewery" ],
+  "http://schema.org/address" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/address/1"
+  } ],
+  "http://schema.org/name" : [ {
+    "@value" : "Brouwerij 1923"
+  } ],
+  "https://github.com/dotwebstack/beer/def#founded" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#dateTime",
+    "@value" : "2018-05-30T09:30:10+02:00"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "123"
+  } ],
+  "https://github.com/dotwebstack/beer/def#number" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#integer",
+    "@value" : "1"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/brewery/2",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Brewery" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Brouwerij De Leckere"
+  } ],
+  "https://github.com/dotwebstack/beer/def#founded" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#dateTime",
+    "@value" : "1997-01-01T00:00:00+02:00"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "2"
+  } ],
+  "https://github.com/dotwebstack/beer/def#number" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#integer",
+    "@value" : "20"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/brewery/456",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Brewery" ],
+  "http://schema.org/address" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/address/2"
+  } ],
+  "http://schema.org/name" : [ {
+    "@value" : "Brouwerij Het 58e Genot i.o."
+  } ],
+  "https://github.com/dotwebstack/beer/def#founded" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#dateTime",
+    "@value" : "2010-05-10T09:30:10+02:00"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "456"
+  } ],
+  "https://github.com/dotwebstack/beer/def#number" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#integer",
+    "@value" : "2"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/brewery/789",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Brewery" ],
+  "http://schema.org/address" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/address/3"
+  } ],
+  "https://github.com/dotwebstack/beer/def#founded" : [ {
+    "@type" : "http://www.w3.org/2001/XMLSchema#dateTime",
+    "@value" : "1870-01-01T00:00:0+02:00"
+  } ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "789"
+  } ],
+  "https://github.com/dotwebstack/beer/def#label" : [ {
+    "@value" : "Alfa Brouwerij"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/ingredient/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Ingredient" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Hop"
+  } ],
+  "https://github.com/dotwebstack/beer/def#test" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/1"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/ingredient/2",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Ingredient" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Gerst"
+  } ],
+  "https://github.com/dotwebstack/beer/def#test" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/2"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/ingredient/3",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Ingredient" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Sinasappel"
+  } ],
+  "https://github.com/dotwebstack/beer/def#test" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/3"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/ingredient/4",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Ingredient" ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@value" : "4"
+  } ],
+  "https://github.com/dotwebstack/beer/def#test" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/4"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/supplement/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Supplement" ],
+  "http://schema.org/name" : [ {
+    "@value" : "Gist"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/test/1",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Test" ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/1"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/test/2",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Test" ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/2"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/test/3",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Test" ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/3"
+  } ]
+}, {
+  "@id" : "https://github.com/dotwebstack/beer/id/test/4",
+  "@type" : [ "https://github.com/dotwebstack/beer/def#Test" ],
+  "https://github.com/dotwebstack/beer/def#identifier" : [ {
+    "@id" : "https://github.com/dotwebstack/beer/id/test/4"
+  } ]
+} ]
