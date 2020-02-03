@@ -72,22 +72,26 @@ public class ResponseTemplateBuilder {
         .responseHeaders(responseHeaders)
         .isDefault(true);
 
-
     if (Objects.isNull(content)) {
       return Collections.singletonList(responseTemplateBuilder.build());
     }
 
     return content.entrySet()
         .stream()
-        .map(entry -> {
-          MediaType mediaType = entry.getValue();
-
-          return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
-              .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
-              .isDefault(isDefault(mediaType, mediaType.getExtensions()))
-              .build();
-        })
+        .map(mapToResponseTemplate(openApi, responseCode, queryName, responseTemplateBuilder))
         .collect(Collectors.toList());
+  }
+
+  private Function<Map.Entry<String, MediaType>, ResponseTemplate> mapToResponseTemplate(OpenAPI openApi,
+      String responseCode, String queryName, ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder) {
+    return entry -> {
+      MediaType mediaType = entry.getValue();
+
+      return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
+          .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
+          .isDefault(isDefault(mediaType, mediaType.getExtensions()))
+          .build();
+    };
   }
 
   private Map<String, ResponseHeader> createResponseHeaders(Map<String, Header> headers) {
@@ -332,9 +336,7 @@ public class ResponseTemplateBuilder {
     if (Objects.nonNull(schema.getExtensions())) {
       Object type = schema.getExtensions()
           .get(X_DWS_TYPE);
-      if (Objects.nonNull(type)) {
-        return Optional.of((String) type);
-      }
+      return Optional.ofNullable((String) type);
     }
     return Optional.empty();
   }

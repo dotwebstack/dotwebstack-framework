@@ -178,7 +178,8 @@ public class OpenApiConfiguration {
         paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()
-        .map(rt -> HttpStatus.valueOf(rt.getResponseCode()))
+        .map(ResponseTemplate::getResponseCode)
+        .map(HttpStatus::valueOf)
         .filter(httpStatus -> !httpStatus.is3xxRedirection())
         .findFirst()
         .ifPresent(i -> coreRequestHandler.validateSchema());
