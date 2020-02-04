@@ -22,19 +22,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 
 public class ResponseTemplateBuilderTest {
 
   private OpenAPI openApi;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     this.openApi = TestResources.openApi();
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"/query1", "/query2"})
-  public void build_returnsTemplates_ForValidSpec() {
+  void build_returnsTemplates_ForValidSpec() {
     // Arrange / Act
     List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
@@ -45,7 +46,7 @@ public class ResponseTemplateBuilderTest {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException(""));
 
-    assertEquals("application/hal+json", okResponse.getMediaType());
+    assertEquals(MediaType.valueOf("application/hal+json"), okResponse.getMediaType());
     assertEquals(200, okResponse.getResponseCode());
     assertEquals("object", okResponse.getResponseObject()
         .getSummary()
@@ -53,7 +54,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_throwsException_MissingSchema() {
+  void build_throwsException_MissingSchema() {
     // Arrange
     openApi.getComponents()
         .getSchemas()
@@ -65,7 +66,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_throwsException_MissingSchema2() {
+  void build_throwsException_MissingSchema2() {
     // Arrange
     openApi.getComponents()
         .getSchemas()
@@ -77,7 +78,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_resolvesXdwsTemplate_forValidSchema() {
+  void build_resolvesXdwsTemplate_forValidSchema() {
     // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
@@ -94,7 +95,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_resolvesAllOfTemplate_forValidSchema() {
+  void build_resolvesAllOfTemplate_forValidSchema() {
     // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query5", HttpMethod.GET);
 
@@ -108,7 +109,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_throwsException_InvalidXdwsTemplateType() {
+  void build_throwsException_InvalidXdwsTemplateType() {
     // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()
         .getSchemas()
@@ -123,14 +124,14 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_throwsException_without_configuredXdwsStringType() {
+  void build_throwsException_without_configuredXdwsStringType() {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, ImmutableList.of("unknown type"), "/query6", HttpMethod.GET));
   }
 
   @Test
-  public void build_succeeds_with_configuredXdwsStringType() {
+  void build_succeeds_with_configuredXdwsStringType() {
     // Act / Assert
     List<ResponseTemplate> responseTemplates =
         getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
@@ -147,7 +148,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void getXdwsType_returns_expectedValue() {
+  void getXdwsType_returns_expectedValue() {
     // Arrange
     Schema<?> schema = this.openApi.getComponents()
         .getSchemas()
@@ -162,7 +163,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void getXdwsType_returns_empty() {
+  void getXdwsType_returns_empty() {
     // Arrange
     Schema<?> schema = this.openApi.getComponents()
         .getSchemas()
@@ -174,7 +175,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_returnsResponseHeaders() {
+  void build_returnsResponseHeaders() {
     // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header")
@@ -193,7 +194,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  public void build_returnsResponseHeaders_forHeaderWithRef() {
+  void build_returnsResponseHeaders_forHeaderWithRef() {
     // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header-Ref")
@@ -215,7 +216,7 @@ public class ResponseTemplateBuilderTest {
     return getResponseTemplates(openApi, Collections.emptyList(), path, httpMethod);
   }
 
-  public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, List<String> xdwsStringTypes, String path,
+  static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, List<String> xdwsStringTypes, String path,
       HttpMethod httpMethod) {
     Operation operation;
     switch (httpMethod) {

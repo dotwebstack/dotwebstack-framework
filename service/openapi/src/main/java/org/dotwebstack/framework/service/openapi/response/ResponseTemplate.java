@@ -4,6 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.MediaType;
 
 @Builder
 @Getter
@@ -12,7 +13,7 @@ public class ResponseTemplate {
 
   private int responseCode;
 
-  private String mediaType;
+  private MediaType mediaType;
 
   private ResponseObject responseObject;
 
@@ -24,7 +25,4 @@ public class ResponseTemplate {
     return this.responseCode >= bottom && this.responseCode <= top;
   }
 
-  public boolean isApplicable(int bottom, int top, String mediaType) {
-    return this.responseCode >= bottom && this.responseCode <= top && this.mediaType.equals(mediaType);
-  }
 }

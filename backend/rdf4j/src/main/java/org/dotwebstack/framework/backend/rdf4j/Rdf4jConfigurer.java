@@ -14,6 +14,7 @@ import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
@@ -33,7 +34,10 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
     registry.add(createAggregateDefinition());
     registry.add(createResourceDefinition());
 
-    registry.add(new ScalarTypeDefinition(Rdf4jScalars.IRI.getName()));
+    Rdf4jScalars.SCALARS.stream()
+        .map(GraphQLScalarType::getName)
+        .map(ScalarTypeDefinition::new)
+        .forEach(registry::add);
   }
 
   private DirectiveDefinition createSparqlDefinition() {
@@ -72,6 +76,8 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
         .name(Rdf4jDirectives.RESOURCE_NAME)
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+            .build())
         .build();
   }
 
@@ -104,6 +110,6 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
-    builder.scalar(Rdf4jScalars.IRI);
+    Rdf4jScalars.SCALARS.forEach(builder::scalar);
   }
 }

@@ -33,7 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @ExtendWith(MockitoExtension.class)
-class ResponseMapperTest {
+class JsonResponseMapperTest {
   private static final ResponseObject REQUIRED_NILLABLE_STRING = getProperty("prop1", "string", true, true, null);
 
   private static final ResponseObject REQUIRED_NON_NILLABLE_STRING = getProperty("prop2", "string", true, false, null);
@@ -51,19 +51,19 @@ class ResponseMapperTest {
   @Mock
   private EnvironmentProperties properties;
 
-  private ResponseMapper responseMapper;
+  private JsonResponseMapper jsonResponseMapper;
 
   @Mock
   private TypeConverterRouter typeConverterRouter;
 
   @BeforeEach
-  public void setup() {
-    this.responseMapper =
-        new ResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter);
+  void setup() {
+    this.jsonResponseMapper =
+        new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter);
   }
 
   @Test
-  public void map_returnsProperty_ForValidResponse() throws NoResultFoundException, JsonProcessingException {
+  void map_returnsProperty_ForValidResponse() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     Object data = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value");
     Deque<FieldContext> dataStack = new ArrayDeque<>();
@@ -76,25 +76,25 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.equals("{\"prop1\":\"prop1value\"}"));
   }
 
   @Test
-  public void map_returnsException_ForMissingRequiredProperty() {
+  void map_returnsException_ForMissingRequiredProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
         .build();
 
     // Act & Assert
-    assertThrows(NoResultFoundException.class, () -> responseMapper.toJson(writeContext));
+    assertThrows(NoResultFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
-  public void map_throwsException_ForMissingRequiredNonNillableProperty() {
+  void map_throwsException_ForMissingRequiredNonNillableProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
@@ -102,11 +102,11 @@ class ResponseMapperTest {
         .build();
 
     // Act / Assert
-    assertThrows(MappingException.class, () -> responseMapper.toJson(writeContext));
+    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
-  public void map_returnsValue_forDwsTemplate() throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forDwsTemplate() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     when(properties.getAllProperties()).thenReturn(ImmutableMap.of("env_var_1", "v0"));
     ResponseObject child2 = getObject("child2", ImmutableList.of(DWS_TEMPLATE));
@@ -133,7 +133,7 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1\"";
@@ -142,8 +142,7 @@ class ResponseMapperTest {
   }
 
   @Test
-  public void map_returnsValue_forResponseWithEnvelopeObjectValue()
-      throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forResponseWithEnvelopeObjectValue() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
@@ -164,14 +163,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"_embedded\":{\"child2\":{\"prop2\":\"v3\"}}}}"));
   }
 
   @Test
-  public void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue()
+  void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -196,14 +195,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"_embedded\":{\"_embedded\":{\"child2\":{\"prop2\":\"v3\"}}}}}"));
   }
 
   @Test
-  public void map_returnsValue_forResponseWithComposedSchema() throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forResponseWithComposedSchema() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child1 =
         getObject("child1", "object", false, null, null, ImmutableList.of(REQUIRED_NILLABLE_STRING));
@@ -226,14 +225,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child2\":{\"prop2\":\"v2\"},\"child1\":{\"prop1\":\"v3\"}}"));
   }
 
   @Test
-  public void map_returnsValue_forResponseWithArray() throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forResponseWithArray() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -259,14 +258,14 @@ class ResponseMapperTest {
 
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"array1\":[{\"prop2\":\"v3\"},{\"prop2\":\"v3\"}]}}"));
   }
 
   @Test
-  public void toJson_returnsNoElement_forNonRequiredNonNillableEmptyArray()
+  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
@@ -288,14 +287,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{}"));
   }
 
   @Test
-  public void toJson_returnsNoElement_forNonRequiredNullableEmptyArray()
+  void toResponse_returnsNoElement_forNonRequiredNullableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
@@ -317,14 +316,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{}}"));
   }
 
   @Test
-  public void toJson_returnsEmptyList_forRequiredNonNullableEmptyArray()
+  void toResponse_returnsEmptyList_forRequiredNonNullableEmptyArray()
       throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
@@ -346,15 +345,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"array1\":[]}}"));
   }
 
   @Test
-  public void toJson_returnsNull_forRequiredNullableEmptyArray()
-      throws NoResultFoundException, JsonProcessingException {
+  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -375,14 +373,14 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
   }
 
   @Test
-  public void map_returnsValue_forResponseWithObject() throws NoResultFoundException, JsonProcessingException {
+  void map_returnsValue_forResponseWithObject() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
@@ -404,43 +402,43 @@ class ResponseMapperTest {
         .build();
 
     // Act
-    String response = responseMapper.toJson(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
   }
 
   @Test
-  public void validate_removeRoot_withDoubleValuePath() {
+  void validate_removeRoot_withDoubleValuePath() {
     // Arrange
     String testString = "test.test";
 
     // Act
-    String resultString = responseMapper.removeRoot(testString);
+    String resultString = jsonResponseMapper.removeRoot(testString);
 
     // Assert
     assertEquals("test", resultString);
   }
 
   @Test
-  public void validate_removeRoot_withMultivaluePath() {
+  void validate_removeRoot_withMultivaluePath() {
     // Arrange
     String testString = "test.test.test";
 
     // Act
-    String resultString = responseMapper.removeRoot(testString);
+    String resultString = jsonResponseMapper.removeRoot(testString);
 
     // Assert
     assertEquals("test.test", resultString);
   }
 
   @Test
-  public void validate_removeRoot_withSinleValuePath() {
+  void validate_removeRoot_withSinleValuePath() {
     // Arrange
     String testString = "test";
 
     // Act
-    String resultString = responseMapper.removeRoot(testString);
+    String resultString = jsonResponseMapper.removeRoot(testString);
 
     // Assert
     assertEquals("", resultString);

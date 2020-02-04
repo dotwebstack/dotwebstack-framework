@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -21,6 +22,10 @@ public class ResponseWriteContext {
   Map<String, Object> parameters;
 
   URI uri;
+
+  public boolean hasSchema() {
+    return Objects.nonNull(getResponseObject().getSummary());
+  }
 
   public boolean isSchemaRequiredNonNillable() {
     return getResponseObject().getSummary()

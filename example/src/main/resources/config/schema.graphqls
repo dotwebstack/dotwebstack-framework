@@ -52,6 +52,11 @@ type Query {
     @sparql(
       repository: "local"
     )
+
+  voorkomen(
+      subject: IRI @resource
+    ): Model
+    @sparql(repository: "local")
 }
 
 type Brewery {

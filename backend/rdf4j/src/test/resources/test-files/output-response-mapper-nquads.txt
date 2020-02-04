@@ -1,0 +1,113 @@
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#identifier> "123" .
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://schema.org/name> "Brouwerij 1923" .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#number> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://schema.org/address> <https://github.com/dotwebstack/beer/id/address/1> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#founded> "2018-05-30T09:30:10+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/address/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Address> .
+<https://github.com/dotwebstack/beer/id/address/1> <http://schema.org/addressLocality> "Moordrecht" .
+<https://github.com/dotwebstack/beer/id/address/1> <http://schema.org/latitude> "51.98776545" .
+<https://github.com/dotwebstack/beer/id/address/1> <http://schema.org/longitude> "4.67090183" .
+<https://github.com/dotwebstack/beer/id/address/1> <http://schema.org/postalCode> "2841 XB" .
+<https://github.com/dotwebstack/beer/id/address/1> <http://schema.org/streetAddress> "Burgemeester Brandtstraat 23" .
+<https://github.com/dotwebstack/beer/id/brewery/456> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/456> <https://github.com/dotwebstack/beer/def#identifier> "456" .
+<https://github.com/dotwebstack/beer/id/brewery/456> <https://github.com/dotwebstack/beer/def#number> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<https://github.com/dotwebstack/beer/id/brewery/456> <http://schema.org/name> "Brouwerij Het 58e Genot i.o." .
+<https://github.com/dotwebstack/beer/id/brewery/456> <http://schema.org/address> <https://github.com/dotwebstack/beer/id/address/2> .
+<https://github.com/dotwebstack/beer/id/brewery/456> <https://github.com/dotwebstack/beer/def#founded> "2010-05-10T09:30:10+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/address/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Address> .
+<https://github.com/dotwebstack/beer/id/address/2> <http://schema.org/addressLocality> "Zundert" .
+<https://github.com/dotwebstack/beer/id/address/2> <http://schema.org/latitude> "51.46376967" .
+<https://github.com/dotwebstack/beer/id/address/2> <http://schema.org/longitude> "4.60958924" .
+<https://github.com/dotwebstack/beer/id/address/2> <http://schema.org/postalCode> "4881 AZ" .
+<https://github.com/dotwebstack/beer/id/address/2> <http://schema.org/streetAddress> "Achtaalseweg 137A" .
+<https://github.com/dotwebstack/beer/id/brewery/789> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/789> <https://github.com/dotwebstack/beer/def#identifier> "789" .
+<https://github.com/dotwebstack/beer/id/brewery/789> <https://github.com/dotwebstack/beer/def#label> "Alfa Brouwerij" .
+<https://github.com/dotwebstack/beer/id/brewery/789> <http://schema.org/address> <https://github.com/dotwebstack/beer/id/address/3> .
+<https://github.com/dotwebstack/beer/id/brewery/789> <https://github.com/dotwebstack/beer/def#founded> "1870-01-01T00:00:0+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/address/3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Address> .
+<https://github.com/dotwebstack/beer/id/address/3> <http://schema.org/addressLocality> "Zundert" .
+<https://github.com/dotwebstack/beer/id/address/3> <http://schema.org/latitude> "52.46376967" .
+<https://github.com/dotwebstack/beer/id/address/3> <http://schema.org/longitude> "6.60958924" .
+<https://github.com/dotwebstack/beer/id/address/3> <http://schema.org/postalCode> "4881 AZ" .
+<https://github.com/dotwebstack/beer/id/address/3> <http://schema.org/streetAddress> "Achtaalseweg 137A" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#identifier> "1" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#number> "100"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<https://github.com/dotwebstack/beer/id/brewery/1> <http://schema.org/name> "Heineken Nederland" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#localName> "Heineken Nederland"@nl .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#localName> "Heineken Niederlande"@de .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#localName> "Heineken Netherlands"@en .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "L. du Clou" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "Z. v. Marke" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "J. v. Hees" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "J. v. Jansen" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "I. Verhoef" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "M. Kuijpers" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#owners> "A. de Bruijn" .
+<https://github.com/dotwebstack/beer/id/brewery/1> <https://github.com/dotwebstack/beer/def#founded> "1864-02-15T12:00:00+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/brewery/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/2> <https://github.com/dotwebstack/beer/def#identifier> "2" .
+<https://github.com/dotwebstack/beer/id/brewery/2> <https://github.com/dotwebstack/beer/def#number> "20"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<https://github.com/dotwebstack/beer/id/brewery/2> <http://schema.org/name> "Brouwerij De Leckere" .
+<https://github.com/dotwebstack/beer/id/brewery/2> <https://github.com/dotwebstack/beer/def#founded> "1997-01-01T00:00:00+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/beer/6> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#identifier> "1" .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/789> .
+<https://github.com/dotwebstack/beer/id/beer/6> <http://schema.org/name> "Alfa Edel Pils" .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/1> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/2> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/3> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/4> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/supplement/1> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/1> .
+<https://github.com/dotwebstack/beer/id/beer/6> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/2> .
+<https://github.com/dotwebstack/beer/id/beer/9> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#identifier> "4" .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/789> .
+<https://github.com/dotwebstack/beer/id/beer/9> <http://schema.org/name> "Alfa Krachtig Dort" .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/3> .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#ingredient> <https://github.com/dotwebstack/beer/id/ingredient/4> .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/1> .
+<https://github.com/dotwebstack/beer/id/beer/9> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/> .
+<https://github.com/dotwebstack/beer/id/beer/7> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .
+<https://github.com/dotwebstack/beer/id/beer/7> <https://github.com/dotwebstack/beer/def#identifier> "2" .
+<https://github.com/dotwebstack/beer/id/beer/7> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/123> .
+<https://github.com/dotwebstack/beer/id/beer/7> <http://schema.org/name> "Straffe Hendrik" .
+<https://github.com/dotwebstack/beer/id/beer/7> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/1> .
+<https://github.com/dotwebstack/beer/id/beer/8> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .
+<https://github.com/dotwebstack/beer/id/beer/8> <https://github.com/dotwebstack/beer/def#identifier> "3" .
+<https://github.com/dotwebstack/beer/id/beer/8> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/123> .
+<https://github.com/dotwebstack/beer/id/beer/8> <http://schema.org/name> "Brugse zot" .
+<https://github.com/dotwebstack/beer/id/beer/8> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/1> .
+<https://github.com/dotwebstack/beer/id/ingredient/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Ingredient> .
+<https://github.com/dotwebstack/beer/id/ingredient/1> <https://github.com/dotwebstack/beer/def#test> <https://github.com/dotwebstack/beer/id/test/1> .
+<https://github.com/dotwebstack/beer/id/ingredient/1> <http://schema.org/name> "Hop" .
+<https://github.com/dotwebstack/beer/id/ingredient/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Ingredient> .
+<https://github.com/dotwebstack/beer/id/ingredient/2> <https://github.com/dotwebstack/beer/def#test> <https://github.com/dotwebstack/beer/id/test/2> .
+<https://github.com/dotwebstack/beer/id/ingredient/2> <http://schema.org/name> "Gerst" .
+<https://github.com/dotwebstack/beer/id/ingredient/3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Ingredient> .
+<https://github.com/dotwebstack/beer/id/ingredient/3> <https://github.com/dotwebstack/beer/def#test> <https://github.com/dotwebstack/beer/id/test/3> .
+<https://github.com/dotwebstack/beer/id/ingredient/3> <http://schema.org/name> "Sinasappel" .
+<https://github.com/dotwebstack/beer/id/ingredient/4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Ingredient> .
+<https://github.com/dotwebstack/beer/id/ingredient/4> <https://github.com/dotwebstack/beer/def#test> <https://github.com/dotwebstack/beer/id/test/4> .
+<https://github.com/dotwebstack/beer/id/ingredient/4> <https://github.com/dotwebstack/beer/def#identifier> "4" .
+<https://github.com/dotwebstack/beer/id/test/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Test> .
+<https://github.com/dotwebstack/beer/id/test/1> <https://github.com/dotwebstack/beer/def#identifier> <https://github.com/dotwebstack/beer/id/test/1> .
+<https://github.com/dotwebstack/beer/id/test/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Test> .
+<https://github.com/dotwebstack/beer/id/test/2> <https://github.com/dotwebstack/beer/def#identifier> <https://github.com/dotwebstack/beer/id/test/2> .
+<https://github.com/dotwebstack/beer/id/test/3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Test> .
+<https://github.com/dotwebstack/beer/id/test/3> <https://github.com/dotwebstack/beer/def#identifier> <https://github.com/dotwebstack/beer/id/test/3> .
+<https://github.com/dotwebstack/beer/id/test/4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Test> .
+<https://github.com/dotwebstack/beer/id/test/4> <https://github.com/dotwebstack/beer/def#identifier> <https://github.com/dotwebstack/beer/id/test/4> .
+<https://github.com/dotwebstack/beer/id/supplement/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Supplement> .
+<https://github.com/dotwebstack/beer/id/supplement/1> <http://schema.org/name> "Gist" .
+<https://github.com/dotwebstack/beer/id/beertype/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#BeerType> .
+<https://github.com/dotwebstack/beer/id/beertype/1> <https://github.com/dotwebstack/beer/def#identifier> "1" .
+<https://github.com/dotwebstack/beer/id/beertype/1> <http://schema.org/name> "Bitter" .
+<https://github.com/dotwebstack/beer/id/beertype/1> <https://github.com/dotwebstack/beer/def#beertype> <https://github.com/dotwebstack/beer/id/beertype/2> .
+<https://github.com/dotwebstack/beer/id/beertype/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#BeerType> .
+<https://github.com/dotwebstack/beer/id/beertype/2> <https://github.com/dotwebstack/beer/def#identifier> "2" .
+<https://github.com/dotwebstack/beer/id/beertype/2> <http://schema.org/name> "Ale" .

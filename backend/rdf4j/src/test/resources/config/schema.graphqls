@@ -33,6 +33,11 @@ type Query {
   beer(identifier: ID!): Beer!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
 
+  breweriesModel(
+    subject: IRI @resource
+  ) : Model
+    @sparql(repository: "local")
+
 }
 
 input QueryParameters {

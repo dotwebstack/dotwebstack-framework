@@ -40,7 +40,7 @@ components:
             breweries:
               type: array
               items:
-               $ref: '#/components/schemas/Brewery'
+                $ref: '#/components/schemas/Brewery'
         _links:
           x-dws-envelope: true
           type: object
@@ -298,3 +298,37 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+    /breweries/{identifier}:
+      get:
+        x-dws-query: brewery
+        parameters:
+          - name: identifier
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          303:
+            description: "300 response"
+            headers:
+              Location:
+                schema:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
+  /breweries/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'

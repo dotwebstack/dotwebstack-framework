@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.google.common.collect.ImmutableList;
@@ -14,11 +13,11 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,30 +48,50 @@ public class ResponseTemplateBuilder {
   }
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
+
     return httpMethodOperation.getOperation()
         .getResponses()
         .entrySet()
         .stream()
-        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
-            httpMethodOperation.getHttpMethod()
-                .name(),
-            resolveRequestBody(openApi, httpMethodOperation.getOperation()
-                .getRequestBody()),
+        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(),
             DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation())).stream())
         .collect(Collectors.toList());
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-      String pathName, String methodName, RequestBody requestBody, String queryName) {
+      String queryName) {
 
-    Map<String, ResponseHeader> responseHeaders = createResponseHeaders(apiResponse.getHeaders());
+    Map<String, Header> headers = apiResponse.getHeaders();
+    Content content = apiResponse.getContent();
 
-    return apiResponse.getContent()
-        .entrySet()
+    Map<String, ResponseHeader> responseHeaders = createResponseHeaders(headers);
+
+
+    ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplate.builder()
+        .responseCode(Integer.parseInt(responseCode))
+        .responseHeaders(responseHeaders)
+        .isDefault(true);
+
+    if (Objects.isNull(content)) {
+      return Collections.singletonList(responseTemplateBuilder.build());
+    }
+
+    return content.entrySet()
         .stream()
-        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName,
-            responseHeaders))
+        .map(mapToResponseTemplate(openApi, responseCode, queryName, responseTemplateBuilder))
         .collect(Collectors.toList());
+  }
+
+  private Function<Map.Entry<String, MediaType>, ResponseTemplate> mapToResponseTemplate(OpenAPI openApi,
+      String responseCode, String queryName, ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder) {
+    return entry -> {
+      MediaType mediaType = entry.getValue();
+
+      return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
+          .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
+          .isDefault(isDefault(mediaType, mediaType.getExtensions()))
+          .build();
+    };
   }
 
   private Map<String, ResponseHeader> createResponseHeaders(Map<String, Header> headers) {
@@ -105,34 +124,28 @@ public class ResponseTemplateBuilder {
         .build();
   }
 
+  private boolean isDefault(MediaType content, Map<String, Object> extensions) {
+    return Objects.nonNull(extensions) && (boolean) content.getExtensions()
+        .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
+  }
+
   @SuppressWarnings("rawtypes")
-  private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
-      MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
+  private ResponseObject getResponseObject(OpenAPI openApi, String responseCode, MediaType content, String queryName) {
     String ref = content.getSchema()
         .get$ref();
 
-    Map<String, Object> extensions = content.getExtensions();
-    boolean isDefault = extensions != null && (boolean) content.getExtensions()
-        .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
-
     Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
-    ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
+    ResponseObject responseObject = createResponseObject(queryName, schema, ref, true, false);
 
     Map<String, SchemaSummary> referenceMap = new HashMap<>();
 
     if (Objects.nonNull(ref)) {
-      referenceMap.put(ref, root.getSummary());
+      referenceMap.put(ref, responseObject.getSummary());
     }
 
-    fillResponseObject(root, openApi, referenceMap, new ArrayList<>(), responseCode);
+    fillResponseObject(responseObject, openApi, referenceMap, new ArrayList<>(), responseCode);
 
-    return ResponseTemplate.builder()
-        .responseCode(Integer.parseInt(responseCode))
-        .mediaType(mediaType)
-        .responseObject(root)
-        .isDefault(isDefault)
-        .responseHeaders(responseHeaders)
-        .build();
+    return responseObject;
   }
 
   @SuppressWarnings("rawtypes")
@@ -323,9 +336,7 @@ public class ResponseTemplateBuilder {
     if (Objects.nonNull(schema.getExtensions())) {
       Object type = schema.getExtensions()
           .get(X_DWS_TYPE);
-      if (Objects.nonNull(type) || (type instanceof String)) {
-        return Optional.of((String) type);
-      }
+      return Optional.ofNullable((String) type);
     }
     return Optional.empty();
   }
