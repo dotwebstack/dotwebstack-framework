@@ -137,7 +137,7 @@ public class ResponseTemplateBuilder {
           .get$ref();
 
       Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
-      ResponseObject responseObject = createResponseObject(queryName, schema, ref, true, false);
+      responseObject = createResponseObject(queryName, schema, ref, true, false);
 
       Map<String, SchemaSummary> referenceMap = new HashMap<>();
 
