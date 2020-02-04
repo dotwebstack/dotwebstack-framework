@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
+import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
@@ -34,6 +36,7 @@ import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -67,6 +70,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     } else if (Objects.isNull(value)) {
       return Collections.emptyMap();
     } else {
+      validateContentType(request);
       try {
         JsonNode node = objectMapper.reader()
             .readTree(value);
@@ -153,6 +157,18 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
               name, pathName, typeDefinition.getName()));
       validate(name, childSchema, inputValueDefinition.getType(), pathName);
     });
+  }
+
+  private void validateContentType(ServerRequest request) throws BadRequestException {
+    List<String> contentTypeHeaders = request.headers()
+        .header(OasConstants.HEADER_CONTENT_TYPE);
+    if (contentTypeHeaders.size() != 1) {
+      throw badRequestException("Expected exactly 1 '{}' header but found {}.", OasConstants.HEADER_CONTENT_TYPE,
+          contentTypeHeaders.size());
+    } else if (!Objects.equals(MediaType.APPLICATION_JSON.toString(), contentTypeHeaders.get(0))) {
+      throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
+          singletonList(MediaType.APPLICATION_JSON));
+    }
   }
 
   @Override

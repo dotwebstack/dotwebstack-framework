@@ -143,7 +143,8 @@ public class RequestBodyHandlerTest {
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
     // Act / Assert
-    assertEquals(expected, this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+    assertEquals(expected,
+        this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
