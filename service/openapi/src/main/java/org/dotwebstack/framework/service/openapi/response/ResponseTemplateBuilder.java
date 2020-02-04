@@ -109,28 +109,31 @@ public class ResponseTemplateBuilder {
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, MimeType mediaType,
       MediaType content, String queryName, Map<String, ResponseHeader> responseHeaders) {
-    String ref = content.getSchema()
-        .get$ref();
-
     Map<String, Object> extensions = content.getExtensions();
     boolean isDefault = extensions != null && (boolean) content.getExtensions()
         .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
 
-    Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
-    ResponseObject root = createResponseObject(queryName, schema, ref, true, false);
+    ResponseObject responseObject = null;
+    if (Objects.nonNull(content.getSchema())) {
+      String ref = content.getSchema()
+          .get$ref();
 
-    Map<String, SchemaSummary> referenceMap = new HashMap<>();
+      Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
+      responseObject = createResponseObject(queryName, schema, ref, true, false);
 
-    if (Objects.nonNull(ref)) {
-      referenceMap.put(ref, root.getSummary());
+      Map<String, SchemaSummary> referenceMap = new HashMap<>();
+
+      if (Objects.nonNull(ref)) {
+        referenceMap.put(ref, responseObject.getSummary());
+      }
+
+      fillResponseObject(responseObject, openApi, referenceMap, new ArrayList<>(), responseCode);
     }
-
-    fillResponseObject(root, openApi, referenceMap, new ArrayList<>(), responseCode);
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
         .mediaType(org.springframework.http.MediaType.asMediaType(mediaType))
-        .responseObject(root)
+        .responseObject(responseObject)
         .isDefault(isDefault)
         .responseHeaders(responseHeaders)
         .build();

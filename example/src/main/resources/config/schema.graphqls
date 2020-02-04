@@ -8,6 +8,12 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
+  breweryModel(identifier: ID! @constraint(pattern: "[0-9]+"),
+    iri: IRI @resource
+  ): Model
+    @sparql(
+      repository: "local")
+
   brewery_with_subject(subject: String! @filter) : Brewery
     @sparql(repository: "local")
 

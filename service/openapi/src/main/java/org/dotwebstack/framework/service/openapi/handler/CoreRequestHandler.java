@@ -172,6 +172,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     responseSchemaContext.getResponses()
         .stream()
+        .filter(responseTemplate -> Objects.nonNull(responseTemplate.getResponseObject()))
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
@@ -257,15 +258,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       URI uri = request.uri();
 
-      ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
-
       String body;
-      if (responseWriteContext.hasSchema()) {
-        body = jsonResponseMapper.toResponse(responseWriteContext);
+      if (Objects.nonNull(template.getResponseObject())) {
+        ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
+            inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
+        body = jsonResponseMapper.toResponse(responseWriteContext);
       } else {
-        body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(responseWriteContext);
+        body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
       }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));

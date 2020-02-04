@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
-import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getRequiredResponseObjectsForSuccessResponse;
+import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathsForSuccessResponse;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ public class GraphQlQueryBuilder {
 
   public String toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
-    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseSchemaContext, inputParams);
+    Set<String> requiredPaths = getPathsForSuccessResponse(responseSchemaContext, inputParams);
 
     StringBuilder builder = new StringBuilder();
     StringJoiner joiner = new StringJoiner(",", "{", "}");

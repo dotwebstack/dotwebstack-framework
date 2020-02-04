@@ -27,7 +27,7 @@ public class IriCoercing implements Coercing<IRI, IRI> {
 
   @Override
   public IRI parseValue(@NonNull Object value) {
-    if (value instanceof URI) {
+    if (value instanceof URI || value instanceof String) {
       return createIri(value.toString());
     }
     throw new CoercingParseValueException(String.format("Unable to parse IRI from '%s' type.", value.getClass()
