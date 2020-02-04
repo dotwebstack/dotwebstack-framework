@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
-import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
@@ -20,10 +19,9 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -36,7 +34,6 @@ import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -60,8 +57,8 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   }
 
   @Override
-  public Map<String, Object> getValues(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext, @NonNull RequestBody requestBody,
-                                       Map<String, Object> parameterMap) throws BadRequestException {
+  public Map<String, Object> getValues(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext,
+      @NonNull RequestBody requestBody, @NonNull Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
 
@@ -70,17 +67,19 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     } else if (Objects.isNull(value)) {
       return Collections.emptyMap();
     } else {
-      validateContentType(request);
       try {
-        JsonNode node = objectMapper.reader().readTree(value);
-        return (Objects.nonNull(node))?Map.of(requestBodyContext.getName(), JsonNodeUtils.toObject(node)):Collections.emptyMap();
+        JsonNode node = objectMapper.reader()
+            .readTree(value);
+        Map<String, Object> result = new HashMap<>();
+        node.fields()
+            .forEachRemaining(field -> result.put(field.getKey(), JsonNodeUtils.toObject(field.getValue())));
+        return result;
       } catch (IOException e) {
         throw illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
       }
     }
   }
 
-  @SuppressWarnings("rawtypes")
   public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
     requestBody.getContent()
         .forEach((key, mediaType) -> {
@@ -156,20 +155,9 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     });
   }
 
-  private void validateContentType(ServerRequest request) throws BadRequestException {
-    List<String> contentTypeHeaders = request.headers()
-        .header(OasConstants.HEADER_CONTENT_TYPE);
-    if (contentTypeHeaders.size() != 1) {
-      throw badRequestException("Expected exactly 1 '{}' header but found {}.", OasConstants.HEADER_CONTENT_TYPE,
-          contentTypeHeaders.size());
-    } else if (!Objects.equals(MediaType.APPLICATION_JSON.toString(), contentTypeHeaders.get(0))) {
-      throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
-          singletonList(MediaType.APPLICATION_JSON));
-    }
-  }
-
   @Override
   public boolean supports(@NonNull RequestBody requestBody) {
-    return true;
+    return Objects.nonNull(requestBody.getContent()
+        .get(MediaType.APPLICATION_JSON));
   }
 }

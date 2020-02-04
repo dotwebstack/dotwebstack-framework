@@ -155,7 +155,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw unsupportedOperationException("No response in the 200 range found.");
     }
-    validateParameters(field, responseSchemaContext.getParameters(), pathName);
+    if (responseSchemaContext.getRequestBodyContext() == null) {
+      validateParameters(field, responseSchemaContext.getParameters(), pathName);
+    }
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
@@ -343,7 +345,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValues(request, requestBodyContext, requestBody, result)
           .forEach(result::put);
-          .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     } else {
       validateRequestBodyNonexistent(request);
     }
