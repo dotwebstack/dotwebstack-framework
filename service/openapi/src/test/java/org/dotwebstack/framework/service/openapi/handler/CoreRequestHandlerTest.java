@@ -5,6 +5,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,7 @@ import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -180,8 +182,9 @@ class CoreRequestHandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void getResponseTest()
+  void getOkResponseTest()
       throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
+    // Arrange
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
     when(request.queryParams()).thenReturn(queryParams);
@@ -194,9 +197,8 @@ class CoreRequestHandlerTest {
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
 
-    Mono<String> mono = mock(Mono.class);
+    Mono<String> mono = Mono.empty();
     when(request.bodyToMono(String.class)).thenReturn(mono);
-    when(mono.block()).thenReturn(null);
 
     ExecutionResult executionResult = mock(ExecutionResult.class);
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
@@ -205,11 +207,48 @@ class CoreRequestHandlerTest {
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
+
+    // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(request);
 
     // Assert
-    assertThat(serverResponse.statusCode()
-        .is2xxSuccessful(), is(true));
+    assertTrue(serverResponse.statusCode()
+        .is2xxSuccessful());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getRedirectResponseTest() throws Exception {
+    // Arrange
+    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    ServerRequest request = mock(ServerRequest.class);
+    when(request.queryParams()).thenReturn(queryParams);
+
+    Map<Object, Object> data = new HashMap<>();
+    data.put("data", "{\"key\" : \"value\" }");
+
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    HttpHeaders asHeaders = mock(HttpHeaders.class);
+    when(headers.asHttpHeaders()).thenReturn(asHeaders);
+    when(request.headers()).thenReturn(headers);
+
+    Mono<String> mono = Mono.empty();
+    when(request.bodyToMono(String.class)).thenReturn(mono);
+
+    ExecutionResult executionResult = mock(ExecutionResult.class);
+    when(executionResult.getErrors()).thenReturn(new ArrayList<>());
+    when(executionResult.getData()).thenReturn(data);
+
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
+    when(responseSchemaContext.getResponses()).thenReturn(getRedirectResponseTemplate());
+    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
+
+    // Act
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request);
+
+    // Assert
+    assertTrue(serverResponse.statusCode()
+        .is3xxRedirection());
   }
 
   @Test
@@ -367,6 +406,31 @@ class CoreRequestHandlerTest {
     ResponseTemplate xml = getTypedResponseTemplateBuilder(MediaType.APPLICATION_XML).build();
 
     return List.of(json, xml);
+  }
+
+  private List<ResponseTemplate> getRedirectResponseTemplate() {
+    List<ResponseTemplate> responseTemplates = new ArrayList<>();
+
+    ResponseHeader responseHeader = ResponseHeader.builder()
+        .name("Location")
+        .type("string")
+        .jexlExpression("www.kadaster.nl")
+        .defaultValue("")
+        .build();
+
+    Map<String, ResponseHeader> responseHeaders = new HashMap<>();
+    responseHeaders.put("Location", responseHeader);
+
+    responseTemplates.add(ResponseTemplate.builder()
+        .mediaType(MediaType.APPLICATION_JSON)
+        .responseObject(ResponseObject.builder()
+            .summary(schemaSummaryBuilder())
+            .build())
+        .responseCode(303)
+        .responseHeaders(responseHeaders)
+        .build());
+
+    return responseTemplates;
   }
 
   private ResponseTemplate.ResponseTemplateBuilder getTypedResponseTemplateBuilder(MediaType mediaType) {
