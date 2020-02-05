@@ -3,10 +3,12 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -18,26 +20,39 @@ public class ResponseContextHelper {
 
   private ResponseContextHelper() {}
 
-  public static Set<String> getRequiredResponseObjectsForSuccessResponse(
-      @NonNull ResponseSchemaContext responseSchemaContext, @NonNull Map<String, Object> inputParams) {
-    ResponseTemplate successResponse = responseSchemaContext.getResponses()
+  public static Set<String> getPathsForSuccessResponse(@NonNull ResponseSchemaContext responseSchemaContext,
+      @NonNull Map<String, Object> inputParams) {
+    Optional<ResponseTemplate> successResponse = responseSchemaContext.getResponses()
         .stream()
         .filter(template -> template.isApplicable(200, 299))
-        .findFirst()
-        .orElseThrow(() -> invalidConfigurationException("No success response found for ResponseSchemaContext!"));
+        .findFirst();
 
-    return getRequiredResponseObject("", successResponse.getResponseObject(), responseSchemaContext.getGraphQlField(),
-        inputParams, true).keySet()
-            .stream()
-            .map(path -> {
-              if (path.startsWith(successResponse.getResponseObject()
-                  .getIdentifier() + ".")) {
-                return path.substring(path.indexOf('.') + 1);
-              }
-              return path;
-            })
-            .filter(path -> !path.isEmpty())
-            .collect(Collectors.toSet());
+    if (successResponse.isPresent()) {
+      ResponseTemplate responseTemplate = successResponse.get();
+      return getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
+    } else {
+      throw invalidConfigurationException("No success response found for ResponseSchemaContext!");
+    }
+  }
+
+  private static Set<String> getResponseObject(GraphQlField graphQlField, Map<String, Object> inputParams,
+      ResponseTemplate responseTemplate) {
+    ResponseObject responseObject = responseTemplate.getResponseObject();
+
+    if (responseObject == null) {
+      return Collections.emptySet();
+    } else {
+      return getRequiredResponseObject("", responseObject, graphQlField, inputParams, true).keySet()
+          .stream()
+          .map(path -> {
+            if (path.startsWith(responseObject.getIdentifier() + ".")) {
+              return path.substring(path.indexOf('.') + 1);
+            }
+            return path;
+          })
+          .filter(path -> !path.isEmpty())
+          .collect(Collectors.toSet());
+    }
   }
 
   static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,

@@ -21,7 +21,7 @@ public abstract class BaseResponseMapper implements ResponseMapper {
 
   @Override
   public boolean supportsInputObjectClass(@NonNull Class<?> clazz) {
-    return Model.class == clazz;
+    return Model.class.isAssignableFrom(clazz);
   }
 
   @Override

@@ -2,6 +2,8 @@ package org.dotwebstack.framework.integrationtest.openapirdf4j;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.dotwebstack.framework.integrationtest.openapirdf4j.matcher.IsEqualIgnoringLineBreaks.equalToIgnoringLineBreaks;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,9 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.dotwebstack.framework.test.TestApplication;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -87,6 +94,26 @@ class OpenApiRdf4jIntegrationTest {
 
     // Assert
     assertResult(result, "/results/breweries_filter_name.json");
+  }
+
+  @ParameterizedTest
+  @CsvSource(value = {"*/*:brewery_model_turtle_identifier.json",
+      "application/n-triples:brewery_model_n-triples_identifier.json"}, delimiter = ':')
+  void openApiRequest_ReturnsBreweryModel_withIdentifierFromPathParamAndAcceptHeader(String acceptHeader,
+      String expectedResultFile) throws IOException {
+    // Arrange & Act
+    String actualResult = webClient.get()
+        .uri("/brewery/123/model")
+        .header("iri", "https://github.com/dotwebstack/beer/id/brewery/123")
+        .header("Accept", acceptHeader)
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    String expectedResult = new String(getFileInputStream(expectedResultFile).readAllBytes());
+    assertThat(actualResult, equalToIgnoringLineBreaks(expectedResult));
   }
 
   @Test
@@ -433,5 +460,11 @@ class OpenApiRdf4jIntegrationTest {
 
     // Assert
     assertEquals(expectedObj, actualObj);
+  }
+
+  private InputStream getFileInputStream(String filename) throws IOException {
+    return Files.newInputStream(Paths.get("src", "test", "resources")
+        .resolve("results")
+        .resolve(filename));
   }
 }
