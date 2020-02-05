@@ -120,32 +120,37 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   private void validate(String propertyName, Schema<?> propertySchema, Type graphQlType, String pathName) {
     Schema<?> schema = resolveSchema(openApi, propertySchema);
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
+    validatePropertyType(propertyName, schema.getType(), unwrapped);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
-      if (!(unwrapped instanceof TypeName)) {
-        throw invalidConfigurationException(
-            "Property '{}' with OAS object type cannot be mapped to GraphQL type '{}', "
-                + "it should be mapped to type '{}'.",
-            propertyName, unwrapped.getClass()
-                .getName(),
-            TypeName.class.getName());
-      }
       InputObjectTypeDefinition typeDefinition = (InputObjectTypeDefinition) this.typeDefinitionRegistry
           .getType(unwrapped)
           .orElseThrow(
               () -> invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
       validateProperties(pathName, schema, typeDefinition);
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
-      if (!(unwrapped instanceof ListType)) {
-        throw invalidConfigurationException(
-            "Property '{}' with OAS array type cannot be mapped to GraphQL type '{}', it"
-                + " should be mapped to type '{}'.",
-            propertyName, unwrapped.getClass(), ListType.class.getName());
-      }
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
     } else {
       this.typeValidator.validateTypesOpenApiToGraphQ(schema.getType(), TypeHelper.getTypeName(unwrapped),
           propertyName);
+    }
+  }
+
+  void validatePropertyType(String propertyName, String oasType, Type<?> graphQlType) {
+    Class<?> expectedClass = null;
+    if (OasConstants.OBJECT_TYPE.equals(oasType)) {
+      expectedClass = TypeName.class;
+    } else if (OasConstants.ARRAY_TYPE.equals(oasType)) {
+      expectedClass = ListType.class;
+    }
+    if (Objects.nonNull(expectedClass) && !graphQlType.getClass()
+        .isAssignableFrom(expectedClass)) {
+      throw invalidConfigurationException(
+          "Property '{}' with OAS object type '{}' cannot be mapped to GraphQL type '{}', "
+              + "it should be mapped to type '{}'.",
+          propertyName, oasType, graphQlType.getClass()
+              .getName(),
+          expectedClass.getName());
     }
   }
 
@@ -179,6 +184,6 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   @Override
   public boolean supports(@NonNull RequestBody requestBody) {
     return Objects.nonNull(requestBody.getContent()
-        .get(MediaType.APPLICATION_JSON));
+        .get(MediaType.APPLICATION_JSON.toString()));
   }
 }

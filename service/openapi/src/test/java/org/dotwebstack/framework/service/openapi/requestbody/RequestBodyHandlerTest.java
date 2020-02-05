@@ -1,11 +1,14 @@
-package org.dotwebstack.framework.service.openapi.param;
+package org.dotwebstack.framework.service.openapi.requestbody;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import graphql.language.ListType;
+import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
@@ -19,7 +22,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -198,6 +201,43 @@ public class RequestBodyHandlerTest {
         .setExtensions(Map.of("an extension", "an extension"));
     assertThrows(InvalidConfigurationException.class,
         () -> this.requestBodyHandler.validate(this.graphQlField, this.requestBody, "/query4"));
+  }
+
+  @Test
+  public void supports_returnsTrue_forJson() {
+    // Act / Assert
+    assertTrue(this.requestBodyHandler.supports(this.requestBody));
+  }
+
+  @Test
+  public void supports_returnsFalse_forNonJson() {
+    // Arrange
+    this.requestBody.getContent()
+        .remove(MediaType.APPLICATION_JSON.toString());
+    // Act / Assert
+    assertFalse(this.requestBodyHandler.supports(this.requestBody));
+  }
+
+  @Test
+  public void validatePropertyType_succeeds_forOasObject() {
+    this.requestBodyHandler.validatePropertyType("p", OasConstants.OBJECT_TYPE, new TypeName("test"));
+  }
+
+  @Test
+  public void validatePropertyType_throwsException_forOasObject() {
+    assertThrows(InvalidConfigurationException.class, () -> this.requestBodyHandler.validatePropertyType("p",
+        OasConstants.OBJECT_TYPE, new ListType(new TypeName("test"))));
+  }
+
+  @Test
+  public void validatePropertyType_succeeds_forOasArray() {
+    this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new ListType(new TypeName("test")));
+  }
+
+  @Test
+  public void validatePropertyType_throwsException_forOasArray() {
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new TypeName("test")));
   }
 
   private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {
