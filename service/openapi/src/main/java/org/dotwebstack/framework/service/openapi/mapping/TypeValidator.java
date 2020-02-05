@@ -29,8 +29,8 @@ public class TypeValidator {
             && !GraphQLString.getName()
                 .equals(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       case NUMBER_TYPE:
@@ -39,8 +39,8 @@ public class TypeValidator {
                 GraphQLShort.getName(), GraphQLBigDecimal.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       case INTEGER_TYPE:
@@ -48,16 +48,16 @@ public class TypeValidator {
             .of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       case BOOLEAN_TYPE:
         if (!GraphQLBoolean.getName()
             .equals(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       default:
@@ -76,24 +76,24 @@ public class TypeValidator {
                 GraphQLShort.getName(), GraphQLBigDecimal.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       case INTEGER_TYPE:
         if (!ImmutableList.of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       case BOOLEAN_TYPE:
         if (!GraphQLBoolean.getName()
             .equals(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
-              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, graphQlType,
-              identifier);
+              "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.", oasType, identifier,
+              graphQlType);
         }
         break;
       default:
