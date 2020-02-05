@@ -45,6 +45,18 @@ class IriCoercingTest {
   }
 
   @Test
+  void parseValue_ReturnsIri_ForStringValue() {
+    // Arrange
+    String uriString = "http://myUri/path";
+
+    // Act
+    IRI result = coercing.parseValue(uriString);
+
+    // Assert
+    assertEquals(result.toString(), uriString);
+  }
+  
+  @Test
   void parseLiteral_ReturnsIri_ForIriValue() {
     // Act
     IRI result = coercing.parseLiteral(Constants.BREWERY_SHAPE);
