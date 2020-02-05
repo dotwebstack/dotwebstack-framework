@@ -33,16 +33,32 @@ public class TypeValidatorTest {
 
   }
 
-  @ParameterizedTest(name = "validateTypeGraphqlToOpenApi is valid with [{arguments}]")
+  @ParameterizedTest(name = "validateTypesOpenApiToGraphQ is valid with [{arguments}]")
   @MethodSource("getValidOasToGraphQl")
   public void validateTypesOpenApiToGraphQ_isValid(String oasType, String graphQlType, String identifier) {
     new TypeValidator().validateTypesOpenApiToGraphQ(oasType, graphQlType, identifier);
+  }
+
+  @ParameterizedTest(name = "validateTypesOpenApiToGraphQ is invalid with [{arguments}]")
+  @MethodSource("getInvalidOasToGraphQl")
+  public void validateTypesOpenApiToGraphQ_throwsException_forInvalidMapping(String oasType, String graphQlType,
+      String identifier) {
+    assertThrows(InvalidConfigurationException.class,
+        () -> new TypeValidator().validateTypesOpenApiToGraphQ(oasType, graphQlType, identifier));
   }
 
   @ParameterizedTest(name = "validateTypesGraphQlToOpenApi is valid with [{arguments}]")
   @MethodSource("getValidGraphQlToOas")
   public void validateTypesGraphQlToOpenApi_isValid(String oasType, String graphQlType, String identifier) {
     new TypeValidator().validateTypesGraphQlToOpenApi(oasType, graphQlType, identifier);
+  }
+
+  @ParameterizedTest(name = "validateTypesGraphQlToOpenApi is invalid with [{arguments}]")
+  @MethodSource("getInvalidGraphQlToOas")
+  public void validateTypesGraphQlToOpenApithrowsException_forInvalidMapping(String oasType, String graphQlType,
+      String identifier) {
+    assertThrows(InvalidConfigurationException.class,
+        () -> new TypeValidator().validateTypesGraphQlToOpenApi(oasType, graphQlType, identifier));
   }
 
   private static Stream<Arguments> getValidOasToGraphQl() {
@@ -56,6 +72,12 @@ public class TypeValidatorTest {
         Arguments.of("boolean", GraphQLBoolean.getName(), "1"));
   }
 
+  private static Stream<Arguments> getInvalidOasToGraphQl() {
+    return Stream.of(Arguments.of("string", GraphQLInt.getName(), "1"),
+        Arguments.of("number", GraphQLBoolean.getName(), "1"), Arguments.of("integer", GraphQLBoolean.getName(), "1"),
+        Arguments.of("boolean", GraphQLFloat.getName(), "1"));
+  }
+
   private static Stream<Arguments> getValidGraphQlToOas() {
     return Stream.of(Arguments.of("string", GraphQLID.getName(), "1"),
         Arguments.of("string", GraphQLString.getName(), "1"), Arguments.of("string", GraphQLFloat.getName(), "1"),
@@ -67,5 +89,10 @@ public class TypeValidatorTest {
         Arguments.of("number", GraphQLBigDecimal.getName(), "1"), Arguments.of("integer", GraphQLInt.getName(), "1"),
         Arguments.of("integer", GraphQLByte.getName(), "1"), Arguments.of("integer", GraphQLShort.getName(), "1"),
         Arguments.of("boolean", GraphQLBoolean.getName(), "1"));
+  }
+
+  private static Stream<Arguments> getInvalidGraphQlToOas() {
+    return Stream.of(Arguments.of("number", GraphQLString.getName(), "1"),
+        Arguments.of("integer", GraphQLBoolean.getName(), "1"), Arguments.of("boolean", GraphQLInt.getName(), "1"));
   }
 }
