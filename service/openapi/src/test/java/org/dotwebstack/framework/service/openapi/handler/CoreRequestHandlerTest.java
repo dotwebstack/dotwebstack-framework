@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,6 +21,8 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +44,7 @@ import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -397,6 +401,28 @@ class CoreRequestHandlerTest {
     when(request.headers()).thenReturn(headers);
     when(request.queryParams()).thenReturn(queryParams);
     return request;
+  }
+
+  @Test
+  void getRequestBodyProperties_returnsEmptyProperties_forRequestBody(){
+    // Arrange
+   RequestBody requestBody = this.openApi.getPaths()
+        .get("/query1")
+        .getPost().getRequestBody();
+   RequestBodyContext requestBodyContext = new RequestBodyContext(requestBody);
+   ResponseSchemaContext responseSchemaContext = mock(ResponseSchemaContext.class);
+   when(responseSchemaContext.getRequestBodyContext()).thenReturn(requestBodyContext);
+
+   // Act / Assert
+   Map<String, Schema> requestBodyProperties = this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext());
+   assertFalse(requestBodyProperties.isEmpty());
+   assertTrue(requestBodyProperties.containsKey("o1_prop1"));
+  }
+
+  @Test
+  void getRequestBodyProperties_returnsEmptyProperties_forNullRequestBody(){
+    // Act / Assert
+    assertEquals(Collections.emptyMap(), this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()));
   }
 
   private List<ResponseTemplate> getResponseTemplates() {

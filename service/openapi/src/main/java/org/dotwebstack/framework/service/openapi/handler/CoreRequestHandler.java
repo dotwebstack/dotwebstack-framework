@@ -182,7 +182,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   @SuppressWarnings("rawtypes")
-  private Map<String, Schema> getRequestBodyProperties(RequestBodyContext requestBodyContext) {
+  Map<String, Schema> getRequestBodyProperties(RequestBodyContext requestBodyContext) {
     if (Objects.nonNull(requestBodyContext) && Objects.nonNull(requestBodyContext.getRequestBodySchema())) {
       io.swagger.v3.oas.models.media.MediaType mediaType = requestBodyContext.getRequestBodySchema()
           .getContent()
