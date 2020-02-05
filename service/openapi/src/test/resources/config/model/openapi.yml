@@ -89,7 +89,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object1'
+              type: object
+              properties:
+                argument1:
+                  type: string
       responses:
         200:
           description: OK
