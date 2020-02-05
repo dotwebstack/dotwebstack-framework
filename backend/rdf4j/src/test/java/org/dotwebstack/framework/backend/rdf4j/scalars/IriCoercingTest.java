@@ -55,7 +55,7 @@ class IriCoercingTest {
     // Assert
     assertEquals(result.toString(), uriString);
   }
-  
+
   @Test
   void parseLiteral_ReturnsIri_ForIriValue() {
     // Act
