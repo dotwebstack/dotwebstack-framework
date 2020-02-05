@@ -427,7 +427,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     });
   }
 
-  private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
+  Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = resolveUrlAndHeaderParameters(request);
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
 

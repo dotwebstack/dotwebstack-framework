@@ -20,7 +20,10 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
 public class TypeValidator {
 
-  public static final String MAPPING_ERROR = "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.";
+  public static final String MAPPING_ERROR_TO = "OAS type '{}' in property '{}' cannot be mapped to GraphQl type '{}'.";
+
+  public static final String MAPPING_ERROR_FROM =
+      "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.";
 
   public void validateTypesOpenApiToGraphQ(@NonNull String oasType, @NonNull String graphQlType,
       @NonNull String identifier) {
@@ -30,7 +33,7 @@ public class TypeValidator {
             .equals(graphQlType)
             && !GraphQLString.getName()
                 .equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       case NUMBER_TYPE:
@@ -38,20 +41,20 @@ public class TypeValidator {
             .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
                 GraphQLShort.getName(), GraphQLBigDecimal.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
         if (!ImmutableList
             .of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       case BOOLEAN_TYPE:
         if (!GraphQLBoolean.getName()
             .equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       default:
@@ -69,19 +72,19 @@ public class TypeValidator {
             .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
                 GraphQLShort.getName(), GraphQLBigDecimal.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
         if (!ImmutableList.of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;
       case BOOLEAN_TYPE:
         if (!GraphQLBoolean.getName()
             .equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR, oasType, identifier, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;
       default:

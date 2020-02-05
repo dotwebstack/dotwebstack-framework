@@ -43,6 +43,7 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
@@ -90,6 +91,9 @@ class CoreRequestHandlerTest {
 
   @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
+
+  @Mock
+  private DefaultRequestBodyHandler defaultRequestBodyHandler;
 
   @Mock
   private EnvironmentProperties environmentProperties;
@@ -391,18 +395,6 @@ class CoreRequestHandlerTest {
     assertEquals(1, params.size());
   }
 
-  ServerRequest getServerRequest() {
-    ServerRequest request = mock(ServerRequest.class);
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
-    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-    queryParams.put("query6_param1", ImmutableList.of("value1"));
-
-    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
-    when(request.headers()).thenReturn(headers);
-    when(request.queryParams()).thenReturn(queryParams);
-    return request;
-  }
-
   @SuppressWarnings("rawtypes")
   @Test
   void getRequestBodyProperties_returnsEmptyProperties_forRequestBody() {
@@ -427,6 +419,49 @@ class CoreRequestHandlerTest {
     // Act / Assert
     assertEquals(Collections.emptyMap(),
         this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException {
+    // Arrange
+    RequestBody requestBody = this.openApi.getPaths()
+        .get("/query1")
+        .getPost()
+        .getRequestBody();
+    RequestBodyContext requestBodyContext = new RequestBodyContext(requestBody);
+    when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(requestBodyContext);
+    when(this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext.getRequestBodySchema()))
+        .thenReturn(this.defaultRequestBodyHandler);
+    when(this.defaultRequestBodyHandler.getValues(any(ServerRequest.class), any(RequestBodyContext.class),
+        any(RequestBody.class), any(Map.class))).thenReturn(Map.of("key", "value"));
+
+    // Act / Assert
+    assertEquals(Map.of("query6_param1", "value1", "key", "value"),
+        this.coreRequestHandler.resolveParameters(getServerRequest()));
+  }
+
+  @Test
+  public void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException {
+    // Arrange
+    ServerRequest request = getServerRequest();
+    when(request.bodyToMono(String.class)).thenReturn(Mono.empty());
+    when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
+
+    // Act / Assert
+    assertEquals(Map.of("query6_param1", "value1"), this.coreRequestHandler.resolveParameters(request));
+  }
+
+  ServerRequest getServerRequest() {
+    ServerRequest request = mock(ServerRequest.class);
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+    queryParams.put("query6_param1", ImmutableList.of("value1"));
+
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+    when(request.headers()).thenReturn(headers);
+    when(request.queryParams()).thenReturn(queryParams);
+    return request;
   }
 
   private List<ResponseTemplate> getResponseTemplates() {
