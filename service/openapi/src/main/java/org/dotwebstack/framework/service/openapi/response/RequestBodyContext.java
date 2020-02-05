@@ -5,12 +5,10 @@ import lombok.Getter;
 
 @Getter
 public class RequestBodyContext {
-  private String name;
 
   private RequestBody requestBodySchema;
 
-  public RequestBodyContext(String name, RequestBody requestBodySchema) {
-    this.name = name;
+  public RequestBodyContext(RequestBody requestBodySchema) {
     this.requestBodySchema = requestBodySchema;
   }
 }

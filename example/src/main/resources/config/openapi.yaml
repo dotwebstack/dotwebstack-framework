@@ -277,6 +277,26 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /brewery_post:
+    post:
+      x-dws-query: brewery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - identifier
+              properties:
+                identifier:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
   /breweries/{identifier}:
     get:
       x-dws-query: brewery
@@ -294,4 +314,3 @@ paths:
               schema:
                 type: string
                 x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
-
