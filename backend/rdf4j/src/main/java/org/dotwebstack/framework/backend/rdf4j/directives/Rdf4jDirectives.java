@@ -6,6 +6,8 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_REPOSITORY = "repository";
 
+  public static final String SPARQL_ARG_QUERY_REF = "queryRef";
+
   public static final String SPARQL_ARG_SUBJECT = "subject";
 
   public static final String SPARQL_ARG_DISTINCT = "distinct";
