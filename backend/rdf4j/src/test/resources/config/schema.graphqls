@@ -25,6 +25,18 @@ type Query {
   ): [Brewery!]!
     @sparql(repository: "local")
 
+  breweries_with_query_ref_as_iri : IRI
+  @sparql(
+    repository: "local"
+    queryRef: "test-iri"
+  )
+
+  breweries_with_query_ref_as_model : Model
+  @sparql(
+    repository: "local"
+    queryRef: "test-model"
+  )
+
   breweriesWithInputObject(
     input: QueryParameters
   ) : [Brewery!]!

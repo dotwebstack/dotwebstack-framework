@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -56,6 +58,10 @@ class Rdf4jConfiguration {
   private static final String BASE_DIR_PREFIX = "rdf4j";
 
   private static final String MODEL_PATH_PATTERN = "model/**";
+
+  private static final String SPARQL_PATH = "sparql";
+
+  private static final String SPARQL_PATH_PATTERN = SPARQL_PATH + "/**";
 
   @Bean
   public ConfigFactory configFactory() {
@@ -138,6 +144,30 @@ class Rdf4jConfiguration {
 
     return registry;
 
+  }
+
+  @Bean
+  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader,
+      @NonNull CoreProperties coreProperties) throws IOException {
+    Map<String, String> result = new HashMap<>();
+    Resource[] resourceList = new Resource[0];
+
+    URI resourcePath = coreProperties.getResourcePath();
+    URI sparqlFolder = resourcePath.resolve(SPARQL_PATH);
+    URI sparqlFolderWithDocuments = resourcePath.resolve(SPARQL_PATH_PATTERN);
+
+    Resource sparqlFolderResource = resourceLoader.getResource(sparqlFolder.toString());
+    if (sparqlFolderResource.exists()) {
+      resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(sparqlFolderWithDocuments.toString());
+    }
+
+    for (Resource resource : resourceList) {
+      String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
+      result.put(resource.getFilename(), content);
+    }
+
+    return result;
   }
 
   private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,

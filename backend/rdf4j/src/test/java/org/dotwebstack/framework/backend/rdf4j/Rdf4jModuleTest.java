@@ -952,6 +952,40 @@ class Rdf4jModuleTest {
   }
 
   @Test
+  void graphQlQuery_returnsIRI_withQueryReference() {
+    // Arrange
+    String query = "{ breweries_with_query_ref_as_iri }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    IRI iri = result.<Map<String, IRI>>getData()
+        .get("breweries_with_query_ref_as_iri");
+
+    assertThat(iri.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+  }
+
+  @Test
+  void graphQlQuery_returnsModel_withQueryReference() {
+    // Arrange
+    String query = "{ breweries_with_query_ref_as_model }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("breweries_with_query_ref_as_model");
+
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+  }
+
+  @Test
   void graphQlQuery_returnsBeer_ForBlankNodeMapping() {
     // Arrange
     String query = "{ beer(identifier: \"6\") { inspiredBy {person} }}";
