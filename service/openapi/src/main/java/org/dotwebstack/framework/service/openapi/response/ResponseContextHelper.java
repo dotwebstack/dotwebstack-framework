@@ -28,22 +28,21 @@ public class ResponseContextHelper {
         .findFirst();
 
     if (successResponse.isPresent()) {
-      return getResponseObject(responseSchemaContext, inputParams, successResponse);
+      ResponseTemplate responseTemplate = successResponse.get();
+      return getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
     } else {
       throw invalidConfigurationException("No success response found for ResponseSchemaContext!");
     }
   }
 
-  private static Set<String> getResponseObject(ResponseSchemaContext responseSchemaContext,
-      Map<String, Object> inputParams, Optional<ResponseTemplate> successResponse) {
-    ResponseTemplate responseTemplate = successResponse.get();
+  private static Set<String> getResponseObject(GraphQlField graphQlField, Map<String, Object> inputParams,
+      ResponseTemplate responseTemplate) {
     ResponseObject responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
       return Collections.emptySet();
     } else {
-      return getRequiredResponseObject("", responseObject, responseSchemaContext.getGraphQlField(), inputParams, true)
-          .keySet()
+      return getRequiredResponseObject("", responseObject, graphQlField, inputParams, true).keySet()
           .stream()
           .map(path -> {
             if (path.startsWith(responseObject.getIdentifier() + ".")) {
