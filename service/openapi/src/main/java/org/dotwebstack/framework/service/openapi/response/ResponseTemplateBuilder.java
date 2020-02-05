@@ -115,12 +115,12 @@ public class ResponseTemplateBuilder {
             : e.getValue()
                 .getSchema();
 
+    Map<String, Object> extensions = schema.getExtensions();
     return ResponseHeader.builder()
         .name(e.getKey())
         .defaultValue((String) schema.getDefault())
         .type(schema.getType())
-        .jexlExpression((String) schema.getExtensions()
-            .get(X_DWS_EXPR))
+        .jexlExpression(Objects.nonNull(extensions) ? (String) extensions.get(X_DWS_EXPR) : null)
         .build();
   }
 
