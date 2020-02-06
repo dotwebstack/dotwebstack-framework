@@ -14,7 +14,7 @@ import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelp
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
