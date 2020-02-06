@@ -4,10 +4,10 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Objects;
+import org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver;
 
 public class RequestBodyContextBuilder {
 
@@ -19,8 +19,9 @@ public class RequestBodyContextBuilder {
 
   public RequestBodyContext buildRequestBodyContext(RequestBody requestBody) {
     if (requestBody != null) {
-      validate(requestBody);
-      return new RequestBodyContext(requestBody);
+      RequestBody resolvedRequestBody = RequestBodyResolver.resolveRequestBody(openApi, requestBody);
+      validate(resolvedRequestBody);
+      return new RequestBodyContext(resolvedRequestBody);
     } else {
       return null;
     }
@@ -28,13 +29,12 @@ public class RequestBodyContextBuilder {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   private void validate(RequestBody requestBody) {
-    Content content = requestBody.getContent();
-
-    if (Objects.isNull(content)) {
+    if (Objects.isNull(requestBody.getContent())) {
       throw illegalArgumentException("RequestBody without content!");
     }
 
-    MediaType mediaType = content.get("application/json");;
+    MediaType mediaType = requestBody.getContent()
+        .get("application/json");;
 
     if (Objects.isNull(mediaType)) {
       throw invalidConfigurationException("Media type 'application/json' not found on request body.");
