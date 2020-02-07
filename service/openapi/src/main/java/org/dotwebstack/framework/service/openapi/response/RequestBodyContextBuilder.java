@@ -27,17 +27,17 @@ public class RequestBodyContextBuilder {
     }
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   private void validate(RequestBody requestBody) {
     if (Objects.isNull(requestBody.getContent())) {
       throw illegalArgumentException("RequestBody without content!");
     }
 
     MediaType mediaType = requestBody.getContent()
-        .get("application/json");;
+        .get(org.springframework.http.MediaType.APPLICATION_JSON.toString());
 
     if (Objects.isNull(mediaType)) {
-      throw invalidConfigurationException("Media type 'application/json' not found on request body.");
+      throw invalidConfigurationException("Media type '{}' not found on request body.",
+          org.springframework.http.MediaType.APPLICATION_JSON.toString());
     }
   }
 }

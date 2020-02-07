@@ -100,8 +100,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   private void validate(Schema<?> schema, GraphQlField graphQlField, String pathName) {
     if (Objects.nonNull(schema.getExtensions()) && !schema.getExtensions()
         .isEmpty()) {
-      throw invalidConfigurationException("Extensions are not supported for requestBody Schemas; in path '{}'.",
-          pathName);
+      throw invalidConfigurationException("Extensions are not supported for requestBody in path '{}'.", pathName);
     }
     Map<String, Schema> properties = schema.getProperties();
     properties.forEach((name, propertySchema) -> {
@@ -145,12 +144,8 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     }
     if (Objects.nonNull(expectedClass) && !graphQlType.getClass()
         .isAssignableFrom(expectedClass)) {
-      throw invalidConfigurationException(
-          "Property '{}' with OAS object type '{}' cannot be mapped to GraphQL type '{}', "
-              + "it should be mapped to type '{}'.",
-          propertyName, oasType, graphQlType.getClass()
-              .getName(),
-          expectedClass.getName());
+      throw invalidConfigurationException("Property '{}' with OAS object type '{}' it should be mapped to type '{}'.",
+          propertyName, oasType, expectedClass.getName());
     }
   }
 
