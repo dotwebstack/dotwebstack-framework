@@ -216,7 +216,7 @@ paths:
             OS:
               schema:
                 type: string
-                x-dws-expr: env.OS
+                x-dws-expr: '`env.OS`'
             API-version:
               schema:
                 type: string

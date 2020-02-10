@@ -18,7 +18,7 @@ beer_brewery:123 a beer_def:Brewery ;
   schema:name "Brouwerij 1923"^^xsd:string ;
   beer_def:number 1;
   schema:address address_id:1 ;
-  beer_def:founded "2018-05-30T09:30:10+02:00"^^xsd:dateTime
+  beer_def:founded "2018-05-30T09:30:10.000+02:00"^^xsd:dateTime
 .
 
 address_id:1 a beer_def:Address ;

@@ -1,120 +1,141 @@
 schema {
-  query: Query
+    query: Query
 }
 
 type Query {
-  brewery(identifier: ID!): Brewery!
+    brewery(identifier: ID!): Brewery!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
-  brewery_with_subject(subject: String! @filter) : Brewery!
+    brewery_with_subject(subject: String! @filter) : Brewery!
     @sparql(repository: "local")
 
-  breweries(
-    name: String 
-      @filter,
-    url: String
-      @filter,
-    foundedAfter: String 
-      @filter(field: "founded", operator: ">"),
-    foundedBefore: String 
-      @filter(field: "founded", operator: "<"),
-    localName: String @filter(field: "localName")
-    withAddressSubject: String @filter(field: "address.subject")
-    sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
-    beerCount: Int @filter(field: "beerCount")
-  ): [Brewery!]!
+    breweries(
+        name: String
+        @filter,
+        url: String
+        @filter,
+        foundedAfter: String
+        @filter(field: "founded", operator: ">"),
+        foundedBefore: String
+        @filter(field: "founded", operator: "<"),
+        localName: String @filter(field: "localName")
+        withAddressSubject: String @filter(field: "address.subject")
+        sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
+        beerCount: Int @filter(field: "beerCount")
+    ): [Brewery!]!
     @sparql(repository: "local")
 
-  breweries_with_query_ref_as_iri : IRI
-  @sparql(
-    repository: "local"
-    queryRef: "test-iri"
-  )
+    breweries_with_query_ref_as_iri(beerIRI: IRI) : IRI
+    @sparql(
+        repository: "local"
+        queryRef: "test-iri"
+    )
 
-  breweries_with_query_ref_as_model : Model
-  @sparql(
-    repository: "local"
-    queryRef: "test-model"
-  )
+    breweries_with_query_ref_with_String(beerString: String) : Model
+    @sparql(
+        repository: "local"
+        queryRef: "test-model-describe"
+    )
 
-  breweriesWithInputObject(
-    input: QueryParameters
-  ) : [Brewery!]!
+    breweries_with_query_ref_with_ID(beerID: ID) : Model
+    @sparql(
+        repository: "local"
+        queryRef: "test-model-describe"
+    )
+
+    breweries_with_query_ref_with_IRI(beerIRI: IRI) : Model
+    @sparql(
+        repository: "local"
+        queryRef: "test-model-describe"
+    )
+
+    beers_with_query_ref_as_model_construct : Model
+    @sparql(
+        repository: "local"
+        queryRef: "test-model-construct"
+    )
+
+    breweriesWithInputObject(
+        input: QueryParameters
+    ) : [Brewery!]!
     @sparql(repository: "local")
 
-  beer(identifier: ID!): Beer!
+    beer(identifier: ID!): Beer!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
 
-  breweriesModel(
-    subject: IRI @resource
-  ) : Model
-    @sparql(repository: "local")
+    breweriesModel(
+        subject: IRI
+    ) : Model
+    @sparql(
+        repository: "local",
+        queryRef: "breweries-model"
+    )
 
 }
 
 input QueryParameters {
-  nestedInput: NestedInput
+    nestedInput: NestedInput
 }
 
 input NestedInput {
-  nestedNestedInput: NestedNestedInput
-  foundedAfter: String 
+    nestedNestedInput: NestedNestedInput
+    foundedAfter: String
     @filter(field: "founded", operator: ">")
 }
 
 input NestedNestedInput {
-  name: [String] 
+    name: [String]
     @filter(field: "name", operator: "=")
 }
 
 type Brewery {
-  identifier: ID!
-  name: String!
-  subject: IRI! @resource
-  number: Int
-  localName: String
-  founded: DateTime!
-  owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
-  address(subject: String @filter): Address
-  beerNames: [String!]
-  beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
-  beerCount: Int! @aggregate(type: COUNT)
-  hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
-  url: String
+    identifier: ID!
+    name: String!
+    subject: IRI! @resource
+    number: Int
+    localName: String
+    founded: DateTime!
+    owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
+    address(subject: String @filter): Address
+    beerNames: [String!]
+    beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
+    beerCount: Int! @aggregate(type: COUNT)
+    hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
+    url: String
 }
 
 type Address {
-  subject: IRI! @resource
-  resource: IRI! @resource
-  postalCode: String!
+    subject: IRI! @resource
+    resource: IRI! @resource
+    postalCode: String!
 }
 
 type Beer {
-  identifier: ID!
-  name: String!
-  subject: IRI! @resource
-  brewery: String!
-  beerTypes: [String]!
-  beerTypesRaw: [BeerType!]
-  ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
-  supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
-  inspiredBy: InspiredBy
+    identifier: ID!
+    name: String!
+    subject: IRI! @resource
+    brewery: String!
+    beerTypes: [String]!
+    beerTypesRaw: [BeerType!]
+    ingredients(sort: [SortField!] = [{field: "name", order: DESC}] @sort, ingredientName: [String!] @filter(field: "name")): [Ingredient!]
+    supplements(supplementName: [String!] @filter(field: "name")): [Supplement!]
+    inspiredBy: InspiredBy
 }
 
 type Ingredient {
-  name: String
+    name: String
 }
 
 type Supplement {
-  name: String
+    name: String
 }
 
 type BeerType {
-  name: String
+    name: String
 }
 
 type InspiredBy {
-  beer: Beer
-  person: String
+    beer: Beer
+    person: String
 }
 

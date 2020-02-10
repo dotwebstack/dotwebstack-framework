@@ -109,7 +109,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
   private void validateBindingName(GraphQLFieldDefinition fieldDefinition, String queryString) {
     String name = fieldDefinition.getName();
     if (!queryString.contains(name)) {
-      throw invalidConfigurationException("GraphQL field name:{} should be bounded", name);
+      throw invalidConfigurationException("GraphQL field name:{} should be bound", name);
     }
   }
 
@@ -119,7 +119,8 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
         && !outputType.getName()
             .equals(Rdf4jScalars.IRI.getName())
         && !(outputType instanceof GraphQLObjectType)) {
-      throw new IllegalArgumentException("Output types other than 'Model', 'IRI' or 'Object' are not yet supported.");
+      throw new IllegalArgumentException(
+          "Output types other than 'Model', 'IRI' or GraphQl object are not yet supported.");
     }
   }
 

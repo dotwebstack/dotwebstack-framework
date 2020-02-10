@@ -17,6 +17,7 @@ import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CoreTraverser {
+
+  private static final List<String> SUPPORTED_TYPE_NAMES = Arrays.asList("IRI", "Model");
 
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
@@ -68,8 +71,7 @@ public class CoreTraverser {
     String inputTypeName = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())
         .getName();
 
-    if (List.of("IRI", "Model")
-        .contains(inputTypeName)) {
+    if (SUPPORTED_TYPE_NAMES.contains(inputTypeName)) {
       return emptyList();
     }
 

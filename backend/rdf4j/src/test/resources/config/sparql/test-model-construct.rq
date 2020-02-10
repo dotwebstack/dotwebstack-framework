@@ -1,0 +1,8 @@
+CONSTRUCT {
+   ?s <https://github.com/dotwebstack/beer/def#brewery> ?o .
+}
+WHERE {
+    ?s a <https://github.com/dotwebstack/beer/def#Beer> .
+    ?s <https://github.com/dotwebstack/beer/def#brewery> ?o .
+    filter(?o = <https://github.com/dotwebstack/beer/id/brewery/789>)
+}

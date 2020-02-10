@@ -12,9 +12,13 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
@@ -23,20 +27,29 @@ import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.TreeModel;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.Query;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 @Slf4j
 public final class StaticQueryFetcher implements DataFetcher<Object> {
+
+  private static final List<GraphQLScalarType> SUPPORTED_TYPE_NAMES =
+      Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL);
 
   private final RepositoryAdapter repositoryAdapter;
 
   private final List<QueryValidator> validators;
 
   private String staticSparqlQuery;
+
+  private final SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   public StaticQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators,
       String staticSparqlQuery) {
@@ -55,42 +68,24 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
       if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.IRI)) {
         return getQueryResultAsIri(environment, fieldDefinition);
+      }
 
-      } else if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.MODEL)) {
+      if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.MODEL)) {
         return getQueryResultAsModel(environment, fieldDefinition);
-
-      } else {
-        throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
       }
     }
 
-    return fieldDefinition.getArguments()
-        .stream()
-        .filter(arg -> Objects.nonNull(arg.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
-        .map(GraphQLArgument::getName)
-        .map(environment::getArgument)
-        .map(Object::toString)
-        .findFirst()
-        .map(subject -> String.format("describe <%s>", subject))
-        .map(query -> fetchGraphQuery(environment, fieldDefinition, query))
-        .map(this::mapQueryResultToModel)
-        .orElseGet(TreeModel::new);
+    throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
   }
 
-  private Object getQueryResultAsModel(@NonNull DataFetchingEnvironment environment,
+  private Model getQueryResultAsModel(@NonNull DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition) {
     GraphQueryResult graphQueryResult = fetchGraphQuery(environment, fieldDefinition, staticSparqlQuery);
 
-    Model model = mapQueryResultToModel(graphQueryResult);
-
-    if (model.isEmpty()) {
-      return null;
-    }
-
-    return model;
+    return mapQueryResultToModel(graphQueryResult).orElse(null);
   }
 
-  private Object getQueryResultAsIri(@NonNull DataFetchingEnvironment environment,
+  private Value getQueryResultAsIri(@NonNull DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition) {
     TupleQueryResult tupleQueryResult = fetchTupleQuery(environment, fieldDefinition, staticSparqlQuery);
 
@@ -98,12 +93,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
     validateQueryHasOneResult(tupleQueryResult, staticSparqlQuery);
 
-    String bindingName = queryBindingSet.getBindingNames()
-        .stream()
-        .findFirst()
-        .get();
-
-    return queryBindingSet.getValue(bindingName);
+    return queryBindingSet.getValue(fieldDefinition.getName());
   }
 
   private void validateQueryHasOneResult(TupleQueryResult tupleQueryResult, String query) {
@@ -116,7 +106,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     String inputTypeName = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())
         .getName();
 
-    return Stream.of(Rdf4jScalars.IRI, Rdf4jScalars.MODEL)
+    return SUPPORTED_TYPE_NAMES.stream()
         .map(GraphQLScalarType::getName)
         .anyMatch(inputTypeName::equals);
   }
@@ -130,22 +120,83 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   private GraphQueryResult fetchGraphQuery(@NonNull DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition, String query) {
     LOG.debug("Executing query for graph: {}", query);
-    return repositoryAdapter.prepareGraphQuery(getRepositoryId(fieldDefinition), environment, query, emptyList())
-        .evaluate();
+
+    GraphQuery queryResult =
+        repositoryAdapter.prepareGraphQuery(getRepositoryId(fieldDefinition), environment, query, emptyList());
+
+    queryResult = (GraphQuery) bindValues(environment, fieldDefinition, queryResult);
+
+    return queryResult.evaluate();
   }
 
   private TupleQueryResult fetchTupleQuery(@NonNull DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition, String query) {
     LOG.debug("Executing query for tuples: {}", query);
-    return repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query)
-        .evaluate();
 
+    TupleQuery queryResult = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
+
+    queryResult = (TupleQuery) bindValues(environment, fieldDefinition, queryResult);
+
+    return queryResult.evaluate();
   }
 
-  private Model mapQueryResultToModel(GraphQueryResult queryResult) {
+  private Query bindValues(@NonNull DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition,
+      Query query) {
+    Map<String, Object> queryParameters = environment.getArguments();
+    List<GraphQLArgument> definedArguments = fieldDefinition.getArguments();
+
+    queryParameters.forEach((key, value) -> {
+
+      GraphQLArgument graphQlArgument = definedArguments.stream()
+          .filter(argument -> argument.getName()
+              .equals(key))
+          .findFirst()
+          .orElse(null);
+
+      validateGraphQlArgument(graphQlArgument, key);
+
+      Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
+          .getName());
+
+      query.setBinding(key, bindingValue);
+    });
+
+    return query;
+  }
+
+  private void validateGraphQlArgument(GraphQLArgument graphQlArgument, String argument) {
+    if (Objects.isNull(graphQlArgument)) {
+      illegalStateException("Invoked endpoint does not support argument {}", argument);
+    }
+  }
+
+  private Value getValueForType(Object value, String type) {
+    switch (type) {
+      case "IRI":
+        return valueFactory.createIRI(String.valueOf(value));
+      case "ID":
+      case "String":
+        return valueFactory.createLiteral((String) value);
+      case "Boolean":
+        return valueFactory.createLiteral((Boolean) value);
+      case "Int":
+        return valueFactory.createLiteral((Integer) value);
+      case "Float":
+        return valueFactory.createLiteral((Float) value);
+      case "BigDecimal":
+        return valueFactory.createLiteral((BigDecimal) value);
+      case "Date":
+        return valueFactory.createLiteral((Date) value);
+      default:
+        throw invalidConfigurationException("Unsupported argument type: {}", value.getClass()
+            .getName());
+    }
+  }
+
+  private Optional<Model> mapQueryResultToModel(GraphQueryResult queryResult) {
     Model model = QueryResults.asModel(queryResult);
     LOG.debug("Fetched [{}] triples", model.size());
-    return model;
+    return Optional.ofNullable(model);
   }
 
 }

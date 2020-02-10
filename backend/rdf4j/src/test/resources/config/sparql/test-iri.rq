@@ -1,1 +1,3 @@
-SELECT DISTINCT ?breweries_with_query_ref_as_iri WHERE { VALUES ?breweries_with_query_ref_as_iri { <https://github.com/dotwebstack/beer/id/brewery/123> }}
+SELECT DISTINCT ?breweries_with_query_ref_as_iri WHERE {
+   ?beerIRI <https://github.com/dotwebstack/beer/def#brewery> ?breweries_with_query_ref_as_iri
+}
