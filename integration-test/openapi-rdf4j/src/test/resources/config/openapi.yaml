@@ -230,3 +230,59 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /brewery_post:
+    post:
+      x-dws-query: brewery
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ['postalCode', 'beers', 'beers.ingredients']
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - identifier
+              properties:
+                identifier:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /brewery/{identifier}/model:
+    get:
+      x-dws-query: breweryModel
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: iri
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uri
+      responses:
+        200:
+          description: OK
+          content:
+            application/ld+json: {}
+            text/n3: {}
+            application/n-quads: {}
+            application/n-triples: {}
+            application/rdf+xml: {}
+            application/trig: {}
+            text/turtle:
+              x-dws-default: true

@@ -22,7 +22,6 @@ public class RequestBodyHandlerRouter {
   }
 
   public RequestBodyHandler getRequestBodyHandler(@NonNull RequestBody requestBody) {
-
     return this.customHandlers.stream()
         .filter(handler -> handler.supports(requestBody))
         .findFirst()

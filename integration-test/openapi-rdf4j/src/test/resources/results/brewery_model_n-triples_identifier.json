@@ -1,0 +1,8 @@
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#identifier> "123" .
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://schema.org/name> "Brouwerij 1923" .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#number> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <http://schema.org/address> <https://github.com/dotwebstack/beer/id/address/1> .
+<https://github.com/dotwebstack/beer/id/brewery/123> <https://github.com/dotwebstack/beer/def#founded> "2018-05-30T09:30:10+02:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://github.com/dotwebstack/beer/id/beer/7> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/123> .
+<https://github.com/dotwebstack/beer/id/beer/8> <https://github.com/dotwebstack/beer/def#brewery> <https://github.com/dotwebstack/beer/id/brewery/123> .

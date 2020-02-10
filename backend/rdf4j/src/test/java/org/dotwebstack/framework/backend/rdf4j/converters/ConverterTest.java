@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.converters;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
@@ -11,8 +12,10 @@ import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.BooleanLiteral;
@@ -24,8 +27,8 @@ class ConverterTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new DateConverter(),
-      new DateTimeConverter(), new IriConverter(), new LongConverter());
+  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new LocalDateConverter(),
+      new DateTimeConverter(), new IriConverter(), new LongConverter(), new IntConverter());
 
   @Test
   void convert_booleanLiteral_toBoolean() {
@@ -41,6 +44,19 @@ class ConverterTest {
   }
 
   @Test
+  void convert_integer_Literal_toInteger() {
+    // Arrange
+    Literal integerLiteral = VF.createLiteral((Integer) 5);
+
+    // Act
+    CoreConverter<Value, ?> converter = getConverter(integerLiteral);
+
+    // Assert
+    assertThat(converter.convertFromValue(integerLiteral), is(5));
+
+  }
+
+  @Test
   void convert_dateLiteral_toLocalDate() throws DatatypeConfigurationException {
     // Arrange
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
@@ -51,8 +67,8 @@ class ConverterTest {
     CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
 
     // Assert
-    assertThat(converter, instanceOf(DateConverter.class));
-    assertThat(((DateConverter) converter).convertLiteral(calenderLiteral), is(LocalDate.parse("2000-01-01")));
+    assertThat(converter, instanceOf(LocalDateConverter.class));
+    assertThat(((LocalDateConverter) converter).convertLiteral(calenderLiteral), is(LocalDate.parse("2000-01-01")));
   }
 
   @Test
@@ -97,13 +113,22 @@ class ConverterTest {
 
     // Assert
     assertThat(converter, instanceOf(IriConverter.class));
-    assertThat(((IriConverter) converter).convert(iri), is(iri));
+    assertThat(((IriConverter) converter).convertFromValue(iri), is(iri));
   }
 
   private CoreConverter<Value, ?> getConverter(Value value) {
     return converters.stream()
-        .filter(converter -> converter.supports(value))
+        .filter(converter -> converter.supportsValue(value))
         .findFirst()
         .orElse(null);
+  }
+
+  @Test
+  void convert_dateTime_toValue_shouldThrowNotImplementedException() {
+    // Arrange
+    DateTimeConverter dateTimeConverter = new DateTimeConverter();
+
+    // Act / Assert
+    assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("dateTime"));
   }
 }

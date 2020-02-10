@@ -8,6 +8,13 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
+  breweryModel(identifier: ID! @constraint(pattern: "[0-9]+"),
+    iri: IRI
+  ): Model
+    @sparql(
+      repository: "local",
+      queryRef: "breweries-model")
+
   brewery_with_subject(subject: String! @filter) : Brewery
     @sparql(repository: "local")
 
@@ -54,9 +61,10 @@ type Query {
     )
 
   voorkomen(
-      subject: IRI @resource
+      subject: IRI
     ): Model
-    @sparql(repository: "local")
+    @sparql(repository: "local",
+    queryRef: "breweries-model")
 }
 
 type Brewery {

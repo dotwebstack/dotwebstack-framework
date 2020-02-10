@@ -1,0 +1,3 @@
+DESCRIBE ?iri WHERE {
+    ?iri ?p ?o
+}

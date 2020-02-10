@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,6 +21,8 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +43,9 @@ import org.dotwebstack.framework.service.openapi.exception.NotAcceptableExceptio
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -86,6 +91,9 @@ class CoreRequestHandlerTest {
 
   @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
+
+  @Mock
+  private DefaultRequestBodyHandler defaultRequestBodyHandler;
 
   @Mock
   private EnvironmentProperties environmentProperties;
@@ -385,6 +393,63 @@ class CoreRequestHandlerTest {
 
     // Assert
     assertEquals(1, params.size());
+  }
+
+  @SuppressWarnings("rawtypes")
+  @Test
+  void getRequestBodyProperties_returnsEmptyProperties_forRequestBody() {
+    // Arrange
+    RequestBody requestBody = this.openApi.getPaths()
+        .get("/query1")
+        .getPost()
+        .getRequestBody();
+    RequestBodyContext requestBodyContext = new RequestBodyContext(requestBody);
+    ResponseSchemaContext responseSchemaContext = mock(ResponseSchemaContext.class);
+    when(responseSchemaContext.getRequestBodyContext()).thenReturn(requestBodyContext);
+
+    // Act / Assert
+    Map<String, Schema> requestBodyProperties =
+        this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext());
+    assertFalse(requestBodyProperties.isEmpty());
+    assertTrue(requestBodyProperties.containsKey("argument1"));
+  }
+
+  @Test
+  void getRequestBodyProperties_returnsEmptyProperties_forNullRequestBody() {
+    // Act / Assert
+    assertEquals(Collections.emptyMap(),
+        this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException {
+    // Arrange
+    RequestBody requestBody = this.openApi.getPaths()
+        .get("/query1")
+        .getPost()
+        .getRequestBody();
+    RequestBodyContext requestBodyContext = new RequestBodyContext(requestBody);
+    when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(requestBodyContext);
+    when(this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext.getRequestBodySchema()))
+        .thenReturn(this.defaultRequestBodyHandler);
+    when(this.defaultRequestBodyHandler.getValues(any(ServerRequest.class), any(RequestBodyContext.class),
+        any(RequestBody.class), any(Map.class))).thenReturn(Map.of("key", "value"));
+
+    // Act / Assert
+    assertEquals(Map.of("query6_param1", "value1", "key", "value"),
+        this.coreRequestHandler.resolveParameters(getServerRequest()));
+  }
+
+  @Test
+  public void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException {
+    // Arrange
+    ServerRequest request = getServerRequest();
+    when(request.bodyToMono(String.class)).thenReturn(Mono.empty());
+    when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
+
+    // Act / Assert
+    assertEquals(Map.of("query6_param1", "value1"), this.coreRequestHandler.resolveParameters(request));
   }
 
   ServerRequest getServerRequest() {

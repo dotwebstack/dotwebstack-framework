@@ -61,7 +61,7 @@ class Rdf4jConfiguration {
 
   private static final String SPARQL_PATH = "sparql";
 
-  private static final String SPARQL_PATH_PATTERN = SPARQL_PATH + "/**";
+  private static final String SPARQL_PATH_PATTERN = SPARQL_PATH + "/**.rq";
 
   @Bean
   public ConfigFactory configFactory() {
@@ -143,7 +143,6 @@ class Rdf4jConfiguration {
         .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
     return registry;
-
   }
 
   @Bean
@@ -162,7 +161,8 @@ class Rdf4jConfiguration {
 
       for (Resource resource : resourceList) {
         String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
-        result.put(resource.getFilename(), content);
+        String fileName = resource.getFilename();
+        result.put(fileName.substring(0, fileName.lastIndexOf('.')), content);
       }
     }
 

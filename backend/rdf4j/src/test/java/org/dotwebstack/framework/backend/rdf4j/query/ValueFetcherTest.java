@@ -60,7 +60,7 @@ import graphql.schema.GraphQLObjectType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import org.dotwebstack.framework.backend.rdf4j.converters.DateConverter;
+import org.dotwebstack.framework.backend.rdf4j.converters.LocalDateConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -116,7 +116,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.getByShaclName(any())).thenReturn(nodeShape);
-    this.converters = ImmutableList.of(new DateConverter());
+    this.converters = ImmutableList.of(new LocalDateConverter());
     this.converterRouter = new Rdf4jConverterRouter(converters);
   }
 

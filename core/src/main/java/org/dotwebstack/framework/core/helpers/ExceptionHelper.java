@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.helpers;
 import java.util.MissingFormatArgumentException;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.NotImplementedException;
 
 public class ExceptionHelper {
 
@@ -32,6 +33,10 @@ public class ExceptionHelper {
     newArguments[newArguments.length - 1] = cause;
 
     return newArguments;
+  }
+
+  public static NotImplementedException notImplementedException(String message, Object... arguments) {
+    return new NotImplementedException(formatMessage(message, arguments), findCause(arguments));
   }
 
   public static IllegalStateException illegalStateException(String message, Object... arguments) {
