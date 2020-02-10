@@ -14,7 +14,7 @@ import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelp
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -28,11 +28,13 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,6 +58,7 @@ import org.dotwebstack.framework.service.openapi.exception.NoResultFoundExceptio
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
+import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
@@ -164,7 +167,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw unsupportedOperationException("No response in the 200 range found.");
     }
-    validateParameters(field, responseSchemaContext.getParameters(), pathName);
+    validateParameters(field, responseSchemaContext.getParameters(),
+        getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()), pathName);
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
@@ -176,6 +180,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .filter(responseTemplate -> Objects.nonNull(responseTemplate.getResponseObject()))
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
+  }
+
+  @SuppressWarnings("rawtypes")
+  Map<String, Schema> getRequestBodyProperties(RequestBodyContext requestBodyContext) {
+    if (Objects.nonNull(requestBodyContext) && Objects.nonNull(requestBodyContext.getRequestBodySchema())) {
+      io.swagger.v3.oas.models.media.MediaType mediaType = requestBodyContext.getRequestBodySchema()
+          .getContent()
+          .get(MediaType.APPLICATION_JSON.toString());
+      Schema<?> schema = SchemaResolver.resolveSchema(openApi, mediaType.getSchema(), mediaType.getSchema()
+          .get$ref());
+      return schema.getProperties();
+    } else {
+      return Collections.emptyMap();
+    }
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
@@ -226,7 +244,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+  @SuppressWarnings("rawtypes")
+  private void validateParameters(GraphQlField field, List<Parameter> parameters,
+      Map<String, Schema> requestBodyProperties, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
             .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
@@ -238,7 +258,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
         .validate(field, parameter, pathName));
     field.getArguments()
-        .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
+        .forEach(
+            argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
   ServerResponse getResponse(ServerRequest request) throws GraphQlErrorException, BadRequestException {
@@ -406,7 +427,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     });
   }
 
-  private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
+  Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = resolveUrlAndHeaderParameters(request);
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
 
@@ -414,8 +435,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
 
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
-          .getValue(request, requestBody, result)
-          .ifPresent(value -> result.put(requestBodyContext.getName(), value));
+          .getValues(request, requestBodyContext, requestBody, result)
+          .forEach(result::put);
     } else {
       validateRequestBodyNonexistent(request);
     }
@@ -423,18 +444,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
   }
 
+  @SuppressWarnings("rawtypes")
   private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-      String pathName) {
-    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && parameters.stream()
+      String pathName, Map<String, Schema> requestBodyProperties) {
+    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && (parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-            .equals(argument.getName()))) {
+            .equals(argument.getName())))
+        && !requestBodyProperties.containsKey(argument.getName())) {
       throw invalidConfigurationException(
           "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
           argument.getName(), pathName);
     }
     if (argument.isRequired()) {
       argument.getChildren()
-          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
+          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName, requestBodyProperties));
     }
   }
 

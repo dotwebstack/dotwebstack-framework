@@ -24,9 +24,11 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient
@@ -452,6 +454,24 @@ class OpenApiRdf4jIntegrationTest {
         .get(0));
     assertEquals("2", responseHeaders.get("X-Pagination-Limit")
         .get(0));
+  }
+
+  @Test
+  void openApiRequest_returnsBrewery_forRequestWithBodyParams() throws IOException {
+    // Arrange & Act
+    String result = this.webClient.post()
+        .uri("/brewery_post?expand=postalCode")
+        .body(Mono.just("{\"identifier\": \"123\"}"), String.class)
+        .header("Content-Type", MediaType.APPLICATION_JSON.toString())
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/brewery_postalCode.json");
   }
 
   private void assertResult(String result, String jsonResultPath) throws IOException {

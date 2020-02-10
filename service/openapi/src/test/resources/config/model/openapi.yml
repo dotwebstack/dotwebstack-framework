@@ -85,6 +85,14 @@ paths:
                 $ref: '#/components/schemas/Object1'
     post:
       x-dws-query: query1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                argument1:
+                  type: string
       responses:
         200:
           description: OK
