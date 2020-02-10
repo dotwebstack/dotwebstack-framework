@@ -27,7 +27,7 @@ public class RequestBodyContextBuilder {
     }
   }
 
-  private void validate(RequestBody requestBody) {
+  static void validate(RequestBody requestBody) {
     if (Objects.isNull(requestBody.getContent())) {
       throw illegalArgumentException("RequestBody without content!");
     }
