@@ -25,13 +25,16 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithInputObjectClass")
-  void shouldSupportsInputObjectClass(ResponseMapper responseMapper, Class<?> inputObjectClass) {
+  void responseMapper_returnsBoolean_forClass(ResponseMapper responseMapper, Class<?> inputObjectClass) {
+    // Act
     boolean actualResult = responseMapper.supportsInputObjectClass(inputObjectClass);
 
+    // Assert
     assertThat(actualResult, is(true));
   }
 
   private static Stream<Arguments> createResponseMappersWithInputObjectClass() {
+    // Arrange
     return Stream.of(Arguments.of(new Notation3ResponseMapper(), Model.class),
         Arguments.of(new TurtleResponseMapper(), Model.class), Arguments.of(new RdfXmlResponseMapper(), Model.class),
         Arguments.of(new JsonLdResponseMapper(), Model.class), Arguments.of(new TrigResponseMapper(), Model.class),
@@ -40,13 +43,16 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithOutputMimeType")
-  void shouldSupportsOutputMimeType(ResponseMapper responseMapper, MimeType outputMimeType) {
+  void responseMapper_returnsBoolean_forMimeType(ResponseMapper responseMapper, MimeType outputMimeType) {
+    // Act
     boolean actualResult = responseMapper.supportsOutputMimeType(outputMimeType);
 
+    // Assert
     assertThat(actualResult, is(true));
   }
 
   private static Stream<Arguments> createResponseMappersWithOutputMimeType() {
+    // Arrange
     return Stream.of(Arguments.of(new Notation3ResponseMapper(), Notation3ResponseMapper.N3_MEDIA_TYPE),
         Arguments.of(new TurtleResponseMapper(), TurtleResponseMapper.TURTLE_MEDIA_TYPE),
         Arguments.of(new RdfXmlResponseMapper(), RdfXmlResponseMapper.RDF_XML_MEDIA_TYPE),
@@ -58,18 +64,23 @@ public class ResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithExpectedResultFileName")
-  void shouldMapModelTo(ResponseMapper responseMapper, String expectedResultFileName) throws IOException {
+  void responseMapper_returnsString_forTrig(ResponseMapper responseMapper, String expectedResultFileName)
+      throws IOException {
+    // Arrange
     InputStream is = getFileInputStream("input-response-mapper.trig");
     Model model =
         Rio.parse(is, "", RDFFormat.TRIG, new ParserConfig(), SimpleValueFactory.getInstance(), new ParseErrorLogger());
 
+    // Act
     String actualResult = responseMapper.toResponse(model);
     String expectedResult = new String(getFileInputStream(expectedResultFileName).readAllBytes());
 
+    // Assert
     assertThat(actualResult, equalToIgnoringLineBreaks(expectedResult));
   }
 
   private static Stream<Arguments> createResponseMappersWithExpectedResultFileName() {
+    // Arrange
     return Stream.of(Arguments.of(new Notation3ResponseMapper(), "output-response-mapper-n3.txt"),
         Arguments.of(new TurtleResponseMapper(), "output-response-mapper-turtle.txt"),
         Arguments.of(new RdfXmlResponseMapper(), "output-response-mapper-rdfxml.txt"),
