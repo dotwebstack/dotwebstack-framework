@@ -8,6 +8,8 @@ import graphql.language.IntValue;
 import graphql.language.StringValue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.dotwebstack.framework.core.helpers.GraphQlValueHelper;
 import org.junit.jupiter.api.Test;
 
 public class GraphQlValueHelperTest {
