@@ -7,6 +7,8 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIM
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.NUMBER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
@@ -71,12 +73,12 @@ public class DefaultParamHandler implements ParamHandler {
 
     if (Objects.nonNull(paramValue)) {
       Object convertedValue = deserialize(parameter, paramValue);
-      validateEnumValues(convertedValue, parameter);
+      validateValues(convertedValue, parameter);
       return Optional.of(convertedValue);
     } else {
       Optional<Object> defaultValue = getDefault(parameter);
       if (defaultValue.isPresent()) {
-        validateEnumValues(defaultValue.get(), parameter);
+        validateValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
           if (Objects.nonNull(parameter.getExtensions()) && parameter.getExtensions()
@@ -121,28 +123,55 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  void validateEnumValues(Object paramValue, Parameter parameter) {
-    String type = parameter.getSchema()
-        .getType();
-    switch (type) {
+  void validateValues(Object paramValue, Parameter parameter) {
+    switch (parameter.getSchema()
+        .getType()) {
       case ARRAY_TYPE:
         validateEnumValuesForArray(paramValue, parameter);
         break;
       case STRING_TYPE:
-        if (hasEnum(parameter) && !parameter.getSchema()
-            .getEnum()
-            .contains(paramValue)) {
-          throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
-              parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
-                  .getEnum()));
-        }
+        validateEnum(paramValue, parameter);
+        break;
+      case INTEGER_TYPE:
+        validateInteger(paramValue, parameter);
+        break;
+      case NUMBER_TYPE:
+        validateNumber(paramValue, parameter);
         break;
       default:
         if (hasEnum(parameter)) {
           throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[]",
               parameter.getName());
         }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void validateEnum(Object paramValue, Parameter parameter) {
+    if (hasEnum(parameter) && !parameter.getSchema()
+        .getEnum()
+        .contains(paramValue)) {
+      throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
+          parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
+              .getEnum()));
+    }
+  }
+
+  private void validateInteger(Object paramValue, Parameter parameter) {
+    try {
+      Long.valueOf((String) paramValue);
+    } catch (ClassCastException | NumberFormatException exception) {
+      throw parameterValidationException("Parameter '{}' has an invalid value: '{}', is not of type: '{}'",
+          parameter.getName(), paramValue, parameter.getSchema()
+              .getType());
+    }
+  }
+
+  private void validateNumber(Object paramValue, Parameter parameter) {
+    try {
+      Double.valueOf((String) paramValue);
+    } catch (ClassCastException | NumberFormatException exception) {
+      validateInteger(paramValue, parameter);
     }
   }
 
