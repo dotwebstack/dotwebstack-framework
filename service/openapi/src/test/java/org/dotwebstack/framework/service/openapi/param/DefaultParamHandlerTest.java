@@ -45,6 +45,10 @@ public class DefaultParamHandlerTest {
 
   private static final String TYPE_STRING = "string";
 
+  private static final String TYPE_INTEGER = "integer";
+
+  private static final String TYPE_NUMBER = "number";
+
   @Mock
   private ServerRequest request;
 
@@ -268,6 +272,74 @@ public class DefaultParamHandlerTest {
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
+  @Test
+  public void getValue_returnsValue_forTypeInteger() {
+    // Arrange
+    mockParameterHeader("test_integer", "42", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+
+
+    // Act
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
+
+    // Assert
+    assertEquals("42", result.get());
+  }
+
+  @Test
+  public void getValue_throwsException_forTypeValidationInteger_double() {
+    // Arrange
+    mockParameterHeader("test_integer", "4.2", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_throwsException_forTypeValidationInteger_string() {
+    // Arrange
+    mockParameterQuery("test_integer", "string", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_returnsValue_forTypeNumber_long() {
+    // Arrange
+    mockParameterHeader("test_number", "2147483648", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+
+
+    // Act
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
+
+    // Assert
+    assertEquals("2147483648", result.get());
+  }
+
+  @Test
+  public void getValue_returnsValue_forTypeNumber_double() {
+    // Arrange
+    mockParameterHeader("test_number", "4.2", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+
+
+    // Act
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
+
+    // Assert
+    assertEquals("4.2", result.get());
+  }
+
+  @Test
+  public void getValue_throwsException_forTypeValidationNumber_string() {
+    // Arrange
+    mockParameterPath("test_number", "string", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
 
   @Test
   public void getValue_throwsException_withArraytUnsupportedStyle() {
