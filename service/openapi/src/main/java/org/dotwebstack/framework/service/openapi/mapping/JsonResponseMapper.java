@@ -261,11 +261,12 @@ public class JsonResponseMapper {
     MapContext context = new MapContext();
 
     // add object data to context
-    StringBuilder fieldsBuilder = new StringBuilder("fields.");
-    StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getParameters()
         .forEach((key1, value1) -> context.set("input." + key1, value1));
 
+    context.set("data", writeContext.getData());
+
+    StringBuilder fieldsBuilder = new StringBuilder("fields.");
     writeContext.getDataStack()
         .stream()
         .map(FieldContext::getData)
@@ -277,6 +278,8 @@ public class JsonResponseMapper {
           fieldsBuilder.append("_parent.");
 
         });
+
+    StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getDataStack()
         .stream()
         .map(FieldContext::getInput)

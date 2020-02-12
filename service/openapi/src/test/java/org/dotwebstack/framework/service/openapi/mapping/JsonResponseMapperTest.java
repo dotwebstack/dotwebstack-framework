@@ -42,7 +42,7 @@ class JsonResponseMapperTest {
 
   private static final ResponseObject DWS_TEMPLATE = getProperty("prop4", "string", true, false,
       "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}_${args._parent"
-          + "._parent.arg1}`");
+          + "._parent.arg1}_${data}`");
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
@@ -113,7 +113,8 @@ class JsonResponseMapperTest {
     ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
     ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child1));
 
-    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> child2Data =
+        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3", DWS_TEMPLATE.getIdentifier(), "dummy");
     Map<String, Object> child1Data =
         ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2", "child2", child2Data);
     Map<String, Object> rootData =
@@ -136,7 +137,7 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1\"";
+    String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1_dummy\"";
     assertTrue(response.contains(expectedSubString), String
         .format("Expected sub string [%s] not found in " + "returned response [%s]", expectedSubString, response));
   }
