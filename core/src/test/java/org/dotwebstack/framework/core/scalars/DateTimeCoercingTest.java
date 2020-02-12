@@ -76,4 +76,19 @@ class DateTimeCoercingTest {
         .getDayOfMonth()));
   }
 
+  @Test
+  void parseLiteral_ReturnsDateTime_ForZonedDateTime() {
+    // Act
+    ZonedDateTime dateTime = coercing.parseLiteral(new StringValue(ZonedDateTime.now()
+        .toString()));
+
+    // Assert
+    assertThat(dateTime.getYear(), equalTo(ZonedDateTime.now()
+        .getYear()));
+    assertThat(dateTime.getMonth(), equalTo(ZonedDateTime.now()
+        .getMonth()));
+    assertThat(dateTime.getDayOfMonth(), equalTo(ZonedDateTime.now()
+        .getDayOfMonth()));
+  }
+
 }

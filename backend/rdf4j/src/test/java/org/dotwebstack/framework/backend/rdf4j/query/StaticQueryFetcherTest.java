@@ -24,12 +24,14 @@ import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.BooleanConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.ByteConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.DateConverter;
+import org.dotwebstack.framework.backend.rdf4j.converters.DateTimeConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.DecimalConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.DoubleConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.FloatConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.IntConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.IntegerConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.IriConverter;
+import org.dotwebstack.framework.backend.rdf4j.converters.LocalDateConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.LongConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.converters.ShortConverter;
@@ -37,6 +39,7 @@ import org.dotwebstack.framework.backend.rdf4j.converters.StringConverter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -151,6 +154,24 @@ class StaticQueryFetcherTest {
   @Test
   void getUnsupportedTest() {
     testGetUnsuccessful("UnsupportedType", "value");
+  }
+
+  @Test
+  void getExceptionForDateTimeConverterTest() {
+    // Arrange
+    DateTimeConverter dateTimeConverter = new DateTimeConverter();
+
+    // Act / Assert
+    assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("someData"));
+  }
+
+  @Test
+  void getExceptionForLocateDateConverterTest() {
+    // Arrange
+    LocalDateConverter localDateConverter = new LocalDateConverter();
+
+    // Act / Assert
+    assertThrows(NotImplementedException.class, () -> localDateConverter.convertToValue("someData"));
   }
 
   private void testGetSuccessful(String type, Object value) {
