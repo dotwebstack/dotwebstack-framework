@@ -172,7 +172,9 @@ public class DefaultParamHandler implements ParamHandler {
     try {
       new BigDecimal((String) paramValue);
     } catch (ClassCastException | NumberFormatException exception) {
-      validateInteger(paramValue, parameter);
+      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
+          parameter.getName(), paramValue, parameter.getSchema()
+              .getType());
     }
   }
 
