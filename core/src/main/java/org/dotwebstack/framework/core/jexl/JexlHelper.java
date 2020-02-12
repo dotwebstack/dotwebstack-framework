@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +33,8 @@ public class JexlHelper {
     return getJexlContext(envParams, argParams, null);
   }
 
-  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams, GraphQlField graphQlField) {
+  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
+      GraphQlField graphQlField) {
     JexlContext jexlContext = new MapContext();
 
     if (Objects.nonNull(envParams)) {

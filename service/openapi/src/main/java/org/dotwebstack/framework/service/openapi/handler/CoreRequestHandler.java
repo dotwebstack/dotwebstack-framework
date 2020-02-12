@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -193,7 +192,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    JexlContext jexlContext = getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField());
+    JexlContext jexlContext =
+        getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField());
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
@@ -284,8 +284,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       String body;
       if (Objects.nonNull(template.getResponseObject())) {
-        ResponseWriteContext responseWriteContext = createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
-            inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+        ResponseWriteContext responseWriteContext =
+            createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
+                inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
         body = jsonResponseMapper.toResponse(responseWriteContext);
       } else {
