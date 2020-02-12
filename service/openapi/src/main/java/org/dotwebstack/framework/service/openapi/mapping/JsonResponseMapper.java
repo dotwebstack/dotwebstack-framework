@@ -266,6 +266,8 @@ public class JsonResponseMapper {
     writeContext.getParameters()
         .forEach((key1, value1) -> context.set("input." + key1, value1));
 
+    context.set("data", writeContext.getData());
+
     writeContext.getDataStack()
         .stream()
         .map(FieldContext::getData)
