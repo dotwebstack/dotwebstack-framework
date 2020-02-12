@@ -161,7 +161,7 @@ public class DefaultParamHandler implements ParamHandler {
     try {
       Long.valueOf((String) paramValue);
     } catch (ClassCastException | NumberFormatException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}', is not of type: '{}'",
+      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
           parameter.getName(), paramValue, parameter.getSchema()
               .getType());
     }
