@@ -76,7 +76,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
           ((ArrayList<String>) Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
               .forEach(defaultValue -> {
                 validateExpandParam(graphQlField, defaultValue, pathName);
-                validateEnumValues(defaultValue, parameter);
+                validateValues(defaultValue, parameter);
               });
         }
         ((ArraySchema) schema).getItems()
@@ -86,7 +86,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
       case STRING_TYPE:
         if (Objects.nonNull(schema.getDefault())) {
           validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
-          validateEnumValues(((StringSchema) schema).getDefault(), parameter);
+          validateValues(((StringSchema) schema).getDefault(), parameter);
         }
         ((StringSchema) schema).getEnum()
             .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));

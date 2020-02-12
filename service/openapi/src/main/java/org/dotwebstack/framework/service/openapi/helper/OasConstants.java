@@ -49,4 +49,7 @@ public class OasConstants {
   public static final String X_DWS_QUERY_PARAMETER_NAME = "name";
 
   public static final String X_DWS_QUERY_PARAMETER_VALUEEXPR = "valueExpr";
+
+  private OasConstants() {}
+
 }
