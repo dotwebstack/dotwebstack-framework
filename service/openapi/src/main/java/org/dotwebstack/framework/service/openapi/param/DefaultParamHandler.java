@@ -25,6 +25,7 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -169,7 +170,7 @@ public class DefaultParamHandler implements ParamHandler {
 
   private void validateNumber(Object paramValue, Parameter parameter) {
     try {
-      Double.valueOf((String) paramValue);
+      new BigDecimal((String) paramValue);
     } catch (ClassCastException | NumberFormatException exception) {
       validateInteger(paramValue, parameter);
     }

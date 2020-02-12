@@ -277,7 +277,6 @@ public class DefaultParamHandlerTest {
     // Arrange
     mockParameterHeader("test_integer", "42", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
 
-
     // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -310,7 +309,6 @@ public class DefaultParamHandlerTest {
     // Arrange
     mockParameterHeader("test_number", "2147483648", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
 
-
     // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -322,7 +320,6 @@ public class DefaultParamHandlerTest {
   public void getValue_returnsValue_forTypeNumber_double() {
     // Arrange
     mockParameterHeader("test_number", "4.2", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
-
 
     // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
