@@ -160,7 +160,9 @@ public class DefaultParamHandler implements ParamHandler {
 
   private void validateInteger(Object paramValue, Parameter parameter) {
     try {
-      Long.valueOf((String) paramValue);
+      if (!(paramValue instanceof Integer)) {
+        Long.valueOf((String) paramValue);
+      }
     } catch (ClassCastException | NumberFormatException exception) {
       throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
           parameter.getName(), paramValue, parameter.getSchema()
@@ -170,7 +172,9 @@ public class DefaultParamHandler implements ParamHandler {
 
   private void validateNumber(Object paramValue, Parameter parameter) {
     try {
-      new BigDecimal((String) paramValue);
+      if (!(paramValue instanceof BigDecimal)) {
+        new BigDecimal((String) paramValue);
+      }
     } catch (ClassCastException | NumberFormatException exception) {
       throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
           parameter.getName(), paramValue, parameter.getSchema()
