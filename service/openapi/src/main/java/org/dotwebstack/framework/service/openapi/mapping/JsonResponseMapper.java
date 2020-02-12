@@ -23,8 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
@@ -258,7 +258,7 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Optional<String> evaluateJexl(ResponseWriteContext writeContext) {
-    MapContext context = new MapContext();
+    JexlContext context = JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField());
 
     // add object data to context
     writeContext.getParameters()

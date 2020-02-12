@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
@@ -11,7 +12,6 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
-import static org.dotwebstack.framework.service.openapi.helper.GraphQlValueHelper.getStringValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -87,10 +86,6 @@ import reactor.core.scheduler.Schedulers;
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String DEFAULT_ACCEPT_HEADER_VALUE = "*/*";
-
-  private static final String ARGUMENT_PREFIX = "args.";
-
-  private static final String ENVIRONMENT_PREFIX = "env.";
 
   private static final String MDC_REQUEST_ID = "requestId";
 
@@ -197,28 +192,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    JexlContext jexlContext = getBaseJexlContext();
-
-    this.responseSchemaContext.getGraphQlField()
-        .getArguments()
-        .stream()
-        .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
-        .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-            getStringValue(argument.getDefaultValue())));
-
-    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+    JexlContext jexlContext =
+        getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField());
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
     return getJexlResults(jexlContext, responseHeaders);
-  }
-
-  private JexlContext getBaseJexlContext() {
-    JexlContext jexlContext = new MapContext();
-
-    this.properties.getAllProperties()
-        .forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
-    return jexlContext;
   }
 
   private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
@@ -305,8 +284,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       String body;
       if (Objects.nonNull(template.getResponseObject())) {
-        ResponseWriteContext responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data,
-            inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+        ResponseWriteContext responseWriteContext =
+            createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
+                inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
         body = jsonResponseMapper.toResponse(responseWriteContext);
       } else {
@@ -337,8 +317,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams) {
-    JexlContext jexlContext = getBaseJexlContext();
-    inputParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+    JexlContext jexlContext = getJexlContext(properties.getAllProperties(), inputParams);
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
         .map(ResponseTemplate::getResponseHeaders)

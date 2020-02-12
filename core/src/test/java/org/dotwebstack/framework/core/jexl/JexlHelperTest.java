@@ -3,17 +3,23 @@ package org.dotwebstack.framework.core.jexl;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
+import graphql.language.StringValue;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.core.query.GraphQlArgument;
+import org.dotwebstack.framework.core.query.GraphQlField;
 import org.junit.jupiter.api.Test;
 
 
@@ -132,6 +138,34 @@ public class JexlHelperTest {
     // Act/ Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
+  }
+
+  @Test
+  public void createJexlContext_createsContext_forEnvAndArgParams() {
+    // Arrange
+    Map<String, String> envParams = Map.of("key", "value");
+    Map<String, Object> argParams = Map.of("name", "test");
+
+    JexlContext context = JexlHelper.getJexlContext(envParams, argParams);
+
+    assertEquals("value", context.get("env.key"));
+    assertEquals("test", context.get("args.name"));
+  }
+
+  @Test
+  public void createJexlContext_createsContext_forGraphQlArgument() {
+    // Arrange
+    GraphQlField graphQlField = GraphQlField.builder()
+        .arguments(List.of(GraphQlArgument.builder()
+            .name("value")
+            .defaultValue(StringValue.newStringValue("1")
+                .build())
+            .build()))
+        .build();
+
+    JexlContext context = JexlHelper.getJexlContext(null, null, graphQlField);
+
+    assertEquals("1", context.get("args.value"));
   }
 
   private GraphQLDirective getGraphQlDirective() {

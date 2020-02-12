@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.helper;
+package org.dotwebstack.framework.core.helpers;
 
 import graphql.language.BooleanValue;
 import graphql.language.FloatValue;

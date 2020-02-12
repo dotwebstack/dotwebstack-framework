@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
@@ -56,6 +57,9 @@ class JsonResponseMapperTest {
   @Mock
   private TypeConverterRouter typeConverterRouter;
 
+  @Mock
+  private GraphQlField graphQlField;
+
   @BeforeEach
   void setup() {
     this.jsonResponseMapper =
@@ -70,6 +74,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING)))
         .data(ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"))
         .dataStack(dataStack)
@@ -97,6 +102,7 @@ class JsonResponseMapperTest {
   void map_throwsException_ForMissingRequiredNonNillableProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
         .data(ImmutableMap.of("other key", "prop1value"))
         .build();
@@ -126,6 +132,7 @@ class JsonResponseMapperTest {
     URI uri = URI.create("http://dontcare.com:90210/bh?a=b");
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
@@ -158,6 +165,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
@@ -190,6 +198,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
@@ -220,6 +229,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
@@ -252,6 +262,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
@@ -281,6 +292,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .parameters(Collections.emptyMap())
         .data(rootData)
@@ -310,6 +322,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .parameters(Collections.emptyMap())
         .data(rootData)
@@ -339,6 +352,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .parameters(Collections.emptyMap())
         .data(rootData)
@@ -367,6 +381,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .parameters(Collections.emptyMap())
         .data(rootData)
@@ -397,6 +412,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
         .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
