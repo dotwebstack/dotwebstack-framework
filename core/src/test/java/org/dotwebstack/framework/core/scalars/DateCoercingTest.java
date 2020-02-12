@@ -74,4 +74,18 @@ class DateCoercingTest {
         .getDayOfMonth()));
   }
 
+  @Test
+  void parseLiteral_ReturnsDateTime_ForLocalDateNow() {
+    // Act
+    LocalDate localDate = coercing.parseLiteral(new StringValue(LocalDate.now()
+        .toString()));
+
+    // Assert
+    assertThat(localDate.getYear(), equalTo(LocalDate.now()
+        .getYear()));
+    assertThat(localDate.getMonth(), equalTo(LocalDate.now()
+        .getMonth()));
+    assertThat(localDate.getDayOfMonth(), equalTo(LocalDate.now()
+        .getDayOfMonth()));
+  }
 }

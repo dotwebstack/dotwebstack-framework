@@ -45,6 +45,8 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
       if (Objects.equals("NOW", stringValue.getValue())) {
         return ZonedDateTime.now();
       }
+
+      return ZonedDateTime.parse(stringValue.getValue());
     }
 
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);

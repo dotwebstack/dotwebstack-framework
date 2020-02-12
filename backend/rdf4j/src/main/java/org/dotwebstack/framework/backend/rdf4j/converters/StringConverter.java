@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Literal;
@@ -8,26 +9,25 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DoubleConverter extends LiteralConverter<Double> {
+public class StringConverter extends LiteralConverter<String> {
 
-  @Override
+  private static final List<String> SUPPORTED_TYPES = List.of("ID", String.class.getSimpleName());
+
   public boolean supportsLiteral(@NonNull Literal literal) {
-    return XMLSchema.DOUBLE.equals(literal.getDatatype());
+    return XMLSchema.STRING.equals(literal.getDatatype());
   }
 
-  @Override
-  public Double convertLiteral(@NonNull Literal literal) {
-    return literal.doubleValue();
+  public String convertLiteral(@NonNull Literal literal) {
+    return literal.stringValue();
   }
 
   @Override
   public boolean supportsType(@Nonnull String typeAsString) {
-    return Double.class.getSimpleName()
-        .equals(typeAsString);
+    return SUPPORTED_TYPES.contains(typeAsString);
   }
 
   @Override
   public Value convertToValue(@NonNull Object value) {
-    return valueFactory.createLiteral((Double) value);
+    return valueFactory.createLiteral((String) value);
   }
 }

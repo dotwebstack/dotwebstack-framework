@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.notImplementedException;
+
+import java.time.LocalDate;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Literal;
@@ -8,26 +11,25 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DoubleConverter extends LiteralConverter<Double> {
+public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
   @Override
   public boolean supportsLiteral(@NonNull Literal literal) {
-    return XMLSchema.DOUBLE.equals(literal.getDatatype());
+    return XMLSchema.DATE.equals(literal.getDatatype());
   }
 
   @Override
-  public Double convertLiteral(@NonNull Literal literal) {
-    return literal.doubleValue();
+  public LocalDate convertLiteral(@NonNull Literal literal) {
+    return LocalDate.parse(literal.stringValue());
   }
 
   @Override
   public boolean supportsType(@Nonnull String typeAsString) {
-    return Double.class.getSimpleName()
-        .equals(typeAsString);
+    return false;
   }
 
   @Override
   public Value convertToValue(@NonNull Object value) {
-    return valueFactory.createLiteral((Double) value);
+    throw notImplementedException("Converting value for LocalDate is not implemented.");
   }
 }

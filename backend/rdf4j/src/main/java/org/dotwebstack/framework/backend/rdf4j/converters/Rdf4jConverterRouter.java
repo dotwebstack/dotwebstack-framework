@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.converters.CoreConverter;
@@ -17,13 +19,22 @@ public class Rdf4jConverterRouter implements CoreConverterRouter {
   }
 
   @Override
-  public Object convert(Object object) {
+  public Object convertFromValue(Object object) {
     Optional<CoreConverter<Value, ?>> compatibleConverter = converters.stream()
-        .filter(converter -> converter.supports((Value) object))
+        .filter(converter -> converter.supportsValue((Value) object))
         .findFirst();
 
     return compatibleConverter.isPresent() ? compatibleConverter.get()
-        .convert((Value) object) : DefaultConverter.convert((Value) object);
+        .convertFromValue((Value) object) : DefaultConverter.convert((Value) object);
+  }
+
+  @Override
+  public Value convertToValue(Object value, String typeAsString) {
+    return converters.stream()
+        .filter(converter -> converter.supportsType(typeAsString))
+        .findFirst()
+        .map(converter -> converter.convertToValue(value))
+        .orElseThrow(() -> invalidConfigurationException("Unsupported argument type: {}", typeAsString));
   }
 
 }

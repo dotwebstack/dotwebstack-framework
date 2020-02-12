@@ -1,0 +1,3 @@
+DESCRIBE ?breweries WHERE {
+   ?beerIRI <https://github.com/dotwebstack/beer/def#brewery> ?breweries
+}

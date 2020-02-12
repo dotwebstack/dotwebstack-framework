@@ -1,11 +1,16 @@
 package org.dotwebstack.framework.core.converters;
 
+import javax.annotation.Nonnull;
 import lombok.NonNull;
 
-public interface CoreConverter<O, T> {
+public interface CoreConverter<V, T> {
 
-  boolean supports(@NonNull O object);
+  boolean supportsValue(@NonNull V value);
 
-  T convert(@NonNull O object);
+  boolean supportsType(@Nonnull String typeAsString);
+
+  T convertFromValue(@NonNull V value);
+
+  V convertToValue(@NonNull Object value);
 
 }

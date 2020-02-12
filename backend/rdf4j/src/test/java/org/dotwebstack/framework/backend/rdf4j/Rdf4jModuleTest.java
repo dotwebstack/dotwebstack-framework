@@ -59,6 +59,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -949,6 +951,60 @@ class Rdf4jModuleTest {
         .get("breweriesModel");
 
     assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+  }
+
+  @Test
+  void graphQlQuery_returnsIri_withQueryReference() {
+    // Arrange
+    String query = "{ breweries_with_query_ref_as_iri (beerIRI: \"https://github.com/dotwebstack/beer/id/beer/6\")}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    IRI iri = result.<Map<String, IRI>>getData()
+        .get("breweries_with_query_ref_as_iri");
+
+    assertThat(iri.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @CsvSource({"breweries_with_query_ref_with_String, (beerString: %s)",
+      "breweries_with_query_ref_with_ID, (beerID: %s)", "breweries_with_query_ref_with_IRI, (beerIRI: %s)"})
+  void graphQlQuery_returnsModel_withQueryReferenceWithDescribe(String graphQlField, String parameter) {
+    // Arrange
+    String param = String.format(parameter, "\"https://github.com/dotwebstack/beer/id/beer/6\"");
+    String query = String.format("{ %s %s }", graphQlField, param);
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get(graphQlField);
+
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+  }
+
+  @Test
+  void graphQlQuery_returnsModel_withQueryReferenceWithConstruct() {
+    // Arrange
+    String query = "{ beers_with_query_ref_as_model_construct }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("beers_with_query_ref_as_model_construct");
+
+    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/beer/6"));
   }
 
   @Test

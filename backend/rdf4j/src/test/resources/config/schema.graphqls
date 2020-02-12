@@ -10,13 +10,13 @@ type Query {
     @sparql(repository: "local")
 
   breweries(
-    name: String 
+    name: String
       @filter,
     url: String
       @filter,
-    foundedAfter: String 
+    foundedAfter: String
       @filter(field: "founded", operator: ">"),
-    foundedBefore: String 
+    foundedBefore: String
       @filter(field: "founded", operator: "<"),
     localName: String @filter(field: "localName")
     withAddressSubject: String @filter(field: "address.subject")
@@ -24,6 +24,36 @@ type Query {
     beerCount: Int @filter(field: "beerCount")
   ): [Brewery!]!
     @sparql(repository: "local")
+
+  breweries_with_query_ref_as_iri(beerIRI: IRI) : IRI
+    @sparql(
+      repository: "local"
+      queryRef: "test-iri"
+    )
+
+  breweries_with_query_ref_with_String(beerString: String) : Model
+    @sparql(
+      repository: "local"
+      queryRef: "test-model-describe"
+    )
+
+  breweries_with_query_ref_with_ID(beerID: ID) : Model
+    @sparql(
+      repository: "local"
+      queryRef: "test-model-describe"
+    )
+
+  breweries_with_query_ref_with_IRI(beerIRI: IRI) : Model
+    @sparql(
+      repository: "local"
+      queryRef: "test-model-describe"
+    )
+
+  beers_with_query_ref_as_model_construct : Model
+    @sparql(
+      repository: "local"
+      queryRef: "test-model-construct"
+    )
 
   breweriesWithInputObject(
     input: QueryParameters
@@ -34,9 +64,12 @@ type Query {
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
 
   breweriesModel(
-    subject: IRI @resource
+    subject: IRI
   ) : Model
-    @sparql(repository: "local")
+    @sparql(
+      repository: "local",
+      queryRef: "breweries-model"
+    )
 
 }
 
@@ -46,12 +79,12 @@ input QueryParameters {
 
 input NestedInput {
   nestedNestedInput: NestedNestedInput
-  foundedAfter: String 
+  foundedAfter: String
     @filter(field: "founded", operator: ">")
 }
 
 input NestedNestedInput {
-  name: [String] 
+  name: [String]
     @filter(field: "name", operator: "=")
 }
 
