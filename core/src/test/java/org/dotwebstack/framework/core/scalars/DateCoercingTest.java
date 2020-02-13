@@ -4,11 +4,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.StringValue;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 class DateCoercingTest {
@@ -16,7 +19,7 @@ class DateCoercingTest {
   private final DateCoercing coercing = new DateCoercing();
 
   @Test
-  void serialize_ReturnsDate_ForDate() {
+  void serialize_ReturnsDate_ForLocalDate() {
     // Arrange
     LocalDate input = LocalDate.now();
 
@@ -25,6 +28,20 @@ class DateCoercingTest {
 
     // Assert
     assertThat(date, is(sameInstance(input)));
+  }
+
+  @Test
+  void serialize_ReturnsDate_ForDate() {
+    // Arrange
+    Date input = new Date();
+
+    // Act
+    LocalDate date = coercing.serialize(input);
+
+    // Assert
+    assertEquals(input.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate(), date);
   }
 
   @Test

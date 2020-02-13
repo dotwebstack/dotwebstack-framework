@@ -125,7 +125,7 @@
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:dateTime
+    sh:datatype xsd:date
   .
 
   beer_sh:Brewery_openinghours a sh:PropertyShape ;

@@ -6,7 +6,9 @@ import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import java.util.Date;
 import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,12 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
   public LocalDate serialize(@NonNull Object value) {
     if (value instanceof LocalDate) {
       return (LocalDate) value;
+    }
+
+    if (value instanceof Date) {
+      return ((Date) value).toInstant()
+          .atZone(ZoneId.systemDefault())
+          .toLocalDate();
     }
 
     if (!(value instanceof String)) {

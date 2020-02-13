@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
-import org.apache.http.client.utils.DateUtils;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -19,7 +22,14 @@ public class DateConverter extends LiteralConverter<Date> {
 
   @Override
   public Date convertLiteral(@NonNull Literal literal) {
-    return DateUtils.parseDate(literal.stringValue());
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    format.setLenient(false);
+    try {
+      return format.parse(literal.stringValue());
+    } catch (ParseException e) {
+      throw illegalArgumentException("Format for date {} does not have the expected format {}", literal.stringValue(),
+          format.toPattern());
+    }
   }
 
   @Override

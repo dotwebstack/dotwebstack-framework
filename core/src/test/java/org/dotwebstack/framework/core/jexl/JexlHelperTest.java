@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.language.StringValue;
+import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import java.util.List;
@@ -158,6 +159,8 @@ public class JexlHelperTest {
     GraphQlField graphQlField = GraphQlField.builder()
         .arguments(List.of(GraphQlArgument.builder()
             .name("value")
+            .type(TypeName.newTypeName("String")
+                .build())
             .defaultValue(StringValue.newStringValue("1")
                 .build())
             .build()))

@@ -46,7 +46,7 @@ public class JexlHelper {
           .stream()
           .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
           .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-              GraphQlValueHelper.getStringValue(argument.getDefaultValue())));
+              GraphQlValueHelper.getValue(argument.getType(), argument.getDefaultValue())));
     }
 
     if (Objects.nonNull(argParams)) {

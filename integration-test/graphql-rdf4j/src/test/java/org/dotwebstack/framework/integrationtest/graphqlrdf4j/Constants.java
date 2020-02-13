@@ -44,7 +44,7 @@ public final class Constants {
   static final String BREWERY_FOUNDED_FIELD = "founded";
 
   static final Literal BREWERY_FOUNDED_EXAMPLE_1 =
-      VF.createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+      VF.createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30"));
 
   static final String BEERS_FIELD = "beers";
 
