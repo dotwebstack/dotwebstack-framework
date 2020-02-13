@@ -23,10 +23,12 @@ public class DateConverter extends LiteralConverter<Date> {
   @Override
   public Date convertLiteral(@NonNull Literal literal) {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    format.setLenient(false);
     try {
       return format.parse(literal.stringValue());
     } catch (ParseException e) {
-      throw illegalArgumentException("Format for date {} does not have the expected format {}", literal, format);
+      throw illegalArgumentException("Format for date {} does not have the expected format {}", literal.stringValue(),
+          format.toPattern());
     }
   }
 

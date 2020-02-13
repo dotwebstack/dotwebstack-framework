@@ -3,11 +3,15 @@ package org.dotwebstack.framework.backend.rdf4j.converters;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -22,13 +26,22 @@ import org.eclipse.rdf4j.model.impl.BooleanLiteral;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.sail.memory.model.CalendarMemLiteral;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class ConverterTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
+  @Mock
+  private Literal literal;
+
+  private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
   private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new LocalDateConverter(),
-      new DateTimeConverter(), new IriConverter(), new LongConverter(), new IntConverter());
+      new DateTimeConverter(), new IriConverter(), new LongConverter(), new IntConverter(), new DateConverter());
 
   @Test
   void convert_booleanLiteral_toBoolean() {
@@ -131,4 +144,29 @@ class ConverterTest {
     // Act / Assert
     assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("dateTime"));
   }
+
+  @Test
+  void convertLiteral_toDateValue_withSupportedFormat() {
+    // Arrange
+    DateConverter dateConverter = new DateConverter();
+    when(literal.stringValue()).thenReturn("2020-01-31");
+
+    // Act
+    Date date = dateConverter.convertLiteral(literal);
+
+    // Assert
+    assertEquals("2020-01-31", simpleDateFormat.format(date));
+  }
+
+  @Test
+  void convertLiteraltoDateValue_throwsError_withUnSupportedFormat() {
+    // Arrange
+    DateConverter dateConverter = new DateConverter();
+    when(literal.stringValue()).thenReturn("2020-31-01");
+
+    // Act & Assert
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> dateConverter.convertLiteral(literal));
+    assertEquals("Format for date 2020-31-01 does not have the expected format yyyy-MM-dd", exception.getMessage());
+  }
+
 }
