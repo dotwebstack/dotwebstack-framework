@@ -166,9 +166,9 @@ public class GraphQlRdf4jIntegrationTest {
 
 
   @Test
-  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() {
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateField() {
     // Arrange
-    String query = "{ breweries(foundedAfter: \"2018-05-29T09:30:10+02:00\") { identifier, name }}";
+    String query = "{ breweries(foundedAfter: \"2018-05-29\") { identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -182,11 +182,10 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() {
+  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateField() {
     // Arrange
     String query =
-        "{ breweries(foundedAfter: \"1990-01-01T00:00:00+02:00\", foundedBefore: \"2011-01-01T00:00:00+02:00\") "
-            + "{ identifier, name }}";
+        "{ breweries(foundedAfter: \"1990-01-01\", foundedBefore: \"2011-01-01\") " + "{ identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -206,7 +205,7 @@ public class GraphQlRdf4jIntegrationTest {
     // Arrange
     String query = "{ breweriesWithInputObject(input: {nestedInput: {nestedNestedInput: {"
         + "name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"]},"
-        + "foundedAfter: \"1800-01-01T00:00:00+02:00\"}}) { identifier, name }}";
+        + "foundedAfter: \"1800-01-01\"}}) { identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
