@@ -143,6 +143,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void build_throwsException_MissingExtensionsInHeaderSchema() {
     // Arrange
     this.openApi.getPaths()
