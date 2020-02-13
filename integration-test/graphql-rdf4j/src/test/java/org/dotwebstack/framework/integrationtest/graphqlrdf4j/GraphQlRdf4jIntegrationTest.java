@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,8 +83,7 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(resultMap, hasEntry(BREWERY_SUBJECT_FIELD, subject));
     assertThat(resultMap, hasEntry(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
     assertThat(resultMap, hasEntry(BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()));
-    assertThat(resultMap,
-        hasEntry(BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
+    assertThat(resultMap, hasEntry(BREWERY_FOUNDED_FIELD, LocalDate.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
   }
 
   @Test

@@ -55,7 +55,7 @@ type Brewery {
   subject: IRI! @resource
   number: Int
   localName: String
-  founded: DateTime!
+  founded: Date!
   owners(sort: [SortField!] = [{order: ASC}] @sort): [String!]
   address(subject: String @filter): Address
   beerNames: [String!]

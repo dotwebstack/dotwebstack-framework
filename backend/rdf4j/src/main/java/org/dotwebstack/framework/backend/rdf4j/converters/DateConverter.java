@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,8 +11,6 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Component;
-
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 @Component
 public class DateConverter extends LiteralConverter<Date> {
