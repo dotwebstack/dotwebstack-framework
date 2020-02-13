@@ -124,6 +124,44 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
+  void build_throwsException_MissingXDwsExprInHeaderSchema() {
+    // Arrange
+    this.openApi.getPaths()
+        .get("/query6")
+        .getGet()
+        .getResponses()
+        .get("200")
+        .getHeaders()
+        .get("X-Response-Header")
+        .getSchema()
+        .getExtensions()
+        .remove("x-dws-expr");
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query6", HttpMethod.GET));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void build_throwsException_MissingExtensionsInHeaderSchema() {
+    // Arrange
+    this.openApi.getPaths()
+        .get("/query6")
+        .getGet()
+        .getResponses()
+        .get("200")
+        .getHeaders()
+        .get("X-Response-Header")
+        .getSchema()
+        .setExtensions(null);
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query6", HttpMethod.GET));
+  }
+
+  @Test
   void build_throwsException_without_configuredXdwsStringType() {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,

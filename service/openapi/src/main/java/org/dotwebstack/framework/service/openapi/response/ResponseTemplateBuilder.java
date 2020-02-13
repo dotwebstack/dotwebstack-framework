@@ -64,7 +64,7 @@ public class ResponseTemplateBuilder {
     Map<String, Header> headers = apiResponse.getHeaders();
     Content content = apiResponse.getContent();
 
-    Map<String, ResponseHeader> responseHeaders = createResponseHeaders(headers);
+    Map<String, ResponseHeader> responseHeaders = createResponseHeaders(headers, queryName);
 
 
     ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplate.builder()
@@ -94,29 +94,36 @@ public class ResponseTemplateBuilder {
     };
   }
 
-  private Map<String, ResponseHeader> createResponseHeaders(Map<String, Header> headers) {
+  private Map<String, ResponseHeader> createResponseHeaders(Map<String, Header> headers, String queryName) {
     if (Objects.isNull(headers)) {
       return Collections.emptyMap();
     }
 
     return headers.entrySet()
         .stream()
-        .map(this::mapHeader)
+        .map(headerEntry -> mapHeader(headerEntry, queryName))
         .collect(Collectors.toMap(ResponseHeader::getName, Function.identity()));
   }
 
-  private ResponseHeader mapHeader(Map.Entry<String, Header> e) {
-    Schema<?> schema = Objects.nonNull(e.getValue()
+  private ResponseHeader mapHeader(Map.Entry<String, Header> headerEntry, String queryName) {
+    Schema<?> schema = Objects.nonNull(headerEntry.getValue()
         .get$ref()) ? resolveSchema(openApi,
-            e.getValue()
+            headerEntry.getValue()
                 .getSchema(),
-            e.getValue()
+            headerEntry.getValue()
                 .get$ref())
-            : e.getValue()
+            : headerEntry.getValue()
                 .getSchema();
 
+    if (Objects.isNull(schema.getExtensions()) || Objects.isNull(schema.getExtensions()
+        .get(X_DWS_EXPR))) {
+      throw invalidConfigurationException(
+          "Found invalid schema for response header '{}' of query '{}': x-dws-expr is missing or null",
+          headerEntry.getKey(), queryName);
+    }
+
     return ResponseHeader.builder()
-        .name(e.getKey())
+        .name(headerEntry.getKey())
         .defaultValue((String) schema.getDefault())
         .type(schema.getType())
         .jexlExpression((String) schema.getExtensions()
