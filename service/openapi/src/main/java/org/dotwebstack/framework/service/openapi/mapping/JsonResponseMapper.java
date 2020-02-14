@@ -233,9 +233,7 @@ public class JsonResponseMapper {
       return null;
     }
 
-    return Objects.nonNull(writeContext.getResponseObject()
-        .getSummary()
-        .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
+    return typeConverterRouter.convert(item, writeContext.getParameters());
   }
 
 

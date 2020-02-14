@@ -14,4 +14,18 @@ import org.springframework.stereotype.Component;
 public class OpenApiProperties {
 
   private List<String> xdwsStringTypes = Collections.emptyList();
+
+  private DateFormatProperties dateproperties;
+
+  @Getter
+  @Setter
+  public static class DateFormatProperties {
+
+    private String dateformat;
+
+    private String datetimeformat;
+
+    private String timezone;
+
+  }
 }

@@ -6,13 +6,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableList;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.IRI;
@@ -35,10 +35,11 @@ class ConverterTest {
   @Mock
   private Literal literal;
 
-  private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+  private Rdf4jProperties rdf4jProperties = new Rdf4jProperties();
 
-  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new LocalDateConverter(),
-      new DateTimeConverter(), new IriConverter(), new LongConverter(), new IntConverter(), new DateConverter());
+  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(),
+      new LocalDateConverter(rdf4jProperties), new DateTimeConverter(rdf4jProperties), new IriConverter(),
+      new LongConverter(), new IntConverter(), new DateConverter());
 
   @Test
   void convert_booleanLiteral_toBoolean() {
@@ -136,7 +137,7 @@ class ConverterTest {
   @Test
   void convert_dateTime_toValue_shouldThrowNotImplementedException() {
     // Arrange
-    DateTimeConverter dateTimeConverter = new DateTimeConverter();
+    DateTimeConverter dateTimeConverter = new DateTimeConverter(rdf4jProperties);
 
     // Act / Assert
     assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("dateTime"));

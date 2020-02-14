@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.BooleanConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.ByteConverter;
@@ -70,6 +71,8 @@ class StaticQueryFetcherTest {
   private TupleQueryResult tupleQueryResultMock;
 
   private StaticQueryFetcher staticQueryFetcherUnderTest;
+
+  private Rdf4jProperties rdf4jProperties;
 
   @BeforeEach
   void setUp() {
@@ -159,7 +162,7 @@ class StaticQueryFetcherTest {
   @Test
   void getExceptionForDateTimeConverterTest() {
     // Arrange
-    DateTimeConverter dateTimeConverter = new DateTimeConverter();
+    DateTimeConverter dateTimeConverter = new DateTimeConverter(rdf4jProperties);
 
     // Act / Assert
     assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("someData"));
@@ -168,7 +171,7 @@ class StaticQueryFetcherTest {
   @Test
   void getExceptionForLocateDateConverterTest() {
     // Arrange
-    LocalDateConverter localDateConverter = new LocalDateConverter();
+    LocalDateConverter localDateConverter = new LocalDateConverter(rdf4jProperties);
 
     // Act / Assert
     assertThrows(NotImplementedException.class, () -> localDateConverter.convertToValue("someData"));

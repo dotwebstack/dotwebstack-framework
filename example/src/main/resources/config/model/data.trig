@@ -14,7 +14,7 @@
   brewery_id:1 a beer_def:Brewery ;
     beer_def:identifier "1" ;
     beer_def:brewmasters "Jeroen van Hees" ;
-    beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:founded "2014-05-03"^^xsd:date ;
     beer_def:group "Onafhankelijk" ;
     beer_def:label "1923 Brouwerij";
     beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
@@ -37,7 +37,7 @@
 
   brewery_id:2 a beer_def:Brewery ;
     beer_def:identifier "2" ;
-    beer_def:founded "2017-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:founded "2017-01-31"^^xsd:date ;
     beer_def:group "Onafhankelijk" ;
     beer_def:label "Brouwerij Het 58e Genot i.o." ;
     schema:state "Noord-Brabant" ;
@@ -60,7 +60,7 @@
     beer_def:annualproduction "140000 hl." ;
     beer_def:brewmasters "Erik Bielders" ;
     beer_def:fax "046-4432835" ;
-    beer_def:founded "1870-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:founded "1870-05-15"^^xsd:date ;
     beer_def:group "Onafhankelijk" ;
     beer_def:openinghours "Alle dagen van de week op aanvraag (12.30-16.00 uur)" ;
     beer_def:owners "Harry Meens" ;
@@ -82,7 +82,7 @@
   brewery_id:4 a beer_def:Brewery ;
     beer_def:identifier "4" ;
     beer_def:brewmasters "Max Schreuder" , "Yvonne van Breda" ;
-    beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:founded "2014-01-01"^^xsd:date ;
     beer_def:group "Onafhankelijk" ;
     beer_def:owners "Max Schreuder" , "Yvonne van Breda" ;
     schema:state "Limburg" ;
@@ -109,7 +109,7 @@
   brewery_id:5 a beer_def:Brewery ;
     beer_def:identifier "5" ;
     beer_def:brewmasters "Doeke Visser" ;
-    beer_def:founded "2008-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:founded "2008-01-01"^^xsd:date ;
     beer_def:group "Onafhankelijk" ;
     beer_def:openinghours "Bezoek op afspraak." ;
     beer_def:owners "Doeke" , "Eva Visser" ;
@@ -132,6 +132,7 @@
 
   beer_id:1 a beer_def:Beer ;
     beer_def:identifier "1";
+    beer_def:created "1991-05-12T23:12:00.000+02:00"^^xsd:dateTime ;
     beer_def:brewery brewery_id:3 ;
     schema:name "Alfa Edel Pils" ;
     beer_def:beertype beer_type_id:1 ;
@@ -142,6 +143,7 @@
 
   beer_id:2 a beer_def:Beer ;
     beer_def:identifier "2";
+    beer_def:created "1953-02-25T10:15:00.000+02:00"^^xsd:dateTime ;
     beer_def:brewery brewery_id:3;
     schema:name "Alfa Krachtig Dort"
   .

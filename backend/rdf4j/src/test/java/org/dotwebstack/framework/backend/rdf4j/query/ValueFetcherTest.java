@@ -60,6 +60,7 @@ import graphql.schema.GraphQLObjectType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.converters.LocalDateConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -102,6 +103,8 @@ class ValueFetcherTest {
 
   private Rdf4jConverterRouter converterRouter;
 
+  private Rdf4jProperties rdf4jProperties;
+
   @BeforeAll
   static void setup() throws IOException {
     PropertyPathFactoryTest.setup();
@@ -116,7 +119,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.getByShaclName(any())).thenReturn(nodeShape);
-    this.converters = ImmutableList.of(new LocalDateConverter());
+    this.converters = ImmutableList.of(new LocalDateConverter(rdf4jProperties));
     this.converterRouter = new Rdf4jConverterRouter(converters);
   }
 

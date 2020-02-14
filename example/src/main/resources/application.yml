@@ -12,3 +12,12 @@ dotwebstack:
       rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
       beer_def: https://github.com/dotwebstack/beer/def#
       brewery_id: https://github.com/dotwebstack/beer/id/brewery/
+    dateproperties:
+      dateformat: yyyy-MM-dd
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+      timezone: Europe/Amsterdam
+  openapi:
+    dateproperties:
+      dateformat: dd-MM-yyyy
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+      timezone: Europe/Amsterdam
