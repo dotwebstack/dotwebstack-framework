@@ -3,15 +3,12 @@ package org.dotwebstack.framework.backend.rdf4j.converters;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -149,24 +146,8 @@ class ConverterTest {
   void convertLiteral_toDateValue_withSupportedFormat() {
     // Arrange
     DateConverter dateConverter = new DateConverter();
-    when(literal.stringValue()).thenReturn("2020-01-31");
-
-    // Act
-    Date date = dateConverter.convertLiteral(literal);
-
-    // Assert
-    assertEquals("2020-01-31", simpleDateFormat.format(date));
-  }
-
-  @Test
-  void convertLiteraltoDateValue_throwsError_withUnSupportedFormat() {
-    // Arrange
-    DateConverter dateConverter = new DateConverter();
-    when(literal.stringValue()).thenReturn("2020-31-01");
 
     // Act & Assert
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> dateConverter.convertLiteral(literal));
-    assertEquals("Format for date 2020-31-01 does not have the expected format yyyy-MM-dd", exception.getMessage());
+    assertThrows(UnsupportedOperationException.class, () -> dateConverter.convertLiteral(literal));
   }
-
 }
