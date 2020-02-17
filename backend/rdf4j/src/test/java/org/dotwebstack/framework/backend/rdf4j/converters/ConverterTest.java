@@ -117,8 +117,12 @@ class ConverterTest {
   @Test
   void convert_datetimeLiteralWithMs_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
-    String formatString = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
+    String formatString = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
     String timeZone = "Europe/Berlin";
+
+    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
+    when(dateFormatProperties.getDatetimeformat()).thenReturn(formatString);
+    when(dateFormatProperties.getTimezone()).thenReturn(timeZone);
 
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
         .newXMLGregorianCalendar("2019-04-10T16:47:49.789661");
