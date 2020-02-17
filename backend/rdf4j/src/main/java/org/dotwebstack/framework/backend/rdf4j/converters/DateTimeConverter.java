@@ -21,8 +21,14 @@ public class DateTimeConverter extends LiteralConverter<ZonedDateTime> {
 
   private Rdf4jProperties rdf4jProperties;
 
+  private ZoneId zoneId;
+
+  private DateTimeFormatter dateTimeFormatter;
+
   public DateTimeConverter(Rdf4jProperties rdf4jProperties) {
     this.rdf4jProperties = rdf4jProperties;
+    this.dateTimeFormatter = getDatetimeFormatter();
+    this.zoneId = getTimezone();
   }
 
   @Override
@@ -32,12 +38,9 @@ public class DateTimeConverter extends LiteralConverter<ZonedDateTime> {
 
   @Override
   public ZonedDateTime convertLiteral(@NonNull Literal literal) {
-    DateTimeFormatter dateTimeFormatter = getDatetimeFormatter();
-
     try {
       return ZonedDateTime.parse(literal.stringValue(), dateTimeFormatter);
     } catch (DateTimeParseException e) {
-      ZoneId zoneId = getTimezone();
       return ZonedDateTime.of(LocalDateTime.parse(literal.stringValue(), dateTimeFormatter), zoneId);
     }
   }

@@ -14,8 +14,11 @@ public class LocalDateTypeConverter implements TypeConverter<LocalDate, String> 
 
   private OpenApiProperties openApiProperties;
 
+  private DateTimeFormatter dateTimeFormatter;
+
   public LocalDateTypeConverter(OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;
+    this.dateTimeFormatter = getDateTimeFormatter();
   }
 
   @Override
@@ -25,12 +28,15 @@ public class LocalDateTypeConverter implements TypeConverter<LocalDate, String> 
 
   @Override
   public String convert(LocalDate source, Map<String, Object> context) {
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
+    return dateTimeFormatter.format(source);
+  }
+
+  private DateTimeFormatter getDateTimeFormatter() {
     if (Objects.nonNull(openApiProperties.getDateproperties()) && Objects.nonNull(openApiProperties.getDateproperties()
         .getDateformat())) {
-      dateTimeFormatter = DateTimeFormatter.ofPattern(openApiProperties.getDateproperties()
+      return DateTimeFormatter.ofPattern(openApiProperties.getDateproperties()
           .getDateformat());
     }
-    return dateTimeFormatter.format(source);
+    return DateTimeFormatter.ISO_LOCAL_DATE;
   }
 }

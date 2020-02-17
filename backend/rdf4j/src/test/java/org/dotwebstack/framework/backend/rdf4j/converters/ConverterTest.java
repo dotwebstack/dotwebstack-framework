@@ -76,7 +76,6 @@ class ConverterTest {
 
     // Assert
     assertThat(converter.convertFromValue(integerLiteral), is(5));
-
   }
 
   @Test
@@ -97,18 +96,16 @@ class ConverterTest {
   @Test
   void convert_datetimeLiteral_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
-    String formatString = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx";
-
     when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDatetimeformat()).thenReturn(formatString);
+    when(dateFormatProperties.getDatetimeformat()).thenReturn("yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
 
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
         .newXMLGregorianCalendar("2000-01-01T20:18:00.000+02:00");
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
-    ZonedDateTime actual = ((DateTimeConverter) converter).convertLiteral(calenderLiteral);
+    DateTimeConverter converter = new DateTimeConverter(rdf4jProperties);
+    ZonedDateTime actual = converter.convertLiteral(calenderLiteral);
 
     // Assert
     assertEquals(ZonedDateTime.parse("2000-01-01T20:18:00.000+02:00"), actual);
@@ -117,24 +114,20 @@ class ConverterTest {
   @Test
   void convert_datetimeLiteralWithMs_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
-    String formatString = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
-    String timeZone = "Europe/Berlin";
-
     when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDatetimeformat()).thenReturn(formatString);
-    when(dateFormatProperties.getTimezone()).thenReturn(timeZone);
+    when(dateFormatProperties.getDatetimeformat()).thenReturn("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+    when(dateFormatProperties.getTimezone()).thenReturn("America/Denver");
 
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
         .newXMLGregorianCalendar("2019-04-10T16:47:49.789661");
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
+    DateTimeConverter converter = new DateTimeConverter(rdf4jProperties);
+    ZonedDateTime actual = converter.convertLiteral(calenderLiteral);
 
     // Assert
-    assertThat(converter, instanceOf(DateTimeConverter.class));
-    assertThat(((DateTimeConverter) converter).convertLiteral(calenderLiteral),
-        is(ZonedDateTime.parse("2019-04-10T16:47:49.789661+02:00[Europe/Berlin]")));
+    assertEquals(ZonedDateTime.parse("2019-04-10T16:47:49.789661-06:00[America/Denver]"), actual);
   }
 
   @Test

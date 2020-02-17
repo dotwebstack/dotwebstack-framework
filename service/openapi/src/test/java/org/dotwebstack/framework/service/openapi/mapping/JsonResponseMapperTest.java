@@ -59,14 +59,20 @@ class JsonResponseMapperTest {
   @Mock
   private OpenApiProperties openApiProperties;
 
-  private TypeConverterRouter typeConverterRouter = new TypeConverterRouter(
-      List.of(new ZonedDateTimeTypeConverter(openApiProperties), new LocalDateTypeConverter(openApiProperties)));
+  @Mock
+  private OpenApiProperties.DateFormatProperties dateFormatProperties;
+
+  private TypeConverterRouter typeConverterRouter;
 
   @Mock
   private GraphQlField graphQlField;
 
   @BeforeEach
   void setup() {
+    when(openApiProperties.getDateproperties()).thenReturn(dateFormatProperties);
+
+    this.typeConverterRouter = new TypeConverterRouter(
+        List.of(new ZonedDateTimeTypeConverter(openApiProperties), new LocalDateTypeConverter(openApiProperties)));
     this.jsonResponseMapper =
         new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter);
   }

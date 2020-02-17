@@ -20,8 +20,11 @@ public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
   private Rdf4jProperties rdf4jProperties;
 
+  private DateTimeFormatter dateTimeFormatter;
+
   public LocalDateConverter(Rdf4jProperties rdf4jProperties) {
     this.rdf4jProperties = rdf4jProperties;
+    this.dateTimeFormatter = getDateTimeFormatter();
   }
 
   @Override
@@ -31,13 +34,16 @@ public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
   @Override
   public LocalDate convertLiteral(@NonNull Literal literal) {
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
+    return LocalDate.parse(literal.stringValue(), dateTimeFormatter);
+  }
+
+  private DateTimeFormatter getDateTimeFormatter() {
     if (Objects.nonNull(rdf4jProperties.getDateproperties()) && Objects.nonNull(rdf4jProperties.getDateproperties()
         .getDateformat())) {
-      dateTimeFormatter = DateTimeFormatter.ofPattern(rdf4jProperties.getDateproperties()
+      return DateTimeFormatter.ofPattern(rdf4jProperties.getDateproperties()
           .getDateformat());
     }
-    return LocalDate.parse(literal.stringValue(), dateTimeFormatter);
+    return DateTimeFormatter.ISO_LOCAL_DATE;
   }
 
   @Override

@@ -15,8 +15,14 @@ public class ZonedDateTimeTypeConverter implements TypeConverter<ZonedDateTime, 
 
   private OpenApiProperties openApiProperties;
 
+  private DateTimeFormatter dateTimeFormatter;
+
+  private ZoneId zoneId;
+
   public ZonedDateTimeTypeConverter(OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;
+    this.dateTimeFormatter = getDateTimeFormatter();
+    this.zoneId = getZoneId();
   }
 
   @Override
@@ -26,20 +32,32 @@ public class ZonedDateTimeTypeConverter implements TypeConverter<ZonedDateTime, 
 
   @Override
   public String convert(ZonedDateTime source, Map<String, Object> context) {
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-    ZonedDateTime zonedDateTime = source;
+    return dateTimeFormatter.format(convertDate(source));
+  }
+
+  private DateTimeFormatter getDateTimeFormatter() {
     if (Objects.nonNull(openApiProperties.getDateproperties()) && Objects.nonNull(openApiProperties.getDateproperties()
         .getDateformat())) {
-      dateTimeFormatter = DateTimeFormatter.ofPattern(openApiProperties.getDateproperties()
+      return DateTimeFormatter.ofPattern(openApiProperties.getDateproperties()
           .getDatetimeformat());
     }
 
+    return DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+  }
+
+  private ZoneId getZoneId() {
     if (Objects.nonNull(openApiProperties.getDateproperties()) && Objects.nonNull(openApiProperties.getDateproperties()
         .getTimezone())) {
-      zonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of(openApiProperties.getDateproperties()
-          .getTimezone()));
+      return ZoneId.of(openApiProperties.getDateproperties()
+          .getTimezone());
     }
+    return null;
+  }
 
-    return dateTimeFormatter.format(zonedDateTime);
+  private ZonedDateTime convertDate(ZonedDateTime source) {
+    if (Objects.nonNull(zoneId)) {
+      return source.withZoneSameInstant(zoneId);
+    }
+    return source;
   }
 }

@@ -72,7 +72,10 @@ class StaticQueryFetcherTest {
 
   private StaticQueryFetcher staticQueryFetcherUnderTest;
 
+  @Mock
   private Rdf4jProperties rdf4jProperties;
+
+  private Rdf4jProperties.DateFormatProperties dateFormatProperties;
 
   @BeforeEach
   void setUp() {
@@ -162,6 +165,7 @@ class StaticQueryFetcherTest {
   @Test
   void getExceptionForDateTimeConverterTest() {
     // Arrange
+    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
     DateTimeConverter dateTimeConverter = new DateTimeConverter(rdf4jProperties);
 
     // Act / Assert
@@ -171,6 +175,7 @@ class StaticQueryFetcherTest {
   @Test
   void getExceptionForLocateDateConverterTest() {
     // Arrange
+    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
     LocalDateConverter localDateConverter = new LocalDateConverter(rdf4jProperties);
 
     // Act / Assert
