@@ -37,7 +37,7 @@ public class ZonedDateTimeTypeConverter implements TypeConverter<ZonedDateTime, 
 
   private DateTimeFormatter getDateTimeFormatter() {
     if (Objects.nonNull(openApiProperties.getDateproperties()) && Objects.nonNull(openApiProperties.getDateproperties()
-        .getDateformat())) {
+        .getDatetimeformat())) {
       return DateTimeFormatter.ofPattern(openApiProperties.getDateproperties()
           .getDatetimeformat());
     }
