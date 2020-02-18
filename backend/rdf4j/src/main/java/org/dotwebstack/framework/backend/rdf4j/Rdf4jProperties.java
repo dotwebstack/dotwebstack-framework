@@ -21,8 +21,6 @@ public class Rdf4jProperties {
 
   private Map<String, RepositoryProperties> repositories;
 
-  private DateFormatProperties dateproperties;
-
   @Getter
   @Setter
   public static class ShapeProperties {
@@ -46,18 +44,6 @@ public class Rdf4jProperties {
     private String type;
 
     private Map<String, Object> args;
-
-  }
-
-  @Getter
-  @Setter
-  public static class DateFormatProperties {
-
-    private String dateformat;
-
-    private String datetimeformat;
-
-    private String timezone;
 
   }
 
