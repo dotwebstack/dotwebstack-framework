@@ -5,16 +5,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.IRI;
@@ -38,19 +38,12 @@ class ConverterTest {
   @Mock
   private Literal literal;
 
-  @Mock
-  private Rdf4jProperties rdf4jProperties;
-
-  @Mock
-  private Rdf4jProperties.DateFormatProperties dateFormatProperties;
-
   private List<CoreConverter<Value, ?>> converters;
 
   @BeforeEach
   public void setup() {
-    converters = ImmutableList.of(new BooleanConverter(), new LocalDateConverter(rdf4jProperties),
-        new DateTimeConverter(rdf4jProperties), new IriConverter(), new LongConverter(), new IntConverter(),
-        new DateConverter());
+    converters = ImmutableList.of(new BooleanConverter(), new LocalDateConverter(), new DateTimeConverter(),
+        new IriConverter(), new LongConverter(), new IntConverter(), new DateConverter());
   }
 
   @Test
@@ -96,38 +89,35 @@ class ConverterTest {
   @Test
   void convert_datetimeLiteral_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
-    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDatetimeformat()).thenReturn("yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
-
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
         .newXMLGregorianCalendar("2000-01-01T20:18:00.000+02:00");
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    DateTimeConverter converter = new DateTimeConverter(rdf4jProperties);
+    DateTimeConverter converter = new DateTimeConverter();
     ZonedDateTime actual = converter.convertLiteral(calenderLiteral);
 
     // Assert
-    assertEquals(ZonedDateTime.parse("2000-01-01T20:18:00.000+02:00"), actual);
+    assertEquals(ZonedDateTime.of(LocalDate.parse("2000-01-01"), LocalTime.parse("20:18:00"), ZoneId.of("GMT+02:00")),
+        actual);
   }
 
   @Test
   void convert_datetimeLiteralWithMs_toZonedDateTime() throws DatatypeConfigurationException {
     // Arrange
-    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDatetimeformat()).thenReturn("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-    when(dateFormatProperties.getTimezone()).thenReturn("America/Denver");
-
     XMLGregorianCalendar calender = DatatypeFactory.newInstance()
-        .newXMLGregorianCalendar("2019-04-10T16:47:49.789661");
+        .newXMLGregorianCalendar("2019-04-10T16:47:49.789");
+    calender.setTimezone(-360);
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    DateTimeConverter converter = new DateTimeConverter(rdf4jProperties);
+    DateTimeConverter converter = new DateTimeConverter();
     ZonedDateTime actual = converter.convertLiteral(calenderLiteral);
 
     // Assert
-    assertEquals(ZonedDateTime.parse("2019-04-10T16:47:49.789661-06:00[America/Denver]"), actual);
+    assertEquals(
+        ZonedDateTime.of(LocalDate.parse("2019-04-10"), LocalTime.parse("16:47:49.789"), ZoneId.of("GMT-06:00")),
+        actual);
   }
 
   @Test
@@ -153,7 +143,7 @@ class ConverterTest {
   @Test
   void convert_dateTime_toValue_shouldThrowNotImplementedException() {
     // Arrange
-    DateTimeConverter dateTimeConverter = new DateTimeConverter(rdf4jProperties);
+    DateTimeConverter dateTimeConverter = new DateTimeConverter();
 
     // Act / Assert
     assertThrows(NotImplementedException.class, () -> dateTimeConverter.convertToValue("dateTime"));
@@ -169,36 +159,18 @@ class ConverterTest {
   }
 
   @Test
-  void convertLiteral_toDateValue_withAmericanFormat() {
+  void convertLiteral_toLocalDateValue_withDefaultFormat() throws DatatypeConfigurationException {
     // Assert
-    String formatString = "yyyy-dd-MM";
-    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDateformat()).thenReturn(formatString);
-    when(literal.stringValue()).thenReturn("2015-15-05");
-    LocalDateConverter converter = new LocalDateConverter(rdf4jProperties);
-    LocalDate expected = LocalDate.parse("2015-05-15");
+    XMLGregorianCalendar calender = DatatypeFactory.newInstance()
+        .newXMLGregorianCalendar("2015-05-15");
+    CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
+
 
     // Act
-    LocalDate actual = converter.convertLiteral(literal);
+    LocalDateConverter converter = (LocalDateConverter) getConverter(calenderLiteral);
+    LocalDate actual = converter.convertLiteral(calenderLiteral);
 
     // Assert
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void convertLiteral_toDateValue_withDutchFormat() {
-    // Assert
-    String formatString = "dd-MM-yyyy";
-    when(rdf4jProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dateFormatProperties.getDateformat()).thenReturn(formatString);
-    when(literal.stringValue()).thenReturn("15-05-2015");
-    LocalDateConverter converter = new LocalDateConverter(rdf4jProperties);
-    LocalDate expected = LocalDate.parse("2015-05-15");
-
-    // Act
-    LocalDate actual = converter.convertLiteral(literal);
-
-    // Assert
-    assertEquals(expected, actual);
+    assertEquals(LocalDate.parse("2015-05-15"), actual);
   }
 }

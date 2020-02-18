@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.language.StringValue;
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -95,8 +94,9 @@ class Rdf4jModuleTest {
     assertThat(resultMap, hasEntry(BREWERY_SUBJECT_FIELD, subject));
     assertThat(resultMap, hasEntry(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
     assertThat(resultMap, hasEntry(BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()));
-    assertThat(resultMap,
-        hasEntry(BREWERY_FOUNDED_FIELD, ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
+    assertThat(resultMap, hasEntry(BREWERY_FOUNDED_FIELD, BREWERY_FOUNDED_EXAMPLE_1.calendarValue()
+        .toGregorianCalendar()
+        .toZonedDateTime()));
   }
 
   @Test
