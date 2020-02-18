@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 @EnableConfigurationProperties(Rdf4jProperties.class)
 public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
-  public LocalDateConverter() {}
-
   @Override
   public boolean supportsLiteral(@NonNull Literal literal) {
     return XMLSchema.DATE.equals(literal.getDatatype());

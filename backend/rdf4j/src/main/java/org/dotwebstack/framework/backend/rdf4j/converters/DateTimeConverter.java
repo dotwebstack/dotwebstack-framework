@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class DateTimeConverter extends LiteralConverter<ZonedDateTime> {
 
-  public DateTimeConverter() {}
-
   @Override
   public boolean supportsLiteral(@NonNull Literal literal) {
     return XMLSchema.DATETIME.equals(literal.getDatatype());
