@@ -55,9 +55,6 @@ public class ZonedDateTimeTypeConverter implements TypeConverter<ZonedDateTime, 
   }
 
   private ZonedDateTime convertDate(ZonedDateTime source) {
-    if (Objects.nonNull(zoneId)) {
-      return source.withZoneSameInstant(zoneId);
-    }
-    return source;
+    return Objects.nonNull(zoneId) ? source.withZoneSameInstant(zoneId) : source;
   }
 }
