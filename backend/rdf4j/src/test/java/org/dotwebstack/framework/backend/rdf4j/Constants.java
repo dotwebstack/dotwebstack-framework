@@ -120,7 +120,7 @@ public final class Constants {
   public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_FOUNDED_TYPE));
 
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 =
-      VF.createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+      VF.createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10.000+02:00"));
 
   // Brewery.postalCode
 

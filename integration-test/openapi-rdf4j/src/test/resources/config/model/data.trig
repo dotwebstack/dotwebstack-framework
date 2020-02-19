@@ -59,7 +59,7 @@ beer_brewery:1 a beer_def:Brewery ;
 beer_brewery:2 a beer_def:Brewery ;
   beer_def:identifier "2" ;
   schema:name "Brouwerij De Leckere"^^xsd:string ;
-  beer_def:founded "1997-01-01T00:00:00+02:00"^^xsd:dateTime
+  beer_def:founded "1997-06-06T00:00:00+02:00"^^xsd:dateTime
 .
 
 beer_id:6 a beer_def:Beer ;

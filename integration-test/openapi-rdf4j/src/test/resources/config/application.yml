@@ -8,3 +8,8 @@ dotwebstack:
       language: de
       graph: https://github.com/dotwebstack/beer/shapes
       prefix: https://github.com/dotwebstack/beer/shapes#
+  openapi:
+    dateproperties:
+      dateformat: yyyy-MM-dd
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ssxxx
+      timezone: Europe/Amsterdam

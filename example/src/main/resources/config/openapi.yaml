@@ -11,10 +11,14 @@ components:
       required:
         - identifier
         - name
+        - created
       properties:
         identifier:
           type: string
         name:
+          type: string
+          nullable: true
+        created:
           type: string
           nullable: true
         ingredients:
@@ -62,12 +66,15 @@ components:
         - identifier
         - subject
         - name
+        - founded
         - localName
         - owners
         - sponsorship
         - beerCount
       properties:
         identifier:
+          type: string
+        founded:
           type: string
         subject:
           type: string

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.conversion;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("rawtypes")
 public class TypeConverterRouter {
 
-  private List<TypeConverter> typeConverters;
+  private List<TypeConverter> typeConverters = new ArrayList<>();
 
   public TypeConverterRouter(List<TypeConverter> typeConverters) {
     this.typeConverters = typeConverters;
@@ -28,7 +27,8 @@ public class TypeConverterRouter {
       return converter.get()
           .convert(source, parameters);
     }
-    throw illegalArgumentException("Could not find a converter for {}", source);
+
+    return source;
   }
 
 }

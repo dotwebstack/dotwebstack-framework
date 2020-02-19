@@ -5,11 +5,14 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import java.util.Date;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+@EnableConfigurationProperties(Rdf4jProperties.class)
 public class DateConverter extends LiteralConverter<Date> {
 
   @Override

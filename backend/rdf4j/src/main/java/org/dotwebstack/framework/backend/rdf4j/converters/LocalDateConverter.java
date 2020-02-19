@@ -5,12 +5,15 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.notImplemen
 import java.time.LocalDate;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+@EnableConfigurationProperties(Rdf4jProperties.class)
 public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
   @Override
@@ -20,7 +23,10 @@ public class LocalDateConverter extends LiteralConverter<LocalDate> {
 
   @Override
   public LocalDate convertLiteral(@NonNull Literal literal) {
-    return LocalDate.parse(literal.stringValue());
+    return literal.calendarValue()
+        .toGregorianCalendar()
+        .toZonedDateTime()
+        .toLocalDate();
   }
 
   @Override

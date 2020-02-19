@@ -36,7 +36,7 @@ type Brewery {
   identifier: ID!
   subject: IRI! @resource
   name: String!
-  founded: String
+  founded: DateTime
   address: Address
   postalCode: String
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name")): [Beer!]

@@ -72,8 +72,7 @@ type Brewery {
   subject: IRI! @resource
   name: String!
   localName: String
-  founded: Int!
-    @transform(expr: "founded.getYear()")
+  founded: Date
   openinghours: String
   owners(sort: [SortField!] = [{order: ASC}] @sort): [String]
   url: String!
@@ -93,6 +92,7 @@ type Address {
 type Beer {
   identifier: ID!
   name: String!
+  created: DateTime!
   brewery: String!
   beerTypes: [String]!
   ingredients(name: [String] @filter(field: "name")): [Ingredient!]

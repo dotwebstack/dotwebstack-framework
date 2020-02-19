@@ -287,3 +287,14 @@ The default is set by using `x-dws-default: true` on a content configuration.
 # 1.2 OpenApi specification on basepath
 The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
 anyone with access to your API can lookup specification used to generate the API.
+
+# 1.3 Dateformats
+You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify
+the format and timezone in which dates and datetimes are shown in your response: 
+
+```application.yml
+dateproperties:
+  dateformat: dd-MM-yyyy
+  datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+  timezone: Europe/Amsterdam
+```

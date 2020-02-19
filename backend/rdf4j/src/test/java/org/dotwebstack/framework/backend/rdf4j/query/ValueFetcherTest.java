@@ -116,6 +116,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.getByShaclName(any())).thenReturn(nodeShape);
+
     this.converters = ImmutableList.of(new LocalDateConverter());
     this.converterRouter = new Rdf4jConverterRouter(converters);
   }

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,8 @@ public class ResponseWriteContext {
   @Builder.Default
   Deque<FieldContext> dataStack = new ArrayDeque<>();
 
-  Map<String, Object> parameters;
+  @Builder.Default
+  Map<String, Object> parameters = new HashMap<>();
 
   URI uri;
 

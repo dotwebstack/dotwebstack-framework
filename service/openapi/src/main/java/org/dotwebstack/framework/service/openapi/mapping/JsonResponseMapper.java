@@ -233,11 +233,8 @@ public class JsonResponseMapper {
       return null;
     }
 
-    return Objects.nonNull(writeContext.getResponseObject()
-        .getSummary()
-        .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
+    return typeConverterRouter.convert(item, writeContext.getParameters());
   }
-
 
   private Object mapObject(ResponseWriteContext writeContext, Object object, boolean isExpanded) {
     if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded)) {

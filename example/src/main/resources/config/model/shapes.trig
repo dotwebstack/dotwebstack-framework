@@ -93,7 +93,7 @@
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:dateTime
+    sh:datatype xsd:date
   .
 
   beer_sh:Brewery_openinghours a sh:PropertyShape ;
@@ -137,6 +137,7 @@
     sh:targetClass beer_def:Beer ;
     dws:inherits beer_sh:Identifiable ;
     sh:property
+      beer_sh:Beer_created ,
       beer_sh:Beer_brewery ,
       beer_sh:Beer_beerTypes ;
     sh:property [
@@ -161,6 +162,15 @@
    sh:maxCount 1 ;
    sh:nodeKind sh:IRI
  .
+
+  beer_sh:Beer_created a sh:PropertyShape ;
+    sh:name "created" ;
+    sh:path beer_def:created ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:dateTime
+  .
 
  beer_sh:Beer_beerTypes a sh:PropertyShape ;
    sh:name "beerTypes" ;
@@ -225,7 +235,6 @@
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
   .
-
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:name "Supplement";
