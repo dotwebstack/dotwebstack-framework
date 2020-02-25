@@ -133,10 +133,7 @@ public final class ValueFetcher extends SourceDataFetcher {
   }
 
   private boolean isSimpleIriAndBlanknode(Object object) {
-    if (object instanceof SimpleIRI) {
-      return Objects.equals("_:", ((SimpleIRI) object).getNamespace());
-    }
-    return false;
+    return object instanceof SimpleIRI && Objects.equals("_:", ((SimpleIRI) object).getNamespace());
   }
 
   @SuppressWarnings("rawtypes")
