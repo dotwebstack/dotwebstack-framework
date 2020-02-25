@@ -33,7 +33,6 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
@@ -103,8 +102,8 @@ public final class ValueFetcher extends SourceDataFetcher {
         .stream()
         .filter(result -> nodeShape == null || nodeShape.getTargetClasses()
             .isEmpty() || result instanceof SimpleLiteral
-            || (result instanceof SimpleIRI
-                ? resultIsOfType((SimpleIRI) result, source.getModel(), nodeShape.getTargetClasses())
+            || (result instanceof Resource
+                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getTargetClasses())
                 : resultIsOfType(result, nodeShape.getTargetClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
