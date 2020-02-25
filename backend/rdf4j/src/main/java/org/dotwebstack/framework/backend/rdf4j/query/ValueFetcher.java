@@ -101,7 +101,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     Stream<Value> stream = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject())
         .stream()
-        .filter(result -> nodeShape == null || result instanceof BNode || result instanceof SimpleLiteral
+        .filter(result -> nodeShape == null || result instanceof BNode || isSimpleIriAndBlanknode(result) || result instanceof SimpleLiteral
             || (result instanceof SimpleIRI
                 ? resultIsOfType((SimpleIRI) result, source.getModel(), nodeShape.getTargetClasses())
                 : resultIsOfType(result, nodeShape.getTargetClasses())));
@@ -129,6 +129,13 @@ public final class ValueFetcher extends SourceDataFetcher {
     }
 
     return stream;
+  }
+
+  private boolean isSimpleIriAndBlanknode(Object object) {
+    if (object instanceof SimpleIRI) {
+      return Objects.equals("_:", ((SimpleIRI) object).getNamespace());
+    }
+    return false;
   }
 
   @SuppressWarnings("rawtypes")
