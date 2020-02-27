@@ -136,7 +136,22 @@ with `beers.ingredients` it is not necessary to provide a separate expand value 
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  
 
-# 1.1.5 Request body
+# 1.1.5 Required Paths
+In some cases fields are only used within an x-dws-expr. Since GraphQL will only return the fields that are required
+by the output, you had to add the property to your response as well. For that reason the `requiredField` parameter is
+added to `x-dws-query`:
+
+```yaml
+x-dws-query:
+  field: brewery
+  requiredPaths:
+    - postalCode
+```
+
+The `requiredField` property describes a list of field names that are required, but just not as
+an explicit field in the response. But for example as a value in an `x-dws-expr`, to build up a link form example.
+
+# 1.1.6 Request body
 In addition to request parameters, it is possible to use the HTTP request body to provide input with the `requestBody` element of an operation:
 ```yaml
     get:
@@ -153,7 +168,7 @@ In addition to request parameters, it is possible to use the HTTP request body t
 ```
 The `requestBody` only supports the `application/json` MediaType as content and should have a schema of type `object` with exactly 1 property. The name of the property is used to map the request body to the GraphQL argument of the corresponding query.
 
-# 1.1.6 Type mapping
+# 1.1.7 Type mapping
 Type definitions in the schema are mapped to GraphQL types based on their name. For example, the following OpenAPI type 
 
 ```yaml
@@ -168,7 +183,7 @@ will be mapped to the `Beer` type defined in `schema.graphqls`:
 Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fields based on their name.
 When defining an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
-# 1.1.7 Envelope type
+# 1.1.8 Envelope type
 It is also possible to add fields to an OpenApi response that are not in the GraphQL response. This is useful if you want 
 to enrich your response, for example in case of a `hal+json` response. The `_links` or `_embedded` objects you create are
 not part of the GraphQL response, but you want them to be part of the rest response. An example can be seen in
@@ -211,7 +226,7 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
-# 1.1.8 Response properties expression
+# 1.1.9 Response properties expression
 By using a response property expression, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. An expression can be assigned to a property by adding the extension field `x-dws-expr` to a property of type `string`:
 ```yaml
 properties:
@@ -228,7 +243,7 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
 
-# 1.1.9 AllOf
+# 1.1.10 AllOf
 It is possible to define an `allOf` property, the resulting property is the combined result of all underlying schema's:
 
 ```yaml
@@ -247,7 +262,7 @@ brewery:
 The response of brewery contains the combined set of required properties of both schema's defined under the `allOf` property. 
 Currently `anyOf` and `oneOf` are not supported.  
 
-# 1.1.10 Response headers
+# 1.1.11 Response headers
 It is possible to return response headers in a DotWebStack response. Their configuration is similar to response properties: 
 ```graphql
   /breweries:
@@ -264,7 +279,7 @@ It is possible to return response headers in a DotWebStack response. Their confi
 ```
 This configuration adds the `X-Pagination-Page` header to the response. Its value is set using an `x-dws-expr`, similar to response properties.
 
-# 1.1.11 Content negotiation
+# 1.1.12 Content negotiation
 It is possible to configure (multiple) contents to allow different response types:
 ```graphql
   /breweries:
