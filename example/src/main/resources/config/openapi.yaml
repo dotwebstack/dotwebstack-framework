@@ -71,7 +71,7 @@ components:
         - owners
         - sponsorship
         - beerCount
-        - href
+        - contextPostalCode
       properties:
         identifier:
           type: string

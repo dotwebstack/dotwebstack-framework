@@ -11,6 +11,8 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredPath;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateResponseMediaTypesAreConfigured;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
@@ -162,6 +164,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw unsupportedOperationException("No response in the 200 range found.");
     }
+
+    responseSchemaContext.getRequiredFields()
+        .forEach(requiredPath -> validateRequiredPath(field, requiredPath, field.getName()));
     validateParameters(field, responseSchemaContext.getParameters(),
         getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()), pathName);
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();

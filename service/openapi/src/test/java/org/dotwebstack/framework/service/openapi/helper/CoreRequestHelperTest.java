@@ -10,12 +10,15 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -92,5 +95,51 @@ class CoreRequestHelperTest {
     // assert
     assertEquals(result.get("someParam"), "someValue");
     assertEquals(result.get("dwsParam"), "/path");
+  }
+
+  @Test
+  public void validateRequiredPath_DoesNotThrowError_withValidInput() {
+    // Arrange
+    GraphQlField field = GraphQlField.builder()
+        .fields(List.of(GraphQlField.builder()
+            .name("postalCode")
+            .build()))
+        .build();
+
+    // Act & Assert
+    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredPath(field, "postalCode", "breweries"));
+  }
+
+  @Test
+  public void validateRequiredPath_DoesNotThrowError_withValidNestedInput() {
+    // Arrange
+    GraphQlField field = GraphQlField.builder()
+        .fields(List.of(GraphQlField.builder()
+            .name("beers")
+            .fields(List.of(GraphQlField.builder()
+                .name("id")
+                .build()))
+            .build()))
+        .build();
+
+    // Act & Assert
+    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredPath(field, "beers.id", "breweries"));
+  }
+
+  @Test
+  public void validateRequiredPath_ThrowsErrorWithInvalidInput() {
+    // Arrange
+    GraphQlField field = GraphQlField.builder()
+        .fields(List.of(GraphQlField.builder()
+            .name("beers")
+            .fields(List.of(GraphQlField.builder()
+                .name("id")
+                .build()))
+            .build()))
+        .build();
+
+    // Act & Assert
+    assertThrows(InvalidOpenApiConfigurationException.class,
+        () -> CoreRequestHelper.validateRequiredPath(field, "beers.test", "breweries"));
   }
 }
