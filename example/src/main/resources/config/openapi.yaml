@@ -71,6 +71,7 @@ components:
         - owners
         - sponsorship
         - beerCount
+        - href
       properties:
         identifier:
           type: string
@@ -87,6 +88,9 @@ components:
         openinghours:
           type: string
           nullable: true
+        contextPostalCode:
+          type: string
+          x-dws-expr: '`${fields.postalCode}`'
         owners:
           type: array
           items:
@@ -154,7 +158,10 @@ components:
 paths:
   /breweries:
     get:
-      x-dws-query: breweries
+      x-dws-query:
+        field: breweries
+        requiredFields:
+          - postalCode
       parameters:
         - name: expand
           x-dws-type: expand
@@ -236,7 +243,8 @@ paths:
                 $ref: "#/components/schemas/Error"
   /brewery_with_subject:
     get:
-      x-dws-query: brewery_with_subject
+      x-dws-query:
+        field: brewery_with_subject
       parameters:
         - name: expand
           x-dws-type: expand
@@ -261,7 +269,8 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /brewery/{identifier}:
     get:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
       parameters:
         - name: expand
           x-dws-type: expand
@@ -286,7 +295,8 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /brewery_post:
     post:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
       requestBody:
         content:
           application/json:
@@ -306,7 +316,8 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /breweries/{identifier}:
     get:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
       parameters:
         - name: identifier
           in: path
@@ -323,7 +334,8 @@ paths:
                 x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
   /brewery/{identifier}/model:
     get:
-      x-dws-query: breweryModel
+      x-dws-query:
+        field: breweryModel
       parameters:
         - name: identifier
           in: path

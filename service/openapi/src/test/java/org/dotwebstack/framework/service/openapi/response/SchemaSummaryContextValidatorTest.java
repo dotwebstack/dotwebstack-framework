@@ -6,7 +6,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -164,6 +163,9 @@ public class SchemaSummaryContextValidatorTest {
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem.getGet());
 
-    return new ResponseSchemaContext(field, responses, Collections.emptyList(), Collections.emptyMap(), null);
+    return ResponseSchemaContext.builder()
+        .graphQlField(field)
+        .responses(responses)
+        .build();
   }
 }

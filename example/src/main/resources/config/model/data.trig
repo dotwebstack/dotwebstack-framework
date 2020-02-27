@@ -66,6 +66,7 @@
     beer_def:owners "Harry Meens" ;
     schema:state "Limburg" ;
     schema:name "Alfa Brouwerij" ;
+    schema:address address_id:5 ;
     schema:taxID "14034012" ;
     schema:telephone "046-4432888" ;
     schema:url <http://www.alfabier.nl>

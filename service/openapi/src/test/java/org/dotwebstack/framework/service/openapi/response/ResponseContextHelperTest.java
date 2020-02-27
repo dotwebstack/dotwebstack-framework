@@ -33,7 +33,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act
@@ -53,7 +56,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act
@@ -70,7 +76,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act / Assert

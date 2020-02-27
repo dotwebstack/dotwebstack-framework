@@ -44,6 +44,8 @@ public class OasConstants {
 
   public static final String X_DWS_QUERY_FIELD = "field";
 
+  public static final String X_DWS_QUERY_REQUIRED_FIELDS = "requiredFields";
+
   public static final String X_DWS_QUERY_PARAMETERS = "parameters";
 
   public static final String X_DWS_QUERY_PARAMETER_NAME = "name";

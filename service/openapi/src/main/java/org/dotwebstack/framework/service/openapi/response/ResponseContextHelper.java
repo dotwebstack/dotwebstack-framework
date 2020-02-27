@@ -29,7 +29,10 @@ public class ResponseContextHelper {
 
     if (successResponse.isPresent()) {
       ResponseTemplate responseTemplate = successResponse.get();
-      return getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
+      Set<String> requiredFields =
+          getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
+      requiredFields.addAll(responseSchemaContext.getRequiredFields());
+      return requiredFields;
     } else {
       throw invalidConfigurationException("No success response found for ResponseSchemaContext!");
     }
