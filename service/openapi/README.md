@@ -144,7 +144,7 @@ added to `x-dws-query`:
 ```yaml
 x-dws-query:
   field: brewery
-  requiredPaths:
+  requiredFields:
     - postalCode
 ```
 
