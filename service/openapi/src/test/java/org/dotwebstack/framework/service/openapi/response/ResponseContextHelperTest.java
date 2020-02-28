@@ -140,6 +140,47 @@ class ResponseContextHelperTest {
   }
 
   @Test
+  void validate_getRequiredResponseObject_withRequiredPaths() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true);
+    ResponseObject child = buildResponseObject("child", "object", true);
+    ResponseObject grandChild = buildResponseObject("grandchild", "string", false);
+    child.getSummary()
+        .setChildren(List.of(grandChild));
+    root.getSummary()
+        .setChildren(List.of(child));
+
+    ResponseTemplate template = ResponseTemplate.builder()
+        .responseCode(200)
+        .responseObject(root)
+        .build();
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("root")
+        .fields(List.of(GraphQlField.builder()
+            .name("child")
+            .fields(List.of(GraphQlField.builder()
+                .name("grandchild")
+                .build()))
+            .build()))
+        .build();
+
+    ResponseSchemaContext context = ResponseSchemaContext.builder()
+        .graphQlField(rootField)
+        .responses(List.of(template))
+        .requiredFields(List.of("child.grandchild"))
+        .build();
+
+    // Act
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
+
+    // Assert
+    assertEquals(2, paths.size());
+    assertTrue(paths.contains("child"));
+    assertTrue(paths.contains("child.grandchild"));
+  }
+
+  @Test
   void validate_getRequiredResponseObject_withComposedOfFields() {
     // Arrange
     ResponseObject root = buildResponseObject("root", "object", true);
