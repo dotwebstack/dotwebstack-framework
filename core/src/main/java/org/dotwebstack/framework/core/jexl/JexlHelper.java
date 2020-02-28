@@ -22,10 +22,6 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 @Slf4j
 public class JexlHelper {
 
-  private static final String X_DWS_EXPR_VALUE = "value";
-
-  private static final String X_DWS_EXPR_FALLBACK = "fallback";
-
   private static final String ENVIRONMENT_PREFIX = "env.";
 
   private static final String ARGUMENT_PREFIX = "args.";
@@ -63,19 +59,22 @@ public class JexlHelper {
     return jexlContext;
   }
 
-  public <T> Optional<T> evaluateScript(Map<String, String> dwsExprMap, JexlContext context, Class<T> clazz) {
+  public <T> Optional<T> evaluateScript(@NonNull String scriptString, String fallbackString,
+      @NonNull JexlContext context, @NonNull Class<T> clazz) {
     try {
-      return evaluateScript(dwsExprMap.get(X_DWS_EXPR_VALUE), context, clazz);
+      return evaluateScript(scriptString, context, clazz);
     } catch (JexlException exception) {
-      if (dwsExprMap.containsKey(X_DWS_EXPR_FALLBACK)) {
-        LOG.warn("Trying to execute fallback script, something went wrong: " + exception.getMessage());
-        return evaluateScript(dwsExprMap.get(X_DWS_EXPR_FALLBACK), context, clazz);
+      if (Objects.nonNull(fallbackString)) {
+        LOG.warn("Trying to execute fallback script, because something went wrong while executing the origin script: "
+            + exception.getMessage());
+        return evaluateScript(fallbackString, context, clazz);
       }
       throw exception;
     }
   }
 
-  public <T> Optional<T> evaluateScript(String scriptString, JexlContext context, Class<T> clazz) {
+  public <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,
+      @NonNull Class<T> clazz) {
     JexlScript script = this.engine.createScript(scriptString);
     Object evaluated = script.execute(context);
     if (evaluated == null) {

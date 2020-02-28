@@ -4,6 +4,8 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
@@ -297,9 +299,11 @@ public class JsonResponseMapper {
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
 
-    return jexlHelper.evaluateScript(writeContext.getResponseObject()
+    Map<String, String> dwsExprMap = writeContext.getResponseObject()
         .getSummary()
-        .getDwsExpr(), context, String.class);
+        .getDwsExpr();
+    return jexlHelper.evaluateScript(dwsExprMap.get(X_DWS_EXPR_VALUE), dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
+        context, String.class);
   }
 
   private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {
