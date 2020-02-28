@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -89,8 +91,11 @@ public class ResponseTemplateBuilderTest {
         .getSummary()
         .getChildren()
         .stream()
-        .filter(wrapper -> "template_content".equals(wrapper.getSummary()
+        .filter(wrapper -> Objects.nonNull(wrapper.getSummary()
             .getDwsExpr()))
+        .filter(wrapper -> "template_content".equals(wrapper.getSummary()
+            .getDwsExpr()
+            .get(X_DWS_EXPR_VALUE)))
         .count());
   }
 

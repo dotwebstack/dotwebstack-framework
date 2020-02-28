@@ -16,6 +16,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -507,7 +508,7 @@ class JsonResponseMapperTest {
             .required(true)
             .required(required)
             .nillable(nillable)
-            .dwsExpr(dwsTemplate)
+            .dwsExpr(Objects.nonNull(dwsTemplate) ? Map.of("value", dwsTemplate) : null)
             .build())
         .build();
   }

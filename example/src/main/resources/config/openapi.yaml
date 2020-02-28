@@ -90,7 +90,9 @@ components:
           nullable: true
         contextPostalCode:
           type: string
-          x-dws-expr: '`${fields.postalCode}`'
+          x-dws-expr:
+            value: '`${fields.postalCode}`'
+            fallback: '``'
         owners:
           type: array
           items:

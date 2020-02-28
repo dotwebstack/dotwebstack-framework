@@ -60,8 +60,7 @@ public class DwsExtensionHelper {
   }
 
   public static boolean isExpr(@NonNull Schema<?> schema) {
-    String isExpr = ((String) getDwsExtension(schema, X_DWS_EXPR));
-    return Objects.nonNull(isExpr);
+    return Objects.nonNull(getDwsExtension(schema, X_DWS_EXPR));
   }
 
   public static boolean isEnvelope(@NonNull Schema<?> schema) {

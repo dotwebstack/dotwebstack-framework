@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
@@ -17,7 +19,12 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.helpers.GraphQlValueHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
+@Slf4j
 public class JexlHelper {
+
+  private static final String X_DWS_EXPR_VALUE = "value";
+
+  private static final String X_DWS_EXPR_FALLBACK = "fallback";
 
   private static final String ENVIRONMENT_PREFIX = "env.";
 
@@ -54,6 +61,18 @@ public class JexlHelper {
     }
 
     return jexlContext;
+  }
+
+  public <T> Optional<T> evaluateScript(Map<String, String> dwsExprMap, JexlContext context, Class<T> clazz) {
+    try {
+      return evaluateScript(dwsExprMap.get(X_DWS_EXPR_VALUE), context, clazz);
+    } catch (JexlException exception) {
+      if (dwsExprMap.containsKey(X_DWS_EXPR_FALLBACK)) {
+        LOG.warn("Trying to execute fallback script, something went wrong: " + exception.getMessage());
+        return evaluateScript(dwsExprMap.get(X_DWS_EXPR_FALLBACK), context, clazz);
+      }
+      throw exception;
+    }
   }
 
   public <T> Optional<T> evaluateScript(String scriptString, JexlContext context, Class<T> clazz) {

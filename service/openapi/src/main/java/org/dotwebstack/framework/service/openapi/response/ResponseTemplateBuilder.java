@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
@@ -324,21 +325,27 @@ public class ResponseTemplateBuilder {
     return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
-  private String getDwsExpression(Schema<?> schema) {
+  @SuppressWarnings("unchecked")
+  private Map<String, String> getDwsExpression(Schema<?> schema) {
     Object result = getDwsExtension(schema, X_DWS_EXPR);
 
     if (Objects.isNull(result)) {
       return null;
     }
 
-    if (!(result instanceof String)) {
-      throw invalidConfigurationException("Value of extension '{}' should be a string.", X_DWS_EXPR);
-    }
     if (!Objects.equals("string", schema.getType())) {
       throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_EXPR);
     }
 
-    return (String) result;
+    if (result instanceof String) {
+      return Map.of(X_DWS_EXPR_VALUE, (String) result);
+    }
+
+    if (!(result instanceof Map) || !((Map) result).containsKey(X_DWS_EXPR_VALUE)) {
+      throw invalidConfigurationException("extension '{}' should contain a property named 'value'.", X_DWS_EXPR);
+    }
+
+    return (Map) result;
   }
 
   protected static Optional<String> getXdwsType(Schema<?> schema) {
