@@ -107,7 +107,7 @@ class CoreRequestHelperTest {
         .build();
 
     // Act & Assert
-    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredPath(field, "postalCode", "breweries"));
+    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredField(field, "postalCode", "breweries"));
   }
 
   @Test
@@ -123,7 +123,7 @@ class CoreRequestHelperTest {
         .build();
 
     // Act & Assert
-    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredPath(field, "beers.id", "breweries"));
+    assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredField(field, "beers.id", "breweries"));
   }
 
   @Test
@@ -140,6 +140,6 @@ class CoreRequestHelperTest {
 
     // Act & Assert
     assertThrows(InvalidOpenApiConfigurationException.class,
-        () -> CoreRequestHelper.validateRequiredPath(field, "beers.test", "breweries"));
+        () -> CoreRequestHelper.validateRequiredField(field, "beers.test", "breweries"));
   }
 }

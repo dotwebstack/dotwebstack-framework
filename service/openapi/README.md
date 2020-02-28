@@ -136,7 +136,7 @@ with `beers.ingredients` it is not necessary to provide a separate expand value 
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  
 
-# 1.1.5 Required Paths
+# 1.1.5 Required fields
 In some cases fields are only used within an x-dws-expr. Since GraphQL will only return the fields that are required
 by the output, you had to add the property to your response as well. For that reason the `requiredField` parameter is
 added to `x-dws-query`:
@@ -149,7 +149,7 @@ x-dws-query:
 ```
 
 The `requiredField` property describes a list of field names that are required, but just not as
-an explicit field in the response. But for example as a value in an `x-dws-expr`, to build up a link form example.
+an explicit field in the response. But for example as a value in an `x-dws-expr` to build up a link.
 
 # 1.1.6 Request body
 In addition to request parameters, it is possible to use the HTTP request body to provide input with the `requestBody` element of an operation:

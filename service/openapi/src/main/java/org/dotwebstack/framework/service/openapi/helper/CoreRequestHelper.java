@@ -56,31 +56,31 @@ public class CoreRequestHelper {
     }
   }
 
-  public static void validateRequiredPath(GraphQlField graphQlField, String expandValue, String pathName) {
-    String[] pathParams = expandValue.split("\\.");
-    validate(graphQlField, pathParams[0], pathName);
+  public static void validateRequiredField(GraphQlField graphQlField, String requiredField, String dwsQueryName) {
+    String[] fields = requiredField.split("\\.");
+    validate(graphQlField, fields[0], dwsQueryName);
 
-    if (pathParams.length > 1) {
+    if (fields.length > 1) {
       GraphQlField childField = graphQlField.getFields()
           .stream()
           .filter(field -> field.getName()
-              .equals(pathParams[0]))
+              .equals(fields[0]))
           .findFirst()
           .orElseThrow(() -> invalidOpenApiConfigurationException(
-              "No field with name '{}' was found on GraphQL field '{}' for pathName '{}'", pathParams[0],
-              graphQlField.getName(), pathName));
-      validateRequiredPath(childField, String.join(".", ArrayUtils.remove(pathParams, 0)), pathName);
+              "Required field '{}' was not found on GraphQL field '{}' for x-dws-query '{}'", fields[0],
+              graphQlField.getName(), dwsQueryName));
+      validateRequiredField(childField, String.join(".", ArrayUtils.remove(fields, 0)), dwsQueryName);
     }
   }
 
-  public static void validate(GraphQlField graphQlField, String requiredPath, String pathName) {
+  public static void validate(GraphQlField graphQlField, String requiredField, String dwsQueryName) {
     if (graphQlField.getFields()
         .stream()
         .noneMatch(field -> field.getName()
-            .equals(requiredPath))) {
+            .equals(requiredField))) {
       throw invalidOpenApiConfigurationException(
-          "Required path '{}' was not found on GraphQL field '{}' for x-dws-query '{}'", requiredPath,
-          graphQlField.getName(), pathName);
+          "Required field '{}' was not found on GraphQL field '{}' for x-dws-query '{}'", requiredField,
+          graphQlField.getName(), dwsQueryName);
     }
   }
 

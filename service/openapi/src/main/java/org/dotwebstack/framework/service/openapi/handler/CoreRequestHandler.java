@@ -11,7 +11,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredPath;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
@@ -165,7 +165,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     responseSchemaContext.getRequiredFields()
-        .forEach(requiredPath -> validateRequiredPath(field, requiredPath, field.getName()));
+        .forEach(requiredPath -> validateRequiredField(field, requiredPath, field.getName()));
     validateParameters(field, responseSchemaContext.getParameters(),
         getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()), pathName);
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
