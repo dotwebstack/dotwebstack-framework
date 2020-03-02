@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
@@ -139,6 +140,39 @@ public class JexlHelperTest {
     // Act/ Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
+  }
+
+  @Test
+  public void evalueScriptWithFallback_fallsBack_forExceptionInScript() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", "`${key1}`", context, String.class);
+    assertEquals(expectedValue, optional.get());
+  }
+
+  @Test
+  public void evalueScriptWithoutFallback_returnsNull_forExceptionInScript() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", null, context, String.class);
+    assertEquals(Optional.empty(), optional);
+  }
+
+  @Test
+  public void evalueScriptWithFallback_returnsNull_forExceptionInScriptAndFallback() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", "return 12;", context, String.class);
+    assertEquals(Optional.empty(), optional);
   }
 
   @Test
