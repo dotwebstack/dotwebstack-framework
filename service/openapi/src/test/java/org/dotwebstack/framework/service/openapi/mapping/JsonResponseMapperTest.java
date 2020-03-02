@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.media.Schema;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -67,6 +68,9 @@ class JsonResponseMapperTest {
 
   @Mock
   private GraphQlField graphQlField;
+
+  @Mock
+  private Schema<?> mockSchema;
 
   @BeforeEach
   void setup() {
@@ -401,6 +405,42 @@ class JsonResponseMapperTest {
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
+  }
+
+  @Test
+  void toResponse_returnsDefaultValue_forInvalidScriptAndNullFallback() {
+    // Arrange
+    when(mockSchema.getDefault()).thenReturn("default");
+
+    Object data = ImmutableMap.of("prop1", "prop1value");
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(data, Collections.emptyMap()));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("value", "args.field1");
+    map.put("fallback", null);
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .uri(URI.create("http://dontcare.com:90210/bh?a=b"))
+        .graphQlField(graphQlField)
+        .responseObject(ResponseObject.builder()
+            .identifier("prop1")
+            .summary(SchemaSummary.builder()
+                .type("string")
+                .required(true)
+                .required(true)
+                .nillable(false)
+                .dwsExpr(map)
+                .schema(mockSchema)
+                .build())
+            .build())
+        .data(ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"))
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    Object actual = jsonResponseMapper.mapScalarDataToResponse(writeContext);
+    assertEquals("default", actual);
   }
 
   @Test

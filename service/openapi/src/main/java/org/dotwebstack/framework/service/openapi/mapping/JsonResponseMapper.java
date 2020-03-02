@@ -197,7 +197,7 @@ public class JsonResponseMapper {
     return newPath.length() > 0 ? newPath + "." + identifier : identifier;
   }
 
-  private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
+  Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
     if (Objects.isNull(writeContext.getResponseObject()
         .getSummary()
         .getDwsExpr())) {
