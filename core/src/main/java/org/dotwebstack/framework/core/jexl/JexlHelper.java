@@ -61,13 +61,13 @@ public class JexlHelper {
   public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, String fallbackString,
       @NonNull JexlContext context, @NonNull Class<T> clazz) {
     try {
-      return evaluateScriptWithFallback(scriptString, context, clazz);
+      return evaluateScript(scriptString, context, clazz);
     } catch (Exception exception) {
       if (Objects.nonNull(fallbackString)) {
         LOG.error("Trying to execute fallback script, because something went wrong while executing the origin script: "
             + exception.getMessage());
         try {
-          return evaluateScriptWithFallback(fallbackString, context, clazz);
+          return evaluateScript(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
           LOG.error("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
         }
@@ -76,7 +76,7 @@ public class JexlHelper {
     }
   }
 
-  public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, @NonNull JexlContext context,
+  public <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,
       @NonNull Class<T> clazz) {
     JexlScript script = this.engine.createScript(scriptString);
     Object evaluated = script.execute(context);

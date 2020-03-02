@@ -14,6 +14,8 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
@@ -46,7 +48,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -207,24 +208,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
     return responseHeaders.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey,
-            entry -> evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders)));
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+          String result = evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders);
+          if (Objects.nonNull(result)) {
+            return result;
+          }
+          throw invalidConfigurationException("Jexl expression for parameter '{}' did not return any value",
+              entry.getKey());
+        }));
   }
 
   private String evaluateJexlExpression(JexlContext jexlContext, String key, Map<String, ResponseHeader> headers) {
     ResponseHeader header = headers.get(key);
-    String jexlExpression = header.getJexlExpression();
-    try {
-      return this.jexlHelper.evaluateScriptWithFallback(jexlExpression, jexlContext, String.class)
-          .orElseThrow(() -> invalidConfigurationException(
-              "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
-    } catch (JexlException e) {
-      if (e.getMessage()
-          .contains("undefined variable") && Objects.nonNull(header.getDefaultValue())) {
-        return header.getDefaultValue();
-      }
-      throw e;
-    }
+    Map<String, String> dwsExprMap = header.getDwsExpressionMap();
+    return this.jexlHelper
+        .evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE), dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
+            jexlContext, String.class)
+        .orElse(header.getDefaultValue());
   }
 
   @SuppressWarnings("rawtypes")

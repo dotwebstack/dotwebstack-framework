@@ -98,7 +98,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateScriptWithFallback("var result = `${key1}`; return result;", context, String.class);
+        this.jexlHelper.evaluateScript("var result = `${key1}`; return result;", context, String.class);
 
     // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
@@ -113,7 +113,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateScriptWithFallback("var result = `${key1}`; return null;", context, String.class);
+        this.jexlHelper.evaluateScript("var result = `${key1}`; return null;", context, String.class);
 
     // Assert
     assertThat("expected empty optional", !evaluated.isPresent());
@@ -138,7 +138,7 @@ public class JexlHelperTest {
 
     // Act/ Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.jexlHelper.evaluateScriptWithFallback("return 12;", context, String.class));
+        () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
   }
 
   @Test

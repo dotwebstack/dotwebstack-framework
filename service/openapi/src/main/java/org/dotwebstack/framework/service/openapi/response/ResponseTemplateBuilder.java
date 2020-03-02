@@ -127,8 +127,7 @@ public class ResponseTemplateBuilder {
         .name(headerEntry.getKey())
         .defaultValue((String) schema.getDefault())
         .type(schema.getType())
-        .jexlExpression((String) schema.getExtensions()
-            .get(X_DWS_EXPR))
+        .dwsExpressionMap(getDwsExpression(schema))
         .build();
   }
 
@@ -333,7 +332,8 @@ public class ResponseTemplateBuilder {
       return null;
     }
 
-    if (!Objects.equals("string", schema.getType())) {
+    if (!schema.getType()
+        .matches("(string|integer)")) {
       throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_EXPR);
     }
 

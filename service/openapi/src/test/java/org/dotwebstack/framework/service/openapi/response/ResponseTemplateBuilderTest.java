@@ -222,7 +222,7 @@ public class ResponseTemplateBuilderTest {
     // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header")
-        .jexlExpression("`value`")
+        .dwsExpressionMap(Map.of(X_DWS_EXPR_VALUE, "`value`"))
         .type("string")
         .build();
 
@@ -241,7 +241,7 @@ public class ResponseTemplateBuilderTest {
     // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header-Ref")
-        .jexlExpression("`ref`")
+        .dwsExpressionMap(Map.of(X_DWS_EXPR_VALUE, "`ref`"))
         .type("string")
         .build();
 
