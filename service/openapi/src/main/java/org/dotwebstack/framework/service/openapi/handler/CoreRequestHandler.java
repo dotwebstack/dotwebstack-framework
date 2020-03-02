@@ -208,14 +208,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
     return responseHeaders.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
-          String result = evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders);
-          if (Objects.nonNull(result)) {
-            return result;
-          }
-          throw invalidConfigurationException("Jexl expression for parameter '{}' did not return any value",
-              entry.getKey());
-        }));
+        .collect(Collectors.toMap(Map.Entry::getKey,
+            entry -> evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders)));
   }
 
   private String evaluateJexlExpression(JexlContext jexlContext, String key, Map<String, ResponseHeader> headers) {
@@ -224,7 +218,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return this.jexlHelper
         .evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE), dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
             jexlContext, String.class)
-        .orElse(header.getDefaultValue());
+        .orElseThrow(() -> invalidConfigurationException(
+            "Jexl expression '{}' for parameter '{}' did not return any value", dwsExprMap.get(X_DWS_EXPR_VALUE), key));
   }
 
   @SuppressWarnings("rawtypes")
