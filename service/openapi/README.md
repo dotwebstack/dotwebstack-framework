@@ -239,6 +239,18 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
 
+In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to specify
+a `fallback` for an `x-dws-expr`:
+
+```yaml
+x-dws-expr: 
+  value: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+  fallback: null
+```
+
+when both the expression defined in the `value` and the `fallback` field result in an error or null, dotwebstack falls back to the
+default value defined in the parent schema.   
+
 # 1.1.10 AllOf
 It is possible to define an `allOf` property, the resulting property is the combined result of all underlying schema's:
 
