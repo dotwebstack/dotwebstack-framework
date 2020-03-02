@@ -1,7 +1,7 @@
 logging:
   level.org.dotwebstack: DEBUG
 
-server.port: 8081
+server.port: 8080
 
 dotwebstack:
   base_url: http://localhost:8080

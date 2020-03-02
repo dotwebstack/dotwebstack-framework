@@ -163,12 +163,18 @@ public class OpenApiConfiguration {
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
     GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
+    List<String> requiredFields = DwsExtensionHelper.getDwsRequiredFields(httpMethodOperation.getOperation());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responseTemplates,
-        httpMethodOperation.getOperation()
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .requiredFields(Objects.nonNull(requiredFields) ? requiredFields : Collections.emptyList())
+        .responses(responseTemplates)
+        .parameters(httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList(),
-        DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()), requestBodyContext);
+                .getParameters() : Collections.emptyList())
+        .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
+        .requestBodyContext(requestBodyContext)
+        .build();
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));

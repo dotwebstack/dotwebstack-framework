@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_NAME;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_VALUEEXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_REQUIRED_FIELDS;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import io.swagger.v3.oas.models.Operation;
@@ -75,6 +76,16 @@ public class DwsExtensionHelper {
       return (String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD);
     }
     return (String) dwsQueryName;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static List<String> getDwsRequiredFields(@NonNull Operation operation) {
+    Object dwsQuery = operation.getExtensions()
+        .get(X_DWS_QUERY);
+    if (dwsQuery instanceof Map) {
+      return (List<String>) ((Map) dwsQuery).get(X_DWS_QUERY_REQUIRED_FIELDS);
+    }
+    return Collections.emptyList();
   }
 
   public static Map<String, String> getDwsQueryParameters(@NonNull Operation operation) {

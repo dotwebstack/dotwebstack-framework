@@ -33,7 +33,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act
@@ -53,7 +56,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act
@@ -70,7 +76,10 @@ class ResponseContextHelperTest {
 
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
-    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responses, null, null, null);
+    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+        .graphQlField(graphQlField)
+        .responses(responses)
+        .build();
     Map<String, Object> inputParams = ImmutableMap.of("key", "value");
 
     // Act / Assert
@@ -128,6 +137,47 @@ class ResponseContextHelperTest {
         .size());
     assertThat(responseObject.get("root"), is(equalTo(root.getSummary())));
     assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
+  }
+
+  @Test
+  void validate_getRequiredResponseObject_withRequiredPaths() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true);
+    ResponseObject child = buildResponseObject("child", "object", true);
+    ResponseObject grandChild = buildResponseObject("grandchild", "string", false);
+    child.getSummary()
+        .setChildren(List.of(grandChild));
+    root.getSummary()
+        .setChildren(List.of(child));
+
+    ResponseTemplate template = ResponseTemplate.builder()
+        .responseCode(200)
+        .responseObject(root)
+        .build();
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("root")
+        .fields(List.of(GraphQlField.builder()
+            .name("child")
+            .fields(List.of(GraphQlField.builder()
+                .name("grandchild")
+                .build()))
+            .build()))
+        .build();
+
+    ResponseSchemaContext context = ResponseSchemaContext.builder()
+        .graphQlField(rootField)
+        .responses(List.of(template))
+        .requiredFields(List.of("child.grandchild"))
+        .build();
+
+    // Act
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
+
+    // Assert
+    assertEquals(2, paths.size());
+    assertTrue(paths.contains("child"));
+    assertTrue(paths.contains("child.grandchild"));
   }
 
   @Test
