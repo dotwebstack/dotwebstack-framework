@@ -70,7 +70,7 @@ class JsonResponseMapperTest {
   private GraphQlField graphQlField;
 
   @Mock
-  private Schema<?> mockSchema;
+  private Schema<String> mockSchema;
 
   @BeforeEach
   void setup() {
