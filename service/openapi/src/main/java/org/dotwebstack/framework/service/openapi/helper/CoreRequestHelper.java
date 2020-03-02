@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
@@ -56,7 +57,8 @@ public class CoreRequestHelper {
     }
   }
 
-  public static void validateRequiredField(GraphQlField graphQlField, String requiredField, String dwsQueryName) {
+  public static void validateRequiredField(@NonNull GraphQlField graphQlField, @NonNull String requiredField,
+      @NonNull String dwsQueryName) {
     String[] fields = requiredField.split("\\.");
     validate(graphQlField, fields[0], dwsQueryName);
 
