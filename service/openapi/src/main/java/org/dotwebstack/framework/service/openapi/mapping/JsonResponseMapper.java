@@ -302,8 +302,8 @@ public class JsonResponseMapper {
     Map<String, String> dwsExprMap = writeContext.getResponseObject()
         .getSummary()
         .getDwsExpr();
-    return jexlHelper.evaluateScript(dwsExprMap.get(X_DWS_EXPR_VALUE), dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
-        context, String.class);
+    return jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
+        dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), context, String.class);
   }
 
   private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {

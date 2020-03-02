@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
@@ -99,7 +98,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateScript("var result = `${key1}`; return result;", context, String.class);
+        this.jexlHelper.evaluateScriptWithFallback("var result = `${key1}`; return result;", context, String.class);
 
     // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
@@ -114,7 +113,7 @@ public class JexlHelperTest {
 
     // Act
     final Optional<String> evaluated =
-        this.jexlHelper.evaluateScript("var result = `${key1}`; return null;", context, String.class);
+        this.jexlHelper.evaluateScriptWithFallback("var result = `${key1}`; return null;", context, String.class);
 
     // Assert
     assertThat("expected empty optional", !evaluated.isPresent());
@@ -139,7 +138,7 @@ public class JexlHelperTest {
 
     // Act/ Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
+        () -> this.jexlHelper.evaluateScriptWithFallback("return 12;", context, String.class));
   }
 
   @Test
@@ -149,7 +148,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
     // Act/ Assert
-    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", "`${key1}`", context, String.class);
+    Optional<String> optional =
+        this.jexlHelper.evaluateScriptWithFallback("return 12;", "`${key1}`", context, String.class);
     assertEquals(expectedValue, optional.get());
   }
 
@@ -160,7 +160,7 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
     // Act/ Assert
-    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", null, context, String.class);
+    Optional<String> optional = this.jexlHelper.evaluateScriptWithFallback("return 12;", null, context, String.class);
     assertEquals(Optional.empty(), optional);
   }
 
@@ -171,7 +171,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
     // Act/ Assert
-    Optional<String> optional = this.jexlHelper.evaluateScript("return 12;", "return 12;", context, String.class);
+    Optional<String> optional =
+        this.jexlHelper.evaluateScriptWithFallback("return 12;", "return 12;", context, String.class);
     assertEquals(Optional.empty(), optional);
   }
 

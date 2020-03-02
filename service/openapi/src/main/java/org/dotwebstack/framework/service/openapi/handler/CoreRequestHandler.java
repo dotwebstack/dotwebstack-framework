@@ -215,7 +215,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     ResponseHeader header = headers.get(key);
     String jexlExpression = header.getJexlExpression();
     try {
-      return this.jexlHelper.evaluateScript(jexlExpression, jexlContext, String.class)
+      return this.jexlHelper.evaluateScriptWithFallback(jexlExpression, jexlContext, String.class)
           .orElseThrow(() -> invalidConfigurationException(
               "Jexl expression '{}' for parameter '{}' did not return any value", jexlExpression, key));
     } catch (JexlException e) {

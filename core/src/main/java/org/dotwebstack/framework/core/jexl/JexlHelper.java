@@ -11,7 +11,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
@@ -59,16 +58,16 @@ public class JexlHelper {
     return jexlContext;
   }
 
-  public <T> Optional<T> evaluateScript(@NonNull String scriptString, String fallbackString,
+  public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, String fallbackString,
       @NonNull JexlContext context, @NonNull Class<T> clazz) {
     try {
-      return evaluateScript(scriptString, context, clazz);
+      return evaluateScriptWithFallback(scriptString, context, clazz);
     } catch (Exception exception) {
       if (Objects.nonNull(fallbackString)) {
         LOG.error("Trying to execute fallback script, because something went wrong while executing the origin script: "
             + exception.getMessage());
         try {
-          return evaluateScript(fallbackString, context, clazz);
+          return evaluateScriptWithFallback(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
           LOG.error("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
         }
@@ -77,11 +76,11 @@ public class JexlHelper {
     }
   }
 
-  <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,
-                                 @NonNull Class<T> clazz) {
+  public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, @NonNull JexlContext context,
+      @NonNull Class<T> clazz) {
     JexlScript script = this.engine.createScript(scriptString);
     Object evaluated = script.execute(context);
-    if (evaluated == null) {
+    if (Objects.isNull(evaluated)) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {
       throw illegalArgumentException("Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].", clazz,
