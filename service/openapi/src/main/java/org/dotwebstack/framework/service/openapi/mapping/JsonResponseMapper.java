@@ -209,6 +209,16 @@ public class JsonResponseMapper {
       return evaluated.get();
     }
 
+    if (Objects.nonNull(writeContext.getResponseObject()
+        .getSummary()
+        .getSchema()
+        .getDefault())) {
+      return writeContext.getResponseObject()
+          .getSummary()
+          .getSchema()
+          .getDefault();
+    }
+
     if (writeContext.isSchemaRequiredNonNillable()) {
       throw mappingException(String.format(
           "Could not create response: required and non-nillable property '%s' expression evaluation returned null.",

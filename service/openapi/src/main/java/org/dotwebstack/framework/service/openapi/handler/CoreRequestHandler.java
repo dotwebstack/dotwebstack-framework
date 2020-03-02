@@ -43,6 +43,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -208,18 +209,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private Map<String, String> getJexlResults(JexlContext jexlContext, Map<String, ResponseHeader> responseHeaders) {
     return responseHeaders.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey,
-            entry -> evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders)));
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+          String result = evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders).orElse(entry.getValue()
+              .getDefaultValue());
+          if (Objects.isNull(result)) {
+            throw invalidConfigurationException("Jexl expression for parameter '{}' did not return any value",
+                entry.getKey());
+          }
+          return result;
+        }));
   }
 
-  private String evaluateJexlExpression(JexlContext jexlContext, String key, Map<String, ResponseHeader> headers) {
+  private Optional<String> evaluateJexlExpression(JexlContext jexlContext, String key,
+      Map<String, ResponseHeader> headers) {
     ResponseHeader header = headers.get(key);
     Map<String, String> dwsExprMap = header.getDwsExpressionMap();
-    return this.jexlHelper
-        .evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE), dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
-            jexlContext, String.class)
-        .orElseThrow(() -> invalidConfigurationException(
-            "Jexl expression '{}' for parameter '{}' did not return any value", dwsExprMap.get(X_DWS_EXPR_VALUE), key));
+    return this.jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
+        dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), jexlContext, String.class);
   }
 
   @SuppressWarnings("rawtypes")
