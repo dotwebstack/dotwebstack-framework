@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.util.Map;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,5 +16,5 @@ public class ResponseHeader {
 
   private String type;
 
-  private String jexlExpression;
+  private Map<String, String> dwsExpressionMap;
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +34,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlException;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -379,7 +380,7 @@ class CoreRequestHandlerTest {
             .get(0);
 
     // Act & Assert
-    assertThrows(JexlException.class,
+    assertThrows(InvalidConfigurationException.class,
         () -> coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>()));
   }
 
@@ -479,7 +480,7 @@ class CoreRequestHandlerTest {
     ResponseHeader responseHeader = ResponseHeader.builder()
         .name("Location")
         .type("string")
-        .jexlExpression("www.kadaster.nl")
+        .dwsExpressionMap(Map.of(X_DWS_EXPR_VALUE, "`www.kadaster.nl`"))
         .defaultValue("")
         .build();
 

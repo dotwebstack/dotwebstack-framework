@@ -11,6 +11,7 @@ components:
       required:
         - o1_prop1
         - o1_prop2
+        - o1_prop5
         - o1_array1
       properties:
         o1_prop1:
@@ -23,6 +24,11 @@ components:
           type: integer
         o1_prop4:
           type: boolean
+        o1_prop5:
+          type: string
+          x-dws-expr:
+            value: "`${field.o1_prop2}`"
+            fallback: null
         o1_array1:
           type: array
           items:

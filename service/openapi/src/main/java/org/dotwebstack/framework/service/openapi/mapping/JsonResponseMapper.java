@@ -4,6 +4,8 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
@@ -195,7 +197,7 @@ public class JsonResponseMapper {
     return newPath.length() > 0 ? newPath + "." + identifier : identifier;
   }
 
-  private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
+  Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
     if (Objects.isNull(writeContext.getResponseObject()
         .getSummary()
         .getDwsExpr())) {
@@ -205,6 +207,16 @@ public class JsonResponseMapper {
     Optional<String> evaluated = evaluateJexl(writeContext);
     if (evaluated.isPresent()) {
       return evaluated.get();
+    }
+
+    if (Objects.nonNull(writeContext.getResponseObject()
+        .getSummary()
+        .getSchema()
+        .getDefault())) {
+      return writeContext.getResponseObject()
+          .getSummary()
+          .getSchema()
+          .getDefault();
     }
 
     if (writeContext.isSchemaRequiredNonNillable()) {
@@ -297,9 +309,11 @@ public class JsonResponseMapper {
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
 
-    return jexlHelper.evaluateScript(writeContext.getResponseObject()
+    Map<String, String> dwsExprMap = writeContext.getResponseObject()
         .getSummary()
-        .getDwsExpr(), context, String.class);
+        .getDwsExpr();
+    return jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
+        dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), context, String.class);
   }
 
   private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,6 @@ public class SchemaSummary {
   @Setter
   private List<ResponseObject> items = new ArrayList<>();
 
-  private String dwsExpr;
+  private Map<String, String> dwsExpr;
 
 }

@@ -142,6 +142,41 @@ public class JexlHelperTest {
   }
 
   @Test
+  public void evaluateScriptWithFallback_fallsBack_forExceptionInScript() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional =
+        this.jexlHelper.evaluateScriptWithFallback("return 12;", "`${key1}`", context, String.class);
+    assertEquals(expectedValue, optional.get());
+  }
+
+  @Test
+  public void evaluateScriptWithoutFallback_returnsNull_forExceptionInScript() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional = this.jexlHelper.evaluateScriptWithFallback("return 12;", null, context, String.class);
+    assertEquals(Optional.empty(), optional);
+  }
+
+  @Test
+  public void evaluateScriptWithFallback_returnsNull_forExceptionInScriptAndFallback() {
+    // Arrange
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Act/ Assert
+    Optional<String> optional =
+        this.jexlHelper.evaluateScriptWithFallback("return 12;", "return 12;", context, String.class);
+    assertEquals(Optional.empty(), optional);
+  }
+
+  @Test
   public void createJexlContext_createsContext_forEnvAndArgParams() {
     // Arrange
     Map<String, String> envParams = Map.of("key", "value");

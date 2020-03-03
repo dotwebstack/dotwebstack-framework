@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
@@ -17,6 +18,7 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.helpers.GraphQlValueHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
+@Slf4j
 public class JexlHelper {
 
   private static final String ENVIRONMENT_PREFIX = "env.";
@@ -56,10 +58,29 @@ public class JexlHelper {
     return jexlContext;
   }
 
-  public <T> Optional<T> evaluateScript(String scriptString, JexlContext context, Class<T> clazz) {
+  public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, String fallbackString,
+      @NonNull JexlContext context, @NonNull Class<T> clazz) {
+    try {
+      return evaluateScript(scriptString, context, clazz);
+    } catch (Exception exception) {
+      LOG.warn("Something went wrong while executing the original script: " + exception.getMessage());
+      if (Objects.nonNull(fallbackString)) {
+        try {
+          LOG.warn("Executing fallback script");
+          return evaluateScript(fallbackString, context, clazz);
+        } catch (Exception fallbackException) {
+          LOG.warn("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
+        }
+      }
+      return Optional.empty();
+    }
+  }
+
+  public <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,
+      @NonNull Class<T> clazz) {
     JexlScript script = this.engine.createScript(scriptString);
     Object evaluated = script.execute(context);
-    if (evaluated == null) {
+    if (Objects.isNull(evaluated)) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {
       throw illegalArgumentException("Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].", clazz,

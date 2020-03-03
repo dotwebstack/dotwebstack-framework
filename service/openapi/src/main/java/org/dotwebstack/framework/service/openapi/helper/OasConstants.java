@@ -34,6 +34,10 @@ public class OasConstants {
 
   public static final String X_DWS_EXPR = "x-dws-expr";
 
+  public static final String X_DWS_EXPR_VALUE = "value";
+
+  public static final String X_DWS_EXPR_FALLBACK_VALUE = "fallback";
+
   public static final String X_DWS_TRANSIENT = "x-dws-transient";
 
   public static final String X_DWS_ENVELOPE = "x-dws-envelope";
