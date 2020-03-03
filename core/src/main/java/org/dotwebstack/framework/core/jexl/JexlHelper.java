@@ -63,13 +63,13 @@ public class JexlHelper {
     try {
       return evaluateScript(scriptString, context, clazz);
     } catch (Exception exception) {
+      LOG.warn("Something went wrong while executing the original script: " + exception.getMessage());
       if (Objects.nonNull(fallbackString)) {
-        LOG.error("Trying to execute fallback script, because something went wrong while executing the origin script: "
-            + exception.getMessage());
         try {
+          LOG.warn("Executing fallback script");
           return evaluateScript(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
-          LOG.error("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
+          LOG.warn("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
         }
       }
       return Optional.empty();

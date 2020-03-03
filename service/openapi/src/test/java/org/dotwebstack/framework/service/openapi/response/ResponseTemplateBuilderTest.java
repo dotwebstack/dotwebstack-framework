@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -114,7 +115,7 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  void build_throwsException_InvalidXdwsTemplateType() {
+  void build_throwsException_ObjectXdwsTemplateType() {
     // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()
         .getSchemas()
@@ -126,6 +127,35 @@ public class ResponseTemplateBuilderTest {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
+  }
+
+  @Test
+  void build_throwsException_ArrayXdwsTemplateType() {
+    // Arrange
+    Schema<?> property1 = (Schema) openApi.getComponents()
+        .getSchemas()
+        .get("Object1")
+        .getProperties()
+        .get("o1_prop1");
+    property1.setType("array");
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
+  }
+
+  @Test
+  void build_throwsException_IntegerXdwsTemplateType() {
+    // Arrange
+    Schema<?> property1 = (Schema) openApi.getComponents()
+        .getSchemas()
+        .get("Object1")
+        .getProperties()
+        .get("o1_prop1");
+    property1.setType("integer");
+
+    // Act / Assert
+    assertDoesNotThrow(() -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test

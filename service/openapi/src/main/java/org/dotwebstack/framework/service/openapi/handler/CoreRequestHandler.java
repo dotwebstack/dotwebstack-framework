@@ -213,7 +213,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           String result = evaluateJexlExpression(jexlContext, entry.getKey(), responseHeaders).orElse(entry.getValue()
               .getDefaultValue());
           if (Objects.isNull(result)) {
-            throw invalidConfigurationException("Jexl expression for parameter '{}' did not return any value",
+            throw invalidConfigurationException("Jexl expression for header '{}' did not return any value",
                 entry.getKey());
           }
           return result;

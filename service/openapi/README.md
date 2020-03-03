@@ -249,7 +249,7 @@ x-dws-expr:
 ```
 
 when both the expression defined in the `value` and the `fallback` field result in an error or null, dotwebstack falls back to the
-default value defined in the parent schema.   
+default value defined in the parent schema. If no default is defined, `null` is the default.   
 
 # 1.1.10 AllOf
 It is possible to define an `allOf` property, the resulting property is the combined result of all underlying schema's:

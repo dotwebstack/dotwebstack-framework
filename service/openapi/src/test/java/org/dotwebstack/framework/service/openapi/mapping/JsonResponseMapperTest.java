@@ -428,7 +428,6 @@ class JsonResponseMapperTest {
             .summary(SchemaSummary.builder()
                 .type("string")
                 .required(true)
-                .required(true)
                 .nillable(false)
                 .dwsExpr(map)
                 .schema(mockSchema)
@@ -440,6 +439,8 @@ class JsonResponseMapperTest {
 
     // Act
     Object actual = jsonResponseMapper.mapScalarDataToResponse(writeContext);
+
+    // Assert
     assertEquals("default", actual);
   }
 

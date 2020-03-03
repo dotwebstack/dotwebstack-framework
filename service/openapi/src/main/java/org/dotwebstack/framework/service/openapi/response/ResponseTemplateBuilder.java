@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -332,9 +333,9 @@ public class ResponseTemplateBuilder {
       return null;
     }
 
-    if (!schema.getType()
-        .matches("(string|integer)")) {
-      throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_EXPR);
+    if ((Objects.equals(OasConstants.ARRAY_TYPE, schema.getType())
+        || Objects.equals(OasConstants.OBJECT_TYPE, schema.getType()))) {
+      throw invalidConfigurationException("Extension '{}' is only allowed for scalar types.", X_DWS_EXPR);
     }
 
     if (result instanceof String) {
@@ -342,7 +343,8 @@ public class ResponseTemplateBuilder {
     }
 
     if (!(result instanceof Map) || !((Map) result).containsKey(X_DWS_EXPR_VALUE)) {
-      throw invalidConfigurationException("extension '{}' should contain a property named 'value'.", X_DWS_EXPR);
+      throw invalidConfigurationException("Extension '{}' should contain a key named '{}'.", X_DWS_EXPR,
+          X_DWS_EXPR_VALUE);
     }
 
     return (Map) result;
