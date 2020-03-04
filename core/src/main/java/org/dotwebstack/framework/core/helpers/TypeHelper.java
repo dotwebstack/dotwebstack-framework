@@ -13,6 +13,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import lombok.NonNull;
 
+@SuppressWarnings("rawtypes")
 public class TypeHelper {
   private TypeHelper() {}
 
@@ -28,17 +29,17 @@ public class TypeHelper {
     }
   }
 
-  public static Type<?> unwrapNonNullType(@NonNull Type<?> type) {
+  public static Type unwrapNonNullType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
-      return (Type<?>) type.getChildren()
+      return (Type) type.getChildren()
           .get(0);
     }
     return type;
   }
 
-  public static Type<?> unwrapType(@NonNull Type<?> type) {
+  public static Type unwrapType(@NonNull Type<?> type) {
     if (type instanceof ListType) {
-      return (Type<?>) type.getChildren()
+      return (Type) type.getChildren()
           .get(0);
     }
     if (type instanceof NonNullType) {
@@ -47,9 +48,9 @@ public class TypeHelper {
     return type;
   }
 
-  public static Type<?> getBaseType(@NonNull Type<?> type) {
+  public static Type getBaseType(@NonNull Type<?> type) {
     if (type instanceof ListType) {
-      return getBaseType((Type<?>) type.getChildren()
+      return getBaseType((Type) type.getChildren()
           .get(0));
     }
     if (type instanceof NonNullType) {
