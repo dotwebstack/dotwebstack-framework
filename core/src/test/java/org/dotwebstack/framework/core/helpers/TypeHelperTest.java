@@ -7,6 +7,12 @@ import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,6 +29,28 @@ public class TypeHelperTest {
 
     // Assert
     assertEquals(Scalars.GraphQLString.getName(), TypeHelper.getTypeName(type));
+  }
+
+  @Test
+  public void unwrapNonNullType_returnsExpectedType_forNonNullType() {
+    // Arrange / Act
+    TypeName type = TypeName.newTypeName(Scalars.GraphQLInt.getName())
+        .build();
+    Type nonNullType = NonNullType.newNonNullType(type)
+        .build();
+
+    // Assert
+    assertEquals(type, TypeHelper.unwrapNonNullType(nonNullType));
+  }
+
+  @Test
+  public void unwrapNonNullType_returnsExpectedType_forNullType() {
+    // Arrange / Act
+    Type type = TypeName.newTypeName(Scalars.GraphQLInt.getName())
+        .build();
+
+    // Assert
+    assertEquals(type, TypeHelper.unwrapNonNullType(type));
   }
 
   @ParameterizedTest()
@@ -45,6 +73,14 @@ public class TypeHelperTest {
     // Act / Assert
     assertEquals(expectedString, TypeHelper.getTypeString(inputType));
   }
+
+  @ParameterizedTest()
+  @MethodSource("getTypeNameArguments")
+  public void getTypeNameArguments_returnsExpectedName(String expectedName, GraphQLType inputType) {
+    // Act / Assert
+    assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+  }
+
 
   private static Stream<Arguments> unwrapTypeArguments() {
 
@@ -106,5 +142,22 @@ public class TypeHelperTest {
     return Stream.of(Arguments.of("[Int]", listType), Arguments.of("Int!", nonNullType),
         Arguments.of("[Float!]", floatListType), Arguments.of("[Float!]!", listNonNullType),
         Arguments.of("Float", floatType));
+  }
+
+  private static Stream<Arguments> getTypeNameArguments() {
+
+    GraphQLList list = GraphQLList.list(Scalars.GraphQLBoolean);
+    GraphQLNonNull nonNull = GraphQLNonNull.nonNull(Scalars.GraphQLBigDecimal);
+
+    return Stream.of(Arguments.of(Scalars.GraphQLBoolean.getName(), list),
+        Arguments.of(Scalars.GraphQLBigDecimal.getName(), nonNull),
+        Arguments.of("GraphQLObjectType", GraphQLObjectType.newObject()
+            .name("GraphQLObjectType")
+            .build()),
+        Arguments.of("GraphQLInputObjectType", GraphQLInputObjectType.newInputObject()
+            .name("GraphQLInputObjectType")
+            .build()),
+        Arguments.of(Scalars.GraphQLString.getName(), Scalars.GraphQLString),
+        Arguments.of("Int", GraphQLTypeReference.typeRef("Int")));
   }
 }
