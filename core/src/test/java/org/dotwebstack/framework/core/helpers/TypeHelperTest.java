@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import graphql.Scalars;
 import graphql.language.ListType;
@@ -13,6 +15,7 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import java.util.Objects;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -90,9 +93,13 @@ public class TypeHelperTest {
 
   @ParameterizedTest()
   @MethodSource("hasListTypeArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(boolean expected, Type inputType) {
+  public void getTypeNameGraphQlType_returnsExpectedName(boolean expected, Type inputType, Class<Exception> clazz) {
     // Act / Assert
-    assertEquals(expected, TypeHelper.hasListType(inputType));
+    if (Objects.nonNull(clazz)) {
+      assertThrows(clazz, () -> TypeHelper.hasListType(inputType));
+    } else {
+      assertEquals(expected, TypeHelper.hasListType(inputType));
+    }
   }
 
   private static Stream<Arguments> unwrapTypeArguments() {
@@ -142,7 +149,8 @@ public class TypeHelperTest {
     Type nonNullType = NonNullType.newNonNullType(intType)
         .build();
 
-    return Stream.of(Arguments.of(false, nonNullType), Arguments.of(true, listType), Arguments.of(false, intType));
+    return Stream.of(Arguments.of(false, nonNullType, null), Arguments.of(true, listType, null),
+        Arguments.of(false, intType, null), Arguments.of(false, mock(Type.class), IllegalArgumentException.class));
   }
 
   private static Stream<Arguments> getTypeStringArguments() {
