@@ -75,12 +75,25 @@ public class TypeHelperTest {
   }
 
   @ParameterizedTest()
-  @MethodSource("getTypeNameArguments")
-  public void getTypeNameArguments_returnsExpectedName(String expectedName, GraphQLType inputType) {
+  @MethodSource("getTypeNameGraphQlTypeArguments")
+  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, GraphQLType inputType) {
     // Act / Assert
     assertEquals(expectedName, TypeHelper.getTypeName(inputType));
   }
 
+  @ParameterizedTest()
+  @MethodSource("getTypeNameArguments")
+  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, Type inputType) {
+    // Act / Assert
+    assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+  }
+
+  @ParameterizedTest()
+  @MethodSource("hasListTypeArguments")
+  public void getTypeNameGraphQlType_returnsExpectedName(boolean expected, Type inputType) {
+    // Act / Assert
+    assertEquals(expected, TypeHelper.hasListType(inputType));
+  }
 
   private static Stream<Arguments> unwrapTypeArguments() {
 
@@ -121,6 +134,17 @@ public class TypeHelperTest {
         Arguments.of(floatType, listNonNullType), Arguments.of(floatType, floatType));
   }
 
+  private static Stream<Arguments> hasListTypeArguments() {
+    TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
+        .build();
+    Type listType = ListType.newListType(intType)
+        .build();
+    Type nonNullType = NonNullType.newNonNullType(intType)
+        .build();
+
+    return Stream.of(Arguments.of(false, nonNullType), Arguments.of(true, listType), Arguments.of(false, intType));
+  }
+
   private static Stream<Arguments> getTypeStringArguments() {
 
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
@@ -145,6 +169,28 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> getTypeNameArguments() {
+
+    TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
+        .build();
+    Type listType = ListType.newListType(intType)
+        .build();
+    Type nonNullType = NonNullType.newNonNullType(intType)
+        .build();
+
+    TypeName floatType = TypeName.newTypeName(Scalars.GraphQLFloat.getName())
+        .build();
+    Type nonNullFloatType = NonNullType.newNonNullType(floatType)
+        .build();
+    ListType floatListType = ListType.newListType(nonNullFloatType)
+        .build();
+    Type listNonNullType = NonNullType.newNonNullType(floatListType)
+        .build();
+
+    return Stream.of(Arguments.of(intType.getName(), intType), Arguments.of(intType.getName(), listType),
+        Arguments.of(intType.getName(), nonNullType), Arguments.of(floatType.getName(), listNonNullType));
+  }
+
+  private static Stream<Arguments> getTypeNameGraphQlTypeArguments() {
 
     GraphQLList list = GraphQLList.list(Scalars.GraphQLBoolean);
     GraphQLNonNull nonNull = GraphQLNonNull.nonNull(Scalars.GraphQLBigDecimal);
