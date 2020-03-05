@@ -11,11 +11,13 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import lombok.NonNull;
 
+@SuppressWarnings("rawtypes")
 public class TypeHelper {
   private TypeHelper() {}
 
-  public static boolean hasListType(Type<?> type) {
+  public static boolean hasListType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
       return hasListType(((NonNullType) type).getType());
     } else if (type instanceof ListType) {
@@ -27,17 +29,17 @@ public class TypeHelper {
     }
   }
 
-  public static Type<?> unwrapNonNullType(Type<?> type) {
+  public static Type unwrapNonNullType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
-      return (Type<?>) type.getChildren()
+      return (Type) type.getChildren()
           .get(0);
     }
     return type;
   }
 
-  public static Type<?> unwrapType(Type<?> type) {
+  public static Type unwrapType(@NonNull Type<?> type) {
     if (type instanceof ListType) {
-      return (Type<?>) type.getChildren()
+      return (Type) type.getChildren()
           .get(0);
     }
     if (type instanceof NonNullType) {
@@ -46,9 +48,9 @@ public class TypeHelper {
     return type;
   }
 
-  public static Type<?> getBaseType(Type<?> type) {
+  public static Type getBaseType(@NonNull Type<?> type) {
     if (type instanceof ListType) {
-      return getBaseType((Type<?>) type.getChildren()
+      return getBaseType((Type) type.getChildren()
           .get(0));
     }
     if (type instanceof NonNullType) {
@@ -57,7 +59,7 @@ public class TypeHelper {
     return type;
   }
 
-  public static String getTypeString(Type<?> type) {
+  public static String getTypeString(@NonNull Type<?> type) {
     StringBuilder builder = new StringBuilder();
     if (type instanceof ListType) {
       builder.append("[");
@@ -72,7 +74,7 @@ public class TypeHelper {
     return builder.toString();
   }
 
-  public static String getTypeName(Type<?> type) {
+  public static String getTypeName(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
       return getTypeName(((NonNullType) type).getType());
     } else if (type instanceof ListType) {
@@ -84,7 +86,7 @@ public class TypeHelper {
     }
   }
 
-  public static String getTypeName(GraphQLType type) {
+  public static String getTypeName(@NonNull GraphQLType type) {
     if (type instanceof GraphQLList) {
       return getTypeName(((GraphQLList) type).getWrappedType());
     } else if (type instanceof GraphQLNonNull) {
@@ -95,5 +97,12 @@ public class TypeHelper {
     } else {
       throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
+  }
+
+  public static NonNullType createNonNullType(@NonNull GraphQLType type) {
+    TypeName optionalType = TypeName.newTypeName(type.getName())
+        .build();
+    return NonNullType.newNonNullType(optionalType)
+        .build();
   }
 }
