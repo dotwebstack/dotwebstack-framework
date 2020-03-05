@@ -9,10 +9,12 @@ import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
+import graphql.schema.Coercing;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import java.util.Objects;
@@ -79,16 +81,25 @@ public class TypeHelperTest {
 
   @ParameterizedTest()
   @MethodSource("getTypeNameGraphQlTypeArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, GraphQLType inputType) {
+  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, GraphQLType inputType,
+      Class<Exception> clazz) {
     // Act / Assert
-    assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+    if (Objects.nonNull(clazz)) {
+      assertThrows(clazz, () -> TypeHelper.getTypeName(inputType));
+    } else {
+      assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+    }
   }
 
   @ParameterizedTest()
   @MethodSource("getTypeNameArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, Type inputType) {
+  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, Type inputType, Class<Exception> clazz) {
     // Act / Assert
-    assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+    if (Objects.nonNull(clazz)) {
+      assertThrows(clazz, () -> TypeHelper.hasListType(inputType));
+    } else {
+      assertEquals(expectedName, TypeHelper.getTypeName(inputType));
+    }
   }
 
   @ParameterizedTest()
@@ -194,8 +205,12 @@ public class TypeHelperTest {
     Type listNonNullType = NonNullType.newNonNullType(floatListType)
         .build();
 
-    return Stream.of(Arguments.of(intType.getName(), intType), Arguments.of(intType.getName(), listType),
-        Arguments.of(intType.getName(), nonNullType), Arguments.of(floatType.getName(), listNonNullType));
+    Type typeName = TypeName.newTypeName("typename")
+        .build();
+
+    return Stream.of(Arguments.of(intType.getName(), intType, null), Arguments.of(intType.getName(), listType, null),
+        Arguments.of(intType.getName(), nonNullType, null), Arguments.of(floatType.getName(), listNonNullType, null),
+        Arguments.of("typename", typeName, null), Arguments.of(null, mock(Type.class), IllegalArgumentException.class));
   }
 
   private static Stream<Arguments> getTypeNameGraphQlTypeArguments() {
@@ -203,15 +218,20 @@ public class TypeHelperTest {
     GraphQLList list = GraphQLList.list(Scalars.GraphQLBoolean);
     GraphQLNonNull nonNull = GraphQLNonNull.nonNull(Scalars.GraphQLBigDecimal);
 
-    return Stream.of(Arguments.of(Scalars.GraphQLBoolean.getName(), list),
-        Arguments.of(Scalars.GraphQLBigDecimal.getName(), nonNull),
+    return Stream.of(Arguments.of(Scalars.GraphQLBoolean.getName(), list, null),
+        Arguments.of(Scalars.GraphQLBigDecimal.getName(), nonNull, null),
         Arguments.of("GraphQLObjectType", GraphQLObjectType.newObject()
             .name("GraphQLObjectType")
-            .build()),
+            .build(), null),
         Arguments.of("GraphQLInputObjectType", GraphQLInputObjectType.newInputObject()
             .name("GraphQLInputObjectType")
-            .build()),
-        Arguments.of(Scalars.GraphQLString.getName(), Scalars.GraphQLString),
-        Arguments.of("Int", GraphQLTypeReference.typeRef("Int")));
+            .build(), null),
+        Arguments.of("GraphQLScalarType", GraphQLScalarType.newScalar()
+            .name("GraphQLScalarType")
+            .coercing(mock(Coercing.class))
+            .build(), null),
+        Arguments.of(Scalars.GraphQLString.getName(), Scalars.GraphQLString, null),
+        Arguments.of("Int", GraphQLTypeReference.typeRef("Int"), null),
+        Arguments.of(null, mock(GraphQLType.class), IllegalArgumentException.class));
   }
 }
