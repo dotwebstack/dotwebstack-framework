@@ -24,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+
 @SuppressWarnings("rawtypes")
 public class TypeHelperTest {
 
@@ -161,7 +162,8 @@ public class TypeHelperTest {
         .build();
 
     return Stream.of(Arguments.of(false, nonNullType, null), Arguments.of(true, listType, null),
-        Arguments.of(false, intType, null), Arguments.of(false, mock(Type.class), IllegalArgumentException.class));
+        Arguments.of(false, intType, null), Arguments.of(false, mock(Type.class), IllegalArgumentException.class),
+        Arguments.of(false, null, NullPointerException.class));
   }
 
   private static Stream<Arguments> getTypeStringArguments() {
@@ -210,7 +212,8 @@ public class TypeHelperTest {
 
     return Stream.of(Arguments.of(intType.getName(), intType, null), Arguments.of(intType.getName(), listType, null),
         Arguments.of(intType.getName(), nonNullType, null), Arguments.of(floatType.getName(), listNonNullType, null),
-        Arguments.of("typename", typeName, null), Arguments.of(null, mock(Type.class), IllegalArgumentException.class));
+        Arguments.of("typename", typeName, null), Arguments.of(null, mock(Type.class), IllegalArgumentException.class),
+        Arguments.of(null, null, NullPointerException.class));
   }
 
   private static Stream<Arguments> getTypeNameGraphQlTypeArguments() {
@@ -232,6 +235,7 @@ public class TypeHelperTest {
             .build(), null),
         Arguments.of(Scalars.GraphQLString.getName(), Scalars.GraphQLString, null),
         Arguments.of("Int", GraphQLTypeReference.typeRef("Int"), null),
-        Arguments.of(null, mock(GraphQLType.class), IllegalArgumentException.class));
+        Arguments.of(null, mock(GraphQLType.class), IllegalArgumentException.class),
+        Arguments.of(null, null, NullPointerException.class));
   }
 }
