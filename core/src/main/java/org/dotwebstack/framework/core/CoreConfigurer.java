@@ -75,6 +75,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createConstraintDefinition());
     typeDefinitionRegistry.add(createFilterDefinition());
     typeDefinitionRegistry.add(createSortDefinition());
+    typeDefinitionRegistry.add(createOffsetDefinition());
+    typeDefinitionRegistry.add(createLimitDefinition());
   }
 
   private DirectiveDefinition createSortDefinition() {
@@ -84,6 +86,20 @@ public class CoreConfigurer implements GraphqlConfigurer {
                 .build(),
             newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
                 .build()))
+        .build();
+  }
+
+  private DirectiveDefinition createLimitDefinition() {
+    return newDirectiveDefinition().name(CoreDirectives.LIMIT_NAME)
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+            .build())
+        .build();
+  }
+
+  private DirectiveDefinition createOffsetDefinition() {
+    return newDirectiveDefinition().name(CoreDirectives.OFFSET_NAME)
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+            .build())
         .build();
   }
 

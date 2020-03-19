@@ -28,5 +28,9 @@ public final class CoreDirectives {
 
   public static final String SORT_NAME = "sort";
 
+  public static final String OFFSET_NAME = "offset";
+
+  public static final String LIMIT_NAME = "limit";
+
   private CoreDirectives() {}
 }
