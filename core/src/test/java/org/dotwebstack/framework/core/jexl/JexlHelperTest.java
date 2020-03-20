@@ -12,6 +12,7 @@ import graphql.language.StringValue;
 import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -186,6 +187,39 @@ public class JexlHelperTest {
 
     assertEquals("value", context.get("env.key"));
     assertEquals("test", context.get("args.name"));
+  }
+
+  @Test
+  public void createJexlContent_createsContext_forFieldDefinition() {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name("beers")
+        .type(Scalars.GraphQLString)
+        .argument(GraphQLArgument.newArgument()
+            .name("defaultValue")
+            .type(Scalars.GraphQLString)
+            .defaultValue("1")
+            .build())
+        .argument(GraphQLArgument.newArgument()
+            .name("value")
+            .type(Scalars.GraphQLString)
+            .value("12")
+            .build())
+        .argument(GraphQLArgument.newArgument()
+            .name("both")
+            .type(Scalars.GraphQLString)
+            .defaultValue("1")
+            .value("12")
+            .build())
+        .build();
+
+    // Act
+    JexlContext context = JexlHelper.getJexlContext(fieldDefinition);
+
+    // Assert
+    assertEquals("1", context.get("args.defaultValue"));
+    assertEquals("12", context.get("args.value"));
+    assertEquals("12", context.get("args.both"));
   }
 
   @Test
