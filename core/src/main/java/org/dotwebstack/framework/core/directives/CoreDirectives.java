@@ -30,7 +30,11 @@ public final class CoreDirectives {
 
   public static final String OFFSET_NAME = "offset";
 
+  public static final String OFFSET_EXPR = "expr";
+
   public static final String LIMIT_NAME = "limit";
+
+  public static final String LIMIT_EXPR = "expr";
 
   private CoreDirectives() {}
 }

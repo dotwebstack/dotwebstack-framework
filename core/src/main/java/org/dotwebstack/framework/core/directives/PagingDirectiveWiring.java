@@ -20,7 +20,7 @@ public abstract class PagingDirectiveWiring implements AutoRegisteredSchemaDirec
         .stream()
         .filter(argument -> argument.getDirective(getDirectiveName()) != null)
         .count() > 1) {
-      throw invalidConfigurationException("{} field on {} object contains more than one offset directive",
+      throw invalidConfigurationException("{} field on {} object contains more than one {} directive",
           environment.getFieldDefinition()
               .getName(),
           environment.getElementParentTree()
@@ -28,7 +28,8 @@ public abstract class PagingDirectiveWiring implements AutoRegisteredSchemaDirec
               .flatMap(parent -> parent.getParentInfo()
                   .map(grandparent -> grandparent.getElement()
                       .getName()))
-              .orElse(null));
+              .orElse(null),
+          getDirectiveName());
     }
 
     return environment.getElement();
