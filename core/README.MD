@@ -129,7 +129,38 @@ case is allowed to provide an argument with a value of 10, 20 or 50 only.
 With the `pattern` constraint an argument can be restricted to match the provided regex-pattern. So in this case it is only allowed 
 to provide an argument which has to be greater than 0. 
 
-## 1.5 Transform Directive
+## 1.5 Paging Directives
+Pagination in Dotwebstack can be done with help of the directives `@limit` and `@offset`:
+
+```grapqhl
+    beers(limit: Int = 10 @limit,
+          offset: Int = 0 @offset):[Beer]
+```
+
+In the example query the first 10 beers are returned by default. If a different limit or offset is required, other values
+can be provided for them as well. 
+
+While this is one case in which limit and offset can be provided, another common case is by the use of `page` and 
+`pageSize` parameters. For this reason it is possible in DotWebStack to define expressions by which the `@limit` and `@offset`
+ parameters can be calculated:
+
+```grapqhl
+    beers(pageSize: Int = 10 @limit, 
+          page: Int = 1 @offset(expr: "(args.page - 1) * args.pageSize")):[Beer]
+```
+
+The `pageSize` and the limit are the same in this case, so no expression is needed. To calculate the offset from the page 
+parameter however, the expression `(args.page - 1) * args.pageSize` is used. Note that it is also possible to use separate 
+parameters for convenience and clearity:
+
+```grapqhl
+    beers(pageSize: Int = 10,
+          page: Int = 1, 
+          limit: Int @limit(expr: "args.pageSize"), 
+          offset: Int @offset(expr: "(args.page - 1) * args.pageSize")):[Beer]
+```
+
+## 1.6 Transform Directive
 The transform directive allows the user to transform a scalar field based on a given 
 [jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes the 
 argument `expr` that contains the jexl expression to transform the original to the desired value:
@@ -142,7 +173,7 @@ type Brewery {
 
 In the given example the `status` is retrieved from a `statusIri`.  
 
-## 1.6 Filter Directive
+## 1.7 Filter Directive
 The filter directive (@filter) allows the user to apply a filter on a field. The field-argument is optional and has a default value consisting of the name of the field where the directive is applied on. So when @filter is used without parameters, the name of the field and the default operator (=) will be used.  
 
 ```schema.graphqls
@@ -152,7 +183,7 @@ The filter directive (@filter) allows the user to apply a filter on a field. The
   name: [String] @filter(field: "name")): [Brewery!]!
 ```
 
-## 1.7 Sort Directive
+## 1.8 Sort Directive
 It is possible to declare a `sort` directive on a field or an argument. The argument of this parameter needs to 
 be one or any array of objects containing a `field` and an `order` parameter:
 * `field`: A `string` that contains the field to sort by, this can also be a path of fields with '.' as separator. The field(s)
@@ -187,7 +218,7 @@ type Brewery {
 
 When the sort encounters a `null` this entry is always sorted last, both with `ASC` and `DESC` sorting.
 
-## 1.8 Jexl Functions
+## 1.9 Jexl Functions
 When using the JexlEngine provided by `org.dotwebstack.framework.core.CoreConfiguration.jexlBuilder`, it is possible to add custom functions to allow for more readable Jexl expressions. Custom functions can be added by creating a POJO class that implements the `org.dotwebstack.framework.core.jexl.JexlFunction` interface. Any class implementing this interface will be picked up by Spring and added to the Jexl engine under its provided namespace.
 ```java
 public class MyFunction implements JexlFunction {
