@@ -156,7 +156,7 @@ parameters for convenience and clearity:
 ```grapqhl
     beers(pageSize: Int = 10,
           page: Int = 1, 
-          limit: Int @limit(expr: "pageSize"), 
+          limit: Int @limit(expr: "args.pageSize"), 
           offset: Int @offset(expr: "(args.page - 1) * args.pageSize")):[Beer]
 ```
 
