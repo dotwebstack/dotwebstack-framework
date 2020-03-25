@@ -6,7 +6,7 @@ The following snippet from an `application.yml` file shows the configuration pro
 
 ```yml
 dotwebstack:
-  Rdf4j:
+  rdf4j:
     shape:
       graph: https://github.com/dotwebstack/beer/shapes
       prefix: https://github.com/dotwebstack/beer/shapes#
@@ -20,7 +20,7 @@ dotwebstack:
 point to the graph that is used within the `shapes` file. The `shape.prefix` property is used to point to the prefix
 of the shapesfile. This prefix is ignored when mapping GraphQL types from `schema.graphqls` to the node shapes in the
 `shapes` file. Within the `prefixes` property you can define a list of general prefixes that is added to the 
-[QueryEnvironment](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/backend/Rdf4j/src/main/java/org/dotwebstack/framework/backend/Rdf4j/query/QueryEnvironment.java). 
+[QueryEnvironment](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/backend/rdf4j/src/main/java/org/dotwebstack/framework/backend/rdf4j/query/QueryEnvironment.java). 
 
 Besides the configuration in the `application.yml` you need to add a `schema.graphqls` file that defines the GraphQL schema. 
 The following example shows the GraphQL description for the Brewery type and a query description to retrieve all the 
@@ -102,6 +102,42 @@ it will result in the following response:
       }
     ]
   }
+}
+```
+
+### 1.1.1 Repository configuration
+Two types of repositories are distinguished within the rdf4j backend domain. An inmemory one, referred to as `local` 
+and `external` ones. `local` is an inmemory database filled on startup with the `.trig` files from under the `config/model`
+folder. A query can point to this repository by specifying the local repository in the @sparql directive:
+ 
+```graphql
+type Query {
+  breweries(): [Brewery!]!
+  @sparql(
+    repository: local
+  )
+}
+```
+
+External repositories can be configured in the `application.yml` file under `dotwebstack.rdf4j.repositories`: 
+```yml
+dotwebstack:
+  rdf4j:
+    repositories:
+      beerRepository:
+        type: sparql
+        args:
+          endpointUrl: http://...
+```
+
+A query can point to this repository by specifying the repository name in the @sparl directive:
+
+```graphql
+type Query {
+  breweries(): [Brewery!]!
+  @sparql(
+    repository: beerRepository
+  )
 }
 ```
 
