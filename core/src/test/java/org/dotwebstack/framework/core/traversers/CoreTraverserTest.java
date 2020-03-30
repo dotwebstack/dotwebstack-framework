@@ -8,14 +8,11 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLInputObjectField.newInputObjectField;
 import static graphql.schema.GraphQLInputObjectType.newInputObject;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.language.FieldDefinition;
 import graphql.language.TypeName;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
@@ -27,15 +24,12 @@ import org.junit.jupiter.api.Test;
 
 class CoreTraverserTest {
 
-  private DataFetchingEnvironment dataFetchingEnvironment;
-
   private TypeDefinitionRegistry typeDefinitionRegistry;
 
   private CoreTraverser coreTraverser;
 
   @BeforeEach
   void doBefore() {
-    dataFetchingEnvironment = mock(DataFetchingEnvironment.class);
     typeDefinitionRegistry = new TypeDefinitionRegistry();
     coreTraverser = new CoreTraverser(typeDefinitionRegistry);
   }
@@ -55,11 +49,8 @@ class CoreTraverserTest {
         .argument(argument)
         .build();
 
-    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(dataFetchingEnvironment.getArguments()).thenReturn(ImmutableMap.of("identifier", 1));
-
     // Act & Assert
-    assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
+    assertThat(coreTraverser.getTuples(fieldDefinition, ImmutableMap.of("identifier", 1), TraverserFilter.noFilter()))
         .contains(DirectiveContainerObject.builder()
             .container(argument)
             .objectType(objectType)
@@ -86,15 +77,13 @@ class CoreTraverserTest {
         .argument(argument)
         .build();
 
-    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(dataFetchingEnvironment.getArguments()).thenReturn(ImmutableMap.of("input", ImmutableMap.of("identifier", 1)));
-
     // Act & Assert
-    assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
-        .contains(DirectiveContainerObject.builder()
-            .container(field)
-            .value(1)
-            .build());
+    assertThat(coreTraverser.getTuples(
+        fieldDefinition, ImmutableMap.of("input", ImmutableMap.of("identifier", 1)), TraverserFilter.noFilter()))
+            .contains(DirectiveContainerObject.builder()
+                .container(field)
+                .value(1)
+                .build());
   }
 
   @Test

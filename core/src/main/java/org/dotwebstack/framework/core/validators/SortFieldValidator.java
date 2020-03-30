@@ -43,7 +43,8 @@ public class SortFieldValidator implements QueryValidator {
   }
 
   public void validate(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getTuples(dataFetchingEnvironment, noFilter())
+    coreTraverser
+        .getTuples(dataFetchingEnvironment.getFieldDefinition(), dataFetchingEnvironment.getArguments(), noFilter())
         .forEach(
             tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getContainer(), tuple.getValue()));
   }

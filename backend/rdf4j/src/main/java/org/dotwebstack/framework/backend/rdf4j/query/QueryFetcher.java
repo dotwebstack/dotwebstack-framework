@@ -109,11 +109,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .fieldDefinition(environment.getFieldDefinition())
         .build();
 
-    List<DirectiveContainerObject> filterMapping =
-        coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME))
-            .stream()
-            .map(determineIsResource(environment))
-            .collect(Collectors.toList());
+    List<DirectiveContainerObject> filterMapping = coreTraverser
+        .getTuples(environment.getFieldDefinition(), environment.getArguments(),
+            directiveWithValueFilter(CoreDirectives.FILTER_NAME))
+        .stream()
+        .map(determineIsResource(environment))
+        .collect(Collectors.toList());
 
     List<IRI> subjects =
         fetchSubjects(environment, queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
