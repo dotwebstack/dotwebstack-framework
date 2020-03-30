@@ -43,7 +43,9 @@ public class ConstraintValidator implements QueryValidator {
   }
 
   public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getTuples(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
+    coreTraverser
+        .getTuples(dataFetchingEnvironment.getFieldDefinition(), dataFetchingEnvironment.getArguments(),
+            directiveFilter(CONSTRAINT_NAME))
         .forEach(this::validateRequest);
   }
 

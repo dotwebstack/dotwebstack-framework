@@ -8,7 +8,6 @@ import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
@@ -38,14 +37,12 @@ public class CoreTraverser {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  public List<DirectiveContainerObject> getTuples(@NonNull DataFetchingEnvironment environment,
-      @NonNull TraverserFilter filter) {
-    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
+  public List<DirectiveContainerObject> getTuples(@NonNull GraphQLFieldDefinition fieldDefinition,
+      @NonNull Map<String, Object> arguments, @NonNull TraverserFilter filter) {
 
     return fieldDefinition.getArguments()
         .stream()
-        .flatMap(argument -> getInputObjectFieldsFromArgument(fieldDefinition, argument, environment.getArguments())
-            .stream())
+        .flatMap(argument -> getInputObjectFieldsFromArgument(fieldDefinition, argument, arguments).stream())
         .filter(filter::apply)
         .collect(Collectors.toList());
   }
@@ -84,7 +81,7 @@ public class CoreTraverser {
       result.add(getDirectiveContainerObject(container, objectType, nestedArguments));
 
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
-      Object nestedArguments = arguments.getOrDefault(container.getName(), null);
+      Object nestedArguments = arguments.getOrDefault(container.getName(), container.getDefaultValue());
 
       result.add(getDirectiveContainerObject(container, objectType, nestedArguments));
     }
