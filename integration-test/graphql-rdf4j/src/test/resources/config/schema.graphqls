@@ -21,6 +21,7 @@ type Query {
     withAddressSubject: String @filter(field: "address.subject")
     sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
     beerCount: Int @filter(field: "beerCount")
+    withBeer: String @filter(field: "beers.name")
   ): [Brewery!]!
     @sparql(repository: "local")
 
@@ -73,7 +74,7 @@ type Address {
 
 type Beer {
   identifier: ID!
-  name: String!
+  name: String
   subject: IRI! @resource
   brewery: String!
   beerTypes: [String]!
