@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 
@@ -112,8 +114,11 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             .map(childFilterRule -> createVertice(edgeSubject, query, childShape,
                 Collections.singletonList(childFilterRule)))
             .map(childVertice -> createEdge(nodeShape, filterRule, childVertice))
-            .ifPresent(edge1 -> vertice.getEdges()
-                .add(edge1));
+            .ifPresent(edge1 -> {
+              vertice.getEdges()
+                  .add(edge1);
+              deepList(singletonList(edge1)).forEach(e -> e.setOptional(false));
+            });
       }
     }
   }

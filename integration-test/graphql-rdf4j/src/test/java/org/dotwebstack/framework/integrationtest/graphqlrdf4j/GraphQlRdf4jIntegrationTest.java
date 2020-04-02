@@ -881,4 +881,25 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(subjects, hasSize(1));
     assertThat(subjects, contains("https://github.com/dotwebstack/beer/id/brewery/123"));
   }
+
+  @Test
+  void graphQlQuery_returnsBreweries_FilterOnHavingOptionalBeerName() {
+    // Arrange
+    String query = "{ breweries(withBeer: \"Alfa Edel Pils\") { identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+    List<String> identifiers = ((List<Object>) data.get("breweries")).stream()
+        .map(ObjectHelper::castToMap)
+        .map(map -> map.get("identifier")
+            .toString())
+        .collect(Collectors.toList());
+
+    assertThat(identifiers, hasSize(1));
+    assertThat(identifiers, contains("789"));
+    assertThat(result.getErrors(), hasSize(0));
+  }
 }
