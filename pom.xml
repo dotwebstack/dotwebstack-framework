@@ -36,6 +36,19 @@
     <tag>HEAD</tag>
   </scm>
 
+  <developers>
+    <developer>
+      <id>joostfarla</id>
+      <name>Joost Farla</name>
+      <email>joost@apiwise.nl</email>
+    </developer>
+    <developer>
+      <id>architolk</id>
+      <name>Marco Brattinga</name>
+      <email>marco.brattinga@ordina.nl</email>
+    </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
