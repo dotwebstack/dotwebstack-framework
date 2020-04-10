@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>backend</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>backend-rdf4j</artifactId>
