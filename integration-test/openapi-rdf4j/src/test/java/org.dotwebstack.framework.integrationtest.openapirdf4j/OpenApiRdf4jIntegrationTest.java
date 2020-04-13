@@ -276,7 +276,7 @@ class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertTrue(result.contains("Unexpected error while executing request"));
+    assertTrue(result.contains("An error occured from which the server was unable to recover"));
   }
 
   @Test
@@ -303,7 +303,7 @@ class OpenApiRdf4jIntegrationTest {
         .expectStatus()
         .is5xxServerError()
         .expectBody(String.class)
-        .value(containsString("Unexpected error while executing request"));
+        .value(containsString("An error occured from which the server was unable to recover"));
   }
 
   @Test
@@ -314,7 +314,7 @@ class OpenApiRdf4jIntegrationTest {
         .expectStatus()
         .is5xxServerError()
         .expectBody(String.class)
-        .value(containsString("Unexpected error while executing request"));
+        .value(containsString("An error occured from which the server was unable to recover"));
   }
 
   @Test
