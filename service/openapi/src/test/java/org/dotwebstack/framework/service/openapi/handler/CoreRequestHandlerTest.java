@@ -218,7 +218,7 @@ class CoreRequestHandlerTest {
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
 
     // Act
-    ServerResponse serverResponse = coreRequestHandler.getResponse(request);
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
 
     // Assert
     assertTrue(serverResponse.statusCode()
@@ -253,7 +253,7 @@ class CoreRequestHandlerTest {
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
 
     // Act
-    ServerResponse serverResponse = coreRequestHandler.getResponse(request);
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
 
     // Assert
     assertTrue(serverResponse.statusCode()
