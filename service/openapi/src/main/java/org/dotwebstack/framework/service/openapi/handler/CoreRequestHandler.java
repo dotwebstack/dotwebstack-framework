@@ -133,16 +133,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-
-    return Mono.fromCallable(() -> getResponse(request))
+    String requestId = UUID.randomUUID()
+        .toString();
+    return Mono.fromCallable(() -> getResponse(request, requestId))
         .publishOn(Schedulers.elastic())
         .onErrorResume(NotAcceptableException.class, getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
         .onErrorResume(ParameterValidationException.class,
             getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
-        .onErrorResume(ResponseMapperException.class,
-            getMonoError(INTERNAL_SERVER_ERROR, "Error while serializing response."))
-        .onErrorResume(GraphQlErrorException.class,
-            getMonoError(INTERNAL_SERVER_ERROR, "Unexpected error while executing request."))
+        .onErrorResume(ResponseMapperException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
+        .onErrorResume(GraphQlErrorException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
         .onErrorResume(NoResultFoundException.class, getMonoError(NOT_FOUND, "No results found."))
         .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
         .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
@@ -154,6 +153,17 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return exception -> {
       String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason [%s]",
           exception.getMessage(), status.value(), reason);
+      return Mono.error(new ResponseStatusException(status, message));
+    };
+  }
+
+  private Function<Exception, Mono<? extends ServerResponse>> getMonoErrorWithoutDetails(HttpStatus status,
+      String requestId) {
+    return exception -> {
+      LOG.info(
+          format("[OpenApi] An Exception occurred [%s] resulting in [%d]", exception.getMessage(), status.value()));
+      String message = format("An error occured from which the server was unable to recover. "
+          + "Please contact the API maintainer with the following details: '%s'", requestId);
       return Mono.error(new ResponseStatusException(status, message));
     };
   }
@@ -246,9 +256,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
-  ServerResponse getResponse(ServerRequest request) throws GraphQlErrorException, BadRequestException {
-    MDC.put(MDC_REQUEST_ID, UUID.randomUUID()
-        .toString());
+  ServerResponse getResponse(ServerRequest request, String requestId)
+      throws GraphQlErrorException, BadRequestException {
+    MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
     HttpStatus httpStatus = getHttpStatus();
