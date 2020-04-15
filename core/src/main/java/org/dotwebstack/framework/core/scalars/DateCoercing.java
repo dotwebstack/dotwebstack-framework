@@ -34,7 +34,8 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
     }
 
     try {
-      return LocalDate.parse((String) value);
+      // to be able to also convert dates that also contain times
+      return LocalDate.parse(((String)value).substring(0, ((String)value).lastIndexOf('T')));
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date string failed.", e);
     }
