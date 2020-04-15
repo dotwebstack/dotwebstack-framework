@@ -38,18 +38,22 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
     try {
       // to be able to also convert dates that also contain times
       if (((String) value).contains("T")) {
-        try {
-          ZonedDateTime zonedDateTime = ZonedDateTime.parse((String) value);
-          return zonedDateTime.toLocalDate();
-        } catch (DateTimeParseException e) {
-          LocalDateTime localDateTime = LocalDateTime.parse((String) value);
-          return localDateTime.toLocalDate();
-        }
+        return getLocalDateFromDateTimeString((String) value);
       }
 
       return LocalDate.parse((String) value);
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date string failed.", e);
+    }
+  }
+
+  private LocalDate getLocalDateFromDateTimeString(@NonNull String value) {
+    try {
+      ZonedDateTime zonedDateTime = ZonedDateTime.parse(value);
+      return zonedDateTime.toLocalDate();
+    } catch (DateTimeParseException e) {
+      LocalDateTime localDateTime = LocalDateTime.parse(value);
+      return localDateTime.toLocalDate();
     }
   }
 
