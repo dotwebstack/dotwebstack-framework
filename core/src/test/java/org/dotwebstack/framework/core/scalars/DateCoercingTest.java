@@ -54,6 +54,24 @@ class DateCoercingTest {
   }
 
   @Test
+  void serialize_ReturnsDate_ForLocalDateString() {
+    // Act
+    LocalDate date = coercing.serialize("2018-05-30T00:00:00");
+
+    // Assert
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
+  }
+
+  @Test
+  void serialize_ReturnsDate_ForZonedDateString() {
+    // Act
+    LocalDate date = coercing.serialize("2018-05-30T00:00:00Z");
+
+    // Assert
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
+  }
+
+  @Test
   void serialize_ThrowsException_ForInvalidDateString() {
     // Act / Assert
     assertThrows(CoercingSerializeException.class, () -> coercing.serialize("foo"));
