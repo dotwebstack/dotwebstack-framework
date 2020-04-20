@@ -212,6 +212,9 @@ paths:
         200:
           description: OK
           content:
+            text/html:
+              schema:
+                type: string
             application/hal+json:
               x-dws-default: true
               schema:
