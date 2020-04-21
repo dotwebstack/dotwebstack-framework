@@ -3,6 +3,14 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-<h1> Home </h1>
-<p> Welcome to my home page. My name is {{ name }}.</p>
+<h1> {{ name }} </h1>
+<h3>since {{ founded }}</h3>
+<p> Welcome to our beer page. Currently we have {{ beerCount }} beers in stock.</p>
+{% if beers is iterable %}
+<ul>
+    {% for beer in beers %}
+    <li>{{ beer.name }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}
