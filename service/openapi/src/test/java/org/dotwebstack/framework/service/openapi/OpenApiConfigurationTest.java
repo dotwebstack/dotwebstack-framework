@@ -83,9 +83,10 @@ public class OpenApiConfigurationTest {
     this.openApiStream = TestResources.openApiStream();
     OpenApiProperties openApiProperties = new OpenApiProperties();
     openApiProperties.setXdwsStringTypes(List.of("customType"));
-    this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
-        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        templateResponseMapper, responseContextValidator, requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
+    this.openApiConfiguration =
+        spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(), jsonResponseMapper,
+            new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, templateResponseMapper,
+            responseContextValidator, requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
   }
 
   @Test

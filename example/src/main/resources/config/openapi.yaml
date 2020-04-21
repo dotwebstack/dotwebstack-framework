@@ -231,7 +231,7 @@ paths:
             OS:
               schema:
                 type: string
-                x-dws-expr: '`mac`'
+                x-dws-expr: env.OS
             API-version:
               schema:
                 type: string

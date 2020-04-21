@@ -6,19 +6,12 @@ import com.mitchellbosecke.pebble.loader.DelegatingLoader;
 import com.mitchellbosecke.pebble.loader.FileLoader;
 import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.CoreProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +19,23 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.CoreProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(CoreProperties.class)
 @Slf4j
 public class PebbleTemplatingConfiguration {
-  private static final String TEMPLATES_LOCATION = "templates";
+  private static final String TEMPLATES_LOCATION = "templates/";
+
+  private static final String CLASSPATH_TEMPLATES_LOCATION = "config/" + TEMPLATES_LOCATION;
+
+  private static final String EXTERNAL_TEMPLATES_LOCATION = "/config/" + TEMPLATES_LOCATION;
 
   private PebbleEngine pebbleEngine;
-
-  private final CoreProperties coreProperties;
 
   private final URI externalTemplatesLocation;
 
@@ -50,9 +50,18 @@ public class PebbleTemplatingConfiguration {
         .getPath())
         .toURI();
 
-    this.coreProperties = coreProperties;
+    this.pebbleEngine = new PebbleEngine.Builder().loader(getLoader())
+        .build();
+  }
 
-    buildEngine();
+  private Loader<?> getLoader() {
+    ClasspathLoader classpathLoader = new ClasspathLoader();
+    classpathLoader.setPrefix(CLASSPATH_TEMPLATES_LOCATION);
+
+    FileLoader fileLoader = new FileLoader();
+    fileLoader.setPrefix(EXTERNAL_TEMPLATES_LOCATION);
+
+    return new DelegatingLoader(List.of(classpathLoader, fileLoader));
   }
 
   @Bean
@@ -66,34 +75,10 @@ public class PebbleTemplatingConfiguration {
         .filter(Objects::nonNull)
         .flatMap(Arrays::stream)
         .map(File::toPath)
-        .peek(location -> LOG.debug("Adding '{}' as pre-compiled template", location.getFileName()))
-        .collect(Collectors.toMap(getTemplateName(), getCompiledTemplate()));
-  }
-
-  private void buildEngine() {
-    List<Loader<?>> defaultLoadingStrategies = new ArrayList<>();
-    ClasspathLoader classpathLoader = new ClasspathLoader();
-    classpathLoader.setPrefix("config/templates/");
-
-    defaultLoadingStrategies.add(classpathLoader);
-
-    FileLoader fileLoader = new FileLoader();
-    fileLoader.setPrefix("/config/templates/");
-
-    defaultLoadingStrategies.add(fileLoader);
-
-    this.pebbleEngine = new PebbleEngine.Builder()
-        .loader(new DelegatingLoader(defaultLoadingStrategies))
-        .build();
-  }
-
-  private Function<Path, PebbleTemplate> getCompiledTemplate() {
-    return location -> pebbleEngine.getTemplate(location.getFileName().toString());
-  }
-
-  private Function<Path, String> getTemplateName() {
-    return location -> location.getFileName()
-        .toString();
+        .map(Path::getFileName)
+        .map(Path::toString)
+        .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
+        .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
   }
 
 }

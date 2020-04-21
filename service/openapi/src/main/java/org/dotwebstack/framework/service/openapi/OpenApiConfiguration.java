@@ -79,10 +79,10 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-                              List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-                              ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-                              TemplateResponseMapper templateResponseMapper, ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-                              OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream, TemplateResponseMapper templateResponseMapper,
+      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -184,8 +184,8 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
-        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper, templateResponseMapper,
-        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
+        templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()
         .map(ResponseTemplate::getResponseCode)
