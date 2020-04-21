@@ -1,32 +1,5 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
-import static java.lang.String.format;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
-import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
-import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
-
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -34,19 +7,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.net.URI;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -85,10 +45,53 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.net.URI;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
+
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String DEFAULT_ACCEPT_HEADER_VALUE = "*/*";
+
+  private static final String JSON_SUBTYPE = "json";
 
   private static final String MDC_REQUEST_ID = "requestId";
 
@@ -298,12 +301,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       URI uri = request.uri();
 
       String body;
-      if (Objects.nonNull(template.getResponseObject())) {
+      if (Objects.nonNull(template.getResponseObject()) && template.getMediaType().getSubtype().endsWith(JSON_SUBTYPE)) {
         ResponseWriteContext responseWriteContext =
             createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
                 inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
         body = jsonResponseMapper.toResponse(responseWriteContext);
+
       } else {
         body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
       }

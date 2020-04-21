@@ -212,9 +212,6 @@ paths:
         200:
           description: OK
           content:
-            text/html:
-              schema:
-                type: string
             application/hal+json:
               x-dws-default: true
               schema:
@@ -234,7 +231,7 @@ paths:
             OS:
               schema:
                 type: string
-                x-dws-expr: env.OS
+                x-dws-expr: '`mac`'
             API-version:
               schema:
                 type: string
@@ -292,6 +289,9 @@ paths:
         200:
           description: OK
           content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/Brewery'
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'

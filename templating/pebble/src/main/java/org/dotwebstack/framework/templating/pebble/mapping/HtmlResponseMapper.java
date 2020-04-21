@@ -5,6 +5,8 @@ import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeType;
 
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map;
 
 @Component
@@ -20,18 +22,25 @@ public class HtmlResponseMapper implements ResponseMapper {
 
   @Override
   public boolean supportsOutputMimeType(MimeType mimeType) {
-    return MimeType.valueOf(HTML_MIMETYPE).equals(mimeType);
+    boolean result = MimeType.valueOf(HTML_MIMETYPE).equals(mimeType);
+    return result;
   }
 
   @Override
   public boolean supportsInputObjectClass(Class<?> clazz) {
-    return clazz.isAssignableFrom(Map.class);
+    boolean result = Map.class.isAssignableFrom(clazz);
+    return result;
   }
 
   @Override
   public String toResponse(Object input) {
 
     System.out.println("test");
+//
+//    Writer writer = new StringWriter();
+//    compiledTemplate.evaluate(writer, context);
+//
+//    String output = writer.toString();
 
     return "";
   }
