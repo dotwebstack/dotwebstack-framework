@@ -153,7 +153,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(NoResultFoundException.class, getMonoError(NOT_FOUND, "No results found."))
         .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
         .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
-        .onErrorResume(InvalidConfigurationException.class, getMonoError(INTERNAL_SERVER_ERROR, "Bad configuration"))
+        .onErrorResume(InvalidConfigurationException.class, getMonoError(BAD_REQUEST, "Bad configuration"))
         .onErrorResume(TemplatingException.class, getMonoError(INTERNAL_SERVER_ERROR, "Templating went wrong"));
   }
 

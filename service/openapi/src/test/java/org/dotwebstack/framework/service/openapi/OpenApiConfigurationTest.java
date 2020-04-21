@@ -85,7 +85,7 @@ public class OpenApiConfigurationTest {
     openApiProperties.setXdwsStringTypes(List.of("customType"));
     this.openApiConfiguration =
         spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(), jsonResponseMapper,
-            new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, templateResponseMapper,
+            new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream, Collections.emptyList(),
             responseContextValidator, requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
   }
 

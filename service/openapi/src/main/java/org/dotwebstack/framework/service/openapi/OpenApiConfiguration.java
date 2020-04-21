@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
@@ -62,7 +64,7 @@ public class OpenApiConfiguration {
 
   private final JsonResponseMapper jsonResponseMapper;
 
-  private final TemplateResponseMapper templateResponseMapper;
+  private final List<TemplateResponseMapper> templateResponseMappers;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
@@ -80,7 +82,8 @@ public class OpenApiConfiguration {
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream, TemplateResponseMapper templateResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+      List<TemplateResponseMapper> templateResponseMappers,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
       OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
@@ -88,7 +91,7 @@ public class OpenApiConfiguration {
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
-    this.templateResponseMapper = templateResponseMapper;
+    this.templateResponseMappers = templateResponseMappers;
     this.responseContextValidator = responseContextValidator;
     this.queryFieldHelper = QueryFieldHelper.builder()
         .typeDefinitionRegistry(typeDefinitionRegistry)
@@ -175,13 +178,16 @@ public class OpenApiConfiguration {
         .responses(responseTemplates)
         .parameters(httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList())
+            .getParameters() : Collections.emptyList())
         .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
         .requestBodyContext(requestBodyContext)
         .build();
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
+
+    validateTemplateResponseMapper(responseTemplates);
+    TemplateResponseMapper templateResponseMapper = getTemplateResponseMapper();
 
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
         responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
@@ -195,6 +201,26 @@ public class OpenApiConfiguration {
         .ifPresent(i -> coreRequestHandler.validateSchema());
 
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
+  }
+
+  private TemplateResponseMapper getTemplateResponseMapper() {
+    if (templateResponseMappers.isEmpty()) {
+      return null;
+    }
+    return templateResponseMappers.get(0);
+  }
+
+  private void validateTemplateResponseMapper(List<ResponseTemplate> responseTemplates) {
+    boolean usesTemplating = responseTemplates.stream().anyMatch(ResponseTemplate::usesTemplating);
+
+    if (usesTemplating && templateResponseMappers.isEmpty()) {
+      throw invalidOpenApiConfigurationException("Configured a template, but templating module not used");
+    }
+
+    int size = templateResponseMappers.size();
+    if (size > 1) {
+      throw invalidConfigurationException("Too many templateResponseMappers configured, expected 1 got: {}", size);
+    }
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
