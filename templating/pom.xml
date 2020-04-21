@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>templating-pebble</module>
+        <module>pebble</module>
     </modules>
 
 

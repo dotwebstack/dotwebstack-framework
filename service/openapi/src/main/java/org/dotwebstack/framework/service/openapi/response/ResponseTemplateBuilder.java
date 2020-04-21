@@ -40,6 +40,8 @@ public class ResponseTemplateBuilder {
 
   private static final String DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION = "x-dws-default";
 
+  private static final String TEMPLATE_NAME_VENDOR_EXTENSION = "x-dws-template";
+
   private final OpenAPI openApi;
 
   private final List<String> xdwsStringTypes;
@@ -92,6 +94,7 @@ public class ResponseTemplateBuilder {
       return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
           .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
           .isDefault(isDefault(mediaType, mediaType.getExtensions()))
+          .templateName(getTemplateName(mediaType, mediaType.getExtensions()))
           .build();
     };
   }
@@ -130,6 +133,15 @@ public class ResponseTemplateBuilder {
         .type(schema.getType())
         .dwsExpressionMap(getDwsExpression(schema))
         .build();
+  }
+
+  private String getTemplateName(MediaType mediaType, Map<String, Object> extensions) {
+    String templateName = null;
+    if (Objects.nonNull(extensions)) {
+      templateName = (String) mediaType.getExtensions()
+          .get(TEMPLATE_NAME_VENDOR_EXTENSION);
+    }
+    return templateName;
   }
 
   private boolean isDefault(MediaType content, Map<String, Object> extensions) {

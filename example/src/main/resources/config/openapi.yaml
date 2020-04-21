@@ -290,6 +290,7 @@ paths:
           description: OK
           content:
             text/html:
+              x-dws-template: home.html
               schema:
                 $ref: '#/components/schemas/Brewery'
             application/hal+json:
