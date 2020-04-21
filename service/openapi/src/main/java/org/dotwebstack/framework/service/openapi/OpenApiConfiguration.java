@@ -22,6 +22,7 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.handler.CoreRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
@@ -61,6 +62,8 @@ public class OpenApiConfiguration {
 
   private final JsonResponseMapper jsonResponseMapper;
 
+  private final TemplateResponseMapper templateResponseMapper;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final ResponseContextValidator responseContextValidator;
@@ -76,15 +79,16 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+                              List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+                              ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+                              TemplateResponseMapper templateResponseMapper, ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
+                              OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
+    this.templateResponseMapper = templateResponseMapper;
     this.responseContextValidator = responseContextValidator;
     this.queryFieldHelper = QueryFieldHelper.builder()
         .typeDefinitionRegistry(typeDefinitionRegistry)
@@ -180,7 +184,7 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
-        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
+        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper, templateResponseMapper,
         paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()

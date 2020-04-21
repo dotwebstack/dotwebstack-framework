@@ -1,32 +1,5 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
-import static java.lang.String.format;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
-import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
-import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
-
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -34,21 +7,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-
-import java.net.URI;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -56,6 +14,7 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
@@ -87,6 +46,47 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.net.URI;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
+import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
+import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
+import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
+
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
@@ -108,6 +108,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JsonResponseMapper jsonResponseMapper;
 
+  private final TemplateResponseMapper templateResponseMapper;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
@@ -119,15 +121,16 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-      ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
-      JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
+                            ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
+                            JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper, ParamHandlerRouter paramHandlerRouter,
+                            RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
+    this.templateResponseMapper = templateResponseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
@@ -162,7 +165,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private Function<Exception, Mono<? extends ServerResponse>> getMonoErrorWithoutDetails(HttpStatus status,
-      String requestId) {
+                                                                                         String requestId) {
     return exception -> {
       LOG.info(
           format("[OpenApi] An Exception occurred [%s] resulting in [%d]", exception.getMessage(), status.value()));
@@ -235,7 +238,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private Optional<String> evaluateJexlExpression(JexlContext jexlContext, String key,
-      Map<String, ResponseHeader> headers) {
+                                                  Map<String, ResponseHeader> headers) {
     ResponseHeader header = headers.get(key);
     Map<String, String> dwsExprMap = header.getDwsExpressionMap();
     return this.jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
@@ -244,12 +247,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @SuppressWarnings("rawtypes")
   private void validateParameters(GraphQlField field, List<Parameter> parameters,
-      Map<String, Schema> requestBodyProperties, String pathName) {
+                                  Map<String, Schema> requestBodyProperties, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
             .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
-                parameter.getExtensions()
-                    .get(X_DWS_TYPE)))
+            parameter.getExtensions()
+                .get(X_DWS_TYPE)))
         .count() > 1) {
       throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
     }
@@ -299,20 +302,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .accept();
       ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
-      URI uri = request.uri();
-
       String body;
-      if (Objects.nonNull(template.getResponseObject()) && template.getMediaType()
-          .getSubtype()
-          .endsWith(JSON_SUBTYPE)) {
-        ResponseWriteContext responseWriteContext =
-            createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
-                inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
-        body = jsonResponseMapper.toResponse(responseWriteContext);
-
+      if (template.usesTemplating()) {
+        body = templateResponseMapper.toResponse(template.getTemplateName(), data);
       } else {
-        body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
+        body = getResponseMapperBody(request, inputParams, data, template);
       }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
@@ -326,6 +321,21 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private String getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data, ResponseTemplate template) {
+    URI uri = request.uri();
+
+    if (Objects.nonNull(template.getResponseObject())) {
+      ResponseWriteContext responseWriteContext =
+          createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
+              inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+
+      return jsonResponseMapper.toResponse(responseWriteContext);
+
+    } else {
+      return getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
+    }
   }
 
   private HttpStatus getHttpStatus() {
@@ -447,7 +457,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @SuppressWarnings("rawtypes")
   private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-      String pathName, Map<String, Schema> requestBodyProperties) {
+                                                    String pathName, Map<String, Schema> requestBodyProperties) {
     if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && (parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName())))
@@ -467,7 +477,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,
-      List<MediaType> supportedMediaTypes) {
+                                           List<MediaType> supportedMediaTypes) {
     return responseTemplates.stream()
         .filter(ResponseTemplate::isDefault)
         .findFirst()

@@ -36,6 +36,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
@@ -91,6 +92,9 @@ class CoreRequestHandlerTest {
   private JsonResponseMapper jsonResponseMapper;
 
   @Mock
+  private TemplateResponseMapper templateResponseMapper;
+
+  @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   @Mock
@@ -128,7 +132,7 @@ class CoreRequestHandlerTest {
     when(this.responseSchemaContext.getGraphQlField())
         .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
     coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
-        graphQl, new ArrayList<>(), jsonResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
+        graphQl, new ArrayList<>(), jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
         environmentProperties));
 
     ResponseTemplate responseTemplate =

@@ -93,8 +93,8 @@ public class ResponseTemplateBuilder {
 
       return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
           .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
-          .isDefault(isDefault(mediaType, mediaType.getExtensions()))
-          .templateName(getTemplateName(mediaType, mediaType.getExtensions()))
+          .isDefault(isDefault(mediaType.getExtensions()))
+          .templateName(getTemplateName(mediaType.getExtensions()))
           .build();
     };
   }
@@ -135,18 +135,21 @@ public class ResponseTemplateBuilder {
         .build();
   }
 
-  private String getTemplateName(MediaType mediaType, Map<String, Object> extensions) {
+  private String getTemplateName(Map<String, Object> extensions) {
     String templateName = null;
     if (Objects.nonNull(extensions)) {
-      templateName = (String) mediaType.getExtensions()
-          .get(TEMPLATE_NAME_VENDOR_EXTENSION);
+      templateName = (String) extensions.get(TEMPLATE_NAME_VENDOR_EXTENSION);
     }
     return templateName;
   }
 
-  private boolean isDefault(MediaType content, Map<String, Object> extensions) {
-    return Objects.nonNull(extensions) && (boolean) content.getExtensions()
-        .get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
+  private boolean isDefault(Map<String, Object> extensions) {
+    Boolean result = false;
+
+    if (Objects.nonNull(extensions)) {
+      result = (Boolean) extensions.get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
+    }
+    return result != null ? result : false;
   }
 
   @SuppressWarnings("rawtypes")
