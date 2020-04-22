@@ -50,11 +50,11 @@ public class PebbleTemplatingConfiguration {
         .getPath())
         .toURI();
 
-    this.pebbleEngine = new PebbleEngine.Builder().loader(getLoader())
+    this.pebbleEngine = new PebbleEngine.Builder().loader(getTemplateLoader())
         .build();
   }
 
-  private Loader<?> getLoader() {
+  private Loader<?> getTemplateLoader() {
     ClasspathLoader classpathLoader = new ClasspathLoader();
     classpathLoader.setPrefix(CLASSPATH_TEMPLATES_LOCATION);
 
