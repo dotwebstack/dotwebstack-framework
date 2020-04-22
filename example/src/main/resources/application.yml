@@ -19,3 +19,4 @@ dotwebstack:
       dateformat: dd-MM-yyyy
       datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
       timezone: Europe/Amsterdam
+    apiDocPublicationPath: /

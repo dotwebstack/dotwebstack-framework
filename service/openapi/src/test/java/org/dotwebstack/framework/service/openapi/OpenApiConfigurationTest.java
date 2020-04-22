@@ -39,7 +39,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -77,7 +79,9 @@ public class OpenApiConfigurationTest {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiStream = TestResources.openApiStream();
-    OpenApiProperties openApiProperties = new OpenApiProperties();
+  }
+
+  private void setupOpenApiConfiguration(OpenApiProperties openApiProperties) {
     openApiProperties.setXdwsStringTypes(List.of("customType"));
     this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
@@ -87,6 +91,7 @@ public class OpenApiConfigurationTest {
   @Test
   public void route_returnsFunctions() {
     // Arrange
+    setupOpenApiConfiguration(new OpenApiProperties());
     final ArgumentCaptor<HttpMethodOperation> argumentCaptor = ArgumentCaptor.forClass(HttpMethodOperation.class);
 
     final RouterFunctionAnswer optionsAnswer = new RouterFunctionAnswer();
@@ -148,6 +153,8 @@ public class OpenApiConfigurationTest {
   @Test
   public void route_throwsException_MissingQuery() {
     // Arrange
+    setupOpenApiConfiguration(new OpenApiProperties());
+
     openApi.getPaths()
         .get("/query1")
         .getGet()
@@ -156,6 +163,74 @@ public class OpenApiConfigurationTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));
+  }
+
+  @Test
+  public void route_returnsApiDoc_OnBasePathByDefault() {
+    // Arrange
+    setupOpenApiConfiguration(new OpenApiProperties());
+    when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
+        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
+
+    // Act / Arrange
+    RouterFunction<ServerResponse> functions = openApiConfiguration.route(openApi);
+    WebTestClient client = WebTestClient.bindToRouterFunction(functions)
+        .build();
+
+    // Act / Assert
+    client.options()
+        .uri("")
+        .exchange()
+        .expectStatus()
+        .isOk();
+
+    client.get()
+        .uri("")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .returnResult()
+        .getResponseBody()
+        .toString()
+        .startsWith("openapi: \"3.0.2\"");
+  }
+
+  @Test
+  public void route_returnsApiDoc_OnConfiguredPath() {
+    // Arrange
+    String apiDocPublicationPath = "/openapi.yaml";
+    OpenApiProperties openApiProperties = new OpenApiProperties();
+    openApiProperties.setApiDocPublicationPath(apiDocPublicationPath);
+    setupOpenApiConfiguration(openApiProperties);
+
+    when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
+        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
+
+    // Act / Arrange
+    RouterFunction<ServerResponse> functions = openApiConfiguration.route(openApi);
+    WebTestClient client = WebTestClient.bindToRouterFunction(functions)
+        .build();
+
+    // Act / Assert
+    client.options()
+        .uri(apiDocPublicationPath)
+        .exchange()
+        .expectStatus()
+        .isOk();
+
+    client.get()
+        .uri(apiDocPublicationPath)
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .returnResult()
+        .getResponseBody()
+        .toString()
+        .startsWith("openapi: \"3.0.2\"");
   }
 
   @SuppressWarnings("unchecked")
