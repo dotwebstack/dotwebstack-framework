@@ -188,7 +188,7 @@ paths:
           description: OK
           content:
             text/html:
-              x-dws-template: home.html
+              x-dws-template: brewery.html
               schema:
                 $ref: '#/components/schemas/Object4'
             application/hal+json:

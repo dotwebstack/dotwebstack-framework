@@ -137,7 +137,7 @@ public class ResponseTemplateBuilder {
 
   private String getTemplateName(Map<String, Object> extensions) {
     String templateName = null;
-    if (Objects.nonNull(extensions)) {
+    if (extensions != null) {
       templateName = (String) extensions.get(TEMPLATE_NAME_VENDOR_EXTENSION);
     }
     return templateName;
@@ -146,7 +146,7 @@ public class ResponseTemplateBuilder {
   private boolean isDefault(Map<String, Object> extensions) {
     Boolean result = false;
 
-    if (Objects.nonNull(extensions)) {
+    if (extensions != null) {
       result = (Boolean) extensions.get(DEFAULT_CONTENT_TYPE_VENDOR_EXTENSION);
     }
     return result != null ? result : false;

@@ -1,13 +1,16 @@
 package org.dotwebstack.framework.templating.pebble.templating;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +35,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
       Map<String, Object> queryResultData, Map<String, String> environmentVariables) {
 
     if (!htmlTemplates.containsKey(templateName)) {
-      throw new InvalidConfigurationException("Template with name {} does not exist", templateName);
+      throw invalidConfigurationException("Template with name {} does not exist", templateName);
     }
 
     PebbleTemplate template = htmlTemplates.get(templateName);
