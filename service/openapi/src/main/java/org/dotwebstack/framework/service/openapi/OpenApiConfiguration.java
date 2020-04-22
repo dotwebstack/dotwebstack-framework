@@ -219,7 +219,7 @@ public class OpenApiConfiguration {
 
     int size = templateResponseMappers.size();
     if (size > 1) {
-      throw invalidConfigurationException("Too many templateResponseMappers configured, expected 1 got: {}", size);
+      throw invalidConfigurationException("More than 1 templateResponseMapper configured, found: {}", size);
     }
   }
 
