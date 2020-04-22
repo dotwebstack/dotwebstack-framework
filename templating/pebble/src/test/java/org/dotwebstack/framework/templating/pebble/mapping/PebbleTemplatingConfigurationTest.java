@@ -1,0 +1,34 @@
+package org.dotwebstack.framework.templating.pebble.mapping;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import java.net.URISyntaxException;
+import java.util.Map;
+import org.dotwebstack.framework.core.CoreProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class PebbleTemplatingConfigurationTest {
+
+  private PebbleTemplatingConfiguration templatingConfiguration;
+
+  @BeforeEach
+  void setUp() throws URISyntaxException {
+    // Arrange
+    templatingConfiguration = new PebbleTemplatingConfiguration(new CoreProperties());
+  }
+
+  @Test
+  void testConfiguration_readsTemplates_successfully() {
+    // Act
+    Map<String, PebbleTemplate> templateMap = templatingConfiguration.htmlTemplates();
+
+    // Assert
+    assertThat(templateMap.containsKey("base.html"), is(true));
+    assertThat(templateMap.containsKey("correct.html"), is(true));
+  }
+
+
+}

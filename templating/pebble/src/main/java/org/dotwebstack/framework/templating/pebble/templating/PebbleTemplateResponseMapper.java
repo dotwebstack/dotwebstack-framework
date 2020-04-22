@@ -29,7 +29,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
 
   @Override
   public String toResponse(String templateName, Map<String, Object> queryInputParams,
-                           Map<String, Object> queryResultData, Map<String, String> environmentVariables) {
+      Map<String, Object> queryResultData, Map<String, String> environmentVariables) {
 
     if (!htmlTemplates.containsKey(templateName)) {
       throw new InvalidConfigurationException("Template with name {} does not exist", templateName);
@@ -47,7 +47,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
   }
 
   private Map<String, Object> resolveMapsToOne(Map<String, Object> queryInputParams,
-                                               Map<String, Object> queryResultData, Map<String, String> environmentVariables) {
+      Map<String, Object> queryResultData, Map<String, String> environmentVariables) {
     LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 
     result.put(INPUT_PARAMS_PREFIX, queryInputParams);

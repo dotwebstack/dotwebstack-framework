@@ -81,11 +81,11 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-                              List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-                              ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-                              List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
-                              RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
-                              EnvironmentProperties environmentProperties) {
+      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+      List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
+      RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
+      EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -178,7 +178,7 @@ public class OpenApiConfiguration {
         .responses(responseTemplates)
         .parameters(httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-            .getParameters() : Collections.emptyList())
+                .getParameters() : Collections.emptyList())
         .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
         .requestBodyContext(requestBodyContext)
         .build();

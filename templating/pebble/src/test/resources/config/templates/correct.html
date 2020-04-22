@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ fields.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ fields.name }}</h1>
+<h3>since {{ fields.founded }}</h3>
+<p> Welcome to our beer page. Currently we have <b>{{ fields.beerCount }}</b> beers in stock.</p>
+{% if fields.beers is iterable %}
+<ul>
+    {% for beer in fields.beers %}
+    <li>{{ beer.name }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
