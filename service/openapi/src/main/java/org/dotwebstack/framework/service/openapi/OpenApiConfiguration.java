@@ -81,11 +81,11 @@ public class OpenApiConfiguration {
   private EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      List<TemplateResponseMapper> templateResponseMappers,
-      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+                              List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+                              ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+                              List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
+                              RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
+                              EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -211,7 +211,8 @@ public class OpenApiConfiguration {
   }
 
   private void validateTemplateResponseMapper(List<ResponseTemplate> responseTemplates) {
-    boolean usesTemplating = responseTemplates.stream().anyMatch(ResponseTemplate::usesTemplating);
+    boolean usesTemplating = responseTemplates.stream()
+        .anyMatch(ResponseTemplate::usesTemplating);
 
     if (usesTemplating && templateResponseMappers.isEmpty()) {
       throw invalidOpenApiConfigurationException("Configured a template, but templating module not used");
