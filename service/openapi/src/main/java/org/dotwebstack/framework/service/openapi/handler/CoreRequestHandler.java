@@ -264,6 +264,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
@@ -295,7 +296,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     ExecutionResult result = graphQL.execute(executionInput);
     if (result.getErrors()
         .isEmpty()) {
-      Object data = ((Map) result.getData()).values()
+      Object queryResultData = ((Map) result.getData()).values()
           .iterator()
           .next();
 
@@ -306,9 +307,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       String body;
 
       if (template.usesTemplating()) {
-        body = templateResponseMapper.toResponse(template.getTemplateName(), data);
+        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams,
+            (LinkedHashMap<String, Object>) queryResultData, properties.getAllProperties());
       } else {
-        body = getResponseMapperBody(request, inputParams, data, template);
+        body = getResponseMapperBody(request, inputParams, queryResultData, template);
       }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
