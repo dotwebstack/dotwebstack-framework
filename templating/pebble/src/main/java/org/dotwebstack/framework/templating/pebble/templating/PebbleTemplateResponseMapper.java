@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
+import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,7 +42,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
     try {
       template.evaluate(writer, resolveMapsToOne(queryInputParams, queryResultData, environmentVariables));
     } catch (IOException exception) {
-      throw new TemplateEvaluationException("Could not evaluate template " + templateName, exception);
+      throw new TemplatingException("Could not evaluate template " + templateName, exception);
     }
 
     return writer.toString();
