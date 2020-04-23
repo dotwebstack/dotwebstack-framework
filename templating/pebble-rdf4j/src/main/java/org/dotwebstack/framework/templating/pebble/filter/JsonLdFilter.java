@@ -26,7 +26,7 @@ public class JsonLdFilter implements Filter {
   @SuppressWarnings("unchecked")
   @Override
   public Object apply(Object model, Map<String, Object> map, PebbleTemplate pebbleTemplate,
-                      EvaluationContext evaluationContext, int i) throws PebbleException {
+      EvaluationContext evaluationContext, int i) throws PebbleException {
     StringWriter stringWriter = new StringWriter();
     RDFWriter rdfWriter = Rio.createWriter(RDFFormat.JSONLD, stringWriter);
 
