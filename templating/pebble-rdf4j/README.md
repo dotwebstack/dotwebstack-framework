@@ -8,9 +8,10 @@ In order to filter Json+Ld, use ```jsonld``` filter in the pebble templates. For
 with jsonld, use:
 ```html
 {% block content %}
-<p>{{ fields | jsonld }}</p>
+<p>{{ fields | jsonld | raw }}</p>
 {% endblock %}
 ```
+The addition ```raw``` makes sure that the result is not encoded.
 
 # 1.3 custom filter
 In order to create custom Pebble filter, see: https://pebbletemplates.io/wiki/guide/extending-pebble

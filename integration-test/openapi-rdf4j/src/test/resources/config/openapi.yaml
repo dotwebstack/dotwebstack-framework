@@ -279,7 +279,7 @@ paths:
           description: OK
           content:
             text/html:
-              x-dws-template: brewery.html
+              x-dws-template: filtered.html
             application/ld+json: {}
             text/n3: {}
             application/n-quads: {}
