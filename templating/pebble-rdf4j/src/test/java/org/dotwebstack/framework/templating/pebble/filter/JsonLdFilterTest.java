@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.templating.pebble.filter;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
@@ -41,7 +40,7 @@ public class JsonLdFilterTest {
     List<String> arguments = jsonLdFilter.getArgumentNames();
 
     // Assert
-    assertThat(arguments, is(nullValue()));
+    assertThat(arguments.isEmpty(), is(true));
   }
 
   private Model buildModel() {
