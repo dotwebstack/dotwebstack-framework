@@ -35,7 +35,7 @@ public class JsonLdFilterTest {
   }
 
   @Test
-  public void argumentNamesShouldReturnNull() {
+  public void argumentNamesShouldReturnEmptyList() {
     // Act
     List<String> arguments = jsonLdFilter.getArgumentNames();
 
