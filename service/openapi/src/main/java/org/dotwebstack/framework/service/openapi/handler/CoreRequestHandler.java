@@ -307,8 +307,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       String body;
 
       if (template.usesTemplating()) {
-        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams,
-            (LinkedHashMap<String, Object>) queryResultData, properties.getAllProperties());
+        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
+            properties.getAllProperties());
       } else {
         body = getResponseMapperBody(request, inputParams, queryResultData, template);
       }

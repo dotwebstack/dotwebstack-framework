@@ -278,6 +278,8 @@ paths:
         200:
           description: OK
           content:
+            text/html:
+              x-dws-template: brewery.html
             application/ld+json: {}
             text/n3: {}
             application/n-quads: {}

@@ -1,0 +1,38 @@
+<html>
+<head>
+    <title>Example</title>
+</head>
+<body>
+<div id="content">
+    <p>{
+  &quot;@graph&quot; : [ {
+    &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/beer/7&quot;,
+    &quot;https://github.com/dotwebstack/beer/def#brewery&quot; : {
+      &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/brewery/123&quot;
+    }
+  }, {
+    &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/beer/8&quot;,
+    &quot;https://github.com/dotwebstack/beer/def#brewery&quot; : {
+      &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/brewery/123&quot;
+    }
+  }, {
+    &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/brewery/123&quot;,
+    &quot;@type&quot; : &quot;https://github.com/dotwebstack/beer/def#Brewery&quot;,
+    &quot;http://schema.org/address&quot; : {
+      &quot;@id&quot; : &quot;https://github.com/dotwebstack/beer/id/address/1&quot;
+    },
+    &quot;http://schema.org/name&quot; : &quot;Brouwerij 1923&quot;,
+    &quot;https://github.com/dotwebstack/beer/def#founded&quot; : {
+      &quot;@type&quot; : &quot;http://www.w3.org/2001/XMLSchema#dateTime&quot;,
+      &quot;@value&quot; : &quot;2018-05-30T09:30:10+02:00&quot;
+    },
+    &quot;https://github.com/dotwebstack/beer/def#identifier&quot; : &quot;123&quot;,
+    &quot;https://github.com/dotwebstack/beer/def#number&quot; : {
+      &quot;@type&quot; : &quot;http://www.w3.org/2001/XMLSchema#integer&quot;,
+      &quot;@value&quot; : &quot;1&quot;
+    }
+  } ]
+}</p>
+</div>
+</body>
+</html>

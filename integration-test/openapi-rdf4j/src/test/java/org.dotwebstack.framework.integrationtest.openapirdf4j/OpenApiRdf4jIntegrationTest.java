@@ -99,7 +99,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = {"*/*:brewery_model_turtle_identifier.json",
+  @CsvSource(value = {"*/*:brewery_model_turtle_identifier.json", "text/html:brewery_model_jsonld_filtered.txt",
       "application/n-triples:brewery_model_n-triples_identifier.json"}, delimiter = ':')
   void openApiRequest_ReturnsBreweryModel_withIdentifierFromPathParamAndAcceptHeader(String acceptHeader,
       String expectedResultFile) throws IOException {
