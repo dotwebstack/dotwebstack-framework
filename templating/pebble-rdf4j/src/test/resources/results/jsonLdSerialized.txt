@@ -1,0 +1,18 @@
+{
+  "@graph" : [ {
+    "@id" : "ex:john",
+    "foaf:age" : {
+      "@type" : "xsd:int",
+      "@value" : "42"
+    },
+    "foaf:mbox" : "john@example.org",
+    "foaf:name" : "John"
+  } ],
+  "@id" : "ex:graph1",
+  "@type" : "ex:Graph",
+  "@context" : {
+    "ex" : "http://example.org/",
+    "foaf" : "http://xmlns.com/foaf/0.1/",
+    "xsd" : "http://www.w3.org/2001/XMLSchema#"
+  }
+}

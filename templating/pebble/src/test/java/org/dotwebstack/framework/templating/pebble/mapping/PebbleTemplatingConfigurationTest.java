@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.core.CoreProperties;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class PebbleTemplatingConfigurationTest {
   @Test
   void testConfiguration_readsTemplates_successfully() throws URISyntaxException {
     // Arrange
-    templatingConfiguration = new PebbleTemplatingConfiguration(new CoreProperties());
+    templatingConfiguration = new PebbleTemplatingConfiguration(new CoreProperties(), Collections.emptyList());
 
     // Act
     Map<String, PebbleTemplate> templateMap = templatingConfiguration.htmlTemplates();

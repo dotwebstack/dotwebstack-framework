@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.templating.pebble.mapping;
 
 import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.extension.Extension;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import com.mitchellbosecke.pebble.loader.DelegatingLoader;
 import com.mitchellbosecke.pebble.loader.FileLoader;
@@ -41,7 +42,8 @@ public class PebbleTemplatingConfiguration {
 
   private final URI classpathTemplatesLocation;
 
-  public PebbleTemplatingConfiguration(CoreProperties coreProperties) throws URISyntaxException {
+  public PebbleTemplatingConfiguration(CoreProperties coreProperties, List<Extension> extensions)
+      throws URISyntaxException {
     this.externalTemplatesLocation = coreProperties.getFileConfigPath()
         .resolve(TEMPLATES_LOCATION);
 
@@ -50,7 +52,8 @@ public class PebbleTemplatingConfiguration {
         .getPath())
         .toURI();
 
-    this.pebbleEngine = new PebbleEngine.Builder().loader(getTemplateLoader())
+    this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
+        .loader(getTemplateLoader())
         .build();
   }
 
