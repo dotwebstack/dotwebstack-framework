@@ -1,4 +1,4 @@
-# 1 pebble rdf4j filter
+# 1 pebble-rdf4j
 
 # 1.1 pebble
 This templating module uses the pebble templating implementation. See https://pebbletemplates.io for documentation on pebble.
