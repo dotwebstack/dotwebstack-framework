@@ -106,7 +106,7 @@ public class ResponseTemplateBuilderTest {
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query5", HttpMethod.GET);
 
     // Assert
-    assertEquals(1, templates.size());
+    assertEquals(2, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
     assertEquals(2, responseTemplate.getResponseObject()
         .getSummary()

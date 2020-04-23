@@ -16,12 +16,15 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
+import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -64,6 +67,9 @@ public class OpenApiConfigurationTest {
   private JsonResponseMapper jsonResponseMapper;
 
   @Mock
+  private TemplateResponseMapper templateResponseMapper;
+
+  @Mock
   private RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   @Mock
@@ -77,11 +83,62 @@ public class OpenApiConfigurationTest {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiStream = TestResources.openApiStream();
+
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Collections.singletonList(templateResponseMapper), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    initOpenApiConfiguration(apiConfiguration);
+  }
+
+  private void initOpenApiConfiguration(OpenApiConfiguration openApiConfiguration) {
+    this.openApiConfiguration = spy(openApiConfiguration);
+  }
+
+  private OpenApiProperties getOpenApiProperties() {
     OpenApiProperties openApiProperties = new OpenApiProperties();
     openApiProperties.setXdwsStringTypes(List.of("customType"));
-    this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+    return openApiProperties;
+  }
+
+  @Test
+  public void route_ThrowsException_InvalidOpenApiConfigurationException() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        responseContextValidator, requestBodyHandlerRouter, openApiProperties, jexlEngine, environmentProperties));
+        Collections.emptyList(), responseContextValidator, requestBodyHandlerRouter, getOpenApiProperties(), jexlEngine,
+        environmentProperties);
+
+    initOpenApiConfiguration(apiConfiguration);
+
+    final RouterFunctionAnswer optionsAnswer = new RouterFunctionAnswer();
+    doAnswer(optionsAnswer).when(openApiConfiguration)
+        .toOptionRouterFunction(anyList());
+
+    when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
+        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
+
+    // Act / Assert
+    assertThrows(InvalidOpenApiConfigurationException.class, () -> openApiConfiguration.route(openApi));
+  }
+
+  @Test
+  public void route_ThrowsException_InvalidConfigurationException() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    initOpenApiConfiguration(apiConfiguration);
+
+    final RouterFunctionAnswer optionsAnswer = new RouterFunctionAnswer();
+    doAnswer(optionsAnswer).when(openApiConfiguration)
+        .toOptionRouterFunction(anyList());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));
   }
 
   @Test

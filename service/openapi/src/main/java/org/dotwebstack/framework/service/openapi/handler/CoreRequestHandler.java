@@ -54,6 +54,8 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
+import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
@@ -90,6 +92,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String DEFAULT_ACCEPT_HEADER_VALUE = "*/*";
 
+  private static final String JSON_SUBTYPE = "json";
+
   private static final String MDC_REQUEST_ID = "requestId";
 
   private OpenAPI openApi;
@@ -104,6 +108,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JsonResponseMapper jsonResponseMapper;
 
+  private final TemplateResponseMapper templateResponseMapper;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
@@ -116,14 +122,16 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
-      JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
+      JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
+      EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
+    this.templateResponseMapper = templateResponseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
@@ -145,8 +153,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(NoResultFoundException.class, getMonoError(NOT_FOUND, "No results found."))
         .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
         .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
-        .onErrorResume(InvalidConfigurationException.class,
-            getMonoError(BAD_REQUEST, "Error while validating the request."));
+        .onErrorResume(InvalidConfigurationException.class, getMonoError(BAD_REQUEST, "Bad configuration"))
+        .onErrorResume(TemplatingException.class, getMonoError(INTERNAL_SERVER_ERROR, "Templating went wrong"));
   }
 
   private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
@@ -256,6 +264,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
@@ -287,7 +296,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     ExecutionResult result = graphQL.execute(executionInput);
     if (result.getErrors()
         .isEmpty()) {
-      Object data = ((Map) result.getData()).values()
+      Object queryResultData = ((Map) result.getData()).values()
           .iterator()
           .next();
 
@@ -295,17 +304,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .accept();
       ResponseTemplate template = getResponseTemplate(acceptHeaders);
 
-      URI uri = request.uri();
-
       String body;
-      if (Objects.nonNull(template.getResponseObject())) {
-        ResponseWriteContext responseWriteContext =
-            createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
-                inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
-        body = jsonResponseMapper.toResponse(responseWriteContext);
+      if (template.usesTemplating()) {
+        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams,
+            (LinkedHashMap<String, Object>) queryResultData, properties.getAllProperties());
       } else {
-        body = getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
+        body = getResponseMapperBody(request, inputParams, queryResultData, template);
       }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
@@ -319,6 +324,22 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private String getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data,
+      ResponseTemplate template) {
+    URI uri = request.uri();
+
+    if (Objects.nonNull(template.getResponseObject())) {
+      ResponseWriteContext responseWriteContext =
+          createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
+              inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+
+      return jsonResponseMapper.toResponse(responseWriteContext);
+
+    } else {
+      return getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
+    }
   }
 
   private HttpStatus getHttpStatus() {

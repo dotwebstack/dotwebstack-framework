@@ -321,3 +321,23 @@ dateproperties:
   datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
   timezone: Europe/Amsterdam
 ```
+
+# 1.4 Templating
+In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
+configure a response like the following:
+```graphql
+  /breweries:
+    get:
+      responses:
+        200:
+          description: OK
+          content:
+            text/html:
+              x-dws-template: your-page.html
+              schema:
+                ...
+            application/xml:
+              schema:
+                ...
+```
+The template file you are referring to, should be configured in ```config/templates/```. For more information on how to use pebble, see https://pebbletemplates.io.

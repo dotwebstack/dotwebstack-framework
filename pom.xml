@@ -60,6 +60,7 @@
     <module>backend</module>
     <module>core</module>
     <module>example</module>
+    <module>templating</module>
     <module>service</module>
     <module>test</module>
     <module>integration-test</module>
@@ -110,6 +111,11 @@
         <groupId>org.zalando</groupId>
         <artifactId>problem-spring-webflux</artifactId>
         <version>0.24.0-RC.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.pebbletemplates</groupId>
+        <artifactId>pebble</artifactId>
+        <version>3.1.2</version>
       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
