@@ -36,9 +36,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
-import org.springframework.stereotype.Component;
 
-@Component
 public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;

@@ -21,6 +21,12 @@ public class ResponseTemplate {
 
   private boolean isDefault;
 
+  private String templateName;
+
+  public boolean usesTemplating() {
+    return templateName != null;
+  }
+
   public boolean isApplicable(int bottom, int top) {
     return this.responseCode >= bottom && this.responseCode <= top;
   }

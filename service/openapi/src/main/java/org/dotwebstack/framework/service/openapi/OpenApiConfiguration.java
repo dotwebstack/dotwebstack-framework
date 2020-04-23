@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
@@ -22,6 +24,7 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
+import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.handler.CoreRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
@@ -61,6 +64,8 @@ public class OpenApiConfiguration {
 
   private final JsonResponseMapper jsonResponseMapper;
 
+  private final List<TemplateResponseMapper> templateResponseMappers;
+
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final ResponseContextValidator responseContextValidator;
@@ -78,13 +83,15 @@ public class OpenApiConfiguration {
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
       ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+      List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
+      RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
+      EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
+    this.templateResponseMappers = templateResponseMappers;
     this.responseContextValidator = responseContextValidator;
     this.queryFieldHelper = QueryFieldHelper.builder()
         .typeDefinitionRegistry(typeDefinitionRegistry)
@@ -180,9 +187,12 @@ public class OpenApiConfiguration {
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
+    validateTemplateResponseMapper(responseTemplates);
+    TemplateResponseMapper templateResponseMapper = getTemplateResponseMapper();
+
     CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
         responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
-        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+        templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()
         .map(ResponseTemplate::getResponseCode)
@@ -192,6 +202,27 @@ public class OpenApiConfiguration {
         .ifPresent(i -> coreRequestHandler.validateSchema());
 
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
+  }
+
+  private TemplateResponseMapper getTemplateResponseMapper() {
+    if (templateResponseMappers.isEmpty()) {
+      return null;
+    }
+    return templateResponseMappers.get(0);
+  }
+
+  private void validateTemplateResponseMapper(List<ResponseTemplate> responseTemplates) {
+    boolean usesTemplating = responseTemplates.stream()
+        .anyMatch(ResponseTemplate::usesTemplating);
+
+    if (usesTemplating && templateResponseMappers.isEmpty()) {
+      throw invalidOpenApiConfigurationException("Configured a template, but templating module not used");
+    }
+
+    int size = templateResponseMappers.size();
+    if (size > 1) {
+      throw invalidConfigurationException("More than 1 templateResponseMapper configured, found: {}", size);
+    }
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
