@@ -3,13 +3,11 @@ package org.dotwebstack.framework.templating.pebble.templating;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.springframework.stereotype.Component;
