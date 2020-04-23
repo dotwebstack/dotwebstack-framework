@@ -7,8 +7,8 @@ This templating module includes rdf4j related extensions for Pebble, like filter
 In order to filter Json+Ld, use ```jsonld``` filter in the pebble templates. For example, to filter the ```fields```
 with jsonld, use:
 ```html
-{% block content %}
-<p>{{ fields | jsonld | raw }}</p>
+{% block script %}
+<script type="application/ld+json">{ fields | jsonld | raw }}</script>
 {% endblock %}
 ```
 The addition ```raw``` makes sure that the result is not encoded.
