@@ -223,12 +223,12 @@ public class OpenApiConfigurationTest {
     when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
         .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
 
-    // Act / Arrange
+    // Act
     RouterFunction<ServerResponse> functions = openApiConfiguration.route(openApi);
     WebTestClient client = WebTestClient.bindToRouterFunction(functions)
         .build();
 
-    // Act / Assert
+    // Assert
     client.options()
         .uri("")
         .exchange()
@@ -265,12 +265,12 @@ public class OpenApiConfigurationTest {
     when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
         .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
 
-    // Act / Arrange
+    // Act
     RouterFunction<ServerResponse> functions = openApiConfiguration.route(openApi);
     WebTestClient client = WebTestClient.bindToRouterFunction(functions)
         .build();
 
-    // Act / Assert
+    // Assert
     client.options()
         .uri(apiDocPublicationPath)
         .exchange()
