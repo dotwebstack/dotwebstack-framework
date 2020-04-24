@@ -307,19 +307,30 @@ It is possible to configure (multiple) contents to allow different response type
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
 The default is set by using `x-dws-default: true` on a content configuration. 
 
-# 1.2 OpenApi specification on basepath
-The OpenApi specification, without the dotwebstack vendor extensions is exposed on the basepath of your API. This way, 
-anyone with access to your API can lookup specification used to generate the API.
+# 1.2 OpenApi document publication
+By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions. This way, anyone with access to your API can look up the OpenApi document that describes the API.
+
+It is also possible to configure a specific path to expose the OpenApi document on using the `apiDocPublicationPath` under the `openapi` section in the `application.yml` configuration file. The value of this property must be a string starting with a `/` followed by a valid path segment according to [RFC-3986](https://tools.ietf.org/html/rfc3986).
+
+For example, the following configuration will expose the api on `{base-path}/openapi.yaml`.
+
+```yaml
+dotwebstack:
+  openapi:
+    apiDocPublicationPath: /openapi.yaml
+```
 
 # 1.3 Dateformats
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify
 the format and timezone in which dates and datetimes are shown in your response: 
 
-```application.yml
-dateproperties:
-  dateformat: dd-MM-yyyy
-  datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
-  timezone: Europe/Amsterdam
+```yaml
+dotwebstack:
+  openapi:
+    dateproperties:
+      dateformat: dd-MM-yyyy
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+      timezone: Europe/Amsterdam
 ```
 
 # 1.4 Templating

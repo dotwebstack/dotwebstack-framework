@@ -135,10 +135,11 @@ public class OpenApiConfiguration {
 
   protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions, @NonNull InputStream openApiStream) {
     RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
-        .and(RequestPredicates.path(""))
+        .and(RequestPredicates.path(openApiProperties.getApiDocPublicationPath()))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    routerFunctions.add(RouterFunctions.route(OPTIONS(""), new OptionsRequestHandler(List.of(HttpMethod.GET))));
+    routerFunctions.add(RouterFunctions.route(OPTIONS(openApiProperties.getApiDocPublicationPath()),
+        new OptionsRequestHandler(List.of(HttpMethod.GET))));
     routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler(openApiStream)));
   }
 
