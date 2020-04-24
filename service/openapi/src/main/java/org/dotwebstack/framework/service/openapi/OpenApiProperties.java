@@ -17,17 +17,8 @@ import org.springframework.validation.annotation.Validated;
 public class OpenApiProperties {
 
   // source: https://tools.ietf.org/html/rfc3986#appendix-A
-  private static final String SUB_DELIMS = "(?:[!$&'()*+,;=])";
-
-  private static final String UNRESERVED = "(?:[A-Za-z0-9-._~])";
-
-  private static final String PCT_ENCODED = "(?:%(?:[0-9ABCDEF]){2})";
-
-  private static final String PCHAR = "(?:" + UNRESERVED + "|" + PCT_ENCODED + "|" + SUB_DELIMS + "|[:@])";
-
-  private static final String SEGMENT = "(?:" + PCHAR + "*)";
-
-  private static final String PATH_ABEMPTY = "(?:(\\/" + SEGMENT + ")*)";
+  private static final String PATH_ABEMPTY =
+      "(?:(\\/(?:(?:(?:[A-Za-z0-9-._~])|(?:%(?:[0-9ABCDEF]){2})|(?:[!$&'()*+,;=])|[:@])*))*)";
 
   private static final String VALID_PATH_REGEX = "^" + PATH_ABEMPTY + "$";
 
