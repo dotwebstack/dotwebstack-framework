@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.service.openapi;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.hamcrest.core.Is.is;
 
 import com.google.common.collect.Iterables;
 import java.util.Set;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 public class OpenApiPropertiesTest {
 
   private static final String PATH_VALIDATION_MSG =
-      "must match \"^(?:(\\/(?:(?:(?:[A-Za-z0-9-._~])|(?:%(?:[0-9ABCDEF]){2})|(?:[!$&'()*+,;=])|[:@])*))*)$\"";
+      "\"^(?:(\\/(?:(?:(?:[A-Za-z0-9-._~])|(?:%(?:[0-9ABCDEF]){2})|(?:[!$&'()*+,;=])|[:@])*))*)$\"";
 
   private Validator validator;
 
@@ -74,7 +74,7 @@ public class OpenApiPropertiesTest {
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)
-        .getMessage(), is(PATH_VALIDATION_MSG));
+        .getMessage(), endsWith(PATH_VALIDATION_MSG));
   }
 
   @Test
@@ -89,7 +89,7 @@ public class OpenApiPropertiesTest {
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)
-        .getMessage(), is(PATH_VALIDATION_MSG));
+        .getMessage(), endsWith(PATH_VALIDATION_MSG));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class OpenApiPropertiesTest {
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)
-        .getMessage(), is(PATH_VALIDATION_MSG));
+        .getMessage(), endsWith(PATH_VALIDATION_MSG));
   }
 
 }
