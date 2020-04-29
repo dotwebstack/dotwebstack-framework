@@ -179,6 +179,69 @@ class ResponseContextHelperTest {
   }
 
   @Test
+  void validate_getRequiredResponseObject_forComplexObject() {
+    // Arrange
+    ResponseObject query = buildResponseObject("query", "object", true, null);
+    ResponseObject breweriesArray = buildResponseObject("breweries", "array", true, query);
+    ResponseObject breweriesObject = buildResponseObject("breweries", "object", true, breweriesArray);
+    ResponseObject breweryIdentifier = buildResponseObject("identifier", "string", true, breweriesObject);
+    ResponseObject ownerObject = buildResponseObject("owner", "object", true, true, breweriesObject);
+    ResponseObject ownerName = buildResponseObject("ownerName", "string", true, ownerObject);
+    ResponseObject beersArray = buildResponseObject("beers", "array", true, breweriesObject);
+    ResponseObject beersObject = buildResponseObject("beers", "object", true, beersArray);
+    ResponseObject beerIdentifier = buildResponseObject("identifier", "object", true, beersObject);
+
+    query.getSummary()
+        .setChildren(List.of(breweriesArray));
+    breweriesArray.getSummary()
+        .setItems(List.of(breweriesObject));
+    breweriesObject.getSummary()
+        .setChildren(List.of(breweryIdentifier, ownerObject, beersArray));
+    ownerObject.getSummary()
+        .setChildren(List.of(ownerName));
+    beersArray.getSummary()
+        .setItems(List.of(beersObject));
+    beersObject.getSummary()
+        .setChildren(List.of(beerIdentifier));
+
+    ResponseTemplate template = ResponseTemplate.builder()
+        .responseCode(200)
+        .responseObject(query)
+        .build();
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("query")
+        .fields(List.of(GraphQlField.builder()
+            .name("ownerName")
+            .build()))
+        .fields(List.of(GraphQlField.builder()
+            .name("identifier")
+            .build()))
+        .fields(List.of(GraphQlField.builder()
+            .name("beers")
+            .fields(List.of(GraphQlField.builder()
+                .name("identifier")
+                .build()))
+            .build()))
+        .build();
+
+    ResponseSchemaContext context = ResponseSchemaContext.builder()
+        .graphQlField(rootField)
+        .responses(List.of(template))
+        .build();
+
+    // Act
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
+
+    // Assert
+    assertEquals(4, paths.size());
+    assertTrue(paths.contains("identifier"));
+    assertTrue(paths.contains("beers"));
+    assertTrue(paths.contains("ownerName"));
+    assertTrue(paths.contains("beers.identifier"));
+  }
+
+  @Test
   void validate_getRequiredResponseObject_withComposedOfFields() {
     // Arrange
     ResponseObject root = buildResponseObject("root", "object", true, null);
@@ -249,11 +312,17 @@ class ResponseContextHelperTest {
   }
 
   private ResponseObject buildResponseObject(String name, String type, boolean required, ResponseObject parent) {
+    return buildResponseObject(name, type, required, false, parent);
+  }
+
+  private ResponseObject buildResponseObject(String name, String type, boolean required, boolean envelope,
+      ResponseObject parent) {
     return ResponseObject.builder()
         .identifier(name)
         .parent(parent)
         .summary(SchemaSummary.builder()
             .type(type)
+            .isEnvelope(envelope)
             .required(required)
             .build())
         .build();
