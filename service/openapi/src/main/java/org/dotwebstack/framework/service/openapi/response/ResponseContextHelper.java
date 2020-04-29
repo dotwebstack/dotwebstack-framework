@@ -66,9 +66,29 @@ public class ResponseContextHelper {
   private static void addPrefixToPath(SchemaSummary summary, ResponseObject responseObject, StringJoiner joiner,
       Map<String, SchemaSummary> responseObjects) {
 
-    if (summary.isEnvelope() || !summary.getComposedOf()
-        .isEmpty() || responseObject.getParent() == null || Objects.equals(OasConstants.ARRAY_TYPE, summary.getType())
-        || (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
+    // envelope objects do not exist in graphql, no prefix should be added
+    if (summary.isEnvelope()) {
+      return;
+    }
+
+    // composed objects are implicit envelope objects, they do not exist in graphql
+    if (!summary.getComposedOf()
+        .isEmpty()) {
+      return;
+    }
+
+    // root objects in graphql are unnamed, so the prefix for root objects in oas should not be added
+    if (responseObject.getParent() == null) {
+      return;
+    }
+
+    // arrays are wrapped around an object with the same name in oas, so the prefix is not added for the array itself
+    if (Objects.equals(OasConstants.ARRAY_TYPE, summary.getType())) {
+      return;
+    }
+
+    // check to see if an object is a direct child of the root array, which does not exist in graphql
+    if ((Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
             && isRootArray(responseObject))) {
       return;
     }
@@ -89,17 +109,17 @@ public class ResponseContextHelper {
 
   private static boolean isRootArray(ResponseObject responseObject) {
     ResponseObject parent = responseObject.getParent();
-    int listAncestors = 0;
+    int parentArrays = 0;
 
     while (parent != null) {
       if (Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
           .getType())) {
-        listAncestors++;
+        parentArrays++;
       }
       parent = parent.getParent();
     }
 
-    return listAncestors <= 1;
+    return parentArrays <= 1;
   }
 
   private static GraphQlField getChildFieldByName(ResponseObject responseObject, GraphQlField graphQlField) {
