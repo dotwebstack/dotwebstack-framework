@@ -69,7 +69,7 @@ public class ResponseContextHelper {
     if (summary.isEnvelope() || !summary.getComposedOf()
         .isEmpty() || responseObject.getParent() == null || Objects.equals(OasConstants.ARRAY_TYPE, summary.getType())
         || (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
-            && hasAtMostOneArrayAncestor(responseObject))) {
+            && isRootArray(responseObject))) {
       return;
     }
 
@@ -87,7 +87,7 @@ public class ResponseContextHelper {
                 .getIdentifier());
   }
 
-  private static boolean hasAtMostOneArrayAncestor(ResponseObject responseObject) {
+  private static boolean isRootArray(ResponseObject responseObject) {
     ResponseObject parent = responseObject.getParent();
     int listAncestors = 0;
 

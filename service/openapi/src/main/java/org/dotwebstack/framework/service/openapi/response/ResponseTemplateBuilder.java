@@ -283,15 +283,15 @@ public class ResponseTemplateBuilder {
           boolean childRequired = isRequired(responseSummary.getSchema(), propId);
           boolean childNillable = isNillable(propSchema);
 
-          if (referenceMap.containsKey(propSchema.get$ref())) {
-            return createResponseObject(propId, referenceMap.get(propSchema.get$ref()), responseObject);
+          if (referenceMap.containsKey(ref)) {
+            return createResponseObject(propId, referenceMap.get(ref), responseObject);
           }
 
           ResponseObject child =
               createResponseObject(propId, propSchema, ref, responseObject, childRequired, childNillable);
 
-          if (Objects.nonNull(propSchema.get$ref())) {
-            referenceMap.put(propSchema.get$ref(), child.getSummary());
+          if (Objects.nonNull(ref)) {
+            referenceMap.put(ref, child.getSummary());
           }
 
           fillResponseObject(child, openApi, referenceMap, new ArrayList<>(parents), responseCode);

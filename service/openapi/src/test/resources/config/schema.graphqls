@@ -15,7 +15,9 @@ type Query {
 
     query6(query6_param1: String): String
 
-    query7: Object6
+    query7: Object7
+
+    query8: Object8
 }
 
 type Object1 {
@@ -45,6 +47,10 @@ type Object5 {
    o5_prop1: String
 }
 
-type Object6 {
-  children: [Object6]
+type Object7 {
+  child: Object7
+}
+
+type Object8 {
+  children: [Object8]
 }

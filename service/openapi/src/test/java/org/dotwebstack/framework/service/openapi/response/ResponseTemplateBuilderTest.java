@@ -101,9 +101,18 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  void build_resolvesSchema_forRecursiveSchema() {
+  void build_resolvesSchema_forRecursiveObjectSchema() {
     // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query7", HttpMethod.GET);
+
+    // Assert
+    assertEquals(1, templates.size());
+  }
+
+  @Test
+  void build_resolvesSchema_forRecursiveArraySchema() {
+    // Act
+    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query8", HttpMethod.GET);
 
     // Assert
     assertEquals(1, templates.size());

@@ -159,14 +159,14 @@ public class OpenApiConfigurationTest {
     openApiConfiguration.route(openApi);
 
     // Assert
-    assertEquals(7, optionsAnswer.getResults()
+    assertEquals(8, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(8)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(9)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         any(RequestBodyContextBuilder.class), argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
-    assertEquals(8, actualHttpMethodOperations.size());
+    assertEquals(9, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
         .getHttpMethod());

@@ -71,19 +71,26 @@ components:
         - $ref: 'components/schemas/Object3'
         - $ref: 'components/schemas/Object4'
 
-    Object6:
+    Object7:
       type: object
-      x-dws-envelope: true
+      nullable: true
       required:
-        - _embedded
+        - child
       properties:
-        _embedded:
-          type: object
-          properties:
-            children:
-              type: array
-              items:
-                $ref: '#/components/schemas/Object6'
+        child:
+          $ref: '#/components/schemas/Object7'
+
+    Object8:
+      type: object
+      nullable: true
+      required:
+        - children
+      properties:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object8'
+
 
   headers:
     HeaderRef:
@@ -247,4 +254,14 @@ paths:
           content:
             application/hal+json:
               schema:
-                $ref: '#/components/schemas/Object6'
+                $ref: '#/components/schemas/Object7'
+  /query8:
+    get:
+      x-dws-query: query8
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object8'
