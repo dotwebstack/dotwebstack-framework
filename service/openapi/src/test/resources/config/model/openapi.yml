@@ -70,6 +70,21 @@ components:
       oneOf:
         - $ref: 'components/schemas/Object3'
         - $ref: 'components/schemas/Object4'
+
+    Object6:
+      type: object
+      x-dws-envelope: true
+      required:
+        - _embedded
+      properties:
+        _embedded:
+          type: object
+          properties:
+            children:
+              type: array
+              items:
+                $ref: '#/components/schemas/Object6'
+
   headers:
     HeaderRef:
       schema:
@@ -222,3 +237,14 @@ paths:
                 x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
+
+  /query7:
+    get:
+      x-dws-query: query7
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object6'
