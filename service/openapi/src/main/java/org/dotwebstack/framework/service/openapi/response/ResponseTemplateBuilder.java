@@ -70,7 +70,6 @@ public class ResponseTemplateBuilder {
 
     Map<String, ResponseHeader> responseHeaders = createResponseHeaders(headers, queryName);
 
-
     ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
         .responseHeaders(responseHeaders)
@@ -160,7 +159,7 @@ public class ResponseTemplateBuilder {
           .get$ref();
 
       Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
-      responseObject = createResponseObject(queryName, schema, ref, true, false);
+      responseObject = createResponseObject(queryName, schema, ref, null, true, false);
 
       Map<String, SchemaSummary> referenceMap = new HashMap<>();
 
@@ -217,11 +216,12 @@ public class ResponseTemplateBuilder {
           }
 
           if (referenceMap.containsKey(schema.get$ref())) {
-            return createResponseObject(responseObject.getIdentifier(), referenceMap.get(schema.get$ref()));
+            return createResponseObject(responseObject.getIdentifier(), referenceMap.get(schema.get$ref()),
+                responseObject);
           }
 
           ResponseObject composedSchema =
-              createResponseObject(responseObject.getIdentifier(), schema, ref, true, false);
+              createResponseObject(responseObject.getIdentifier(), schema, ref, responseObject, true, false);
 
           if (Objects.nonNull(schema.get$ref())) {
             referenceMap.put(schema.get$ref(), composedSchema.getSummary());
@@ -246,9 +246,10 @@ public class ResponseTemplateBuilder {
 
     ResponseObject item;
     if (referenceMap.containsKey(ref)) {
-      item = createResponseObject(responseObject.getIdentifier(), referenceMap.get(ref));
+      item = createResponseObject(responseObject.getIdentifier(), referenceMap.get(ref), responseObject);
     } else {
-      item = createResponseObject(responseObject.getIdentifier(), usedSchema, ref, true, isNillable(usedSchema));
+      item = createResponseObject(responseObject.getIdentifier(), usedSchema, ref, responseObject, true,
+          isNillable(usedSchema));
       if (Objects.nonNull(ref)) {
         referenceMap.put(ref, item.getSummary());
       }
@@ -282,14 +283,15 @@ public class ResponseTemplateBuilder {
           boolean childRequired = isRequired(responseSummary.getSchema(), propId);
           boolean childNillable = isNillable(propSchema);
 
-          if (referenceMap.containsKey(propSchema.get$ref())) {
-            return createResponseObject(propId, referenceMap.get(propSchema.get$ref()));
+          if (referenceMap.containsKey(ref)) {
+            return createResponseObject(propId, referenceMap.get(ref), responseObject);
           }
 
-          ResponseObject child = createResponseObject(propId, propSchema, ref, childRequired, childNillable);
+          ResponseObject child =
+              createResponseObject(propId, propSchema, ref, responseObject, childRequired, childNillable);
 
-          if (Objects.nonNull(propSchema.get$ref())) {
-            referenceMap.put(propSchema.get$ref(), child.getSummary());
+          if (Objects.nonNull(ref)) {
+            referenceMap.put(ref, child.getSummary());
           }
 
           fillResponseObject(child, openApi, referenceMap, new ArrayList<>(parents), responseCode);
@@ -301,29 +303,32 @@ public class ResponseTemplateBuilder {
         .setChildren(children);
   }
 
-  private ResponseObject createResponseObject(String identifier, SchemaSummary summary) {
+  private ResponseObject createResponseObject(String identifier, SchemaSummary summary, ResponseObject parent) {
     return ResponseObject.builder()
         .identifier(identifier)
+        .parent(parent)
         .summary(summary)
         .build();
   }
 
-  private ResponseObject createResponseObject(String identifier, Schema<?> schema, String ref, boolean isRequired,
-      boolean isNillable) {
+  private ResponseObject createResponseObject(String identifier, Schema<?> schema, String ref, ResponseObject parent,
+      boolean isRequired, boolean isNillable) {
     Optional<String> xdwsType = getXdwsType(schema);
     if (xdwsType.isPresent() && this.xdwsStringTypes.contains(xdwsType.get())) {
       return ResponseObject.builder()
           .identifier(identifier)
-          .summary(createResponseObject(new StringSchema(), ref, isRequired, isNillable))
+          .parent(parent)
+          .summary(createSchemaSummary(new StringSchema(), ref, isRequired, isNillable))
           .build();
     }
     return ResponseObject.builder()
         .identifier(identifier)
-        .summary(createResponseObject(schema, ref, isRequired, isNillable))
+        .parent(parent)
+        .summary(createSchemaSummary(schema, ref, isRequired, isNillable))
         .build();
   }
 
-  private SchemaSummary createResponseObject(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
+  private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
     return SchemaSummary.builder()
         .isEnvelope(isEnvelope(schema))
         .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")

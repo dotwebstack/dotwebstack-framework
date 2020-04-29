@@ -70,6 +70,28 @@ components:
       oneOf:
         - $ref: 'components/schemas/Object3'
         - $ref: 'components/schemas/Object4'
+
+    Object7:
+      type: object
+      nullable: true
+      required:
+        - child
+      properties:
+        child:
+          $ref: '#/components/schemas/Object7'
+
+    Object8:
+      type: object
+      nullable: true
+      required:
+        - children
+      properties:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object8'
+
+
   headers:
     HeaderRef:
       schema:
@@ -222,3 +244,24 @@ paths:
                 x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
+
+  /query7:
+    get:
+      x-dws-query: query7
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object7'
+  /query8:
+    get:
+      x-dws-query: query8
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object8'
