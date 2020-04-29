@@ -6,13 +6,13 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -45,18 +45,9 @@ public class ResponseContextHelper {
 
     if (responseObject == null) {
       return Collections.emptySet();
-    } else {
-      return getRequiredResponseObject("", responseObject, graphQlField, inputParams).keySet()
-          .stream()
-          .map(path -> {
-            if (path.startsWith(responseObject.getIdentifier() + ".")) {
-              return path.substring(path.indexOf('.') + 1);
-            }
-            return path;
-          })
-          .filter(path -> !path.isEmpty())
-          .collect(Collectors.toSet());
     }
+
+    return new HashSet<>(getRequiredResponseObject("", responseObject, graphQlField, inputParams).keySet());
   }
 
   static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
@@ -77,8 +68,8 @@ public class ResponseContextHelper {
 
     if (summary.isEnvelope() || !summary.getComposedOf()
         .isEmpty() || responseObject.getParent() == null || Objects.equals(OasConstants.ARRAY_TYPE, summary.getType())
-        || (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectListParent(responseObject)
-            && onlyHasOneListAncestor(responseObject))) {
+        || (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
+            && hasAtMostOneArrayAncestor(responseObject))) {
       return;
     }
 
@@ -88,7 +79,7 @@ public class ResponseContextHelper {
     }
   }
 
-  private static boolean hasDirectListParent(ResponseObject responseObject) {
+  private static boolean hasDirectArrayParent(ResponseObject responseObject) {
     return responseObject.getParent() != null && Objects.equals(ARRAY_TYPE, responseObject.getParent()
         .getSummary()
         .getType()) && responseObject.getIdentifier()
@@ -96,19 +87,19 @@ public class ResponseContextHelper {
                 .getIdentifier());
   }
 
-  private static boolean onlyHasOneListAncestor(ResponseObject responseObject) {
+  private static boolean hasAtMostOneArrayAncestor(ResponseObject responseObject) {
     ResponseObject parent = responseObject.getParent();
-    int listParents = 0;
+    int listAncestors = 0;
 
     while (parent != null) {
       if (Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
           .getType())) {
-        listParents++;
+        listAncestors++;
       }
       parent = parent.getParent();
     }
 
-    return listParents <= 1;
+    return listAncestors <= 1;
   }
 
   private static GraphQlField getChildFieldByName(ResponseObject responseObject, GraphQlField graphQlField) {
