@@ -82,14 +82,14 @@ public class ResponseContextHelper {
       return;
     }
 
-    // arrays are wrapped around an object with the same name in oas, so the prefix is not added for the array itself
+    // arrays are wrapped around an object with the same name in oas, add prefix only for object
     if (Objects.equals(OasConstants.ARRAY_TYPE, summary.getType())) {
       return;
     }
 
     // check to see if an object is a direct child of the root array, which does not exist in graphql
     if ((Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
-            && isRootArray(responseObject))) {
+        && isRootArray(responseObject))) {
       return;
     }
 
