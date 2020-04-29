@@ -4,11 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @Builder
 @Getter
 public class ResponseObject {
 
   private String identifier;
+
+  private ResponseObject parent;
 
   @Setter
   private SchemaSummary summary;

@@ -24,7 +24,7 @@ class ResponseContextHelperTest {
   @Test
   void validate_getPathsForSuccessResponse_withNoRequiredFields() {
     // Arrange
-    ResponseObject root = buildResponseObject("key", "string", false);
+    ResponseObject root = buildResponseObject("key", "string", false, null);
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
         .responseObject(root)
         .responseCode(200)
@@ -90,12 +90,12 @@ class ResponseContextHelperTest {
   @Test
   void validate_getRequiredResponseObject_withNoRequiredFields() {
     // Arrange
-    ResponseObject root = buildResponseObject("key", "string", false);
+    ResponseObject root = buildResponseObject("key", "string", false, null);
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"), false);
+        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"));
 
     // Assert
     assertEquals(0, responseObject.entrySet()
@@ -105,24 +105,23 @@ class ResponseContextHelperTest {
   @Test
   void validate_getRequiredResponseObject_withOneRequiredField() {
     // Arrange
-    ResponseObject root = buildResponseObject("key", "string", true);
+    ResponseObject root = buildResponseObject("key", "string", true, null);
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"), false);
+        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"));
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
+    assertEquals(0, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("key"), is(equalTo(root.getSummary())));
   }
 
   @Test
   void validate_getRequiredResponseObject_withChildFields() {
     // Arrange
-    ResponseObject root = buildResponseObject("root", "object", true);
-    ResponseObject child = buildResponseObject("child", "string", true);
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "string", true, root);
     root.getSummary()
         .setChildren(List.of(child));
 
@@ -130,21 +129,20 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"), false);
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
 
     // Assert
-    assertEquals(2, responseObject.entrySet()
+    assertEquals(1, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("root"), is(equalTo(root.getSummary())));
-    assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
   @Test
   void validate_getRequiredResponseObject_withRequiredPaths() {
     // Arrange
-    ResponseObject root = buildResponseObject("root", "object", true);
-    ResponseObject child = buildResponseObject("child", "object", true);
-    ResponseObject grandChild = buildResponseObject("grandchild", "string", false);
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "object", true, root);
+    ResponseObject grandChild = buildResponseObject("grandchild", "string", false, child);
     child.getSummary()
         .setChildren(List.of(grandChild));
     root.getSummary()
@@ -183,8 +181,8 @@ class ResponseContextHelperTest {
   @Test
   void validate_getRequiredResponseObject_withComposedOfFields() {
     // Arrange
-    ResponseObject root = buildResponseObject("root", "object", true);
-    ResponseObject child = buildResponseObject("child", "string", true);
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "string", true, root);
     root.getSummary()
         .setComposedOf(List.of(child));
 
@@ -192,7 +190,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"), false);
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
 
     // Assert
     assertEquals(1, responseObject.entrySet()
@@ -203,28 +201,28 @@ class ResponseContextHelperTest {
   @Test
   void validate_getRequiredResponseObject_withMultiPathComposedOfFields() {
     // Arrange
-    ResponseObject root = buildResponseObject("root", "object", true);
-    ResponseObject child = buildResponseObject("child", "string", true);
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "string", true, root);
     root.getSummary()
         .setComposedOf(List.of(child));
 
     GraphQlField rootField = buildGraphQlField("root", List.of("child"));
 
     // Act
-    Map<String, SchemaSummary> responseObject = ResponseContextHelper.getRequiredResponseObject("root.root", root,
-        rootField, ImmutableMap.of("child", "value"), false);
+    Map<String, SchemaSummary> responseObject =
+        ResponseContextHelper.getRequiredResponseObject("root", root, rootField, ImmutableMap.of("child", "value"));
 
     // Assert
     assertEquals(1, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
   @Test
   void validate_getRequiredResponseObject_withItems() {
     // Arrange
-    ResponseObject root = buildResponseObject("root", "object", true);
-    ResponseObject child = buildResponseObject("child", "string", true);
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "string", true, root);
     root.getSummary()
         .setItems(List.of(child));
 
@@ -232,13 +230,12 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"), false);
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
 
     // Assert
-    assertEquals(2, responseObject.entrySet()
+    assertEquals(1, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("root"), is(equalTo(root.getSummary())));
-    assertThat(responseObject.get("root.child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
   @Test
@@ -251,9 +248,10 @@ class ResponseContextHelperTest {
     assertFalse(ResponseContextHelper.isExpanded(Collections.emptyMap(), ""));
   }
 
-  private ResponseObject buildResponseObject(String name, String type, boolean required) {
+  private ResponseObject buildResponseObject(String name, String type, boolean required, ResponseObject parent) {
     return ResponseObject.builder()
         .identifier(name)
+        .parent(parent)
         .summary(SchemaSummary.builder()
             .type(type)
             .required(required)
