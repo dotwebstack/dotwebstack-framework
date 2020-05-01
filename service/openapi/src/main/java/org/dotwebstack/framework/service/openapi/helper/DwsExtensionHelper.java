@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
+import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
@@ -19,13 +20,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.NonNull;
 
 public class DwsExtensionHelper {
 
-  public static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
+  static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
 
-  public static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
+  static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
 
   private DwsExtensionHelper() {}
 
@@ -59,7 +61,7 @@ public class DwsExtensionHelper {
     return (Objects.nonNull(extensions)) ? extensions.get(typeName) : null;
   }
 
-  public static boolean isExpr(@NonNull Schema<?> schema) {
+  private static boolean isExpr(@NonNull Schema<?> schema) {
     return Objects.nonNull(getDwsExtension(schema, X_DWS_EXPR));
   }
 
@@ -68,35 +70,46 @@ public class DwsExtensionHelper {
     return (Objects.nonNull(isEnvelope) && isEnvelope) || isExpr(schema);
   }
 
-  public static String getDwsQueryName(@NonNull Operation operation) {
+  public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
+    if (operation.getExtensions() == null || !operation.getExtensions()
+        .containsKey(X_DWS_QUERY)) {
+      return Optional.empty();
+    }
     Object dwsQueryName = operation.getExtensions()
         .get(X_DWS_QUERY);
     if (dwsQueryName instanceof Map) {
-      return (String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD);
+      return Optional.of((String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD));
     }
-    return (String) dwsQueryName;
+    return Optional.of((String) dwsQueryName);
   }
 
   @SuppressWarnings("unchecked")
   public static List<String> getDwsRequiredFields(@NonNull Operation operation) {
+    if (operation.getExtensions() == null) {
+      return emptyList();
+    }
+
     Object dwsQuery = operation.getExtensions()
         .get(X_DWS_QUERY);
     if (dwsQuery instanceof Map) {
       return (List<String>) ((Map) dwsQuery).get(X_DWS_QUERY_REQUIRED_FIELDS);
     }
-    return Collections.emptyList();
+    return emptyList();
   }
 
   public static Map<String, String> getDwsQueryParameters(@NonNull Operation operation) {
+    if (operation.getExtensions() == null) {
+      return Collections.emptyMap();
+    }
+
     Map<String, String> result = new HashMap<>();
     Object dwsQuery = operation.getExtensions()
         .get(X_DWS_QUERY);
     if (dwsQuery instanceof Map) {
       List<?> dwsParameters =
-          Objects.requireNonNullElse((List<?>) ((Map) dwsQuery).get(X_DWS_QUERY_PARAMETERS), Collections.emptyList());
-      dwsParameters.stream()
-          .forEach(o -> result.put((String) ((Map) o).get(X_DWS_QUERY_PARAMETER_NAME),
-              (String) ((Map) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
+          Objects.requireNonNullElse((List<?>) ((Map) dwsQuery).get(X_DWS_QUERY_PARAMETERS), emptyList());
+      dwsParameters.forEach(o -> result.put((String) ((Map) o).get(X_DWS_QUERY_PARAMETER_NAME),
+          (String) ((Map) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
     }
     return result;
   }

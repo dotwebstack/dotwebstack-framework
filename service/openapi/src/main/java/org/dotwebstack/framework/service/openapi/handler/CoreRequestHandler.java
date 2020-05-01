@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
@@ -29,6 +30,7 @@ import static org.springframework.web.reactive.function.BodyInserters.fromPublis
 
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
+import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
@@ -217,7 +219,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
     JexlContext jexlContext =
-        getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField());
+        getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField(), null);
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
@@ -264,38 +266,40 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"rawtypes"})
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
-    HttpStatus httpStatus = getHttpStatus();
+    ExecutionResult result = buildQueryString(inputParams).map(query -> {
+      if (LOG.isDebugEnabled()) {
+        logInputRequest(request);
+        LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
+      }
 
-    if (httpStatus.is3xxRedirection()) {
-      URI location = getLocationHeaderUri(inputParams);
+      ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+          .query(query)
+          .variables(inputParams)
+          .build();
 
-      return ServerResponse.status(httpStatus)
-          .location(location)
-          .build()
-          .block();
-    }
+      return graphQL.execute(executionInput);
+    })
+        .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
 
-    String query = buildQueryString(inputParams);
 
-    if (LOG.isDebugEnabled()) {
-      logInputRequest(request);
-      LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
-    }
-
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
-        .variables(inputParams)
-        .build();
-
-    ExecutionResult result = graphQL.execute(executionInput);
     if (result.getErrors()
         .isEmpty()) {
+      HttpStatus httpStatus = getHttpStatus();
+      if (httpStatus.is3xxRedirection()) {
+        URI location = getLocationHeaderUri(inputParams, result.getData());
+
+        return ServerResponse.status(httpStatus)
+            .location(location)
+            .build()
+            .block();
+      }
+
       Object queryResultData = ((Map) result.getData()).values()
           .iterator()
           .next();
@@ -352,8 +356,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
   }
 
-  private URI getLocationHeaderUri(Map<String, Object> inputParams) {
-    JexlContext jexlContext = getJexlContext(properties.getAllProperties(), inputParams);
+  private URI getLocationHeaderUri(Map<String, Object> inputParams, Map<String, Object> resultData) {
+    JexlContext jexlContext = getJexlContext(properties.getAllProperties(), inputParams, null, resultData);
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
         .map(ResponseTemplate::getResponseHeaders)
@@ -476,7 +480,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private String buildQueryString(Map<String, Object> inputParams) {
+  private Optional<String> buildQueryString(Map<String, Object> inputParams) {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
 

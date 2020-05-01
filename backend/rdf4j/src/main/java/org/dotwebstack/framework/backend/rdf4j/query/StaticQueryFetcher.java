@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -25,6 +26,8 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -35,6 +38,8 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 
 @Slf4j
 public final class StaticQueryFetcher implements DataFetcher<Object> {
+
+  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private static final List<GraphQLScalarType> SUPPORTED_TYPE_NAMES =
       Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL);
@@ -136,23 +141,31 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   }
 
   private void bindValues(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition, Query query) {
+    GraphQLDirective sparqlDirective = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME);
     Map<String, Object> queryParameters = environment.getArguments();
     List<GraphQLArgument> definedArguments = fieldDefinition.getArguments();
 
-    queryParameters.forEach((key, value) -> {
+    String subjectTemplate =
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
 
-      GraphQLArgument graphQlArgument = definedArguments.stream()
-          .filter(argument -> argument.getName()
-              .equals(key))
-          .findFirst()
-          .orElseThrow(() -> illegalStateException("Invoked endpoint does not support argument {}", key));
+    if (subjectTemplate != null) {
+      query.setBinding("subject", VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
+    } else {
+      queryParameters.forEach((key, value) -> {
 
-      Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
-          .getName());
+        GraphQLArgument graphQlArgument = definedArguments.stream()
+            .filter(argument -> argument.getName()
+                .equals(key))
+            .findFirst()
+            .orElseThrow(() -> illegalStateException("Invoked endpoint does not support argument {}", key));
 
-      query.setBinding(key, bindingValue);
+        Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
+            .getName());
 
-    });
+        query.setBinding(key, bindingValue);
+
+      });
+    }
   }
 
   private Value getValueForType(Object value, String typeAsString) {

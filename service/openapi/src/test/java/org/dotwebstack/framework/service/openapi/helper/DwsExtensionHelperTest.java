@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
+import static java.util.Collections.emptyMap;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.swagger.v3.oas.models.Operation;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +23,7 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(DwsExtensionHelper.getDwsQueryName(getShortForm), "query1");
+    assertEquals(getDwsQueryName(getShortForm), Optional.of("query1"));
   }
 
   @Test
@@ -32,7 +35,7 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(DwsExtensionHelper.getDwsQueryName(getAdvancedForm), "query2");
+    assertEquals(getDwsQueryName(getAdvancedForm), Optional.of("query2"));
   }
 
   @Test
@@ -44,7 +47,7 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act
-    Map<String, String> dwsParameters = DwsExtensionHelper.getDwsQueryParameters(getWithDwsParameters);
+    Map<String, String> dwsParameters = getDwsQueryParameters(getWithDwsParameters);
 
     // Assert
     assertEquals(dwsParameters.size(), 1);
@@ -60,7 +63,7 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(DwsExtensionHelper.getDwsQueryParameters(getWithoutDwsParameters), Collections.emptyMap());
+    assertEquals(getDwsQueryParameters(getWithoutDwsParameters), emptyMap());
   }
 
   @Test
@@ -72,6 +75,6 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(DwsExtensionHelper.getDwsQueryParameters(getShortForm), Collections.emptyMap());
+    assertEquals(getDwsQueryParameters(getShortForm), emptyMap());
   }
 }

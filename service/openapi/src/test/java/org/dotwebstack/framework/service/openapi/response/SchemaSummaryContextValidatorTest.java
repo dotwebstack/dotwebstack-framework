@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
@@ -160,11 +161,11 @@ public class SchemaSummaryContextValidatorTest {
     PathItem pathItem = this.openApi.getPaths()
         .get(path);
     List<ResponseTemplate> responses = ResponseTemplateBuilderTest.getResponseTemplates(this.openApi, path, httpMethod);
-    GraphQlField field = TestResources.queryFieldHelper(this.registry)
+    Optional<GraphQlField> field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem.getGet());
 
     return ResponseSchemaContext.builder()
-        .graphQlField(field)
+        .graphQlField(field.orElse(null))
         .responses(responses)
         .build();
   }

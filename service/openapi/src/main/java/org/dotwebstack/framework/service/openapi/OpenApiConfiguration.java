@@ -170,11 +170,11 @@ public class OpenApiConfiguration {
 
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
-    GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
+    Optional<GraphQlField> graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
     List<String> requiredFields = DwsExtensionHelper.getDwsRequiredFields(httpMethodOperation.getOperation());
 
     ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
-        .graphQlField(graphQlField)
+        .graphQlField(graphQlField.orElse(null))
         .requiredFields(Objects.nonNull(requiredFields) ? requiredFields : Collections.emptyList())
         .responses(responseTemplates)
         .parameters(httpMethodOperation.getOperation()

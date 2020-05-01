@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
@@ -32,7 +33,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
-import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 @Builder
@@ -58,7 +58,7 @@ public class ResponseTemplateBuilder {
         .entrySet()
         .stream()
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(),
-            DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation())).stream())
+            getDwsQueryName(httpMethodOperation.getOperation()).orElse(null)).stream())
         .collect(Collectors.toList());
   }
 
