@@ -12,10 +12,10 @@ import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.Test;
 
 
-public class DwsExtensionHelperTest {
+class DwsExtensionHelperTest {
 
   @Test
-  public void getDwsQueryName_returnsQueryName_whenShortForm() {
+  void getDwsQueryName_returnsQueryName_whenShortForm() {
     // Arrange
     Operation getShortForm = TestResources.openApi()
         .getPaths()
@@ -27,7 +27,7 @@ public class DwsExtensionHelperTest {
   }
 
   @Test
-  public void getDwsQueryName_returnsField_whenAdvancedForm() {
+  void getDwsQueryName_returnsField_whenAdvancedForm() {
     // Arrange
     Operation getAdvancedForm = TestResources.openApi()
         .getPaths()
@@ -39,7 +39,7 @@ public class DwsExtensionHelperTest {
   }
 
   @Test
-  public void getDwsQueryParameters_returnsParameters_whenSpecified() {
+  void getDwsQueryParameters_returnsParameters_whenSpecified() {
     // Arrange
     Operation getWithDwsParameters = TestResources.openApi()
         .getPaths()
@@ -63,7 +63,7 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(getDwsQueryParameters(getWithoutDwsParameters), emptyMap());
+    assertEquals(emptyMap(), getDwsQueryParameters(getWithoutDwsParameters));
   }
 
   @Test
@@ -75,6 +75,6 @@ public class DwsExtensionHelperTest {
         .getGet();
 
     // Act / Assert
-    assertEquals(getDwsQueryParameters(getShortForm), emptyMap());
+    assertEquals(emptyMap(), getDwsQueryParameters(getShortForm));
   }
 }

@@ -41,6 +41,8 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
+  private static final String SUBJECT = "subject";
+
   private static final List<GraphQLScalarType> SUPPORTED_TYPE_NAMES =
       Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL);
 
@@ -149,7 +151,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
 
     if (subjectTemplate != null) {
-      query.setBinding("subject", VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
+      query.setBinding(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
     } else {
       queryParameters.forEach((key, value) -> {
 

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,37 +37,37 @@ public class DwsExtensionHelper {
 
   public static boolean supportsDwsType(@NonNull Parameter parameter, @NonNull String typeString) {
     Map<String, Object> extensions = parameter.getExtensions();
-    return Objects.nonNull(extensions) && supportsDwsType(typeString, extensions);
+    return extensions != null && supportsDwsType(typeString, extensions);
   }
 
   public static boolean supportsDwsType(@NonNull RequestBody requestBody, @NonNull String typeString) {
     Map<String, Object> extensions = requestBody.getExtensions();
-    return Objects.nonNull(extensions) && supportsDwsType(typeString, extensions);
+    return extensions != null && supportsDwsType(typeString, extensions);
   }
 
   private static boolean supportsDwsType(String typeString, Map<String, Object> extensions) {
     String handler = (String) extensions.get(X_DWS_TYPE);
-    return (Objects.nonNull(handler)) && Objects.equals(handler, typeString);
+    return (handler != null) && handler.equals(typeString);
   }
 
   public static boolean hasDwsExtensionWithValue(@NonNull Parameter parameter, @NonNull String typeName,
       @NonNull Object value) {
     Map<String, Object> extensions = parameter.getExtensions();
-    return (Objects.nonNull(extensions)) && Objects.equals(value, extensions.get(typeName));
+    return (extensions != null) && value.equals(extensions.get(typeName));
   }
 
   public static Object getDwsExtension(@NonNull Schema<?> schema, @NonNull String typeName) {
     Map<String, Object> extensions = schema.getExtensions();
-    return (Objects.nonNull(extensions)) ? extensions.get(typeName) : null;
+    return (extensions != null) ? extensions.get(typeName) : null;
   }
 
   private static boolean isExpr(@NonNull Schema<?> schema) {
-    return Objects.nonNull(getDwsExtension(schema, X_DWS_EXPR));
+    return getDwsExtension(schema, X_DWS_EXPR) != null;
   }
 
   public static boolean isEnvelope(@NonNull Schema<?> schema) {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
-    return (Objects.nonNull(isEnvelope) && isEnvelope) || isExpr(schema);
+    return (isEnvelope != null && isEnvelope) || isExpr(schema);
   }
 
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
@@ -99,7 +99,7 @@ public class DwsExtensionHelper {
 
   public static Map<String, String> getDwsQueryParameters(@NonNull Operation operation) {
     if (operation.getExtensions() == null) {
-      return Collections.emptyMap();
+      return emptyMap();
     }
 
     Map<String, String> result = new HashMap<>();

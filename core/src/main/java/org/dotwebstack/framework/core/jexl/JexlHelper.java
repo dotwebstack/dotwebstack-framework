@@ -42,11 +42,11 @@ public class JexlHelper {
       GraphQlField graphQlField, Map<String, Object> resultData) {
     JexlContext jexlContext = new MapContext();
 
-    if (Objects.nonNull(envParams)) {
+    if (envParams != null) {
       envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
     }
 
-    if (Objects.nonNull(graphQlField)) {
+    if (graphQlField != null) {
       graphQlField.getArguments()
           .stream()
           .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
@@ -61,7 +61,7 @@ public class JexlHelper {
           .forEach(entry -> jexlContext.set(FIELDS_PREFIX + entry.getKey(), entry.getValue()));
     }
 
-    if (Objects.nonNull(argParams)) {
+    if (argParams != null) {
       argParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     }
 
