@@ -221,6 +221,7 @@ paths:
       x-dws-query: query6
       parameters:
         - name: query6_param1
+          x-dws-type: specialtype
           in: query
           schema:
             type: string
@@ -265,3 +266,45 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object8'
+  /query9:
+    get:
+      x-dws-query:
+        field: query9
+        requiredFields:
+          - field1
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object2'
+  /query10:
+    get:
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`/foo/bar`'
+  /query11:
+    post:
+      x-dws-query: query11
+      requestBody:
+        x-dws-type: specialtype
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                argument1:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object1'
