@@ -188,6 +188,19 @@ class DwsExtensionHelperTest {
   }
 
   @Test
+  void supportsDwsType_returnsFalse_forRequestBodyWithDwsTypeMismatch() {
+    // Arrange
+    RequestBody requestBody = TestResources.openApi()
+        .getPaths()
+        .get("/query11")
+        .getPost()
+        .getRequestBody();
+
+    // Act / Assert
+    assertFalse(supportsDwsType(requestBody, "anothertype"));
+  }
+
+  @Test
   void supportsDwsType_returnsTrue_forParameterWithoutDwsType() {
     // Arrange
     Parameter parameter = TestResources.openApi()
@@ -213,6 +226,20 @@ class DwsExtensionHelperTest {
 
     // Act / Assert
     assertTrue(supportsDwsType(parameter, "specialtype"));
+  }
+
+  @Test
+  void supportsDwsType_returnsFalse_forParameterWithDwsTypeMismatch() {
+    // Arrange
+    Parameter parameter = TestResources.openApi()
+        .getPaths()
+        .get("/query6")
+        .getGet()
+        .getParameters()
+        .get(0);
+
+    // Act / Assert
+    assertFalse(supportsDwsType(parameter, "anothertype"));
   }
 
   @Test
