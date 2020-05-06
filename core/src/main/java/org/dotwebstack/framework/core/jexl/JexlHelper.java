@@ -26,6 +26,8 @@ public class JexlHelper {
 
   private static final String ARGUMENT_PREFIX = "args.";
 
+  private static final String FIELDS_PREFIX = "fields.";
+
   private final JexlEngine engine;
 
   public JexlHelper(@NonNull JexlEngine engine) {
@@ -33,18 +35,18 @@ public class JexlHelper {
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams) {
-    return getJexlContext(envParams, argParams, null);
+    return getJexlContext(envParams, argParams, null, null);
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
-      GraphQlField graphQlField) {
+      GraphQlField graphQlField, Map<String, Object> resultData) {
     JexlContext jexlContext = new MapContext();
 
-    if (Objects.nonNull(envParams)) {
+    if (envParams != null) {
       envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
     }
 
-    if (Objects.nonNull(graphQlField)) {
+    if (graphQlField != null) {
       graphQlField.getArguments()
           .stream()
           .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
@@ -52,7 +54,14 @@ public class JexlHelper {
               GraphQlValueHelper.getValue(argument.getType(), argument.getDefaultValue())));
     }
 
-    if (Objects.nonNull(argParams)) {
+    if (resultData != null) {
+      resultData.entrySet()
+          .stream()
+          .filter(entry -> !(entry.getValue() instanceof Map))
+          .forEach(entry -> jexlContext.set(FIELDS_PREFIX + entry.getKey(), entry.getValue()));
+    }
+
+    if (argParams != null) {
       argParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
     }
 

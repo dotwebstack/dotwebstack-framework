@@ -267,7 +267,8 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Optional<String> evaluateJexl(ResponseWriteContext writeContext) {
-    JexlContext context = JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField());
+    JexlContext context =
+        JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField(), null);
 
     // add object data to context
     writeContext.getParameters()

@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseContext
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import lombok.NonNull;
@@ -14,8 +15,13 @@ import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 
 public class GraphQlQueryBuilder {
 
-  public String toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
+  public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
+
+    if (responseSchemaContext.getGraphQlField() == null) {
+      return Optional.empty();
+    }
+
     Set<String> requiredPaths = getPathsForSuccessResponse(responseSchemaContext, inputParams);
 
     StringBuilder builder = new StringBuilder();
@@ -31,7 +37,7 @@ public class GraphQlQueryBuilder {
       builder.append(")");
     }
     builder.append(joiner.toString());
-    return builder.toString();
+    return Optional.of(builder.toString());
   }
 
   protected void addToQuery(GraphQlField field, Set<String> requiredPaths, StringJoiner joiner,

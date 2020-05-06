@@ -15,7 +15,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class JsonLdFilterTest {
+class JsonLdFilterTest {
 
   private JsonLdFilter jsonLdFilter;
 
@@ -26,16 +26,16 @@ public class JsonLdFilterTest {
   }
 
   @Test
-  public void applyModelTest() throws IOException {
+  void applyModelTest() throws IOException {
     // Act
     String result = (String) jsonLdFilter.apply(buildModel(), null, null, null, 0);
 
     // Assert
-    assertThat(result, is(new String(getFileInputStream("jsonLdSerialized.txt").readAllBytes())));
+    assertThat(result.replace("\r\n", "\n"), is(new String(getFileInputStream("jsonLdSerialized.txt").readAllBytes())));
   }
 
   @Test
-  public void argumentNamesShouldReturnEmptyList() {
+  void argumentNamesShouldReturnEmptyList() {
     // Act
     List<String> arguments = jsonLdFilter.getArgumentNames();
 

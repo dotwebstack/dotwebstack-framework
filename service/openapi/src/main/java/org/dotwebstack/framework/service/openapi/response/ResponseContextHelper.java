@@ -25,7 +25,7 @@ public class ResponseContextHelper {
       @NonNull Map<String, Object> inputParams) {
     Optional<ResponseTemplate> successResponse = responseSchemaContext.getResponses()
         .stream()
-        .filter(template -> template.isApplicable(200, 299))
+        .filter(template -> template.isApplicable(200, 299) || template.isApplicable(300, 303))
         .findFirst();
 
     if (successResponse.isPresent()) {
