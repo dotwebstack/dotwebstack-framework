@@ -5,6 +5,7 @@ import static java.util.Collections.emptyMap;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsRequiredFields;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -212,5 +213,19 @@ class DwsExtensionHelperTest {
 
     // Act / Assert
     assertTrue(supportsDwsType(parameter, "specialtype"));
+  }
+
+  @Test
+  void hasDwsExtensionWithValue_returnsTrue_forParameterWithDwsType() {
+    // Arrange
+    Parameter parameter = TestResources.openApi()
+        .getPaths()
+        .get("/query6")
+        .getGet()
+        .getParameters()
+        .get(0);
+
+    // Act / Assert
+    assertTrue(hasDwsExtensionWithValue(parameter, OasConstants.X_DWS_TYPE, "specialtype"));
   }
 }
