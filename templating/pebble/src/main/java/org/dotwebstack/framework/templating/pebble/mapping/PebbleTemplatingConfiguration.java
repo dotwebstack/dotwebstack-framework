@@ -10,6 +10,7 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,19 +39,26 @@ public class PebbleTemplatingConfiguration {
 
   private PebbleEngine pebbleEngine;
 
-  private final URI externalTemplatesLocation;
-
-  private final URI classpathTemplatesLocation;
+  private URI templatesLocation;
 
   public PebbleTemplatingConfiguration(CoreProperties coreProperties, List<Extension> extensions)
       throws URISyntaxException {
-    this.externalTemplatesLocation = coreProperties.getFileConfigPath()
-        .resolve(TEMPLATES_LOCATION);
 
-    this.classpathTemplatesLocation = getClass().getResource(coreProperties.getResourcePath()
-        .resolve(TEMPLATES_LOCATION)
-        .getPath())
-        .toURI();
+    URI uri = coreProperties.getFileConfigPath()
+        .resolve(TEMPLATES_LOCATION);
+    if (Files.exists(Paths.get(uri))) {
+      templatesLocation = uri;
+    } else {
+      URL classpathUrl = getClass().getResource(coreProperties.getResourcePath()
+          .resolve(TEMPLATES_LOCATION)
+          .getPath());
+      if (classpathUrl != null) {
+        uri = classpathUrl.toURI();
+        if (Files.exists(Paths.get(uri))) {
+          templatesLocation = uri;
+        }
+      }
+    }
 
     this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
         .loader(getTemplateLoader())
@@ -69,7 +77,7 @@ public class PebbleTemplatingConfiguration {
 
   @Bean
   public Map<String, PebbleTemplate> htmlTemplates() {
-    return Stream.of(externalTemplatesLocation, classpathTemplatesLocation)
+    return Stream.ofNullable(templatesLocation)
         .map(Paths::get)
         .filter(Files::exists)
         .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
