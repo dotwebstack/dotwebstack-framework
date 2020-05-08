@@ -88,8 +88,8 @@ public class ResponseContextHelper {
     }
 
     // check to see if an object is a direct child of the root array, which does not exist in graphql
-    if ((Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && hasDirectArrayParent(responseObject)
-        && isRootArray(responseObject))) {
+    if (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType())
+        && ((hasDirectArrayParent(responseObject) && isRootArray(responseObject)) || isHiddenRoot(responseObject))) {
       return;
     }
 
@@ -97,6 +97,24 @@ public class ResponseContextHelper {
     if (summary.isRequired()) {
       responseObjects.put(joiner.toString(), summary);
     }
+  }
+
+  private static boolean isHiddenRoot(ResponseObject responseObject) {
+    ResponseObject parent = responseObject.getParent();
+    while (parent != null) {
+      if (parent.getSummary()
+          .getComposedOf()
+          .isEmpty()
+          && !parent.getSummary()
+              .isEnvelope()
+          && !Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
+              .getType())) {
+        return false;
+      }
+      parent = parent.getParent();
+    }
+
+    return true;
   }
 
   private static boolean hasDirectArrayParent(ResponseObject responseObject) {
