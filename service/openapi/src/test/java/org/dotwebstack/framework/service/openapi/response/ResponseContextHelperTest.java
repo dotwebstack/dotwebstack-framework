@@ -262,6 +262,29 @@ class ResponseContextHelperTest {
   }
 
   @Test
+  void validate_getRequiredResponseObject_withComposedOfObjectField() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "object", true, root);
+    root.getSummary()
+        .setComposedOf(List.of(child));
+    ResponseObject grandchild = buildResponseObject("grandchild", "string", true, root);
+    child.getSummary()
+        .setChildren(List.of(grandchild));
+
+    GraphQlField rootField = buildGraphQlField("root", List.of("grandchild"));
+
+    // Act
+    Map<String, SchemaSummary> responseObject =
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("grandchild", "value"));
+
+    // Assert
+    assertEquals(1, responseObject.entrySet()
+        .size());
+    assertThat(responseObject.get("grandchild"), is(equalTo(grandchild.getSummary())));
+  }
+
+  @Test
   void validate_getRequiredResponseObject_withMultiPathComposedOfFields() {
     // Arrange
     ResponseObject root = buildResponseObject("root", "object", true, null);
