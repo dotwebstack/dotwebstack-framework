@@ -37,7 +37,7 @@ class ResponseContextHelperTest {
         .graphQlField(graphQlField)
         .responses(responses)
         .build();
-    Map<String, Object> inputParams = ImmutableMap.of("key", "value");
+    Map<String, Object> inputParams = Collections.emptyMap();
 
     // Act
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
@@ -60,7 +60,7 @@ class ResponseContextHelperTest {
         .graphQlField(graphQlField)
         .responses(responses)
         .build();
-    Map<String, Object> inputParams = ImmutableMap.of("key", "value");
+    Map<String, Object> inputParams = Collections.emptyMap();
 
     // Act
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
@@ -95,7 +95,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
 
     // Assert
     assertEquals(0, responseObject.entrySet()
@@ -110,7 +110,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, ImmutableMap.of("key", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
 
     // Assert
     assertEquals(0, responseObject.entrySet()
@@ -129,7 +129,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
     assertEquals(1, responseObject.entrySet()
@@ -181,7 +181,7 @@ class ResponseContextHelperTest {
   @Test
   void validate_getRequiredResponseObject_forComplexObject() {
     // Arrange
-    ResponseObject query = buildResponseObject("query", "object", true, null);
+    ResponseObject query = buildResponseObject("query", "object", true, true, null);
     ResponseObject breweriesArray = buildResponseObject("breweries", "array", true, query);
     ResponseObject breweriesObject = buildResponseObject("breweries", "object", true, breweriesArray);
     ResponseObject breweryIdentifier = buildResponseObject("identifier", "string", true, breweriesObject);
@@ -210,7 +210,7 @@ class ResponseContextHelperTest {
         .build();
 
     GraphQlField rootField = GraphQlField.builder()
-        .name("query")
+        .name("brewery")
         .fields(List.of(GraphQlField.builder()
             .name("ownerName")
             .build()))
@@ -223,6 +223,7 @@ class ResponseContextHelperTest {
                 .name("identifier")
                 .build()))
             .build()))
+        .type("Brewery")
         .build();
 
     ResponseSchemaContext context = ResponseSchemaContext.builder()
@@ -253,7 +254,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
     assertEquals(1, responseObject.entrySet()
@@ -276,7 +277,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("grandchild", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
     assertEquals(1, responseObject.entrySet()
@@ -296,12 +297,47 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("root", root, rootField, ImmutableMap.of("child", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
     assertEquals(1, responseObject.entrySet()
         .size());
     assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
+  }
+
+  @Test
+  void validate_getRequiredResponseObject_withListDirectlyUnderRootObject() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject children = buildResponseObject("children", "array", true, root);
+    root.getSummary()
+        .setChildren(List.of(children));
+    ResponseObject child = buildResponseObject("children", "object", true, children);
+    children.getSummary()
+        .setItems(List.of(child));
+    ResponseObject identifier = buildResponseObject("identifier", "object", true, child);
+    child.getSummary()
+        .setChildren(List.of(identifier));
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("root")
+        .fields(List.of(GraphQlField.builder()
+            .name("children")
+            .fields(List.of(GraphQlField.builder()
+                .name("identifier")
+                .build()))
+            .build()))
+        .build();
+
+    // Act
+    Map<String, SchemaSummary> responseObject =
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+
+    // Assert
+    assertEquals(2, responseObject.entrySet()
+        .size());
+    assertThat(responseObject.get("children"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("children.identifier"), is(equalTo(identifier.getSummary())));
   }
 
   @Test
@@ -316,7 +352,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, ImmutableMap.of("child", "value"));
+        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
     assertEquals(1, responseObject.entrySet()

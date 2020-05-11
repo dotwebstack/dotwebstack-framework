@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
 import java.util.Collections;
@@ -88,8 +87,7 @@ public class ResponseContextHelper {
     }
 
     // check to see if an object is a direct child of the root array, which does not exist in graphql
-    if (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType())
-        && ((hasDirectArrayParent(responseObject) && isRootArray(responseObject)) || isHiddenRoot(responseObject))) {
+    if (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && isHiddenRoot(responseObject)) {
       return;
     }
 
@@ -115,29 +113,6 @@ public class ResponseContextHelper {
     }
 
     return true;
-  }
-
-  private static boolean hasDirectArrayParent(ResponseObject responseObject) {
-    return responseObject.getParent() != null && Objects.equals(ARRAY_TYPE, responseObject.getParent()
-        .getSummary()
-        .getType()) && responseObject.getIdentifier()
-            .equals(responseObject.getParent()
-                .getIdentifier());
-  }
-
-  private static boolean isRootArray(ResponseObject responseObject) {
-    ResponseObject parent = responseObject.getParent();
-    int parentArrays = 0;
-
-    while (parent != null) {
-      if (Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
-          .getType())) {
-        parentArrays++;
-      }
-      parent = parent.getParent();
-    }
-
-    return parentArrays <= 1;
   }
 
   private static GraphQlField getChildFieldByName(ResponseObject responseObject, GraphQlField graphQlField) {
