@@ -64,6 +64,11 @@ public class ResponseContextHelper {
 
   private static void addPrefixToPath(SchemaSummary summary, ResponseObject responseObject, StringJoiner joiner,
       Map<String, SchemaSummary> responseObjects) {
+    /*
+     * Based on the required fields from the OAS resposne a GraphQL query is constructed. Some fields
+     * however do only exist in OAS and not in GraphQL. To deal with this properly, the following rules
+     * are in place:
+     */
 
     // envelope objects do not exist in graphql, no prefix should be added
     if (summary.isEnvelope()) {
@@ -86,7 +91,7 @@ public class ResponseContextHelper {
       return;
     }
 
-    // check to see if an object is a direct child of the root array, which does not exist in graphql
+    // check to see if the object is a hidden root (it only has parents that do not exist in graphql)
     if (Objects.equals(OasConstants.OBJECT_TYPE, summary.getType()) && isHiddenRoot(responseObject)) {
       return;
     }
