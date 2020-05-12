@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>integration-test</artifactId>
-        <version>0.2.5</version>
+        <version>0.2.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>openapi-rdf4j</artifactId>
-    <version>0.2.5</version>
+    <version>0.2.6-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
