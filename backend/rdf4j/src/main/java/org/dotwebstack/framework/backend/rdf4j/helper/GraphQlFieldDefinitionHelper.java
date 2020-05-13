@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.eclipse.rdf4j.query.QueryLanguage.SPARQL;
 
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ public class GraphQlFieldDefinitionHelper {
 
   public static boolean graphQlFieldDefinitionIsOfType(@NonNull GraphQLOutputType type,
       @NonNull GraphQLScalarType scalarType) {
-    return type.getName()
+    return ((GraphQLNamedType) type).getName()
         .equals(scalarType.getName());
   }
 

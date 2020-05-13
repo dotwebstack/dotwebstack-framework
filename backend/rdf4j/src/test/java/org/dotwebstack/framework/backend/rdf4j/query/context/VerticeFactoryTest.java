@@ -171,7 +171,7 @@ public class VerticeFactoryTest {
 
     assertThat(vertice.getOrderables()
         .get(0)
-        .getQueryString(), is("DESC( COALESCE( ?x1, \" \" ) )"));
+        .getQueryString(), is("DESC( COALESCE( ?x1, \"\" ) )"));
   }
 
   @Test

@@ -8,6 +8,11 @@
         <version>0.2.6-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <swagger.version>2.0.19</swagger.version>
+        <spring.test.version>5.1.7.RELEASE</spring.test.version>
+    </properties>
+
     <artifactId>service-openapi</artifactId>
     <dependencies>
         <dependency>
@@ -26,16 +31,16 @@
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser-v3</artifactId>
-            <version>2.0.13</version>
+            <version>${swagger.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>5.1.7.RELEASE</version>
+            <version>${spring.test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

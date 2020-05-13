@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.directives;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLNamedSchemaElement;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 
@@ -26,8 +27,7 @@ public abstract class PagingDirectiveWiring implements AutoRegisteredSchemaDirec
           environment.getElementParentTree()
               .getParentInfo()
               .flatMap(parent -> parent.getParentInfo()
-                  .map(grandparent -> grandparent.getElement()
-                      .getName()))
+                  .map(grandparent -> ((GraphQLNamedSchemaElement) grandparent.getElement()).getName()))
               .orElse(null),
           getDirectiveName());
     }

@@ -17,6 +17,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
@@ -126,7 +127,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
   }
 
   private void validateOutputType(GraphQLType outputType) {
-    String outputTypeName = outputType.getName();
+    String outputTypeName = ((GraphQLNamedType) outputType).getName();
 
     boolean isScalar = Stream.of(MODEL, IRI)
         .map(GraphQLScalarType::getName)

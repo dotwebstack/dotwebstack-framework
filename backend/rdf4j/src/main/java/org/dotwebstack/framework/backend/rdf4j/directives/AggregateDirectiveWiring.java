@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import graphql.Scalars;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
@@ -57,7 +58,7 @@ public class AggregateDirectiveWiring implements AutoRegisteredSchemaDirectiveWi
     if (hasTransformDirective && !Scalars.GraphQLInt.equals(rawType)) {
       throw invalidConfigurationException(
           "Found an error on @aggregate directive defined on field {}.{}: expected output type is Int but got {}",
-          typeName, fieldDefinition.getName(), rawType.getName());
+          typeName, fieldDefinition.getName(), ((GraphQLNamedType) rawType).getName());
     }
   }
 

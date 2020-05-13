@@ -9,7 +9,8 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLNamedSchemaElement;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
@@ -39,7 +40,8 @@ public class FilterValidator {
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
-          GraphQLType type = GraphQLTypeUtil.unwrapType(((GraphQLFieldDefinition) parentInfo.getElement()).getType())
+          GraphQLNamedType type = (GraphQLNamedType) GraphQLTypeUtil
+              .unwrapType(((GraphQLFieldDefinition) parentInfo.getElement()).getType())
               .lastElement();
           TypeName typeName = TypeName.newTypeName(type.getName())
               .build();
@@ -58,8 +60,7 @@ public class FilterValidator {
         .getParentInfo()
         .ifPresent(parentInfo -> {
           TypeDefinition<?> typeDefinition = typeDefinitionRegistry.types()
-              .get(parentInfo.getElement()
-                  .getName());
+              .get(((GraphQLNamedSchemaElement) parentInfo.getElement()).getName());
           coreTraverser.getRootResultTypeNames(typeDefinition)
               .forEach(typeName -> validateDirectiveContainer(environment.getElement(), typeName));
         });

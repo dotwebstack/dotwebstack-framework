@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -366,8 +367,8 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
-        is("Validation error of type WrongType: argument 'sort[0].order' with value "
-            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder' @ 'breweries'"));
+        startsWith("Validation error of type WrongType: argument 'sort[0].order' with value "
+            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder'"));
     Map<String, Object> data = result.getData();
   }
 

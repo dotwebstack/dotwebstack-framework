@@ -6,6 +6,7 @@ import graphql.language.NonNullType;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
@@ -58,7 +59,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   }
 
   private void validateOnlyOnType(String typeName, String fieldName, GraphQLType rawType, String type) {
-    if (!(rawType.getName()
+    if (!(((GraphQLNamedType) rawType).getName()
         .equals(type))) {
       throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName,
           type);

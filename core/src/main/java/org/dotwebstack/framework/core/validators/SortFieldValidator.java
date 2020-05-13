@@ -15,10 +15,10 @@ import graphql.language.TypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirectiveContainer;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLType;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,8 @@ public class SortFieldValidator implements QueryValidator {
             tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getContainer(), tuple.getValue()));
   }
 
-  public void validate(GraphQLType fieldDefinitionType, GraphQLDirectiveContainer directiveContainer, Object value) {
+  public void validate(GraphQLFieldDefinition fieldDefinitionType, GraphQLDirectiveContainer directiveContainer,
+      Object value) {
     if (isSortField(getInputValueDefinition(directiveContainer))) {
       GraphQLInputType inputType = getInputType(directiveContainer);
       if (inputType instanceof GraphQLList) {
@@ -80,21 +81,22 @@ public class SortFieldValidator implements QueryValidator {
         .getSimpleName());
   }
 
-  void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, String fallback, GraphQLInputType type) {
+  void validateSortFieldList(GraphQLFieldDefinition fieldDefinition, Object value, String fallback,
+      GraphQLInputType type) {
     if (!(value instanceof List)) {
       throw illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
     List<?> valueList = (List) value;
-    valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue, fallback));
+    valueList.forEach(sortFieldValue -> validateSortField(fieldDefinition, sortFieldValue, fallback));
   }
 
-  void validateSortField(GraphQLType fieldDefinitionType, Object value, String fallback) {
+  void validateSortField(GraphQLFieldDefinition fieldDefinition, Object value, String fallback) {
     Optional<String> sortFieldValue = getSortFieldValue(value, fallback);
     if (!sortFieldValue.isPresent()) {
-      throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinitionType.getName(),
+      throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinition.getName(),
           CoreInputTypes.SORT_FIELD_FIELD);
     }
-    this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
+    this.validateSortFieldValue(getTypeName(fieldDefinition.getType()), null, null, sortFieldValue.get());
   }
 
   Optional<String> getSortFieldValue(Object sortArgument, String fallback) {

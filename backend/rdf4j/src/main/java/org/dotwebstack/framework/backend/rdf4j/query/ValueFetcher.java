@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORD
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -80,8 +81,8 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
     if (environment.getParentType() instanceof GraphQLObjectType) {
-      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(environment.getParentType()
-          .getName());
+      NodeShape nodeShape =
+          nodeShapeRegistry.getByShaclName(((GraphQLNamedType) environment.getParentType()).getName());
 
       return nodeShape.getPropertyShape(environment.getField()
           .getName());

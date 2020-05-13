@@ -2,7 +2,6 @@ package org.dotwebstack.framework.integrationtest.openapirdf4j.matcher;
 
 import java.util.Objects;
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -37,7 +36,6 @@ public class IsEqualIgnoringLineBreaks extends TypeSafeMatcher<String> {
         .appendText(")");
   }
 
-  @Factory
   public static Matcher<String> equalToIgnoringLineBreaks(String expectedString) {
     return new IsEqualIgnoringLineBreaks(expectedString);
   }

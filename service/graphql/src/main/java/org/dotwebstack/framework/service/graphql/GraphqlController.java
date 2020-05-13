@@ -18,7 +18,7 @@ class GraphqlController {
     this.graphQL = graphQL;
   }
 
-  @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ExecutionResult> handleGet(@RequestParam("query") String query) {
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)

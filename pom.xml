@@ -52,8 +52,19 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.boot.version>2.1.4.RELEASE</spring.boot.version>
-    <rdf4j.version>3.0.0</rdf4j.version>
+    <spring.boot.version>2.2.7.RELEASE</spring.boot.version>
+    <rdf4j.version>3.2.0</rdf4j.version>
+    <graphql.java.version>14.0</graphql.java.version>
+    <commons.jexl.version>3.1</commons.jexl.version>
+    <commons.text.version>1.8</commons.text.version>
+    <commons.lang3.version>3.10</commons.lang3.version>
+    <problem.spring.webflux.version>0.24.0</problem.spring.webflux.version>
+    <pebble.version>3.1.3</pebble.version>
+    <lombok.version>1.18.12</lombok.version>
+    <guava.version>29.0-jre</guava.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    <mockito.junit.jupiter.version>2.28.2</mockito.junit.jupiter.version>
+    <jakarta.validation.api>2.0.2</jakarta.validation.api>
   </properties>
 
   <modules>
@@ -90,58 +101,58 @@
       <dependency>
         <groupId>com.graphql-java</groupId>
         <artifactId>graphql-java</artifactId>
-        <version>13.0</version>
+        <version>${graphql.java.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-jexl3</artifactId>
-        <version>3.1</version>
+        <version>${commons.jexl.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-text</artifactId>
-        <version>1.6</version>
+        <version>${commons.text.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.9</version>
+        <version>${commons.lang3.version}</version>
       </dependency>
       <dependency>
         <groupId>org.zalando</groupId>
         <artifactId>problem-spring-webflux</artifactId>
-        <version>0.24.0-RC.0</version>
+        <version>${problem.spring.webflux.version}</version>
       </dependency>
       <dependency>
         <groupId>io.pebbletemplates</groupId>
         <artifactId>pebble</artifactId>
-        <version>3.1.2</version>
+        <version>${pebble.version}</version>
       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
-        <version>1.18.6</version>
+        <version>${lombok.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>27.1-jre</version>
+        <version>${guava.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>
-        <version>5.4.1</version>
+        <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-junit-jupiter</artifactId>
-        <version>2.23.4</version>
+        <version>${mockito.junit.jupiter.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.validation</groupId>
         <artifactId>jakarta.validation-api</artifactId>
-        <version>2.0.1</version>
+        <version>${jakarta.validation.api}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

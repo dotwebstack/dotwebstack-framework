@@ -29,6 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
 import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -389,8 +391,8 @@ class Rdf4jModuleTest {
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
-        is("Validation error of type WrongType: argument 'sort[0].order' with value "
-            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder' @ 'breweries'"));
+        startsWith("Validation error of type WrongType: argument 'sort[0].order' with value "
+            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder'"));
     Map<String, Object> data = result.getData();
   }
 
@@ -950,7 +952,13 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("breweriesModel");
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+    assertThat(subjectsToString(model), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+  }
+
+  private String subjectsToString(Model model) {
+    return Stream.of(model.subjects())
+        .map(Object::toString)
+        .collect(Collectors.joining());
   }
 
   @Test
@@ -987,8 +995,15 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get(graphQlField);
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+    assertThat(objectsToString(model), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
   }
+
+  private String objectsToString(Model model) {
+    return Stream.of(model.objects())
+        .map(Object::toString)
+        .collect(Collectors.joining());
+  }
+
 
   @Test
   void graphQlQuery_returnsModel_withQueryReferenceWithConstruct() {
@@ -1004,7 +1019,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("beers_with_query_ref_as_model_construct");
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/beer/6"));
+    assertThat(subjectsToString(model), containsString("https://github.com/dotwebstack/beer/id/beer/6"));
   }
 
   @Test
