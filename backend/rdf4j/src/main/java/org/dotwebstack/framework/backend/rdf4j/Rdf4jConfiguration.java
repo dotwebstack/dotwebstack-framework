@@ -30,6 +30,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
+import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -84,6 +85,13 @@ class Rdf4jConfiguration {
         return localRepositoryManager.getRepository(repositoryId)
             .getConnection()
             .prepareGraphQuery(query);
+      }
+
+      @Override
+      public BooleanQuery prepareBooleanQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareBooleanQuery(query);
       }
 
       @Override
