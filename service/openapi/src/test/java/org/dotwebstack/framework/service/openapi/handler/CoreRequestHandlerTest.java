@@ -14,7 +14,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionInput;
@@ -39,7 +38,6 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -193,33 +191,13 @@ class CoreRequestHandlerTest {
     assertThat(responseTemplate.getMediaType(), is(MediaType.APPLICATION_JSON));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  void getOkResponseTest()
-      throws NoResultFoundException, JsonProcessingException, BadRequestException, GraphQlErrorException {
+  void getOkResponseTest() throws Exception {
     // Arrange
-    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-    ServerRequest request = mock(ServerRequest.class);
-    when(request.queryParams()).thenReturn(queryParams);
-
     Map<Object, Object> data = new HashMap<>();
-    data.put("data", "{\"key\" : \"value\" }");
+    data.put("query6", "{\"key\" : \"value\" }");
 
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
-    HttpHeaders asHeaders = mock(HttpHeaders.class);
-    when(headers.asHttpHeaders()).thenReturn(asHeaders);
-    when(request.headers()).thenReturn(headers);
-
-    Mono<String> mono = Mono.empty();
-    when(request.bodyToMono(String.class)).thenReturn(mono);
-
-    ExecutionResult executionResult = mock(ExecutionResult.class);
-    when(executionResult.getErrors()).thenReturn(new ArrayList<>());
-    when(executionResult.getData()).thenReturn(data);
-
-    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
-    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
-    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
+    ServerRequest request = arrangeResponseTest(data, getResponseTemplates());
 
     // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
@@ -229,16 +207,38 @@ class CoreRequestHandlerTest {
         .is2xxSuccessful());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void getRedirectResponseTest() throws Exception {
+  void getRedirectResponseTest() throws Exception {
     // Arrange
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", "{\"key\" : \"value\" }");
+
+    ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
+
+    // Act
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
+
+    // Assert
+    assertTrue(serverResponse.statusCode()
+        .is3xxRedirection());
+  }
+
+  @Test
+  void shouldThrowNoResultFoundExceptionTest() throws Exception {
+    // Arrange
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", null);
+
+    ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
+
+    // Act/Assert
+    assertThrows(NoResultFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+  }
+
+  private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates) {
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
     when(request.queryParams()).thenReturn(queryParams);
-
-    Map<Object, Object> data = new HashMap<>();
-    data.put("data", "{\"key\" : \"value\" }");
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     HttpHeaders asHeaders = mock(HttpHeaders.class);
@@ -253,15 +253,10 @@ class CoreRequestHandlerTest {
     when(executionResult.getData()).thenReturn(data);
 
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
-    when(responseSchemaContext.getResponses()).thenReturn(getRedirectResponseTemplate());
+    when(responseSchemaContext.getResponses()).thenReturn(responseTemplates);
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
 
-    // Act
-    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
-
-    // Assert
-    assertTrue(serverResponse.statusCode()
-        .is3xxRedirection());
+    return request;
   }
 
   @Test

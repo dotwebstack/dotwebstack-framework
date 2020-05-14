@@ -170,9 +170,26 @@ public final class QueryFetcher implements DataFetcher<Object> {
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
 
     return Objects.nonNull(subjectTemplate)
-        ? ImmutableList.of(VF.createIRI(new StringSubstitutor(arguments).replace(subjectTemplate)))
+        ? fetchSubjectFromSubjectTemplate(subjectTemplate, arguments, environment, sparqlDirective)
         : fetchSubjectsFromDatabase(environment, queryEnvironment, filterMapping, arguments, repositoryAdapter,
             sparqlDirective);
+  }
+
+  private List<IRI> fetchSubjectFromSubjectTemplate(String subjectTemplate, Map<String, Object> arguments,
+      DataFetchingEnvironment environment, GraphQLDirective sparqlDirective) {
+    IRI subject = VF.createIRI(new StringSubstitutor(arguments).replace(subjectTemplate));
+
+    String subjectAskQuery = String.format("ASK { <%s> ?predicate ?object }", subject);
+
+    logQuery(SUBJECTS, subjectAskQuery);
+
+    String repositoryId =
+        DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_REPOSITORY, String.class);
+
+    boolean queryResult = repositoryAdapter.prepareBooleanQuery(repositoryId, environment, subjectAskQuery)
+        .evaluate();
+
+    return queryResult ? ImmutableList.of(subject) : Collections.emptyList();
   }
 
   private List<IRI> fetchSubjectsFromDatabase(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
