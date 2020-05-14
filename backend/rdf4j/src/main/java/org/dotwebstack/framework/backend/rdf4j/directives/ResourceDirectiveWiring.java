@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
 import graphql.language.NonNullType;
 import graphql.schema.GraphQLArgument;
@@ -9,6 +10,7 @@ import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import java.util.Objects;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.springframework.stereotype.Component;
@@ -58,8 +60,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   }
 
   private void validateOnlyOnType(String typeName, String fieldName, GraphQLType rawType, String type) {
-    if (!(rawType.getName()
-        .equals(type))) {
+    if (!(Objects.equals(getTypeName(rawType), type))) {
       throw invalidConfigurationException("{}.{} should be of type '{}' for @resource directive", typeName, fieldName,
           type);
     }

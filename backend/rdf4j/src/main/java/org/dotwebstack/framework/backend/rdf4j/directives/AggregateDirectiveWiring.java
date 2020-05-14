@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
 import graphql.Scalars;
 import graphql.schema.GraphQLFieldDefinition;
@@ -57,7 +58,7 @@ public class AggregateDirectiveWiring implements AutoRegisteredSchemaDirectiveWi
     if (hasTransformDirective && !Scalars.GraphQLInt.equals(rawType)) {
       throw invalidConfigurationException(
           "Found an error on @aggregate directive defined on field {}.{}: expected output type is Int but got {}",
-          typeName, fieldDefinition.getName(), rawType.getName());
+          typeName, fieldDefinition.getName(), getTypeName(rawType));
     }
   }
 

@@ -4,13 +4,10 @@ import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
-import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeReference;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
@@ -91,16 +88,15 @@ public class TypeHelper {
       return getTypeName(((GraphQLList) type).getWrappedType());
     } else if (type instanceof GraphQLNonNull) {
       return getTypeName(((GraphQLNonNull) type).getWrappedType());
-    } else if (type instanceof GraphQLObjectType || type instanceof GraphQLInputObjectType
-        || type instanceof GraphQLScalarType || type instanceof GraphQLTypeReference) {
-      return type.getName();
+    } else if (type instanceof GraphQLNamedType) {
+      return ((GraphQLNamedType) type).getName();
     } else {
       throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
   }
 
   public static NonNullType createNonNullType(@NonNull GraphQLType type) {
-    TypeName optionalType = TypeName.newTypeName(type.getName())
+    TypeName optionalType = TypeName.newTypeName(getTypeName(type))
         .build();
     return NonNullType.newNonNullType(optionalType)
         .build();

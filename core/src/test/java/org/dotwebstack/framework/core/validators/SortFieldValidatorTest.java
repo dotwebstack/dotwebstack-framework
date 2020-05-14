@@ -12,6 +12,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.ListType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeName;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +37,11 @@ class SortFieldValidatorTest {
   private static final String FIELD_NAME_1 = "field1";
 
   private static final String FIELD_NAME_2 = "field2";
+
+  private static final GraphQLFieldDefinition stringFieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+      .name("String")
+      .type(Scalars.GraphQLString)
+      .build();
 
   @Mock
   private TypeDefinitionRegistry registry;
@@ -144,7 +150,7 @@ class SortFieldValidatorTest {
 
     // Act & Assert
     assertThrows(InvalidConfigurationException.class,
-        () -> sortFieldValidator.validateSortField(Scalars.GraphQLString, sortArgument, "fallback"));
+        () -> sortFieldValidator.validateSortField(stringFieldDefinition, sortArgument, "fallback"));
   }
 
   @Test
@@ -156,7 +162,7 @@ class SortFieldValidatorTest {
 
     // Act & Assert
     assertThrows(IllegalArgumentException.class,
-        () -> sortFieldValidator.validateSortField(Scalars.GraphQLString, sortArgument, "fallback"));
+        () -> sortFieldValidator.validateSortField(stringFieldDefinition, sortArgument, "fallback"));
   }
 
   @Test
@@ -168,7 +174,7 @@ class SortFieldValidatorTest {
 
     // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> sortFieldValidator
-        .validateSortFieldList(Scalars.GraphQLString, sortArgument, "fallback", Scalars.GraphQLString));
+        .validateSortFieldList(stringFieldDefinition, sortArgument, "fallback", Scalars.GraphQLString));
   }
 
   @Test

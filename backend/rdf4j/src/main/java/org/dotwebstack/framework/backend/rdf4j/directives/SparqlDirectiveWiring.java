@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.IRI;
 import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.MODEL;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
@@ -126,7 +127,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
   }
 
   private void validateOutputType(GraphQLType outputType) {
-    String outputTypeName = outputType.getName();
+    String outputTypeName = getTypeName(outputType);
 
     boolean isScalar = Stream.of(MODEL, IRI)
         .map(GraphQLScalarType::getName)

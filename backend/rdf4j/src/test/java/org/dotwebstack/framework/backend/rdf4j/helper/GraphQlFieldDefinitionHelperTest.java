@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.schema.GraphQLNamedOutputType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -27,7 +28,7 @@ class GraphQlFieldDefinitionHelperTest {
   @CsvSource({"name, name, true", "name, notname, false"})
   void graphQlFieldDefinitionIsOfTypeTest(String outputTypeName, String scalarTypeName, boolean success) {
     // Arrange
-    GraphQLOutputType graphQlOutputTypeMock = mock(GraphQLOutputType.class);
+    GraphQLNamedOutputType graphQlOutputTypeMock = mock(GraphQLNamedOutputType.class);
     GraphQLScalarType graphQlScalarTypeMock = mock(GraphQLScalarType.class);
     when(graphQlOutputTypeMock.getName()).thenReturn(outputTypeName);
     when(graphQlScalarTypeMock.getName()).thenReturn(scalarTypeName);

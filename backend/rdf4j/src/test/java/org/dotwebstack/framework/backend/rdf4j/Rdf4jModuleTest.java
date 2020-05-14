@@ -29,6 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -389,8 +390,8 @@ class Rdf4jModuleTest {
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
-        is("Validation error of type WrongType: argument 'sort[0].order' with value "
-            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder' @ 'breweries'"));
+        startsWith("Validation error of type WrongType: argument 'sort[0].order' with value "
+            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder'"));
     Map<String, Object> data = result.getData();
   }
 
@@ -950,7 +951,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("breweriesModel");
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/brewery/123");
   }
 
   @Test
@@ -987,7 +988,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get(graphQlField);
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+    assertContainsObject(model, "https://github.com/dotwebstack/beer/id/brewery/789");
   }
 
   @Test
@@ -1004,7 +1005,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("beers_with_query_ref_as_model_construct");
 
-    assertThat(model.toString(), containsString("https://github.com/dotwebstack/beer/id/beer/6"));
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/beer/6");
   }
 
   @Test
@@ -1024,5 +1025,17 @@ class Rdf4jModuleTest {
     assertThat(castToMap(data.get("beer")).containsKey("inspiredBy"), equalTo(true));
     assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).containsKey("person"), equalTo(true));
     assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).get("person"), equalTo("Erik Bierhof"));
+  }
+
+  private void assertContainsObject(Model model, String object) {
+    assertTrue(model.objects()
+        .stream()
+        .anyMatch(modelObject -> Objects.equals(modelObject.stringValue(), object)));
+  }
+
+  private void assertContainsSubject(Model model, String subject) {
+    assertTrue(model.subjects()
+        .stream()
+        .anyMatch(modelSubject -> Objects.equals(modelSubject.stringValue(), subject)));
   }
 }

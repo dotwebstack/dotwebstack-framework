@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.traversers;
 
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
+
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import java.util.Objects;
@@ -20,11 +22,9 @@ public interface TraverserFilter {
 
   static TraverserFilter typeFilter(String name) {
     return tuple -> ((tuple.getContainer() instanceof GraphQLInputObjectField
-        && Objects.equals(((GraphQLInputObjectField) tuple.getContainer()).getType()
-            .getName(), name))
+        && Objects.equals(getTypeName(((GraphQLInputObjectField) tuple.getContainer()).getType()), name))
         || (tuple.getContainer() instanceof GraphQLArgument
-            && Objects.equals(((GraphQLArgument) tuple.getContainer()).getType()
-                .getName(), name)));
+            && Objects.equals(getTypeName(((GraphQLArgument) tuple.getContainer()).getType()), name)));
   }
 
   static TraverserFilter noFilter() {

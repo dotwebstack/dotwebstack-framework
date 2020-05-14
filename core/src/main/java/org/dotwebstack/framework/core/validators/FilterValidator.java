@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.validators;
 
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
+
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
@@ -9,6 +11,7 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLNamedSchemaElement;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLTypeUtil;
@@ -41,7 +44,7 @@ public class FilterValidator {
         .ifPresent(parentInfo -> {
           GraphQLType type = GraphQLTypeUtil.unwrapType(((GraphQLFieldDefinition) parentInfo.getElement()).getType())
               .lastElement();
-          TypeName typeName = TypeName.newTypeName(type.getName())
+          TypeName typeName = TypeName.newTypeName(getTypeName(type))
               .build();
 
           if (!(type instanceof GraphQLTypeReference) && !GraphQLTypeUtil.isLeaf(type)
@@ -58,8 +61,7 @@ public class FilterValidator {
         .getParentInfo()
         .ifPresent(parentInfo -> {
           TypeDefinition<?> typeDefinition = typeDefinitionRegistry.types()
-              .get(parentInfo.getElement()
-                  .getName());
+              .get(((GraphQLNamedSchemaElement) parentInfo.getElement()).getName());
           coreTraverser.getRootResultTypeNames(typeDefinition)
               .forEach(typeName -> validateDirectiveContainer(environment.getElement(), typeName));
         });

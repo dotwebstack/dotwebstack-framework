@@ -63,8 +63,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
       GraphQLArgument sortArgument = environment.getElement();
       if (sortArgument != null && sortArgument.getDefaultValue() != null) {
-        sortFieldValidator.validate(environment.getFieldDefinition()
-            .getType(), sortArgument, sortArgument.getDefaultValue());
+        sortFieldValidator.validate(environment.getFieldDefinition(), sortArgument, sortArgument.getDefaultValue());
       }
     }
     return environment.getElement();
