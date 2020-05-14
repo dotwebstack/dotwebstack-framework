@@ -952,13 +952,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("breweriesModel");
 
-    assertThat(subjectsToString(model), containsString("https://github.com/dotwebstack/beer/id/brewery/1"));
-  }
-
-  private String subjectsToString(Model model) {
-    return Stream.of(model.subjects())
-        .map(Object::toString)
-        .collect(Collectors.joining());
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/brewery/1");
   }
 
   @Test
@@ -995,15 +989,8 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get(graphQlField);
 
-    assertThat(objectsToString(model), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+    assertContainsObject(model, "https://github.com/dotwebstack/beer/id/brewery/789");
   }
-
-  private String objectsToString(Model model) {
-    return Stream.of(model.objects())
-        .map(Object::toString)
-        .collect(Collectors.joining());
-  }
-
 
   @Test
   void graphQlQuery_returnsModel_withQueryReferenceWithConstruct() {
@@ -1019,7 +1006,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("beers_with_query_ref_as_model_construct");
 
-    assertThat(subjectsToString(model), containsString("https://github.com/dotwebstack/beer/id/beer/6"));
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/beer/6");
   }
 
   @Test
@@ -1039,5 +1026,17 @@ class Rdf4jModuleTest {
     assertThat(castToMap(data.get("beer")).containsKey("inspiredBy"), equalTo(true));
     assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).containsKey("person"), equalTo(true));
     assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).get("person"), equalTo("Erik Bierhof"));
+  }
+
+  private boolean assertContainsObject(Model model, String object) {
+    return Stream.of(model.objects())
+        .anyMatch(modelObject -> modelObject.toString()
+            .equals(object));
+  }
+
+  private boolean assertContainsSubject(Model model, String subject) {
+    return Stream.of(model.subjects())
+        .anyMatch(modelSubject -> modelSubject.toString()
+            .equals(subject));
   }
 }

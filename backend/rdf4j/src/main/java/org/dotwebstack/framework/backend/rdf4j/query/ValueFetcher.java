@@ -3,13 +3,13 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static org.dotwebstack.framework.backend.rdf4j.helper.CompareHelper.getComparator;
 import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_ORDER_ASC;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -81,8 +81,7 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
     if (environment.getParentType() instanceof GraphQLObjectType) {
-      NodeShape nodeShape =
-          nodeShapeRegistry.getByShaclName(((GraphQLNamedType) environment.getParentType()).getName());
+      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(getTypeName(environment.getParentType()));
 
       return nodeShape.getPropertyShape(environment.getField()
           .getName());

@@ -2,13 +2,14 @@ package org.dotwebstack.framework.backend.rdf4j.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.eclipse.rdf4j.query.QueryLanguage.SPARQL;
 
-import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import javax.validation.constraints.NotEmpty;
 import lombok.NonNull;
 import org.eclipse.rdf4j.query.parser.ParsedGraphQuery;
@@ -30,8 +31,7 @@ public class GraphQlFieldDefinitionHelper {
 
   public static boolean graphQlFieldDefinitionIsOfType(@NonNull GraphQLOutputType type,
       @NonNull GraphQLScalarType scalarType) {
-    return ((GraphQLNamedType) type).getName()
-        .equals(scalarType.getName());
+    return Objects.equals(getTypeName(type), scalarType.getName());
   }
 
   public static void validateQueryHasCommand(@NonNull String staticSparqlQuery, @NotEmpty String... queryOperators) {
