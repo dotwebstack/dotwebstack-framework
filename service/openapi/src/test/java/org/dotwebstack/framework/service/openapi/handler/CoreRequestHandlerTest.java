@@ -203,7 +203,7 @@ class CoreRequestHandlerTest {
     when(request.queryParams()).thenReturn(queryParams);
 
     Map<Object, Object> data = new HashMap<>();
-    data.put("data", "{\"key\" : \"value\" }");
+    data.put("query6", "{\"key\" : \"value\" }");
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     HttpHeaders asHeaders = mock(HttpHeaders.class);
@@ -238,7 +238,7 @@ class CoreRequestHandlerTest {
     when(request.queryParams()).thenReturn(queryParams);
 
     Map<Object, Object> data = new HashMap<>();
-    data.put("data", "{\"key\" : \"value\" }");
+    data.put("query6", "{\"key\" : \"value\" }");
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     HttpHeaders asHeaders = mock(HttpHeaders.class);
