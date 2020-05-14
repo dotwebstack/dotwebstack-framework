@@ -232,7 +232,8 @@ class StaticQueryFetcherTest {
     when(dataFetchingEnvironmentMock.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(dataFetchingEnvironmentMock.getArguments()).thenReturn(environmentArguments);
 
-    when(tupleQueryResultMock.hasNext()).thenReturn(true).thenReturn(false);
+    when(tupleQueryResultMock.hasNext()).thenReturn(true)
+        .thenReturn(false);
     when(tupleQueryResultMock.next()).thenReturn(EmptyBindingSet.getInstance());
 
     when(tupleQueryMock.evaluate()).thenReturn(tupleQueryResultMock);
