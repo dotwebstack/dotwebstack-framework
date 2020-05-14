@@ -101,7 +101,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
     validateQueryHasOneResult(tupleQueryResult, staticSparqlQuery);
 
-    return Optional.of(queryBindingSet.getValue(fieldDefinition.getName()));
+    return Optional.ofNullable(queryBindingSet.getValue(fieldDefinition.getName()));
   }
 
   private void validateQueryHasOneResult(TupleQueryResult tupleQueryResult, String query) {
