@@ -15,6 +15,7 @@ import graphql.schema.GraphQLTypeUtil;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
@@ -69,7 +70,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
 
     if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.IRI)) {
-      return getQueryResultAsIri(environment, fieldDefinition);
+      return getQueryResultAsIri(environment, fieldDefinition).orElse(null);
     }
 
     if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.MODEL)) {
@@ -88,14 +89,19 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     return model;
   }
 
-  private Value getQueryResultAsIri(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition) {
+  private Optional<Value> getQueryResultAsIri(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
     TupleQueryResult tupleQueryResult = fetchTupleQuery(environment, fieldDefinition, staticSparqlQuery);
+
+    if (!tupleQueryResult.hasNext()) {
+      return Optional.empty();
+    }
 
     BindingSet queryBindingSet = tupleQueryResult.next();
 
     validateQueryHasOneResult(tupleQueryResult, staticSparqlQuery);
 
-    return queryBindingSet.getValue(fieldDefinition.getName());
+    return Optional.of(queryBindingSet.getValue(fieldDefinition.getName()));
   }
 
   private void validateQueryHasOneResult(TupleQueryResult tupleQueryResult, String query) {

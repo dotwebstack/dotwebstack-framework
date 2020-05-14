@@ -175,7 +175,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
             sparqlDirective);
   }
 
-  private List<IRI> fetchSubjectFromSubjectTemplate(String subjectTemplate, Map<String, Object>  arguments, DataFetchingEnvironment environment, GraphQLDirective sparqlDirective) {
+  private List<IRI> fetchSubjectFromSubjectTemplate(String subjectTemplate, Map<String, Object> arguments,
+      DataFetchingEnvironment environment, GraphQLDirective sparqlDirective) {
     IRI subject = VF.createIRI(new StringSubstitutor(arguments).replace(subjectTemplate));
 
     String subjectAskQuery = String.format("ASK { <%s> ?predicate ?object }", subject);

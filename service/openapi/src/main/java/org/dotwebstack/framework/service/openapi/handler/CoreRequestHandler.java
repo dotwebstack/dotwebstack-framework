@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
@@ -287,9 +288,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     })
         .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
 
-
     if (result.getErrors()
         .isEmpty()) {
+
+      if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
+        throw noResultFoundException("Did not find data for your response.");
+      }
+
       HttpStatus httpStatus = getHttpStatus();
       if (httpStatus.is3xxRedirection()) {
         URI location = getLocationHeaderUri(inputParams, result.getData());
@@ -354,6 +359,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .filter(httpStatus1 -> httpStatus1.is2xxSuccessful() || httpStatus1.is3xxRedirection())
         .findFirst()
         .orElseThrow(() -> invalidConfigurationException("No response within range 2xx 3xx configured."));
+  }
+
+  private boolean isQueryExecuted(Map<String, Object> resultData) {
+    return !resultData.isEmpty();
+  }
+
+  private boolean objectExists(Map<String, Object> resultData) {
+    return resultData.get(responseSchemaContext.getGraphQlField()
+        .getName()) != null;
   }
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams, Map<String, Object> resultData) {
