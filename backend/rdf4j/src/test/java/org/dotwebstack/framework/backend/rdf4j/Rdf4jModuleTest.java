@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
 import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -1028,15 +1027,17 @@ class Rdf4jModuleTest {
     assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).get("person"), equalTo("Erik Bierhof"));
   }
 
-  private boolean assertContainsObject(Model model, String object) {
-    return Stream.of(model.objects())
-        .anyMatch(modelObject -> modelObject.toString()
-            .equals(object));
+  private void assertContainsObject(Model model, String object) {
+    assertThat(model.objects()
+        .stream()
+        .map(Object::toString)
+        .collect(Collectors.joining("")), containsString(object));
   }
 
-  private boolean assertContainsSubject(Model model, String subject) {
-    return Stream.of(model.subjects())
-        .anyMatch(modelSubject -> modelSubject.toString()
-            .equals(subject));
+  private void assertContainsSubject(Model model, String subject) {
+    assertThat(model.subjects()
+        .stream()
+        .map(Object::toString)
+        .collect(Collectors.joining("")), containsString(subject));
   }
 }
