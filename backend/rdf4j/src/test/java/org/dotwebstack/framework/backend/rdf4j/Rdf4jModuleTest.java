@@ -951,7 +951,7 @@ class Rdf4jModuleTest {
     Model model = result.<Map<String, Model>>getData()
         .get("breweriesModel");
 
-    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/brewery/1");
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/brewery/123");
   }
 
   @Test
@@ -1028,16 +1028,14 @@ class Rdf4jModuleTest {
   }
 
   private void assertContainsObject(Model model, String object) {
-    assertThat(model.objects()
+    assertTrue(model.objects()
         .stream()
-        .map(Object::toString)
-        .collect(Collectors.joining("")), containsString(object));
+        .anyMatch(modelObject -> Objects.equals(modelObject.stringValue(), object)));
   }
 
   private void assertContainsSubject(Model model, String subject) {
-    assertThat(model.subjects()
+    assertTrue(model.subjects()
         .stream()
-        .map(Object::toString)
-        .collect(Collectors.joining("")), containsString(subject));
+        .anyMatch(modelSubject -> Objects.equals(modelSubject.stringValue(), subject)));
   }
 }
