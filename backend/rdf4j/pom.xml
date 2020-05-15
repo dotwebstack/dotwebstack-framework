@@ -10,6 +10,66 @@
 
   <artifactId>backend-rdf4j</artifactId>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-sail</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-sparql</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-manager</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-memory</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sparqlbuilder</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-n3</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-rdfxml</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-jsonld</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-nquads</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-ntriples</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
@@ -65,6 +125,10 @@
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-rio-ntriples</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

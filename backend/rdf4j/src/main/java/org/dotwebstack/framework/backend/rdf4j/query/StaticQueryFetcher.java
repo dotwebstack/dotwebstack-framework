@@ -74,19 +74,25 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     }
 
     if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.MODEL)) {
-      return getQueryResultAsModel(environment, fieldDefinition);
+      return getQueryResultAsModel(environment, fieldDefinition).orElse(null);
     }
 
     throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
   }
 
-  private Model getQueryResultAsModel(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition) {
+  private Optional<Model> getQueryResultAsModel(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
     GraphQueryResult graphQueryResult = fetchGraphQuery(environment, fieldDefinition, staticSparqlQuery);
 
     Model model = QueryResults.asModel(graphQueryResult);
+
+    if (model.isEmpty()) {
+      return Optional.empty();
+    }
+
     LOG.debug("Fetched [{}] triples", model.size());
 
-    return model;
+    return Optional.of(model);
   }
 
   private Optional<Value> getQueryResultAsIri(DataFetchingEnvironment environment,
@@ -155,7 +161,6 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
     String subjectTemplate =
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
-
     if (subjectTemplate != null) {
       query.setBinding(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
     } else {
