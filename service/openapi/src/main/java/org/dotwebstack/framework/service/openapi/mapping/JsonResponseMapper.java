@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapComposedSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -229,13 +230,26 @@ public class JsonResponseMapper {
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings({"rawtypes", "unchecked"})
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
     unwrapChildSchema(parentContext).forEach(child -> {
       Object object = mapDataToResponse(child, path);
       result.put(child.getResponseObject()
           .getIdentifier(), object);
+    });
+
+    // for a composed evenlope schema, we need to merge the underlying schema's into one result
+    unwrapComposedSchema(parentContext).forEach(child -> {
+      String identifier = child.getResponseObject()
+          .getIdentifier();
+      Map childResponse = (Map) mapDataToResponse(child, path);
+
+      if ((result.containsKey(identifier))) {
+        ((Map) result.get(identifier)).putAll(childResponse);
+      } else {
+        result.put(identifier, childResponse);
+      }
     });
     return result;
   }
@@ -262,6 +276,15 @@ public class JsonResponseMapper {
                 .getIdentifier());
       }
     }
+
+    if (!writeContext.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .isEmpty()) {
+      return ((Map) object).get(writeContext.getResponseObject()
+          .getIdentifier());
+    }
+
     return object;
   }
 

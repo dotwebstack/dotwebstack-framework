@@ -54,16 +54,16 @@ public class ResponseContextHelper {
     Map<String, SchemaSummary> responseObjects = new HashMap<>();
     StringJoiner joiner = getStringJoiner(prefix);
     SchemaSummary summary = responseObject.getSummary();
-    addPrefixToPath(summary, responseObject, joiner, responseObjects);
-    if (summary.isRequired() || summary.isEnvelope()
-        || isExpanded(inputParams, getPathString(prefix, responseObject))) {
+    boolean isExpanded = isExpanded(inputParams, getPathString(prefix, responseObject));
+    addPrefixToPath(summary, responseObject, joiner, responseObjects, isExpanded);
+    if (summary.isRequired() || summary.isEnvelope() || isExpanded) {
       handleSubSchemas(graphQlField, inputParams, responseObjects, joiner, responseObject);
     }
     return responseObjects;
   }
 
   private static void addPrefixToPath(SchemaSummary summary, ResponseObject responseObject, StringJoiner joiner,
-      Map<String, SchemaSummary> responseObjects) {
+      Map<String, SchemaSummary> responseObjects, boolean isExpanded) {
     /*
      * Based on the required fields from the OAS resposne a GraphQL query is constructed. Some fields
      * however do only exist in OAS and not in GraphQL. To deal with this properly, the following rules
@@ -72,12 +72,6 @@ public class ResponseContextHelper {
 
     // envelope objects do not exist in graphql, no prefix should be added
     if (summary.isEnvelope()) {
-      return;
-    }
-
-    // composed objects are implicit envelope objects, they do not exist in graphql
-    if (!summary.getComposedOf()
-        .isEmpty()) {
       return;
     }
 
@@ -97,7 +91,7 @@ public class ResponseContextHelper {
     }
 
     joiner.add(responseObject.getIdentifier());
-    if (summary.isRequired()) {
+    if (summary.isRequired() || isExpanded) {
       responseObjects.put(joiner.toString(), summary);
     }
   }
@@ -105,11 +99,8 @@ public class ResponseContextHelper {
   private static boolean isHiddenRoot(ResponseObject responseObject) {
     ResponseObject parent = responseObject.getParent();
     while (parent != null) {
-      if (parent.getSummary()
-          .getComposedOf()
-          .isEmpty()
-          && !parent.getSummary()
-              .isEnvelope()
+      if (!parent.getSummary()
+          .isEnvelope()
           && !Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
               .getType())) {
         return false;
@@ -144,7 +135,6 @@ public class ResponseContextHelper {
     } else if (!summary.getComposedOf()
         .isEmpty()) {
       subGraphQlField = getChildFieldByName(responseObject, graphQlField);
-      prefix = removeLastElementFromPath(joiner);
       subSchemas = summary.getComposedOf();
     } else if (!summary.getItems()
         .isEmpty()) {
@@ -155,17 +145,6 @@ public class ResponseContextHelper {
     }
 
     extractResponseObjects(prefix, subSchemas, subGraphQlField, inputParams, responseObjects);
-  }
-
-  private static String removeLastElementFromPath(StringJoiner joiner) {
-    String joinString;
-    joinString = joiner.toString()
-        .contains(".")
-            ? joiner.toString()
-                .substring(0, joiner.toString()
-                    .lastIndexOf('.'))
-            : "";
-    return joinString;
   }
 
   private static void extractResponseObjects(String prefix, List<ResponseObject> children, GraphQlField childField,

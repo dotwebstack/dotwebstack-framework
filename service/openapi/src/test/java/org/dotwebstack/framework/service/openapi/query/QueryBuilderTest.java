@@ -47,8 +47,8 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, new HashMap<>(), true,
-        "");
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
+        new HashMap<>(), true, "");
 
     // Assert
     assertEquals("{brewery{identifier}}", bodyJoiner.toString());
@@ -69,7 +69,8 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
+        arguments, true, "");
 
     // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
@@ -92,7 +93,8 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
+    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, new HashSet<>(), bodyJoiner, argumentJoiner,
+        arguments, true, "");
 
     // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());

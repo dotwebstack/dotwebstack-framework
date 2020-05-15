@@ -19,20 +19,31 @@ public class ResponseWriteContextHelper {
         .getSummary()
         .getChildren()
         .stream()
-        .map(child -> {
-          Object data = parentContext.getData();
-          Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
-
-          if (!child.getSummary()
-              .isEnvelope() && data instanceof Map) {
-            data = ((Map) data).get(child.getIdentifier());
-            dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
-          }
-
-          return createNewResponseWriteContext(parentContext.getGraphQlField(), child, data,
-              parentContext.getParameters(), dataStack, parentContext.getUri());
-        })
+        .map(child -> unwrapSubSchema(parentContext, child))
         .collect(Collectors.toList());
+  }
+
+  public static List<ResponseWriteContext> unwrapComposedSchema(@NonNull ResponseWriteContext parentContext) {
+    return parentContext.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .stream()
+        .map(composed -> unwrapSubSchema(parentContext, composed))
+        .collect(Collectors.toList());
+  }
+
+  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, ResponseObject child) {
+    Object data = parentContext.getData();
+    Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
+
+    if (!child.getSummary()
+        .isEnvelope() && data instanceof Map) {
+      data = ((Map) data).get(child.getIdentifier());
+      dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
+    }
+
+    return createNewResponseWriteContext(parentContext.getGraphQlField(), child, data, parentContext.getParameters(),
+        dataStack, parentContext.getUri());
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {

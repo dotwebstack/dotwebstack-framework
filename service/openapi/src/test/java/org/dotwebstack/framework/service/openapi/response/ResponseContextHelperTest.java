@@ -280,9 +280,10 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
+    assertEquals(2, responseObject.entrySet()
         .size());
-    assertThat(responseObject.get("grandchild"), is(equalTo(grandchild.getSummary())));
+    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("child.grandchild"), is(equalTo(grandchild.getSummary())));
   }
 
   @Test
