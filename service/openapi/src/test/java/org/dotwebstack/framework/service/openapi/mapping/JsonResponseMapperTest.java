@@ -229,16 +229,15 @@ class JsonResponseMapperTest {
   @Test
   void map_returnsValue_forResponseWithComposedSchema() throws NoResultFoundException {
     // Arrange
-    ResponseObject child1 =
-        getObject("child1", "object", false, null, null, ImmutableList.of(REQUIRED_NILLABLE_STRING));
-    ResponseObject child2 =
-        getObject("child2", "object", false, null, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
+        Collections.emptyList());
+    ResponseObject child2 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING),
+        Collections.emptyList());
     ResponseObject responseObject =
         getObject("response", "object", false, null, null, ImmutableList.of(child1, child2));
 
-    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1",
-        ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3"), "child2",
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2"));
+    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3",
+        REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2");
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
@@ -254,7 +253,39 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop1\":\"v3\"},\"child2\":{\"prop2\":\"v2\"}}"));
+    assertTrue(response.contains("\"prop1\":\"v3\""));
+    assertTrue(response.contains("\"prop2\":\"v2\""));
+  }
+
+  @Test
+  void map_returnsValue_forResponseWithComposedEnvelopeSchema() throws NoResultFoundException {
+    // Arrange
+    ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
+        Collections.emptyList());
+    ResponseObject child2 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING),
+        Collections.emptyList());
+    ResponseObject responseObject =
+        getObject("response", "object", true, null, Collections.emptyList(), ImmutableList.of(child1, child2));
+
+    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3",
+        REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2");
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("\"prop1\":\"v3\""));
+    assertTrue(response.contains("\"prop2\":\"v2\""));
   }
 
   @Test

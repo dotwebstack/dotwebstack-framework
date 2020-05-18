@@ -142,7 +142,6 @@ public class JsonResponseMapper {
     parentContext.getResponseObject()
         .getSummary()
         .getComposedOf()
-        .stream()
         .forEach(composedSchema -> {
           ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
           mergeComposedResponse(path, results, writeContext, writeContext.getResponseObject()

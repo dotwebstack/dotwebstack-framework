@@ -48,7 +48,7 @@ public class GraphQlQueryBuilder {
     return Optional.of(builder.toString());
   }
 
-  private void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
+  protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
     /*
      * This method checks if the paths that are required from the OAS schema are added to the GraphQL
      * query.
