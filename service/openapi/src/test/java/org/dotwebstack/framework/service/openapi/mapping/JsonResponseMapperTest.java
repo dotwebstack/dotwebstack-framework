@@ -254,7 +254,7 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    assertTrue(response.contains("{\"prop2\":\"v1\",\"child2\":{\"prop2\":\"v2\"},\"child1\":{\"prop1\":\"v3\"}}"));
+    assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop1\":\"v3\"},\"child2\":{\"prop2\":\"v2\"}}"));
   }
 
   @Test

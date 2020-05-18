@@ -36,8 +36,13 @@ public class ResponseWriteContextHelper {
     Object data = parentContext.getData();
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-    if (!child.getSummary()
-        .isEnvelope() && data instanceof Map) {
+    if (parentContext.getResponseObject()
+        .getSummary()
+        .getComposedOf()
+        .isEmpty()
+        && !child.getSummary()
+            .isEnvelope()
+        && data instanceof Map) {
       data = ((Map) data).get(child.getIdentifier());
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
     }

@@ -73,6 +73,7 @@ public class JsonResponseMapper {
     if (Objects.isNull(response)) {
       throw noResultFoundException("Did not find data for your response.");
     }
+
     return toJson(response);
   }
 
@@ -95,7 +96,17 @@ public class JsonResponseMapper {
         }
         return null;
       case OBJECT_TYPE:
-        return processObject(writeContext, summary, newPath);
+        Object object = processObject(writeContext, summary, newPath);
+        if (!writeContext.getResponseObject()
+            .getSummary()
+            .getComposedOf()
+            .isEmpty()) {
+          Object key = ((Map) object).keySet()
+              .iterator()
+              .next();
+          object = ((Map) object).get(key);
+        }
+        return object;
       default:
         if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
             || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
@@ -132,12 +143,11 @@ public class JsonResponseMapper {
         .getSummary()
         .getComposedOf()
         .stream()
-        .map(composedSchema -> {
+        .forEach(composedSchema -> {
           ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
-          return ((Map<String, Object>) mapDataToResponse(writeContext, path));
-        })
-        .filter(Objects::nonNull)
-        .forEach(map -> map.forEach(results::put));
+          mergeComposedResponse(path, results, writeContext, writeContext.getResponseObject()
+              .getIdentifier());
+        });
 
     return results;
   }
@@ -230,7 +240,6 @@ public class JsonResponseMapper {
     return null;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
     unwrapChildSchema(parentContext).forEach(child -> {
@@ -243,15 +252,21 @@ public class JsonResponseMapper {
     unwrapComposedSchema(parentContext).forEach(child -> {
       String identifier = child.getResponseObject()
           .getIdentifier();
-      Map childResponse = (Map) mapDataToResponse(child, path);
-
-      if ((result.containsKey(identifier))) {
-        ((Map) result.get(identifier)).putAll(childResponse);
-      } else {
-        result.put(identifier, childResponse);
-      }
+      mergeComposedResponse(path, result, child, identifier);
     });
     return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  private void mergeComposedResponse(String path, Map<String, Object> result, ResponseWriteContext child,
+      String identifier) {
+    Map<String, Object> childResponse = (Map<String, Object>) mapDataToResponse(child, path);
+
+    if ((result.containsKey(identifier))) {
+      ((Map<String, Object>) result.get(identifier)).putAll(childResponse);
+    } else {
+      result.put(identifier, childResponse);
+    }
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
@@ -275,14 +290,6 @@ public class JsonResponseMapper {
             writeContext.getResponseObject()
                 .getIdentifier());
       }
-    }
-
-    if (!writeContext.getResponseObject()
-        .getSummary()
-        .getComposedOf()
-        .isEmpty()) {
-      return ((Map) object).get(writeContext.getResponseObject()
-          .getIdentifier());
     }
 
     return object;
