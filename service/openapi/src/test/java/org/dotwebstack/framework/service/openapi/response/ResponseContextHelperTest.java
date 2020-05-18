@@ -179,6 +179,47 @@ class ResponseContextHelperTest {
   }
 
   @Test
+  void validate_getRequiredResponseObject_withExpandedPaths() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "object", false, root);
+    ResponseObject grandChild = buildResponseObject("grandchild", "string", true, child);
+    child.getSummary()
+        .setChildren(List.of(grandChild));
+    root.getSummary()
+        .setChildren(List.of(child));
+
+    ResponseTemplate template = ResponseTemplate.builder()
+        .responseCode(200)
+        .responseObject(root)
+        .build();
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("root")
+        .fields(List.of(GraphQlField.builder()
+            .name("child")
+            .fields(List.of(GraphQlField.builder()
+                .name("grandchild")
+                .build()))
+            .build()))
+        .build();
+
+    ResponseSchemaContext context = ResponseSchemaContext.builder()
+        .graphQlField(rootField)
+        .responses(List.of(template))
+        .build();
+
+    // Act
+    Set<String> paths =
+        ResponseContextHelper.getPathsForSuccessResponse(context, Map.of(X_DWS_EXPANDED_PARAMS, List.of("child")));
+
+    // Assert
+    assertEquals(2, paths.size());
+    assertTrue(paths.contains("child"));
+    assertTrue(paths.contains("child.grandchild"));
+  }
+
+  @Test
   void validate_getRequiredResponseObject_forComplexObject() {
     // Arrange
     ResponseObject query = buildResponseObject("query", "object", true, true, null);
