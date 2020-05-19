@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,7 +42,7 @@ class ResponseContextHelperTest {
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
 
     // Assert
-    assertEquals(0, paths.size());
+    assertTrue(paths.isEmpty());
   }
 
   @Test
@@ -66,7 +65,7 @@ class ResponseContextHelperTest {
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
 
     // Assert
-    assertEquals(0, paths.size());
+    assertTrue(paths.isEmpty());
   }
 
   @Test
@@ -98,8 +97,8 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
 
     // Assert
-    assertEquals(0, responseObject.entrySet()
-        .size());
+    assertTrue(responseObject.entrySet()
+        .isEmpty());
   }
 
   @Test
@@ -113,8 +112,8 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
 
     // Assert
-    assertEquals(0, responseObject.entrySet()
-        .size());
+    assertTrue(responseObject.entrySet()
+        .isEmpty());
   }
 
   @Test
@@ -132,9 +131,7 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
-        .size());
-    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
+    assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
   }
 
   @Test
@@ -173,9 +170,46 @@ class ResponseContextHelperTest {
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
 
     // Assert
-    assertEquals(2, paths.size());
-    assertTrue(paths.contains("child"));
-    assertTrue(paths.contains("child.grandchild"));
+    assertThat(Set.of("child", "child.grandchild"), is(equalTo(paths)));
+  }
+
+  @Test
+  void validate_getRequiredResponseObject_withExpandedPaths() {
+    // Arrange
+    ResponseObject root = buildResponseObject("root", "object", true, null);
+    ResponseObject child = buildResponseObject("child", "object", false, root);
+    ResponseObject grandChild = buildResponseObject("grandchild", "string", true, child);
+    child.getSummary()
+        .setChildren(List.of(grandChild));
+    root.getSummary()
+        .setChildren(List.of(child));
+
+    ResponseTemplate template = ResponseTemplate.builder()
+        .responseCode(200)
+        .responseObject(root)
+        .build();
+
+    GraphQlField rootField = GraphQlField.builder()
+        .name("root")
+        .fields(List.of(GraphQlField.builder()
+            .name("child")
+            .fields(List.of(GraphQlField.builder()
+                .name("grandchild")
+                .build()))
+            .build()))
+        .build();
+
+    ResponseSchemaContext context = ResponseSchemaContext.builder()
+        .graphQlField(rootField)
+        .responses(List.of(template))
+        .build();
+
+    // Act
+    Set<String> paths =
+        ResponseContextHelper.getPathsForSuccessResponse(context, Map.of(X_DWS_EXPANDED_PARAMS, List.of("child")));
+
+    // Assert
+    assertThat(Set.of("child", "child.grandchild"), is(equalTo(paths)));
   }
 
   @Test
@@ -235,11 +269,7 @@ class ResponseContextHelperTest {
     Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
 
     // Assert
-    assertEquals(4, paths.size());
-    assertTrue(paths.contains("identifier"));
-    assertTrue(paths.contains("beers"));
-    assertTrue(paths.contains("ownerName"));
-    assertTrue(paths.contains("beers.identifier"));
+    assertThat(Set.of("identifier", "beers", "ownerName", "beers.identifier"), is(equalTo(paths)));
   }
 
   @Test
@@ -257,8 +287,7 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
-        .size());
+    assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
     assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
@@ -280,9 +309,9 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
-        .size());
-    assertThat(responseObject.get("grandchild"), is(equalTo(grandchild.getSummary())));
+    assertThat(Set.of("child", "child.grandchild"), is(equalTo(responseObject.keySet())));
+    assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
+    assertThat(responseObject.get("child.grandchild"), is(equalTo(grandchild.getSummary())));
   }
 
   @Test
@@ -300,8 +329,7 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
-        .size());
+    assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
     assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 
@@ -334,8 +362,7 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(2, responseObject.entrySet()
-        .size());
+    assertThat(Set.of("children", "children.identifier"), is(equalTo(responseObject.keySet())));
     assertThat(responseObject.get("children"), is(equalTo(child.getSummary())));
     assertThat(responseObject.get("children.identifier"), is(equalTo(identifier.getSummary())));
   }
@@ -355,8 +382,7 @@ class ResponseContextHelperTest {
         ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
 
     // Assert
-    assertEquals(1, responseObject.entrySet()
-        .size());
+    assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
     assertThat(responseObject.get("child"), is(equalTo(child.getSummary())));
   }
 

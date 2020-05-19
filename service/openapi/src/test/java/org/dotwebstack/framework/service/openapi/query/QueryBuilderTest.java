@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -47,11 +50,36 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, new HashMap<>(), true,
-        "");
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
+        new HashMap<>(), true, "");
 
     // Assert
     assertEquals("{brewery{identifier}}", bodyJoiner.toString());
+  }
+
+  @Test
+  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
+    Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
+    Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
+
+    assertDoesNotThrow(() -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+  }
+
+  @Test
+  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredPathsAreQueried() {
+    Set<String> requiredPaths = Set.of("beers", "beers.identifier", "beers.name");
+    Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
+
+    assertDoesNotThrow(() -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+  }
+
+  @Test
+  public void validateRequiredPathsQueried_returnsError_whenRequiredPathsAreNotQueried() {
+    Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
+    Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
+
+    assertThrows(InvalidConfigurationException.class,
+        () -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -69,7 +97,8 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
+        arguments, true, "");
 
     // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
@@ -92,7 +121,8 @@ public class QueryBuilderTest {
     StringJoiner argumentJoiner = new StringJoiner(",");
 
     // Act
-    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
+    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, new HashSet<>(), bodyJoiner, argumentJoiner,
+        arguments, true, "");
 
     // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());

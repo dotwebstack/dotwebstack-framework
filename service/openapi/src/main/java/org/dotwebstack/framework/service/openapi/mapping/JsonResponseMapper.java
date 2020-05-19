@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapComposedSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,6 +73,7 @@ public class JsonResponseMapper {
     if (Objects.isNull(response)) {
       throw noResultFoundException("Did not find data for your response.");
     }
+
     return toJson(response);
   }
 
@@ -94,7 +96,21 @@ public class JsonResponseMapper {
         }
         return null;
       case OBJECT_TYPE:
-        return processObject(writeContext, summary, newPath);
+        Object object = processObject(writeContext, summary, newPath);
+
+        /*
+         * After the object is mapped, we check if it was a composed schema. If that is the case one layer
+         * is unwrapped in the response. This layer only exist in the schema, not in the response.
+         */
+        if (!writeContext.getResponseObject()
+            .getSummary()
+            .getComposedOf()
+            .isEmpty()) {
+          object = ((Map) object).get(((Map) object).keySet()
+              .iterator()
+              .next());
+        }
+        return object;
       default:
         if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
             || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
@@ -130,13 +146,11 @@ public class JsonResponseMapper {
     parentContext.getResponseObject()
         .getSummary()
         .getComposedOf()
-        .stream()
-        .map(composedSchema -> {
+        .forEach(composedSchema -> {
           ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
-          return ((Map<String, Object>) mapDataToResponse(writeContext, path));
-        })
-        .filter(Objects::nonNull)
-        .forEach(map -> map.forEach(results::put));
+          mergeComposedResponse(path, results, writeContext, writeContext.getResponseObject()
+              .getIdentifier());
+        });
 
     return results;
   }
@@ -229,7 +243,6 @@ public class JsonResponseMapper {
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
     unwrapChildSchema(parentContext).forEach(child -> {
@@ -237,7 +250,30 @@ public class JsonResponseMapper {
       result.put(child.getResponseObject()
           .getIdentifier(), object);
     });
+
+    // for a composed envelope schema, we need to merge the underlying schema's into one result
+    unwrapComposedSchema(parentContext).forEach(child -> {
+      String identifier = child.getResponseObject()
+          .getIdentifier();
+      mergeComposedResponse(path, result, child, identifier);
+    });
     return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  private void mergeComposedResponse(String path, Map<String, Object> result, ResponseWriteContext child,
+      String identifier) {
+    /*
+     * allOf schemas are merged so that the parent object has the combined propertyset of the distinct
+     * composed schemas directly underneath.
+     */
+    Map<String, Object> childResponse = (Map<String, Object>) mapDataToResponse(child, path);
+
+    if ((result.containsKey(identifier))) {
+      ((Map<String, Object>) result.get(identifier)).putAll(childResponse);
+    } else {
+      result.put(identifier, childResponse);
+    }
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
@@ -262,6 +298,7 @@ public class JsonResponseMapper {
                 .getIdentifier());
       }
     }
+
     return object;
   }
 
