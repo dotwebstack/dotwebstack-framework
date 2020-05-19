@@ -51,8 +51,8 @@ public class GraphQlQueryBuilder {
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
     /*
      * This method checks if the paths that are required from the OAS schema are added to the GraphQL
-     * query. This is checked so that we fail fast, a request now always fails if a field is missing
-     * and we can build our tests on that assumption
+     * query. This is checked so that we fail fast, a request now always fails if a field is missing and
+     * we can build our tests on that assumption
      */
     List<String> missingPaths = requiredPaths.stream()
         .filter(requiredPath -> !queriedPaths.contains(requiredPath))
