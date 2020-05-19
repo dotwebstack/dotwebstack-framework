@@ -251,7 +251,7 @@ public class JsonResponseMapper {
           .getIdentifier(), object);
     });
 
-    // for a composed evenlope schema, we need to merge the underlying schema's into one result
+    // for a composed envelope schema, we need to merge the underlying schema's into one result
     unwrapComposedSchema(parentContext).forEach(child -> {
       String identifier = child.getResponseObject()
           .getIdentifier();
