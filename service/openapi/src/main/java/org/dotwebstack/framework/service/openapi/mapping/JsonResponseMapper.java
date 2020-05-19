@@ -97,14 +97,19 @@ public class JsonResponseMapper {
         return null;
       case OBJECT_TYPE:
         Object object = processObject(writeContext, summary, newPath);
+
+        /*
+         * After the object is mapped, we check if it was a composed schema. If that is the case
+         * one layer is unwrapped in the response. This layer only exist in the schema, not in
+         * the response.
+         */
         if (!writeContext.getResponseObject()
             .getSummary()
             .getComposedOf()
             .isEmpty()) {
-          Object key = ((Map) object).keySet()
+          object = ((Map) object).get(((Map) object).keySet()
               .iterator()
-              .next();
-          object = ((Map) object).get(key);
+              .next());
         }
         return object;
       default:
@@ -259,6 +264,10 @@ public class JsonResponseMapper {
   @SuppressWarnings("unchecked")
   private void mergeComposedResponse(String path, Map<String, Object> result, ResponseWriteContext child,
       String identifier) {
+    /*
+     * allOf schemas are merged so that the parent object has the combined propertyset of the distinct
+     * composed schemas directly underneath.
+     */
     Map<String, Object> childResponse = (Map<String, Object>) mapDataToResponse(child, path);
 
     if ((result.containsKey(identifier))) {
