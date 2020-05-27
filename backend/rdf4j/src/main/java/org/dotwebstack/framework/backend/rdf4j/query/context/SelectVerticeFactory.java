@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.m
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 
 import graphql.schema.GraphQLFieldDefinition;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -36,21 +35,21 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   public Vertice createRoot(Variable subject, NodeShape nodeShape, List<FilterRule> filterRules, List<OrderBy> orderBys,
       OuterQuery<?> query) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
-    makeEdgesUnique(vertice.getEdges());
+    vertice.setEdges(makeEdgesUnique(vertice.getEdges()));
     orderBys.forEach(orderBy -> addOrderables(vertice, query, orderBy, nodeShape));
     return vertice;
   }
 
   private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<FilterRule> filterRules) {
-    Vertice vertice = createVertice(subject, nodeShape);
+    Vertice vertice = createVertice(subject, nodeShape, query);
 
     filterRules.forEach(filter -> applyFilter(vertice, nodeShape, filter, query));
     return vertice;
   }
 
-  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
-    List<Edge> edges = new ArrayList<>();
+  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape, @NonNull OuterQuery<?> query) {
+    List<Edge> edges = createRequiredEdges(nodeShape, query);
 
     Set<Iri> iris = nodeShape.getTargetClasses()
         .stream()
@@ -63,6 +62,23 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .subject(subject)
         .edges(edges)
         .build();
+  }
+
+  private List<Edge> createRequiredEdges(@NonNull NodeShape nodeShape, OuterQuery<?> query) {
+    return nodeShape.getPropertyShapes()
+        .values()
+        .stream()
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
+        .map(ps -> {
+          Variable var = query.var();
+          Edge edge = createSimpleEdge(var, ps.getPath(), false, true);
+          if (ps.getNode() != null) {
+            edge.getObject()
+                .setEdges(createRequiredEdges(ps.getNode(), query));
+          }
+          return edge;
+        })
+        .collect(Collectors.toList());
   }
 
   private void applyFilter(Vertice vertice, NodeShape nodeShape, FilterRule filterRule, OuterQuery<?> query) {

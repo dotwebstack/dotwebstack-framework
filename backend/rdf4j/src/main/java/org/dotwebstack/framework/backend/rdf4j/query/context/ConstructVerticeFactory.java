@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
@@ -67,7 +66,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     if (Objects.isNull(fieldPath)) {
       doSortMapping(nodeShape, selectedFields, edges, query);
-      makeEdgesUnique(edges);
       edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
       doFilterMapping(nodeShape, selectedFields, edges, query);
     }
