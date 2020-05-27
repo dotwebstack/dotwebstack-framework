@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {

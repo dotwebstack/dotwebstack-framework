@@ -124,7 +124,7 @@ class Rdf4jConfigurationTest {
     when(rdfResource.getInputStream()).thenReturn(new ByteArrayInputStream(rdfContent.getBytes()));
     when(rdfResource.getFilename()).thenReturn("foo.trig");
     when(rdfResource.isReadable()).thenReturn(true);
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[]{rdfResource});
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {rdfResource});
 
     // Act / Assert
     assertThrows(RDFParseException.class,
@@ -138,7 +138,7 @@ class Rdf4jConfigurationTest {
     when(rdfResource.getFilename()).thenReturn("foo.trig");
     when(rdfResource.isReadable()).thenReturn(true);
     when(rdfResource.getInputStream()).thenThrow(IOException.class);
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[]{rdfResource});
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {rdfResource});
 
     // Act / Assert
     assertThrows(UncheckedIOException.class,
