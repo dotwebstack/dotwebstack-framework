@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.CoreProperties;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -80,6 +82,9 @@ public class OpenApiConfigurationTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
+  @Mock
+  private ResourceLoaderUtils resourceLoaderUtils;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
@@ -89,7 +94,7 @@ public class OpenApiConfigurationTest {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
         Collections.singletonList(templateResponseMapper), responseContextValidator, requestBodyHandlerRouter,
-        getOpenApiProperties(), jexlEngine, environmentProperties);
+        getOpenApiProperties(), jexlEngine, environmentProperties, resourceLoaderUtils);
 
     initOpenApiConfiguration(apiConfiguration);
   }
@@ -110,7 +115,7 @@ public class OpenApiConfigurationTest {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
         Collections.emptyList(), responseContextValidator, requestBodyHandlerRouter, getOpenApiProperties(), jexlEngine,
-        environmentProperties);
+        environmentProperties, resourceLoaderUtils);
 
     initOpenApiConfiguration(apiConfiguration);
 
@@ -131,7 +136,7 @@ public class OpenApiConfigurationTest {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
         Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
-        getOpenApiProperties(), jexlEngine, environmentProperties);
+        getOpenApiProperties(), jexlEngine, environmentProperties, resourceLoaderUtils);
 
     initOpenApiConfiguration(apiConfiguration);
 
@@ -258,7 +263,7 @@ public class OpenApiConfigurationTest {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
         Collections.singletonList(templateResponseMapper), responseContextValidator, requestBodyHandlerRouter,
-        openApiProperties, jexlEngine, environmentProperties);
+        openApiProperties, jexlEngine, environmentProperties, new ResourceLoaderUtils(new CoreProperties()));
 
     initOpenApiConfiguration(apiConfiguration);
 

@@ -95,8 +95,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String DEFAULT_ACCEPT_HEADER_VALUE = "*/*";
 
-  private static final String JSON_SUBTYPE = "json";
-
   private static final String MDC_REQUEST_ID = "requestId";
 
   private OpenAPI openApi;

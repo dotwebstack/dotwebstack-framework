@@ -10,6 +10,9 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -42,6 +46,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,6 +58,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
 public class OpenApiConfiguration {
+
+  private static final String STATIC_ASSETS_LOCATION = "assets/";
 
   private final OpenAPI openApi;
 
@@ -80,12 +87,14 @@ public class OpenApiConfiguration {
 
   private EnvironmentProperties environmentProperties;
 
+  private ResourceLoaderUtils resourceLoaderUtils;
+
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
       ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
       RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
-      EnvironmentProperties environmentProperties) {
+      EnvironmentProperties environmentProperties, ResourceLoaderUtils resourceLoaderUtils) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -102,11 +111,27 @@ public class OpenApiConfiguration {
     this.openApiProperties = openApiProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
+    this.resourceLoaderUtils = resourceLoaderUtils;
+  }
+
+  Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
+    URI staticResourceLocation = resourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION);
+
+    if (staticResourceLocation != null) {
+      if (Files.exists(Paths.get(staticResourceLocation))) {
+        return Optional.of(RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
+            new FileSystemResource(staticResourceLocation.getPath())));
+      }
+    }
+
+    return Optional.empty();
   }
 
   @Bean
   public RouterFunction<ServerResponse> route(@NonNull OpenAPI openApi) {
     RouterFunctions.Builder routerFunctions = RouterFunctions.route();
+
+    staticResourceRouter().ifPresent(routerFunctions::add);
 
     ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
