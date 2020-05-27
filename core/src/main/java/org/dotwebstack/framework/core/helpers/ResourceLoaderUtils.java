@@ -6,21 +6,20 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.dotwebstack.framework.core.CoreProperties;
+
+import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {
-
-  private static CoreProperties coreProperties = new CoreProperties();
 
   public static URI getResourceLocation(String resourceLocation) {
     URI resourceAsUri = null;
 
-    URI uri = coreProperties.getFileConfigPath()
+    URI uri = ResourceProperties.getFileConfigPath()
         .resolve(resourceLocation);
     if (Files.exists(Paths.get(uri))) {
       resourceAsUri = uri;
     } else {
-      URL classpathUrl = ResourceLoaderUtils.class.getResource(coreProperties.getResourcePath()
+      URL classpathUrl = ResourceLoaderUtils.class.getResource(ResourceProperties.getResourcePath()
           .resolve(resourceLocation)
           .getPath());
       if (classpathUrl != null) {

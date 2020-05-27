@@ -47,9 +47,7 @@ public class CoreConfiguration {
   @Profile("!test")
   @Bean
   public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
-    CoreProperties coreProperties = new CoreProperties();
-
-    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties.getResourcePath()
+    Reader reader = new InputStreamReader(resourceLoader.getResource(ResourceProperties.getResourcePath()
         .resolve(FIXED_SCHEMA_NAME)
         .toString())
         .getInputStream());

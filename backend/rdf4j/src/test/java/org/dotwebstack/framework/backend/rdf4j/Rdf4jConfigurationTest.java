@@ -24,7 +24,6 @@ import lombok.Cleanup;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.CoreProperties;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResolver;
@@ -53,8 +52,6 @@ class Rdf4jConfigurationTest {
 
   private Rdf4jProperties rdf4jProperties;
 
-  private CoreProperties coreProperties;
-
   @BeforeEach
   void setUp() {
     ShapeProperties shapeProperties = new ShapeProperties();
@@ -62,8 +59,6 @@ class Rdf4jConfigurationTest {
     shapeProperties.setPrefix(SHAPE_PREFIX);
     rdf4jProperties = new Rdf4jProperties();
     rdf4jProperties.setShape(shapeProperties);
-
-    coreProperties = new CoreProperties();
   }
 
   @Test
