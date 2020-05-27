@@ -10,6 +10,8 @@ import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {
 
+  private ResourceLoaderUtils() {}
+
   public static URI getResourceLocation(String resourceLocation) {
     URI resourceAsUri = null;
 

@@ -4,6 +4,8 @@ import java.net.URI;
 
 public class ResourceProperties {
 
+  private ResourceProperties() {}
+
   private static final String CLASSPATH_PREFIX = "classpath:/";
 
   private static final String FILE_PREFIX = "file:/";
