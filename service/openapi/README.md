@@ -354,4 +354,4 @@ configure a response like the following:
 The template file you are referring to, should be configured in ```config/templates/```. For more information on how to use pebble, see https://pebbletemplates.io.
 
 # 1.5 Static Resources
-In order to use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
+To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
