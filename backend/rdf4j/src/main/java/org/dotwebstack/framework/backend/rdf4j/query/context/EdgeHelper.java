@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasSameType;
 
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
@@ -39,10 +40,12 @@ class EdgeHelper {
   }
 
   private static boolean isEqualEdge(Edge edge1, Edge edge2) {
-    return edge1.getPredicate()
+    boolean queryStringEquals = edge1.getPredicate()
         .getQueryString()
         .equals(edge2.getPredicate()
             .getQueryString());
+    boolean typeEquals = hasSameType(edge1, edge2);
+    return queryStringEquals && typeEquals;
   }
 
   private static Consumer<Edge> addToDuplicate(Edge edge) {

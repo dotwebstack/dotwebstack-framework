@@ -201,7 +201,7 @@ abstract class AbstractVerticeFactory {
         .filter(childEdge -> hasEqualQueryString(childEdge, propertyShape))
         .filter(childEdge -> hasEqualTargetClass(childEdge, propertyShape))
         .findFirst()
-        .orElse(getNewEdge(propertyShape, vertice, required, isVisible, query));
+        .orElseGet(() -> getNewEdge(propertyShape, vertice, required, isVisible, query));
     if (required) {
       edge.setOptional(false);
     }

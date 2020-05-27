@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
@@ -66,6 +67,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     if (Objects.isNull(fieldPath)) {
       doSortMapping(nodeShape, selectedFields, edges, query);
+      makeEdgesUnique(edges);
       edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
       doFilterMapping(nodeShape, selectedFields, edges, query);
     }
@@ -77,10 +79,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     NodeShape childShape = propertyShape.getNode();
     Edge edge;
+    boolean optional = propertyShape.getMinCount() == null || propertyShape.getMinCount() < 1;
     if (Objects.isNull(childShape)) {
-      edge = createSimpleEdge(query.var(), propertyShape.getPath(), true, true);
+      edge = createSimpleEdge(query.var(), propertyShape.getPath(), optional, true);
     } else {
-      edge = createComplexEdge(nodeShape, selectedField, fieldPath, query);
+      edge = createComplexEdge(nodeShape, selectedField, fieldPath, optional, query);
     }
 
     addLanguageFilter(edge, propertyShape);
@@ -192,7 +195,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
    * A complex edge is an edge with filters vertices/filters added to it
    */
   private Edge createComplexEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath,
-      OuterQuery<?> query) {
+      boolean optional, OuterQuery<?> query) {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     BasePath path = propertyShape.getPath();
 
@@ -204,7 +207,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
                 .flatMap(FieldPath::rest)
                 .orElse(null),
             query.var(), query))
-        .isOptional(true)
+        .isOptional(optional)
         .isVisible(true)
         .aggregate(createAggregate(selectedField.getFieldDefinition(), query.var()).orElse(null))
         .build();

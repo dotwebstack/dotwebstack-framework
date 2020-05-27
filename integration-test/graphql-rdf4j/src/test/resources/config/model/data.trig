@@ -132,6 +132,7 @@ ingredient_id:3 a beer_def:Ingredient ;
 ingredient_id:4 a beer_def:Ingredient ;
   beer_def:test test_id:4 ;
   beer_def:identifier "4";
+  schema:name "Citroen"
 .
 
 test_id:1 a beer_def:Test ;

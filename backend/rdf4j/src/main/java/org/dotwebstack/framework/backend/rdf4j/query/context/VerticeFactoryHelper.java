@@ -57,6 +57,23 @@ class VerticeFactoryHelper {
         .anyMatch(childEdge -> isOfType(childEdge, types));
   }
 
+  static boolean hasSameType(Edge edge, Edge edge2) {
+    Set<Edge> types2 = edge2.getObject()
+        .getEdges()
+        .stream()
+        .filter(e -> stringify(RDF.TYPE).equals(e.getPredicate()
+            .getQueryString()))
+        .collect(Collectors.toSet());
+    Set<Edge> types = edge.getObject()
+        .getEdges()
+        .stream()
+        .filter(e -> stringify(RDF.TYPE).equals(e.getPredicate()
+            .getQueryString()))
+        .collect(Collectors.toSet());
+    types2.retainAll(types);
+    return !types2.isEmpty();
+  }
+
   /*
    * Find out whether the given edge is of any of the given types
    */
