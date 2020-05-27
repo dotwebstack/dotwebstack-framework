@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
@@ -18,6 +19,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactor
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
@@ -73,7 +75,6 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Vertice root = selectVerticeFactory.createRoot(SUBJECT_VAR, nodeShape, filterRules, orderBys, query);
 
     query.select(root.getSubject())
-        .distinct()
         .where(VerticeHelper.getWherePatterns(root)
             .toArray(new GraphPattern[] {}));
 
@@ -82,11 +83,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    if (distinctQuery(sparqlDirective)) {
+    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape)) {
       return this.query.distinct()
           .getQueryString();
     }
     return this.query.getQueryString();
+  }
+
+  private boolean distinctQuery(NodeShape nodeShape) {
+    return propertyShapeStream(nodeShape)
+        .anyMatch(ps -> ps.getNode() != null && ps.getMaxCount() != null && ps.getMaxCount() > 1);
   }
 
   private boolean distinctQuery(@NonNull GraphQLDirective sparqlDirective) {
@@ -94,6 +100,17 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         .map(directive -> directive.getArgument(Rdf4jDirectives.SPARQL_ARG_DISTINCT))
         .map(argument -> (Boolean) argument.getValue())
         .orElse(false);
+  }
+
+  private Stream<PropertyShape> propertyShapeStream(NodeShape nodeShape) {
+    return Stream.concat(nodeShape.getPropertyShapes()
+        .values()
+        .stream(),
+        nodeShape.getPropertyShapes()
+            .values()
+            .stream()
+            .filter(ps -> ps.getNode() != null)
+            .flatMap(ps -> propertyShapeStream(ps.getNode())));
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
