@@ -20,8 +20,8 @@ public class OpenApiSchemaConfiguration {
 
   private final CoreProperties coreProperties;
 
-  public OpenApiSchemaConfiguration(CoreProperties properties) {
-    this.coreProperties = properties;
+  public OpenApiSchemaConfiguration() {
+    this.coreProperties = new CoreProperties();
   }
 
   @Bean

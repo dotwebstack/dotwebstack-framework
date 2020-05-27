@@ -6,8 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.util.Collections;
 import java.util.Map;
-import org.dotwebstack.framework.core.CoreProperties;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.junit.jupiter.api.Test;
 
 class PebbleTemplatingConfigurationTest {
@@ -17,8 +15,7 @@ class PebbleTemplatingConfigurationTest {
   @Test
   void testConfiguration_readsTemplates_successfully() {
     // Arrange
-    templatingConfiguration =
-        new PebbleTemplatingConfiguration(new ResourceLoaderUtils(new CoreProperties()), Collections.emptyList());
+    templatingConfiguration = new PebbleTemplatingConfiguration(Collections.emptyList());
 
     // Act
     Map<String, PebbleTemplate> templateMap = templatingConfiguration.htmlTemplates();

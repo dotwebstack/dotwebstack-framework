@@ -452,6 +452,7 @@ class OpenApiRdf4jIntegrationTest {
 
     String expectedResult = "<html>\n" + "<body>Hello World!</body>\n" + "</html>";
 
+    // Assert
     assertEquals(result, expectedResult);
   }
 

@@ -102,10 +102,11 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  LocalRepositoryManager localRepositoryManager(@NonNull CoreProperties coreProperties,
-      @NonNull Rdf4jProperties rdf4jProperties, @NonNull ConfigFactory configFactory,
-      @NonNull ResourceLoader resourceLoader) throws IOException {
+  LocalRepositoryManager localRepositoryManager(@NonNull Rdf4jProperties rdf4jProperties,
+      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
+
+    CoreProperties coreProperties = new CoreProperties();
 
     File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
         .toFile();
@@ -154,9 +155,10 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader,
-      @NonNull CoreProperties coreProperties) throws IOException {
+  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
     Map<String, String> result = new HashMap<>();
+
+    CoreProperties coreProperties = new CoreProperties();
 
     URI resourcePath = coreProperties.getResourcePath();
     URI sparqlFolder = resourcePath.resolve(SPARQL_PATH);

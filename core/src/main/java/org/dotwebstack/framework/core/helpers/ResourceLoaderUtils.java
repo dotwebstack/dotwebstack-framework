@@ -7,20 +7,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.dotwebstack.framework.core.CoreProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-@EnableConfigurationProperties(CoreProperties.class)
 public class ResourceLoaderUtils {
 
-  private CoreProperties coreProperties;
+  private static CoreProperties coreProperties = new CoreProperties();
 
-  public ResourceLoaderUtils(CoreProperties coreProperties) {
-    this.coreProperties = coreProperties;
-  }
-
-  public URI getResourceLocation(String resourceLocation) {
+  public static URI getResourceLocation(String resourceLocation) {
     URI resourceAsUri = null;
 
     URI uri = coreProperties.getFileConfigPath()
@@ -28,7 +20,7 @@ public class ResourceLoaderUtils {
     if (Files.exists(Paths.get(uri))) {
       resourceAsUri = uri;
     } else {
-      URL classpathUrl = getClass().getResource(coreProperties.getResourcePath()
+      URL classpathUrl = ResourceLoaderUtils.class.getResource(coreProperties.getResourcePath()
           .resolve(resourceLocation)
           .getPath());
       if (classpathUrl != null) {

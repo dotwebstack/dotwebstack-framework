@@ -87,14 +87,12 @@ public class OpenApiConfiguration {
 
   private EnvironmentProperties environmentProperties;
 
-  private ResourceLoaderUtils resourceLoaderUtils;
-
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
       ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
       RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
-      EnvironmentProperties environmentProperties, ResourceLoaderUtils resourceLoaderUtils) {
+      EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -111,11 +109,10 @@ public class OpenApiConfiguration {
     this.openApiProperties = openApiProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
-    this.resourceLoaderUtils = resourceLoaderUtils;
   }
 
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
-    URI staticResourceLocation = resourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION);
+    URI staticResourceLocation = ResourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION);
 
     if (staticResourceLocation != null) {
       if (Files.exists(Paths.get(staticResourceLocation))) {

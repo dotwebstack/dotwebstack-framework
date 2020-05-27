@@ -38,9 +38,9 @@ public class PebbleTemplatingConfiguration {
 
   private URI templatesLocation;
 
-  public PebbleTemplatingConfiguration(ResourceLoaderUtils resourceLoaderUtils, List<Extension> extensions) {
+  public PebbleTemplatingConfiguration(List<Extension> extensions) {
 
-    templatesLocation = resourceLoaderUtils.getResourceLocation(TEMPLATES_LOCATION);
+    templatesLocation = ResourceLoaderUtils.getResourceLocation(TEMPLATES_LOCATION);
 
     this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
         .loader(getTemplateLoader())
