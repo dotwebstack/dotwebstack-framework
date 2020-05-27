@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URI;
 import org.junit.jupiter.api.Test;
 
-public class ResourceLoaderUtilsTest {
+class ResourceLoaderUtilsTest {
 
   @Test
   void assert_notNull_AssetsResource() {
