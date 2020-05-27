@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
-public class OpenApiSchemaConfigurationTest {
+class OpenApiSchemaConfigurationTest {
 
   @Test
   void test_openApiStream() throws FileNotFoundException {
