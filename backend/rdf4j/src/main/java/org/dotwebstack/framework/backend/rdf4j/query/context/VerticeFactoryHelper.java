@@ -57,21 +57,20 @@ class VerticeFactoryHelper {
         .anyMatch(childEdge -> isOfType(childEdge, types));
   }
 
-  static boolean hasSameType(Edge edge, Edge edge2) {
-    Set<Edge> types2 = edge2.getObject()
+  static boolean hasSameType(Edge edge1, Edge edge2) {
+    return edge1.getObject()
         .getEdges()
         .stream()
-        .filter(e -> stringify(RDF.TYPE).equals(e.getPredicate()
+        .filter(e1 -> stringify(RDF.TYPE).equals(e1.getPredicate()
             .getQueryString()))
-        .collect(Collectors.toSet());
-    Set<Edge> types = edge.getObject()
-        .getEdges()
-        .stream()
-        .filter(e -> stringify(RDF.TYPE).equals(e.getPredicate()
-            .getQueryString()))
-        .collect(Collectors.toSet());
-    types2.retainAll(types);
-    return !types2.isEmpty();
+        .flatMap(e1 -> e1.getObject().getIris().stream())
+        .anyMatch(type1 -> edge2.getObject()
+            .getEdges()
+            .stream()
+            .filter(e2 -> stringify(RDF.TYPE).equals(e2.getPredicate()
+                .getQueryString()))
+            .flatMap(e2 -> e2.getObject().getIris().stream())
+            .anyMatch(type2 -> Objects.equals(type1.getQueryString(), type2.getQueryString())));
   }
 
   /*

@@ -48,8 +48,8 @@ class EdgeHelper {
         .getQueryString()
         .equals(edge2.getPredicate()
             .getQueryString());
-    boolean typeEquals = hasSameType(edge1, edge2);
-    return queryStringEquals && typeEquals;
+
+    return queryStringEquals && hasSameType(edge1, edge2);
   }
 
   private static Consumer<Edge> addToDuplicate(Edge edge) {
