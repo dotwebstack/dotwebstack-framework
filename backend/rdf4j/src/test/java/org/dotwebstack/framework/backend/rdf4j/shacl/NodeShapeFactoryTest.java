@@ -3,10 +3,13 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactoryTest.loadShapeModel;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.Map;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -100,6 +103,30 @@ class NodeShapeFactoryTest {
         .getTargetClasses()
         .iterator()
         .next(), equalTo(INGREDIENT_CLASS));
+  }
+
+  @Test
+  public void validatePropertyShapes_doesNotThrowError_forValidPropertyShapes() {
+    // Arrange
+    Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
+        .identifier(() -> "beer_sh:Beer")
+        .minCount(1)
+        .build());
+
+    // Act & Assert
+    assertDoesNotThrow(() -> NodeShapeFactory.validatePropertyShapes(propertyShapes));
+  }
+
+  @Test
+  public void validatePropertyShapes_throwsError_forPropertyShapeWithMinCount5() {
+    // Arrange
+    Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
+        .identifier(() -> "beer_sh:Beer")
+        .minCount(5)
+        .build());
+
+    // Act & Assert
+    assertThrows(InvalidConfigurationException.class, () -> NodeShapeFactory.validatePropertyShapes(propertyShapes));
   }
 
 }

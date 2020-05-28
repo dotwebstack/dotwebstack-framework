@@ -86,13 +86,24 @@ public class NodeShapeFactory {
         .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
         .collect(Collectors.toList());
 
-    Map<String, PropertyShape> result = new HashMap<>();
+    Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
     Stream.concat(propertyShapesList.stream(), orShapes.stream())
-        .filter(propertyShape -> !result.containsKey(propertyShape.getName()))
-        .forEach(propertyShape -> result.put(propertyShape.getName(), propertyShape));
+        .filter(propertyShape -> !propertyShapes.containsKey(propertyShape.getName()))
+        .forEach(propertyShape -> propertyShapes.put(propertyShape.getName(), propertyShape));
 
-    return result;
+    validatePropertyShapes(propertyShapes);
+    return propertyShapes;
+  }
+
+  static void validatePropertyShapes(Map<String, PropertyShape> propertyShapes) {
+    propertyShapes.values()
+        .forEach(propertyShape -> {
+          if (propertyShape.getMinCount() != null && propertyShape.getMinCount() > 1) {
+            throw invalidConfigurationException("Propertyshape {} has a minCount > 1, which is not yet supported",
+                propertyShape.getIdentifier());
+          }
+        });
   }
 
   private static List<Resource> getOrPropertyShapes(Model shapeModel, Resource nodeShape) {

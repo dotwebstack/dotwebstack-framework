@@ -13,6 +13,7 @@ public class VerticeFactoryHelperTest {
 
   @Test
   public void hasSameType_returnsTrue_forSameEdge() {
+    // Arrange
     Edge edge1 = Edge.builder()
         .object(Vertice.builder()
             .edges(List.of(Edge.builder()
@@ -24,11 +25,13 @@ public class VerticeFactoryHelperTest {
             .build())
         .build();
 
+    // Act & Assert
     assertTrue(VerticeFactoryHelper.hasSameType(edge1, edge1));
   }
 
   @Test
   public void hasSameType_returnsFalse_forEdgesWithDifferentTypes() {
+    // Arrange
     Edge edge1 = Edge.builder()
         .object(Vertice.builder()
             .edges(List.of(Edge.builder()
@@ -51,11 +54,13 @@ public class VerticeFactoryHelperTest {
             .build())
         .build();
 
+    // Act & Assert
     assertFalse(VerticeFactoryHelper.hasSameType(edge1, edge2));
   }
 
   @Test
   public void hasSameType_returnsFalse_forEdgeWithoutAType() {
+    // Arrange
     Edge edge1 = Edge.builder()
         .object(Vertice.builder()
             .edges(List.of(Edge.builder()
@@ -78,11 +83,13 @@ public class VerticeFactoryHelperTest {
             .build())
         .build();
 
+    // Act & Assert
     assertFalse(VerticeFactoryHelper.hasSameType(edge1, edge2));
   }
 
   @Test
   public void hasSameType_returnsTrue_forEdgesWithOverlappingType() {
+    // Arrange
     Edge edge1 = Edge.builder()
         .object(Vertice.builder()
             .edges(List.of(Edge.builder()
@@ -107,6 +114,7 @@ public class VerticeFactoryHelperTest {
             .build())
         .build();
 
+    // Act & Assert
     assertTrue(VerticeFactoryHelper.hasSameType(edge1, edge2));
   }
 
