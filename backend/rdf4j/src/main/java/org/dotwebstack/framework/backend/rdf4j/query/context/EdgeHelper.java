@@ -39,6 +39,10 @@ class EdgeHelper {
         .getTargetClasses());
   }
 
+  static boolean isEqualToEdge(PropertyShape propertyShape, Edge edge) {
+    return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge, propertyShape);
+  }
+
   private static boolean isEqualEdge(Edge edge1, Edge edge2) {
     boolean queryStringEquals = edge1.getPredicate()
         .getQueryString()

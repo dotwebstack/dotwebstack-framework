@@ -64,7 +64,11 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .build();
   }
 
-  private List<Edge> createRequiredEdges(@NonNull NodeShape nodeShape, OuterQuery<?> query) {
+  /*
+   * Check which edges should be added to the where part of the query based on a sh:minCount property
+   * of 1
+   */
+  List<Edge> createRequiredEdges(@NonNull NodeShape nodeShape, OuterQuery<?> query) {
     return nodeShape.getPropertyShapes()
         .values()
         .stream()

@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.isEqualToEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
@@ -42,7 +43,43 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
   public Vertice createRoot(@NonNull NodeShape nodeShape, @NonNull List<SelectedField> fields,
       @NonNull OuterQuery<?> query) {
-    return createVertice(nodeShape, fields, null, query.var(), query);
+    Vertice root = createVertice(nodeShape, fields, null, query.var(), query);
+    addRequiredEdges(root, nodeShape, query);
+    return root;
+  }
+
+  private void addRequiredEdges(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query) {
+    List<PropertyShape> unselectedFields = nodeShape.getPropertyShapes()
+        .values()
+        .stream()
+        .filter(propertyShape -> vertice.getEdges()
+            .stream()
+            .noneMatch(edge -> isEqualToEdge(propertyShape, edge)))
+        .collect(Collectors.toList());
+
+    List<Edge> edges = unselectedFields.stream()
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
+        .map(ps -> {
+          Variable var = query.var();
+          return createSimpleEdge(var, ps.getPath(), false, false);
+        })
+        .collect(Collectors.toList());
+    vertice.getEdges()
+        .addAll(edges);
+
+    vertice.getEdges()
+        .forEach(edge -> {
+          nodeShape.getPropertyShapes()
+              .values()
+              .stream()
+              .filter(propertyShape -> isEqualToEdge(propertyShape, edge))
+              .findFirst()
+              .ifPresent(childPropertyShape -> {
+                if (childPropertyShape.getNode() != null) {
+                  addRequiredEdges(edge.getObject(), childPropertyShape.getNode(), query);
+                }
+              });
+        });
   }
 
   private Vertice createVertice(NodeShape nodeShape, List<SelectedField> fields, FieldPath fieldPath,
