@@ -142,6 +142,11 @@ ingredient_id:4 a beer_def:Ingredient ;
   schema:name "Citroen"
 .
 
+ingredient_id:5 a beer_def:Ingredient ;
+  beer_def:identifier "5";
+  schema:name "Invalid_Ingredient"
+.
+
 test_id:1 a beer_def:Test ;
   beer_def:identifier test_id:1 ;
 .
