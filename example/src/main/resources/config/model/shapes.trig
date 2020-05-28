@@ -20,7 +20,7 @@
   beer_sh:Identifier a sh:PropertyShape ;
     sh:name "identifier" ;
     sh:path beer_def:identifier ;
-    sh:minCount 2 ;
+    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
