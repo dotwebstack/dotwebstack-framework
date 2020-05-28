@@ -4,9 +4,12 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -91,7 +94,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private boolean distinctQuery(NodeShape nodeShape) {
-    return propertyShapeStream(nodeShape)
+    return getPropertyShapeSet(nodeShape).stream()
         .anyMatch(ps -> ps.getNode() != null && ps.getMaxCount() != null && ps.getMaxCount() > 1);
   }
 
@@ -102,15 +105,14 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         .orElse(false);
   }
 
-  private Stream<PropertyShape> propertyShapeStream(NodeShape nodeShape) {
-    return Stream.concat(nodeShape.getPropertyShapes()
-        .values()
-        .stream(),
-        nodeShape.getPropertyShapes()
-            .values()
-            .stream()
-            .filter(ps -> ps.getNode() != null)
-            .flatMap(ps -> propertyShapeStream(ps.getNode())));
+  private Set<PropertyShape> getPropertyShapeSet(NodeShape nodeShape) {
+    Set<PropertyShape> propertyShapes = new HashSet<>(nodeShape.getPropertyShapes().values());
+    propertyShapes.forEach(propertyShape -> {
+      if (!propertyShapes.contains(propertyShape) && propertyShape.getNode() != null) {
+        propertyShapes.addAll(getPropertyShapeSet(propertyShape.getNode()));
+      }
+    });
+    return propertyShapes;
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
