@@ -1,14 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Set;
-
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Set;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.junit.jupiter.api.Test;
 
 public class VerticeFactoryHelperTest {
 

@@ -63,13 +63,17 @@ class VerticeFactoryHelper {
         .stream()
         .filter(e1 -> stringify(RDF.TYPE).equals(e1.getPredicate()
             .getQueryString()))
-        .flatMap(e1 -> e1.getObject().getIris().stream())
+        .flatMap(e1 -> e1.getObject()
+            .getIris()
+            .stream())
         .anyMatch(type1 -> edge2.getObject()
             .getEdges()
             .stream()
             .filter(e2 -> stringify(RDF.TYPE).equals(e2.getPredicate()
                 .getQueryString()))
-            .flatMap(e2 -> e2.getObject().getIris().stream())
+            .flatMap(e2 -> e2.getObject()
+                .getIris()
+                .stream())
             .anyMatch(type2 -> Objects.equals(type1.getQueryString(), type2.getQueryString())));
   }
 
