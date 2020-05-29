@@ -352,3 +352,7 @@ configure a response like the following:
                 ...
 ```
 The template file you are referring to, should be configured in ```config/templates/```. For more information on how to use pebble, see https://pebbletemplates.io.
+
+# 1.5 Static Resources
+To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
+The resource will become available on ```http://{your-dws-service}/assets/your-image.jpg```

@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -26,7 +25,6 @@ import org.springframework.core.io.ResourceLoader;
 
 @Slf4j
 @Configuration
-@EnableConfigurationProperties(CoreProperties.class)
 public class CoreConfiguration {
 
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
@@ -48,9 +46,8 @@ public class CoreConfiguration {
 
   @Profile("!test")
   @Bean
-  public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader,
-      @NonNull CoreProperties coreProperties) throws IOException {
-    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties.getResourcePath()
+  public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
+    Reader reader = new InputStreamReader(resourceLoader.getResource(ResourceProperties.getResourcePath()
         .resolve(FIXED_SCHEMA_NAME)
         .toString())
         .getInputStream());

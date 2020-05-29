@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
@@ -126,6 +127,37 @@ public class OpenApiConfigurationTest {
   }
 
   @Test
+  public void test_toOptionRouterFunction() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    // Act
+    Optional<RouterFunction<ServerResponse>> response =
+        apiConfiguration.toOptionRouterFunction(Collections.emptyList());
+
+    // Assert
+    assertTrue(response.isEmpty());
+  }
+
+  @Test
+  public void test_toOptionRouterFunction_WithNullArgument() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    // Act
+    Optional<RouterFunction<ServerResponse>> response = apiConfiguration.toOptionRouterFunction(null);
+
+    // Assert
+    assertTrue(response.isEmpty());
+  }
+
+  @Test
   public void route_ThrowsException_InvalidConfigurationException() {
     // Arrange
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
@@ -141,6 +173,21 @@ public class OpenApiConfigurationTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));
+  }
+
+  @Test
+  public void test_staticResourceRouter() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    // Act
+    Optional<RouterFunction<ServerResponse>> result = apiConfiguration.staticResourceRouter();
+
+    // Assert
+    assertTrue(result.isPresent());
   }
 
   @Test
