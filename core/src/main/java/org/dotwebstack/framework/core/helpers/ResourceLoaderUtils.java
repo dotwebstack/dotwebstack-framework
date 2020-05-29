@@ -27,7 +27,7 @@ public class ResourceLoaderUtils {
         try {
           uri = classpathUrl.toURI();
         } catch (Exception e) {
-          throw illegalStateException("Cannot get URI from classpathUrl");
+          throw illegalStateException(format("Cannot get URI from classpathUrl %s",classpathUrl));
         }
 
         if (Files.exists(Paths.get(uri))) {
