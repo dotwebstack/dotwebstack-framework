@@ -207,4 +207,18 @@ class Rdf4jConfigurationTest {
     assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));
   }
 
+  @Test
+  void return_EmptyQueryReferenceRegistry_When_SparqlResourceFolder_DoesntExists() throws IOException {
+    // Arrange
+    Resource sparqlResource = mock(Resource.class);
+    when(sparqlResource.exists()).thenReturn(false);
+    when(resourceLoader.getResource(anyString())).thenReturn(sparqlResource);
+
+    // Act
+    Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
+
+    // Assert
+    assertThat(result.size(), is(0));
+  }
+
 }

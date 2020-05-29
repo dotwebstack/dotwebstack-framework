@@ -6,13 +6,14 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {
 
   private ResourceLoaderUtils() {}
 
-  public static URI getResourceLocation(String resourceLocation) {
+  public static URI getResourceLocation(@NonNull String resourceLocation) {
     URI resourceAsUri = null;
 
     URI uri = ResourceProperties.getFileConfigPath()
@@ -27,7 +28,7 @@ public class ResourceLoaderUtils {
         try {
           uri = classpathUrl.toURI();
         } catch (Exception e) {
-          throw illegalStateException(format("Cannot get URI from classpathUrl %s",classpathUrl));
+          throw illegalStateException(String.format("Cannot get URI from classpathUrl %s", classpathUrl));
         }
 
         if (Files.exists(Paths.get(uri))) {
