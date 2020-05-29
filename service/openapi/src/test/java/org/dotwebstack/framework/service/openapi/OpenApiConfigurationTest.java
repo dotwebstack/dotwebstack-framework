@@ -143,6 +143,21 @@ public class OpenApiConfigurationTest {
   }
 
   @Test
+  public void test_toOptionRouterFunction_WithNullArgument() {
+    // Arrange
+    OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
+        jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
+        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        getOpenApiProperties(), jexlEngine, environmentProperties);
+
+    // Act
+    Optional<RouterFunction<ServerResponse>> response = apiConfiguration.toOptionRouterFunction(null);
+
+    // Assert
+    assertTrue(response.isEmpty());
+  }
+
+  @Test
   public void route_ThrowsException_InvalidConfigurationException() {
     // Arrange
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),

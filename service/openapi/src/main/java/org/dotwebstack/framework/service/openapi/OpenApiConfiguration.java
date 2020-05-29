@@ -246,8 +246,8 @@ public class OpenApiConfiguration {
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
-      @NonNull List<HttpMethodOperation> httpMethodOperations) {
-    if (httpMethodOperations.isEmpty()) {
+      List<HttpMethodOperation> httpMethodOperations) {
+    if (httpMethodOperations == null || httpMethodOperations.isEmpty()) {
       return Optional.empty();
     }
 
