@@ -115,10 +115,8 @@ public class OpenApiConfiguration {
     URI staticResourceLocation = ResourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION);
 
     if (staticResourceLocation != null && Files.exists(Paths.get(staticResourceLocation))) {
-      if (Files.exists(Paths.get(staticResourceLocation))) {
-        return Optional.of(RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
-            new FileSystemResource(staticResourceLocation.getPath())));
-      }
+      return Optional.of(RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
+          new FileSystemResource(staticResourceLocation.getPath())));
     }
 
     return Optional.empty();
