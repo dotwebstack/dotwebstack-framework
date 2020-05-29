@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.core.helpers;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import org.dotwebstack.framework.core.ResourceProperties;
-
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {
 
@@ -24,7 +23,7 @@ public class ResourceLoaderUtils {
           .resolve(resourceLocation)
           .getPath());
       if (classpathUrl != null) {
-          uri = classpathUrl.toURI();
+        uri = classpathUrl.toURI();
 
         if (uriExists(uri)) {
           resourceAsUri = uri;
