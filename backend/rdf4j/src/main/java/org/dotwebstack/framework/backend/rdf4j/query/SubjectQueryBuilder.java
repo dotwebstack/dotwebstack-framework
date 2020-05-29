@@ -4,14 +4,12 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
@@ -106,7 +104,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private Set<PropertyShape> getPropertyShapeSet(NodeShape nodeShape) {
-    Set<PropertyShape> propertyShapes = new HashSet<>(nodeShape.getPropertyShapes().values());
+    Set<PropertyShape> propertyShapes = new HashSet<>(nodeShape.getPropertyShapes()
+        .values());
     propertyShapes.forEach(propertyShape -> {
       if (!propertyShapes.contains(propertyShape) && propertyShape.getNode() != null) {
         propertyShapes.addAll(getPropertyShapeSet(propertyShape.getNode()));
