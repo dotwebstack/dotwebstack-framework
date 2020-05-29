@@ -13,7 +13,7 @@ public final class NodeShape {
 
   private final IRI identifier;
 
-  private final Set<IRI> targetClasses;
+  private final Set<IRI> classes;
 
   private final IRI parent;
 

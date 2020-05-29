@@ -117,7 +117,7 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_ForSimpleBreweryNodeShape() {
     // Arrange
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -152,7 +152,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -187,7 +187,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -227,7 +227,7 @@ public class VerticeFactoryTest {
     NodeShape ingredientShape = NodeShape.builder()
         .name("Ingredient")
         .propertyShapes(ImmutableMap.of("name", ingredientName))
-        .targetClasses(Set.of(INGREDIENTS_TARGET_CLASS))
+        .classes(Set.of(INGREDIENTS_TARGET_CLASS))
         .build();
 
     PropertyShape beerIngredients = PropertyShape.builder()
@@ -242,7 +242,7 @@ public class VerticeFactoryTest {
     NodeShape beersShape = NodeShape.builder()
         .name("Beer")
         .propertyShapes(ImmutableMap.of("ingredients", beerIngredients))
-        .targetClasses(Set.of(BEERS_TARGET_CLASS))
+        .classes(Set.of(BEERS_TARGET_CLASS))
         .build();
 
     PropertyShape breweryBeers = PropertyShape.builder()
@@ -257,7 +257,7 @@ public class VerticeFactoryTest {
 
 
     when(nodeShape.getPropertyShape("beers")).thenReturn(breweryBeers);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
 
     SelectQuery query = Queries.SELECT();
 
@@ -321,7 +321,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -367,7 +367,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(BREWERY_NAME_FIELD)).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     when(selectedField.getName()).thenReturn(BREWERY_NAME_FIELD);

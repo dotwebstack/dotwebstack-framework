@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPro
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.constants.Rdf4jConstants;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
@@ -49,7 +49,7 @@ public class NodeShapeFactory {
     NodeShape nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
-        .targetClasses(Models.getPropertyIRIs(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .classes(Models.getPropertyIRIs(shapeModel, identifier, SHACL.CLASS))
         .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS).orElse(null))
         .propertyShapes(propertyShapes)
         .build();
@@ -149,7 +149,7 @@ public class NodeShapeFactory {
        * if a sh:node is present, it means a reference exist to another NodeShape. For that reason the
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
-      IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
+      IRI nodeIri = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
       builder.node(createShapeFromModel(shapeModel, nodeIri, nodeShapeMap));
 
       usedShape = nodeIri;
@@ -164,13 +164,13 @@ public class NodeShapeFactory {
       }
     }
 
-    builder.identifier(usedShape)
-        .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
-            .map(Literal::intValue)
-            .orElse(null))
-        .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
-            .map(Literal::intValue)
-            .orElse(null));
+    builder.constraints(Stream.of(ConstraintType.values())
+        .map(constraint -> new AbstractMap.SimpleEntry<ConstraintType, Object>(constraint,
+            Models.getProperty(shapeModel, shape, constraint.getShaclType())
+                .orElse(null)))
+        .filter(entry -> entry.getValue() != null)
+        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+    builder.identifier(usedShape);
 
     return builder.build();
   }
@@ -232,8 +232,7 @@ public class NodeShapeFactory {
       parentShape.getPropertyShapes()
           .forEach((key, value) -> {
             if (!nodeShape.getPropertyShapes()
-                .keySet()
-                .contains(key)) {
+                .containsKey(key)) {
               nodeShape.getPropertyShapes()
                   .put(key, value);
             }

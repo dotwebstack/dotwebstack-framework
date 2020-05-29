@@ -35,7 +35,6 @@ import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -201,7 +200,7 @@ abstract class AbstractVerticeFactory {
         .filter(childEdge -> hasEqualQueryString(childEdge, propertyShape))
         .filter(childEdge -> hasEqualTargetClass(childEdge, propertyShape))
         .findFirst()
-        .orElseGet(() -> getNewEdge(propertyShape, vertice, required, isVisible, query));
+        .orElseGet(() -> getNewEdge(propertyShape, vertice, isVisible, required, query));
     if (required) {
       edge.setOptional(false);
     }
@@ -260,10 +259,8 @@ abstract class AbstractVerticeFactory {
           .map(edge -> getSubjectForField(edge, nodeShape, fieldPath));
     }
 
-    BasePath path = nodeShape.getPropertyShape(fieldPath.first()
-        .getName())
-        .getPath();
-    Edge simpleEdge = createSimpleEdge(query.var(), path, !fieldPath.isRequired(), false);
+    Edge simpleEdge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPath.first()
+        .getName()), false, !fieldPath.isRequired());
 
     vertice.getEdges()
         .add(simpleEdge);
@@ -271,6 +268,14 @@ abstract class AbstractVerticeFactory {
     return fieldPath.rest()
         .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), childShape, remainder, query)
             .map(edge -> getSubjectForField(edge, childShape, remainder)));
+  }
+
+  void addHasValueConstraint(Edge edge, PropertyShape propertyShape) {
+    if (propertyShape.getHasValue() != null) {
+      Vertice object = edge.getObject();
+      object.getEdges()
+          .add(createSimpleEdge(propertyShape.getHasValue(), propertyShape, false, false));
+    }
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {

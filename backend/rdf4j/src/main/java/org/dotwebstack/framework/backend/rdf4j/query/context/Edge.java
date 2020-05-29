@@ -3,12 +3,15 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import java.util.Objects;
 import lombok.Builder;
 import lombok.Data;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 
 @Data
 @Builder
 class Edge implements Comparable<Edge> {
+
+  private PropertyShape propertyShape;
 
   private RdfPredicate predicate;
 
@@ -32,12 +35,27 @@ class Edge implements Comparable<Edge> {
   }
 
   public String toString() {
-    String value = object.getSubject() != null ? object.getSubject()
-        .getQueryString()
-        : object.getIris()
-            .iterator()
-            .next()
-            .getQueryString();
-    return predicate.getQueryString() + " " + value;
+    return predicate.getQueryString() + " " + getObjectValue();
+  }
+
+  private String getObjectValue() {
+    if (object.getSubject() != null) {
+      return object.getSubject()
+          .getQueryString();
+    }
+
+    if (object.getIris() != null) {
+      return object.getIris()
+          .iterator()
+          .next()
+          .getQueryString();
+    }
+
+    if (object.getValue() != null) {
+      return object.getValue()
+          .stringValue();
+    }
+
+    return "";
   }
 }

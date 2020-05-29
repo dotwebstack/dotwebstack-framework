@@ -42,7 +42,6 @@ class NodeShapeFactoryTest {
     shapeModel = loadShapeModel();
   }
 
-
   @Test
   void get_returnShOrShape_ForGivenModel() {
     // Arrange
@@ -82,7 +81,7 @@ class NodeShapeFactoryTest {
     assertThat(supplements.getNode()
         .getIdentifier(), equalTo(SUPPLEMENT_SHAPE));
     assertThat(supplements.getNode()
-        .getTargetClasses()
+        .getClasses()
         .iterator()
         .next(), equalTo(SUPPLEMENT_CLASS));
 
@@ -100,7 +99,7 @@ class NodeShapeFactoryTest {
     assertThat(ingredients.getNode()
         .getIdentifier(), equalTo(INGREDIENT_SHAPE));
     assertThat(ingredients.getNode()
-        .getTargetClasses()
+        .getClasses()
         .iterator()
         .next(), equalTo(INGREDIENT_CLASS));
   }
@@ -110,7 +109,7 @@ class NodeShapeFactoryTest {
     // Arrange
     Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
         .identifier(() -> "beer_sh:Beer")
-        .minCount(1)
+        .constraints(Map.of(ConstraintType.MINCOUNT, VF.createLiteral(1)))
         .build());
 
     // Act & Assert
@@ -122,7 +121,7 @@ class NodeShapeFactoryTest {
     // Arrange
     Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
         .identifier(() -> "beer_sh:Beer")
-        .minCount(5)
+        .constraints(Map.of(ConstraintType.MINCOUNT, VF.createLiteral(5)))
         .build());
 
     // Act & Assert

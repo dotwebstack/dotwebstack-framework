@@ -4,7 +4,6 @@ import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 
 import graphql.schema.GraphQLFieldDefinition;
@@ -35,7 +34,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   public Vertice createRoot(Variable subject, NodeShape nodeShape, List<FilterRule> filterRules, List<OrderBy> orderBys,
       OuterQuery<?> query) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
-    vertice.setEdges(makeEdgesUnique(vertice.getEdges()));
     orderBys.forEach(orderBy -> addOrderables(vertice, query, orderBy, nodeShape));
     return vertice;
   }
@@ -51,12 +49,12 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape, @NonNull OuterQuery<?> query) {
     List<Edge> edges = createRequiredEdges(nodeShape, query);
 
-    Set<Iri> iris = nodeShape.getTargetClasses()
+    Set<Iri> iris = nodeShape.getClasses()
         .stream()
         .map(targetClass -> Rdf.iri(targetClass.stringValue()))
         .collect(Collectors.toSet());
 
-    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
+    edges.add(createSimpleEdge(iris, () -> stringify(RDF.TYPE), true));
 
     return Vertice.builder()
         .subject(subject)
@@ -74,8 +72,13 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
         .stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
         .map(ps -> {
+          if (ps.getHasValue() != null) {
+            return createSimpleEdge(ps.getHasValue(), ps, false, false);
+          }
+
           Variable var = query.var();
-          Edge edge = createSimpleEdge(var, ps.getPath(), false, true);
+          Edge edge = createSimpleEdge(var, ps, true, false);
+
           if (ps.getNode() != null) {
             edge.getObject()
                 .setEdges(createRequiredEdges(ps.getNode(), query));
@@ -107,9 +110,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             .isEmpty()) {
           GraphQLFieldDefinition fieldDefinition = filterRule.getFieldPath()
               .first();
-          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
-              .getPath()
-              .toPredicate(), false);
+          edge = createSimpleEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), false, false);
 
           if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
             edge.setOptional(true);

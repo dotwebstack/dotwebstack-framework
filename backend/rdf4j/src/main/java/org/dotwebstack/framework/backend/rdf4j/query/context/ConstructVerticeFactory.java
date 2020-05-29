@@ -7,7 +7,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.c
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.isEqualToEdge;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
@@ -60,8 +59,12 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     List<Edge> edges = unselectedFields.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
         .map(ps -> {
+          if (ps.getHasValue() != null) {
+            return createSimpleEdge(ps.getHasValue(), ps, false, false);
+          }
+
           Variable var = query.var();
-          return createSimpleEdge(var, ps.getPath(), false, false);
+          return createSimpleEdge(var, ps, false, false);
         })
         .collect(Collectors.toList());
     vertice.getEdges()
@@ -69,16 +72,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     vertice.getEdges()
         .forEach(edge -> {
-          nodeShape.getPropertyShapes()
-              .values()
-              .stream()
-              .filter(propertyShape -> isEqualToEdge(propertyShape, edge))
-              .findFirst()
-              .ifPresent(childPropertyShape -> {
-                if (childPropertyShape.getNode() != null) {
-                  addRequiredEdges(edge.getObject(), childPropertyShape.getNode(), query);
-                }
-              });
+          NodeShape childShape = edge.getObject() != null ? edge.getObject()
+              .getNodeShape() : null;
+          if (childShape != null) {
+            addRequiredEdges(edge.getObject(), childShape, query);
+          }
         });
   }
 
@@ -87,6 +85,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     List<Edge> edges = transformFieldsToEdges(nodeShape, fields, fieldPath, query);
 
     return Vertice.builder()
+        .nodeShape(nodeShape)
         .subject(subject)
         .edges(edges)
         .build();
@@ -104,8 +103,10 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     if (Objects.isNull(fieldPath)) {
       doSortMapping(nodeShape, selectedFields, edges, query);
-      makeEdgesUnique(edges);
-      edges.add(createSimpleEdge(null, getTargetClassIris(nodeShape), () -> stringify(RDF.TYPE), true));
+      Set<Iri> classIris = getClassIris(nodeShape);
+      if (!classIris.isEmpty()) {
+        edges.add(createSimpleEdge(classIris, () -> stringify(RDF.TYPE), true));
+      }
       doFilterMapping(nodeShape, selectedFields, edges, query);
     }
 
@@ -118,17 +119,18 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     Edge edge;
     boolean optional = propertyShape.getMinCount() == null || propertyShape.getMinCount() < 1;
     if (Objects.isNull(childShape)) {
-      edge = createSimpleEdge(query.var(), propertyShape.getPath(), optional, true);
+      edge = createSimpleEdge(query.var(), propertyShape, true, optional);
     } else {
-      edge = createComplexEdge(nodeShape, selectedField, fieldPath, optional, query);
+      edge = createComplexEdge(nodeShape, selectedField, fieldPath, query, optional);
     }
 
+    addHasValueConstraint(edge, propertyShape);
     addLanguageFilter(edge, propertyShape);
     return edge;
   }
 
-  private Set<Iri> getTargetClassIris(NodeShape nodeShape) {
-    return nodeShape.getTargetClasses()
+  private Set<Iri> getClassIris(NodeShape nodeShape) {
+    return nodeShape.getClasses()
         .stream()
         .map(targetClass -> Rdf.iri(targetClass.stringValue()))
         .collect(Collectors.toSet());
@@ -232,7 +234,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
    * A complex edge is an edge with filters vertices/filters added to it
    */
   private Edge createComplexEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath,
-      boolean optional, OuterQuery<?> query) {
+      OuterQuery<?> query, boolean isOptional) {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     BasePath path = propertyShape.getPath();
 
@@ -244,7 +246,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
                 .flatMap(FieldPath::rest)
                 .orElse(null),
             query.var(), query))
-        .isOptional(optional)
+        .isOptional(isOptional)
         .isVisible(true)
         .aggregate(createAggregate(selectedField.getFieldDefinition(), query.var()).orElse(null))
         .build();

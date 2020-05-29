@@ -99,11 +99,21 @@ public class VerticeHelper {
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
-    GraphPattern graphPattern = (Objects.nonNull(edge.getObject()
-        .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
-            edge.getObject()
-                .getSubject())
-            .optional(edge.isOptional()) : getTriplePatternForIris(edge, subject);
+    GraphPattern graphPattern;
+
+    if (edge.getObject()
+        .getSubject() != null) {
+      graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+          .getSubject())
+          .optional(edge.isOptional());
+    } else if (!edge.getObject()
+        .getIris()
+        .isEmpty()) {
+      graphPattern = getTriplePatternForIris(edge, subject);
+    } else {
+      graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+          .getValue());
+    }
 
     if (!edge.getObject()
         .getFilters()

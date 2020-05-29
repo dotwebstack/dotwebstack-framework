@@ -39,7 +39,7 @@ public class EdgeHelperTest {
         .build();
     PropertyShape shape = PropertyShape.builder()
         .node(NodeShape.builder()
-            .targetClasses(Set.of(VF.createIRI("http://www.example.com#testType")))
+            .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
             .build())
         .build();
 
@@ -60,7 +60,7 @@ public class EdgeHelperTest {
         .build();
     PropertyShape shape = PropertyShape.builder()
         .node(NodeShape.builder()
-            .targetClasses(Set.of(VF.createIRI("http://www.example.com#testType")))
+            .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
             .build())
         .build();
 

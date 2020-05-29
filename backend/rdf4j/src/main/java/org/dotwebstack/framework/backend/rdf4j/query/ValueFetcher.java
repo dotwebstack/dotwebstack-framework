@@ -98,11 +98,11 @@ public final class ValueFetcher extends SourceDataFetcher {
     Stream<Value> stream = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject())
         .stream()
-        .filter(result -> nodeShape == null || nodeShape.getTargetClasses()
+        .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
-                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getTargetClasses())
-                : resultIsOfType(result, nodeShape.getTargetClasses())));
+                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getClasses())
+                : resultIsOfType(result, nodeShape.getClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()

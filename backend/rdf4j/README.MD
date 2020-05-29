@@ -48,7 +48,7 @@ this mapping can be seen in the following `shapes` file, that contains a subset 
 
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier 
   .
@@ -191,7 +191,7 @@ to retrieve and object from the current subject.
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier 
   .
@@ -220,7 +220,7 @@ You can chain as many paths as you like, and you can use both predicate paths an
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_name
   .
@@ -250,7 +250,7 @@ underlying objects. For example when you are not interested in the parent per se
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_postalCode 
   .
@@ -289,7 +289,7 @@ in one direction, but not the other. So in our previous examples that would mean
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_beers
   .
@@ -321,7 +321,7 @@ For example, finding the names of all people a person knows either directly, or 
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -350,7 +350,7 @@ length 0.
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -379,7 +379,7 @@ length 0 or 1.
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -562,7 +562,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
 
 ```shacl
  ex:Pet a sh:NodeShape ;
-    sh:targetClass owl:Thing ;
+    sh:class owl:Thing ;
     sh:name "Animal" ;
     sh:property
       ex:name,
@@ -571,7 +571,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
 
   ex:Dog a sh:NodeShape ;
     sh:name "Dog";
-    sh:targetClass ex_def:Dog ;
+    sh:class ex_def:Dog ;
     dws:inherits ex:Pet ;
     sh:property
       ex:fetchesBall ,
@@ -580,7 +580,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
   
   ex:Cat a sh:NodeShape ;
     sh:name "Cat";
-    sh:targetClass ex_def:Cat ;
+    sh:class ex_def:Cat ;
     dws:inherits ex:Pet ;
     sh:property
       ex:breed ,
