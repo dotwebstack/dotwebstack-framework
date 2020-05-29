@@ -1,41 +1,40 @@
 package org.dotwebstack.framework.core.helpers;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import org.dotwebstack.framework.core.ResourceProperties;
 
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import lombok.NonNull;
-import org.dotwebstack.framework.core.ResourceProperties;
 
 public class ResourceLoaderUtils {
 
-  private ResourceLoaderUtils() {}
-
+  @SneakyThrows
   public static URI getResourceLocation(@NonNull String resourceLocation) {
     URI resourceAsUri = null;
 
     URI uri = ResourceProperties.getFileConfigPath()
         .resolve(resourceLocation);
-    if (Files.exists(Paths.get(uri))) {
+    if (uriExists(uri)) {
       resourceAsUri = uri;
     } else {
       URL classpathUrl = ResourceLoaderUtils.class.getResource(ResourceProperties.getResourcePath()
           .resolve(resourceLocation)
           .getPath());
       if (classpathUrl != null) {
-        try {
           uri = classpathUrl.toURI();
-        } catch (Exception e) {
-          throw illegalStateException(String.format("Cannot get URI from classpathUrl %s", classpathUrl));
-        }
 
-        if (Files.exists(Paths.get(uri))) {
+        if (uriExists(uri)) {
           resourceAsUri = uri;
         }
       }
     }
     return resourceAsUri;
+  }
+
+  static boolean uriExists(URI uri) {
+    return Files.exists(Paths.get(uri));
   }
 }
