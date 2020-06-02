@@ -11,6 +11,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 
 import graphql.schema.SelectedField;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,15 +23,15 @@ import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.FilteredField;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -56,19 +57,23 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             .noneMatch(edge -> isEqualToEdge(propertyShape, edge)))
         .collect(Collectors.toList());
 
-    List<Edge> edges = unselectedFields.stream()
+    List<Constraint> constraints = unselectedFields.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
         .map(ps -> {
+          Constraint.ConstraintBuilder builder = Constraint.builder();
+          builder.predicate(ps.getPath()
+              .toPredicate());
           if (ps.getHasValue() != null) {
-            return createSimpleEdge(ps.getHasValue(), ps, false, false);
+            builder.constraintType(ConstraintType.HASVALUE);
+            builder.values(Set.of(ps.getHasValue()));
+          } else {
+            builder.constraintType(ConstraintType.MINCOUNT);
           }
-
-          Variable var = query.var();
-          return createSimpleEdge(var, ps, false, false);
+          return builder.build();
         })
         .collect(Collectors.toList());
-    vertice.getEdges()
-        .addAll(edges);
+    vertice.getConstraints()
+        .addAll(constraints);
 
     vertice.getEdges()
         .forEach(edge -> {
@@ -88,6 +93,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .nodeShape(nodeShape)
         .subject(subject)
         .edges(edges)
+        .constraints(getConstraints(nodeShape))
         .build();
   }
 
@@ -103,14 +109,31 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     if (Objects.isNull(fieldPath)) {
       doSortMapping(nodeShape, selectedFields, edges, query);
-      Set<Iri> classIris = getClassIris(nodeShape);
-      if (!classIris.isEmpty()) {
-        edges.add(createSimpleEdge(classIris, () -> stringify(RDF.TYPE), true));
-      }
       doFilterMapping(nodeShape, selectedFields, edges, query);
     }
 
     return edges;
+  }
+
+  private Set<Constraint> getConstraints(NodeShape nodeShape) {
+    Set<Constraint> constraints = new HashSet<>();
+    getTypeConstraint(nodeShape).ifPresent(constraints::add);
+    return constraints;
+  }
+
+  private Optional<Constraint> getTypeConstraint(NodeShape nodeShape) {
+    Set<Value> classes = nodeShape.getClasses()
+        .stream()
+        .map(iri -> (Value) iri)
+        .collect(Collectors.toSet());
+    if (!classes.isEmpty()) {
+      return Optional.of(Constraint.builder()
+          .constraintType(ConstraintType.RDF_TYPE)
+          .predicate(() -> stringify(RDF.TYPE))
+          .values(classes)
+          .build());
+    }
+    return Optional.empty();
   }
 
   private Edge getEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath, OuterQuery<?> query) {
@@ -124,16 +147,8 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
       edge = createComplexEdge(nodeShape, selectedField, fieldPath, query, optional);
     }
 
-    addHasValueConstraint(edge, propertyShape);
     addLanguageFilter(edge, propertyShape);
     return edge;
-  }
-
-  private Set<Iri> getClassIris(NodeShape nodeShape) {
-    return nodeShape.getClasses()
-        .stream()
-        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
-        .collect(Collectors.toSet());
   }
 
   private Edge processFilters(Edge edge, OuterQuery<?> query, PropertyShape propertyShape,

@@ -54,9 +54,12 @@ public class SelectVerticeFactoryTest {
         .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery_beers"))
         .build());
     when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, hasSize(1));
@@ -85,9 +88,12 @@ public class SelectVerticeFactoryTest {
         .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_identifier"))
         .build());
     when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, hasSize(1));
@@ -117,9 +123,12 @@ public class SelectVerticeFactoryTest {
     // Arrange
     when(breweryShapeMock.getPropertyShapes()).thenReturn(Map.of("beers", beersPropertyShapeMock));
     when(beersPropertyShapeMock.getMinCount()).thenReturn(0);
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, is(empty()));

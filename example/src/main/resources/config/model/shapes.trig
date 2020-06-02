@@ -117,17 +117,15 @@
   beer_sh:Brewery_lemonBeers a sh:PropertyShape ;
     sh:name "lemonBeers" ;
     sh:path [ sh:inversePath beer_def:brewery ] ;
-    sh:node beer_sh:LemonBeer
-  .
-
-  beer_sh:LemonBeer a sh:NodeShape ;
-    sh:name "LemonBeer" ;
-    dws:inherits beer_sh:Beer ;
-    sh:property [
-      sh:name "hasCitroenIngredient" ;
-      sh:path (beer_def:ingredient [ sh:alternativePath ( schema:name beer_def:label ) ]) ;
-      sh:hasValue "Citroen" ;
-      sh:minCount 1 ;
+    sh:node [
+      sh:name "LemonBeer" ;
+      dws:inherits beer_sh:Beer ;
+      sh:property [
+        sh:name "hasCitroenIngredient" ;
+        sh:path (beer_def:ingredient [ sh:alternativePath ( schema:name beer_def:label ) ]) ;
+        sh:hasValue "Citroen" ;
+        sh:minCount 1 ;
+      ]
     ]
   .
 

@@ -3,17 +3,16 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,52 +24,42 @@ public class EdgeHelperTest {
 
   @Test
   void hasEqualTargetClass_returnsTrue_withNullNodeShape() {
-    Iri iri = () -> "<http://www.example.com#testType>";
+    IRI iri = VF.createIRI("http://www.example.com#testType");
 
-    Edge edge = Edge.builder()
-        .object(Vertice.builder()
-            .edges(List.of(Edge.builder()
-                .predicate(() -> "<" + RDF.TYPE.stringValue() + ">")
-                .object(Vertice.builder()
-                    .iris(Set.of(iri))
-                    .build())
-                .build()))
-            .build())
+    Vertice vertice = Vertice.builder()
+        .constraints(Set.of(Constraint.builder()
+            .constraintType(ConstraintType.RDF_TYPE)
+            .predicate(() -> "<" + RDF.TYPE.stringValue() + ">")
+            .values(Set.of(iri))
+            .build()))
         .build();
-    PropertyShape shape = PropertyShape.builder()
-        .node(NodeShape.builder()
-            .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
-            .build())
+    NodeShape shape = NodeShape.builder()
+        .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
         .build();
 
-    assertTrue(EdgeHelper.hasEqualTargetClass(edge, shape));
+    assertTrue(EdgeHelper.hasEqualTargetClass(vertice, shape));
   }
 
   @Test
   void hasEqualTargetClass_returnsFalse_forChildWithoutSameType() {
-    Edge edge = Edge.builder()
-        .object(Vertice.builder()
-            .edges(List.of(Edge.builder()
-                .predicate(() -> "<" + RDF.TYPE.stringValue() + ">")
-                .object(Vertice.builder()
-                    .iris(Collections.emptySet())
-                    .build())
-                .build()))
-            .build())
+    Vertice vertice = Vertice.builder()
+        .constraints(Set.of(Constraint.builder()
+            .constraintType(ConstraintType.RDF_TYPE)
+            .predicate(() -> "<" + RDF.TYPE.stringValue() + ">")
+            .values(Set.of(VF.createIRI("http://www.example.com#otherType")))
+            .build()))
         .build();
-    PropertyShape shape = PropertyShape.builder()
-        .node(NodeShape.builder()
-            .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
-            .build())
+    NodeShape shape = NodeShape.builder()
+        .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
         .build();
 
-    assertFalse(EdgeHelper.hasEqualTargetClass(edge, shape));
+    assertFalse(EdgeHelper.hasEqualTargetClass(vertice, shape));
   }
 
   @Test
-  public void hasEqualTargetClass_returnsTrue_forNullPropertyShape() {
+  public void hasEqualTargetClass_returnsTrue_forNullNodeShape() {
     // Arrange / Act / Assert
-    assertTrue(EdgeHelper.hasEqualTargetClass(null, mock(PropertyShape.class)));
+    assertTrue(EdgeHelper.hasEqualTargetClass(null, null));
   }
 
   @Test
@@ -101,6 +90,4 @@ public class EdgeHelperTest {
     assertTrue(edges.contains(edge2));
     assertTrue(edges.contains(edge3));
   }
-
-
 }

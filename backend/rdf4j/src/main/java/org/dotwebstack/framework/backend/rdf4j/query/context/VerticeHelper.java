@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
@@ -11,9 +12,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Aggregate;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -35,10 +38,13 @@ public class VerticeHelper {
   public static List<TriplePattern> getConstructPatterns(Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
-    return edges.stream()
+    List<TriplePattern> triplePatterns = edges.stream()
         .flatMap(edge -> getConstructPatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+
+    triplePatterns.addAll(getTypeConstraintTriples(vertice));
+    return triplePatterns;
   }
 
   private static List<TriplePattern> getConstructPatterns(Edge edge, Variable subject) {
@@ -48,22 +54,25 @@ public class VerticeHelper {
       if (Objects.nonNull(edge.getAggregate())) {
         triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getAggregate()
             .getVariable()));
-      } else if (Objects.nonNull(edge.getObject()
-          .getSubject())) {
-        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
-            .getSubject()));
-      } else {
-        edge.getObject()
-            .getIris()
-            .forEach(iri -> {
-              triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), iri));
-            });
       }
+      triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
+          .getSubject()));
     }
 
     triplePatterns.addAll(getConstructPatterns(edge.getObject()));
 
     return triplePatterns;
+  }
+
+  private static List<TriplePattern> getTypeConstraintTriples(Vertice vertice) {
+    return vertice.getConstraints()
+        .stream()
+        .filter(constraint -> stringify(RDF.TYPE).equals(constraint.getPredicate()
+            .getQueryString()))
+        .flatMap(typeConstraint -> typeConstraint.getValues()
+            .stream()
+            .map(value -> GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), value)))
+        .collect(Collectors.toList());
   }
 
   private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
@@ -81,39 +90,35 @@ public class VerticeHelper {
     return singletonList(graphPatternNotTriples);
   }
 
+  private static List<GraphPattern> getConstraintPatterns(Vertice vertice) {
+    return vertice.getConstraints()
+        .stream()
+        .flatMap(constraint -> Stream.of(getTriplePatternForConstraint(vertice.getSubject(), constraint)))
+        .collect(Collectors.toList());
+  }
+
   public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     Collections.sort(edges);
 
-    List<GraphPattern> result = edges.stream()
+    List<GraphPattern> graphPatterns = edges.stream()
         .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+    graphPatterns.addAll(getConstraintPatterns(vertice));
 
     List<Filter> filtersWithEdge = getFilters(vertice);
     if (!filtersWithEdge.isEmpty()) {
-      return getWherePatternsWithFilter(result, filtersWithEdge);
+      return getWherePatternsWithFilter(graphPatterns, filtersWithEdge);
     }
 
-    return result;
+    return graphPatterns;
   }
 
   private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
-    GraphPattern graphPattern;
-
-    if (edge.getObject()
-        .getSubject() != null) {
-      graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
-          .getSubject())
-          .optional(edge.isOptional());
-    } else if (!edge.getObject()
-        .getIris()
-        .isEmpty()) {
-      graphPattern = getTriplePatternForIris(edge, subject);
-    } else {
-      graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
-          .getValue());
-    }
+    GraphPattern graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+        .getSubject())
+        .optional(edge.isOptional());
 
     if (!edge.getObject()
         .getFilters()
@@ -136,6 +141,7 @@ public class VerticeHelper {
           .groupBy(subject)
           .optional(true);
     }
+
     return singletonList(graphPattern);
   }
 
@@ -179,22 +185,19 @@ public class VerticeHelper {
     return subject;
   }
 
-  private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {
-    if (edge.getObject()
-        .getIris()
+  private static GraphPattern getTriplePatternForConstraint(Variable subject, Constraint constraint) {
+    if (constraint.getValues()
         .size() == 1) {
-      return GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
-          .getIris()
+      return GraphPatterns.tp(subject, constraint.getPredicate(), constraint.getValues()
           .iterator()
           .next())
-          .optional(edge.isOptional());
+          .optional(constraint.isOptional());
     }
 
-    return GraphPatterns.union(edge.getObject()
-        .getIris()
+    return GraphPatterns.union(constraint.getValues()
         .stream()
-        .map(iri -> GraphPatterns.tp(subject, edge.getPredicate(), iri)
-            .optional(edge.isOptional()))
+        .map(iri -> GraphPatterns.tp(subject, constraint.getPredicate(), iri)
+            .optional(constraint.isOptional()))
         .toArray(GraphPattern[]::new));
   }
 

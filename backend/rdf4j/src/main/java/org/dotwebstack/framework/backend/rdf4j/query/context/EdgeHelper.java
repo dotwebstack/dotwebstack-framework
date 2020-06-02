@@ -1,20 +1,17 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasConstraintOfType;
 
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 class EdgeHelper {
@@ -30,13 +27,12 @@ class EdgeHelper {
         .equals(queryString);
   }
 
-  static boolean hasEqualTargetClass(Edge edge, PropertyShape propertyShape) {
-    return Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(edge, propertyShape.getNode()
-        .getClasses());
+  static boolean hasEqualTargetClass(Vertice vertice, NodeShape nodeShape) {
+    return Objects.isNull(nodeShape) || hasConstraintOfType(vertice, nodeShape.getClasses());
   }
 
   static boolean isEqualToEdge(PropertyShape propertyShape, Edge edge) {
-    return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge, propertyShape);
+    return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge.getObject(), propertyShape.getNode());
   }
 
   static Edge getNewEdge(PropertyShape propertyShape, Vertice vertice, boolean isVisible, boolean required,
@@ -56,7 +52,7 @@ class EdgeHelper {
 
   private static boolean isScalarOrHasChildOfType(Edge edge, NodeShape nodeShape, SelectedField field) {
     return GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
-        .getType())) || hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
+        .getType())) || hasConstraintOfType(edge.getObject(), nodeShape.getPropertyShape(field.getName())
             .getNode()
             .getClasses());
   }
@@ -65,13 +61,7 @@ class EdgeHelper {
     return createEdge(propertyShape, createVertice(object, propertyShape.getNode()), isVisible, isOptional);
   }
 
-  static Edge createSimpleEdge(Value value, PropertyShape propertyShape, boolean isVisible, boolean isOptional) {
-    return createEdge(propertyShape, createVertice(value, null), isVisible, isOptional);
-  }
 
-  static Edge createSimpleEdge(Set<Iri> iris, RdfPredicate predicate, boolean isVisible) {
-    return createEdge(predicate, createVertice(iris, null), isVisible);
-  }
 
   private static Edge createEdge(PropertyShape propertyShape, Vertice object, boolean isVisible, boolean isOptional) {
     return createEdge(propertyShape, propertyShape.getPath()
@@ -102,21 +92,6 @@ class EdgeHelper {
     return Vertice.builder()
         .nodeShape(nodeShape)
         .subject(subject)
-        .build();
-  }
-
-  private static Vertice createVertice(Set<Iri> iris, NodeShape nodeShape) {
-    return Vertice.builder()
-        .nodeShape(nodeShape)
-        .iris(iris)
-        .build();
-  }
-
-
-  private static Vertice createVertice(Value value, NodeShape nodeShape) {
-    return Vertice.builder()
-        .nodeShape(nodeShape)
-        .value(value)
         .build();
   }
 

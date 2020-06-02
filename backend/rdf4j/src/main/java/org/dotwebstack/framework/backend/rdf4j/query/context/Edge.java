@@ -35,27 +35,8 @@ class Edge implements Comparable<Edge> {
   }
 
   public String toString() {
-    return predicate.getQueryString() + " " + getObjectValue();
+    return predicate.getQueryString() + " " + object.getSubject()
+        .getQueryString();
   }
 
-  private String getObjectValue() {
-    if (object.getSubject() != null) {
-      return object.getSubject()
-          .getQueryString();
-    }
-
-    if (object.getIris() != null) {
-      return object.getIris()
-          .iterator()
-          .next()
-          .getQueryString();
-    }
-
-    if (object.getValue() != null) {
-      return object.getValue()
-          .stringValue();
-    }
-
-    return "";
-  }
 }

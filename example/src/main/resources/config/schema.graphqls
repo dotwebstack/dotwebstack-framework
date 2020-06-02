@@ -81,7 +81,7 @@ type Brewery {
   postalCode: String
   sponsorship: Sponsorship
   beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
-  lemonBeers: [LemonBeer]
+  lemonBeers: [Beer]
   beerCount: Int! @aggregate(type: COUNT)
 }
 
@@ -91,16 +91,6 @@ type Address {
 }
 
 type Beer {
-  identifier: ID!
-  name: String!
-  created: DateTime!
-  brewery: String!
-  beerTypes: [String]!
-  ingredients(name: [String] @filter(field: "name")): [Ingredient!]
-  supplements: [Supplement!]
-}
-
-type LemonBeer {
   identifier: ID!
   name: String!
   created: DateTime!

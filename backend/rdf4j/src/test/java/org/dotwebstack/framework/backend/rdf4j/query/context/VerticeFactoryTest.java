@@ -13,8 +13,10 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_TARG
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -125,18 +127,17 @@ public class VerticeFactoryTest {
         Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
+    assertThat(vertice.getConstraints()
         .size(), is(1));
-    Edge edge = vertice.getEdges()
-        .get(0);
-
-    assertThat(edge.getPredicate()
-        .getQueryString(), is(stringify(RDF.TYPE)));
-    assertThat(edge.getObject()
-        .getIris()
+    Constraint constraint = vertice.getConstraints()
         .iterator()
-        .next()
-        .getQueryString(), is(stringify(BREWERY_TARGET_CLASS)));
+        .next();
+
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(stringify(RDF.TYPE)));
+    assertThat(constraint.getValues()
+        .iterator()
+        .next(), is(equalTo(BREWERY_TARGET_CLASS)));
   }
 
   @Test
@@ -270,24 +271,46 @@ public class VerticeFactoryTest {
         .build()), Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
-        .get(1);
+        .get(0);
 
     assertThat(edge.getObject()
-        .getEdges()
-        .size(), is(2));
-    edge = edge.getObject()
-        .getEdges()
-        .get(1);
+        .getConstraints(), hasSize(1));
+    constraint = edge.getObject()
+        .getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
     assertThat(edge.getObject()
-        .getEdges()
-        .size(), is(2));
+        .getEdges(), hasSize(1));
     edge = edge.getObject()
         .getEdges()
-        .get(1);
+        .get(0);
+
+    assertThat(edge.getObject()
+        .getConstraints(), hasSize(1));
+    constraint = edge.getObject()
+        .getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(edge.getObject()
+        .getEdges(), hasSize(1));
+    edge = edge.getObject()
+        .getEdges()
+        .get(0);
 
     assertThat(edge.getObject()
         .getFilters()
@@ -333,10 +356,16 @@ public class VerticeFactoryTest {
         .build()), Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
-        .get(1);
+        .get(0);
 
     assertThat(edge.getObject()
         .getFilters()
@@ -379,12 +408,16 @@ public class VerticeFactoryTest {
     Vertice vertice = constructVerticeFactory.createRoot(nodeShape, fields, query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
         .get(0);
-
     assertThat(edge.getPredicate()
         .getQueryString(), is(stringify(BREWERY_LABEL)));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
   }
 }

@@ -16,12 +16,13 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,6 +30,38 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
 
   public SelectVerticeFactory(SerializerRouter serializerRouter, Rdf4jProperties rdf4jProperties) {
     super(serializerRouter, rdf4jProperties);
+  }
+
+  /*
+   * Check which edges should be added to the where part of the query based on a sh:minCount property
+   * of 1
+   */
+  static void addConstraints(@NonNull Vertice vertice, @NonNull NodeShape nodeShape, OuterQuery<?> query) {
+    nodeShape.getPropertyShapes()
+        .values()
+        .stream()
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
+        .forEach(ps -> {
+          if (ps.getHasValue() != null) {
+            Constraint constraint = Constraint.builder()
+                .predicate(ps.getPath()
+                    .toPredicate())
+                .values(Set.of((Resource) ps.getHasValue()))
+                .constraintType(ConstraintType.HASVALUE)
+                .build();
+            vertice.getConstraints()
+                .add(constraint);
+          } else {
+            Variable var = query.var();
+            Edge edge = createSimpleEdge(var, ps, true, false);
+            vertice.getEdges()
+                .add(edge);
+            if (ps.getNode() != null) {
+              Vertice childVertice = edge.getObject();
+              addConstraints(childVertice, ps.getNode(), query);
+            }
+          }
+        });
   }
 
   public Vertice createRoot(Variable subject, NodeShape nodeShape, List<FilterRule> filterRules, List<OrderBy> orderBys,
@@ -47,45 +80,26 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape, @NonNull OuterQuery<?> query) {
-    List<Edge> edges = createRequiredEdges(nodeShape, query);
+    Vertice vertice = Vertice.builder()
+        .subject(subject)
+        .build();
 
-    Set<Iri> iris = nodeShape.getClasses()
+    Set<Value> iris = nodeShape.getClasses()
         .stream()
-        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
+        .map(targetClass -> (Value) targetClass)
         .collect(Collectors.toSet());
 
-    edges.add(createSimpleEdge(iris, () -> stringify(RDF.TYPE), true));
+    if (!iris.isEmpty()) {
+      vertice.getConstraints()
+          .addAll(Set.of(Constraint.builder()
+              .constraintType(ConstraintType.RDF_TYPE)
+              .predicate(() -> stringify(RDF.TYPE))
+              .values(iris)
+              .build()));
+    }
 
-    return Vertice.builder()
-        .subject(subject)
-        .edges(edges)
-        .build();
-  }
-
-  /*
-   * Check which edges should be added to the where part of the query based on a sh:minCount property
-   * of 1
-   */
-  static List<Edge> createRequiredEdges(@NonNull NodeShape nodeShape, OuterQuery<?> query) {
-    return nodeShape.getPropertyShapes()
-        .values()
-        .stream()
-        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
-        .map(ps -> {
-          if (ps.getHasValue() != null) {
-            return createSimpleEdge(ps.getHasValue(), ps, false, false);
-          }
-
-          Variable var = query.var();
-          Edge edge = createSimpleEdge(var, ps, true, false);
-
-          if (ps.getNode() != null) {
-            edge.getObject()
-                .setEdges(createRequiredEdges(ps.getNode(), query));
-          }
-          return edge;
-        })
-        .collect(Collectors.toList());
+    addConstraints(vertice, nodeShape, query);
+    return vertice;
   }
 
   private void applyFilter(Vertice vertice, NodeShape nodeShape, FilterRule filterRule, OuterQuery<?> query) {

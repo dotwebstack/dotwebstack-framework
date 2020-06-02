@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
@@ -11,10 +10,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 
 class VerticeFactoryHelper {
@@ -50,45 +49,13 @@ class VerticeFactoryHelper {
   /*
    * Find out if given edge contains a child edge is of given type.
    */
-  static boolean hasChildEdgeOfType(Edge edge, Set<IRI> types) {
-    return edge.getObject()
-        .getEdges()
+  static boolean hasConstraintOfType(Vertice vertice, Set<IRI> types) {
+    return vertice.getConstraints(ConstraintType.RDF_TYPE)
         .stream()
-        .anyMatch(childEdge -> isOfType(childEdge, types));
-  }
-
-  static boolean hasSameType(Edge edge1, Edge edge2) {
-    return edge1.getObject()
-        .getEdges()
-        .stream()
-        .filter(e1 -> stringify(RDF.TYPE).equals(e1.getPredicate()
-            .getQueryString()))
-        .flatMap(e1 -> e1.getObject()
-            .getIris()
+        .flatMap(constraint -> constraint.getValues()
             .stream())
-        .anyMatch(type1 -> edge2.getObject()
-            .getEdges()
-            .stream()
-            .filter(e2 -> stringify(RDF.TYPE).equals(e2.getPredicate()
-                .getQueryString()))
-            .flatMap(e2 -> e2.getObject()
-                .getIris()
-                .stream())
-            .anyMatch(type2 -> Objects.equals(type1.getQueryString(), type2.getQueryString())));
-  }
-
-  /*
-   * Find out whether the given edge is of any of the given types
-   */
-  static boolean isOfType(Edge edge, Set<IRI> types) {
-    return types.stream()
-        .anyMatch(type -> (stringify(RDF.TYPE)).equals(edge.getPredicate()
-            .getQueryString())
-            && (edge.getObject()
-                .getIris()
-                .stream()
-                .anyMatch(iri -> iri.getQueryString()
-                    .equals(stringify(type)))));
+        .anyMatch(value -> types.stream()
+            .anyMatch(value::equals));
   }
 
 

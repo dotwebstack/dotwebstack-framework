@@ -198,7 +198,7 @@ abstract class AbstractVerticeFactory {
 
     Edge edge = childEdges.stream()
         .filter(childEdge -> hasEqualQueryString(childEdge, propertyShape))
-        .filter(childEdge -> hasEqualTargetClass(childEdge, propertyShape))
+        .filter(childEdge -> hasEqualTargetClass(childEdge.getObject(), propertyShape.getNode()))
         .findFirst()
         .orElseGet(() -> getNewEdge(propertyShape, vertice, isVisible, required, query));
     if (required) {
@@ -268,14 +268,6 @@ abstract class AbstractVerticeFactory {
     return fieldPath.rest()
         .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), childShape, remainder, query)
             .map(edge -> getSubjectForField(edge, childShape, remainder)));
-  }
-
-  void addHasValueConstraint(Edge edge, PropertyShape propertyShape) {
-    if (propertyShape.getHasValue() != null) {
-      Vertice object = edge.getObject();
-      object.getEdges()
-          .add(createSimpleEdge(propertyShape.getHasValue(), propertyShape, false, false));
-    }
   }
 
   void addLanguageFilter(Edge edge, PropertyShape propertyShape) {
