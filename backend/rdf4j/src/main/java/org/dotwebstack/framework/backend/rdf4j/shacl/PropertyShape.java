@@ -4,7 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.HASVA
 import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.MAXCOUNT;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.MINCOUNT;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public final class PropertyShape {
   private final BasePath path;
 
   @Builder.Default
-  private final Map<ConstraintType, Object> constraints = new HashMap<>();
+  private final Map<ConstraintType, Object> constraints = new EnumMap<>(ConstraintType.class);
 
   private final IRI nodeKind;
 
