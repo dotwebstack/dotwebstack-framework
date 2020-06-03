@@ -119,16 +119,19 @@ beer_id:8 a beer_def:Beer ;
 
 
 ingredient_id:1 a beer_def:Ingredient ;
+  beer_def:identifier "1" ;
   beer_def:test test_id:1 ;
   schema:name "Hop"
 .
 
 ingredient_id:2 a beer_def:Ingredient ;
+  beer_def:identifier "2" ;
   beer_def:test test_id:2 ;
   schema:name "Gerst"
 .
 
 ingredient_id:3 a beer_def:Ingredient ;
+  beer_def:identifier "3" ;
   beer_def:test test_id:3 ;
   schema:name "Sinasappel"
 .
@@ -136,6 +139,12 @@ ingredient_id:3 a beer_def:Ingredient ;
 ingredient_id:4 a beer_def:Ingredient ;
   beer_def:test test_id:4 ;
   beer_def:identifier "4";
+  schema:name "Citroen"
+.
+
+ingredient_id:5 a beer_def:Ingredient ;
+  beer_def:identifier "5";
+  schema:name "Invalid_Ingredient"
 .
 
 test_id:1 a beer_def:Test ;
@@ -155,6 +164,7 @@ test_id:4 a beer_def:Test ;
 .
 
 supplement_id:1 a beer_def:Supplement ;
+  beer_def:identifier "1" ;
   schema:name "Gist"
 .
 

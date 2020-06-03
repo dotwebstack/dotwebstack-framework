@@ -4,9 +4,11 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -18,6 +20,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactor
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
@@ -81,11 +84,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    if (distinctQuery(sparqlDirective)) {
+    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape)) {
       return this.query.distinct()
           .getQueryString();
     }
     return this.query.getQueryString();
+  }
+
+  private boolean distinctQuery(NodeShape nodeShape) {
+    return getPropertyShapeSet(nodeShape).stream()
+        .anyMatch(ps -> ps.getNode() != null && ps.getMaxCount() != null && ps.getMaxCount() > 1);
   }
 
   private boolean distinctQuery(@NonNull GraphQLDirective sparqlDirective) {
@@ -93,6 +101,17 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         .map(directive -> directive.getArgument(Rdf4jDirectives.SPARQL_ARG_DISTINCT))
         .map(argument -> (Boolean) argument.getValue())
         .orElse(false);
+  }
+
+  private Set<PropertyShape> getPropertyShapeSet(NodeShape nodeShape) {
+    Set<PropertyShape> propertyShapes = new HashSet<>(nodeShape.getPropertyShapes()
+        .values());
+    propertyShapes.forEach(propertyShape -> {
+      if (!propertyShapes.contains(propertyShape) && propertyShape.getNode() != null) {
+        propertyShapes.addAll(getPropertyShapeSet(propertyShape.getNode()));
+      }
+    });
+    return propertyShapes;
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {

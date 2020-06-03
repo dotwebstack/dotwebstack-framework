@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasSameType;
 
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
@@ -38,9 +39,17 @@ class EdgeHelper {
         .getTargetClasses());
   }
 
-  private static boolean isEqualEdge(Edge uniqueEdge, Edge edge) {
-    return uniqueEdge.getPredicate()
-        .equals(edge.getPredicate());
+  static boolean isEqualToEdge(PropertyShape propertyShape, Edge edge) {
+    return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge, propertyShape);
+  }
+
+  private static boolean isEqualEdge(Edge edge1, Edge edge2) {
+    boolean queryStringEquals = edge1.getPredicate()
+        .getQueryString()
+        .equals(edge2.getPredicate()
+            .getQueryString());
+
+    return queryStringEquals && hasSameType(edge1, edge2);
   }
 
   private static Consumer<Edge> addToDuplicate(Edge edge) {
@@ -66,12 +75,13 @@ class EdgeHelper {
    * the edges, if we find more edges with the same predicate, we place the child edges of the latter
    * edges we find, on top of the first edge we find.
    */
-  static void makeEdgesUnique(List<Edge> edges) {
+  static List<Edge> makeEdgesUnique(List<Edge> edges) {
     List<Edge> uniqueEdges = new ArrayList<>();
     edges.forEach(edge -> uniqueEdges.stream()
         .filter(uniqueEdge -> isEqualEdge(uniqueEdge, edge))
         .findFirst()
         .ifPresentOrElse(addToDuplicate(edge), () -> uniqueEdges.add(edge)));
+    return uniqueEdges;
   }
 
   static List<Edge> findEdgesToBeProcessed(NodeShape nodeShape, SelectedField field, List<Edge> edges) {

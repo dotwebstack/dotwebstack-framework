@@ -98,7 +98,6 @@
   beer_sh:Brewery_postalCode a sh:PropertyShape ;
     sh:name "postalCode" ;
     sh:path ( schema:address schema:postalCode ) ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
@@ -125,7 +124,6 @@
   beer_sh:Brewery_number a sh:PropertyShape ;
     sh:name "number" ;
     sh:path beer_def:number;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:integer
@@ -134,7 +132,6 @@
   beer_sh:Brewery_localName a sh:PropertyShape ;
     sh:name "localName" ;
     sh:path beer_def:localName ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype rdf:langString
@@ -143,7 +140,6 @@
   beer_sh:Brewery_owners a sh:PropertyShape ;
     sh:name "owners" ;
     sh:path beer_def:owners ;
-    sh:minCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
   .
@@ -151,7 +147,6 @@
   beer_sh:Brewery_founded a sh:PropertyShape ;
     sh:name "founded" ;
     sh:path beer_def:founded ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:dateTime
@@ -160,7 +155,6 @@
   beer_sh:Brewery_openinghours a sh:PropertyShape ;
     sh:name "openinghours" ;
     sh:path beer_def:openinghours ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
@@ -169,7 +163,6 @@
   beer_sh:Brewery_url a sh:PropertyShape ;
     sh:name "url" ;
     sh:path schema:url ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
@@ -302,7 +295,6 @@
   beer_sh:Address_streetAddress a sh:PropertyShape ;
     sh:name "streetAddress" ;
     sh:path schema:streetAddress ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
@@ -319,7 +311,6 @@
   beer_sh:ingredient_test a sh:PropertyShape ;
     sh:name "test" ;
     sh:path beer_def:test ;
-    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:node beer_sh:Ingredient_test ;
   .

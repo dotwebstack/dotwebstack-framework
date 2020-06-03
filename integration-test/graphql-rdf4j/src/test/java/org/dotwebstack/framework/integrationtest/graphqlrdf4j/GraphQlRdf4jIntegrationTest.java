@@ -154,15 +154,13 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
-                ImmutableList.of(
-                    ImmutableMap.of(INGREDIENTS_FIELD,
-                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)),
-                    ImmutableMap.of(INGREDIENTS_FIELD,
-                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"), NAME_NULL_MAP)))))));
+        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(
+            ImmutableMap.of(INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))),
+            ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
 
@@ -387,11 +385,10 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
   @Test
@@ -447,12 +444,11 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP)))))));
+        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
   @Test
@@ -470,13 +466,12 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"), NAME_NULL_MAP),
-                    SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen")),
+                SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
 
     List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
     Map<String, Object> edelPils =
@@ -544,7 +539,7 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(ingredients.get(0), is(equalTo("Sinasappel")));
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
-    assertThat(ingredients.get(3), is(equalTo(null)));
+    assertThat(ingredients.get(3), is(equalTo("Citroen")));
 
   }
 

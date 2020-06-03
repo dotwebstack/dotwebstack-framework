@@ -30,4 +30,14 @@ class Edge implements Comparable<Edge> {
   public int compareTo(Edge other) {
     return Boolean.compare(isOptional, other.isOptional);
   }
+
+  public String toString() {
+    String value = object.getSubject() != null ? object.getSubject()
+        .getQueryString()
+        : object.getIris()
+            .iterator()
+            .next()
+            .getQueryString();
+    return predicate.getQueryString() + " " + value;
+  }
 }

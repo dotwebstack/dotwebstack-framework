@@ -551,7 +551,13 @@ sh:property [
 This construct makes it possible to have two property shapes with the same `sh:path` and each pointing to different node shape. 
 Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
 
-## 1.8 NodeShape Inheritance
+## 1.8 Constraints
+### 1.8.1 minCount
+It is possible to add sh:minCount to a property shape, to add constraints to your query regarding required properties.
+When adding minCount of 0 or omitting minCount altogether, the property is optional. When adding a minCount of
+1, the property is required. Currently, minCount > 1 is not supported.
+
+## 1.9 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
 
 ```shacl
@@ -587,7 +593,7 @@ properties of `Pet`. This means that besides the `fetchesBall` property (whether
 instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
 relation with `Animal` also a name and an owner. 
 
-## 1.9 Aggregate directive
+## 1.10 Aggregate directive
 It is possible to aggregate results by setting an `@aggregate` directive on a GraphQL field.
 The `@aggregate` directive takes one argument, the `type` argument. The following types are currently supported: `COUNT`  For example: 
 
@@ -626,7 +632,7 @@ type Query {
 }
 ```
 
-## 1.10 Resource directive
+## 1.11 Resource directive
 It is possible to return the value of a subject, by using `@resource` on an IRI field.
 ```graphql
 type Beer {
@@ -637,7 +643,7 @@ type Beer {
 ```
 The `@resource` directive can only be used for an IRI field.
 
-## 1.11 Static Query for IRI and Model output types
+## 1.12 Static Query for IRI and Model output types
 For output types IRI and Model, it is possible to use a static query. This can be done by adding
 a ```sparql``` folder to the ```config``` folder. Within the ```sparql``` folder, you can define a ```.rq``` file containing 
 a Sparql query. The reference to this ```.rq``` is defined by using the ```queryRef``` property within the ```@sparql``` directive, like:
