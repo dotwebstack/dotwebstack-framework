@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -16,12 +15,14 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Aggregate;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.core.Assignment;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
+import org.eclipse.rdf4j.sparqlbuilder.core.QueryElement;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
@@ -29,6 +30,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfObject;
 
 @Slf4j
 public class VerticeHelper {
@@ -37,13 +39,13 @@ public class VerticeHelper {
 
   public static List<TriplePattern> getConstructPatterns(Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
-    Collections.sort(edges);
     List<TriplePattern> triplePatterns = edges.stream()
         .flatMap(edge -> getConstructPatterns(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
     triplePatterns.addAll(getTypeConstraintTriples(vertice));
+    sortQueryElements(triplePatterns);
     return triplePatterns;
   }
 
@@ -71,7 +73,13 @@ public class VerticeHelper {
             .getQueryString()))
         .flatMap(typeConstraint -> typeConstraint.getValues()
             .stream()
-            .map(value -> GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), value)))
+            .map(value -> {
+              if (value instanceof Value) {
+                return GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), (Value) value);
+              } else {
+                return GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), (RdfObject) value);
+              }
+            }))
         .collect(Collectors.toList());
   }
 
@@ -99,7 +107,6 @@ public class VerticeHelper {
 
   public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
-    Collections.sort(edges);
 
     List<GraphPattern> graphPatterns = edges.stream()
         .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
@@ -108,10 +115,10 @@ public class VerticeHelper {
     graphPatterns.addAll(getConstraintPatterns(vertice));
 
     List<Filter> filtersWithEdge = getFilters(vertice);
+    sortQueryElements(graphPatterns);
     if (!filtersWithEdge.isEmpty()) {
       return getWherePatternsWithFilter(graphPatterns, filtersWithEdge);
     }
-
     return graphPatterns;
   }
 
@@ -143,6 +150,19 @@ public class VerticeHelper {
     }
 
     return singletonList(graphPattern);
+  }
+
+  private static void sortQueryElements(List<? extends QueryElement> queryElements) {
+    queryElements.sort((one, other) -> {
+      if (one.getQueryString()
+          .startsWith("OPTIONAL")
+          && other.getQueryString()
+              .startsWith("OPTIONAL")) {
+        return 0;
+      }
+      return one.getQueryString()
+          .startsWith("OPTIONAL") ? 1 : -1;
+    });
   }
 
   private static Set<Projectable> getSelectedForCount(Variable root, Variable subject, Edge edge) {
@@ -188,16 +208,29 @@ public class VerticeHelper {
   private static GraphPattern getTriplePatternForConstraint(Variable subject, Constraint constraint) {
     if (constraint.getValues()
         .size() == 1) {
-      return GraphPatterns.tp(subject, constraint.getPredicate(), constraint.getValues()
+      Object value = constraint.getValues()
           .iterator()
-          .next())
-          .optional(constraint.isOptional());
+          .next();
+      if (value instanceof Value) {
+        return GraphPatterns.tp(subject, constraint.getPredicate(), (Value) value)
+            .optional(constraint.isOptional());
+      } else {
+        return GraphPatterns.tp(subject, constraint.getPredicate(), (RdfObject) value)
+            .optional(constraint.isOptional());
+      }
     }
 
     return GraphPatterns.union(constraint.getValues()
         .stream()
-        .map(iri -> GraphPatterns.tp(subject, constraint.getPredicate(), iri)
-            .optional(constraint.isOptional()))
+        .map(value -> {
+          if (value instanceof Value) {
+            return GraphPatterns.tp(subject, constraint.getPredicate(), (Value) value)
+                .optional(constraint.isOptional());
+          } else {
+            return GraphPatterns.tp(subject, constraint.getPredicate(), (RdfObject) value)
+                .optional(constraint.isOptional());
+          }
+        })
         .toArray(GraphPattern[]::new));
   }
 

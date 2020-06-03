@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.findEdgesToBeProcessed;
@@ -23,13 +22,10 @@ import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.FilteredField;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
-import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.springframework.stereotype.Component;
@@ -44,11 +40,11 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
   public Vertice createRoot(@NonNull NodeShape nodeShape, @NonNull List<SelectedField> fields,
       @NonNull OuterQuery<?> query) {
     Vertice root = createVertice(nodeShape, fields, null, query.var(), query);
-    addRequiredEdges(root, nodeShape, query);
+    addConstraints(root, nodeShape, query);
     return root;
   }
 
-  private void addRequiredEdges(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query) {
+  private void addConstraints(Vertice vertice, NodeShape nodeShape, OuterQuery<?> outerQuery) {
     List<PropertyShape> unselectedFields = nodeShape.getPropertyShapes()
         .values()
         .stream()
@@ -57,30 +53,17 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             .noneMatch(edge -> isEqualToEdge(propertyShape, edge)))
         .collect(Collectors.toList());
 
-    List<Constraint> constraints = unselectedFields.stream()
-        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
-        .map(ps -> {
-          Constraint.ConstraintBuilder builder = Constraint.builder();
-          builder.predicate(ps.getPath()
-              .toPredicate());
-          if (ps.getHasValue() != null) {
-            builder.constraintType(ConstraintType.HASVALUE);
-            builder.values(Set.of(ps.getHasValue()));
-          } else {
-            builder.constraintType(ConstraintType.MINCOUNT);
-          }
-          return builder.build();
-        })
-        .collect(Collectors.toList());
-    vertice.getConstraints()
-        .addAll(constraints);
+    unselectedFields.forEach(propertyShape -> {
+      getValueConstraint(propertyShape).ifPresent(vertice.getConstraints()::add);
+      getMinCountConstraint(propertyShape, outerQuery).ifPresent(vertice.getConstraints()::add);
+    });
 
     vertice.getEdges()
         .forEach(edge -> {
           NodeShape childShape = edge.getObject() != null ? edge.getObject()
               .getNodeShape() : null;
           if (childShape != null) {
-            addRequiredEdges(edge.getObject(), childShape, query);
+            addConstraints(edge.getObject(), childShape, outerQuery);
           }
         });
   }
@@ -119,21 +102,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     Set<Constraint> constraints = new HashSet<>();
     getTypeConstraint(nodeShape).ifPresent(constraints::add);
     return constraints;
-  }
-
-  private Optional<Constraint> getTypeConstraint(NodeShape nodeShape) {
-    Set<Value> classes = nodeShape.getClasses()
-        .stream()
-        .map(iri -> (Value) iri)
-        .collect(Collectors.toSet());
-    if (!classes.isEmpty()) {
-      return Optional.of(Constraint.builder()
-          .constraintType(ConstraintType.RDF_TYPE)
-          .predicate(() -> stringify(RDF.TYPE))
-          .values(classes)
-          .build());
-    }
-    return Optional.empty();
   }
 
   private Edge getEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath, OuterQuery<?> query) {

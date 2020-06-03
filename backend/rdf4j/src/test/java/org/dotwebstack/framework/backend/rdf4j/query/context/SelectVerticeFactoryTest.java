@@ -58,7 +58,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, breweryShapeMock, outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert
@@ -92,7 +92,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, breweryShapeMock, outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert
@@ -127,7 +127,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    SelectVerticeFactory.addConstraints(vertice, breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, breweryShapeMock, outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert

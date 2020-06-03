@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Data
@@ -20,12 +19,12 @@ public class Constraint {
   private boolean isOptional;
 
   @Builder.Default
-  private Set<Value> values = new HashSet<>();
+  private Set<Object> values = new HashSet<>();
 
   @Override
   public String toString() {
     return predicate.getQueryString() + values.stream()
-        .map(Value::stringValue)
+        .map(Object::toString)
         .collect(Collectors.joining(", "));
   }
 }

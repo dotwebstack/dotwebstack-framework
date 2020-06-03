@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.getNewEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.hasEqualQueryString;
@@ -22,9 +23,11 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,10 +36,12 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -48,6 +53,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 @Slf4j
 abstract class AbstractVerticeFactory {
+  private static final SimpleValueFactory SVF = SimpleValueFactory.getInstance();
 
   private static List<GraphQLScalarType> NUMERIC_TYPES = Arrays.asList(Scalars.GraphQLInt, Scalars.GraphQLFloat,
       Scalars.GraphQLBigDecimal, Scalars.GraphQLBigDecimal, Scalars.GraphQLLong, Scalars.GraphQLBigInteger);
@@ -241,6 +247,44 @@ abstract class AbstractVerticeFactory {
     }
 
     return Rdf.literalOf("");
+  }
+
+  static Optional<Constraint> getValueConstraint(PropertyShape propertyShape) {
+    if (propertyShape.getHasValue() != null) {
+      return Optional.of(Constraint.builder()
+          .predicate(propertyShape.getPath()
+              .toPredicate())
+          .constraintType(ConstraintType.HASVALUE)
+          .values(Set.of(propertyShape.getHasValue()))
+          .build());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  static Optional<Constraint> getMinCountConstraint(PropertyShape propertyShape, OuterQuery<?> outerQuery) {
+    if (propertyShape.getMinCount() != null && propertyShape.getMinCount() >= 1) {
+      return Optional.of(Constraint.builder()
+          .predicate(propertyShape.getPath()
+              .toPredicate())
+          .constraintType(ConstraintType.MINCOUNT)
+          .values(Set.of(outerQuery.var()))
+          .build());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  static Optional<Constraint> getTypeConstraint(NodeShape nodeShape) {
+    Set<Object> classes = new HashSet<>(nodeShape.getClasses());
+    if (!classes.isEmpty()) {
+      return Optional.of(Constraint.builder()
+          .constraintType(ConstraintType.RDF_TYPE)
+          .predicate(() -> stringify(RDF.TYPE))
+          .values(classes)
+          .build());
+    }
+    return Optional.empty();
   }
 
   private Optional<Variable> getSubjectForResource(Vertice vertice, NodeShape nodeShape, FieldPath fieldPath,
