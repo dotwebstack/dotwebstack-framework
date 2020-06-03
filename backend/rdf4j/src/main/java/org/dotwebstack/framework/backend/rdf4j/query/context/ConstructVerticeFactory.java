@@ -9,12 +9,11 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.i
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
@@ -40,48 +39,23 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
   public Vertice createRoot(@NonNull NodeShape nodeShape, @NonNull List<SelectedField> fields,
       @NonNull OuterQuery<?> query) {
     Vertice root = createVertice(nodeShape, fields, null, query.var(), query);
-    addConstraints(root, nodeShape, query);
+    addConstraints(root, query);
     return root;
-  }
-
-  private void addConstraints(Vertice vertice, NodeShape nodeShape, OuterQuery<?> outerQuery) {
-    List<PropertyShape> unselectedFields = nodeShape.getPropertyShapes()
-        .values()
-        .stream()
-        .filter(propertyShape -> vertice.getEdges()
-            .stream()
-            .noneMatch(edge -> isEqualToEdge(propertyShape, edge)))
-        .collect(Collectors.toList());
-
-    unselectedFields.forEach(propertyShape -> {
-      getValueConstraint(propertyShape).ifPresent(vertice.getConstraints()::add);
-      getMinCountConstraint(propertyShape, outerQuery).ifPresent(vertice.getConstraints()::add);
-    });
-
-    vertice.getEdges()
-        .forEach(edge -> {
-          NodeShape childShape = edge.getObject() != null ? edge.getObject()
-              .getNodeShape() : null;
-          if (childShape != null) {
-            addConstraints(edge.getObject(), childShape, outerQuery);
-          }
-        });
   }
 
   private Vertice createVertice(NodeShape nodeShape, List<SelectedField> fields, FieldPath fieldPath,
       final Variable subject, OuterQuery<?> query) {
-    List<Edge> edges = transformFieldsToEdges(nodeShape, fields, fieldPath, query);
+    List<Edge> edges = getAllEdges(nodeShape, fields, fieldPath, query);
 
     return Vertice.builder()
         .nodeShape(nodeShape)
         .subject(subject)
         .edges(edges)
-        .constraints(getConstraints(nodeShape))
         .build();
   }
 
-  private List<Edge> transformFieldsToEdges(NodeShape nodeShape, List<SelectedField> selectedFields,
-      FieldPath fieldPath, OuterQuery<?> query) {
+  private List<Edge> getAllEdges(NodeShape nodeShape, List<SelectedField> selectedFields, FieldPath fieldPath,
+      OuterQuery<?> query) {
     List<Edge> edges = selectedFields.stream()
         .filter(field -> Objects.isNull(field.getFieldDefinition()
             .getDirective(Rdf4jDirectives.RESOURCE_NAME)))
@@ -94,14 +68,18 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
       doSortMapping(nodeShape, selectedFields, edges, query);
       doFilterMapping(nodeShape, selectedFields, edges, query);
     }
+    List<PropertyShape> unselected = getUnselectedPropertyShapes(nodeShape.getPropertyShapes()
+        .values(), edges);
+    edges.addAll(getRequiredEdges(unselected, query));
 
     return edges;
   }
 
-  private Set<Constraint> getConstraints(NodeShape nodeShape) {
-    Set<Constraint> constraints = new HashSet<>();
-    getTypeConstraint(nodeShape).ifPresent(constraints::add);
-    return constraints;
+  private List<PropertyShape> getUnselectedPropertyShapes(Collection<PropertyShape> propertyShapes, List<Edge> edges) {
+    return propertyShapes.stream()
+        .filter(propertyShape -> edges.stream()
+            .noneMatch(edge -> isEqualToEdge(propertyShape, edge)))
+        .collect(Collectors.toList());
   }
 
   private Edge getEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath, OuterQuery<?> query) {
@@ -223,6 +201,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     return Edge.builder()
         .predicate(path.toPredicate())
+        .propertyShape(propertyShape)
         .constructPredicate(path.toConstructPredicate())
         .object(createVertice(propertyShape.getNode(), filteredFields(selectedField, fieldPath),
             Optional.ofNullable(fieldPath)

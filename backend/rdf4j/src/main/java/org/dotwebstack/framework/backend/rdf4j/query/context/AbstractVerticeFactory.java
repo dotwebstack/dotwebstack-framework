@@ -23,6 +23,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -250,7 +252,8 @@ abstract class AbstractVerticeFactory {
   }
 
   static Optional<Constraint> getValueConstraint(PropertyShape propertyShape) {
-    if (propertyShape.getHasValue() != null) {
+    if (propertyShape.getMinCount() != null && propertyShape.getMinCount() >= 1
+        && propertyShape.getHasValue() != null) {
       return Optional.of(Constraint.builder()
           .predicate(propertyShape.getPath()
               .toPredicate())
@@ -285,6 +288,62 @@ abstract class AbstractVerticeFactory {
           .build());
     }
     return Optional.empty();
+  }
+
+  static void addRequiredEdges(Vertice vertice, Collection<PropertyShape> propertyShapes, OuterQuery<?> query) {
+    propertyShapes.stream()
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
+        .forEach(ps -> {
+          Edge simpleEdge = createSimpleEdge(query.var(), ps, false, false);
+
+          vertice.getEdges()
+              .add(simpleEdge);
+          addRequiredEdges(simpleEdge.getObject(), ps.getNode()
+              .getPropertyShapes()
+              .values(), query);
+        });
+  }
+
+  static List<Edge> getRequiredEdges(Collection<PropertyShape> propertyShapes, OuterQuery<?> query) {
+    return propertyShapes.stream()
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
+        .map(ps -> {
+          Edge edge = createSimpleEdge(query.var(), ps, false, false);
+          addRequiredEdges(edge.getObject(), ps.getNode()
+              .getPropertyShapes()
+              .values(), query);
+          return edge;
+        })
+        .collect(Collectors.toList());
+  }
+
+  /*
+   * Check which edges should be added to the where part of the query based on a sh:minCount property
+   * of 1
+   */
+  static void addConstraints(@NonNull Vertice vertice, @NonNull OuterQuery<?> outerQuery) {
+    getTypeConstraint(vertice.getNodeShape()).ifPresent(vertice.getConstraints()::add);
+    vertice.getNodeShape()
+        .getPropertyShapes()
+        .values()
+        .forEach(ps -> {
+          getValueConstraint(ps).ifPresent(vertice.getConstraints()::add);
+          getMinCountConstraint(ps, outerQuery).ifPresent(minCountConstraint -> {
+            vertice.getConstraints()
+                .add(minCountConstraint);
+          });
+        });
+
+    vertice.getEdges()
+        .stream()
+        .filter(edge -> edge.getPropertyShape() != null)
+        .forEach(edge -> {
+          Vertice childVertice = edge.getObject();
+          NodeShape childNodeShape = childVertice.getNodeShape();
+          if (childNodeShape != null) {
+            addConstraints(childVertice, outerQuery);
+          }
+        });
   }
 
   private Optional<Variable> getSubjectForResource(Vertice vertice, NodeShape nodeShape, FieldPath fieldPath,

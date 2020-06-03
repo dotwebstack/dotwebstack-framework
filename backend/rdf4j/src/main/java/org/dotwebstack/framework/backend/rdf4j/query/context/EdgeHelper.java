@@ -52,9 +52,10 @@ class EdgeHelper {
 
   private static boolean isScalarOrHasChildOfType(Edge edge, NodeShape nodeShape, SelectedField field) {
     return GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
-        .getType())) || hasConstraintOfType(edge.getObject(), nodeShape.getPropertyShape(field.getName())
-            .getNode()
-            .getClasses());
+        .getType())) || Objects.equals(edge.getObject()
+            .getNodeShape(),
+            nodeShape.getPropertyShape(field.getName())
+                .getNode());
   }
 
   static Edge createSimpleEdge(Variable object, PropertyShape propertyShape, boolean isVisible, boolean isOptional) {
@@ -69,10 +70,6 @@ class EdgeHelper {
         propertyShape.getPath()
             .toConstructPredicate(),
         object, isVisible, isOptional);
-  }
-
-  private static Edge createEdge(RdfPredicate predicate, Vertice object, boolean isVisible) {
-    return createEdge(null, predicate, null, object, isVisible, false);
   }
 
   private static Edge createEdge(PropertyShape propertyShape, RdfPredicate predicate, RdfPredicate constructPredicate,
