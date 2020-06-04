@@ -93,14 +93,18 @@ public class JsonResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-        if (!summary.isEnvelope() && (summary.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
-          return mapArrayDataToResponse(writeContext, newPath);
-        }
-        if (summary.isEnvelope() && summary.getSchema()
-            .getDefault() != null) {
+
+        if (summary.isEnvelope()) {
           return mapDefaultArrayToResponse(summary);
         }
+
+        if ((summary.isRequired()
+            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
+
+          return Optional.ofNullable(mapArrayDataToResponse(writeContext, newPath))
+              .orElse(mapDefaultArrayToResponse(summary));
+        }
+
         return null;
       case OBJECT_TYPE:
         Object object = processObject(writeContext, summary, newPath);
@@ -128,7 +132,7 @@ public class JsonResponseMapper {
   }
 
   private Object mapDefaultArrayToResponse(SchemaSummary summary) {
-    if (summary.getSchema()
+    if (summary.getSchema() != null && summary.getSchema()
         .getDefault() instanceof ArrayNode) {
       ArrayNode arrayNode = (ArrayNode) summary.getSchema()
           .getDefault();
