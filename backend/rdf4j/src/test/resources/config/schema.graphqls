@@ -99,6 +99,7 @@ type Brewery {
   address(subject: String @filter): Address
   beerNames: [String!]
   beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
+  lemonBeers: [Beer]
   beerCount: Int! @aggregate(type: COUNT)
   hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
   url: String

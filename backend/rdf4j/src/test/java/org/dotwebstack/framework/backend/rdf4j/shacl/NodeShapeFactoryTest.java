@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactoryTest.loadShapeModel;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -7,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
@@ -31,6 +34,8 @@ class NodeShapeFactoryTest {
 
   private static final IRI INGREDIENT_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#ingredient");
 
+  private static final IRI BREWERY_SHAPE = VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery");
+
   private static final IRI INGREDIENT_SHAPE = VF.createIRI("https://github.com/dotwebstack/beer/shapes#Ingredient");
 
   private static final IRI SUPPLEMENT_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Supplement");
@@ -47,10 +52,14 @@ class NodeShapeFactoryTest {
     // Arrange
     NodeShapeRegistry registry = new NodeShapeRegistry("https://github.com/dotwebstack/beer/shapes#");
 
+    Map<Resource, NodeShape> nodeShapeMap = new HashMap<>();
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
-        .stream()
-        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
-        .forEach(shape -> registry.register(shape.getIdentifier(), shape));
+        .forEach(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject, nodeShapeMap));
+    nodeShapeMap.values()
+        .forEach(shape -> {
+          processInheritance(shape, nodeShapeMap);
+          registry.register(shape.getIdentifier(), shape);
+        });
 
     // Act
     NodeShape breweryShape = registry.get("Brewery");

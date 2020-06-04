@@ -48,6 +48,7 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_lemonBeers ,
       beer_sh:Brewery_beerCount ,
       beer_sh:Brewery_hasBeers ,
       beer_sh:Brewery_beerNames ,
@@ -173,6 +174,21 @@
     sh:path [ sh:inversePath beer_def:brewery ] ;
     sh:maxCount 10 ;
     sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_lemonBeers a sh:PropertyShape ;
+    sh:name "lemonBeers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node [
+      sh:name "LemonBeer" ;
+      dws:inherits beer_sh:Beer ;
+      sh:property [
+        sh:name "hasCitroenIngredient" ;
+        sh:path (beer_def:ingredient [ sh:alternativePath ( schema:name beer_def:label ) ]) ;
+        sh:hasValue "Citroen" ;
+        sh:minCount 1 ;
+      ]
+    ]
   .
 
    beer_sh:Brewery_beerCount a sh:PropertyShape ;
