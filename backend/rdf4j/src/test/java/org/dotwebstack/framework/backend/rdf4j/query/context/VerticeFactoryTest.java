@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,19 +31,26 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.eclipse.rdf4j.model.impl.SimpleLiteral;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
+import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,6 +117,14 @@ public class VerticeFactoryTest {
 
   @Mock
   SelectedField selectedField;
+
+  private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
+
+  @Mock
+  private SimpleLiteral stringLiteralMock;
+
+  @Mock
+  private SimpleLiteral minCountLiteralMock;
 
   @BeforeEach
   private void setup() {
@@ -419,5 +435,52 @@ public class VerticeFactoryTest {
         .next();
     assertThat(constraint.getPredicate()
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+  }
+
+  @Test
+  public void getValueConstraint_retrunsConstraint_forPropertyShape() {
+    // Arrange
+    when(minCountLiteralMock.intValue()).thenReturn(1);
+
+    PropertyShape propertyShape = PropertyShape.builder()
+        .path(PredicatePath.builder()
+            .iri(VF.createIRI("http://www.example.com/dotwebstack/hasCitroenIngredient"))
+            .build())
+        .constraints(Map.of(ConstraintType.MINCOUNT, minCountLiteralMock, ConstraintType.HASVALUE, stringLiteralMock))
+        .build();
+
+    // Act
+    Optional<Constraint> constraintOptional = AbstractVerticeFactory.getValueConstraint(propertyShape);
+
+    // Assert
+    assertTrue(constraintOptional.isPresent());
+  }
+
+  @Test
+  public void getRequiredEdges_returnsEdge_forPropertyShape() {
+    // Arrange
+    OuterQuery<?> query = Queries.CONSTRUCT();
+    when(minCountLiteralMock.intValue()).thenReturn(1);
+
+    PropertyShape propertyShape = PropertyShape.builder()
+        .path(PredicatePath.builder()
+            .iri(VF.createIRI("http://www.example.com/dotwebstack/hasBeers"))
+            .build())
+        .constraints(Map.of(ConstraintType.MINCOUNT, minCountLiteralMock))
+        .node(NodeShape.builder()
+            .name("Beer")
+            .propertyShapes(Map.of("identifier", PropertyShape.builder()
+                .path(PredicatePath.builder()
+                    .iri(VF.createIRI("http://www.example.com/dotwebstack/identifier"))
+                    .build())
+                .build()))
+            .build())
+        .build();
+
+    // Act
+    List<Edge> requiredEdges = AbstractVerticeFactory.getRequiredEdges(List.of(propertyShape), query);
+
+    // Assert
+    assertThat(requiredEdges, hasSize(1));
   }
 }
