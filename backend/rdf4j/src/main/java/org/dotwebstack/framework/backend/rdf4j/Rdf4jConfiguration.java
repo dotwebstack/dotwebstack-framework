@@ -23,7 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.CoreProperties;
+import org.dotwebstack.framework.core.ResourceProperties;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -100,9 +100,8 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  LocalRepositoryManager localRepositoryManager(@NonNull CoreProperties coreProperties,
-      @NonNull Rdf4jProperties rdf4jProperties, @NonNull ConfigFactory configFactory,
-      @NonNull ResourceLoader resourceLoader) throws IOException {
+  LocalRepositoryManager localRepositoryManager(@NonNull Rdf4jProperties rdf4jProperties,
+      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
 
     File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
@@ -113,7 +112,7 @@ class Rdf4jConfiguration {
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
-        coreProperties.getResourcePath());
+        ResourceProperties.getResourcePath());
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
@@ -152,11 +151,10 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader,
-      @NonNull CoreProperties coreProperties) throws IOException {
+  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
     Map<String, String> result = new HashMap<>();
 
-    URI resourcePath = coreProperties.getResourcePath();
+    URI resourcePath = ResourceProperties.getResourcePath();
     URI sparqlFolder = resourcePath.resolve(SPARQL_PATH);
     URI sparqlFolderWithDocuments = resourcePath.resolve(SPARQL_PATH_PATTERN);
 

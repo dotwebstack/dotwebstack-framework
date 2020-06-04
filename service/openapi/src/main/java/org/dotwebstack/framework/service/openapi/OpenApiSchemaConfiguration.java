@@ -9,7 +9,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.dotwebstack.framework.core.CoreProperties;
+import org.dotwebstack.framework.core.ResourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,28 +18,22 @@ public class OpenApiSchemaConfiguration {
 
   private static final String SPEC_FILENAME = "openapi.yaml";
 
-  private final CoreProperties coreProperties;
-
-  public OpenApiSchemaConfiguration(CoreProperties properties) {
-    this.coreProperties = properties;
-  }
-
   @Bean
   public InputStream openApiStream() throws FileNotFoundException {
-    URI location = coreProperties.getFileConfigPath()
+    URI location = ResourceProperties.getFileConfigPath()
         .resolve(SPEC_FILENAME);
     Path path = Paths.get(location);
     if (Files.exists(path)) {
       return new FileInputStream(path.toFile());
     }
-    return getClass().getResourceAsStream(coreProperties.getResourcePath()
+    return getClass().getResourceAsStream(ResourceProperties.getResourcePath()
         .resolve(SPEC_FILENAME)
         .getPath());
   }
 
   @Bean
   public OpenAPI openApi() {
-    return new OpenAPIV3Parser().read(coreProperties.getResourcePath()
+    return new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
         .resolve(SPEC_FILENAME)
         .getPath());
   }

@@ -108,6 +108,7 @@ components:
         beerCount:
           type: integer
         sponsorship:
+          x-dws-envelope: true
           type: object
           x-dws-envelope: true
           nullable: true

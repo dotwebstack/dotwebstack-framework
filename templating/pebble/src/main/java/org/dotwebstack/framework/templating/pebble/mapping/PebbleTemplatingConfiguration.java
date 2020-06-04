@@ -9,8 +9,6 @@ import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,13 +20,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.CoreProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(CoreProperties.class)
+
 @Slf4j
 public class PebbleTemplatingConfiguration {
   private static final String TEMPLATES_LOCATION = "templates/";
@@ -41,24 +38,9 @@ public class PebbleTemplatingConfiguration {
 
   private URI templatesLocation;
 
-  public PebbleTemplatingConfiguration(CoreProperties coreProperties, List<Extension> extensions)
-      throws URISyntaxException {
+  public PebbleTemplatingConfiguration(List<Extension> extensions) {
 
-    URI uri = coreProperties.getFileConfigPath()
-        .resolve(TEMPLATES_LOCATION);
-    if (Files.exists(Paths.get(uri))) {
-      templatesLocation = uri;
-    } else {
-      URL classpathUrl = getClass().getResource(coreProperties.getResourcePath()
-          .resolve(TEMPLATES_LOCATION)
-          .getPath());
-      if (classpathUrl != null) {
-        uri = classpathUrl.toURI();
-        if (Files.exists(Paths.get(uri))) {
-          templatesLocation = uri;
-        }
-      }
-    }
+    templatesLocation = ResourceLoaderUtils.getResourceLocation(TEMPLATES_LOCATION);
 
     this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
         .loader(getTemplateLoader())

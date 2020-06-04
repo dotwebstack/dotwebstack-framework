@@ -439,6 +439,24 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void openApiRequest_returnTestAsset() {
+    // Arrange & Act
+    String result = this.webClient.get()
+        .uri("/assets/test.html")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    String expectedResult = "<html>\n" + "<body>Hello World!</body>\n" + "</html>";
+
+    // Assert
+    assertEquals(expectedResult, result);
+  }
+
+  @Test
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
     // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
