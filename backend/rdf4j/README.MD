@@ -552,10 +552,26 @@ This construct makes it possible to have two property shapes with the same `sh:p
 Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
 
 ## 1.8 Constraints
+Constraints can be added to the shapes file to further restrict data from fitting as property or node shape constructs. 
+Without these constraints it is only possible to restrict the model by the given paths, sometimes this is not enough.
+Think about objects that have to be of a certain class to fit a nodeshape, or objects that need to have at least one 
+predicate of a certain type, sometimes even with a certain value. In Dotwebstack each constraint will limit what will be
+returned for a certain query, so that it applies to the rules specified in the shapes file. In the following paragraphs 
+the constraints supported in Dotwebstack are discussed. 
+
 ### 1.8.1 minCount
-It is possible to add sh:minCount to a property shape, to add constraints to your query regarding required properties.
+It is possible to add `sh:minCount` to a property shape, to add constraints to your query regarding required properties.
 When adding minCount of 0 or omitting minCount altogether, the property is optional. When adding a minCount of
 1, the property is required. Currently, minCount > 1 is not supported.
+
+### 1.8.2 hasValue
+By adding `sh:hasValue` to a property shape, at least on of the triples in the data needs to have given predicate in 
+combination with the given value in order to meet this requirement. 
+
+### 1.8.3 Class
+By adding a `sh:class` to a node shape, you can bind your node shape to a class. This means that a requirement is added to 
+query that will constrain the returned object to have and `rdf:type` relation with the given class. Multiple classes will
+result in multiple constraints and thus objects will have to have `rdf:type` relations with all given classes.
 
 ## 1.9 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
