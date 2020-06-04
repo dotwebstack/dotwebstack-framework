@@ -108,6 +108,28 @@ components:
           type: string
         streetAddress:
           type: string
+    BreweryCollectionWrapper:
+      type: object
+      x-dws-envelope: true
+      required:
+        - origin
+        - breweries
+      properties:
+        origin:
+          type: object
+          x-dws-envelope: true
+          properties:
+            countries:
+              type: array
+              x-dws-envelope: true
+              default: ['Netherlands','Belgium']
+              items:
+                type: string
+                x-dws-envelope: true
+        breweries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Brewery'
 
 paths:
   /breweries:
@@ -182,6 +204,19 @@ paths:
               schema:
                 type: integer
                 x-dws-expr: args.page
+  /breweriesWrappedResult:
+    get:
+      x-dws-query: breweries
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollectionWrapper'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollectionWrapper'
   /brewery_with_subject:
     get:
       x-dws-query: brewery_with_subject

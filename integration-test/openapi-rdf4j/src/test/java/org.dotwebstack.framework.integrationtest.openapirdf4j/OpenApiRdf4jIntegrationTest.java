@@ -55,6 +55,20 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void openApiRequest_ReturnsBreweriesInWrappedResult_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweriesWrappedResult")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_in_wrapped_result.json");
+  }
+
+  @Test
   void openApiRequest_ReturnsBrewery_withIdentifierFromPathParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()

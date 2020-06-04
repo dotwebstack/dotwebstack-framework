@@ -17,7 +17,9 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -90,9 +93,13 @@ public class JsonResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-        if (summary.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
+        if (!summary.isEnvelope() && (summary.isRequired()
+            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
           return mapArrayDataToResponse(writeContext, newPath);
+        }
+        if (summary.isEnvelope() && summary.getSchema()
+            .getDefault() != null) {
+          return mapDefaultArrayToResponse(summary);
         }
         return null;
       case OBJECT_TYPE:
@@ -118,6 +125,18 @@ public class JsonResponseMapper {
         }
         return null;
     }
+  }
+
+  private Object mapDefaultArrayToResponse(SchemaSummary summary) {
+    if (summary.getSchema()
+        .getDefault() instanceof ArrayNode) {
+      ArrayNode arrayNode = (ArrayNode) summary.getSchema()
+          .getDefault();
+      return StreamSupport.stream(arrayNode.spliterator(), false)
+          .map(JsonNode::textValue)
+          .collect(Collectors.toList());
+    }
+    return null;
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
