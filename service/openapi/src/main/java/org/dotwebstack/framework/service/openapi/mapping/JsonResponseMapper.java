@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,8 +100,7 @@ public class JsonResponseMapper {
         if ((summary.isRequired()
             || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
 
-          return Optional.ofNullable(mapArrayDataToResponse(writeContext, newPath))
-              .orElse(mapDefaultArrayToResponse(summary));
+          return mapArrayDataToResponse(writeContext, newPath);
         }
 
         return null;
@@ -140,7 +138,11 @@ public class JsonResponseMapper {
           .map(JsonNode::textValue)
           .collect(Collectors.toList());
     }
-    return null;
+
+    if (summary.isNillable()) {
+      return null;
+    }
+    return List.of();
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
@@ -187,12 +189,9 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    if (Objects.isNull(parentContext.getData()) && parentContext.getResponseObject()
-        .getSummary()
-        .isNillable()) {
-      return null;
-    } else if (Objects.isNull(parentContext.getData())) {
-      return Collections.emptyList();
+    if (Objects.isNull(parentContext.getData())) {
+      return mapDefaultArrayToResponse(parentContext.getResponseObject()
+          .getSummary());
     } else if (parentContext.getData() instanceof List) {
       return ((List<Object>) parentContext.getData()).stream()
           .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData), path))

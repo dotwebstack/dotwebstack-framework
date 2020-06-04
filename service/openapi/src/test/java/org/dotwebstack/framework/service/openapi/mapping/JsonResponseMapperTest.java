@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -323,6 +325,72 @@ class JsonResponseMapperTest {
   }
 
   @Test
+  void map_returnsValue_forResponseWithDefaultArrayForEnvelope() throws NoResultFoundException {
+    // Arrange
+    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject array1 = getObject("array1", "array", false, false, true, null,
+        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema(List.of("defaultvalue")));
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> arrayObject1Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> arrayObject2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    List<Object> array1Data = ImmutableList.of(arrayObject1Data, arrayObject2Data);
+    Map<String, Object> child1Data = ImmutableMap.of("array1", array1Data);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
+  }
+
+  @Test
+  void map_returnsValue_forResponseWithDefaultArray() throws NoResultFoundException {
+    // Arrange
+    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject array1 = getObject("array1", "array", true, false, false, null,
+        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema(List.of("defaultvalue")));
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
+  }
+
+  @Test
   void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NoResultFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
@@ -541,12 +609,24 @@ class JsonResponseMapperTest {
     assertEquals("", resultString);
   }
 
+  private static ArraySchema getArraySchema(List<String> defaultValues) {
+    ArraySchema arraySchema = new ArraySchema().type("string");
+    arraySchema.setDefault(new ObjectMapper().valueToTree(defaultValues));
+    return arraySchema;
+  }
+
   private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
     return getObject(identifier, "object", true, false, null, children, new ArrayList<>());
   }
 
   private static ResponseObject getObject(String identifier, String type, boolean required, boolean nullable,
       boolean envelop, List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf) {
+    return getObject(identifier, type, required, nullable, envelop, items, children, composedOf, null);
+  }
+
+  private static ResponseObject getObject(String identifier, String type, boolean required, boolean nullable,
+      boolean envelop, List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf,
+      Schema<?> schema) {
     return ResponseObject.builder()
         .identifier(identifier)
         .summary(SchemaSummary.builder()
@@ -557,6 +637,7 @@ class JsonResponseMapperTest {
             .items(items)
             .composedOf(composedOf)
             .isEnvelope(envelop)
+            .schema(schema)
             .build())
         .build();
   }
