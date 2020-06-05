@@ -13,6 +13,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
@@ -40,7 +40,6 @@ import org.eclipse.rdf4j.model.impl.SimpleLiteral;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 
-@Slf4j
 public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;
@@ -100,11 +99,8 @@ public final class ValueFetcher extends SourceDataFetcher {
     NodeShape nodeShape = propertyShape.getNode();
     Set<Value> values = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject());
-    LOG.debug("filtering propertyshape {} values {}", propertyShape.getPath()
-        .toPredicate()
-        .toString(), values);
     Stream<Value> stream = values.stream()
-        .filter(result -> constraintCheck(result, propertyShape, source.getModel()))
+        .filter(result -> validConstraints(result, nodeShape, propertyShape, source.getModel(), new HashSet<String>()))
         .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
@@ -161,50 +157,46 @@ public final class ValueFetcher extends SourceDataFetcher {
                     .equals(type)));
   }
 
-  private boolean constraintCheck(Object value, PropertyShape propertyShape, Model model) {
-    LOG.debug("checking contraints on propertyShape {} with value {} ", propertyShape.getPath()
-        .toPredicate()
-        .getQueryString(), value);
+  private boolean validConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape, Model model,
+      HashSet<String> checked) {
 
+    checked.add(getKey(nodeShape, propertyShape));
     return propertyShape.getConstraints()
         .entrySet()
         .stream()
         .allMatch((entry) -> {
-          boolean valid = isValid(entry.getKey(), entry.getValue(), value, propertyShape, model);
+          boolean valid = validConstraint(entry.getKey(), entry.getValue(), value);
           NodeShape targetNode = propertyShape.getNode();
           if (valid && value instanceof Resource && targetNode != null) {
-            LOG.debug("{} is pointing to node {}, checking child values", value, targetNode.getClasses());
-            return targetNode.getPropertyShapes()
-                .values()
-                .stream()
-                .allMatch(childPs -> {
-                  Set<Value> childValues = childPs.getPath()
-                      .resolvePath(model, (Resource) value);
-                  LOG.debug("got values for targetNode {} with value {} and propertyShape {}: {} ",
-                      targetNode.getClasses(), value, childPs.getPath()
-                          .toPredicate()
-                          .getQueryString(),
-                      childValues);
-                  return childValues.stream()
-                      .allMatch(cv -> constraintCheck(cv, childPs, model));
-                });
+            return validConstraints((Resource) value, targetNode, model, checked);
           }
           return valid;
         });
   }
 
-  private boolean isValid(ConstraintType type, Object constraintValue, Object value, PropertyShape propertyShape,
-      Model model) {
-    LOG.debug("checking contraint {}={} for value {}", type, constraintValue, value);
-    switch (type) {
-      case HASVALUE:
-        return Objects.equals(Objects.toString(constraintValue), Objects.toString(value));
-      case MAXCOUNT:
-      case MINCOUNT:
-      case RDF_TYPE:
-      default:
-        return true;
+  private boolean validConstraints(Resource subject, NodeShape targetNode, Model model, HashSet<String> checked) {
+    return targetNode.getPropertyShapes()
+        .values()
+        .stream()
+        .filter(propertyShape -> !checked.contains(getKey(targetNode, propertyShape)))
+        .allMatch(propertyShape -> {
+          Set<Value> values = propertyShape.getPath()
+              .resolvePath(model, subject);
+          return values.stream()
+              .allMatch(childValue -> validConstraints(childValue, targetNode, propertyShape, model, checked));
+        });
+  }
+
+  private String getKey(NodeShape nodeShape, PropertyShape propertyShape) {
+    String nodeShapeKey = nodeShape != null ? nodeShape.getName() : "root";
+    return nodeShapeKey + "_" + propertyShape.getName();
+  }
+
+  private boolean validConstraint(ConstraintType type, Object constraintValue, Object value) {
+    if (type == ConstraintType.HASVALUE) {
+      return Objects.equals(Objects.toString(constraintValue), Objects.toString(value));
     }
+    return true;
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
