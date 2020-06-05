@@ -294,7 +294,7 @@ abstract class AbstractVerticeFactory {
     propertyShapes.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
         .forEach(ps -> {
-          Edge simpleEdge = createSimpleEdge(query.var(), ps, false, false);
+          Edge simpleEdge = createSimpleEdge(query.var(), ps, true, false);
 
           vertice.getEdges()
               .add(simpleEdge);
@@ -306,12 +306,14 @@ abstract class AbstractVerticeFactory {
 
   static List<Edge> getRequiredEdges(Collection<PropertyShape> propertyShapes, OuterQuery<?> query) {
     return propertyShapes.stream()
-        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
+        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
         .map(ps -> {
-          Edge edge = createSimpleEdge(query.var(), ps, false, false);
-          addRequiredEdges(edge.getObject(), ps.getNode()
-              .getPropertyShapes()
-              .values(), query);
+          Edge edge = createSimpleEdge(query.var(), ps, true, false);
+          if (ps.getNode() != null) {
+            addRequiredEdges(edge.getObject(), ps.getNode()
+                .getPropertyShapes()
+                .values(), query);
+          }
           return edge;
         })
         .collect(Collectors.toList());
