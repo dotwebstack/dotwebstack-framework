@@ -24,6 +24,8 @@ public class OasConstants {
 
   public static final String X_DWS_NAME = "x-dws-name";
 
+  public static final String X_DWS_DEFAULT = "x-dws-default";
+
   public static final String X_DWS_VALIDATE = "x-dws-validate";
 
   public static final String X_DWS_EXPAND_TYPE = "expand";

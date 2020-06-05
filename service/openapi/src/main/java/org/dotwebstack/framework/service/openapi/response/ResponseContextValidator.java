@@ -73,6 +73,11 @@ public class ResponseContextValidator {
             });
         break;
       default:
+        // Skip 'static' paths in the OAS specification. (all nodes are envelopes)
+        if (responseObject.getSummary()
+            .isEnvelope()) {
+          return;
+        }
         if (!Objects.equals(field.getName(), responseObject.getIdentifier())) {
           throw invalidOpenApiConfigurationException(
               "OAS field '{}' does not match with GraphQl object '{}' for schema type '{}'",

@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
@@ -18,7 +19,6 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
@@ -90,10 +91,17 @@ public class JsonResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-        if (summary.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true)))) {
+
+        if (summary.isEnvelope()) {
+          return mapDefaultArrayToResponse(responseObject);
+        }
+
+        if ((summary.isRequired()
+            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
+
           return mapArrayDataToResponse(writeContext, newPath);
         }
+
         return null;
       case OBJECT_TYPE:
         Object object = processObject(writeContext, summary, newPath);
@@ -118,6 +126,25 @@ public class JsonResponseMapper {
         }
         return null;
     }
+  }
+
+  private Object mapDefaultArrayToResponse(ResponseObject responseObject) {
+    Object defaultValue;
+    SchemaSummary summary = responseObject.getSummary();
+    if (summary.getSchema() != null
+        && (defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT)) != null) {
+      if (defaultValue instanceof List) {
+        return defaultValue;
+      }
+
+      throw mappingException("'{}' value for property '{}' not of type array!", OasConstants.X_DWS_DEFAULT,
+          responseObject.getIdentifier());
+    }
+
+    if (summary.isNillable()) {
+      return null;
+    }
+    return List.of();
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
@@ -164,12 +191,8 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    if (Objects.isNull(parentContext.getData()) && parentContext.getResponseObject()
-        .getSummary()
-        .isNillable()) {
-      return null;
-    } else if (Objects.isNull(parentContext.getData())) {
-      return Collections.emptyList();
+    if (Objects.isNull(parentContext.getData())) {
+      return mapDefaultArrayToResponse(parentContext.getResponseObject());
     } else if (parentContext.getData() instanceof List) {
       return ((List<Object>) parentContext.getData()).stream()
           .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData), path))
