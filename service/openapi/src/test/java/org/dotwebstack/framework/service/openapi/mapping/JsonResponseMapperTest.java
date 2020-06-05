@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -28,6 +27,7 @@ import org.dotwebstack.framework.service.openapi.conversion.LocalDateTypeConvert
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.conversion.ZonedDateTimeTypeConverter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
@@ -391,6 +391,35 @@ class JsonResponseMapperTest {
   }
 
   @Test
+  void map_returnsException_forResponseWithDefaultArrayWithInvalidType() throws NoResultFoundException {
+    // Arrange
+    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject array1 = getObject("array1", "array", true, false, false, null,
+        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema("defaultvalue"));
+    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = new HashMap<>();
+    child1Data.put("array1", null);
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+
+    // Act & Assert
+    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
+  }
+
+  @Test
   void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NoResultFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
@@ -609,9 +638,9 @@ class JsonResponseMapperTest {
     assertEquals("", resultString);
   }
 
-  private static ArraySchema getArraySchema(List<String> defaultValues) {
+  private static ArraySchema getArraySchema(Object defaultValue) {
     ArraySchema arraySchema = new ArraySchema().type("string");
-    arraySchema.setDefault(new ObjectMapper().valueToTree(defaultValues));
+    arraySchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, defaultValue));
     return arraySchema;
   }
 

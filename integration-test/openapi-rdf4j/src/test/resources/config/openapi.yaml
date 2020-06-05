@@ -122,7 +122,7 @@ components:
             countries:
               type: array
               x-dws-envelope: true
-              default: ['Netherlands','Belgium']
+              x-dws-default: ['Netherlands','Belgium']
               items:
                 type: string
                 x-dws-envelope: true
