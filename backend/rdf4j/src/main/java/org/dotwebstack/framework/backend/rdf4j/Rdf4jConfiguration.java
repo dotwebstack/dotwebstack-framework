@@ -164,9 +164,6 @@ class Rdf4jConfiguration {
           .getResources(sparqlLocation.get() + SPARQL_PATTERN);
 
       for (Resource resource : resourceList) {
-        if (!resource.exists()) {
-          continue;
-        }
         String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
         String fileName = resource.getFilename();
         result.put(fileName.substring(0, fileName.lastIndexOf('.')), content);

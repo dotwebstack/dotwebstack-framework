@@ -226,7 +226,6 @@ class Rdf4jConfigurationTest {
     // Arrange
 
     Resource scriptResource = mock(Resource.class);
-    when(scriptResource.exists()).thenReturn(true);
     when(scriptResource.getInputStream()).thenReturn(IOUtils.toInputStream("script", Charsets.UTF_8.name()));
     when(scriptResource.getFilename()).thenReturn("script.rq");
 
