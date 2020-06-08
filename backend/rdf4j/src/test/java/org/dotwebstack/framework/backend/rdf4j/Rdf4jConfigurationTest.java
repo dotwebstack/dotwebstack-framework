@@ -224,7 +224,6 @@ class Rdf4jConfigurationTest {
   @Test
   void return_QueryReferenceRegistry_When_FilesMatchPattern() throws IOException {
     // Arrange
-
     Resource scriptResource = mock(Resource.class);
     when(scriptResource.getInputStream()).thenReturn(IOUtils.toInputStream("script", Charsets.UTF_8.name()));
     when(scriptResource.getFilename()).thenReturn("script.rq");
