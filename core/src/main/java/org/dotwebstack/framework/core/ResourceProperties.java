@@ -10,7 +10,7 @@ public class ResourceProperties {
 
   private static final String FILE_PREFIX = "file:/";
 
-  public static final String CONFIG_PATH = "config/";
+  private static final String CONFIG_PATH = "config/";
 
   public static URI getFileConfigPath() {
     return URI.create(FILE_PREFIX + CONFIG_PATH);
