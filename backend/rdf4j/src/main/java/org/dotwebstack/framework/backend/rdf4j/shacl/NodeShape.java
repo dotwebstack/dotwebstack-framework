@@ -1,19 +1,22 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 @Builder
 @Getter
 public final class NodeShape {
 
-  private final IRI identifier;
+  private final Resource identifier;
 
-  private final Set<IRI> targetClasses;
+  @Builder.Default
+  private final Set<IRI> classes = new HashSet<>();
 
   private final IRI parent;
 

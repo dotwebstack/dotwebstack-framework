@@ -13,8 +13,11 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_TARG
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,19 +31,26 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.eclipse.rdf4j.model.impl.SimpleLiteral;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
+import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,6 +118,14 @@ public class VerticeFactoryTest {
   @Mock
   SelectedField selectedField;
 
+  private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
+
+  @Mock
+  private SimpleLiteral stringLiteralMock;
+
+  @Mock
+  private SimpleLiteral minCountLiteralMock;
+
   @BeforeEach
   private void setup() {
     selectVerticeFactory = new SelectVerticeFactory(router, rdf4jProperties);
@@ -117,7 +135,7 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_ForSimpleBreweryNodeShape() {
     // Arrange
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -125,18 +143,17 @@ public class VerticeFactoryTest {
         Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
+    assertThat(vertice.getConstraints()
         .size(), is(1));
-    Edge edge = vertice.getEdges()
-        .get(0);
-
-    assertThat(edge.getPredicate()
-        .getQueryString(), is(stringify(RDF.TYPE)));
-    assertThat(edge.getObject()
-        .getIris()
+    Constraint constraint = vertice.getConstraints()
         .iterator()
-        .next()
-        .getQueryString(), is(stringify(BREWERY_TARGET_CLASS)));
+        .next();
+
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(stringify(RDF.TYPE)));
+    assertThat(constraint.getValues()
+        .iterator()
+        .next(), is(equalTo(BREWERY_TARGET_CLASS)));
   }
 
   @Test
@@ -152,7 +169,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -187,7 +204,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -227,7 +244,7 @@ public class VerticeFactoryTest {
     NodeShape ingredientShape = NodeShape.builder()
         .name("Ingredient")
         .propertyShapes(ImmutableMap.of("name", ingredientName))
-        .targetClasses(Set.of(INGREDIENTS_TARGET_CLASS))
+        .classes(Set.of(INGREDIENTS_TARGET_CLASS))
         .build();
 
     PropertyShape beerIngredients = PropertyShape.builder()
@@ -242,7 +259,7 @@ public class VerticeFactoryTest {
     NodeShape beersShape = NodeShape.builder()
         .name("Beer")
         .propertyShapes(ImmutableMap.of("ingredients", beerIngredients))
-        .targetClasses(Set.of(BEERS_TARGET_CLASS))
+        .classes(Set.of(BEERS_TARGET_CLASS))
         .build();
 
     PropertyShape breweryBeers = PropertyShape.builder()
@@ -257,7 +274,7 @@ public class VerticeFactoryTest {
 
 
     when(nodeShape.getPropertyShape("beers")).thenReturn(breweryBeers);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
 
     SelectQuery query = Queries.SELECT();
 
@@ -270,24 +287,46 @@ public class VerticeFactoryTest {
         .build()), Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
-        .get(1);
+        .get(0);
 
     assertThat(edge.getObject()
-        .getEdges()
-        .size(), is(2));
-    edge = edge.getObject()
-        .getEdges()
-        .get(1);
+        .getConstraints(), hasSize(1));
+    constraint = edge.getObject()
+        .getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
     assertThat(edge.getObject()
-        .getEdges()
-        .size(), is(2));
+        .getEdges(), hasSize(1));
     edge = edge.getObject()
         .getEdges()
-        .get(1);
+        .get(0);
+
+    assertThat(edge.getObject()
+        .getConstraints(), hasSize(1));
+    constraint = edge.getObject()
+        .getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(edge.getObject()
+        .getEdges(), hasSize(1));
+    edge = edge.getObject()
+        .getEdges()
+        .get(0);
 
     assertThat(edge.getObject()
         .getFilters()
@@ -321,7 +360,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -333,10 +372,16 @@ public class VerticeFactoryTest {
         .build()), Collections.emptyList(), query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
-        .get(1);
+        .get(0);
 
     assertThat(edge.getObject()
         .getFilters()
@@ -367,7 +412,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(BREWERY_NAME_FIELD)).thenReturn(breweryName);
-    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     when(selectedField.getName()).thenReturn(BREWERY_NAME_FIELD);
@@ -379,12 +424,63 @@ public class VerticeFactoryTest {
     Vertice vertice = constructVerticeFactory.createRoot(nodeShape, fields, query);
 
     // Assert
-    assertThat(vertice.getEdges()
-        .size(), is(2));
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
         .get(0);
-
     assertThat(edge.getPredicate()
         .getQueryString(), is(stringify(BREWERY_LABEL)));
+    assertThat(vertice.getConstraints(), hasSize(1));
+    Constraint constraint = vertice.getConstraints()
+        .iterator()
+        .next();
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+  }
+
+  @Test
+  public void getValueConstraint_retrunsConstraint_forPropertyShape() {
+    // Arrange
+    when(minCountLiteralMock.intValue()).thenReturn(1);
+
+    PropertyShape propertyShape = PropertyShape.builder()
+        .path(PredicatePath.builder()
+            .iri(VF.createIRI("http://www.example.com/dotwebstack/hasCitroenIngredient"))
+            .build())
+        .constraints(Map.of(ConstraintType.MINCOUNT, minCountLiteralMock, ConstraintType.HASVALUE, stringLiteralMock))
+        .build();
+
+    // Act
+    Optional<Constraint> constraintOptional = AbstractVerticeFactory.getValueConstraint(propertyShape);
+
+    // Assert
+    assertTrue(constraintOptional.isPresent());
+  }
+
+  @Test
+  public void getRequiredEdges_returnsEdge_forPropertyShape() {
+    // Arrange
+    OuterQuery<?> query = Queries.CONSTRUCT();
+    when(minCountLiteralMock.intValue()).thenReturn(1);
+
+    PropertyShape propertyShape = PropertyShape.builder()
+        .path(PredicatePath.builder()
+            .iri(VF.createIRI("http://www.example.com/dotwebstack/hasBeers"))
+            .build())
+        .constraints(Map.of(ConstraintType.MINCOUNT, minCountLiteralMock))
+        .node(NodeShape.builder()
+            .name("Beer")
+            .propertyShapes(Map.of("identifier", PropertyShape.builder()
+                .path(PredicatePath.builder()
+                    .iri(VF.createIRI("http://www.example.com/dotwebstack/identifier"))
+                    .build())
+                .build()))
+            .build())
+        .build();
+
+    // Act
+    List<Edge> requiredEdges = AbstractVerticeFactory.getRequiredEdges(List.of(propertyShape), query);
+
+    // Assert
+    assertThat(requiredEdges, hasSize(1));
   }
 }

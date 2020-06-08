@@ -33,7 +33,13 @@ public class SelectVerticeFactoryTest {
   private NodeShape beerShapeMock;
 
   @Mock
+  private NodeShape ingredientShapeMock;
+
+  @Mock
   private PropertyShape beersPropertyShapeMock;
+
+  @Mock
+  private PropertyShape ingredientPropertyShapeMock;
 
   @Mock
   private PropertyShape identifierPropertyShapeMock;
@@ -48,15 +54,26 @@ public class SelectVerticeFactoryTest {
   public void createRequiredEdges_returnsAddedEdge_forEdgeWithMinCount1() {
     // Arrange
     when(outerQueryMock.var()).thenReturn(x1Mock);
-    when(breweryShapeMock.getPropertyShapes()).thenReturn(Map.of("beers", beersPropertyShapeMock));
     when(beersPropertyShapeMock.getMinCount()).thenReturn(1);
     when(beersPropertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
         .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery_beers"))
         .build());
+    when(beersPropertyShapeMock.getNode()).thenReturn(beerShapeMock);
+
+    when(beerShapeMock.getPropertyShapes()).thenReturn(Map.of("ingredient", ingredientPropertyShapeMock));
+    when(ingredientPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(ingredientPropertyShapeMock.getNode()).thenReturn(ingredientShapeMock);
+    when(ingredientPropertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_ingredients"))
+        .build());
+
     when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, hasSize(1));
@@ -73,21 +90,27 @@ public class SelectVerticeFactoryTest {
   public void createRequiredEdges_returnsNesteEdge_forNestedNodeshape() {
     // Arrange
     when(outerQueryMock.var()).thenReturn(x1Mock);
-    when(breweryShapeMock.getPropertyShapes()).thenReturn(Map.of("beers", beersPropertyShapeMock));
     when(beersPropertyShapeMock.getMinCount()).thenReturn(1);
     when(beersPropertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
         .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery_beers"))
         .build());
     when(beersPropertyShapeMock.getNode()).thenReturn(beerShapeMock);
-    when(beerShapeMock.getPropertyShapes()).thenReturn(Map.of("identifier", identifierPropertyShapeMock));
-    when(identifierPropertyShapeMock.getMinCount()).thenReturn(1);
-    when(identifierPropertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
-        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_identifier"))
+
+    when(beerShapeMock.getPropertyShapes()).thenReturn(Map.of("ingredient", ingredientPropertyShapeMock));
+    when(ingredientPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(ingredientPropertyShapeMock.getNode()).thenReturn(ingredientShapeMock);
+    when(ingredientPropertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_ingredients"))
         .build());
+    when(ingredientShapeMock.getPropertyShapes()).thenReturn(Map.of("identifier", identifierPropertyShapeMock));
+
     when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, hasSize(1));
@@ -105,7 +128,7 @@ public class SelectVerticeFactoryTest {
     assertThat(beersEdges, hasSize(1));
     assertThat(beersEdges.get(0)
         .getPredicate()
-        .getQueryString(), is(equalTo("<https://github.com/dotwebstack/beer/shapes#Beer_identifier>")));
+        .getQueryString(), is(equalTo("<https://github.com/dotwebstack/beer/shapes#Beer_ingredients>")));
     assertThat(beersEdges.get(0)
         .getObject()
         .getSubject()
@@ -115,11 +138,13 @@ public class SelectVerticeFactoryTest {
   @Test
   public void createRequiredEdges_doesNotReturnEdge_forEdgeWithMinCount0() {
     // Arrange
-    when(breweryShapeMock.getPropertyShapes()).thenReturn(Map.of("beers", beersPropertyShapeMock));
     when(beersPropertyShapeMock.getMinCount()).thenReturn(0);
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
-    List<Edge> edges = SelectVerticeFactory.createRequiredEdges(breweryShapeMock, outerQueryMock);
+    SelectVerticeFactory.addRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
 
     // Assert
     assertThat(edges, is(empty()));

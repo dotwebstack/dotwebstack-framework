@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,6 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryPropert
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.ResourceProperties;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -139,15 +137,15 @@ class Rdf4jConfiguration {
     NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
         .getPrefix());
 
-    Map<IRI, NodeShape> nodeShapeMap = new HashMap<>();
-    List<NodeShape> shapes = Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
-        .stream()
-        .map(subject -> createShapeFromModel(shapeModel, subject, nodeShapeMap))
-        .collect(Collectors.toList());
+    Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap = new HashMap<>();
+    Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
+        .forEach(subject -> createShapeFromModel(shapeModel, subject, nodeShapeMap));
 
-    shapes.stream()
-        .map(shape -> processInheritance(shape, nodeShapeMap))
-        .forEach(shape -> registry.register(shape.getIdentifier(), shape));
+    nodeShapeMap.values()
+        .forEach(shape -> {
+          processInheritance(shape, nodeShapeMap);
+          registry.register(shape.getIdentifier(), shape);
+        });
 
     return registry;
   }

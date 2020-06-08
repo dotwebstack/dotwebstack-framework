@@ -70,6 +70,7 @@ components:
         - localName
         - owners
         - sponsorship
+        - lemonBeers
         - beerCount
       properties:
         identifier:
@@ -97,6 +98,10 @@ components:
           items:
             type: string
         beers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beer'
+        lemonBeers:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
@@ -280,7 +285,7 @@ paths:
             default: ['beers']
             items:
               type: string
-              enum: ['beers', 'beers.ingredients', 'beers.supplements']
+              enum: ['beers', 'beers.ingredients', 'beers.supplements', 'lemonBeers', 'lemonBeers.ingredients', 'lemonBeers.supplements']
         - name: identifier
           in: path
           required: true
