@@ -1,10 +1,18 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.HASVALUE;
+import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.MAXCOUNT;
+import static org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType.MINCOUNT;
+
+import java.util.EnumMap;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 
 @Builder
 @Getter
@@ -16,9 +24,8 @@ public final class PropertyShape {
 
   private final BasePath path;
 
-  private final Integer minCount;
-
-  private final Integer maxCount;
+  @Builder.Default
+  private final Map<ConstraintType, Object> constraints = new EnumMap<>(ConstraintType.class);
 
   private final IRI nodeKind;
 
@@ -26,4 +33,21 @@ public final class PropertyShape {
 
   private final IRI datatype;
 
+  public Integer getMinCount() {
+    if (constraints.containsKey(MINCOUNT)) {
+      return ((Literal) constraints.get(MINCOUNT)).intValue();
+    }
+    return null;
+  }
+
+  public Integer getMaxCount() {
+    if (constraints.containsKey(MAXCOUNT)) {
+      return ((Literal) constraints.get(MAXCOUNT)).intValue();
+    }
+    return null;
+  }
+
+  public Value getHasValue() {
+    return (Value) constraints.getOrDefault(HASVALUE, null);
+  }
 }

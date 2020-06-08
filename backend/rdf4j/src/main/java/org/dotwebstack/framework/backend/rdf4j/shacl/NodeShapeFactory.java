@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPropertyIri;
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredProperty;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +21,6 @@ import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.constants.Rdf4jConstants;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
@@ -34,12 +35,12 @@ public class NodeShapeFactory {
 
   private NodeShapeFactory() {}
 
-  public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
+  public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull Resource identifier) {
     return createShapeFromModel(shapeModel, identifier, new HashMap<>());
   }
 
-  public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull IRI identifier,
-      Map<IRI, NodeShape> nodeShapeMap) {
+  public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull Resource identifier,
+      Map<Resource, NodeShape> nodeShapeMap) {
     Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
     if (nodeShapeMap.containsKey(identifier)) {
@@ -49,7 +50,7 @@ public class NodeShapeFactory {
     NodeShape nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
-        .targetClasses(Models.getPropertyIRIs(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .classes(Models.getPropertyIRIs(shapeModel, identifier, SHACL.CLASS))
         .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS).orElse(null))
         .propertyShapes(propertyShapes)
         .build();
@@ -63,7 +64,7 @@ public class NodeShapeFactory {
   }
 
   private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape,
-      Map<IRI, NodeShape> nodeShapeMap) {
+      Map<Resource, NodeShape> nodeShapeMap) {
     /*
      * The sh:or can occur on multiple levels, either as a direct child of a nodeshape or as a child of
      * an sh:property. Here the direct childs of type sh:or on a nodeshape are processed
@@ -137,7 +138,8 @@ public class NodeShapeFactory {
         .collect(Collectors.toList());
   }
 
-  private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape, Map<IRI, NodeShape> nodeShapeMap) {
+  private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape,
+      Map<Resource, NodeShape> nodeShapeMap) {
     PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder();
     Resource usedShape = shape;
 
@@ -149,10 +151,14 @@ public class NodeShapeFactory {
        * if a sh:node is present, it means a reference exist to another NodeShape. For that reason the
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
-      IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
+      IRI nodeIri = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
       builder.node(createShapeFromModel(shapeModel, nodeIri, nodeShapeMap));
 
       usedShape = nodeIri;
+    } else if (ValueUtils.isPropertyPresent(shapeModel, usedShape, SHACL.NODE)) {
+      MemBNode bnode = (MemBNode) findRequiredProperty(shapeModel, usedShape, SHACL.NODE);
+      builder.node(createShapeFromModel(shapeModel, bnode, nodeShapeMap));
+      usedShape = bnode;
     }
 
     if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE_KIND_PROP)) {
@@ -164,13 +170,13 @@ public class NodeShapeFactory {
       }
     }
 
-    builder.identifier(usedShape)
-        .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
-            .map(Literal::intValue)
-            .orElse(null))
-        .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
-            .map(Literal::intValue)
-            .orElse(null));
+    builder.constraints(Stream.of(ConstraintType.values())
+        .map(constraint -> new AbstractMap.SimpleEntry<ConstraintType, Object>(constraint,
+            Models.getProperty(shapeModel, shape, constraint.getType())
+                .orElse(null)))
+        .filter(entry -> entry.getValue() != null)
+        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue)));
+    builder.identifier(usedShape);
 
     return builder.build();
   }
@@ -208,7 +214,8 @@ public class NodeShapeFactory {
     return shapes;
   }
 
-  private static void chainSuperclasses(NodeShape nodeShape, Map<IRI, NodeShape> nodeShapeMap, List<IRI> parents) {
+  private static void chainSuperclasses(NodeShape nodeShape,
+      Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap, List<IRI> parents) {
     if (Objects.nonNull(nodeShape.getParent())) {
       if (nodeShapeMap.containsKey(nodeShape.getParent())) {
         if (parents.contains(nodeShape.getParent())) {
@@ -224,7 +231,8 @@ public class NodeShapeFactory {
     }
   }
 
-  public static NodeShape processInheritance(@NonNull NodeShape nodeShape, @NonNull Map<IRI, NodeShape> nodeShapeMap) {
+  public static void processInheritance(@NonNull NodeShape nodeShape,
+      @NonNull Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap) {
     ArrayList<IRI> parents = new ArrayList<>();
     chainSuperclasses(nodeShape, nodeShapeMap, parents);
     parents.forEach(parent -> {
@@ -232,14 +240,18 @@ public class NodeShapeFactory {
       parentShape.getPropertyShapes()
           .forEach((key, value) -> {
             if (!nodeShape.getPropertyShapes()
-                .keySet()
-                .contains(key)) {
+                .containsKey(key)) {
               nodeShape.getPropertyShapes()
                   .put(key, value);
             }
           });
+      if (!parentShape.getClasses()
+          .isEmpty() && nodeShape.getClasses()
+              .isEmpty()) {
+        nodeShape.getClasses()
+            .addAll(parentShape.getClasses());
+      }
     });
-    return nodeShape;
   }
 
 }

@@ -10,7 +10,6 @@
 
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Identifiable a sh:NodeShape ;
-    sh:targetClass owl:Thing ;
     sh:name "Identifiable" ;
     sh:property
       beer_sh:Identifier ,
@@ -29,14 +28,13 @@
    beer_sh:Name a sh:PropertyShape ;
      sh:name "name" ;
      sh:path [ sh:alternativePath ( schema:name beer_def:label ) ] ;
-     sh:minCount 1 ;
      sh:maxCount 1 ;
      sh:nodeKind sh:Literal ;
      sh:datatype xsd:string
    .
 
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     dws:inherits beer_sh:Identifiable ;
     sh:name "Brewery" ;
     sh:property
@@ -167,7 +165,7 @@
   .
 
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     dws:inherits beer_sh:Identifiable ;
     sh:name "Beer" ;
     sh:property
@@ -209,7 +207,7 @@
 
   beer_sh:BeerType a sh:NodeShape ;
     sh:name "BeerType" ;
-    sh:targetClass beer_def:BeerType ;
+    sh:class beer_def:BeerType ;
     dws:inherits beer_sh:Identifiable ;
   .
 
@@ -247,7 +245,7 @@
 
   beer_sh:Address a sh:NodeShape ;
     sh:name "Address" ;
-    sh:targetClass beer_def:Address ;
+    sh:class beer_def:Address ;
     sh:property
       beer_sh:Address_postalcode,
       beer_sh:Address_streetAddress
@@ -272,7 +270,7 @@
   .
 
   beer_sh:Ingredient a sh:NodeShape ;
-    sh:targetClass beer_def:Ingredient ;
+    sh:class beer_def:Ingredient ;
     dws:inherits beer_sh:Identifiable ;
     sh:property beer_sh:ingredient_test;
     sh:name "Ingredient" ;
@@ -290,12 +288,12 @@
   beer_sh:Ingredient_test a sh:NodeShape ;
     dws:inherits beer_sh:Identifiable ;
     sh:name "Test" ;
-    sh:targetClass beer_def:Test ;
+    sh:class beer_def:Test ;
     sh:nodeKind sh:IRI ;
   .
 
   beer_sh:Supplement a sh:NodeShape ;
-    sh:targetClass beer_def:Supplement ;
+    sh:class beer_def:Supplement ;
     dws:inherits beer_sh:Identifiable ;
     sh:name "Supplement" ;
     sh:nodeKind sh:IRI

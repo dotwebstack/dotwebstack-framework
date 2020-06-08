@@ -13,6 +13,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -95,14 +97,16 @@ public final class ValueFetcher extends SourceDataFetcher {
   private Stream<Value> resolve(final DataFetchingEnvironment environment, PropertyShape propertyShape,
       QuerySolution source) {
     NodeShape nodeShape = propertyShape.getNode();
-    Stream<Value> stream = propertyShape.getPath()
-        .resolvePath(source.getModel(), source.getSubject())
-        .stream()
-        .filter(result -> nodeShape == null || nodeShape.getTargetClasses()
+    Set<Value> values = propertyShape.getPath()
+        .resolvePath(source.getModel(), source.getSubject());
+    Stream<Value> stream = values.stream()
+        .filter(result -> validPropertyShapeConstraints(result, nodeShape, propertyShape, source.getModel(),
+            new HashSet<String>()))
+        .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
-                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getTargetClasses())
-                : resultIsOfType(result, nodeShape.getTargetClasses())));
+                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getClasses())
+                : resultIsOfType(result, nodeShape.getClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()
@@ -144,6 +148,7 @@ public final class ValueFetcher extends SourceDataFetcher {
                 .equals(type)));
   }
 
+
   private boolean resultIsOfType(Value value, Set<IRI> types) {
     return listOf(((MemResource) value).getSubjectStatementList()).stream()
         .anyMatch(statement -> statement.getPredicate()
@@ -151,6 +156,50 @@ public final class ValueFetcher extends SourceDataFetcher {
             && types.stream()
                 .anyMatch(type -> statement.getObject()
                     .equals(type)));
+  }
+
+  private boolean validPropertyShapeConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape,
+      Model model, HashSet<String> checked) {
+
+    checked.add(getKey(nodeShape, propertyShape));
+    return propertyShape.getConstraints()
+        .entrySet()
+        .stream()
+        .allMatch((entry) -> {
+          boolean valid = validConstraint(entry.getKey(), entry.getValue(), value);
+          NodeShape targetNode = propertyShape.getNode();
+          if (valid && value instanceof Resource && targetNode != null) {
+            return validNodeShapeConstraints((Resource) value, targetNode, model, checked);
+          }
+          return valid;
+        });
+  }
+
+  private boolean validNodeShapeConstraints(Resource subject, NodeShape nodeShape, Model model,
+      HashSet<String> checked) {
+    return nodeShape.getPropertyShapes()
+        .values()
+        .stream()
+        .filter(propertyShape -> !checked.contains(getKey(nodeShape, propertyShape)))
+        .allMatch(propertyShape -> {
+          Set<Value> values = propertyShape.getPath()
+              .resolvePath(model, subject);
+          return values.stream()
+              .allMatch(
+                  childValue -> validPropertyShapeConstraints(childValue, nodeShape, propertyShape, model, checked));
+        });
+  }
+
+  private String getKey(NodeShape nodeShape, PropertyShape propertyShape) {
+    String nodeShapeKey = nodeShape != null ? nodeShape.getName() : "root";
+    return nodeShapeKey + "_" + propertyShape.getName();
+  }
+
+  private boolean validConstraint(ConstraintType type, Object constraintValue, Object value) {
+    if (type == ConstraintType.HASVALUE) {
+      return Objects.equals(Objects.toString(constraintValue), Objects.toString(value));
+    }
+    return true;
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {

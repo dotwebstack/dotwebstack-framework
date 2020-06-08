@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
@@ -17,7 +18,7 @@ public class NodeShapeRegistry {
 
   private final String shapePrefix;
 
-  private final HashMap<IRI, NodeShape> nodeShapes = new HashMap<>();
+  private final HashMap<Resource, NodeShape> nodeShapes = new HashMap<>();
 
   private final HashMap<String, NodeShape> nodeShapesByName = new HashMap<>();
 
@@ -25,7 +26,7 @@ public class NodeShapeRegistry {
     this.shapePrefix = shapePrefix;
   }
 
-  public void register(IRI identifier, NodeShape nodeShape) {
+  public void register(Resource identifier, NodeShape nodeShape) {
     nodeShapes.put(identifier, nodeShape);
     nodeShapesByName.put(nodeShape.getName(), nodeShape);
   }

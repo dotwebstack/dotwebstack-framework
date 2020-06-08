@@ -48,7 +48,7 @@ this mapping can be seen in the following `shapes` file, that contains a subset 
 
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier 
   .
@@ -191,7 +191,7 @@ to retrieve and object from the current subject.
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier 
   .
@@ -220,7 +220,7 @@ You can chain as many paths as you like, and you can use both predicate paths an
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_name
   .
@@ -250,7 +250,7 @@ underlying objects. For example when you are not interested in the parent per se
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_postalCode 
   .
@@ -289,7 +289,7 @@ in one direction, but not the other. So in our previous examples that would mean
 
 beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass beer_def:Brewery ;
+    sh:class beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_beers
   .
@@ -321,7 +321,7 @@ For example, finding the names of all people a person knows either directly, or 
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -350,7 +350,7 @@ length 0.
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -379,7 +379,7 @@ length 0 or 1.
 
 beer:shapes {
   beer_sh:Beer a sh:NodeShape ;
-    sh:targetClass beer_def:Beer ;
+    sh:class beer_def:Beer ;
     sh:property
       beer_sh:Beer_beerTypes
  .
@@ -552,17 +552,33 @@ This construct makes it possible to have two property shapes with the same `sh:p
 Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
 
 ## 1.8 Constraints
+Constraints can be added to the shapes file to further restrict data from fitting as property or node shape constructs. 
+Without these constraints it is only possible to restrict the model by the given paths, sometimes this is not enough.
+Think about objects that have to be of a certain class to fit a nodeshape, or objects that need to have at least one 
+predicate of a certain type, sometimes even with a certain value. In Dotwebstack each constraint will limit what will be
+returned for a certain query, so that it applies to the rules specified in the shapes file. In the following paragraphs 
+the constraints supported in Dotwebstack are discussed. 
+
 ### 1.8.1 minCount
-It is possible to add sh:minCount to a property shape, to add constraints to your query regarding required properties.
+It is possible to add `sh:minCount` to a property shape, to add constraints to your query regarding required properties.
 When adding minCount of 0 or omitting minCount altogether, the property is optional. When adding a minCount of
 1, the property is required. Currently, minCount > 1 is not supported.
+
+### 1.8.2 hasValue
+By adding `sh:hasValue` to a property shape, at least on of the triples in the data needs to have given predicate in 
+combination with the given value in order to meet this requirement. 
+
+### 1.8.3 Class
+By adding a `sh:class` to a node shape, you can bind your node shape to a class. This means that a requirement is added to 
+query that will constrain the returned object to have and `rdf:type` relation with the given class. Multiple classes will
+result in multiple constraints and thus objects will have to have `rdf:type` relations with all given classes.
 
 ## 1.9 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
 
 ```shacl
  ex:Pet a sh:NodeShape ;
-    sh:targetClass owl:Thing ;
+    sh:class owl:Thing ;
     sh:name "Animal" ;
     sh:property
       ex:name,
@@ -571,7 +587,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
 
   ex:Dog a sh:NodeShape ;
     sh:name "Dog";
-    sh:targetClass ex_def:Dog ;
+    sh:class ex_def:Dog ;
     dws:inherits ex:Pet ;
     sh:property
       ex:fetchesBall ,
@@ -580,7 +596,7 @@ It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `
   
   ex:Cat a sh:NodeShape ;
     sh:name "Cat";
-    sh:targetClass ex_def:Cat ;
+    sh:class ex_def:Cat ;
     dws:inherits ex:Pet ;
     sh:property
       ex:breed ,

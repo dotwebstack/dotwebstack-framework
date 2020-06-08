@@ -1,28 +1,20 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.makeEdgesUnique;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,54 +27,24 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   public Vertice createRoot(Variable subject, NodeShape nodeShape, List<FilterRule> filterRules, List<OrderBy> orderBys,
       OuterQuery<?> query) {
     Vertice vertice = createVertice(subject, query, nodeShape, filterRules);
-    vertice.setEdges(makeEdgesUnique(vertice.getEdges()));
     orderBys.forEach(orderBy -> addOrderables(vertice, query, orderBy, nodeShape));
     return vertice;
   }
 
   private Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<FilterRule> filterRules) {
-    Vertice vertice = createVertice(subject, nodeShape, query);
+    Vertice vertice = Vertice.builder()
+        .subject(subject)
+        .nodeShape(nodeShape)
+        .build();
+
+    addRequiredEdges(vertice, nodeShape.getPropertyShapes()
+        .values(), query);
 
     filterRules.forEach(filter -> applyFilter(vertice, nodeShape, filter, query));
+
+    addConstraints(vertice, query);
     return vertice;
-  }
-
-  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape, @NonNull OuterQuery<?> query) {
-    List<Edge> edges = createRequiredEdges(nodeShape, query);
-
-    Set<Iri> iris = nodeShape.getTargetClasses()
-        .stream()
-        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
-        .collect(Collectors.toSet());
-
-    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
-
-    return Vertice.builder()
-        .subject(subject)
-        .edges(edges)
-        .build();
-  }
-
-  /*
-   * Check which edges should be added to the where part of the query based on a sh:minCount property
-   * of 1
-   */
-  static List<Edge> createRequiredEdges(@NonNull NodeShape nodeShape, OuterQuery<?> query) {
-    return nodeShape.getPropertyShapes()
-        .values()
-        .stream()
-        .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
-        .map(ps -> {
-          Variable var = query.var();
-          Edge edge = createSimpleEdge(var, ps.getPath(), false, true);
-          if (ps.getNode() != null) {
-            edge.getObject()
-                .setEdges(createRequiredEdges(ps.getNode(), query));
-          }
-          return edge;
-        })
-        .collect(Collectors.toList());
   }
 
   private void applyFilter(Vertice vertice, NodeShape nodeShape, FilterRule filterRule, OuterQuery<?> query) {
@@ -107,9 +69,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
             .isEmpty()) {
           GraphQLFieldDefinition fieldDefinition = filterRule.getFieldPath()
               .first();
-          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(fieldDefinition.getName())
-              .getPath()
-              .toPredicate(), false);
+          edge = createSimpleEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), false, false);
 
           if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
             edge.setOptional(true);
