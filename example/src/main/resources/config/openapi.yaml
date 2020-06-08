@@ -110,7 +110,6 @@ components:
         sponsorship:
           x-dws-envelope: true
           type: object
-          x-dws-envelope: true
           nullable: true
           allOf:
             - $ref: '#/components/schemas/SponsorshipId'
