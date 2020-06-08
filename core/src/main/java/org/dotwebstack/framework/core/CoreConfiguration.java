@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
@@ -9,14 +11,17 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,8 +52,11 @@ public class CoreConfiguration {
   @Profile("!test")
   @Bean
   public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
-    Reader reader = new InputStreamReader(resourceLoader.getResource(ResourceProperties.getResourcePath()
-        .resolve(FIXED_SCHEMA_NAME)
+    Optional<URI> schemaLocation = ResourceLoaderUtils.getResourceLocation(FIXED_SCHEMA_NAME);
+    if (schemaLocation.isEmpty()) {
+      throw invalidConfigurationException("Graphql schema not found on location: {}", schemaLocation);
+    }
+    Reader reader = new InputStreamReader(resourceLoader.getResource(schemaLocation.get()
         .toString())
         .getInputStream());
 

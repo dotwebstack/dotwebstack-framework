@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
@@ -63,7 +63,7 @@ class Rdf4jConfiguration {
 
   private static final String SPARQL_PATH = "sparql";
 
-  private static final String SPARQL_PATH_PATTERN = SPARQL_PATH + "/**.rq";
+  private static final String SPARQL_PATTERN = "/**.rq";
 
   @Bean
   public ConfigFactory configFactory() {
@@ -157,14 +157,11 @@ class Rdf4jConfiguration {
   public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
     Map<String, String> result = new HashMap<>();
 
-    URI resourcePath = ResourceProperties.getResourcePath();
-    URI sparqlFolder = resourcePath.resolve(SPARQL_PATH);
-    URI sparqlFolderWithDocuments = resourcePath.resolve(SPARQL_PATH_PATTERN);
+    Optional<URI> sparqlLocation = ResourceLoaderUtils.getResourceLocation(SPARQL_PATH);
 
-    Resource sparqlFolderResource = resourceLoader.getResource(sparqlFolder.toString());
-    if (sparqlFolderResource.exists()) {
+    if (sparqlLocation.isPresent()) {
       Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-          .getResources(sparqlFolderWithDocuments.toString());
+          .getResources(sparqlLocation.get() + SPARQL_PATTERN);
 
       for (Resource resource : resourceList) {
         String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);

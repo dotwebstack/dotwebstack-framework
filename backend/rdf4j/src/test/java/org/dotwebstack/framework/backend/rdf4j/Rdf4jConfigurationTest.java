@@ -15,12 +15,14 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import lombok.Cleanup;
+import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -208,17 +210,31 @@ class Rdf4jConfigurationTest {
   }
 
   @Test
-  void return_EmptyQueryReferenceRegistry_When_SparqlResourceFolder_DoesntExists() throws IOException {
+  void return_EmptyQueryReferenceRegistry_When_FilesNotMatchPattern() throws IOException {
     // Arrange
-    Resource sparqlResource = mock(Resource.class);
-    when(sparqlResource.exists()).thenReturn(false);
-    when(resourceLoader.getResource(anyString())).thenReturn(sparqlResource);
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
 
     // Act
     Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
 
     // Assert
     assertThat(result.size(), is(0));
+  }
+
+  @Test
+  void return_QueryReferenceRegistry_When_FilesMatchPattern() throws IOException {
+    // Arrange
+    Resource scriptResource = mock(Resource.class);
+    when(scriptResource.getInputStream()).thenReturn(IOUtils.toInputStream("script", Charsets.UTF_8.name()));
+    when(scriptResource.getFilename()).thenReturn("script.rq");
+
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {scriptResource});
+
+    // Act
+    Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
+
+    // Assert
+    assertThat(result.size(), is(1));
   }
 
 }
