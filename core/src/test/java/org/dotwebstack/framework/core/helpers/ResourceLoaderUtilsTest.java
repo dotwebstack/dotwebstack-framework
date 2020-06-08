@@ -2,11 +2,11 @@ package org.dotwebstack.framework.core.helpers;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.junit.jupiter.api.Test;
 
@@ -15,19 +15,21 @@ class ResourceLoaderUtilsTest {
   @Test
   void assert_notNull_ClassPathResource() {
     // Arrange & Act
-    URI resource = ResourceLoaderUtils.getResourceLocation("assets/");
+    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation("assets/");
 
     // Assert
     assertNotNull(resource);
+    assertTrue(resource.isPresent());
   }
 
   @Test
   void test_nonExistingResource() {
     // Arrange & Act
-    URI resource = ResourceLoaderUtils.getResourceLocation("invalid/");
+    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation("invalid/");
 
     // Assert
-    assertNull(resource);
+    assertNotNull(resource);
+    assertFalse(resource.isPresent());
   }
 
   @Test
@@ -40,10 +42,11 @@ class ResourceLoaderUtilsTest {
         .toURI();
 
     // Act
-    URI resource = ResourceLoaderUtils.getResourceLocation(assertUri.getPath());
+    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation(assertUri.getPath());
 
     // Assert
     assertNotNull(resource);
+    assertTrue(resource.isPresent());
   }
 
   @Test

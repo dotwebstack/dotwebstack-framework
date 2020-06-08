@@ -24,6 +24,7 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryPropert
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.ResourceProperties;
+import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -56,7 +57,9 @@ class Rdf4jConfiguration {
 
   private static final String BASE_DIR_PREFIX = "rdf4j";
 
-  private static final String MODEL_PATH_PATTERN = "model/**";
+  private static final String MODEL_PATH = "model";
+
+  private static final String MODEL_PATTERN = "/**.trig";
 
   private static final String SPARQL_PATH = "sparql";
 
@@ -111,8 +114,8 @@ class Rdf4jConfiguration {
 
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
-    populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
-        ResourceProperties.getResourcePath());
+
+    populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader);
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
@@ -190,40 +193,43 @@ class Rdf4jConfiguration {
     return new RepositoryConfig(LOCAL_REPOSITORY_ID, repositoryConfig);
   }
 
-  private static void populateLocalRepository(Repository repository, ResourceLoader resourceLoader, URI resourcePath) {
-    Resource[] resourceList;
+  private static void populateLocalRepository(Repository repository, ResourceLoader resourceLoader) {
+    ResourceLoaderUtils.getResourceLocation(MODEL_PATH)
+        .ifPresent(modelPath -> {
+          Resource[] resourceList;
 
-    try {
-      resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-          .getResources(resourcePath.resolve(MODEL_PATH_PATTERN)
-              .toString());
-    } catch (IOException e) {
-      throw new UncheckedIOException("Error while loading local model.", e);
-    }
-
-    @Cleanup
-    RepositoryConnection con = repository.getConnection();
-
-    Arrays.stream(resourceList)
-        .filter(Resource::isReadable)
-        .filter(resource -> resource.getFilename() != null)
-        .forEach(modelResource -> {
-          String fileExtension = Arrays.stream(modelResource.getFilename()
-              .split("\\."))
-              .reduce("", (s1, s2) -> s2);
-
-          RDFFormat format = FileFormats.getFormat(fileExtension);
-
-          if (format != null) {
-            LOG.debug("Adding '{}' into '{}' repository", modelResource.getFilename(), LOCAL_REPOSITORY_ID);
-
-            try {
-              con.add(modelResource.getInputStream(), "", format);
-            } catch (IOException e) {
-              throw new UncheckedIOException("Error while loading data.", e);
-            }
+          try {
+            resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+                .getResources(modelPath.toString() + MODEL_PATTERN);
+          } catch (IOException e) {
+            throw new UncheckedIOException("Error while loading local model.", e);
           }
+
+          @Cleanup
+          RepositoryConnection con = repository.getConnection();
+
+          Arrays.stream(resourceList)
+              .filter(Resource::isReadable)
+              .filter(resource -> resource.getFilename() != null)
+              .forEach(modelResource -> {
+                String fileExtension = Arrays.stream(modelResource.getFilename()
+                    .split("\\."))
+                    .reduce("", (s1, s2) -> s2);
+
+                RDFFormat format = FileFormats.getFormat(fileExtension);
+
+                if (format != null) {
+                  LOG.debug("Adding '{}' into '{}' repository", modelResource.getFilename(), LOCAL_REPOSITORY_ID);
+
+                  try {
+                    con.add(modelResource.getInputStream(), "", format);
+                  } catch (IOException e) {
+                    throw new UncheckedIOException("Error while loading data.", e);
+                  }
+                }
+              });
         });
+
   }
 
 }

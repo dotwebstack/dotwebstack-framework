@@ -10,9 +10,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,14 +109,9 @@ public class OpenApiConfiguration {
   }
 
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
-    URI staticResourceLocation = ResourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION);
-
-    if (staticResourceLocation != null && Files.exists(Paths.get(staticResourceLocation))) {
-      return Optional.of(RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
-          new FileSystemResource(staticResourceLocation.getPath())));
-    }
-
-    return Optional.empty();
+    return ResourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION)
+        .map(staticResourceLocation -> RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
+            new FileSystemResource(staticResourceLocation.getPath())));
   }
 
   @Bean
