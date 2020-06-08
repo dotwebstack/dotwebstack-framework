@@ -100,7 +100,8 @@ public final class ValueFetcher extends SourceDataFetcher {
     Set<Value> values = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject());
     Stream<Value> stream = values.stream()
-        .filter(result -> validConstraints(result, nodeShape, propertyShape, source.getModel(), new HashSet<String>()))
+        .filter(result -> validPropertyShapeConstraints(result, nodeShape, propertyShape, source.getModel(),
+            new HashSet<String>()))
         .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
@@ -157,8 +158,8 @@ public final class ValueFetcher extends SourceDataFetcher {
                     .equals(type)));
   }
 
-  private boolean validConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape, Model model,
-      HashSet<String> checked) {
+  private boolean validPropertyShapeConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape,
+      Model model, HashSet<String> checked) {
 
     checked.add(getKey(nodeShape, propertyShape));
     return propertyShape.getConstraints()
@@ -168,22 +169,24 @@ public final class ValueFetcher extends SourceDataFetcher {
           boolean valid = validConstraint(entry.getKey(), entry.getValue(), value);
           NodeShape targetNode = propertyShape.getNode();
           if (valid && value instanceof Resource && targetNode != null) {
-            return validConstraints((Resource) value, targetNode, model, checked);
+            return validNodeShapeConstraints((Resource) value, targetNode, model, checked);
           }
           return valid;
         });
   }
 
-  private boolean validConstraints(Resource subject, NodeShape targetNode, Model model, HashSet<String> checked) {
-    return targetNode.getPropertyShapes()
+  private boolean validNodeShapeConstraints(Resource subject, NodeShape nodeShape, Model model,
+      HashSet<String> checked) {
+    return nodeShape.getPropertyShapes()
         .values()
         .stream()
-        .filter(propertyShape -> !checked.contains(getKey(targetNode, propertyShape)))
+        .filter(propertyShape -> !checked.contains(getKey(nodeShape, propertyShape)))
         .allMatch(propertyShape -> {
           Set<Value> values = propertyShape.getPath()
               .resolvePath(model, subject);
           return values.stream()
-              .allMatch(childValue -> validConstraints(childValue, targetNode, propertyShape, model, checked));
+              .allMatch(
+                  childValue -> validPropertyShapeConstraints(childValue, nodeShape, propertyShape, model, checked));
         });
   }
 
