@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJE
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -422,6 +423,31 @@ public class DefaultParamHandlerTest {
     // Act / Assert
     assertThrows(UnsupportedOperationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_throwsError_withNonMatchingPattern() {
+    // Arrange
+    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getPattern()).thenReturn("[A-Z]+");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+
+    // Act & Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_returns_withMatchingPattern() {
+    // Arrange
+    mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getPattern()).thenReturn("[A-Z]+");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+
+    // Act & Assert
+    assertDoesNotThrow(() -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test

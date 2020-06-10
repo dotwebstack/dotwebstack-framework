@@ -132,6 +132,7 @@ public class DefaultParamHandler implements ParamHandler {
         break;
       case STRING_TYPE:
         validateEnum(paramValue, parameter);
+        validatePattern(paramValue.toString(), parameter);
         break;
       case INTEGER_TYPE:
         validateInteger(paramValue, parameter);
@@ -155,6 +156,18 @@ public class DefaultParamHandler implements ParamHandler {
       throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
           parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
               .getEnum()));
+    }
+  }
+
+  private void validatePattern(String paramValue, Parameter parameter) {
+    if (parameter.getSchema() != null && parameter.getSchema()
+        .getPattern() != null) {
+      String pattern = parameter.getSchema()
+          .getPattern();
+      if (!paramValue.matches(pattern)) {
+        throw parameterValidationException("Parameter '{}' with value '{}' does not match expected pattern '{}'",
+            parameter.getName(), paramValue, String.join(", ", pattern));
+      }
     }
   }
 
