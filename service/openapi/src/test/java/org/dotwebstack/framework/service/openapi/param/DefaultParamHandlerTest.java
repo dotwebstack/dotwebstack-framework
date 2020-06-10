@@ -451,6 +451,18 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
+  public void getValue_returns_withNullPattern() {
+    // Arrange
+    mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getPattern()).thenReturn(null);
+    when(schema.getType()).thenReturn(TYPE_STRING);
+
+    // Act & Assert
+    assertDoesNotThrow(() -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
   public void getDefault_returnsListForArrayType() {
     // Arrange
     PathItem query3 = TestResources.openApi()
