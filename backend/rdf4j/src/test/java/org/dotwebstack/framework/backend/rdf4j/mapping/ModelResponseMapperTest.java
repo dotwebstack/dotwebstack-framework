@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.MimeType;
 
-public class ResponseMapperTest {
+public class ModelResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithInputObjectClass")
