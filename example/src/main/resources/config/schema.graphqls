@@ -8,6 +8,14 @@ type Query {
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
+  brewerySparql(identifier: ID! @constraint(pattern: "[0-9]+")
+  ): SparqlQueryResult!
+    @sparql(
+      repository: "local",
+      queryRef: "breweries-sparql"
+      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}"
+  )
+
   breweryModel(identifier: ID! @constraint(pattern: "[0-9]+"),
     iri: IRI
   ): Model
