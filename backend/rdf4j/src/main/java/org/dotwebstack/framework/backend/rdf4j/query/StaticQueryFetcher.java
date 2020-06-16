@@ -154,36 +154,36 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
       String query) {
     LOG.debug("Executing query for graph: {}", query);
 
-    GraphQuery queryResult =
+    GraphQuery graphQuery =
         repositoryAdapter.prepareGraphQuery(getRepositoryId(fieldDefinition), environment, query, emptyList());
 
-    bindValues(environment, fieldDefinition, queryResult);
+    bindValues(environment, fieldDefinition, graphQuery);
 
-    return queryResult.evaluate();
+    return graphQuery.evaluate();
   }
 
   private TupleQueryResult fetchTupleQuery(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition,
       String query) {
     LOG.debug("Executing query for tuples: {}", query);
 
-    TupleQuery queryResult = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
+    TupleQuery tupleQuery = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
 
-    bindValues(environment, fieldDefinition, queryResult);
+    bindValues(environment, fieldDefinition, tupleQuery);
 
-    return queryResult.evaluate();
+    return tupleQuery.evaluate();
   }
 
   private SparqlQueryResult fetchSparqlQuery(DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition, String query) {
     LOG.debug("Executing query for sparql: {}", query);
 
-    TupleQuery queryResult = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
+    TupleQuery tupleQuery = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
 
-    bindValues(environment, fieldDefinition, queryResult);
+    bindValues(environment, fieldDefinition, tupleQuery);
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     SPARQLResultsXMLWriter writer = new SPARQLResultsXMLWriter(outputStream);
-    queryResult.evaluate(writer);
+    tupleQuery.evaluate(writer);
 
     return new SparqlQueryResult(new ByteArrayInputStream(outputStream.toByteArray()));
   }
