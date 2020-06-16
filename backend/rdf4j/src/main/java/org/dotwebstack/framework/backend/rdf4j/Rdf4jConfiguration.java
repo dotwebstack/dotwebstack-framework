@@ -22,10 +22,12 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
+import org.dotwebstack.framework.backend.rdf4j.model.SparqlResult;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -93,6 +95,13 @@ class Rdf4jConfiguration {
         return localRepositoryManager.getRepository(repositoryId)
             .getConnection()
             .prepareBooleanQuery(query);
+      }
+
+      @Override
+      public SparqlResult executeSparqlQuery(String repositoryId, DataFetchingEnvironment environment, String query,
+                                             List<String> subjects, Map<String, Value> bindingValues) {
+        localRepositoryManager.getRepository(repositoryId).getConnection().prepareTupleQuery("g").evaluate();
+        return null;
       }
 
       @Override

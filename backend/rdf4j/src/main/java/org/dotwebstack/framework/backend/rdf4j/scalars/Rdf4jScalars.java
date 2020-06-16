@@ -17,7 +17,13 @@ public final class Rdf4jScalars {
       .coercing(new ModelCoercing())
       .build();
 
-  public static final ImmutableList<GraphQLScalarType> SCALARS = ImmutableList.of(MODEL, IRI);
+  public static final GraphQLScalarType SPARQL_RESULT = GraphQLScalarType.newScalar()
+      .name("SparqlResult")
+      .description("Sparql Result type")
+      .coercing(new SparqlResultCoercing())
+      .build();
+
+  public static final ImmutableList<GraphQLScalarType> SCALARS = ImmutableList.of(MODEL, IRI, SPARQL_RESULT);
 
   private Rdf4jScalars() {}
 

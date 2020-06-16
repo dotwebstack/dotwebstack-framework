@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.GraphQlFieldDefinit
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -13,6 +14,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +24,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.model.SparqlResult;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.validators.QueryValidator;
@@ -45,7 +48,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   private static final String SUBJECT = "subject";
 
   private static final List<GraphQLScalarType> SUPPORTED_TYPE_NAMES =
-      Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL);
+      Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL, Rdf4jScalars.SPARQL_RESULT);
 
   private final RepositoryAdapter repositoryAdapter;
 
@@ -77,6 +80,10 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
       return getQueryResultAsModel(environment, fieldDefinition).orElse(null);
     }
 
+    if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.SPARQL_RESULT)) {
+      return getQueryResultAsSparqlResult(environment, fieldDefinition).orElse(null);
+    }
+
     throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
   }
 
@@ -93,6 +100,17 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     LOG.debug("Fetched [{}] triples", model.size());
 
     return Optional.of(model);
+  }
+
+  private Optional<SparqlResult> getQueryResultAsSparqlResult(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
+    LOG.debug("Executing query for graph: {}", staticSparqlQuery);
+
+    Map<String, Value> bindingValues = getBindingValues(environment, fieldDefinition);
+    SparqlResult result = repositoryAdapter.executeSparqlQuery(getRepositoryId(fieldDefinition), environment,
+        staticSparqlQuery, emptyList(), bindingValues);
+
+    return Optional.of(result);
   }
 
   private Optional<Value> getQueryResultAsIri(DataFetchingEnvironment environment,
@@ -155,6 +173,11 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   }
 
   private void bindValues(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition, Query query) {
+    getBindingValues(environment, fieldDefinition).forEach(query::setBinding);
+  }
+
+  private Map<String, Value> getBindingValues(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
     GraphQLDirective sparqlDirective = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME);
     Map<String, Object> queryParameters = environment.getArguments();
     List<GraphQLArgument> definedArguments = fieldDefinition.getArguments();
@@ -162,8 +185,9 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     String subjectTemplate =
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
     if (subjectTemplate != null) {
-      query.setBinding(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
+      return ImmutableMap.of(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
     } else {
+      Map<String, Value> result = new HashMap<>();
       queryParameters.forEach((key, value) -> {
 
         GraphQLArgument graphQlArgument = definedArguments.stream()
@@ -175,9 +199,9 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
         Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
             .getName());
 
-        query.setBinding(key, bindingValue);
-
+        result.put(key, bindingValue);
       });
+      return result;
     }
   }
 
