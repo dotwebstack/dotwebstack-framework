@@ -132,6 +132,25 @@ class OpenApiRdf4jIntegrationTest {
     assertThat(actualResult, equalToIgnoringLineBreaks(expectedResult));
   }
 
+  @ParameterizedTest
+  @CsvSource(value = {"application/sparql-results+json:brewery_sparql_result.json",
+      "application/sparql-results+xml:brewery_sparql_result.xml"}, delimiter = ':')
+  void openApiRequest_ReturnsBrewerySparqlResult_withIdentifierFromPath(String acceptHeader, String expectedResultFile)
+      throws IOException {
+    // Arrange & Act
+    String actualResult = webClient.get()
+        .uri("/brewery/123/sparql")
+        .header("Accept", acceptHeader)
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    String expectedResult = new String(getFileInputStream(expectedResultFile).readAllBytes());
+    assertThat(actualResult.replace("\t", "    "), equalToIgnoringLineBreaks(expectedResult));
+  }
+
   @Test
   void openApiRequest_ReturnsBrewery_withNameFromQueryParamAndAcceptHeaderXml() {
     // Arrange & Act

@@ -1,0 +1,15 @@
+PREFIX rdf:         <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX beer_def:    <https://github.com/dotwebstack/beer/def#>
+PREFIX schema:      <http://schema.org/>
+
+SELECT ?brewery ?name ?founded
+  WHERE {
+    ?brewery rdf:type beer_def:Brewery .
+    OPTIONAL {
+      ?brewery schema:name ?name .
+    }
+    OPTIONAL {
+      ?brewery beer_def:founded ?founded .
+    }
+    FILTER ( ?brewery = ?subject)
+}
