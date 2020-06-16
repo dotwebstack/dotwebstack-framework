@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.mapping;
 
-import com.google.common.base.Charsets;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import org.dotwebstack.framework.backend.rdf4j.model.SparqlQueryResult;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
@@ -18,7 +18,7 @@ public class SparqlJsonResultResponseMapper implements ResponseMapper {
 
   @Override
   public boolean supportsOutputMimeType(MimeType mimeType) {
-    return this.SPARQL_RESULT_JSON_MEDIA_TYPE.equals(mimeType);
+    return SPARQL_RESULT_JSON_MEDIA_TYPE.equals(mimeType);
   }
 
   @Override
@@ -45,7 +45,7 @@ public class SparqlJsonResultResponseMapper implements ResponseMapper {
     } catch (IOException exception) {
       throw new ResponseMapperException("Serialization failed.", exception);
     }
-    return outputStream.toString(Charsets.UTF_8);
+    return outputStream.toString(StandardCharsets.UTF_8);
   }
 
 
