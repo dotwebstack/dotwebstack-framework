@@ -14,11 +14,11 @@ import org.springframework.util.MimeType;
 @Component
 public class SparqlJsonResultResponseMapper implements ResponseMapper {
 
-  private MimeType mimeType = MimeType.valueOf("application/sparql-results+json");
+  static final MimeType SPARQL_RESULT_JSON_MEDIA_TYPE = MimeType.valueOf("application/sparql-results+json");
 
   @Override
   public boolean supportsOutputMimeType(MimeType mimeType) {
-    return this.mimeType.equals(mimeType);
+    return this.SPARQL_RESULT_JSON_MEDIA_TYPE.equals(mimeType);
   }
 
   @Override

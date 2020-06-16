@@ -12,11 +12,11 @@ import org.springframework.util.MimeType;
 @Component
 public class SparqlXmlResultResponseMapper implements ResponseMapper {
 
-  private MimeType mimeType = MimeType.valueOf("application/sparql-results+xml");
+  static final MimeType SPARQL_RESULT_XML_MEDIA_TYPE = MimeType.valueOf("application/sparql-results+xml");
 
   @Override
   public boolean supportsOutputMimeType(MimeType mimeType) {
-    return this.mimeType.equals(mimeType);
+    return this.SPARQL_RESULT_XML_MEDIA_TYPE.equals(mimeType);
   }
 
   @Override
