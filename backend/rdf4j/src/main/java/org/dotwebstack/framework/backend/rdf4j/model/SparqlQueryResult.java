@@ -6,10 +6,10 @@ import lombok.Getter;
 
 
 @Getter
-public class SparqlResult {
+public class SparqlQueryResult {
   private InputStream inputStream;
 
-  public SparqlResult(InputStream source) {
+  public SparqlQueryResult(InputStream source) {
     this.inputStream = source;
   }
 }

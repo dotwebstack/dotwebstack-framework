@@ -4,7 +4,7 @@ import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
-import org.dotwebstack.framework.backend.rdf4j.model.SparqlResult;
+import org.dotwebstack.framework.backend.rdf4j.model.SparqlQueryResult;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeType;
@@ -21,21 +21,21 @@ public class SparqlXmlResultResponseMapper implements ResponseMapper {
 
   @Override
   public boolean supportsInputObjectClass(Class<?> clazz) {
-    return SparqlResult.class.isAssignableFrom(clazz);
+    return SparqlQueryResult.class.isAssignableFrom(clazz);
   }
 
   @Override
   public String toResponse(Object input) {
-    if (!(input instanceof SparqlResult)) {
-      throw new IllegalArgumentException("Input can only be of the type SparqlResult.");
+    if (!(input instanceof SparqlQueryResult)) {
+      throw new IllegalArgumentException("Input can only be of the type SparqlQueryResult.");
     }
 
-    SparqlResult sparqlResult = (SparqlResult) input;
+    SparqlQueryResult sparqlQueryResult = (SparqlQueryResult) input;
 
-    try (InputStream inputStream = sparqlResult.getInputStream()) {
+    try (InputStream inputStream = sparqlQueryResult.getInputStream()) {
       return IOUtils.toString(inputStream, Charsets.UTF_8);
     } catch (IOException exception) {
-      throw new RuntimeException("Serialization failed.", exception);
+      throw new ResponseMapperException("Serialization failed.", exception);
     }
   }
 }

@@ -57,7 +57,7 @@ public class ResourceDirectiveWiring implements AutoRegisteredSchemaDirectiveWir
   }
 
   private void validateOutputSparqlResult(String typeName, String fieldName, GraphQLType rawType) {
-    validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.SPARQL_RESULT.getName());
+    validateOnlyOnType(typeName, fieldName, rawType, Rdf4jScalars.SPARQL_QUERY_RESULT.getName());
   }
 
   private void validateOnlyOnIri(String typeName, String fieldName, GraphQLType rawType) {

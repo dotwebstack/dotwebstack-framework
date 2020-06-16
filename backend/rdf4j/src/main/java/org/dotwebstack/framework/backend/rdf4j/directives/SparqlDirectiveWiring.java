@@ -7,7 +7,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.GraphQlFieldDefinit
 import static org.dotwebstack.framework.backend.rdf4j.helper.GraphQlFieldDefinitionHelper.validateQueryHasCommand;
 import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.IRI;
 import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.MODEL;
-import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.SPARQL_RESULT;
+import static org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars.SPARQL_QUERY_RESULT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
@@ -110,7 +110,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
 
       } else if (graphQlFieldDefinitionIsOfType((GraphQLOutputType) outputType, MODEL)) {
         validateQueryHasCommand(staticSparqlQuery, DESCRIBE_QUERY_COMMAND, CONSTRUCT_QUERY_COMMAND);
-      } else if (graphQlFieldDefinitionIsOfType((GraphQLOutputType) outputType, SPARQL_RESULT)) {
+      } else if (graphQlFieldDefinitionIsOfType((GraphQLOutputType) outputType, SPARQL_QUERY_RESULT)) {
         validateQueryHasCommand(staticSparqlQuery, SELECT_QUERY_COMMAND, DESCRIBE_QUERY_COMMAND,
             CONSTRUCT_QUERY_COMMAND);
       } else {
@@ -133,7 +133,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
   private void validateOutputType(GraphQLType outputType) {
     String outputTypeName = getTypeName(outputType);
 
-    boolean isScalar = Stream.of(MODEL, IRI, SPARQL_RESULT)
+    boolean isScalar = Stream.of(MODEL, IRI, SPARQL_QUERY_RESULT)
         .map(GraphQLScalarType::getName)
         .anyMatch(outputTypeName::equals);
 

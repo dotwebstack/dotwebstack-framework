@@ -659,7 +659,7 @@ type Beer {
 ```
 The `@resource` directive can only be used for an IRI field.
 
-## 1.12 Static Query for IRI and Model output types
+## 1.12 Static Query for IRI, Model and SparqlQueryResult output types
 For output types IRI and Model, it is possible to use a static query. This can be done by adding
 a ```sparql``` folder to the ```config``` folder. Within the ```sparql``` folder, you can define a ```.rq``` file containing 
 a Sparql query. The reference to this ```.rq``` is defined by using the ```queryRef``` property within the ```@sparql``` directive, like:
@@ -702,3 +702,14 @@ The following rules apply for output type Model:
 <ul>
 <li>The query MUST be a DESCRIBE or CONSTRUCT query</li>
 </ul>
+
+### For SparqlQueryResult
+```graphql
+type Query {
+  nameOfQuery: SparqlQueryResult
+  @sparql(
+    queryRef: "queryForModel"
+  )
+}
+```
+In the example above, the name of the static query file should be ```queryForModel.rq```.
