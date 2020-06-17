@@ -708,8 +708,8 @@ The following rules apply for output type Model:
 type Query {
   nameOfQuery: SparqlQueryResult
   @sparql(
-    queryRef: "queryForSparqlResult"
+    queryRef: "queryForSparqlQueryResult"
   )
 }
 ```
-In the example above, the name of the static query file should be ```queryForSparqlResult.rq```.
+In the example above, the name of the static query file should be ```queryForSparqlQueryResult.rq```.
