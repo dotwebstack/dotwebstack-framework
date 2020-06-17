@@ -51,7 +51,7 @@ class ModelCoercingTest {
   }
 
   @Test
-  void parseLiteral_ReturnsString_ForModelValue() throws IOException {
+  void parseLiteral_ReturnsString_ForModelLiteral() throws IOException {
     // Arrange
     Model model = getDataTrigExampleModel();
 
