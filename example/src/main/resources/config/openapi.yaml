@@ -364,5 +364,23 @@ paths:
             application/n-triples: {}
             application/rdf+xml: {}
             application/trig: {}
+            application/sparql-result+json: {}
+            application/sparql-result+xml: {}
             text/turtle:
+              x-dws-default: true
+  /brewery/{identifier}/sparql:
+    get:
+      x-dws-query: brewerySparql
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/sparql-results+json: {}
+            application/sparql-results+xml:
               x-dws-default: true

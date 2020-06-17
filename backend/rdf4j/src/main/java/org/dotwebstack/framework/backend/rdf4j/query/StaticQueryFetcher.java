@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.GraphQlFieldDefinit
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
@@ -12,7 +13,10 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +26,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.model.SparqlQueryResult;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.validators.QueryValidator;
@@ -36,6 +41,7 @@ import org.eclipse.rdf4j.query.Query;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
 
 @Slf4j
 public final class StaticQueryFetcher implements DataFetcher<Object> {
@@ -45,7 +51,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   private static final String SUBJECT = "subject";
 
   private static final List<GraphQLScalarType> SUPPORTED_TYPE_NAMES =
-      Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL);
+      Arrays.asList(Rdf4jScalars.IRI, Rdf4jScalars.MODEL, Rdf4jScalars.SPARQL_QUERY_RESULT);
 
   private final RepositoryAdapter repositoryAdapter;
 
@@ -53,7 +59,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
   private final Rdf4jConverterRouter converterRouter;
 
-  private String staticSparqlQuery;
+  private final String staticSparqlQuery;
 
   public StaticQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators,
       Rdf4jConverterRouter converterRouter, @NonNull String staticSparqlQuery) {
@@ -77,6 +83,10 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
       return getQueryResultAsModel(environment, fieldDefinition).orElse(null);
     }
 
+    if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.SPARQL_QUERY_RESULT)) {
+      return getQueryResultAsSparqlResult(environment, fieldDefinition).orElse(null);
+    }
+
     throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
   }
 
@@ -93,6 +103,15 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     LOG.debug("Fetched [{}] triples", model.size());
 
     return Optional.of(model);
+  }
+
+  private Optional<SparqlQueryResult> getQueryResultAsSparqlResult(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
+    LOG.debug("Executing query for sparql: {}", staticSparqlQuery);
+
+    SparqlQueryResult sparqlQueryResult = fetchSparqlQuery(environment, fieldDefinition, staticSparqlQuery);
+
+    return Optional.of(sparqlQueryResult);
   }
 
   private Optional<Value> getQueryResultAsIri(DataFetchingEnvironment environment,
@@ -135,26 +154,46 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
       String query) {
     LOG.debug("Executing query for graph: {}", query);
 
-    GraphQuery queryResult =
+    GraphQuery graphQuery =
         repositoryAdapter.prepareGraphQuery(getRepositoryId(fieldDefinition), environment, query, emptyList());
 
-    bindValues(environment, fieldDefinition, queryResult);
+    bindValues(environment, fieldDefinition, graphQuery);
 
-    return queryResult.evaluate();
+    return graphQuery.evaluate();
   }
 
   private TupleQueryResult fetchTupleQuery(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition,
       String query) {
     LOG.debug("Executing query for tuples: {}", query);
 
-    TupleQuery queryResult = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
+    TupleQuery tupleQuery = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
 
-    bindValues(environment, fieldDefinition, queryResult);
+    bindValues(environment, fieldDefinition, tupleQuery);
 
-    return queryResult.evaluate();
+    return tupleQuery.evaluate();
+  }
+
+  private SparqlQueryResult fetchSparqlQuery(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition, String query) {
+    LOG.debug("Executing query for sparql: {}", query);
+
+    TupleQuery tupleQuery = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
+
+    bindValues(environment, fieldDefinition, tupleQuery);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    SPARQLResultsXMLWriter writer = new SPARQLResultsXMLWriter(outputStream);
+    tupleQuery.evaluate(writer);
+
+    return new SparqlQueryResult(new ByteArrayInputStream(outputStream.toByteArray()));
   }
 
   private void bindValues(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition, Query query) {
+    getBindingValues(environment, fieldDefinition).forEach(query::setBinding);
+  }
+
+  private Map<String, Value> getBindingValues(DataFetchingEnvironment environment,
+      GraphQLFieldDefinition fieldDefinition) {
     GraphQLDirective sparqlDirective = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME);
     Map<String, Object> queryParameters = environment.getArguments();
     List<GraphQLArgument> definedArguments = fieldDefinition.getArguments();
@@ -162,8 +201,9 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     String subjectTemplate =
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
     if (subjectTemplate != null) {
-      query.setBinding(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
+      return ImmutableMap.of(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
     } else {
+      Map<String, Value> result = new HashMap<>();
       queryParameters.forEach((key, value) -> {
 
         GraphQLArgument graphQlArgument = definedArguments.stream()
@@ -175,9 +215,9 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
         Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
             .getName());
 
-        query.setBinding(key, bindingValue);
-
+        result.put(key, bindingValue);
       });
+      return result;
     }
   }
 

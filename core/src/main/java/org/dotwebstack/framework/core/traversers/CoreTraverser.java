@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CoreTraverser {
 
-  private static final List<String> SUPPORTED_TYPE_NAMES = Arrays.asList("IRI", "Model");
+  private static final List<String> SUPPORTED_TYPE_NAMES = Arrays.asList("IRI", "Model", "SparqlQueryResult");
 
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 

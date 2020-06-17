@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -13,6 +14,7 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLOutputType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.BooleanConverter;
 import org.dotwebstack.framework.backend.rdf4j.converters.ByteConverter;
@@ -41,12 +44,20 @@ import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 
 class StaticQueryFetcherTest {
@@ -69,6 +80,12 @@ class StaticQueryFetcherTest {
   @Mock
   private TupleQueryResult tupleQueryResultMock;
 
+  @Mock
+  private GraphQuery graphQueryMock;
+
+  @Mock
+  private GraphQueryResult graphQueryResultMock;
+
   private StaticQueryFetcher staticQueryFetcherUnderTest;
 
   @BeforeEach
@@ -86,74 +103,88 @@ class StaticQueryFetcherTest {
         new StaticQueryFetcher(mockRepositoryAdapterMock, Collections.emptyList(), converterRouter, SELECT_QUERY);
   }
 
-  @Test
-  void getForIriTest() {
-    testGetSuccessful("IRI", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForIriTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "IRI", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
   }
 
-  @Test
-  void getForIdTest() {
-    testGetSuccessful("ID", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForIdTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "ID", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
   }
 
-  @Test
-  void getForStringTest() {
-    testGetSuccessful("String", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForStringTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "String", "\"https://github.com/dotwebstack/beer/id/beer/6\"");
   }
 
-  @Test
-  void getForBooleanTest() {
-    testGetSuccessful("Boolean", true);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForBooleanTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Boolean", true);
   }
 
-  @Test
-  void getForByteTest() {
-    testGetSuccessful("Byte", Byte.parseByte("2"));
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForByteTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Byte", Byte.parseByte("2"));
   }
 
-  @Test
-  void getForIntTest() {
-    testGetSuccessful("Int", 1);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForIntTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Int", 1);
   }
 
-  @Test
-  void getForBigIntegerTest() {
-    testGetSuccessful("BigInteger", BigInteger.TEN);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForBigIntegerTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "BigInteger", BigInteger.TEN);
   }
 
-  @Test
-  void getForShortTest() {
-    testGetSuccessful("Short", (short) 1);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForShortTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Short", (short) 1);
   }
 
-  @Test
-  void getForFloatTest() {
-    testGetSuccessful("Float", 1.0f);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForFloatTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Float", 1.0f);
   }
 
-  @Test
-  void getForDoubleTest() {
-    testGetSuccessful("Double", 1.0);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForDoubleTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Double", 1.0);
   }
 
-  @Test
-  void getForDateTest() {
-    testGetSuccessful("Date", new Date(System.currentTimeMillis()));
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForDateTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Date", new Date(System.currentTimeMillis()));
   }
 
-  @Test
-  void getForBigDecimalTest() {
-    testGetSuccessful("BigDecimal", BigDecimal.ONE);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForBigDecimalTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "BigDecimal", BigDecimal.ONE);
   }
 
-  @Test
-  void getForLongTest() {
-    testGetSuccessful("Long", Long.MAX_VALUE);
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getForLongTest(GraphQLOutputType graphqlOutputType) {
+    testGetSuccessful(graphqlOutputType, "Long", Long.MAX_VALUE);
   }
 
-  @Test
-  void getUnsupportedTest() {
-    testGetUnsuccessful("UnsupportedType", "value");
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void getUnsupportedTest(GraphQLOutputType graphqlOutputType) {
+    testGetUnsuccessful(graphqlOutputType, "UnsupportedType", "value");
   }
 
   @Test
@@ -174,24 +205,24 @@ class StaticQueryFetcherTest {
     assertThrows(NotImplementedException.class, () -> localDateConverter.convertToValue("someData"));
   }
 
-  private void testGetSuccessful(String type, Object value) {
+  private void testGetSuccessful(GraphQLOutputType graphqlOutputType, String type, Object value) {
     // Arrange
-    arrange(type, value);
+    arrange(graphqlOutputType, type, value);
 
     // Act
     assertDoesNotThrow(() -> staticQueryFetcherUnderTest.get(dataFetchingEnvironmentMock));
   }
 
-  private void testGetUnsuccessful(String type, Object value) {
+  private void testGetUnsuccessful(GraphQLOutputType graphqlOutputType, String type, Object value) {
     // Arrange
-    arrange(type, value);
+    arrange(graphqlOutputType, type, value);
 
     // Act
     assertThrows(InvalidConfigurationException.class,
         () -> staticQueryFetcherUnderTest.get(dataFetchingEnvironmentMock));
   }
 
-  private void arrange(String type, Object value) {
+  private void arrange(GraphQLOutputType graphqlOutputType, String type, Object value) {
     List<GraphQLArgument> arguments = new ArrayList<>();
     GraphQLInputObjectType iriType = GraphQLInputObjectType.newInputObject()
         .name(type)
@@ -225,7 +256,7 @@ class StaticQueryFetcherTest {
     Map<String, Object> environmentArguments = Collections.singletonMap("subject", value);
 
     when(graphQlFieldDefinitionMock.getName()).thenReturn("breweries_with_query_ref_as_iri");
-    when(graphQlFieldDefinitionMock.getType()).thenReturn(Rdf4jScalars.IRI);
+    when(graphQlFieldDefinitionMock.getType()).thenReturn(graphqlOutputType);
     when(graphQlFieldDefinitionMock.getDirective(Rdf4jDirectives.SPARQL_NAME)).thenReturn(directive);
     when(graphQlFieldDefinitionMock.getArguments()).thenReturn(arguments);
 
@@ -238,19 +269,44 @@ class StaticQueryFetcherTest {
 
     when(tupleQueryMock.evaluate()).thenReturn(tupleQueryResultMock);
 
+    when(graphQueryResultMock.hasNext()).thenReturn(true)
+        .thenReturn(false);
+
+    Resource subject = SimpleValueFactory.getInstance()
+        .createIRI("http://subject");
+    IRI predicate = SimpleValueFactory.getInstance()
+        .createIRI("http://predicate");
+    Value object = SimpleValueFactory.getInstance()
+        .createLiteral("object");
+
+    when(graphQueryResultMock.next()).thenReturn(SimpleValueFactory.getInstance()
+        .createStatement(subject, predicate, object));
+
+    when(graphQueryMock.evaluate()).thenReturn(graphQueryResultMock);
+
     when(mockRepositoryAdapterMock.prepareTupleQuery(eq("local"), any(DataFetchingEnvironment.class), eq(SELECT_QUERY)))
         .thenReturn(tupleQueryMock);
+
+    when(mockRepositoryAdapterMock.prepareGraphQuery(eq("local"), any(DataFetchingEnvironment.class), eq(SELECT_QUERY),
+        anyList())).thenReturn(graphQueryMock);
   }
 
-  @Test
-  void testSupports() {
+  @ParameterizedTest
+  @MethodSource("createGraphqlOutputTypes")
+  void testSupports(GraphQLOutputType graphqlOutputType) {
     // Arrange
-    when(graphQlFieldDefinitionMock.getType()).thenReturn(Rdf4jScalars.IRI);
+    when(graphQlFieldDefinitionMock.getType()).thenReturn(graphqlOutputType);
 
     // Act
     boolean result = StaticQueryFetcher.supports(graphQlFieldDefinitionMock);
 
     // Assert
     assertTrue(result);
+  }
+
+  private static Stream<Arguments> createGraphqlOutputTypes() {
+    // Arrange
+    return Stream.of(Arguments.of(Rdf4jScalars.IRI), Arguments.of(Rdf4jScalars.MODEL),
+        Arguments.of(Rdf4jScalars.SPARQL_QUERY_RESULT));
   }
 }

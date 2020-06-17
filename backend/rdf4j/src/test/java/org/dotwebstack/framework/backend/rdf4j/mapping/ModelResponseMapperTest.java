@@ -3,12 +3,14 @@ package org.dotwebstack.framework.backend.rdf4j.mapping;
 import static org.dotwebstack.framework.backend.rdf4j.matcher.IsEqualIgnoringLineBreaks.equalToIgnoringLineBreaks;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.backend.rdf4j.model.SparqlQueryResult;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -21,7 +23,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.util.MimeType;
 
-public class ResponseMapperTest {
+public class ModelResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithInputObjectClass")
@@ -88,6 +90,24 @@ public class ResponseMapperTest {
         Arguments.of(new TrigResponseMapper(), "output-response-mapper-trig.txt"),
         Arguments.of(new NQuadsResponseMapper(), "output-response-mapper-nquads.txt"),
         Arguments.of(new NTriplesResponseMapper(), "output-response-mapper-ntriples.txt"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createResponseMappers")
+  void responseMapper_throwsIllegalArgumentException_forSparqlQueryResult(ResponseMapper responseMapper) {
+    // Arrange
+    SparqlQueryResult sparqlQueryResult = new SparqlQueryResult(null);
+
+    // Act/Assert
+    assertThrows(IllegalArgumentException.class, () -> responseMapper.toResponse(sparqlQueryResult));
+  }
+
+  private static Stream<Arguments> createResponseMappers() {
+    // Arrange
+    return Stream.of(Arguments.of(new Notation3ResponseMapper()), Arguments.of(new TurtleResponseMapper()),
+        Arguments.of(new RdfXmlResponseMapper()), Arguments.of(new JsonLdResponseMapper()),
+        Arguments.of(new TrigResponseMapper()), Arguments.of(new NQuadsResponseMapper()),
+        Arguments.of(new NTriplesResponseMapper()));
   }
 
   private InputStream getFileInputStream(String filename) throws IOException {
