@@ -29,6 +29,19 @@ class SparqlQueryResultCoercingTest {
   }
 
   @Test
+  void serialize_ReturnsString_ForSparqlQueryResultValue() throws IOException {
+    // Arrange
+    SparqlQueryResult sparqlQueryResult = getSparqlQueryResultExample();
+
+    // Act
+    SparqlQueryResult result = coercing.serialize(sparqlQueryResult);
+
+    // Assert
+    assertThat(new String(result.getInputStream()
+        .readAllBytes()), is(new String(getSparqlExampleInputStream().readAllBytes())));
+  }
+
+  @Test
   void parseValue_ReturnsString_ForSparqlQueryResultValue() throws IOException {
     // Arrange
     SparqlQueryResult sparqlQueryResult = getSparqlQueryResultExample();

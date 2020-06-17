@@ -39,6 +39,18 @@ class ModelCoercingTest {
   }
 
   @Test
+  void serialize_ReturnsString_ForModelValue() throws IOException {
+    // Arrange
+    Model model = getDataTrigExampleModel();
+
+    // Act
+    Model result = coercing.serialize(model);
+
+    // Assert
+    assertModelHasResults(result);
+  }
+
+  @Test
   void parseValue_ReturnsString_ForModelValue() throws IOException {
     // Arrange
     Model model = getDataTrigExampleModel();
