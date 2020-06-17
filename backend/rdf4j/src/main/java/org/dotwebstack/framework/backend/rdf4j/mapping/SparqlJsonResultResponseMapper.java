@@ -47,6 +47,4 @@ public class SparqlJsonResultResponseMapper implements ResponseMapper {
     }
     return outputStream.toString(StandardCharsets.UTF_8);
   }
-
-
 }
