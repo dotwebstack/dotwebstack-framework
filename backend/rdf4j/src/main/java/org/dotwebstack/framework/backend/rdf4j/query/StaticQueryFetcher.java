@@ -59,7 +59,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
   private final Rdf4jConverterRouter converterRouter;
 
-  private String staticSparqlQuery;
+  private final String staticSparqlQuery;
 
   public StaticQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators,
       Rdf4jConverterRouter converterRouter, @NonNull String staticSparqlQuery) {
