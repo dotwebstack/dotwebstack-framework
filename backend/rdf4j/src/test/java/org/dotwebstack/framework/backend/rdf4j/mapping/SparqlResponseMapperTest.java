@@ -94,7 +94,7 @@ public class SparqlResponseMapperTest {
   @MethodSource("createResponseMappers")
   void responseMapper_throwsResponseMapperException_forInputStreamIsThrowingIoException(ResponseMapper responseMapper) {
     // Arrange
-    InputStream is = mock(InputStream.class, new IOExceptionAnswer());
+    InputStream is = mock(InputStream.class, new IoExceptionAnswer());
     SparqlQueryResult sparqlQueryResult = new SparqlQueryResult(is);
 
     // Act/Assert
@@ -113,7 +113,7 @@ public class SparqlResponseMapperTest {
         .resolve(filename));
   }
 
-  private static class IOExceptionAnswer implements Answer<Object> {
+  private static class IoExceptionAnswer implements Answer<Object> {
 
     public Object answer(InvocationOnMock invocation) throws Throwable {
       throw new IOException();
