@@ -94,7 +94,7 @@ public class ModelResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappers")
-  void responseMapper_throwsException_forSparqlQueryResult(ResponseMapper responseMapper) {
+  void responseMapper_throwsIllegalArgumentException_forSparqlQueryResult(ResponseMapper responseMapper) {
     // Arrange
     SparqlQueryResult sparqlQueryResult = new SparqlQueryResult(null);
 

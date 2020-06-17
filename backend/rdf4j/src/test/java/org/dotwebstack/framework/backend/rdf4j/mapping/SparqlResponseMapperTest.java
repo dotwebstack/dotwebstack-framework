@@ -92,7 +92,7 @@ public class SparqlResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappers")
-  void responseMapper_throwsResponseMapperException_forInputStreamIsThrowingIOException(ResponseMapper responseMapper) {
+  void responseMapper_throwsResponseMapperException_forInputStreamIsThrowingIoException(ResponseMapper responseMapper) {
     // Arrange
     InputStream is = mock(InputStream.class, new IOExceptionAnswer());
     SparqlQueryResult sparqlQueryResult = new SparqlQueryResult(is);
