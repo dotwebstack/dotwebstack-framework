@@ -7,8 +7,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noContentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
@@ -26,6 +27,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
@@ -61,8 +63,9 @@ import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
-import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.NoContentException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
+import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
@@ -151,11 +154,16 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
         .onErrorResume(ResponseMapperException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
         .onErrorResume(GraphQlErrorException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
-        .onErrorResume(NoResultFoundException.class, getMonoError(NOT_FOUND, "No results found."))
+        .onErrorResume(NoContentException.class, getMonoError(NO_CONTENT))
+        .onErrorResume(NotFoundException.class, getMonoError(NOT_FOUND, "No results found."))
         .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
         .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
         .onErrorResume(InvalidConfigurationException.class, getMonoError(BAD_REQUEST, "Bad configuration"))
         .onErrorResume(TemplatingException.class, getMonoError(INTERNAL_SERVER_ERROR, "Templating went wrong"));
+  }
+
+  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status) {
+    return exception -> Mono.error(new ResponseStatusException(status));
   }
 
   private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
@@ -290,7 +298,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .isEmpty()) {
 
       if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
-        throw noResultFoundException("Did not find data for your response.");
+        throw notFoundException("Did not find data for your response.");
       }
 
       HttpStatus httpStatus = getHttpStatus();
@@ -318,6 +326,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             properties.getAllProperties());
       } else {
         body = getResponseMapperBody(request, inputParams, queryResultData, template);
+      }
+
+      if (Objects.isNull(body)) {
+        throw noContentException("No content found.");
       }
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));

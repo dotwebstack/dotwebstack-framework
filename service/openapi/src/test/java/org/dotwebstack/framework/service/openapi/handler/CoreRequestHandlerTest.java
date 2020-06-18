@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -35,11 +36,13 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.NoContentException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
+import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -90,6 +93,9 @@ class CoreRequestHandlerTest {
   private JsonResponseMapper jsonResponseMapper;
 
   @Mock
+  private ResponseMapper responseMapper;
+
+  @Mock
   private TemplateResponseMapper templateResponseMapper;
 
   @Mock
@@ -130,7 +136,7 @@ class CoreRequestHandlerTest {
     when(this.responseSchemaContext.getGraphQlField())
         .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
     coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
-        graphQl, new ArrayList<>(), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
+        graphQl, List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
         requestBodyHandlerRouter, jexlHelper, environmentProperties));
 
     ResponseTemplate responseTemplate =
@@ -224,7 +230,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNoResultFoundExceptionTest() throws Exception {
+  void shouldThrowNotFoundExceptionTest() {
     // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", null);
@@ -232,7 +238,31 @@ class CoreRequestHandlerTest {
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
 
     // Act/Assert
-    assertThrows(NoResultFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+    assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+  }
+
+  @Test
+  void shouldThrowNoContentExceptionTest() {
+    // Arrange
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", "data");
+
+    MediaType mediaType = MediaType.valueOf("application/sparql-results+json");
+    when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
+    when(responseMapper.supportsOutputMimeType(eq(mediaType))).thenReturn(true);
+    when(responseMapper.toResponse(any())).thenReturn(null);
+
+    ResponseTemplate responseTemplate = ResponseTemplate.builder()
+        .mediaType(mediaType)
+        .responseCode(200)
+        .responseHeaders(new HashMap<>())
+        .mediaType(mediaType)
+        .build();
+
+    ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
+
+    // Act/Assert
+    assertThrows(NoContentException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
   private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates) {

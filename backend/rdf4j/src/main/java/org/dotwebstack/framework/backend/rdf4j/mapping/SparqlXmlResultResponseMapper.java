@@ -32,6 +32,14 @@ public class SparqlXmlResultResponseMapper implements ResponseMapper {
 
     SparqlQueryResult sparqlQueryResult = (SparqlQueryResult) input;
 
+    if (sparqlQueryResult.hasResult()) {
+      return toXmlResponse(sparqlQueryResult);
+    }
+
+    return null;
+  }
+
+  private String toXmlResponse(SparqlQueryResult sparqlQueryResult) {
     try (InputStream inputStream = sparqlQueryResult.getInputStream()) {
       return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     } catch (IOException exception) {

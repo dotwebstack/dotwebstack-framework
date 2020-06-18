@@ -32,19 +32,28 @@ public class SparqlJsonResultResponseMapper implements ResponseMapper {
       throw new IllegalArgumentException("Input can only be of the type SparqlQueryResult.");
     }
 
+    SparqlQueryResult sparqlQueryResult = (SparqlQueryResult) input;
+
+    if (sparqlQueryResult.hasResult()) {
+      return toJsonResponse(sparqlQueryResult);
+    }
+
+    return null;
+  }
+
+  private String toJsonResponse(SparqlQueryResult sparqlQueryResult) {
     SPARQLResultsXMLParser parser = new SPARQLResultsXMLParser();
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     SPARQLResultsJSONWriter writer = new SPARQLResultsJSONWriter(outputStream);
     parser.setQueryResultHandler(writer);
 
-    SparqlQueryResult sparqlQueryResult = (SparqlQueryResult) input;
-
     try (InputStream inputStream = sparqlQueryResult.getInputStream()) {
       parser.parseQueryResult(inputStream);
     } catch (IOException exception) {
       throw new ResponseMapperException("Serialization failed.", exception);
     }
+
     return outputStream.toString(StandardCharsets.UTF_8);
   }
 }
