@@ -15,8 +15,12 @@ public class OpenApiExceptionHelper extends ExceptionHelper {
     return new ParameterValidationException(formatMessage(message, arguments), findCause(arguments));
   }
 
-  public static NoResultFoundException noResultFoundException(String message, Object... arguments) {
-    return new NoResultFoundException(formatMessage(message, arguments), findCause(arguments));
+  public static NoContentException noContentException(String message, Object... arguments) {
+    return new NoContentException(formatMessage(message, arguments), findCause(arguments));
+  }
+
+  public static NotFoundException notFoundException(String message, Object... arguments) {
+    return new NotFoundException(formatMessage(message, arguments), findCause(arguments));
   }
 
   public static GraphQlErrorException graphQlErrorException(String message, Object... arguments) {

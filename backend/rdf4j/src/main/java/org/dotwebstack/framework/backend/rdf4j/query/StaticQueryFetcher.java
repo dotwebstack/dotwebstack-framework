@@ -84,7 +84,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     }
 
     if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.SPARQL_QUERY_RESULT)) {
-      return getQueryResultAsSparqlResult(environment, fieldDefinition).orElse(null);
+      return getQueryResultAsSparqlResult(environment, fieldDefinition);
     }
 
     throw invalidConfigurationException("Only Model and IRI graphQL outputTypes are supported");
@@ -105,13 +105,20 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     return Optional.of(model);
   }
 
-  private Optional<SparqlQueryResult> getQueryResultAsSparqlResult(DataFetchingEnvironment environment,
+  private SparqlQueryResult getQueryResultAsSparqlResult(DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition) {
     LOG.debug("Executing query for sparql: {}", staticSparqlQuery);
 
-    SparqlQueryResult sparqlQueryResult = fetchSparqlQuery(environment, fieldDefinition, staticSparqlQuery);
+    TupleQueryResult tupleQueryResult = fetchTupleQuery(environment, fieldDefinition, staticSparqlQuery);
 
-    return Optional.of(sparqlQueryResult);
+    if (tupleQueryResult.hasNext()) {
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      SPARQLResultsXMLWriter writer = new SPARQLResultsXMLWriter(outputStream);
+      QueryResults.report(tupleQueryResult, writer);
+      return new SparqlQueryResult(new ByteArrayInputStream(outputStream.toByteArray()));
+    }
+
+    return new SparqlQueryResult();
   }
 
   private Optional<Value> getQueryResultAsIri(DataFetchingEnvironment environment,
@@ -173,21 +180,6 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     return tupleQuery.evaluate();
   }
 
-  private SparqlQueryResult fetchSparqlQuery(DataFetchingEnvironment environment,
-      GraphQLFieldDefinition fieldDefinition, String query) {
-    LOG.debug("Executing query for sparql: {}", query);
-
-    TupleQuery tupleQuery = repositoryAdapter.prepareTupleQuery(getRepositoryId(fieldDefinition), environment, query);
-
-    bindValues(environment, fieldDefinition, tupleQuery);
-
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    SPARQLResultsXMLWriter writer = new SPARQLResultsXMLWriter(outputStream);
-    tupleQuery.evaluate(writer);
-
-    return new SparqlQueryResult(new ByteArrayInputStream(outputStream.toByteArray()));
-  }
-
   private void bindValues(DataFetchingEnvironment environment, GraphQLFieldDefinition fieldDefinition, Query query) {
     getBindingValues(environment, fieldDefinition).forEach(query::setBinding);
   }
@@ -215,7 +207,13 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
         Value bindingValue = getValueForType(value, GraphQLTypeUtil.unwrapAll(graphQlArgument.getType())
             .getName());
 
-        result.put(key, bindingValue);
+
+        String keyPrefix = "";
+        if (graphQlFieldDefinitionIsOfType(fieldDefinition.getType(), Rdf4jScalars.SPARQL_QUERY_RESULT)) {
+          keyPrefix = "arg_";
+        }
+
+        result.put(keyPrefix + key, bindingValue);
       });
       return result;
     }

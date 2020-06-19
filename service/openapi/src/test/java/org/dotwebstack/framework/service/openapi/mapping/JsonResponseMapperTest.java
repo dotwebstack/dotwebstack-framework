@@ -26,7 +26,7 @@ import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.conversion.LocalDateTypeConverter;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.conversion.ZonedDateTimeTypeConverter;
-import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -85,7 +85,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsProperty_ForValidResponse() throws NoResultFoundException {
+  void map_returnsProperty_ForValidResponse() throws NotFoundException {
     // Arrange
     Object data = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value");
     Deque<FieldContext> dataStack = new ArrayDeque<>();
@@ -113,7 +113,7 @@ class JsonResponseMapperTest {
         .build();
 
     // Act & Assert
-    assertThrows(NoResultFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
@@ -130,7 +130,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forDwsTemplate() throws NoResultFoundException {
+  void map_returnsValue_forDwsTemplate() throws NotFoundException {
     // Arrange
     when(properties.getAllProperties()).thenReturn(ImmutableMap.of("env_var_1", "v0"));
     ResponseObject child2 = getObject("child2", ImmutableList.of(DWS_TEMPLATE));
@@ -168,7 +168,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithEnvelopeObjectValue() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithEnvelopeObjectValue() throws NotFoundException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
@@ -197,7 +197,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue() throws NotFoundException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject embedded1 =
@@ -229,7 +229,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithComposedSchema() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithComposedSchema() throws NotFoundException {
     // Arrange
     ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
         Collections.emptyList());
@@ -260,7 +260,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithComposedEnvelopeSchema() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithComposedEnvelopeSchema() throws NotFoundException {
     // Arrange
     ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
         Collections.emptyList());
@@ -291,7 +291,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithArray() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithArray() throws NotFoundException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -325,7 +325,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithDefaultArrayForEnvelope() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithDefaultArrayForEnvelope() throws NotFoundException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -359,7 +359,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithDefaultArray() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithDefaultArray() throws NotFoundException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -391,7 +391,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsException_forResponseWithDefaultArrayWithInvalidType() throws NoResultFoundException {
+  void map_returnsException_forResponseWithDefaultArrayWithInvalidType() throws NotFoundException {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
@@ -420,7 +420,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NoResultFoundException {
+  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -449,7 +449,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNullableEmptyArray() throws NoResultFoundException {
+  void toResponse_returnsNoElement_forNonRequiredNullableEmptyArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -478,7 +478,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsEmptyList_forRequiredNonNullableEmptyArray() throws NoResultFoundException {
+  void toResponse_returnsEmptyList_forRequiredNonNullableEmptyArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -507,7 +507,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NoResultFoundException {
+  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -573,7 +573,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void map_returnsValue_forResponseWithObject() throws NoResultFoundException {
+  void map_returnsValue_forResponseWithObject() throws NotFoundException {
     // Arrange
     ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));

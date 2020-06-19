@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.mapping;
 
 import static org.dotwebstack.framework.backend.rdf4j.matcher.IsEqualIgnoringLineBreaks.equalToIgnoringLineBreaks;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -78,6 +79,19 @@ public class SparqlResponseMapperTest {
     // Arrange
     return Stream.of(Arguments.of(new SparqlJsonResultResponseMapper(), "output-response-mapper-sparqlresultjson.txt"),
         Arguments.of(new SparqlXmlResultResponseMapper(), "output-response-mapper-sparqlresultxml.txt"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("createResponseMappers")
+  void responseMapper_returnsNull_forSparql(ResponseMapper responseMapper) {
+    // Arrange
+    SparqlQueryResult sparqlQueryResult = new SparqlQueryResult();
+
+    // Act
+    String actualResult = responseMapper.toResponse(sparqlQueryResult);
+
+    // Assert
+    assertThat(actualResult, is(nullValue()));
   }
 
   @ParameterizedTest

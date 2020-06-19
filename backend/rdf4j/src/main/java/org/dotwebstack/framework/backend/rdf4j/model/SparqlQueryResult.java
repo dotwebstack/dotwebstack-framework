@@ -8,7 +8,13 @@ import lombok.Getter;
 public class SparqlQueryResult {
   private InputStream inputStream;
 
+  public SparqlQueryResult() {}
+
   public SparqlQueryResult(InputStream source) {
     this.inputStream = source;
+  }
+
+  public boolean hasResult() {
+    return inputStream != null;
   }
 }

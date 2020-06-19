@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -72,7 +72,7 @@ public class JsonResponseMapper {
   private String toJson(ResponseWriteContext writeContext) throws JsonProcessingException {
     Object response = mapDataToResponse(writeContext, "");
     if (Objects.isNull(response)) {
-      throw noResultFoundException("Did not find data for your response.");
+      throw notFoundException("Did not find data for your response.");
     }
 
     return toJson(response);
