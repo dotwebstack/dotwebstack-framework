@@ -2,6 +2,8 @@ package org.dotwebstack.framework.backend.rdf4j.converters;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import javax.annotation.Nonnull;
 import lombok.NonNull;
@@ -33,6 +35,15 @@ public class DateConverter extends LiteralConverter<Date> {
 
   @Override
   public Value convertToValue(@NonNull Object value) {
+    if (value instanceof LocalDate) {
+      return valueFactory.createLiteral(convertToDateViaInstant((LocalDate) value));
+    }
     return valueFactory.createLiteral((Date) value);
+  }
+
+  private Date convertToDateViaInstant(LocalDate dateToConvert) {
+    return Date.from(dateToConvert.atStartOfDay()
+        .atZone(ZoneId.systemDefault())
+        .toInstant());
   }
 }
