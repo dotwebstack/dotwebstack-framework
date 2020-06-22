@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_VALUESIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
@@ -42,6 +43,7 @@ public class ConstraintValidator implements QueryValidator {
     validate(directiveContainerObject, true);
   }
 
+  @Override
   public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
     coreTraverser
         .getTuples(dataFetchingEnvironment.getFieldDefinition(), dataFetchingEnvironment.getArguments(),
@@ -78,6 +80,9 @@ public class ConstraintValidator implements QueryValidator {
         case CONSTRAINT_ARG_ONEOF:
         case CONSTRAINT_ARG_ONEOF_INT:
           checkOneOf(name, castToList(argument.getValue()), value);
+          break;
+        case CONSTRAINT_ARG_VALUESIN:
+          checkValuesIn(name, castToList(argument.getValue()), castToList(value));
           break;
         case CONSTRAINT_ARG_PATTERN:
           if (Objects.nonNull(value)) {
@@ -116,6 +121,13 @@ public class ConstraintValidator implements QueryValidator {
     if (!constraint.contains(value)) {
       throw new DirectiveValidationException("Constraint 'oneOf' {} violated on '{}' with value '{}'", constraint, name,
           value);
+    }
+  }
+
+  private void checkValuesIn(String name, List<Object> constraint, List<Object> values) {
+    if (!constraint.containsAll(values)) {
+      throw new DirectiveValidationException("Constraint 'valuesIn' {} violated on '{}' with values '{}'", constraint,
+          name, values);
     }
   }
 
