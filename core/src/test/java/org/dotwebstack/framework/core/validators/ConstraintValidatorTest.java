@@ -86,13 +86,13 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForValuesInArgument() {
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(oneOfArgument(Arrays.asList("foo", "bar")), "foo", "boom!"));
+        () -> validator.validate(valuesInArgument(Arrays.asList("foo", "bar")), "name", List.of("boom!")));
   }
 
   @Test
   void validate_throwsNothing_ForValidValuesInArgument() {
-    assertDoesNotThrow(
-        () -> validator.validate(oneOfArgument(Arrays.asList("foo", "bar", "tic", "tac", "toe")), "foo", "tac"));
+    assertDoesNotThrow(() -> validator.validate(valuesInArgument(Arrays.asList("foo", "bar", "tic", "tac", "toe")),
+        "name", List.of("foo", "tac")));
   }
 
   @Test
