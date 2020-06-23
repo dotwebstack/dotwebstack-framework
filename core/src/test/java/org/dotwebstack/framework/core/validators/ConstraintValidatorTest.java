@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.validators;
 
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.schema.GraphQLArgument;
@@ -83,6 +84,18 @@ class ConstraintValidatorTest {
   }
 
   @Test
+  void validate_throwsException_ForValuesInArgument() {
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(valuesInArgument(Arrays.asList("foo", "bar")), "name", List.of("boom!")));
+  }
+
+  @Test
+  void validate_throwsNothing_ForValidValuesInArgument() {
+    assertDoesNotThrow(() -> validator.validate(valuesInArgument(Arrays.asList("foo", "bar", "tic", "tac", "toe")),
+        "name", List.of("foo", "tac")));
+  }
+
+  @Test
   void validate_throwsException_patternArgument() {
     assertThrows(DirectiveValidationException.class,
         () -> validator.validate(stringArgument("^[a-z][0-9]$"), "pattern", "Alfa Brouwerij"));
@@ -107,6 +120,14 @@ class ConstraintValidatorTest {
   private GraphQLArgument oneOfArgument(List<String> values) {
     return GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
+        .type(GraphQLList.list(GraphQLString))
+        .value(values)
+        .build();
+  }
+
+  private GraphQLArgument valuesInArgument(List<String> values) {
+    return GraphQLArgument.newArgument()
+        .name(CoreDirectives.CONSTRAINT_ARG_VALUESIN)
         .type(GraphQLList.list(GraphQLString))
         .value(values)
         .build();

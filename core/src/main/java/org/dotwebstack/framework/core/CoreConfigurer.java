@@ -175,6 +175,9 @@ public class CoreConfigurer implements GraphqlConfigurer {
             newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
                 .type(new ListType(new TypeName(GraphQLInt.getName())))
                 .build(),
+            newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_VALUESIN)
+                .type(new ListType(new TypeName(GraphQLString.getName())))
+                .build(),
             newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_PATTERN)
                 .type(new TypeName(GraphQLString.getName()))
                 .build()))
