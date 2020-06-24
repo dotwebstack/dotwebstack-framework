@@ -4,7 +4,7 @@ schema {
 
 type Query {
   brewery(identifier: ID!): Brewery!
-    @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
+    @sparql(repository: "local", subject: "`https://github.com/dotwebstack/beer/id/brewery/${identifier}`")
 
   brewery_with_subject(subject: String! @filter) : Brewery!
     @sparql(repository: "local")
@@ -61,7 +61,7 @@ type Query {
     @sparql(repository: "local")
 
   beer(identifier: ID!): Beer!
-    @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
+    @sparql(repository: "local", subject: "`https://github.com/dotwebstack/beer/id/beer/${identifier}`")
 
   breweriesModel(
     subject: IRI
@@ -108,7 +108,7 @@ type Brewery {
 type Address {
   subject: IRI! @resource
   resource: IRI! @resource
-  postalCode: String!
+  postalCode: String !
 }
 
 type Beer {

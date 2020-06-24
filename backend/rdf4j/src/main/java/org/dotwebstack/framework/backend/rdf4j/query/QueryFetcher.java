@@ -26,8 +26,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
@@ -37,8 +37,10 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactor
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.dotwebstack.framework.core.validators.QueryValidator;
@@ -177,7 +179,15 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private List<IRI> fetchSubjectFromSubjectTemplate(String subjectTemplate, Map<String, Object> arguments,
       DataFetchingEnvironment environment, GraphQLDirective sparqlDirective) {
-    IRI subject = VF.createIRI(new StringSubstitutor(arguments).replace(subjectTemplate));
+
+    JexlContext jexlContext = JexlHelper.getJexlContext(environment.getFieldDefinition());
+    arguments.forEach(jexlContext::set);
+    String evaluatedSubject =
+        new JexlHelper((this.jexlEngine)).evaluateScript(subjectTemplate, jexlContext, String.class)
+            .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+                "Directive {} argument {} returned an " + "empty response for JEXL expression {}",
+                sparqlDirective.getName(), Rdf4jDirectives.SPARQL_ARG_SUBJECT, subjectTemplate));
+    IRI subject = VF.createIRI(evaluatedSubject);
 
     String subjectAskQuery = String.format("ASK { <%s> ?predicate ?object }", subject);
 
