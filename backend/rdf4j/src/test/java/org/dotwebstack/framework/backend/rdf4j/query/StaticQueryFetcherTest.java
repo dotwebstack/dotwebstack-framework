@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.BooleanConverter;
@@ -44,6 +46,7 @@ import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.NotImplementedException;
 import org.dotwebstack.framework.core.converters.CoreConverter;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -64,6 +67,10 @@ class StaticQueryFetcherTest {
 
   private static final String SELECT_QUERY = "SELECT DISTINCT ?breweries_with_query_ref_as_iri WHERE {\n"
       + "   ?subject <https://github.com/dotwebstack/beer/def#brewery> ?breweries_with_query_ref_as_iri\n" + "}";
+
+  private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
+      .strict(true)
+      .create();
 
   @Mock
   private RepositoryAdapter mockRepositoryAdapterMock;
@@ -99,8 +106,8 @@ class StaticQueryFetcherTest {
 
     Rdf4jConverterRouter converterRouter = new Rdf4jConverterRouter(converters);
 
-    staticQueryFetcherUnderTest =
-        new StaticQueryFetcher(mockRepositoryAdapterMock, Collections.emptyList(), converterRouter, SELECT_QUERY);
+    staticQueryFetcherUnderTest = new StaticQueryFetcher(mockRepositoryAdapterMock, Collections.emptyList(),
+        converterRouter, SELECT_QUERY, new JexlHelper(this.jexlEngine));
   }
 
   @ParameterizedTest

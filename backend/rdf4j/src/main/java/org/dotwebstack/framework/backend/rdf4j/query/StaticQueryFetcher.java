@@ -22,13 +22,15 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.jexl3.JexlContext;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.model.SparqlQueryResult;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -61,12 +63,15 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
 
   private final String staticSparqlQuery;
 
+  private JexlHelper jexlHelper;
+
   public StaticQueryFetcher(RepositoryAdapter repositoryAdapter, List<QueryValidator> validators,
-      Rdf4jConverterRouter converterRouter, @NonNull String staticSparqlQuery) {
+      Rdf4jConverterRouter converterRouter, @NonNull String staticSparqlQuery, @NonNull JexlHelper jexlHelper) {
     this.repositoryAdapter = repositoryAdapter;
     this.validators = validators;
     this.converterRouter = converterRouter;
     this.staticSparqlQuery = staticSparqlQuery;
+    this.jexlHelper = jexlHelper;
   }
 
   @Override
@@ -193,7 +198,13 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
     String subjectTemplate =
         DirectiveUtils.getArgument(sparqlDirective, Rdf4jDirectives.SPARQL_ARG_SUBJECT, String.class);
     if (subjectTemplate != null) {
-      return ImmutableMap.of(SUBJECT, VF.createIRI(new StringSubstitutor(queryParameters).replace(subjectTemplate)));
+      JexlContext jexlContext = JexlHelper.getJexlContext(fieldDefinition);
+      queryParameters.forEach(jexlContext::set);
+      String evaluatedSubject = this.jexlHelper.evaluateScript(subjectTemplate, jexlContext, String.class)
+          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+              "Directive {} argument {} returned an " + "empty response for JEXL expression {}",
+              sparqlDirective.getName(), Rdf4jDirectives.SPARQL_ARG_SUBJECT, subjectTemplate));
+      return ImmutableMap.of(SUBJECT, VF.createIRI(evaluatedSubject));
     } else {
       Map<String, Value> result = new HashMap<>();
       queryParameters.forEach((key, value) -> {

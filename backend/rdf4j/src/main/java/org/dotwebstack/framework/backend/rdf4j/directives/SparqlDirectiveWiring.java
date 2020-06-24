@@ -42,6 +42,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.QueryValidator;
@@ -172,7 +173,8 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
       if (Objects.isNull(staticSparqlQuery)) {
         throw invalidConfigurationException("For outputType 'IRI' and 'Model', a queryRef configuration is mandatory.");
       }
-      return new StaticQueryFetcher(supportedAdapter, validators, converterRouter, staticSparqlQuery);
+      return new StaticQueryFetcher(supportedAdapter, validators, converterRouter, staticSparqlQuery,
+          new JexlHelper((jexlEngine)));
     } else {
       return new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine, validators, coreTraverser,
           selectVerticeFactory, constructVerticeFactory);
