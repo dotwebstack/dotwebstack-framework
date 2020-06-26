@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -167,6 +168,17 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(UnsupportedMediaTypeException.class,
+        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+  }
+
+  @Test
+  public void getValue_throwsNoException_forSupportedMediaTypeWithSuffix() {
+    // Arrange
+    ServerRequest serverRequest =
+        mockServerRequest("{ \"foo\" : \"bar\"}", MediaType.parseMediaType("application/json;charset=utf-8"));
+
+    // Act / Assert
+    assertDoesNotThrow(
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
