@@ -84,6 +84,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     }
   }
 
+  @Override
   public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
     requestBody.getContent()
         .forEach((key, mediaType) -> {
@@ -170,7 +171,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     if (contentTypeHeaders.size() != 1) {
       throw badRequestException("Expected exactly 1 '{}' header but found {}.", OasConstants.HEADER_CONTENT_TYPE,
           contentTypeHeaders.size());
-    } else if (!Objects.equals(MediaType.APPLICATION_JSON.toString(), contentTypeHeaders.get(0))) {
+    } else if (!MediaType.APPLICATION_JSON.equalsTypeAndSubtype(MediaType.parseMediaType(contentTypeHeaders.get(0)))) {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
           singletonList(MediaType.APPLICATION_JSON));
     }
