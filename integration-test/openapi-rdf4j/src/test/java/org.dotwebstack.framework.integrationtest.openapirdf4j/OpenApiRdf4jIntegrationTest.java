@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -247,7 +248,7 @@ class OpenApiRdf4jIntegrationTest {
     assertTrue(result.contains("Parameter 'sort' has (an) invalid value(s)"));
   }
 
-  @Test()
+  @Test
   void openApiRequest_returnsBreweries_forSortQueryWithMultipleSorting() throws IOException {
     // Arrange & Act
     String result = webClient.get()

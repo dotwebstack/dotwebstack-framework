@@ -358,6 +358,6 @@ dotwebstack:
 # 2.3 Serialization of null fields
 `dotwebstack.openapi.serializeNull` is an optional property that can be set to true/false to include/exclude null fields in the openAPI response. By default, i.e. if this property is not set, null fields will be serialized.   
 
-# 2.3 Static Resources
+# 2.4 Static Resources
 To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
 The resource will become available on ```http://{your-dws-service}/assets/your-image.jpg```
