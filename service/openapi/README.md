@@ -307,33 +307,7 @@ It is possible to configure (multiple) contents to allow different response type
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
 The default is set by using `x-dws-default: true` on a content configuration. 
 
-# 1.2 OpenApi document publication
-By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions. This way, anyone with access to your API can look up the OpenApi document that describes the API.
-
-It is also possible to configure a specific path to expose the OpenApi document on using the `apiDocPublicationPath` under the `openapi` section in the `application.yml` configuration file. The value of this property must be a string starting with a `/` followed by a valid path segment according to [RFC-3986](https://tools.ietf.org/html/rfc3986).
-
-For example, the following configuration will expose the api on `{base-path}/openapi.yaml`.
-
-```yaml
-dotwebstack:
-  openapi:
-    apiDocPublicationPath: /openapi.yaml
-```
-
-# 1.3 Dateformats
-You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify
-the format and timezone in which dates and datetimes are shown in your response: 
-
-```yaml
-dotwebstack:
-  openapi:
-    dateproperties:
-      dateformat: dd-MM-yyyy
-      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
-      timezone: Europe/Amsterdam
-```
-
-# 1.4 Templating
+# 1.2 Templating
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
 configure a response like the following:
 ```graphql
@@ -353,6 +327,37 @@ configure a response like the following:
 ```
 The template file you are referring to, should be configured in ```config/templates/```. For more information on how to use pebble, see https://pebbletemplates.io.
 
-# 1.5 Static Resources
+# 2 Application properties
+
+# 2.1 OpenApi document publication
+By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions. This way, anyone with access to your API can look up the OpenApi document that describes the API.
+
+It is also possible to configure a specific path to expose the OpenApi document on using the `apiDocPublicationPath` under the `openapi` section in the `application.yml` configuration file. The value of this property must be a string starting with a `/` followed by a valid path segment according to [RFC-3986](https://tools.ietf.org/html/rfc3986).
+
+For example, the following configuration will expose the api on `{base-path}/openapi.yaml`.
+
+```yaml
+dotwebstack:
+  openapi:
+    apiDocPublicationPath: /openapi.yaml
+```
+
+
+# 2.2 Dateformats
+You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify
+the format and timezone in which dates and datetimes are shown in your response: 
+
+```yaml
+dotwebstack:
+  openapi:
+    dateproperties:
+      dateformat: dd-MM-yyyy
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+      timezone: Europe/Amsterdam
+```
+# 2.3 Serialization of null fields
+`dotwebstack.openapi.serializeNull` is an optional property that can be set to true/false to include/exclude null fields in the openAPI response. By default, i.e. if this property is not set, null fields will be serialized.   
+
+# 2.3 Static Resources
 To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
 The resource will become available on ```http://{your-dws-service}/assets/your-image.jpg```

@@ -27,6 +27,8 @@ public class OpenApiProperties {
 
   private List<String> xdwsStringTypes = Collections.emptyList();
 
+  private boolean serializeNull = true;
+
   private DateFormatProperties dateproperties;
 
   @Getter
