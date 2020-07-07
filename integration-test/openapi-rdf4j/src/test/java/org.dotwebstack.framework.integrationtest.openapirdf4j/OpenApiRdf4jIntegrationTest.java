@@ -247,7 +247,7 @@ class OpenApiRdf4jIntegrationTest {
     assertTrue(result.contains("Parameter 'sort' has (an) invalid value(s)"));
   }
 
-  @Test()
+  @Test
   void openApiRequest_returnsBreweries_forSortQueryWithMultipleSorting() throws IOException {
     // Arrange & Act
     String result = webClient.get()
