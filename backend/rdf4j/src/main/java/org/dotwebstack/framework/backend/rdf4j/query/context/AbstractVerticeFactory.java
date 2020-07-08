@@ -43,7 +43,6 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -55,8 +54,6 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 @Slf4j
 abstract class AbstractVerticeFactory {
-  private static final SimpleValueFactory SVF = SimpleValueFactory.getInstance();
-
   private static List<GraphQLScalarType> NUMERIC_TYPES = Arrays.asList(Scalars.GraphQLInt, Scalars.GraphQLFloat,
       Scalars.GraphQLBigDecimal, Scalars.GraphQLBigDecimal, Scalars.GraphQLLong, Scalars.GraphQLBigInteger);
 
@@ -90,7 +87,7 @@ abstract class AbstractVerticeFactory {
 
     FieldPath fieldPath = argumentResultWrapper.getFieldPath();
     if (!fieldPath.isResource()) {
-      findOrCreatePath(vertice, propertyShape.getNode(), fieldPath, true, query);
+      findOrCreatePath(vertice, propertyShape.getNode(), fieldPath, true, false, query);
     }
   }
 
@@ -100,7 +97,7 @@ abstract class AbstractVerticeFactory {
       addFilterToVertice(nodeShape, vertice, filterRule, vertice.getSubject());
       return;
     }
-    findOrCreatePath(vertice, nodeShape, filterRule.getFieldPath(), false, query).ifPresent(match -> {
+    findOrCreatePath(vertice, nodeShape, filterRule.getFieldPath(), true, query).ifPresent(match -> {
       addFilterToVertice(nodeShape, match, filterRule);
     });
   }
@@ -160,8 +157,8 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, NodeShape nodeShape, FieldPath fieldPath,
-      OuterQuery<?> query) {
-    return findOrCreatePath(vertice, nodeShape, fieldPath, false, query);
+      boolean makePathRequired, OuterQuery<?> query) {
+    return findOrCreatePath(vertice, nodeShape, fieldPath, false, makePathRequired, query);
   }
 
   /*
@@ -169,7 +166,7 @@ abstract class AbstractVerticeFactory {
    * of the path that does not yet exist
    */
   private Optional<Edge> findOrCreatePath(Vertice vertice, NodeShape nodeShape, FieldPath fieldPath, boolean isVisible,
-      OuterQuery<?> query) {
+      boolean makePathRequired, OuterQuery<?> query) {
 
     if (fieldPath.last()
         .map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
@@ -185,6 +182,10 @@ abstract class AbstractVerticeFactory {
         findOrCreateEdge(nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath.getFieldDefinitions())),
             vertice, fieldPath.isRequired(), isVisible, query);
 
+    if (makePathRequired) {
+      match.setOptional(false);
+    }
+
     if (fieldPath.isSingleton()) {
       createAggregate(fieldPath.first(), query.var()).ifPresent(match::setAggregate);
       return of(match);
@@ -193,7 +194,7 @@ abstract class AbstractVerticeFactory {
     return findOrCreatePath(match.getObject(), getNextNodeShape(nodeShape, fieldPath.getFieldDefinitions()),
         fieldPath.rest()
             .orElseThrow(() -> illegalStateException("Remainder expected but got nothing!")),
-        isVisible, query);
+        isVisible, false, query);
   }
 
   /*
@@ -351,7 +352,7 @@ abstract class AbstractVerticeFactory {
   private Optional<Variable> getSubjectForResource(Vertice vertice, NodeShape nodeShape, FieldPath fieldPath,
       OuterQuery<?> query) {
     return fieldPath.rest()
-        .flatMap(remainder -> findOrCreatePath(vertice, nodeShape, remainder, query)
+        .flatMap(remainder -> findOrCreatePath(vertice, nodeShape, remainder, false, query)
             .map(edge -> getSubjectForField(edge, nodeShape, remainder)))
         .or(() -> Optional.of(vertice.getSubject()));
   }
@@ -360,7 +361,7 @@ abstract class AbstractVerticeFactory {
       OuterQuery<?> query) {
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPath.getFieldDefinitions());
     if (nodeShape.equals(childShape) || fieldPath.isSingleton()) {
-      return findOrCreatePath(vertice, nodeShape, fieldPath, query)
+      return findOrCreatePath(vertice, nodeShape, fieldPath, false, query)
           .map(edge -> getSubjectForField(edge, nodeShape, fieldPath));
     }
 
@@ -371,7 +372,7 @@ abstract class AbstractVerticeFactory {
         .add(simpleEdge);
 
     return fieldPath.rest()
-        .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), childShape, remainder, query)
+        .flatMap(remainder -> findOrCreatePath(simpleEdge.getObject(), childShape, remainder, false, query)
             .map(edge -> getSubjectForField(edge, childShape, remainder)));
   }
 

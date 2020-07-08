@@ -445,7 +445,7 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    assertTrue(response.contains("{\"child1\":{}"));
+    assertTrue(response.contains("{\"child1\":null}"));
   }
 
   @Test
@@ -474,7 +474,7 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    assertTrue(response.contains("{\"child1\":{}}"));
+    assertTrue(response.contains("{\"child1\":null}"));
   }
 
   @Test
