@@ -1,0 +1,11 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+construct {
+  ?subject ?p ?o .
+  ?nir ?nir_p ?nir_o .
+}
+{
+  ?subject
+    ^foaf:page ?nir ;
+    ?p ?o .
+  ?nir ?nir_p ?nir_o . 
+}

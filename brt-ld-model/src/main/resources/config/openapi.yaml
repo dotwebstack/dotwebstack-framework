@@ -1,0 +1,39 @@
+openapi: 3.0.2
+
+info:
+  title: BRK Linked data model
+  version: 1.0.0
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        errorCode:
+          type: string
+
+paths:
+  /id/{type}/{identifier}:
+    get:
+      x-dws-query: informationResourceBegrip
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: 'fields.informationResourceBegrip.stringValue()'

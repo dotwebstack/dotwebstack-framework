@@ -1,0 +1,13 @@
+<html>
+{% block scripts %}
+<script type="application/ld+json">
+    {{
+        fields
+        |
+        jsonld
+        |
+        raw
+    }}
+</script>
+{% endblock %}
+</html>

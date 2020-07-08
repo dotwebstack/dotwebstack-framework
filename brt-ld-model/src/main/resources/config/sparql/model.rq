@@ -1,0 +1,10 @@
+## query
+
+construct {
+  ?s ?p ?o .
+}
+{
+  graph <http://brk.basisregistraties.overheid.nl/def/brk> {
+    ?s ?p ?o .
+  }
+}
