@@ -4,6 +4,7 @@ import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
@@ -18,8 +19,11 @@ import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class ConstraintValidatorTest {
 
   private JexlEngine jexlEngine = new JexlBuilder().silent(false)
@@ -127,6 +131,24 @@ class ConstraintValidatorTest {
   void validate_throwsNothing_forValidArgumentInExprArgument() {
     assertDoesNotThrow(() -> validator.validate(expressionArgument("args.page / args.pageSize == 12"), "expr", 15,
         fieldDefinitionMock, Map.of("page", 36, "pageSize", 3)));
+  }
+
+  @Test
+  void validate_works_withoutAlternateRequestArguments() {
+    when(fieldDefinitionMock.getArguments()).thenReturn(List.of(GraphQLArgument.newArgument()
+        .name("page")
+        .value(1)
+        .type(GraphQLInt)
+        .build(),
+        GraphQLArgument.newArgument()
+            .name("pageSize")
+            .value(25)
+            .type(GraphQLInt)
+            .build()));
+
+    assertDoesNotThrow(
+        () -> validator.validate(expressionArgument("args.page > 0 && args.page <= ( 1000 / args.pageSize )"), "expr",
+            1, fieldDefinitionMock, null));
   }
 
   private GraphQLArgument minArgument(Object value) {
