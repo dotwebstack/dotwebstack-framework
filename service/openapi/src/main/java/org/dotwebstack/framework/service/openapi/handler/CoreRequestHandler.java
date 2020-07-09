@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noContentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
@@ -31,6 +32,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
@@ -55,6 +57,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
@@ -342,7 +345,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .block();
     }
 
+    if (hasDirectiveValidationException(result)) {
+      throw parameterValidationException("Validation of request parameters failed");
+    }
+
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
+  private boolean hasDirectiveValidationException(ExecutionResult result) {
+    return result.getErrors()
+        .stream()
+        .anyMatch(e -> e instanceof ExceptionWhileDataFetching
+            && ((ExceptionWhileDataFetching) e).getException() instanceof DirectiveValidationException);
   }
 
   private String getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data,
