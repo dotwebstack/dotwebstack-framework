@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -420,9 +421,14 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD,
-        ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
-            .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+    assertThat(data,
+        hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+                ImmutableList.of(
+                    ImmutableMap.of(INGREDIENTS_FIELD,
+                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))),
+                    ImmutableMap.of(INGREDIENTS_FIELD, Collections.emptyList()))))));
   }
 
   /*

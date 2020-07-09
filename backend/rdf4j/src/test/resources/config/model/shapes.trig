@@ -37,7 +37,6 @@
 
   beer_sh:Brewery a sh:NodeShape ;
     sh:class beer_def:Brewery ;
-    sh:class beer_def:LargeBrewery ;
     dws:inherits beer_sh:Identifiable ;
     sh:name "Brewery" ;
     sh:property

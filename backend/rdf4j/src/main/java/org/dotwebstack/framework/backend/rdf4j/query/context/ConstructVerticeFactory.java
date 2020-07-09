@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.createSimpleEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.EdgeHelper.deepList;
@@ -114,9 +113,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
           .build();
 
       addFilterToVertice(vertice, query, propertyShape.getNode(), filterRule);
-
-      deepList(singletonList(edge)).forEach(e -> e.setOptional(false));
-
       return edge;
     }
 
@@ -163,6 +159,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
             .orElseThrow(() -> illegalStateException("Expected rest fieldPath but got nothing!")))
                 .ifPresent(filterEdge -> {
                   deepList(Collections.singletonList(filterEdge)).forEach(edge -> edge.setVisible(false));
+                  filterEdge.setOptional(false);
                   baseEdge.getObject()
                       .getEdges()
                       .add(filterEdge);

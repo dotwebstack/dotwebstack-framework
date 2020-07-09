@@ -443,9 +443,14 @@ class Rdf4jModuleTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD,
-        ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
-            .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+    assertThat(data,
+        hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+                ImmutableList.of(
+                    ImmutableMap.of(INGREDIENTS_FIELD,
+                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))),
+                    ImmutableMap.of(INGREDIENTS_FIELD, Collections.emptyList()))))));
   }
 
   /*

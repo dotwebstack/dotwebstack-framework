@@ -226,7 +226,11 @@ public class JsonResponseMapper {
             result.put(childSchema.getIdentifier(), convertType(writeContext, object));
           }
         });
-    return result;
+
+    if (result.size() > 0) {
+      return result;
+    }
+    return null;
   }
 
   private String childPath(String path, String identifier) {
