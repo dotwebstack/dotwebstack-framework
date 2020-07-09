@@ -104,7 +104,7 @@ public class ConstraintValidator implements QueryValidator {
         case CONSTRAINT_ARG_EXPR:
           if (Objects.nonNull(value)) {
             checkExpr(name, argument.getValue()
-                .toString(), (Integer) value, fieldDefinition, requestArguments);
+                .toString(), value, fieldDefinition, requestArguments);
           }
           break;
         default:
@@ -148,7 +148,7 @@ public class ConstraintValidator implements QueryValidator {
     }
   }
 
-  private void checkExpr(String name, String constraint, Integer value, GraphQLFieldDefinition fieldDefinition,
+  private void checkExpr(String name, String constraint, Object value, GraphQLFieldDefinition fieldDefinition,
       Map<String, Object> requestArguments) {
     JexlContext jexlContext = JexlHelper.getJexlContext(fieldDefinition);
     if (requestArguments != null) {
