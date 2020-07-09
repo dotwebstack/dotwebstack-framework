@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.validators;
 
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_EXPR;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MAX;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
@@ -14,14 +15,19 @@ import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiv
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirectiveContainer;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.springframework.stereotype.Component;
@@ -31,8 +37,11 @@ public class ConstraintValidator implements QueryValidator {
 
   private final CoreTraverser coreTraverser;
 
-  public ConstraintValidator(CoreTraverser coreTraverser) {
+  private final JexlHelper jexlHelper;
+
+  public ConstraintValidator(CoreTraverser coreTraverser, JexlEngine jexlEngine) {
     this.coreTraverser = coreTraverser;
+    this.jexlHelper = new JexlHelper(jexlEngine);
   }
 
   public void validateSchema(@NonNull DirectiveContainerObject directiveContainerObject) {
@@ -65,10 +74,12 @@ public class ConstraintValidator implements QueryValidator {
         .flatMap(directive -> directive.getArguments()
             .stream())
         .forEach(argument -> validate(argument, directiveContainerObject.getContainer()
-            .getName(), directiveContainerObject.getValue()));
+            .getName(), directiveContainerObject.getValue(), directiveContainerObject.getFieldDefinition(),
+            directiveContainerObject.getRequestArguments()));
   }
 
-  void validate(GraphQLArgument argument, String name, Object value) {
+  void validate(GraphQLArgument argument, String name, Object value, GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> requestArguments) {
     if (Objects.nonNull(argument.getValue())) {
       switch (argument.getName()) {
         case CONSTRAINT_ARG_MIN:
@@ -88,6 +99,12 @@ public class ConstraintValidator implements QueryValidator {
           if (Objects.nonNull(value)) {
             checkPattern(name, argument.getValue()
                 .toString(), value.toString());
+          }
+          break;
+        case CONSTRAINT_ARG_EXPR:
+          if (Objects.nonNull(value)) {
+            checkExpr(name, argument.getValue()
+                .toString(), (Integer) value, fieldDefinition, requestArguments);
           }
           break;
         default:
@@ -129,6 +146,22 @@ public class ConstraintValidator implements QueryValidator {
       throw new DirectiveValidationException("Constraint 'valuesIn' {} violated on '{}' with values '{}'", constraint,
           name, values);
     }
+  }
+
+  private void checkExpr(String name, String constraint, Integer value, GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> requestArguments) {
+    JexlContext jexlContext = JexlHelper.getJexlContext(fieldDefinition);
+    if (requestArguments != null) {
+      JexlHelper.updateContext(jexlContext, requestArguments);
+    }
+
+    jexlHelper.evaluateExpression(constraint, jexlContext, Boolean.class)
+        .ifPresent(result -> {
+          if (!result) {
+            throw new DirectiveValidationException("Constraint 'expr' [{}] violated on '{}' with value '{}'",
+                constraint, name, value);
+          }
+        });
   }
 
   private void validateRequiredValue(GraphQLDirectiveContainer container) {

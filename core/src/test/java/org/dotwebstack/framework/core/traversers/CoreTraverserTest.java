@@ -19,6 +19,7 @@ import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,12 +50,16 @@ class CoreTraverserTest {
         .argument(argument)
         .build();
 
+    Map<String, Object> arguments = Map.of("identifier", 1);
+
     // Act & Assert
-    assertThat(coreTraverser.getTuples(fieldDefinition, ImmutableMap.of("identifier", 1), TraverserFilter.noFilter()))
+    assertThat(coreTraverser.getTuples(fieldDefinition, arguments, TraverserFilter.noFilter()))
         .contains(DirectiveContainerObject.builder()
             .container(argument)
             .objectType(objectType)
             .value(1)
+            .fieldDefinition(fieldDefinition)
+            .requestArguments(arguments)
             .build());
   }
 
@@ -83,6 +88,7 @@ class CoreTraverserTest {
             .contains(DirectiveContainerObject.builder()
                 .container(field)
                 .value(1)
+                .fieldDefinition(fieldDefinition)
                 .build());
   }
 
