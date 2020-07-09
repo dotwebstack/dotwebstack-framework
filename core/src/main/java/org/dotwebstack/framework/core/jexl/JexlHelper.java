@@ -24,7 +24,7 @@ public class JexlHelper {
 
   private static final String ENVIRONMENT_PREFIX = "env.";
 
-  public static final String ARGUMENT_PREFIX = "args.";
+  private static final String ARGUMENT_PREFIX = "args.";
 
   private static final String FIELDS_PREFIX = "fields.";
 
