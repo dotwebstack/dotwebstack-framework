@@ -241,11 +241,11 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
 
-    ExceptionWhileDataFetching graphQLError = mock(ExceptionWhileDataFetching.class);
+    ExceptionWhileDataFetching graphQlError = mock(ExceptionWhileDataFetching.class);
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(ExecutionResultImpl.newExecutionResult()
-        .addError(graphQLError)
+        .addError(graphQlError)
         .build());
-    when(graphQLError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
+    when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
 
     // Act / Assert
     assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
