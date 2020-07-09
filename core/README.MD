@@ -144,7 +144,7 @@ to provide an argument which has to be greater than 0.
  page: Int = 1 @constraint(expr: "args.page > 0 && args.page <= ( 1000 / args.pageSize )")
 ```
 
-With the `expr` constraint an argument can be restricted to match the provided Jaxl expression. So in this case it is only allowed 
+With the `expr` constraint an argument can be restricted to validate true for the provided Jexl expression. So in this case it is only allowed 
 to provide an argument for page which is greater than 0 and smaller or equal to 1000 devided by pageSize argument. 
 
 ## 1.5 Paging Directives
