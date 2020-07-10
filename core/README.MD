@@ -145,7 +145,7 @@ to provide an argument which has to be greater than 0.
 ```
 
 With the `expr` constraint an argument can be restricted to validate true for the provided Jexl expression. So in this case it is only allowed 
-to provide an argument for page which is greater than 0 and smaller or equal to 1000 devided by pageSize argument. 
+to provide an argument for page which is greater than 0 and less than or equal to 1000 divided by pageSize argument. 
 
 ## 1.5 Paging Directives
 Pagination in Dotwebstack can be done with help of the directives `@limit` and `@offset`:
