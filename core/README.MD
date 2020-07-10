@@ -82,7 +82,7 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
 It is possible to add a constraint to an argument on any level by preceding the argument with the `@constraint` directive. 
 These constraints can be used to restrict the input from the user and provide hints as to why certain arguments 
-are invalid. The following constraints are currently provided: `min`, `max`, `oneOf`, `oneOfInt`, `valuesIn` and `pattern`. 
+are invalid. The following constraints are currently provided: `min`, `max`, `oneOf`, `oneOfInt`, `valuesIn`, `pattern` and `expr`. 
 
 ### 1.4.1 Min
 
@@ -137,6 +137,15 @@ the user is allowed to provide a list with one or more of "BE", "DE", "EN", "NL"
 
 With the `pattern` constraint an argument can be restricted to match the provided regex-pattern. So in this case it is only allowed 
 to provide an argument which has to be greater than 0. 
+
+### 1.4.7 Expr
+
+```graphql
+ page: Int = 1 @constraint(expr: "args.page > 0 && args.page <= ( 1000 / args.pageSize )")
+```
+
+With the `expr` constraint an argument can be restricted to validate true for the provided Jexl expression. So in this case it is only allowed 
+to provide an argument for page which is greater than 0 and less than or equal to 1000 divided by pageSize argument. 
 
 ## 1.5 Paging Directives
 Pagination in Dotwebstack can be done with help of the directives `@limit` and `@offset`:

@@ -63,7 +63,7 @@ public class CoreTraverser {
   }
 
   private List<DirectiveContainerObject> getInputObjectFieldsFromArgument(GraphQLFieldDefinition fieldDefinition,
-      GraphQLArgument container, Map<String, Object> arguments) {
+      GraphQLArgument container, Map<String, Object> requestArguments) {
 
     String inputTypeName = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())
         .getName();
@@ -75,26 +75,31 @@ public class CoreTraverser {
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
     List<DirectiveContainerObject> result = new ArrayList<>();
     if (container.getType() instanceof GraphQLInputObjectType) {
-      Map<String, Object> nestedArguments = getNestedMap(arguments, container.getName());
-      result.addAll(getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(), nestedArguments));
+      Map<String, Object> nestedArguments = getNestedMap(requestArguments, container.getName());
+      result.addAll(getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(), nestedArguments,
+          fieldDefinition));
 
-      result.add(getDirectiveContainerObject(container, objectType, nestedArguments));
+      result
+          .add(getDirectiveContainerObject(container, objectType, nestedArguments, fieldDefinition, requestArguments));
 
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
-      Object nestedArguments = arguments.getOrDefault(container.getName(), container.getDefaultValue());
+      Object nestedArguments = requestArguments.getOrDefault(container.getName(), container.getDefaultValue());
 
-      result.add(getDirectiveContainerObject(container, objectType, nestedArguments));
+      result
+          .add(getDirectiveContainerObject(container, objectType, nestedArguments, fieldDefinition, requestArguments));
     }
 
     return result;
   }
 
   private DirectiveContainerObject getDirectiveContainerObject(GraphQLArgument container, GraphQLObjectType objectType,
-      Object nestedArguments) {
+      Object nestedArguments, GraphQLFieldDefinition fieldDefinition, Map<String, Object> requestArguments) {
     return DirectiveContainerObject.builder()
         .container(container)
         .objectType(objectType)
         .value(nestedArguments)
+        .fieldDefinition(fieldDefinition)
+        .requestArguments(requestArguments)
         .build();
   }
 
@@ -103,17 +108,18 @@ public class CoreTraverser {
    * object type
    */
   private List<DirectiveContainerObject> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType,
-      Map<String, Object> arguments) {
+      Map<String, Object> arguments, GraphQLFieldDefinition fieldDefinition) {
     return inputObjectType.getFields()
         .stream()
         .flatMap(field -> {
           if (field.getType() instanceof GraphQLInputObjectType) {
             return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType(),
-                getNestedMap(arguments, field.getName())).stream();
+                getNestedMap(arguments, field.getName()), fieldDefinition).stream();
           } else if (GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType) {
             return Stream.of(DirectiveContainerObject.builder()
                 .container(field)
                 .value(arguments.getOrDefault(field.getName(), null))
+                .fieldDefinition(fieldDefinition)
                 .build());
           }
           return Stream.empty();

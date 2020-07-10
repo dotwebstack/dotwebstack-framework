@@ -17,8 +17,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
+import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
@@ -43,6 +46,7 @@ import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.NoContentException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
+import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -227,6 +231,24 @@ class CoreRequestHandlerTest {
     // Assert
     assertTrue(serverResponse.statusCode()
         .is3xxRedirection());
+  }
+
+  @Test
+  void getParameterValidationExceptionTest() {
+    // Arrange
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", "{\"key\" : \"value\" }");
+
+    ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
+
+    ExceptionWhileDataFetching graphQlError = mock(ExceptionWhileDataFetching.class);
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(ExecutionResultImpl.newExecutionResult()
+        .addError(graphQlError)
+        .build());
+    when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
   @Test
