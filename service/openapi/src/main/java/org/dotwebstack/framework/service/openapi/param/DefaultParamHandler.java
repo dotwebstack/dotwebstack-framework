@@ -7,6 +7,8 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIM
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATETIME_FORMAT;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATE_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.NUMBER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -177,7 +179,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   private void validateDate(Object paramValue, Parameter parameter) {
-    if (parameter.getSchema() != null && "date".equals(parameter.getSchema()
+    if (parameter.getSchema() != null && DATE_FORMAT.equals(parameter.getSchema()
         .getFormat())) {
       try {
         LocalDate.parse((String) paramValue);
@@ -192,7 +194,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   private void validateDateTime(Object paramValue, Parameter parameter) {
-    if (parameter.getSchema() != null && "date-time".equals(parameter.getSchema()
+    if (parameter.getSchema() != null && DATETIME_FORMAT.equals(parameter.getSchema()
         .getFormat())) {
       try {
         ZonedDateTime.parse((String) paramValue);
