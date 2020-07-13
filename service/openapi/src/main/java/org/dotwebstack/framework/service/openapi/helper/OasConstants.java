@@ -12,6 +12,10 @@ public class OasConstants {
 
   public static final String INTEGER_TYPE = "integer";
 
+  public static final String DATE_FORMAT = "date";
+
+  public static final String DATETIME_FORMAT = "date-time";
+
   public static final String BOOLEAN_TYPE = "boolean";
 
   public static final String PARAM_PATH_TYPE = "path";

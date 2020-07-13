@@ -7,6 +7,8 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIM
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATETIME_FORMAT;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATE_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.NUMBER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -26,6 +28,9 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -133,6 +138,8 @@ public class DefaultParamHandler implements ParamHandler {
       case STRING_TYPE:
         validateEnum(paramValue, parameter);
         validatePattern(paramValue.toString(), parameter);
+        validateDate(paramValue, parameter);
+        validateDateTime(paramValue, parameter);
         break;
       case INTEGER_TYPE:
         validateInteger(paramValue, parameter);
@@ -167,6 +174,36 @@ public class DefaultParamHandler implements ParamHandler {
       if (!paramValue.matches(pattern)) {
         throw parameterValidationException("Parameter '{}' with value '{}' does not match expected pattern '{}'",
             parameter.getName(), paramValue, String.join(", ", pattern));
+      }
+    }
+  }
+
+  private void validateDate(Object paramValue, Parameter parameter) {
+    if (parameter.getSchema() != null && DATE_FORMAT.equals(parameter.getSchema()
+        .getFormat())) {
+      try {
+        LocalDate.parse((String) paramValue);
+      } catch (ClassCastException | DateTimeParseException e) {
+        throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}' and format: '{}'",
+            parameter.getName(), paramValue, parameter.getSchema()
+                .getType(),
+            parameter.getSchema()
+                .getFormat());
+      }
+    }
+  }
+
+  private void validateDateTime(Object paramValue, Parameter parameter) {
+    if (parameter.getSchema() != null && DATETIME_FORMAT.equals(parameter.getSchema()
+        .getFormat())) {
+      try {
+        ZonedDateTime.parse((String) paramValue);
+      } catch (ClassCastException | DateTimeParseException e) {
+        throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}' and format: '{}'",
+            parameter.getName(), paramValue, parameter.getSchema()
+                .getType(),
+            parameter.getSchema()
+                .getFormat());
       }
     }
   }
