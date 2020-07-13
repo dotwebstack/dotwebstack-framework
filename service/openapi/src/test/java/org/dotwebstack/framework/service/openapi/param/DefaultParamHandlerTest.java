@@ -50,6 +50,10 @@ public class DefaultParamHandlerTest {
 
   private static final String TYPE_NUMBER = "number";
 
+  private static final String FORMAT_DATE = "date";
+
+  private static final String FORMAT_DATETIME = "date-time";
+
   @Mock
   private ServerRequest request;
 
@@ -267,6 +271,27 @@ public class DefaultParamHandlerTest {
     // Arrange
     mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
     mockArrayEnum(asList("v1", "v2"));
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_throwsException_forTypeValidationDateCheck() {
+    // Arrange
+    mockParameterHeader("test_date", "2019-03-99", TYPE_STRING, FORMAT_DATE, false, Parameter.StyleEnum.SIMPLE);
+
+    // Act / Assert
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
+  }
+
+  @Test
+  public void getValue_throwsException_forTypeValidationDateTimeCheck() {
+    // Arrange
+    mockParameterHeader("test_date-time", "2016-03-99T00:00:00+01:00", TYPE_STRING, FORMAT_DATETIME, false,
+        Parameter.StyleEnum.SIMPLE);
 
     // Act / Assert
     assertThrows(ParameterValidationException.class,
@@ -530,7 +555,7 @@ public class DefaultParamHandlerTest {
   private void mockParameterPath(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_PATH_TYPE);
     when(request.pathVariable(name)).thenReturn(value);
-    mockParameter(name, type, explode, style);
+    mockParameter(name, type, null, explode, style);
   }
 
   private void mockParameterQuery(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
@@ -538,15 +563,20 @@ public class DefaultParamHandlerTest {
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add(name, value);
     when(request.queryParams()).thenReturn(map);
-    mockParameter(name, type, explode, style);
+    mockParameter(name, type, null, explode, style);
   }
 
   private void mockParameterHeader(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
+    mockParameterHeader(name, value, type, null, explode, style);
+  }
+
+  private void mockParameterHeader(String name, String value, String type, String format, boolean explode,
+      Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_HEADER_TYPE);
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     when(headers.header(name)).thenReturn(asList(value));
     when(request.headers()).thenReturn(headers);
-    mockParameter(name, type, explode, style);
+    mockParameter(name, type, format, explode, style);
   }
 
   @SuppressWarnings("rawtypes")
@@ -556,7 +586,7 @@ public class DefaultParamHandlerTest {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void mockParameter(String name, String type, boolean explode, Parameter.StyleEnum style) {
+  private void mockParameter(String name, String type, String format, boolean explode, Parameter.StyleEnum style) {
     when(parameter.getName()).thenReturn(name);
     when(parameter.getExplode()).thenReturn(explode);
     when(parameter.getStyle()).thenReturn(style);
@@ -580,5 +610,6 @@ public class DefaultParamHandlerTest {
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getType()).thenReturn(type);
+    when(schema.getFormat()).thenReturn(format);
   }
 }
