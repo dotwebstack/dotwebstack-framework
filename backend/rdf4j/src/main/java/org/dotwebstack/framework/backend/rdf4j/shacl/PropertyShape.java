@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Builder
 @Getter
@@ -49,5 +50,13 @@ public final class PropertyShape {
 
   public Value getHasValue() {
     return (Value) constraints.getOrDefault(HASVALUE, null);
+  }
+
+  public RdfPredicate toConstructPredicate() {
+    return getPath().toConstructPredicate();
+  }
+
+  public RdfPredicate toPredicate() {
+    return getPath().toPredicate();
   }
 }

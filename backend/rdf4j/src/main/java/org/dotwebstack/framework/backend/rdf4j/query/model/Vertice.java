@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,5 +37,9 @@ public class Vertice {
     return constraints.stream()
         .filter(constraint -> constraintType.equals(constraint.getConstraintType()))
         .collect(Collectors.toSet());
+  }
+
+  public void addFilter(Filter filter) {
+    filters.add(filter);
   }
 }

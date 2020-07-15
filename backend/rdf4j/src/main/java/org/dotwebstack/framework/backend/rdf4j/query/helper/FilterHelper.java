@@ -1,7 +1,7 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Objects.isNull;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.FieldPathHelper.getFieldDefinitions;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper.getFieldDefinitions;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
@@ -20,6 +21,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
+import org.dotwebstack.framework.backend.rdf4j.query.model.ArgumentFieldMapping;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
+import org.dotwebstack.framework.backend.rdf4j.query.model.FilterRule;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
@@ -32,6 +38,7 @@ import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 public class FilterHelper {
 
@@ -47,9 +54,8 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
-    // filtering with a language tag will result in "FILTER LANG( ?x0 ) = 'en'" instead of "FILTER ?x0 =
-    // 'something'"
+  public static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
+    // filtering with en language tag will result in "FILTER LANG( ?x0 ) = 'en'"
     if (LANGUAGE.equals(operator)) {
       return Expressions.equals(Expressions.function(LANG, subject), operand);
     }
@@ -63,7 +69,7 @@ public class FilterHelper {
     return function.apply(subject, operand);
   }
 
-  static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
+  public static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
       List<Expression<?>> expressions) {
     Expression<?> current = expressions.remove(0);
     Expression<?> usedExpression;
@@ -82,10 +88,31 @@ public class FilterHelper {
     return usedExpression;
   }
 
-  static Operand getOperand(NodeShape nodeShape, String field, String filterString, String tagLanguage) {
+  public static FilterRule buildFilterRule(ArgumentFieldMapping mapping) {
+    return buildFilterRule(mapping.getArgumentValue(), mapping.getFieldPath());
+  }
+
+  public static FilterRule buildFilterRule(Object argumentValue, FieldPath fieldPath) {
+    return FilterRule.builder()
+        .fieldPath(fieldPath)
+        .value(argumentValue)
+        .build();
+  }
+
+  public static RdfValue buildOperands(NodeShape nodeShape, FilterRule filterRule, String language,
+      String filterString) {
+    if (filterRule.getFieldPath()
+        .isResource()) {
+      return Rdf.iri(filterString);
+    }
+    String field = filterRule.getFieldPath()
+        .last()
+        .map(GraphQLFieldDefinition::getName)
+        .orElse(null);
+
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
-    if (Optional.of(nodeShape.getPropertyShape(field))
+    if (Optional.of(propertyShape)
         .stream()
         .map(PropertyShape::getNodeKind)
         .anyMatch(SHACL.IRI::equals)) {
@@ -93,7 +120,7 @@ public class FilterHelper {
     }
 
     if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
-      return Rdf.literalOfLanguage(filterString, tagLanguage);
+      return Rdf.literalOfLanguage(filterString, language);
     }
 
     if (isNull(propertyShape.getDatatype())) {
@@ -113,5 +140,21 @@ public class FilterHelper {
         .orElse(container.getName());
 
     return getFieldDefinitions(objectType, path);
+  }
+
+  public static void addLanguageFilter(Edge edge, PropertyShape propertyShape, String language) {
+    if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
+      Filter languageFilter = buildLanguageFilter(language);
+      edge.getObject()
+          .getFilters()
+          .add(languageFilter);
+    }
+  }
+
+  private static Filter buildLanguageFilter(String language) {
+    return Filter.builder()
+        .operator(FilterOperator.LANGUAGE)
+        .operands(ImmutableList.of(Rdf.literalOf(language)))
+        .build();
   }
 }

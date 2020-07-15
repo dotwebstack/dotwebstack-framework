@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import java.util.Set;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;

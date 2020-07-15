@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.SparqlFormatHelper.formatQuery;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
@@ -30,10 +31,9 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
-import org.dotwebstack.framework.backend.rdf4j.query.context.FieldPathHelper;
-import org.dotwebstack.framework.backend.rdf4j.query.context.OrderBy;
-import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper;
+import org.dotwebstack.framework.backend.rdf4j.query.model.FilterRule;
+import org.dotwebstack.framework.backend.rdf4j.query.model.OrderBy;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -72,22 +72,18 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final List<QueryValidator> validators;
 
-  private final SelectVerticeFactory selectVerticeFactory;
-
-  private final ConstructVerticeFactory constructVerticeFactory;
+  private final VerticeFactory verticeFactory;
 
   public QueryFetcher(RepositoryAdapter repositoryAdapter, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, List<QueryValidator> validators,
-      CoreTraverser coreTraverser, SelectVerticeFactory selectVerticeFactory,
-      ConstructVerticeFactory constructVerticeFactory) {
+      CoreTraverser coreTraverser, VerticeFactory verticeFactory) {
     this.repositoryAdapter = repositoryAdapter;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.coreTraverser = coreTraverser;
     this.validators = validators;
-    this.selectVerticeFactory = selectVerticeFactory;
-    this.constructVerticeFactory = constructVerticeFactory;
+    this.verticeFactory = verticeFactory;
   }
 
   @Override
@@ -195,10 +191,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private List<IRI> fetchSubjectsFromDatabase(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment,
       List<DirectiveContainerObject> filterMapping, Map<String, Object> arguments, RepositoryAdapter repositoryAdapter,
       GraphQLDirective sparqlDirective) {
-    List<OrderBy> orderBys = getOrderByObject(environment, arguments);
 
-    String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
-        .getQueryString(arguments, sparqlDirective, filterMapping, orderBys);
+    List<OrderBy> orderBys = getOrderBys(environment, arguments);
+    List<FilterRule> filterRules = getFilterRules(queryEnvironment, filterMapping);
+
+    String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, verticeFactory)
+        .getQueryString(arguments, sparqlDirective, filterRules, orderBys);
 
     logQuery(SUBJECTS, subjectQuery);
 
@@ -210,11 +208,11 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     return QueryResults.asList(queryResult)
         .stream()
-        .map(bindings -> (IRI) bindings.getValue("s"))
+        .map(bindings -> (IRI) bindings.getValue("x0"))
         .collect(Collectors.toList());
   }
 
-  private List<OrderBy> getOrderByObject(DataFetchingEnvironment environment, Map<String, Object> arguments) {
+  private List<OrderBy> getOrderBys(DataFetchingEnvironment environment, Map<String, Object> arguments) {
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldDefinition()
         .getType());
     return environment.getFieldDefinition()
@@ -237,6 +235,23 @@ public final class QueryFetcher implements DataFetcher<Object> {
             .map(this::validateOrderBy)
             .collect(Collectors.toList()))
         .orElse(Collections.emptyList());
+  }
+
+  private List<FilterRule> getFilterRules(QueryEnvironment environment, List<DirectiveContainerObject> filterMapping) {
+    return filterMapping.stream()
+        .map(tuple -> FilterRule.builder()
+            .fieldPath(FieldPath.builder()
+                .required(true)
+                .fieldDefinitions(getFilterRulePath(environment.getObjectType(), tuple.getContainer()))
+                .build())
+            .operator((String) tuple.getContainer()
+                .getDirective(CoreDirectives.FILTER_NAME)
+                .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
+                .getValue())
+            .objectType(tuple.getObjectType())
+            .value(tuple.getValue())
+            .build())
+        .collect(Collectors.toList());
   }
 
   private OrderBy validateOrderBy(OrderBy orderBy) {
@@ -295,7 +310,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
+    String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, verticeFactory)
         .getQueryString();
 
     logQuery(GRAPH, graphQuery);

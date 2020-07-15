@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import java.util.Objects;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Data
 @Builder
-class Edge implements Comparable<Edge> {
+public class Edge implements Comparable<Edge> {
 
   private PropertyShape propertyShape;
 
@@ -25,7 +25,9 @@ class Edge implements Comparable<Edge> {
 
   private Aggregate aggregate;
 
-  RdfPredicate getConstructPredicate() {
+  private PathType pathType;
+
+  public RdfPredicate getConstructPredicate() {
     return Objects.nonNull(constructPredicate) ? constructPredicate : predicate;
   }
 

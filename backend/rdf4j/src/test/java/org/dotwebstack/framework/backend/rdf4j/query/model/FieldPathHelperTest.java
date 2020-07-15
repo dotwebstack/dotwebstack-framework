@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.FilteredField;
+import org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper;
 import org.junit.jupiter.api.Test;
 
 class FieldPathHelperTest {

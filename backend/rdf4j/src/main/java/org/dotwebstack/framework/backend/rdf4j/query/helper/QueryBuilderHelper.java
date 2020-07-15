@@ -1,8 +1,8 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.joinExpressions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.rdf4j.query.model.AggregateType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -33,9 +38,9 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfObject;
 
 @Slf4j
-public class VerticeHelper {
+public class QueryBuilderHelper {
 
-  private VerticeHelper() {}
+  private QueryBuilderHelper() {}
 
   public static List<TriplePattern> getConstructPatterns(Vertice vertice) {
     List<Edge> edges = vertice.getEdges();

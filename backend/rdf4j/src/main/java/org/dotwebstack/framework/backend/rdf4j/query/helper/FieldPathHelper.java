@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -23,8 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
+import org.dotwebstack.framework.backend.rdf4j.query.FilteredField;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 
@@ -65,7 +67,7 @@ public class FieldPathHelper {
     return emptyList();
   }
 
-  static String getFirstName(List<GraphQLFieldDefinition> fieldPath) {
+  public static String getFirstName(List<GraphQLFieldDefinition> fieldPath) {
     return fieldPath.stream()
         .findFirst()
         .map(GraphQLFieldDefinition::getName)
@@ -97,7 +99,7 @@ public class FieldPathHelper {
         directiveName);
   }
 
-  static FieldPath getFieldPath(SelectedField selectedField, GraphQLArgument argument, String directiveName) {
+  public static FieldPath getFieldPath(SelectedField selectedField, GraphQLArgument argument, String directiveName) {
     GraphQLUnmodifiedType unmodifiedType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
         .getType());
     String fieldName = getFieldName(argument, directiveName);
@@ -118,4 +120,25 @@ public class FieldPathHelper {
 
     throw unsupportedOperationException("Unable to determine fieldDefinition for argument {}", argument);
   }
+
+  public static List<SelectedField> filteredFields(SelectedField selectedField, FieldPath fieldPath) {
+    if (Objects.isNull(fieldPath)) {
+      return selectedField.getSelectionSet()
+          .getFields();
+    }
+
+    List<SelectedField> selectedFields = selectedField.getSelectionSet()
+        .getFields()
+        .stream()
+        .filter(childField -> childField.getName()
+            .equals(fieldPath.first()
+                .getName()))
+        .collect(Collectors.toList());
+
+    if (selectedFields.isEmpty()) {
+      selectedFields.add(new FilteredField(fieldPath));
+    }
+    return selectedFields;
+  }
+
 }
