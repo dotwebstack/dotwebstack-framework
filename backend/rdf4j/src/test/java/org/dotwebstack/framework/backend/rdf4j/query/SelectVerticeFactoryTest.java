@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.buildRequiredEdges;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
+
+import org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -74,7 +75,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    buildRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert
@@ -113,7 +114,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    buildRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert
@@ -147,7 +148,7 @@ public class SelectVerticeFactoryTest {
         .build();
 
     // Act
-    buildRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
     List<Edge> edges = vertice.getEdges();
 
     // Assert

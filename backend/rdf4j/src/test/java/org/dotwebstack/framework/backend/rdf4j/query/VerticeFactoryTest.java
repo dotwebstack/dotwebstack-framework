@@ -13,8 +13,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_TARG
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.getValueConstraint;
-import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.resolveRequiredEdges;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.buildValueConstraint;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
@@ -454,7 +454,7 @@ public class VerticeFactoryTest {
         .build();
 
     // Act
-    Optional<Constraint> constraintOptional = getValueConstraint(propertyShape);
+    Optional<Constraint> constraintOptional = buildValueConstraint(propertyShape);
 
     // Assert
     assertTrue(constraintOptional.isPresent());
@@ -482,7 +482,7 @@ public class VerticeFactoryTest {
         .build();
 
     // Act
-    List<Edge> requiredEdges = resolveRequiredEdges(List.of(propertyShape), query);
+    List<Edge> requiredEdges = ConstraintHelper.resolveRequiredEdges(List.of(propertyShape), query);
 
     // Assert
     assertThat(requiredEdges, hasSize(1));

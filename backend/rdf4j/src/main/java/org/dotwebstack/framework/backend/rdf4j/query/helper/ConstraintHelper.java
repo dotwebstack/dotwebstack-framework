@@ -26,8 +26,8 @@ public class ConstraintHelper {
 
   private ConstraintHelper() {}
 
-  public static void buildRequiredEdges(Vertice vertice, Collection<PropertyShape> propertyShapes,
-      OuterQuery<?> query) {
+  public static void addResolvedRequiredEdges(Vertice vertice, Collection<PropertyShape> propertyShapes,
+                                              OuterQuery<?> query) {
     propertyShapes.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
         .forEach(ps -> {
@@ -37,7 +37,7 @@ public class ConstraintHelper {
 
           vertice.getEdges()
               .add(edge);
-          buildRequiredEdges(edge.getObject(), ps.getNode()
+          addResolvedRequiredEdges(edge.getObject(), ps.getNode()
               .getPropertyShapes()
               .values(), query);
         });
@@ -49,7 +49,7 @@ public class ConstraintHelper {
         .map(ps -> {
           Edge edge = buildEdge(query.var(), ps, PathType.CONSTRAINT);
           if (ps.getNode() != null) {
-            buildRequiredEdges(edge.getObject(), ps.getNode()
+            addResolvedRequiredEdges(edge.getObject(), ps.getNode()
                 .getPropertyShapes()
                 .values(), query);
           }
@@ -70,7 +70,7 @@ public class ConstraintHelper {
             .anyMatch(value::equals));
   }
 
-  public static Optional<Constraint> getTypeConstraint(NodeShape nodeShape) {
+  public static Optional<Constraint> buildTypeConstraint(NodeShape nodeShape) {
     Set<Object> classes = new HashSet<>(nodeShape.getClasses());
     if (!classes.isEmpty()) {
       return Optional.of(Constraint.builder()
@@ -82,7 +82,7 @@ public class ConstraintHelper {
     return Optional.empty();
   }
 
-  public static Optional<Constraint> getValueConstraint(PropertyShape propertyShape) {
+  public static Optional<Constraint> buildValueConstraint(PropertyShape propertyShape) {
     if (propertyShape.getMinCount() != null && propertyShape.getMinCount() >= 1
         && propertyShape.getHasValue() != null) {
       return Optional.of(Constraint.builder()
@@ -101,11 +101,11 @@ public class ConstraintHelper {
    * of 1
    */
   public static void buildConstraints(@NonNull Vertice vertice, @NonNull OuterQuery<?> outerQuery) {
-    getTypeConstraint(vertice.getNodeShape()).ifPresent(vertice.getConstraints()::add);
+    buildTypeConstraint(vertice.getNodeShape()).ifPresent(vertice.getConstraints()::add);
     vertice.getNodeShape()
         .getPropertyShapes()
         .values()
-        .forEach(ps -> getValueConstraint(ps).ifPresent(vertice.getConstraints()::add));
+        .forEach(ps -> buildValueConstraint(ps).ifPresent(vertice.getConstraints()::add));
 
     vertice.getEdges()
         .stream()

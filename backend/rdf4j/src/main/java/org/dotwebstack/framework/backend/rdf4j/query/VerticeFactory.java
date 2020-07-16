@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static java.util.Objects.nonNull;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.AggregateHelper.resolveAggregate;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.buildConstraints;
-import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.resolveRequiredEdges;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.buildEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.isEqualToEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper.filteredFields;
@@ -29,6 +28,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Aggregate;
 import org.dotwebstack.framework.backend.rdf4j.query.model.ArgumentFieldMapping;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
@@ -89,7 +89,7 @@ public class VerticeFactory {
     Variable subject = query.var();
     List<Edge> edges = resolveEdgesFromSelectedFields(nodeShape, fields, fieldPath, query);
 
-    edges.addAll(resolveRequiredEdges(getUnselectedPropertyShapes(nodeShape.getPropertyShapes()
+    edges.addAll(ConstraintHelper.resolveRequiredEdges(getUnselectedPropertyShapes(nodeShape.getPropertyShapes()
         .values(), edges), query));
 
     return Vertice.builder()

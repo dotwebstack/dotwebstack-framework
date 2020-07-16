@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLFieldDefinition;
+
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,8 @@ public final class NodeShape {
 
   private final String name;
 
-  private final Map<String, PropertyShape> propertyShapes;
+  @Builder.Default
+  private final Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
   public PropertyShape getPropertyShape(String propertyShapeName) {
     PropertyShape propertyShape = this.propertyShapes.get(propertyShapeName);

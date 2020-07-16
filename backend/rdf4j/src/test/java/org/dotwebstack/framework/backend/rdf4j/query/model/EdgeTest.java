@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.helper;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
