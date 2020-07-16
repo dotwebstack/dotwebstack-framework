@@ -54,7 +54,7 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
+  public static Expression<?> buildExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
     // filtering with en language tag will result in "FILTER LANG( ?x0 ) = 'en'"
     if (LANGUAGE.equals(operator)) {
       return Expressions.equals(Expressions.function(LANG, subject), operand);

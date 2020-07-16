@@ -38,9 +38,9 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     Vertice root = constructVerticeFactory.buildConstructQuery(nodeShape, environment.getSelectionSet()
         .getFields(), query);
-    query.construct(QueryBuilderHelper.getConstructPatterns(root)
+    query.construct(QueryBuilderHelper.buildConstructTriples(root)
         .toArray(new TriplePattern[] {}))
-        .where(QueryBuilderHelper.getWherePatterns(root)
+        .where(QueryBuilderHelper.buildWhereTriples(root)
             .toArray(new GraphPattern[] {}));
 
     String queryString = query.getQueryString();
