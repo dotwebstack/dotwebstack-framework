@@ -134,7 +134,7 @@ public class VerticeFactory {
       FieldPath fieldPath, NodeShape childShape, Variable edgeSubject) {
     Edge edge;
     GraphQLFieldDefinition fieldDefinition = fieldPath.first();
-    edge = buildEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), false, false, PathType.FILTER);
+    edge = buildEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), PathType.FILTER);
 
     if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
       resolveAggregate(fieldDefinition, query.var()).ifPresent(aggregate -> {
@@ -177,11 +177,10 @@ public class VerticeFactory {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
     NodeShape childShape = propertyShape.getNode();
     Edge edge;
-    boolean optional = propertyShape.getMinCount() == null || propertyShape.getMinCount() < 1;
     if (Objects.isNull(childShape)) {
-      edge = buildEdge(query.var(), propertyShape, true, optional, pathType);
+      edge = buildEdge(query.var(), propertyShape, pathType);
     } else {
-      edge = buildNestedEdge(nodeShape, selectedField, fieldPath, query, optional, pathType);
+      edge = buildNestedEdge(nodeShape, selectedField, fieldPath, query, pathType);
     }
 
     addLanguageFilter(edge, propertyShape, language);
@@ -231,7 +230,7 @@ public class VerticeFactory {
       PropertyShape propertyShape = nodeShape.getPropertyShape(argumentFieldMapping.getSelectedField()
           .getName());
       if (!fieldPath.isResource()) {
-        resolvePath(selectionEdge.getObject(), propertyShape.getNode(), fieldPath, true, false, query, PathType.SORT);
+        resolvePath(selectionEdge.getObject(), propertyShape.getNode(), fieldPath, query, PathType.SORT);
       }
     });
   }
@@ -240,7 +239,7 @@ public class VerticeFactory {
    * A nested edge is an edge with an object vertice created from another nodeshape
    */
   private Edge buildNestedEdge(NodeShape nodeShape, SelectedField selectedField, FieldPath fieldPath,
-      OuterQuery<?> query, boolean isOptional, PathType pathType) {
+      OuterQuery<?> query, PathType pathType) {
     PropertyShape propertyShape = nodeShape.getPropertyShape(selectedField.getName());
 
     Vertice object = createVertice(propertyShape.getNode(), filteredFields(selectedField, fieldPath),
@@ -251,7 +250,7 @@ public class VerticeFactory {
 
     Aggregate aggregate = resolveAggregate(selectedField.getFieldDefinition(), query.var()).orElse(null);
 
-    return buildEdge(propertyShape, object, true, isOptional, pathType, aggregate);
+    return buildEdge(propertyShape, object, pathType, aggregate);
   }
 
   List<ArgumentFieldMapping> getArgumentFieldMapping(SelectedField selectedField, String directiveName) {
@@ -276,9 +275,8 @@ public class VerticeFactory {
     if (filterRule.isResource()) {
       vertice.addFilter(createFilter(nodeShape, filterRule, null));
     } else {
-      resolvePath(vertice, nodeShape, filterRule.getFieldPath(), false, true, query, pathType)
-          .ifPresent(match -> match.getObject()
-              .addFilter(createFilter(nodeShape, filterRule, null)));
+      resolvePath(vertice, nodeShape, filterRule.getFieldPath(), query, pathType).ifPresent(match -> match.getObject()
+          .addFilter(createFilter(nodeShape, filterRule, null)));
     }
   }
 

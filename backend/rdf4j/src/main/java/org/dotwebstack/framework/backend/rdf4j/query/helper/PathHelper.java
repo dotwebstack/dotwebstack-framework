@@ -27,7 +27,7 @@ public class PathHelper {
    * create the missing part of the path
    */
   public static Optional<Edge> resolvePath(@NonNull Vertice vertice, NodeShape nodeShape, @NonNull FieldPath fieldPath,
-      boolean isVisible, boolean makePathRequired, @NonNull OuterQuery<?> query, @NonNull PathType pathType) {
+      @NonNull OuterQuery<?> query, @NonNull PathType pathType) {
     if (fieldPath.last()
         .map(fieldDefinition -> fieldDefinition.getDirective(Rdf4jDirectives.RESOURCE_NAME))
         .isPresent()) {
@@ -41,7 +41,7 @@ public class PathHelper {
     PropertyShape propertyShape =
         nodeShape.getPropertyShape(FieldPathHelper.getFirstName(fieldPath.getFieldDefinitions()));
     Edge match = findExistingEdge(vertice, propertyShape, pathType).orElseGet(() -> {
-      Edge edge = buildEdge(query.var(), propertyShape, isVisible, !fieldPath.isRequired(), pathType);
+      Edge edge = buildEdge(query.var(), propertyShape, pathType);
       vertice.getEdges()
           .add(edge);
       return edge;
@@ -57,6 +57,6 @@ public class PathHelper {
         .orElse(nodeShape),
         fieldPath.rest()
             .orElseThrow(() -> illegalStateException("Remainder expected but got nothing!")),
-        isVisible, false, query, pathType);
+        query, pathType);
   }
 }

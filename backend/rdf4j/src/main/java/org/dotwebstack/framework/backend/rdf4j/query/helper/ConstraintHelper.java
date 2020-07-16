@@ -32,9 +32,8 @@ public class ConstraintHelper {
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
         .forEach(ps -> {
           Edge edge = findExistingEdge(vertice, ps, PathType.CONSTRAINT)
-              .orElseGet(() -> buildEdge(query.var(), ps, true, false, PathType.CONSTRAINT));
+              .orElseGet(() -> buildEdge(query.var(), ps, PathType.CONSTRAINT));
           edge.addPathType(PathType.CONSTRAINT);
-          // edge.setOptional(false);
 
           vertice.getEdges()
               .add(edge);
@@ -48,7 +47,7 @@ public class ConstraintHelper {
     return propertyShapes.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1)
         .map(ps -> {
-          Edge edge = buildEdge(query.var(), ps, true, false, PathType.CONSTRAINT);
+          Edge edge = buildEdge(query.var(), ps, PathType.CONSTRAINT);
           if (ps.getNode() != null) {
             buildRequiredEdges(edge.getObject(), ps.getNode()
                 .getPropertyShapes()

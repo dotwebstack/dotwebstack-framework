@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Aggregate;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
@@ -42,20 +40,17 @@ public class EdgeHelper {
     return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge.getObject(), propertyShape.getNode());
   }
 
-  public static Edge buildEdge(Variable object, PropertyShape propertyShape, boolean isVisible, boolean isOptional,
-      PathType pathType) {
-    return buildEdge(propertyShape, buildVertice(object, propertyShape.getNode()), isVisible, isOptional, pathType,
-        null);
+  public static Edge buildEdge(Variable object, PropertyShape propertyShape, PathType pathType) {
+    return buildEdge(propertyShape, buildVertice(object, propertyShape.getNode()), pathType, null);
   }
 
-  public static Edge buildEdge(PropertyShape propertyShape, Vertice object, boolean isVisible, boolean isOptional,
-      PathType pathType, Aggregate aggregate) {
-    return buildEdge(propertyShape, propertyShape.toPredicate(), propertyShape.toConstructPredicate(), object,
-        isVisible, isOptional, pathType, aggregate);
+  public static Edge buildEdge(PropertyShape propertyShape, Vertice object, PathType pathType, Aggregate aggregate) {
+    return buildEdge(propertyShape, propertyShape.toPredicate(), propertyShape.toConstructPredicate(), object, pathType,
+        aggregate);
   }
 
   private static Edge buildEdge(PropertyShape propertyShape, RdfPredicate predicate, RdfPredicate constructPredicate,
-      Vertice object, boolean isVisible, boolean isOptional, PathType pathType, Aggregate aggregate) {
+      Vertice object, PathType pathType, Aggregate aggregate) {
     return Edge.builder()
         .propertyShape(propertyShape)
         .predicate(predicate)
@@ -91,12 +86,5 @@ public class EdgeHelper {
         .filter(childEdge -> hasEqualQueryString(childEdge, propertyShape))
         .filter(childEdge -> hasEqualTargetClass(childEdge.getObject(), propertyShape.getNode()))
         .findFirst();
-  }
-
-  public static List<Edge> deepList(List<Edge> edges) {
-    return edges.stream()
-        .flatMap(edge -> Stream.concat(Stream.of(edge), deepList(edge.getObject()
-            .getEdges()).stream()))
-        .collect(Collectors.toList());
   }
 }

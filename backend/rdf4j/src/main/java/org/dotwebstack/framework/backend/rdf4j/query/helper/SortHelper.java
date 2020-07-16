@@ -40,7 +40,7 @@ public class SortHelper {
             .orElse(null))
         .orElse(orderBy.getFieldPath());
 
-    return resolvePath(vertice, nodeShape, orderBy.getFieldPath(), false, false, query, PathType.SORT).map(edge -> {
+    return resolvePath(vertice, nodeShape, orderBy.getFieldPath(), query, PathType.SORT).map(edge -> {
       Optional<FieldPath> restOptional = fieldPath.rest();
       if (restOptional.isPresent()) {
         NodeShape childShape = nodeShape.getChildNodeShape(fieldPath.getFieldDefinitions())
