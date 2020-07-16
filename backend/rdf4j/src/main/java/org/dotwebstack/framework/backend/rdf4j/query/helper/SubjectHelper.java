@@ -14,27 +14,30 @@ public class SubjectHelper {
 
   private SubjectHelper() {}
 
-  public static Variable getSubjectForField(Edge match, NodeShape nodeShape, FieldPath fieldPath) {
+  public static Variable getSubjectForField(Edge edge, NodeShape nodeShape, FieldPath fieldPath) {
     if (fieldPath.isSingleton()) {
-      return Objects.nonNull(match.getAggregate()) ? match.getAggregate()
+      return Objects.nonNull(edge.getAggregate()) ? edge.getAggregate()
           .getVariable()
-          : match.getObject()
+          : edge.getObject()
               .getSubject();
     }
 
     PropertyShape propertyShape = nodeShape.getPropertyShape(fieldPath.first()
         .getName());
-    Edge next = match.getObject()
+    Edge next = edge.getObject()
         .getEdges()
         .stream()
-        .filter(edge -> edge.getPredicate()
+        .filter(childEdge -> childEdge.getPredicate()
+            .getQueryString()
             .equals(propertyShape.getPath()
-                .toPredicate()))
+                .toPredicate()
+                .getQueryString()))
         .findFirst()
         .orElseThrow(() -> illegalArgumentException("Did not find a predicate with name '{}' for edge '{}'",
             propertyShape.getPath()
-                .toPredicate(),
-            match.getObject()
+                .toPredicate()
+                .getQueryString(),
+            edge.getObject()
                 .getSubject()));
 
     return getSubjectForField(next, propertyShape.getNode(), fieldPath.rest()
