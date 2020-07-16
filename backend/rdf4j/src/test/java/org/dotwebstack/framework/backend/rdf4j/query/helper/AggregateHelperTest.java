@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class AggregateHelperTest {
+class AggregateHelperTest {
 
   @Mock
   private GraphQLFieldDefinition fieldDefinitionMock;
@@ -31,7 +31,7 @@ public class AggregateHelperTest {
   private GraphQLArgument aggregateArgument;
 
   @Test
-  public void resolveAggregate_returnsEmpty_forFieldWithoutAggregateDirective() {
+  void resolveAggregate_returnsEmpty_forFieldWithoutAggregateDirective() {
     // Arrange
     when(fieldDefinitionMock.getDirective(Rdf4jDirectives.AGGREGATE_NAME)).thenReturn(null);
 
@@ -40,7 +40,7 @@ public class AggregateHelperTest {
   }
 
   @Test
-  public void resolveAggregate_returnsEmpty_forFieldWithoutAggregateType() {
+  void resolveAggregate_returnsEmpty_forFieldWithoutAggregateType() {
     // Arrange
     when(fieldDefinitionMock.getDirective(Rdf4jDirectives.AGGREGATE_NAME)).thenReturn(aggregateDirective);
     when(aggregateDirective.getArgument(Rdf4jDirectives.AGGREGATE_TYPE)).thenReturn(null);
@@ -50,7 +50,7 @@ public class AggregateHelperTest {
   }
 
   @Test
-  public void resolveAggregate_returnsAggregate_forFieldWithAggregateDirective() {
+  void resolveAggregate_returnsAggregate_forFieldWithAggregateDirective() {
     // Arrange
     when(fieldDefinitionMock.getDirective(Rdf4jDirectives.AGGREGATE_NAME)).thenReturn(aggregateDirective);
     when(aggregateDirective.getArgument(Rdf4jDirectives.AGGREGATE_TYPE)).thenReturn(aggregateArgument);

@@ -66,7 +66,7 @@ public class ConstraintHelperTest {
   private OuterQuery<?> outerQueryMock;
 
   @Test
-  public void hasConstraintOfType_ReturnsFalse_forVerticeWithoutConstraint() {
+  void hasConstraintOfType_ReturnsFalse_forVerticeWithoutConstraint() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .constraints(Collections.emptySet())
@@ -77,7 +77,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void hasConstraintOfType_ReturnsFalse_forVerticeWithMinCountConstraint() {
+  void hasConstraintOfType_ReturnsFalse_forVerticeWithMinCountConstraint() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .constraints(Set.of(Constraint.builder()
@@ -90,7 +90,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void hasConstraintOfType_ReturnsFalse_forUnmatchingTypeConstraint() {
+  void hasConstraintOfType_ReturnsFalse_forUnmatchingTypeConstraint() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .constraints(Set.of(Constraint.builder()
@@ -104,7 +104,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void hasConstraintOfType_ReturnsTrue_forMatchingTypeConstraint() {
+  void hasConstraintOfType_ReturnsTrue_forMatchingTypeConstraint() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .constraints(Set.of(Constraint.builder()
@@ -118,7 +118,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildTypeConstraint_ReturnsEmpty_forNodeShapeWithoutAType() {
+  void buildTypeConstraint_ReturnsEmpty_forNodeShapeWithoutAType() {
     // Arrange
     NodeShape nodeShape = NodeShape.builder()
         .classes(Collections.emptySet())
@@ -129,7 +129,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithSingleType() {
+  void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithSingleType() {
     // Arrange
     NodeShape nodeShape = NodeShape.builder()
         .classes(Set.of(breweryIri))
@@ -147,7 +147,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithMultipleTypes() {
+  void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithMultipleTypes() {
     // Arrange
     NodeShape nodeShape = NodeShape.builder()
         .classes(Set.of(breweryIri, restaurantIri))
@@ -165,7 +165,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildValueConstraint_ReturnsEmpty_forPropertyShapeWithNoMinCount() {
+  void buildValueConstraint_ReturnsEmpty_forPropertyShapeWithNoMinCount() {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(0);
 
@@ -178,7 +178,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildValueConstraint_ReturnsEmpty_forPropertyShapeWithMinCount() {
+  void buildValueConstraint_ReturnsEmpty_forPropertyShapeWithMinCount() {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
@@ -199,7 +199,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsNoEdges_forEmptyPropertyShapes() {
+  void addResolvedRequiredEdges_ReturnsNoEdges_forEmptyPropertyShapes() {
     // Act
     List<Edge> edges = ConstraintHelper.resolveRequiredEdges(Collections.emptyList(), outerQueryMock);
 
@@ -208,7 +208,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsNoEdges_forNonRequiredPropertyShapes() {
+  void addResolvedRequiredEdges_ReturnsNoEdges_forNonRequiredPropertyShapes() {
     // Arrange
     PropertyShape identifierShape = PropertyShape.builder()
         .path(PredicatePath.builder()
@@ -225,7 +225,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsMultipleEdges_forMultipleConstrainedPropertyShapes() {
+  void addResolvedRequiredEdges_ReturnsMultipleEdges_forMultipleConstrainedPropertyShapes() {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
     when(outerQueryMock.var()).thenReturn(variableMock);
@@ -271,7 +271,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsUnchangedVertice_ForNoPropertyShape() {
+  void addResolvedRequiredEdges_ReturnsUnchangedVertice_ForNoPropertyShape() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .build();
@@ -285,7 +285,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsUnchangedVertice_ForPropertyShapeWithoutNodeShape() {
+  void addResolvedRequiredEdges_ReturnsUnchangedVertice_ForPropertyShapeWithoutNodeShape() {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
@@ -307,7 +307,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void addResolvedRequiredEdges_ReturnsVerticeWithExtraEdge_ForPropertyShapeWithBeerNodeShape() {
+  void addResolvedRequiredEdges_ReturnsVerticeWithExtraEdge_ForPropertyShapeWithBeerNodeShape() {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
@@ -340,7 +340,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildConstraints_ReturnsUnchangedVertice_ForVerticeWithouConstraint() {
+  void buildConstraints_ReturnsUnchangedVertice_ForVerticeWithouConstraint() {
     // Arrange
     Vertice vertice = Vertice.builder()
         .nodeShape(NodeShape.builder()
@@ -356,7 +356,7 @@ public class ConstraintHelperTest {
   }
 
   @Test
-  public void buildConstraints_ReturnsVerticeWithConstraints_ForConstrainedNodeShape() {
+  void buildConstraints_ReturnsVerticeWithConstraints_ForConstrainedNodeShape() {
     // Arrange
     NodeShape beerShape = NodeShape.builder()
         .name("Beer")
