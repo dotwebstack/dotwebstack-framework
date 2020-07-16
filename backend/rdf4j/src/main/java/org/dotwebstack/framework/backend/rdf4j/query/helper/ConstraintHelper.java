@@ -33,8 +33,8 @@ public class ConstraintHelper {
         .forEach(ps -> {
           Edge edge = findExistingEdge(vertice, ps, PathType.CONSTRAINT)
               .orElseGet(() -> buildEdge(query.var(), ps, true, false, PathType.CONSTRAINT));
-
-          edge.setOptional(false);
+          edge.addPathType(PathType.CONSTRAINT);
+          // edge.setOptional(false);
 
           vertice.getEdges()
               .add(edge);
@@ -69,19 +69,6 @@ public class ConstraintHelper {
             .stream())
         .anyMatch(value -> types.stream()
             .anyMatch(value::equals));
-  }
-
-  public static Optional<Constraint> getMinCountConstraint(PropertyShape propertyShape, OuterQuery<?> outerQuery) {
-    if (propertyShape.getMinCount() != null && propertyShape.getMinCount() >= 1) {
-      return Optional.of(Constraint.builder()
-          .predicate(propertyShape.getPath()
-              .toPredicate())
-          .constraintType(ConstraintType.MINCOUNT)
-          .values(Set.of(outerQuery.var()))
-          .build());
-    } else {
-      return Optional.empty();
-    }
   }
 
   public static Optional<Constraint> getTypeConstraint(NodeShape nodeShape) {
@@ -119,13 +106,7 @@ public class ConstraintHelper {
     vertice.getNodeShape()
         .getPropertyShapes()
         .values()
-        .forEach(ps -> {
-          getValueConstraint(ps).ifPresent(vertice.getConstraints()::add);
-          getMinCountConstraint(ps, outerQuery).ifPresent(minCountConstraint -> {
-            vertice.getConstraints()
-                .add(minCountConstraint);
-          });
-        });
+        .forEach(ps -> getValueConstraint(ps).ifPresent(vertice.getConstraints()::add));
 
     vertice.getEdges()
         .stream()

@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.AggregateHelper.resolveAggregate;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.buildConstraints;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.resolveRequiredEdges;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.buildEdge;
-import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.deepList;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.isEqualToEdge;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper.filteredFields;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.FieldPathHelper.getFieldPath;
@@ -115,7 +113,7 @@ public class VerticeFactory {
             resolveLeafFilter(vertice, nodeShape, query, filterRule, fieldPath, childShape, query.var());
           }
           resolveNodeFilter(vertice, nodeShape, query, filterRule, fieldPath, childShape);
-        }, () -> resolveFilter(vertice, query, nodeShape, filterRule));
+        }, () -> resolveFilter(vertice, query, nodeShape, filterRule, PathType.FILTER));
   }
 
   private void resolveNodeFilter(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query, FilterRule filterRule,
@@ -128,11 +126,8 @@ public class VerticeFactory {
             .build())
         .map(childFilterRule -> buildSelectQuery(childShape, List.of(childFilterRule), Collections.emptyList(), query))
         .map(childVertice -> buildEdge(nodeShape, filterRule, childVertice, PathType.NESTED_FILTER))
-        .ifPresent(edge1 -> {
-          vertice.getEdges()
-              .add(edge1);
-          deepList(singletonList(edge1)).forEach(e -> e.setOptional(false));
-        });
+        .ifPresent(edge1 -> vertice.getEdges()
+            .add(edge1));
   }
 
   private void resolveLeafFilter(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query, FilterRule filterRule,
@@ -143,12 +138,11 @@ public class VerticeFactory {
 
     if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
       resolveAggregate(fieldDefinition, query.var()).ifPresent(aggregate -> {
-        edge.setOptional(true);
         edge.setAggregate(aggregate);
         vertice.addFilter(createFilter(nodeShape, filterRule, aggregate.getVariable()));
       });
     } else {
-      resolveFilter(edge.getObject(), query, childShape, filterRule);
+      resolveFilter(edge.getObject(), query, childShape, filterRule, PathType.FILTER);
     }
 
     vertice.getEdges()
@@ -202,7 +196,8 @@ public class VerticeFactory {
           if (mapping.isSingleton()) {
             PropertyShape propertyShape = nodeShape.getPropertyShape(mapping.getSelectedField()
                 .getName());
-            resolveFilter(selectionEdge.getObject(), query, propertyShape.getNode(), buildFilterRule(mapping));
+            resolveFilter(selectionEdge.getObject(), query, propertyShape.getNode(), buildFilterRule(mapping),
+                PathType.FILTER);
           } else {
             resolveNestedFilter(selectionEdge, mapping, nodeShape, query);
           }
@@ -219,11 +214,11 @@ public class VerticeFactory {
     Edge filterEdge = resolveEdge(childShape, filterField, mapping.getFieldPath()
         .rest()
         .orElse(null), query, PathType.NESTED_FILTER);
-    filterEdge.setOptional(false);
+    filterEdge.addPathType(PathType.NESTED_FILTER);
 
     FilterRule filterRule = buildFilterRule(mapping.getArgumentValue(), mapping.fieldPathRest());
 
-    resolveFilter(filterEdge.getObject(), query, childShape, filterRule);
+    resolveFilter(filterEdge.getObject(), query, childShape, filterRule, PathType.NESTED_FILTER);
 
     baseEdge.getObject()
         .getEdges()
@@ -276,11 +271,12 @@ public class VerticeFactory {
     return Collections.emptyList();
   }
 
-  void resolveFilter(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
+  void resolveFilter(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule,
+      PathType pathType) {
     if (filterRule.isResource()) {
       vertice.addFilter(createFilter(nodeShape, filterRule, null));
     } else {
-      resolvePath(vertice, nodeShape, filterRule.getFieldPath(), false, true, query, PathType.FILTER)
+      resolvePath(vertice, nodeShape, filterRule.getFieldPath(), false, true, query, pathType)
           .ifPresent(match -> match.getObject()
               .addFilter(createFilter(nodeShape, filterRule, null)));
     }

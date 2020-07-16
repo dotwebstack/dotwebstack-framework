@@ -46,9 +46,7 @@ public class PathHelper {
           .add(edge);
       return edge;
     });
-    if (fieldPath.isRequired() || makePathRequired) {
-      match.setOptional(false);
-    }
+    match.addPathType(pathType);
 
     if (fieldPath.isSingleton()) {
       resolveAggregate(fieldPath.first(), query.var()).ifPresent(match::setAggregate);

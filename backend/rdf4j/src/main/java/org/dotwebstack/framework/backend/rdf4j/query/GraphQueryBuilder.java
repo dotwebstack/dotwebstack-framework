@@ -47,9 +47,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     if (queryString.contains("SELECT")) {
       String[] splitted = queryString.split("WHERE \\{");
       Stream.iterate(2, index -> index < splitted.length, index -> index + 1)
-          .forEach(index -> {
-            splitted[index] = createValuesBlock(subjects, root.getSubject()) + splitted[index];
-          });
+          .forEach(index -> splitted[index] = createValuesBlock(subjects, root.getSubject()) + splitted[index]);
       return String.join("WHERE {", splitted);
     }
     return queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, root.getSubject()));

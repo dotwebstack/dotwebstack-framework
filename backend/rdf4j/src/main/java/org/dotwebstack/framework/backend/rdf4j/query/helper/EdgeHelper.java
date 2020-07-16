@@ -61,9 +61,7 @@ public class EdgeHelper {
         .predicate(predicate)
         .constructPredicate(constructPredicate)
         .object(object)
-        .isVisible(isVisible)
-        .isOptional(isOptional)
-        .pathType(pathType)
+        .pathTypes(new ArrayList<>(List.of(pathType)))
         .aggregate(aggregate)
         .build();
   }
@@ -76,9 +74,7 @@ public class EdgeHelper {
             .getPath()
             .toPredicate())
         .object(childVertice)
-        .isVisible(false)
-        .isOptional(false)
-        .pathType(pathType)
+        .pathTypes(new ArrayList<>(List.of(pathType)))
         .build();
   }
 
@@ -91,8 +87,7 @@ public class EdgeHelper {
     }
 
     return childEdges.stream()
-        .filter(childEdge -> childEdge.getPathType()
-            .isReusePaths())
+        .filter(Edge::hasReusablePaths)
         .filter(childEdge -> hasEqualQueryString(childEdge, propertyShape))
         .filter(childEdge -> hasEqualTargetClass(childEdge.getObject(), propertyShape.getNode()))
         .findFirst();
