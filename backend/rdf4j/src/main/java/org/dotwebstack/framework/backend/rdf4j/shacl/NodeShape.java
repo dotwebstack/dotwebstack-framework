@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLFieldDefinition;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;

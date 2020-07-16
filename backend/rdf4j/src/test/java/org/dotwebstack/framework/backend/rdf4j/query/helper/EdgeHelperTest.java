@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
-import org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;

@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
-
 import org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;

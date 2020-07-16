@@ -27,7 +27,7 @@ public class ConstraintHelper {
   private ConstraintHelper() {}
 
   public static void addResolvedRequiredEdges(Vertice vertice, Collection<PropertyShape> propertyShapes,
-                                              OuterQuery<?> query) {
+      OuterQuery<?> query) {
     propertyShapes.stream()
         .filter(ps -> ps.getMinCount() != null && ps.getMinCount() >= 1 && ps.getNode() != null)
         .forEach(ps -> {

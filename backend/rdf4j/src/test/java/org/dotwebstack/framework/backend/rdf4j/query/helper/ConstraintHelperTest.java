@@ -1,5 +1,20 @@
 package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
@@ -20,27 +35,8 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.platform.engine.support.hierarchical.Node;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ConstraintHelperTest {
@@ -77,7 +73,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act & Assert
-    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, any()));
+    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, Collections.emptySet()));
   }
 
   @Test
@@ -90,7 +86,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act & Assert
-    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, any()));
+    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, Collections.emptySet()));
   }
 
   @Test
@@ -140,10 +136,12 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    Constraint constraint = ConstraintHelper.buildTypeConstraint(nodeShape).get();
+    Constraint constraint = ConstraintHelper.buildTypeConstraint(nodeShape)
+        .get();
 
     // Assert
-    assertThat(constraint.getPredicate().getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
     assertThat(constraint.getValues(), is(equalTo(Set.of(breweryIri))));
     assertThat(constraint.getConstraintType(), is(equalTo(ConstraintType.RDF_TYPE)));
   }
@@ -156,10 +154,12 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    Constraint constraint = ConstraintHelper.buildTypeConstraint(nodeShape).get();
+    Constraint constraint = ConstraintHelper.buildTypeConstraint(nodeShape)
+        .get();
 
     // Assert
-    assertThat(constraint.getPredicate().getQueryString(), is(equalTo(stringify(RDF.TYPE))));
+    assertThat(constraint.getPredicate()
+        .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
     assertThat(constraint.getValues(), is(equalTo(Set.of(breweryIri, restaurantIri))));
     assertThat(constraint.getConstraintType(), is(equalTo(ConstraintType.RDF_TYPE)));
   }
@@ -183,12 +183,15 @@ public class ConstraintHelperTest {
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
     PropertyShape propertyShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(identifierIRI).build())
+        .path(PredicatePath.builder()
+            .iri(identifierIRI)
+            .build())
         .constraints(Map.of(ConstraintType.MINCOUNT, intergerLiteralMock, ConstraintType.HASVALUE, valueMock))
         .build();
 
     // Act
-    Constraint valueConstraint = ConstraintHelper.buildValueConstraint(propertyShape).get();
+    Constraint valueConstraint = ConstraintHelper.buildValueConstraint(propertyShape)
+        .get();
 
     // Assert
     assertThat(valueConstraint.getConstraintType(), is(equalTo(ConstraintType.HASVALUE)));
@@ -206,8 +209,11 @@ public class ConstraintHelperTest {
 
   @Test
   public void addResolvedRequiredEdges_ReturnsNoEdges_forNonRequiredPropertyShapes() {
+    // Arrange
     PropertyShape identifierShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(identifierIRI).build())
+        .path(PredicatePath.builder()
+            .iri(identifierIRI)
+            .build())
         .constraints(Collections.emptyMap())
         .build();
 
@@ -225,15 +231,17 @@ public class ConstraintHelperTest {
     when(outerQueryMock.var()).thenReturn(variableMock);
 
     PropertyShape identifierShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(identifierIRI).build())
+        .path(PredicatePath.builder()
+            .iri(identifierIRI)
+            .build())
         .constraints(Map.of(ConstraintType.MINCOUNT, intergerLiteralMock))
         .build();
     PropertyShape nameShape = PropertyShape.builder()
         .path(AlternativePath.builder()
             .object(SequencePath.builder()
                 .first(PredicatePath.builder()
-                  .iri(VF.createIRI("http://schema.org/name"))
-                  .build())
+                    .iri(VF.createIRI("http://schema.org/name"))
+                    .build())
                 .rest(PredicatePath.builder()
                     .iri(VF.createIRI(DWS_BEER_PREFIX + "label"))
                     .build())
@@ -247,23 +255,33 @@ public class ConstraintHelperTest {
 
     // Assert
     assertThat(edges, hasSize(2));
-    assertThat(edges.get(0).getPathTypes(), contains(PathType.CONSTRAINT));
-    assertThat(edges.get(0).getPredicate().getQueryString(), is(equalTo(stringify(identifierIRI))));
+    assertThat(edges.get(0)
+        .getPathTypes(), contains(PathType.CONSTRAINT));
+    assertTrue(edges.stream()
+        .anyMatch(edge -> edge.getPredicate()
+            .getQueryString()
+            .equals(stringify(identifierIRI))));
 
-    assertThat(edges.get(1).getPathTypes(), contains(PathType.CONSTRAINT));
-    assertThat(edges.get(1).getPredicate().getQueryString(), is(equalTo("(<http://schema.org/name>|<https://github.com/dotwebstack/beer/def#label>)")));
+    assertThat(edges.get(1)
+        .getPathTypes(), contains(PathType.CONSTRAINT));
+    assertTrue(edges.stream()
+        .anyMatch(edge -> edge.getPredicate()
+            .getQueryString()
+            .equals("(<http://schema.org/name>|<https://github.com/dotwebstack/beer/def#label>)")));
   }
 
   @Test
   public void addResolvedRequiredEdges_ReturnsUnchangedVertice_ForNoPropertyShape() {
     // Arrange
-    Vertice vertice = Vertice.builder().build();
+    Vertice vertice = Vertice.builder()
+        .build();
 
     // Act
     ConstraintHelper.addResolvedRequiredEdges(vertice, Collections.emptySet(), outerQueryMock);
 
     // Assert
-    assertTrue(vertice.getEdges().isEmpty());
+    assertTrue(vertice.getEdges()
+        .isEmpty());
   }
 
   @Test
@@ -271,9 +289,12 @@ public class ConstraintHelperTest {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
-    Vertice vertice = Vertice.builder().build();
+    Vertice vertice = Vertice.builder()
+        .build();
     PropertyShape identifierShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(identifierIRI).build())
+        .path(PredicatePath.builder()
+            .iri(identifierIRI)
+            .build())
         .constraints(Map.of(ConstraintType.MINCOUNT, intergerLiteralMock))
         .build();
 
@@ -281,7 +302,8 @@ public class ConstraintHelperTest {
     ConstraintHelper.addResolvedRequiredEdges(vertice, Set.of(identifierShape), outerQueryMock);
 
     // Assert
-    assertTrue(vertice.getEdges().isEmpty());
+    assertTrue(vertice.getEdges()
+        .isEmpty());
   }
 
   @Test
@@ -289,17 +311,25 @@ public class ConstraintHelperTest {
     // Arrange
     when(intergerLiteralMock.intValue()).thenReturn(1);
 
-    Vertice vertice = Vertice.builder().build();
+    Vertice vertice = Vertice.builder()
+        .build();
 
     PropertyShape identifierShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(identifierIRI).build())
+        .path(PredicatePath.builder()
+            .iri(identifierIRI)
+            .build())
         .constraints(Map.of(ConstraintType.MINCOUNT, intergerLiteralMock))
         .build();
 
     PropertyShape beerShape = PropertyShape.builder()
-        .path(PredicatePath.builder().iri(beerIri).build())
+        .path(PredicatePath.builder()
+            .iri(beerIri)
+            .build())
         .constraints(Map.of(ConstraintType.MINCOUNT, intergerLiteralMock))
-        .node(NodeShape.builder().name("Beer").propertyShapes(Map.of("identifier", identifierShape)).build())
+        .node(NodeShape.builder()
+            .name("Beer")
+            .propertyShapes(Map.of("identifier", identifierShape))
+            .build())
         .build();
 
     // Act
@@ -312,13 +342,17 @@ public class ConstraintHelperTest {
   @Test
   public void buildConstraints_ReturnsUnchangedVertice_ForVerticeWithouConstraint() {
     // Arrange
-    Vertice vertice = Vertice.builder().nodeShape(NodeShape.builder().build()).build();
+    Vertice vertice = Vertice.builder()
+        .nodeShape(NodeShape.builder()
+            .build())
+        .build();
 
     // Act
     ConstraintHelper.buildConstraints(vertice, outerQueryMock);
 
     // Assert
-    assertTrue(vertice.getConstraints().isEmpty());
+    assertTrue(vertice.getConstraints()
+        .isEmpty());
   }
 
   @Test
@@ -336,13 +370,14 @@ public class ConstraintHelperTest {
         .classes(Set.of(breweryIri))
         .build();
     Vertice vertice = Vertice.builder()
-            .edges(List.of(Edge.builder()
-                .propertyShape(PropertyShape.builder().build())
-                .object(Vertice.builder()
-                    .nodeShape(beerShape)
-                    .build())
-                .build()))
-            .nodeShape(breweryShape)
+        .edges(List.of(Edge.builder()
+            .propertyShape(PropertyShape.builder()
+                .build())
+            .object(Vertice.builder()
+                .nodeShape(beerShape)
+                .build())
+            .build()))
+        .nodeShape(breweryShape)
         .build();
 
     // Act
@@ -350,6 +385,9 @@ public class ConstraintHelperTest {
 
     // Assert
     assertThat(vertice.getConstraints(), hasSize(1));
-    assertThat(vertice.getEdges().get(0).getObject().getConstraints(), hasSize(1));
+    assertThat(vertice.getEdges()
+        .get(0)
+        .getObject()
+        .getConstraints(), hasSize(1));
   }
 }

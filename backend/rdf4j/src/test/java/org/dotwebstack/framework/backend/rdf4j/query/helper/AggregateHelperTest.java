@@ -1,26 +1,22 @@
 package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLFieldDefinition;
-import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.query.model.Aggregate;
-import org.dotwebstack.framework.backend.rdf4j.query.model.AggregateType;
-import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
-import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-
-import java.util.Optional;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
+import java.util.Optional;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Aggregate;
+import org.dotwebstack.framework.backend.rdf4j.query.model.AggregateType;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class AggregateHelperTest {
@@ -61,8 +57,9 @@ public class AggregateHelperTest {
     when(aggregateArgument.getValue()).thenReturn(AggregateType.COUNT);
 
     // Act & Assert
-    assertThat(AggregateHelper.resolveAggregate(fieldDefinitionMock, any()), is(equalTo(Optional.of(Aggregate.builder().type(
-        AggregateType.COUNT).build()))));
+    assertThat(AggregateHelper.resolveAggregate(fieldDefinitionMock, any()), is(equalTo(Optional.of(Aggregate.builder()
+        .type(AggregateType.COUNT)
+        .build()))));
   }
 
 }

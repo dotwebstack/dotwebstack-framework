@@ -5,8 +5,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
-import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
