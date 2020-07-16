@@ -25,20 +25,15 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class PathHelperTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
@@ -46,9 +41,6 @@ public class PathHelperTest {
   private Vertice vertice;
 
   private NodeShape nodeShape;
-
-  @Mock
-  private Variable variable;
 
   @Mock
   private GraphQLFieldDefinition fieldDefinition1;
@@ -68,16 +60,10 @@ public class PathHelperTest {
     this.fieldPath = FieldPath.builder()
         .fieldDefinitions(List.of(this.fieldDefinition1, this.fieldDefinition2))
         .build();
-
-    when(this.variable.getQueryString()).thenReturn("?x1");
-    when(this.fieldDefinition1.getName()).thenReturn("field1");
-    when(this.fieldDefinition2.getName()).thenReturn("field2");
-
   }
 
-  @DisplayName("Resolve path returns empty when last path element contains a @resource directive")
   @Test
-  public void resolvePathResourceDirective() {
+  public void resolvePath_returnsEmpty_for_resourceDirective() {
     // Arrange
     when(fieldDefinition2.getDirective(Rdf4jDirectives.RESOURCE_NAME)).thenReturn(mock(GraphQLDirective.class));
 
@@ -89,9 +75,8 @@ public class PathHelperTest {
     assertThat(result.isEmpty(), is(true));
   }
 
-  @DisplayName("Resolve path returns empty optional for null nodeshape")
   @Test
-  public void resolvePathNullNodeShape() {
+  public void resolvePath_returnsEmpty_for_nullNodeShape() {
     // Arrange & Act
     Optional<Edge> result = PathHelper.resolvePath(this.vertice, null, this.fieldPath, this.query, PathType.CONSTRAINT);
 
@@ -99,10 +84,10 @@ public class PathHelperTest {
     assertThat(result.isEmpty(), is(true));
   }
 
-  @DisplayName("Resolve path returns edge with constraint path type")
   @Test
-  public void resolvePath() {
+  public void resolvePath_returnsEdge_for_singleFieldDefinitions() {
     // Arrange
+    when(this.fieldDefinition1.getName()).thenReturn("field1");
     FieldPath fieldPath = FieldPath.builder()
         .fieldDefinitions(List.of(this.fieldDefinition1))
         .build();
@@ -120,17 +105,51 @@ public class PathHelperTest {
         .getPathTypes(), is(List.of(PathType.CONSTRAINT)));
   }
 
+  @Test
+  public void resolvePath_returnsEdge_for_multipleFieldDefinitions() {
+    // Arrange
+    when(this.fieldDefinition1.getName()).thenReturn("field1");
+    when(this.fieldDefinition2.getName()).thenReturn("field2");
+    FieldPath fieldPath = FieldPath.builder()
+        .fieldDefinitions(List.of(this.fieldDefinition1, this.fieldDefinition2))
+        .build();
+
+    // Act
+    Optional<Edge> result =
+        PathHelper.resolvePath(this.vertice, this.nodeShape, fieldPath, this.query, PathType.FILTER);
+
+    // Assert
+    assertThat(result.isPresent(), is(true));
+    assertThat(result.get()
+        .getPropertyShape()
+        .getName(), is("field2"));
+    assertThat(result.get()
+        .getPathTypes(), is(List.of(PathType.FILTER)));
+  }
+
   private NodeShape buildNodeShape() {
+    PropertyShape propertyShape2 = PropertyShape.builder()
+        .name("field2")
+        .path(PredicatePath.builder()
+            .iri(VF.createIRI("http://www.example.com/iri2"))
+            .build())
+        .build();
+
+    NodeShape nodeShape2 = NodeShape.builder()
+        .propertyShapes(Map.of("field2", propertyShape2))
+        .classes(Set.of(VF.createIRI("http://www.example.com#testType2")))
+        .build();
+
     PropertyShape propertyShape1 = PropertyShape.builder()
         .name("field1")
+        .node(nodeShape2)
         .path(PredicatePath.builder()
             .iri(VF.createIRI("http://www.example.com/iri1"))
             .build())
         .build();
 
-    Map<String, PropertyShape> propertyShapes = Map.of("field1", propertyShape1);
     return NodeShape.builder()
-        .propertyShapes(propertyShapes)
+        .propertyShapes(Map.of("field1", propertyShape1))
         .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
         .build();
   }
