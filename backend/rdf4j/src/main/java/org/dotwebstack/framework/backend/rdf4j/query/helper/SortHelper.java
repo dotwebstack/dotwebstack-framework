@@ -25,7 +25,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfValue;
 
 public class SortHelper {
 
-  private static List<GraphQLScalarType> NUMERIC_TYPES = Arrays.asList(Scalars.GraphQLInt, Scalars.GraphQLFloat,
+  public static List<GraphQLScalarType> NUMERIC_TYPES = Arrays.asList(Scalars.GraphQLInt, Scalars.GraphQLFloat,
       Scalars.GraphQLBigDecimal, Scalars.GraphQLBigDecimal, Scalars.GraphQLLong, Scalars.GraphQLBigInteger);
 
   private SortHelper() {}
