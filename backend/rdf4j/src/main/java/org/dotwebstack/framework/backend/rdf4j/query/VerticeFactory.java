@@ -102,7 +102,7 @@ public class VerticeFactory {
   private void addFilterRule(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query, FilterRule filterRule) {
     FieldPath fieldPath = filterRule.getFieldPath();
     if (fieldPath.isResource()) {
-      vertice.addFilter(createFilter(nodeShape, filterRule, null));
+      vertice.addFilter(createFilter(nodeShape, filterRule, vertice.getSubject()));
       return;
     }
 

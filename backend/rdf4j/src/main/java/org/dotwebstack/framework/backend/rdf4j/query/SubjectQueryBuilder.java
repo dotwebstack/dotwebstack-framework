@@ -29,15 +29,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private final NodeShape nodeShape;
 
-  private final VerticeFactory constructVerticeFactory;
+  private final VerticeFactory verticeFactory;
 
   private SubjectQueryBuilder(@NonNull QueryEnvironment environment, @NonNull JexlEngine jexlEngine,
-      @NonNull VerticeFactory constructVerticeFactory) {
+      @NonNull VerticeFactory verticeFactory) {
     super(environment, Queries.SELECT());
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.nodeShape = this.environment.getNodeShapeRegistry()
         .get(this.environment.getObjectType());
-    this.constructVerticeFactory = constructVerticeFactory;
+    this.verticeFactory = verticeFactory;
   }
 
   static SubjectQueryBuilder create(@NonNull QueryEnvironment environment, @NonNull JexlEngine jexlEngine,
@@ -49,7 +49,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       List<FilterRule> filterRules, List<OrderBy> orderBys) {
     final MapContext context = new MapContext(arguments);
 
-    Vertice root = constructVerticeFactory.buildSelectQuery(nodeShape, filterRules, orderBys, query);
+    Vertice root = verticeFactory.buildSelectQuery(nodeShape, filterRules, orderBys, query);
 
     query.select(root.getSubject())
         .where(QueryBuilderHelper.buildWhereTriples(root)
