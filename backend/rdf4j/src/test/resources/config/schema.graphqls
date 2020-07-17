@@ -100,6 +100,8 @@ type Brewery {
   beerNames: [String!]
   beers(brewery: [SortField!] = [{order: ASC}] @sort, ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
   lemonBeers: [Beer]
+  edelPils(name: String = "Alfa Edel Pils" @filter): [Beer]
+  krachtigDort(name: String = "Alfa Krachtig Dort" @filter): [Beer]
   beerCount: Int! @aggregate(type: COUNT)
   hasBeers: Boolean! @aggregate(type: COUNT) @transform(expr: "hasBeers > 0")
   url: String

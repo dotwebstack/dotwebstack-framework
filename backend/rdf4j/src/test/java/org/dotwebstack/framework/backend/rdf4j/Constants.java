@@ -139,6 +139,10 @@ public final class Constants {
 
   public static final String BEERS_FIELD = "beers";
 
+  public static final String KRACHTIGDORT_FIELD = "krachtigDort";
+
+  public static final String EDELPILS_FIELD = "edelPils";
+
   public static final String BEER_NAMES_FIELD = "beerNames";
 
   public static final String BEERS_NAME_FIELD = "name";

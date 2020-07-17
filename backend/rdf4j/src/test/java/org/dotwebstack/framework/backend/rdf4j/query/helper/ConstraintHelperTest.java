@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,6 +34,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -52,6 +54,24 @@ public class ConstraintHelperTest {
   private static final IRI beerIri = VF.createIRI(DWS_BEER_PREFIX + "beer");
 
   private static final IRI identifierIRI = VF.createIRI(DWS_BEER_PREFIX + "identifier");
+
+  @Mock
+  private NodeShape beerShapeMock;
+
+  @Mock
+  private NodeShape ingredientShapeMock;
+
+  @Mock
+  private PropertyShape beersPropertyShapeMock;
+
+  @Mock
+  private PropertyShape ingredientPropertyShapeMock;
+
+  @Mock
+  private PropertyShape identifierPropertyShapeMock;
+
+  @Mock
+  private Variable x1Mock;
 
   @Mock
   private IntegerLiteral intergerLiteralMock;
@@ -337,6 +357,110 @@ public class ConstraintHelperTest {
 
     // Assert
     assertThat(vertice.getEdges(), hasSize(1));
+  }
+
+  @Test
+  public void addResolvedRequiredEdges_returnsAddedEdge_forEdgeWithMinCount1() {
+    // Arrange
+    when(outerQueryMock.var()).thenReturn(x1Mock);
+    when(beersPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(beersPropertyShapeMock.toPredicate()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery_beers"))
+        .build()
+        .toPredicate());
+    when(beersPropertyShapeMock.getNode()).thenReturn(beerShapeMock);
+
+    when(beerShapeMock.getPropertyShapes()).thenReturn(Map.of("ingredient", ingredientPropertyShapeMock));
+    when(ingredientPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(ingredientPropertyShapeMock.getNode()).thenReturn(ingredientShapeMock);
+    when(ingredientPropertyShapeMock.toPredicate()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_ingredients"))
+        .build()
+        .toPredicate());
+
+    when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
+
+    // Act
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
+
+    // Assert
+    assertThat(edges, hasSize(1));
+    assertThat(edges.get(0)
+        .getPredicate()
+        .getQueryString(), is(Matchers.equalTo("<https://github.com/dotwebstack/beer/shapes#Brewery_beers>")));
+    assertThat(edges.get(0)
+        .getObject()
+        .getSubject()
+        .getQueryString(), is(Matchers.equalTo("?x1")));
+  }
+
+  @Test
+  public void addResolvedRequiredEdges_returnsNesteEdge_forNestedNodeshape() {
+    // Arrange
+    when(outerQueryMock.var()).thenReturn(x1Mock);
+    when(beersPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(beersPropertyShapeMock.toPredicate()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Brewery_beers"))
+        .build()
+        .toPredicate());
+    when(beersPropertyShapeMock.getNode()).thenReturn(beerShapeMock);
+
+    when(beerShapeMock.getPropertyShapes()).thenReturn(Map.of("ingredient", ingredientPropertyShapeMock));
+    when(ingredientPropertyShapeMock.getMinCount()).thenReturn(1);
+    when(ingredientPropertyShapeMock.getNode()).thenReturn(ingredientShapeMock);
+    when(ingredientPropertyShapeMock.toPredicate()).thenReturn(PredicatePath.builder()
+        .iri(VF.createIRI("https://github.com/dotwebstack/beer/shapes#Beer_ingredients"))
+        .build()
+        .toPredicate());
+    when(ingredientShapeMock.getPropertyShapes()).thenReturn(Map.of("identifier", identifierPropertyShapeMock));
+
+    when(x1Mock.getQueryString()).thenReturn("?x1");
+    Vertice vertice = Vertice.builder()
+        .build();
+
+    // Act
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
+
+    // Assert
+    assertThat(edges, hasSize(1));
+    assertThat(edges.get(0)
+        .getPredicate()
+        .getQueryString(), is(Matchers.equalTo("<https://github.com/dotwebstack/beer/shapes#Brewery_beers>")));
+    assertThat(edges.get(0)
+        .getObject()
+        .getSubject()
+        .getQueryString(), is(Matchers.equalTo("?x1")));
+
+    List<Edge> beersEdges = edges.get(0)
+        .getObject()
+        .getEdges();
+    assertThat(beersEdges, hasSize(1));
+    assertThat(beersEdges.get(0)
+        .getPredicate()
+        .getQueryString(), is(Matchers.equalTo("<https://github.com/dotwebstack/beer/shapes#Beer_ingredients>")));
+    assertThat(beersEdges.get(0)
+        .getObject()
+        .getSubject()
+        .getQueryString(), is(Matchers.equalTo("?x1")));
+  }
+
+  @Test
+  public void addResolvedRequiredEdges_doesNotReturnEdge_forEdgeWithMinCount0() {
+    // Arrange
+    when(beersPropertyShapeMock.getMinCount()).thenReturn(0);
+    Vertice vertice = Vertice.builder()
+        .build();
+
+    // Act
+    ConstraintHelper.addResolvedRequiredEdges(vertice, List.of(beersPropertyShapeMock), outerQueryMock);
+    List<Edge> edges = vertice.getEdges();
+
+    // Assert
+    assertThat(edges, is(empty()));
   }
 
   @Test

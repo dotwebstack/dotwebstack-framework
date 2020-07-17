@@ -17,8 +17,10 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXA
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.EDELPILS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.KRACHTIGDORT_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
@@ -171,6 +173,24 @@ class Rdf4jModuleTest {
                     ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))),
             ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
                 ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsResult_forQueryMultipleFilteredFieldsBasedOnSamePath() {
+    // Arrange
+    String query = "{ breweries(name: \"Alfa Brouwerij\"){ edelPils { name }, krachtigDort { name }}}";
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(
+                ImmutableMap.of(EDELPILS_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_NAME_FIELD, "Alfa Edel Pils")),
+                    KRACHTIGDORT_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_NAME_FIELD, "Alfa Krachtig Dort"))))));
   }
 
   @Test
