@@ -16,6 +16,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFI
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SUBJECT_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.EDELPILS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
@@ -807,8 +808,7 @@ class Rdf4jModuleTest {
   @Test
   void graphqlQuery_ReturnsBrewery_FilteredBySubject() {
     // Arrange
-    String query =
-        "{ brewery_with_subject(subject: \"https://github.com/dotwebstack/beer/id/brewery/123\") { subject }}";
+    String query = "{ brewery_with_subject(subject: \"" + BREWERY_SUBJECT_EXAMPLE_2 + "\") { subject }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -816,7 +816,7 @@ class Rdf4jModuleTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
+    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_2);
 
     assertThat(data, hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, subject)));
   }
@@ -882,6 +882,30 @@ class Rdf4jModuleTest {
         .isEmpty());
     assertEquals(1, result.getErrors()
         .size());
+  }
+
+  @Test
+  void graphQlQuery_returnsLemonBeers_WithoutTheOtherBeers() {
+    // Arrange
+    String query = "{breweries(name: \"Alfa Brouwerij\"){ lemonBeers { name }, edelPils {name}, krachtigDort{ name }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+
+    List<Object> breweries = (List<Object>) data.get("breweries");
+    assertThat(breweries, hasSize(1));
+
+    List<Object> lemonBeers = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("lemonBeers");
+    assertThat(lemonBeers, hasSize(2));
+
+    List<Object> edelPils = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("edelPils");
+    assertThat(edelPils, hasSize(1));
+
+    List<Object> krachtigDort = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("krachtigDort");
+    assertThat(krachtigDort, hasSize(1));
   }
 
   @Test

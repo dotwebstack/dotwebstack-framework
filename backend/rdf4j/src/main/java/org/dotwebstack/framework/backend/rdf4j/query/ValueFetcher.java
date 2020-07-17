@@ -165,6 +165,8 @@ public final class ValueFetcher extends SourceDataFetcher {
     return propertyShape.getConstraints()
         .entrySet()
         .stream()
+        .filter(constraint -> constraint.getKey()
+            .equals(ConstraintType.HASVALUE))
         .allMatch((entry) -> {
           boolean valid = validConstraint(entry.getKey(), entry.getValue(), value);
           NodeShape targetNode = propertyShape.getNode();
@@ -184,8 +186,11 @@ public final class ValueFetcher extends SourceDataFetcher {
         .allMatch(propertyShape -> {
           Set<Value> values = propertyShape.getPath()
               .resolvePath(model, subject);
+          if (values.isEmpty()) {
+            return validPropertyShapeConstraints(null, nodeShape, propertyShape, model, checked);
+          }
           return values.stream()
-              .allMatch(
+              .anyMatch(
                   childValue -> validPropertyShapeConstraints(childValue, nodeShape, propertyShape, model, checked));
         });
   }

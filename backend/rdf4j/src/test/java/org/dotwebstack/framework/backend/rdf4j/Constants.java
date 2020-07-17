@@ -46,7 +46,6 @@ public final class Constants {
 
   public static final String BEER_DEF = "https://github.com/dotwebstack/beer/def#";
 
-  public static final IRI BEER_3 = VF.createIRI(BEER_DEF.concat("3"));
   // Query
 
   public static final IRI XSD_STRING = VF.createIRI(XSD_PREFIX.concat("string"));
@@ -82,6 +81,8 @@ public final class Constants {
   public static final String BREWERY_SUBJECT_FIELD = "subject";
 
   public static final String BREWERY_SUBJECT_EXAMPLE_1 = "https://github.com/dotwebstack/beer/id/brewery/123";
+
+  public static final String BREWERY_SUBJECT_EXAMPLE_2 = "https://github.com/dotwebstack/beer/id/brewery/456";
 
   // Brewery.name
 
@@ -147,11 +148,7 @@ public final class Constants {
 
   public static final String BEERS_NAME_FIELD = "name";
 
-  public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
-
   public static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
-
-  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
 
   public static final IRI BREWERY_BEERNAMES_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERNAMES_TYPE));
 
@@ -182,8 +179,6 @@ public final class Constants {
 
   public static final String BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE = "Beer_beerTypesZeroOrOne";
 
-  public static final IRI BEER_BEERTYPE_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#beertype");
-
   public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
 
   public static final IRI BEER_BEERTYPE_ZERO_OR_MORE_SHAPE =
@@ -192,11 +187,7 @@ public final class Constants {
   public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE =
       VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
 
-  public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
-
   public static final String BEERTYPE_EXAMPLE_1_NAME = "Beertype1";
-
-  public static final BNode BEERTYPE_EXAMPLE_2 = VF.createBNode();
 
   public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
 
@@ -225,10 +216,6 @@ public final class Constants {
   public static final BNode BREWERY_ADDRESS_EXAMPLE_2 = VF.createBNode();
 
   // Address.postalCode
-
-  public static final String POSTALCODE_TYPE = "Address_PostalCode";
-
-  public static final IRI POSTALCODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(POSTALCODE_TYPE));
 
   public static final IRI ADDRESS_POSTALCODE_PATH = VF.createIRI("http://schema.org/postalCode");
 
