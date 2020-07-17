@@ -6,7 +6,7 @@ public enum PathType {
   FILTER(true, false, true), // this path is used in a single filter
   NESTED_FILTER(false, false, true), // this path is used for a nested filter
   SORT(true, false, false), // used for sorting
-  CONSTRAINT(true, false, true); // used for constraints
+  CONSTRAINT(true, true, true); // used for constraints
 
   private boolean reusePaths;
 
