@@ -196,7 +196,7 @@ public class QueryBuilderHelper {
         .collect(Collectors.toList());
   }
 
-  private static Variable getSubject(Edge edge, Variable subject) {
+  static Variable getSubject(Edge edge, Variable subject) {
     if (Objects.nonNull(edge.getAggregate())) {
       return edge.getAggregate()
           .getVariable();
