@@ -235,13 +235,13 @@ public class JsonResponseMapper {
     return createResponseObject(result);
   }
 
-  private void addDataToResponse(String path, Map<String, Object> result, String identifier,
+  private void addDataToResponse(String path, Map<String, Object> response, String identifier,
       ResponseWriteContext writeContext) {
     boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, identifier));
     Object object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
 
     if (Objects.nonNull(object) || (writeContext.isSchemaRequiredNillable() || isExpanded)) {
-      result.put(identifier, convertType(writeContext, object));
+      response.put(identifier, convertType(writeContext, object));
     }
   }
 
