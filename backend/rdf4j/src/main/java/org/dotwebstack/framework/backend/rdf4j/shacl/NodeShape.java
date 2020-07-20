@@ -1,8 +1,15 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
+import graphql.schema.GraphQLFieldDefinition;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -22,7 +29,8 @@ public final class NodeShape {
 
   private final String name;
 
-  private final Map<String, PropertyShape> propertyShapes;
+  @Builder.Default
+  private final Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
   public PropertyShape getPropertyShape(String propertyShapeName) {
     PropertyShape propertyShape = this.propertyShapes.get(propertyShapeName);
@@ -34,5 +42,25 @@ public final class NodeShape {
     }
 
     return propertyShape;
+  }
+
+  /*
+   * Obtain the nodeshape for the given fieldpath.
+   */
+  public Optional<NodeShape> getChildNodeShape(List<GraphQLFieldDefinition> fieldPath) {
+    return fieldPath.stream()
+        .findFirst()
+        .map(GraphQLFieldDefinition::getName)
+        .map(this::getPropertyShape)
+        .map(PropertyShape::getNode)
+        .or(() -> {
+          if (fieldPath.size() > 1) {
+            // this means that we have found a scalar field -> we cannot go any level deeper anymore
+            throw illegalArgumentException("Cannot get child shape '{}' from '{}'", fieldPath.stream()
+                .map(GraphQLFieldDefinition::getName)
+                .collect(Collectors.joining(".")), getIdentifier().stringValue());
+          }
+          return Optional.empty();
+        });
   }
 }

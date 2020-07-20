@@ -1,8 +1,8 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.joinExpressions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.rdf4j.query.model.AggregateType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -33,23 +38,25 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfObject;
 
 @Slf4j
-public class VerticeHelper {
+public class QueryBuilderHelper {
 
-  private VerticeHelper() {}
+  private static final String OPTIONAL = "OPTIONAL";
 
-  public static List<TriplePattern> getConstructPatterns(Vertice vertice) {
+  private QueryBuilderHelper() {}
+
+  public static List<TriplePattern> buildConstructTriples(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
     List<TriplePattern> triplePatterns = edges.stream()
-        .flatMap(edge -> getConstructPatterns(edge, vertice.getSubject()).stream())
+        .flatMap(edge -> buildConstructTriples(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
-    triplePatterns.addAll(getTypeConstraintTriples(vertice));
+    triplePatterns.addAll(buildTypeConstraintTriples(vertice));
     sortQueryElements(triplePatterns);
     return triplePatterns;
   }
 
-  private static List<TriplePattern> getConstructPatterns(Edge edge, Variable subject) {
+  private static List<TriplePattern> buildConstructTriples(Edge edge, Variable subject) {
     List<TriplePattern> triplePatterns = new ArrayList<>();
 
     if (edge.isVisible()) {
@@ -61,12 +68,12 @@ public class VerticeHelper {
           .getSubject()));
     }
 
-    triplePatterns.addAll(getConstructPatterns(edge.getObject()));
+    triplePatterns.addAll(buildConstructTriples(edge.getObject()));
 
     return triplePatterns;
   }
 
-  private static List<TriplePattern> getTypeConstraintTriples(Vertice vertice) {
+  private static List<TriplePattern> buildTypeConstraintTriples(Vertice vertice) {
     return vertice.getConstraints()
         .stream()
         .filter(constraint -> stringify(RDF.TYPE).equals(constraint.getPredicate()
@@ -83,8 +90,7 @@ public class VerticeHelper {
         .collect(Collectors.toList());
   }
 
-  private static List<GraphPattern> getWherePatternsWithFilter(List<GraphPattern> result,
-      List<Filter> filtersWithVariables) {
+  private static List<GraphPattern> buildFilterTriples(List<GraphPattern> result, List<Filter> filtersWithVariables) {
     GraphPatternNotTriples graphPatternNotTriples = GraphPatterns.and(result.toArray(GraphPattern[]::new));
 
     filtersWithVariables
@@ -98,31 +104,31 @@ public class VerticeHelper {
     return singletonList(graphPatternNotTriples);
   }
 
-  private static List<GraphPattern> getConstraintPatterns(Vertice vertice) {
+  private static List<GraphPattern> buildConstraintTriples(Vertice vertice) {
     return vertice.getConstraints()
         .stream()
-        .flatMap(constraint -> Stream.of(getTriplePatternForConstraint(vertice.getSubject(), constraint)))
+        .flatMap(constraint -> Stream.of(buildTripleForConstraint(vertice.getSubject(), constraint)))
         .collect(Collectors.toList());
   }
 
-  public static List<GraphPattern> getWherePatterns(@NonNull Vertice vertice) {
+  public static List<GraphPattern> buildWhereTriples(@NonNull Vertice vertice) {
     List<Edge> edges = vertice.getEdges();
 
     List<GraphPattern> graphPatterns = edges.stream()
-        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
+        .flatMap(edge -> buildWhereTriples(edge, vertice.getSubject()).stream())
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-    graphPatterns.addAll(getConstraintPatterns(vertice));
+    graphPatterns.addAll(buildConstraintTriples(vertice));
 
-    List<Filter> filtersWithEdge = getFilters(vertice);
+    List<Filter> filtersWithEdge = getNonNullFilters(vertice);
     sortQueryElements(graphPatterns);
     if (!filtersWithEdge.isEmpty()) {
-      return getWherePatternsWithFilter(graphPatterns, filtersWithEdge);
+      return buildFilterTriples(graphPatterns, filtersWithEdge);
     }
     return graphPatterns;
   }
 
-  private static List<GraphPattern> getWherePatterns(Edge edge, Variable subject) {
+  private static List<GraphPattern> buildWhereTriples(Edge edge, Variable subject) {
     GraphPattern graphPattern = GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
         .getSubject())
         .optional(edge.isOptional());
@@ -133,12 +139,12 @@ public class VerticeHelper {
       Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
-          .map(filter -> getFilterExpression(filter, resolveVariable(edge, subject)))
+          .map(filter -> buildFilterExpression(filter, getSubject(edge, subject)))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }
 
-    List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
+    List<GraphPattern> childPatterns = buildWhereTriples(edge.getObject());
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
     if (Objects.nonNull(edge.getAggregate()) && Objects.equals(AggregateType.COUNT, edge.getAggregate()
@@ -155,13 +161,13 @@ public class VerticeHelper {
   private static void sortQueryElements(List<? extends QueryElement> queryElements) {
     queryElements.sort((one, other) -> {
       if (one.getQueryString()
-          .startsWith("OPTIONAL")
+          .startsWith(OPTIONAL)
           && other.getQueryString()
-              .startsWith("OPTIONAL")) {
+              .startsWith(OPTIONAL)) {
         return 0;
       }
       return one.getQueryString()
-          .startsWith("OPTIONAL") ? 1 : -1;
+          .startsWith(OPTIONAL) ? 1 : -1;
     });
   }
 
@@ -183,14 +189,14 @@ public class VerticeHelper {
     return result;
   }
 
-  private static List<Filter> getFilters(@NonNull Vertice vertice) {
+  private static List<Filter> getNonNullFilters(@NonNull Vertice vertice) {
     return vertice.getFilters()
         .stream()
         .filter(filter -> Objects.nonNull(filter.getVariable()))
         .collect(Collectors.toList());
   }
 
-  private static Variable resolveVariable(Edge edge, Variable subject) {
+  static Variable getSubject(Edge edge, Variable subject) {
     if (Objects.nonNull(edge.getAggregate())) {
       return edge.getAggregate()
           .getVariable();
@@ -205,7 +211,7 @@ public class VerticeHelper {
     return subject;
   }
 
-  private static GraphPattern getTriplePatternForConstraint(Variable subject, Constraint constraint) {
+  private static GraphPattern buildTripleForConstraint(Variable subject, Constraint constraint) {
     if (constraint.getValues()
         .size() == 1) {
       Object value = constraint.getValues()
@@ -234,10 +240,10 @@ public class VerticeHelper {
         .toArray(GraphPattern[]::new));
   }
 
-  private static Expression<?> getFilterExpression(Filter filter, Variable subject) {
+  private static Expression<?> buildFilterExpression(Filter filter, Variable subject) {
     List<Expression<?>> expressions = filter.getOperands()
         .stream()
-        .map(operand -> FilterHelper.getExpressionFromOperator(subject, filter.getOperator(), operand))
+        .map(operand -> FilterHelper.buildExpressionFromOperator(subject, filter.getOperator(), operand))
         .collect(Collectors.toList());
     return FilterHelper.joinExpressions(FilterJoinType.OR, null, expressions);
   }

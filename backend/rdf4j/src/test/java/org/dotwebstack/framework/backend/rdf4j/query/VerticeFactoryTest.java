@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_TARGET_CLASS;
@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_TARG
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
+import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.buildValueConstraint;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,7 +37,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
-import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
+import org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
+import org.dotwebstack.framework.backend.rdf4j.query.model.FilterRule;
+import org.dotwebstack.framework.backend.rdf4j.query.model.OrderBy;
+import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
@@ -111,9 +118,7 @@ public class VerticeFactoryTest {
   private SerializerRouter router =
       new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()));
 
-  private SelectVerticeFactory selectVerticeFactory;
-
-  private ConstructVerticeFactory constructVerticeFactory;
+  private VerticeFactory verticeFactory;
 
   @Mock
   SelectedField selectedField;
@@ -128,8 +133,7 @@ public class VerticeFactoryTest {
 
   @BeforeEach
   private void setup() {
-    selectVerticeFactory = new SelectVerticeFactory(router, rdf4jProperties);
-    constructVerticeFactory = new ConstructVerticeFactory(router, rdf4jProperties);
+    verticeFactory = new VerticeFactory(router, rdf4jProperties);
   }
 
   @Test
@@ -139,8 +143,8 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
-        Collections.emptyList(), query);
+    Vertice vertice =
+        verticeFactory.buildSelectQuery(nodeShape, Collections.emptyList(), Collections.emptyList(), query);
 
     // Assert
     assertThat(vertice.getConstraints()
@@ -173,7 +177,7 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
+    Vertice vertice = verticeFactory.buildSelectQuery(nodeShape, Collections.emptyList(),
         ImmutableList.of(OrderBy.builder()
             .fieldPath(FieldPath.builder()
                 .fieldDefinitions(singletonList(NAME))
@@ -208,7 +212,7 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, Collections.emptyList(),
+    Vertice vertice = verticeFactory.buildSelectQuery(nodeShape, Collections.emptyList(),
         ImmutableList.of(OrderBy.builder()
             .fieldPath(FieldPath.builder()
                 .fieldDefinitions(singletonList(NONNULL_NAME))
@@ -272,14 +276,14 @@ public class VerticeFactoryTest {
         .node(beersShape)
         .build();
 
-
     when(nodeShape.getPropertyShape("beers")).thenReturn(breweryBeers);
+    when(nodeShape.getChildNodeShape(any())).thenReturn(Optional.of(beersShape));
     when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
 
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, singletonList(FilterRule.builder()
+    Vertice vertice = verticeFactory.buildSelectQuery(nodeShape, singletonList(FilterRule.builder()
         .fieldPath(FieldPath.builder()
             .fieldDefinitions(Arrays.asList(BEERS, INGREDIENTS, NAME))
             .build())
@@ -364,7 +368,7 @@ public class VerticeFactoryTest {
     SelectQuery query = Queries.SELECT();
 
     // Act
-    Vertice vertice = selectVerticeFactory.createRoot(query.var(), nodeShape, singletonList(FilterRule.builder()
+    Vertice vertice = verticeFactory.buildSelectQuery(nodeShape, singletonList(FilterRule.builder()
         .fieldPath(FieldPath.builder()
             .fieldDefinitions(singletonList(NAME))
             .build())
@@ -421,7 +425,7 @@ public class VerticeFactoryTest {
     ImmutableList<SelectedField> fields = ImmutableList.of(selectedField);
 
     // Act
-    Vertice vertice = constructVerticeFactory.createRoot(nodeShape, fields, query);
+    Vertice vertice = verticeFactory.buildConstructQuery(nodeShape, fields, query);
 
     // Assert
     assertThat(vertice.getEdges(), hasSize(1));
@@ -450,7 +454,7 @@ public class VerticeFactoryTest {
         .build();
 
     // Act
-    Optional<Constraint> constraintOptional = AbstractVerticeFactory.getValueConstraint(propertyShape);
+    Optional<Constraint> constraintOptional = buildValueConstraint(propertyShape);
 
     // Assert
     assertTrue(constraintOptional.isPresent());
@@ -478,7 +482,7 @@ public class VerticeFactoryTest {
         .build();
 
     // Act
-    List<Edge> requiredEdges = AbstractVerticeFactory.getRequiredEdges(List.of(propertyShape), query);
+    List<Edge> requiredEdges = ConstraintHelper.resolveRequiredEdges(List.of(propertyShape), query);
 
     // Assert
     assertThat(requiredEdges, hasSize(1));

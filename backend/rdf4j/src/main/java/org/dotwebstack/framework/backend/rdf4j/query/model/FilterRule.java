@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import graphql.schema.GraphQLObjectType;
 import lombok.Builder;
@@ -15,4 +15,8 @@ public class FilterRule {
   private Object value;
 
   private GraphQLObjectType objectType;
+
+  public boolean isResource() {
+    return fieldPath.isResource();
+  }
 }

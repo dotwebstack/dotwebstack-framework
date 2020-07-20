@@ -48,6 +48,8 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_krachtigDort ,
+      beer_sh:Brewery_edelPils ,
       beer_sh:Brewery_lemonBeers ,
       beer_sh:Brewery_beerCount ,
       beer_sh:Brewery_hasBeers ,
@@ -171,6 +173,20 @@
 
   beer_sh:Brewery_beers a sh:PropertyShape ;
     sh:name "beers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:maxCount 10 ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_krachtigDort a sh:PropertyShape ;
+    sh:name "krachtigDort" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:maxCount 10 ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_edelPils a sh:PropertyShape ;
+    sh:name "edelPils" ;
     sh:path [ sh:inversePath beer_def:brewery ] ;
     sh:maxCount 10 ;
     sh:node beer_sh:Beer

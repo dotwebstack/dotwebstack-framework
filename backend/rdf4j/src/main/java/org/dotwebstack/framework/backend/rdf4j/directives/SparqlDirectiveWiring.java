@@ -36,8 +36,7 @@ import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.StaticQueryFetcher;
-import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
-import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.VerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
@@ -67,14 +66,12 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
 
   private CoreTraverser coreTraverser;
 
-  private final SelectVerticeFactory selectVerticeFactory;
-
-  private final ConstructVerticeFactory constructVerticeFactory;
+  private final VerticeFactory verticeFactory;
 
   public SparqlDirectiveWiring(List<RepositoryAdapter> repositoryAdapters, Rdf4jConverterRouter converterRouter,
       NodeShapeRegistry nodeShapeRegistry, Map<String, String> queryReferenceRegistry, Rdf4jProperties rdf4jProperties,
       JexlEngine jexlEngine, ConstraintValidator constraintValidator, CoreTraverser coreTraverser,
-      SelectVerticeFactory selectVerticeFactory, ConstructVerticeFactory constructVerticeFactory) {
+      VerticeFactory verticeFactory) {
     this.repositoryAdapters = repositoryAdapters;
     this.converterRouter = converterRouter;
     this.nodeShapeRegistry = nodeShapeRegistry;
@@ -84,8 +81,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
     this.jexlEngine = jexlEngine;
     this.constraintValidator = constraintValidator;
     this.coreTraverser = coreTraverser;
-    this.selectVerticeFactory = selectVerticeFactory;
-    this.constructVerticeFactory = constructVerticeFactory;
+    this.verticeFactory = verticeFactory;
   }
 
   @Override
@@ -175,7 +171,7 @@ public class SparqlDirectiveWiring implements AutoRegisteredSchemaDirectiveWirin
       return new StaticQueryFetcher(supportedAdapter, validators, converterRouter, staticSparqlQuery);
     } else {
       return new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine, validators, coreTraverser,
-          selectVerticeFactory, constructVerticeFactory);
+          verticeFactory);
     }
   }
 
