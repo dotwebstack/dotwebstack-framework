@@ -427,7 +427,7 @@ class JsonResponseMapperTest {
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
 
     Map<String, Object> child1Data = new HashMap<>();
-    child1Data.put("array1", null);
+    child1Data.put("array1", Collections.emptyList());
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
@@ -441,11 +441,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":null}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
@@ -470,11 +467,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":null}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
@@ -528,11 +522,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
