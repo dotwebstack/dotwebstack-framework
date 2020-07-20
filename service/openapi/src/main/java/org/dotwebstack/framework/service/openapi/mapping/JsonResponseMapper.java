@@ -184,13 +184,12 @@ public class JsonResponseMapper {
   }
 
   private Object createResponseObject(Map<String, Object> result) {
-    if (!result.isEmpty() && !result.values()
+    if (result.isEmpty() || result.values()
         .stream()
         .allMatch(Objects::isNull)) {
-      return result;
+      return null;
     }
-
-    return null;
+    return result;
   }
 
   String removeRoot(String path) {

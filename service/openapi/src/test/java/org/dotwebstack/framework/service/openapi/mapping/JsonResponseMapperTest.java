@@ -419,15 +419,16 @@ class JsonResponseMapperTest {
     assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
+  // Empty arrays, when not expanded, are by default not retrieved from the response
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NotFoundException {
+  void toResponse_throwsNotFoundException_forNonRequiredNonNillableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
 
     Map<String, Object> child1Data = new HashMap<>();
-    child1Data.put("array1", Collections.emptyList());
+    child1Data.put("array1", null);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
@@ -446,7 +447,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNullableEmptyArray() throws NotFoundException {
+  void toResponse_returnsNoElement_forNonRequiredNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -472,7 +473,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsEmptyList_forRequiredNonNullableEmptyArray() throws NotFoundException {
+  void toResponse_returnsEmptyList_forRequiredNonNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -501,7 +502,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NotFoundException {
+  void toResponse_throwsNotFoundException_forRequiredNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
