@@ -23,8 +23,8 @@ public class PathHelper {
   private PathHelper() {}
 
   /*
-   * Find the next edge based on the given fieldpath. In case no or a only partial path is found,
-   * create the missing part of the path
+   * Find the next edge based on the given fieldpath. In case no or a partial path is found, create
+   * the missing part of the path
    */
   public static Optional<Edge> resolvePath(@NonNull Vertice vertice, NodeShape nodeShape, @NonNull FieldPath fieldPath,
       @NonNull OuterQuery<?> query, @NonNull PathType pathType) {

@@ -132,9 +132,8 @@ public class VerticeFactory {
 
   private void resolveLeafFilter(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query, FilterRule filterRule,
       FieldPath fieldPath, NodeShape childShape, Variable edgeSubject) {
-    Edge edge;
     GraphQLFieldDefinition fieldDefinition = fieldPath.first();
-    edge = buildEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), PathType.FILTER);
+    Edge edge = buildEdge(edgeSubject, nodeShape.getPropertyShape(fieldDefinition.getName()), PathType.FILTER);
 
     if (Objects.nonNull(fieldDefinition.getDirective(Rdf4jDirectives.AGGREGATE_NAME))) {
       resolveAggregate(fieldDefinition, query.var()).ifPresent(aggregate -> {

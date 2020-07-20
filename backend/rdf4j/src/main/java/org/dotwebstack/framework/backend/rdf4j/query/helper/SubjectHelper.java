@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -14,7 +14,7 @@ public class SubjectHelper {
 
   private SubjectHelper() {}
 
-  public static Variable getSubjectForField(Edge edge, NodeShape nodeShape, FieldPath fieldPath) {
+  public static Variable getSubjectForField(@NonNull Edge edge, NodeShape nodeShape, @NonNull FieldPath fieldPath) {
     if (fieldPath.isSingleton()) {
       return Objects.nonNull(edge.getAggregate()) ? edge.getAggregate()
           .getVariable()
@@ -40,7 +40,7 @@ public class SubjectHelper {
             edge.getObject()
                 .getSubject()));
 
-    return getSubjectForField(next, propertyShape.getNode(), fieldPath.rest()
-        .orElseThrow(() -> illegalStateException("Expected a remainder but got nothing!")));
+    return getSubjectForField(next, propertyShape.getNode(), Objects.requireNonNull(fieldPath.rest()
+        .orElse(null)));
   }
 }

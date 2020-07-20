@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.model.ArgumentFieldMapping;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
@@ -54,7 +55,8 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static Expression<?> buildExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
+  public static Expression<?> buildExpressionFromOperator(@NonNull Variable subject, @NonNull FilterOperator operator,
+      @NonNull Operand operand) {
     // filtering with en language tag will result in "FILTER LANG( ?x0 ) = 'en'"
     if (LANGUAGE.equals(operator)) {
       return Expressions.equals(Expressions.function(LANG, subject), operand);
@@ -69,8 +71,8 @@ public class FilterHelper {
     return function.apply(subject, operand);
   }
 
-  public static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
-      List<Expression<?>> expressions) {
+  public static Expression<?> joinExpressions(@NonNull FilterJoinType joinType, Expression<?> joinedExpression,
+      @NonNull List<Expression<?>> expressions) {
     Expression<?> current = expressions.remove(0);
     Expression<?> usedExpression;
 
@@ -88,7 +90,7 @@ public class FilterHelper {
     return usedExpression;
   }
 
-  public static FilterRule buildFilterRule(ArgumentFieldMapping mapping) {
+  public static FilterRule buildFilterRule(@NonNull ArgumentFieldMapping mapping) {
     return buildFilterRule(mapping.getArgumentValue(), mapping.getFieldPath());
   }
 
@@ -99,7 +101,7 @@ public class FilterHelper {
         .build();
   }
 
-  public static RdfValue buildOperands(NodeShape nodeShape, FilterRule filterRule, String language,
+  public static RdfValue buildOperands(@NonNull NodeShape nodeShape, @NonNull FilterRule filterRule, String language,
       String filterString) {
     if (filterRule.getFieldPath()
         .isResource()) {
@@ -131,8 +133,8 @@ public class FilterHelper {
         .stringValue()));
   }
 
-  public static List<GraphQLFieldDefinition> getFilterRulePath(GraphQLObjectType objectType,
-      GraphQLDirectiveContainer container) {
+  public static List<GraphQLFieldDefinition> getFilterRulePath(@NonNull GraphQLObjectType objectType,
+      @NonNull GraphQLDirectiveContainer container) {
     String path = Optional.of(container)
         .map(con -> container.getDirective(CoreDirectives.FILTER_NAME))
         .map(dc -> dc.getArgument(CoreDirectives.FILTER_ARG_FIELD))
@@ -142,7 +144,7 @@ public class FilterHelper {
     return getFieldDefinitions(objectType, path);
   }
 
-  public static void addLanguageFilter(Edge edge, PropertyShape propertyShape, String language) {
+  public static void addLanguageFilter(@NonNull Edge edge, @NonNull PropertyShape propertyShape, String language) {
     if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
       Filter languageFilter = buildLanguageFilter(language);
       edge.getObject()

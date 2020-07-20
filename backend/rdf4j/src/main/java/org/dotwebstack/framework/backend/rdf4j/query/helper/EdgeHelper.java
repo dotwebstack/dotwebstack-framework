@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nonnull;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Aggregate;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
@@ -23,7 +24,7 @@ public class EdgeHelper {
 
   private EdgeHelper() {}
 
-  public static boolean hasEqualQueryString(Edge edge, PropertyShape propertyShape) {
+  public static boolean hasEqualQueryString(@NonNull Edge edge, @Nonnull PropertyShape propertyShape) {
     String queryString = propertyShape.getPath()
         .toPredicate()
         .getQueryString();
@@ -32,19 +33,21 @@ public class EdgeHelper {
         .equals(queryString);
   }
 
-  public static boolean hasEqualTargetClass(Vertice vertice, NodeShape nodeShape) {
+  public static boolean hasEqualTargetClass(@NonNull Vertice vertice, NodeShape nodeShape) {
     return Objects.isNull(nodeShape) || hasConstraintOfType(vertice, nodeShape.getClasses());
   }
 
-  public static boolean isEqualToEdge(PropertyShape propertyShape, Edge edge) {
+  public static boolean isEqualToEdge(@NonNull PropertyShape propertyShape, @Nonnull Edge edge) {
     return hasEqualQueryString(edge, propertyShape) && hasEqualTargetClass(edge.getObject(), propertyShape.getNode());
   }
 
-  public static Edge buildEdge(Variable object, PropertyShape propertyShape, PathType pathType) {
+  public static Edge buildEdge(@Nonnull Variable object, @NonNull PropertyShape propertyShape,
+      @Nonnull PathType pathType) {
     return buildEdge(propertyShape, buildVertice(object, propertyShape.getNode()), pathType, null);
   }
 
-  public static Edge buildEdge(PropertyShape propertyShape, Vertice object, PathType pathType, Aggregate aggregate) {
+  public static Edge buildEdge(@NonNull PropertyShape propertyShape, @Nonnull Vertice object,
+      @NonNull PathType pathType, Aggregate aggregate) {
     return buildEdge(propertyShape, propertyShape.toPredicate(), propertyShape.toConstructPredicate(), object, pathType,
         aggregate);
   }
@@ -61,7 +64,8 @@ public class EdgeHelper {
         .build();
   }
 
-  public static Edge buildEdge(NodeShape nodeShape, FilterRule filter, Vertice childVertice, PathType pathType) {
+  public static Edge buildEdge(@NonNull NodeShape nodeShape, @NonNull FilterRule filter, @NonNull Vertice childVertice,
+      @NonNull PathType pathType) {
     return Edge.builder()
         .predicate(nodeShape.getPropertyShape(filter.getFieldPath()
             .first()
@@ -77,7 +81,7 @@ public class EdgeHelper {
       @NonNull PathType pathType) {
     List<Edge> childEdges = nonNull(vertice.getEdges()) ? vertice.getEdges() : new ArrayList<>();
 
-    if (!pathType.isReusePaths()) {
+    if (!pathType.hasReusablePaths()) {
       return Optional.empty();
     }
 

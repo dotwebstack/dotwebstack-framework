@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.FieldPath;
 import org.dotwebstack.framework.backend.rdf4j.query.model.OrderBy;
@@ -30,8 +31,8 @@ public class SortHelper {
 
   private SortHelper() {}
 
-  public static Optional<Variable> findOrderVariable(Vertice vertice, NodeShape nodeShape, OuterQuery<?> query,
-      OrderBy orderBy) {
+  public static Optional<Variable> findOrderVariable(@NonNull Vertice vertice, @NonNull NodeShape nodeShape,
+      @NonNull OuterQuery<?> query, @NonNull OrderBy orderBy) {
     FieldPath fieldPath = orderBy.getFieldPath()
         .last()
         .filter(leaf -> Objects.nonNull(leaf.getDirective(Rdf4jDirectives.RESOURCE_NAME)))
@@ -52,7 +53,7 @@ public class SortHelper {
         .or(() -> Optional.of(vertice.getSubject()));
   }
 
-  public static RdfValue getDefaultOrderByValue(GraphQLFieldDefinition fieldDefinition) {
+  public static RdfValue getDefaultOrderByValue(@NonNull GraphQLFieldDefinition fieldDefinition) {
     GraphQLType type = GraphQLTypeUtil.unwrapOne(fieldDefinition.getType());
 
     if (NUMERIC_TYPES.stream()

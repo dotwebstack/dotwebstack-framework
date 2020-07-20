@@ -59,7 +59,7 @@ public class ConstraintHelper {
   }
 
   /*
-   * Find out if given edge contains a child edge is of given type.
+   * Find out if given edge contains a child edge of given type.
    */
   static boolean hasConstraintOfType(Vertice vertice, Set<IRI> types) {
     return vertice.getConstraints(ConstraintType.RDF_TYPE)

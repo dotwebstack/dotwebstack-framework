@@ -56,6 +56,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
+  private static final String SELECTED_SUBJECT_NAME = "x0";
+
   private static final String SUBJECTS = "subjects";
 
   private static final String GRAPH = "graph";
@@ -208,7 +210,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     return QueryResults.asList(queryResult)
         .stream()
-        .map(bindings -> (IRI) bindings.getValue("x0"))
+        .map(bindings -> (IRI) bindings.getValue(SELECTED_SUBJECT_NAME))
         .collect(Collectors.toList());
   }
 

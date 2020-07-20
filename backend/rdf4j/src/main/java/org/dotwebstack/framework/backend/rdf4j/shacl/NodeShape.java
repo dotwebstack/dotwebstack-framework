@@ -45,8 +45,7 @@ public final class NodeShape {
   }
 
   /*
-   * Check out if it is possible to go one level deeper, If not return null, but only if we are
-   * certain that this is the last path that we process
+   * Obtain the nodeshape for the given fieldpath.
    */
   public Optional<NodeShape> getChildNodeShape(List<GraphQLFieldDefinition> fieldPath) {
     return fieldPath.stream()

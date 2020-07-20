@@ -67,7 +67,7 @@ public class FieldPathHelper {
     return emptyList();
   }
 
-  public static String getFirstName(List<GraphQLFieldDefinition> fieldPath) {
+  public static String getFirstName(@NonNull List<GraphQLFieldDefinition> fieldPath) {
     return fieldPath.stream()
         .findFirst()
         .map(GraphQLFieldDefinition::getName)
@@ -99,7 +99,8 @@ public class FieldPathHelper {
         directiveName);
   }
 
-  public static FieldPath getFieldPath(SelectedField selectedField, GraphQLArgument argument, String directiveName) {
+  public static FieldPath getFieldPath(@NonNull SelectedField selectedField, @NonNull GraphQLArgument argument,
+      @NonNull String directiveName) {
     GraphQLUnmodifiedType unmodifiedType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
         .getType());
     String fieldName = getFieldName(argument, directiveName);
@@ -121,7 +122,7 @@ public class FieldPathHelper {
     throw unsupportedOperationException("Unable to determine fieldDefinition for argument {}", argument);
   }
 
-  public static List<SelectedField> filteredFields(SelectedField selectedField, FieldPath fieldPath) {
+  public static List<SelectedField> filteredFields(@NonNull SelectedField selectedField, FieldPath fieldPath) {
     if (Objects.isNull(fieldPath)) {
       return selectedField.getSelectionSet()
           .getFields();

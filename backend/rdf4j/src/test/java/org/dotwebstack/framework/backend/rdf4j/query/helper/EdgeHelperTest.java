@@ -59,6 +59,7 @@ public class EdgeHelperTest {
   @Test
   public void hasEqualTargetClass_returnsTrue_forNullNodeShape() {
     // Arrange / Act / Assert
-    assertTrue(EdgeHelper.hasEqualTargetClass(null, null));
+    assertTrue(EdgeHelper.hasEqualTargetClass(Vertice.builder()
+        .build(), null));
   }
 }

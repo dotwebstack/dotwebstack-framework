@@ -42,7 +42,7 @@ public class Edge implements Comparable<Edge> {
 
   public boolean hasReusablePaths() {
     return pathTypes.stream()
-        .anyMatch(PathType::isReusePaths);
+        .anyMatch(PathType::hasReusablePaths);
   }
 
   public void addPathType(PathType pathType) {

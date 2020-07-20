@@ -8,20 +8,20 @@ public enum PathType {
   SORT(true, false, false), // used for sorting
   CONSTRAINT(true, true, true); // used for constraints
 
-  private boolean reusePaths;
+  private boolean reusablePaths;
 
   private boolean visible;
 
   private boolean required;
 
-  PathType(boolean reusePaths, boolean visible, boolean required) {
-    this.reusePaths = reusePaths;
+  PathType(boolean reusablePaths, boolean visible, boolean required) {
+    this.reusablePaths = reusablePaths;
     this.visible = visible;
     this.required = required;
   }
 
-  public boolean isReusePaths() {
-    return reusePaths;
+  public boolean hasReusablePaths() {
+    return reusablePaths;
   }
 
   public boolean isVisible() {
