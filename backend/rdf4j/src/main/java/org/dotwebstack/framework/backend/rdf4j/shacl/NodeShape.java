@@ -23,7 +23,7 @@ public final class NodeShape {
   private final Resource identifier;
 
   @Builder.Default
-  private final Set<IRI> classes = new HashSet<>();
+  private final Set<Set<IRI>> classes = new HashSet<>();
 
   private final IRI parent;
 

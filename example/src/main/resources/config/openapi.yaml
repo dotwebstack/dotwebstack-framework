@@ -25,6 +25,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
+        supplements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'

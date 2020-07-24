@@ -61,13 +61,14 @@ public class ConstraintHelper {
   /*
    * Find out if given edge contains a child edge of given type.
    */
-  static boolean hasConstraintOfType(Vertice vertice, Set<IRI> types) {
-    return vertice.getConstraints(ConstraintType.RDF_TYPE)
-        .stream()
-        .flatMap(constraint -> constraint.getValues()
-            .stream())
-        .anyMatch(value -> types.stream()
-            .anyMatch(value::equals));
+  static boolean hasConstraintOfType(Vertice vertice, Set<Set<IRI>> orTypes) {
+    return orTypes.stream()
+        .anyMatch(andTypes -> andTypes.stream()
+            .allMatch(type -> vertice.getConstraints(ConstraintType.RDF_TYPE)
+                .stream()
+                .flatMap(constraint -> constraint.getValues()
+                    .stream())
+                .anyMatch(value -> value.equals(type))));
   }
 
   public static Optional<Constraint> buildTypeConstraint(NodeShape nodeShape) {
@@ -101,7 +102,14 @@ public class ConstraintHelper {
    * of 1
    */
   public static void buildConstraints(@NonNull Vertice vertice, @NonNull OuterQuery<?> outerQuery) {
-    buildTypeConstraint(vertice.getNodeShape()).ifPresent(vertice.getConstraints()::add);
+    buildTypeConstraint(vertice.getNodeShape()).ifPresent(constraint -> {
+      vertice.addConstraint(constraint);
+
+      // add an edge to be able to query the types in the construct part
+      if (vertice.hasTypeEdge()) {
+        vertice.addEdge(buildEdge(outerQuery.var()));
+      }
+    });
     vertice.getNodeShape()
         .getPropertyShapes()
         .values()

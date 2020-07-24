@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Objects.nonNull;
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.ConstraintHelper.hasConstraintOfType;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.VerticeHelper.buildVertice;
 
@@ -17,6 +18,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
@@ -74,6 +76,14 @@ public class EdgeHelper {
             .toPredicate())
         .object(childVertice)
         .pathTypes(new ArrayList<>(List.of(pathType)))
+        .build();
+  }
+
+  public static Edge buildEdge(Variable subject) {
+    return Edge.builder()
+        .predicate(() -> stringify(RDF.TYPE))
+        .object(buildVertice(subject, null))
+        .pathTypes(new ArrayList<>(List.of(PathType.SELECTED_FIELD)))
         .build();
   }
 

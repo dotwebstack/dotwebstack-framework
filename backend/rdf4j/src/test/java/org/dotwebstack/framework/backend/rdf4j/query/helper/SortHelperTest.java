@@ -139,7 +139,7 @@ public class SortHelperTest {
 
     NodeShape nodeShape2 = NodeShape.builder()
         .propertyShapes(Map.of("field2", propertyShape2))
-        .classes(Set.of(VF.createIRI("http://www.example.com#testType2")))
+        .classes(Set.of(Set.of(VF.createIRI("http://www.example.com#testType2"))))
         .build();
 
     PropertyShape propertyShape1 = PropertyShape.builder()
@@ -152,7 +152,7 @@ public class SortHelperTest {
 
     return NodeShape.builder()
         .propertyShapes(Map.of("field1", propertyShape1))
-        .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
+        .classes(Set.of(Set.of(VF.createIRI("http://www.example.com#testType"))))
         .build();
   }
 

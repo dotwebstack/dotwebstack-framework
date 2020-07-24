@@ -3,10 +3,10 @@ package org.dotwebstack.framework.backend.rdf4j.query.helper;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -69,7 +69,7 @@ public class QueryBuilderHelperTest {
     assertThat(triples.get(0)
         .getQueryString(),
         is(equalTo(
-            "{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> . }")));
+            "?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .")));
   }
 
   @Test
@@ -93,7 +93,7 @@ public class QueryBuilderHelperTest {
     // Assert
     assertThat(triples, hasSize(1));
     assertThat(triples.get(0)
-        .getQueryString(), is(equalTo("{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x12 . }")));
+        .getQueryString(), is(equalTo("?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x12 .")));
   }
 
   @Test
@@ -115,13 +115,15 @@ public class QueryBuilderHelperTest {
     List<GraphPattern> triples = QueryBuilderHelper.buildWhereTriples(vertice);
 
     // Assert
-    assertThat(triples, hasSize(1));
+    assertThat(triples, hasSize(2));
     String queryString = triples.get(0)
         .getQueryString();
-    assertThat(queryString, containsString(
-        "{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> . }"));
-    assertThat(queryString, containsString(" UNION "));
-    assertThat(queryString, containsString("{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x12 . }"));
+    assertTrue(triples.stream()
+        .allMatch(triple -> triple.getQueryString()
+            .equals(
+                "{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> . }")
+            || triple.getQueryString()
+                .equals("{ ?x0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x12 . }")));
   }
 
   @Test

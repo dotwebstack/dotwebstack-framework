@@ -1,17 +1,16 @@
 package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static java.util.Collections.singletonList;
-import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.joinExpressions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.query.model.AggregateType;
@@ -21,7 +20,6 @@ import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Aggregate;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -36,6 +34,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfObject;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Slf4j
 public class QueryBuilderHelper {
@@ -51,7 +50,6 @@ public class QueryBuilderHelper {
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
-    triplePatterns.addAll(buildTypeConstraintTriples(vertice));
     sortQueryElements(triplePatterns);
     return triplePatterns;
   }
@@ -73,21 +71,28 @@ public class QueryBuilderHelper {
     return triplePatterns;
   }
 
-  private static List<TriplePattern> buildTypeConstraintTriples(Vertice vertice) {
-    return vertice.getConstraints()
-        .stream()
-        .filter(constraint -> stringify(RDF.TYPE).equals(constraint.getPredicate()
-            .getQueryString()))
-        .flatMap(typeConstraint -> typeConstraint.getValues()
-            .stream()
-            .map(value -> {
-              if (value instanceof Value) {
-                return GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), (Value) value);
-              } else {
-                return GraphPatterns.tp(vertice.getSubject(), typeConstraint.getPredicate(), (RdfObject) value);
-              }
-            }))
-        .collect(Collectors.toList());
+  @SuppressWarnings("unchecked")
+  private static List<TriplePattern> buildTriple(Variable subject, RdfPredicate predicate, Object value) {
+    if (value instanceof Set) {
+      if (((Set<Value>) value).isEmpty()) {
+        return Collections.emptyList();
+      }
+      return ((Set<Value>) value).stream()
+          .map(singleValue -> buildTriple(subject, predicate, singleValue))
+          .collect(Collectors.toList());
+    } else if (value instanceof Value) {
+      return List.of(buildTriple(subject, predicate, (Value) value));
+    } else {
+      return List.of(buildTriple(subject, predicate, (RdfObject) value));
+    }
+  }
+
+  private static TriplePattern buildTriple(Variable subject, RdfPredicate predicate, RdfObject value) {
+    return GraphPatterns.tp(subject, predicate, value);
+  }
+
+  private static TriplePattern buildTriple(Variable subject, RdfPredicate predicate, Value value) {
+    return GraphPatterns.tp(subject, predicate, value);
   }
 
   private static List<GraphPattern> buildFilterTriples(List<GraphPattern> result, List<Filter> filtersWithVariables) {
@@ -107,7 +112,7 @@ public class QueryBuilderHelper {
   private static List<GraphPattern> buildConstraintTriples(Vertice vertice) {
     return vertice.getConstraints()
         .stream()
-        .flatMap(constraint -> Stream.of(buildTripleForConstraint(vertice.getSubject(), constraint)))
+        .flatMap(constraint -> buildTripleForConstraint(vertice.getSubject(), constraint).stream())
         .collect(Collectors.toList());
   }
 
@@ -211,33 +216,31 @@ public class QueryBuilderHelper {
     return subject;
   }
 
-  private static GraphPattern buildTripleForConstraint(Variable subject, Constraint constraint) {
+  @SuppressWarnings("unchecked")
+  private static List<GraphPattern> buildTripleForConstraint(Variable subject, Constraint constraint) {
     if (constraint.getValues()
         .size() == 1) {
-      Object value = constraint.getValues()
+      Object object = constraint.getValues()
           .iterator()
           .next();
-      if (value instanceof Value) {
-        return GraphPatterns.tp(subject, constraint.getPredicate(), (Value) value)
-            .optional(constraint.isOptional());
-      } else {
-        return GraphPatterns.tp(subject, constraint.getPredicate(), (RdfObject) value)
-            .optional(constraint.isOptional());
+      if (object instanceof Set) {
+        GraphPattern[] graphPatterns = ((Set<Object>) object).stream()
+            .flatMap(value -> buildTriple(subject, constraint.getPredicate(), value).stream())
+            .toArray(GraphPattern[]::new);
+        return List.of(GraphPatterns.union(graphPatterns));
       }
+      return buildTriple(subject, constraint.getPredicate(), object).stream()
+          .map(triplePattern -> (GraphPattern) triplePattern)
+          .collect(Collectors.toList());
     }
 
-    return GraphPatterns.union(constraint.getValues()
+    return constraint.getValues()
         .stream()
-        .map(value -> {
-          if (value instanceof Value) {
-            return GraphPatterns.tp(subject, constraint.getPredicate(), (Value) value)
-                .optional(constraint.isOptional());
-          } else {
-            return GraphPatterns.tp(subject, constraint.getPredicate(), (RdfObject) value)
-                .optional(constraint.isOptional());
-          }
-        })
-        .toArray(GraphPattern[]::new));
+        .flatMap(value -> buildTriple(subject, constraint.getPredicate(), value).stream())
+        .map(triplePattern -> (GraphPattern) triplePattern)
+        .filter(Objects::nonNull)
+        .map(triplePattern -> triplePattern.optional(constraint.isOptional()))
+        .collect(Collectors.toList());
   }
 
   private static Expression<?> buildFilterExpression(Filter filter, Variable subject) {

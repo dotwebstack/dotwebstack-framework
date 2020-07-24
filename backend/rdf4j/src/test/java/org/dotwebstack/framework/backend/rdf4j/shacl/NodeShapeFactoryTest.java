@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
@@ -92,7 +93,7 @@ class NodeShapeFactoryTest {
     assertThat(supplements.getNode()
         .getClasses()
         .iterator()
-        .next(), equalTo(SUPPLEMENT_CLASS));
+        .next(), equalTo(Set.of(SUPPLEMENT_CLASS)));
 
     PropertyShape ingredients = propertyShapes.get("ingredients");
 
@@ -110,7 +111,7 @@ class NodeShapeFactoryTest {
     assertThat(ingredients.getNode()
         .getClasses()
         .iterator()
-        .next(), equalTo(INGREDIENT_CLASS));
+        .next(), equalTo(Set.of(INGREDIENT_CLASS)));
   }
 
   @Test
