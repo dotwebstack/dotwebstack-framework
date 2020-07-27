@@ -136,12 +136,11 @@ public class NodeShapeFactory {
         .collect(Collectors.toSet());
   }
 
-  private static IRI getClassIri(Resource resource) {
+  static IRI getClassIri(Resource resource) {
     if (resource instanceof MemBNode) {
       MemStatementList subjectStatements = ((MemBNode) resource).getSubjectStatementList();
-      if (subjectStatements.size() == 1 && subjectStatements.get(0)
-          .getPredicate()
-          .equals(SHACL.CLASS)) {
+      if (subjectStatements.size() == 1 && Objects.equals(SHACL.CLASS, subjectStatements.get(0)
+          .getPredicate())) {
         MemValue value = subjectStatements.get(0)
             .getObject();
         if (value instanceof IRI) {
