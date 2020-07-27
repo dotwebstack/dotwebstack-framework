@@ -21,7 +21,7 @@ beer_brewery:123 a beer_def:Brewery ;
   beer_def:founded "2018-05-30T09:30:10.000+02:00"^^xsd:dateTime
 .
 
-address_id:1 a beer_def:Address ;
+address_id:1 a beer_def:Address, beer_def:Location;
   schema:addressLocality "Moordrecht" ;
   schema:latitude "51.98776545" ;
   schema:longitude "4.67090183" ;
@@ -37,7 +37,7 @@ beer_brewery:456 a beer_def:Brewery ;
   beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
 .
 
-address_id:2 a beer_def:Address ;
+address_id:2 a beer_def:Address, beer_def:Location;
   schema:addressLocality "Zundert" ;
   schema:latitude "51.46376967" ;
   schema:longitude "4.60958924" ;
@@ -52,7 +52,7 @@ beer_brewery:789 a beer_def:Brewery ;
   beer_def:founded "1870-01-01T00:00:0+02:00"^^xsd:dateTime
 .
 
-address_id:3 a beer_def:Address ;
+address_id:3 a beer_def:Address, beer_def:Location;
   schema:addressLocality "Zundert" ;
   schema:latitude "52.46376967" ;
   schema:longitude "6.60958924" ;

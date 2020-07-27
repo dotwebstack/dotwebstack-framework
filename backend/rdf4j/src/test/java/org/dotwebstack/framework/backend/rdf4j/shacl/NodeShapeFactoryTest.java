@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.pro
 import static org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactoryTest.loadShapeModel;
 import static org.eclipse.rdf4j.sail.memory.model.MemValue.EMPTY_LIST;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -14,7 +15,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
@@ -52,6 +52,8 @@ class NodeShapeFactoryTest {
   private static final IRI INGREDIENT_SHAPE = VF.createIRI("https://github.com/dotwebstack/beer/shapes#Ingredient");
 
   private static final IRI SUPPLEMENT_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Supplement");
+
+  private static final IRI TEST_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Test");
 
   private static final IRI SUPPLEMENT_SHAPE = VF.createIRI("https://github.com/dotwebstack/beer/shapes#Supplement");
 
@@ -120,7 +122,7 @@ class NodeShapeFactoryTest {
     assertThat(supplements.getNode()
         .getClasses()
         .iterator()
-        .next(), equalTo(Set.of(SUPPLEMENT_CLASS)));
+        .next(), hasItems(SUPPLEMENT_CLASS, TEST_CLASS));
 
     PropertyShape ingredients = propertyShapes.get("ingredients");
 
@@ -138,7 +140,7 @@ class NodeShapeFactoryTest {
     assertThat(ingredients.getNode()
         .getClasses()
         .iterator()
-        .next(), equalTo(Set.of(INGREDIENT_CLASS)));
+        .next(), hasItems(INGREDIENT_CLASS, TEST_CLASS));
   }
 
   @Test
