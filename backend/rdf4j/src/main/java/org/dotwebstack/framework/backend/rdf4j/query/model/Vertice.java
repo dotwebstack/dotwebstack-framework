@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -42,21 +43,21 @@ public class Vertice {
         .collect(Collectors.toSet());
   }
 
-  public void addConstraint(Constraint constraint) {
+  public void addConstraint(@NonNull Constraint constraint) {
     constraints.add(constraint);
   }
 
-  public void addEdge(Edge edge) {
+  public void addEdge(@NonNull Edge edge) {
     edges.add(edge);
   }
 
-  public void addFilter(Filter filter) {
+  public void addFilter(@NonNull Filter filter) {
     filters.add(filter);
   }
 
   public boolean hasTypeEdge() {
     return edges.stream()
-        .noneMatch(edge -> edge.getPredicate()
+        .anyMatch(edge -> edge.getPredicate()
             .getQueryString()
             .equals(stringify(RDF.TYPE)));
   }

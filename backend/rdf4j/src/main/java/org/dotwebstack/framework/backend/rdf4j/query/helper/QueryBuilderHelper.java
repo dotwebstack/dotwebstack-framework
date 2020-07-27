@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -74,9 +73,6 @@ public class QueryBuilderHelper {
   @SuppressWarnings("unchecked")
   private static List<TriplePattern> buildTriple(Variable subject, RdfPredicate predicate, Object value) {
     if (value instanceof Set) {
-      if (((Set<Value>) value).isEmpty()) {
-        return Collections.emptyList();
-      }
       return ((Set<Value>) value).stream()
           .map(singleValue -> buildTriple(subject, predicate, singleValue))
           .collect(Collectors.toList());

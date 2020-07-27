@@ -79,7 +79,7 @@ public class EdgeHelper {
         .build();
   }
 
-  public static Edge buildEdge(Variable subject) {
+  public static Edge buildEdge(@NonNull Variable subject) {
     return Edge.builder()
         .predicate(() -> stringify(RDF.TYPE))
         .object(buildVertice(subject, null))

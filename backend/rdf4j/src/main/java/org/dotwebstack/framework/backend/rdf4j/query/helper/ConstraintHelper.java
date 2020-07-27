@@ -106,7 +106,7 @@ public class ConstraintHelper {
       vertice.addConstraint(constraint);
 
       // add an edge to be able to query the types in the construct part
-      if (vertice.hasTypeEdge()) {
+      if (!vertice.hasTypeEdge()) {
         vertice.addEdge(buildEdge(outerQuery.var()));
       }
     });

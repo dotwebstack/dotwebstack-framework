@@ -105,8 +105,8 @@ public final class ValueFetcher extends SourceDataFetcher {
         .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
-                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getClasses())
-                : resultIsOfType(result, nodeShape.getClasses())));
+                ? resultIsOfOrType((Resource) result, source.getModel(), nodeShape.getClasses())
+                : resultIsOfOrType(result, nodeShape.getClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()
@@ -140,24 +140,31 @@ public final class ValueFetcher extends SourceDataFetcher {
     return Objects.equals(SORT_FIELD_ORDER_ASC, fieldOrder.toString());
   }
 
-  private boolean resultIsOfType(Resource resource, Model model, Set<Set<IRI>> orTypes) {
+  private boolean resultIsOfOrType(Resource resource, Model model, Set<Set<IRI>> orTypes) {
     return orTypes.stream()
-        .allMatch(andTypes -> andTypes.stream()
-            .anyMatch(type -> model.filter(resource, RDF.TYPE, null)
-                .stream()
-                .anyMatch(statement -> statement.getObject()
-                    .equals(type))));
+        .allMatch(andTypes -> resultIsOfAndType(resource, model, andTypes));
   }
 
-
-  private boolean resultIsOfType(Value value, Set<Set<IRI>> orTypes) {
+  private boolean resultIsOfOrType(Value value, Set<Set<IRI>> orTypes) {
     return orTypes.stream()
-        .allMatch(andTypes -> andTypes.stream()
-            .anyMatch(type -> listOf(((MemResource) value).getSubjectStatementList()).stream()
-                .anyMatch(statement -> statement.getPredicate()
-                    .equals(RDF.TYPE)
-                    && statement.getObject()
-                        .equals(type))));
+        .allMatch(andTypes -> resultisOfAndType((MemResource) value, andTypes));
+  }
+
+  private boolean resultIsOfAndType(Resource resource, Model model, Set<IRI> andTypes) {
+    return andTypes.stream()
+        .anyMatch(type -> model.filter(resource, RDF.TYPE, null)
+            .stream()
+            .anyMatch(statement -> statement.getObject()
+                .equals(type)));
+  }
+
+  private boolean resultisOfAndType(MemResource value, Set<IRI> andTypes) {
+    return andTypes.stream()
+        .anyMatch(type -> listOf(value.getSubjectStatementList()).stream()
+            .anyMatch(statement -> statement.getPredicate()
+                .equals(RDF.TYPE)
+                && statement.getObject()
+                    .equals(type)));
   }
 
   private boolean hasValidPropertyShapeConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape,
