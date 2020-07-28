@@ -298,7 +298,7 @@ public class VerticeFactoryTest {
     assertThat(constraint.getPredicate()
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
-    assertThat(vertice.getEdges(), hasSize(2));
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
         .get(0);
 
@@ -312,7 +312,7 @@ public class VerticeFactoryTest {
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
     assertThat(edge.getObject()
-        .getEdges(), hasSize(2));
+        .getEdges(), hasSize(1));
     edge = edge.getObject()
         .getEdges()
         .get(0);
@@ -327,7 +327,7 @@ public class VerticeFactoryTest {
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
     assertThat(edge.getObject()
-        .getEdges(), hasSize(2));
+        .getEdges(), hasSize(1));
     edge = edge.getObject()
         .getEdges()
         .get(0);
@@ -383,7 +383,7 @@ public class VerticeFactoryTest {
     assertThat(constraint.getPredicate()
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
 
-    assertThat(vertice.getEdges(), hasSize(2));
+    assertThat(vertice.getEdges(), hasSize(1));
     Edge edge = vertice.getEdges()
         .get(0);
 
