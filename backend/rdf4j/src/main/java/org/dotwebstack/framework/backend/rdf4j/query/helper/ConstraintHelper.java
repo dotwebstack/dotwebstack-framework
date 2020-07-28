@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.helper.EdgeHelper.fi
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.QueryType;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -101,13 +103,14 @@ public class ConstraintHelper {
    * Check which edges should be added to the where part of the query based on a sh:minCount property
    * of 1
    */
-  public static void buildConstraints(@NonNull Vertice vertice, @NonNull OuterQuery<?> outerQuery) {
+  public static void buildConstraints(@NonNull Vertice vertice, QueryType queryType,
+      @NonNull OuterQuery<?> outerQuery) {
     buildTypeConstraint(vertice.getNodeShape()).ifPresent(constraint -> {
       vertice.addConstraint(constraint);
 
       // add an edge to be able to query the types in the construct part
-      if (!vertice.hasTypeEdge()) {
-        vertice.addEdge(buildEdge(outerQuery.var()));
+      if (Objects.equals(QueryType.CONSTRUCT, queryType) && !vertice.hasTypeEdge()) {
+        vertice.addEdge(buildEdge(outerQuery.var(), PathType.CONSTRAINT));
       }
     });
     vertice.getNodeShape()
@@ -122,7 +125,7 @@ public class ConstraintHelper {
           Vertice childVertice = edge.getObject();
           NodeShape childNodeShape = childVertice.getNodeShape();
           if (childNodeShape != null) {
-            buildConstraints(childVertice, outerQuery);
+            buildConstraints(childVertice, queryType, outerQuery);
           }
         });
   }

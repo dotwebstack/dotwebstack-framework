@@ -79,11 +79,11 @@ public class EdgeHelper {
         .build();
   }
 
-  public static Edge buildEdge(@NonNull Variable subject) {
+  public static Edge buildEdge(@NonNull Variable subject, @NonNull PathType pathType) {
     return Edge.builder()
         .predicate(() -> stringify(RDF.TYPE))
         .object(buildVertice(subject, null))
-        .pathTypes(new ArrayList<>(List.of(PathType.SELECTED_FIELD)))
+        .pathTypes(new ArrayList<>(List.of(pathType)))
         .build();
   }
 

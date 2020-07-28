@@ -19,6 +19,7 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.QueryType;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -474,7 +475,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    ConstraintHelper.buildConstraints(vertice, outerQueryMock);
+    ConstraintHelper.buildConstraints(vertice, QueryType.CONSTRUCT, outerQueryMock);
 
     // Assert
     assertTrue(vertice.getConstraints()
@@ -510,7 +511,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    ConstraintHelper.buildConstraints(vertice, outerQueryMock);
+    ConstraintHelper.buildConstraints(vertice, QueryType.CONSTRUCT, outerQueryMock);
 
     // Assert
     assertThat(vertice.getConstraints(), hasSize(1));
