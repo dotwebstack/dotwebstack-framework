@@ -569,9 +569,11 @@ By adding `sh:hasValue` to a property shape, at least on of the triples in the d
 combination with the given value in order to meet this requirement. 
 
 ### 1.8.3 Class
-By adding a `sh:class` to a node shape, you can bind your node shape to a class. This means that a requirement is added to 
-query that will constrain the returned object to have and `rdf:type` relation with the given class. Multiple classes will
-result in multiple constraints and thus objects will have to have `rdf:type` relations with all given classes.
+By adding an `sh:class` to a node shape, you can bind your node shape to a class. This means that a constraint is added to the 
+query that will constrain the returned object to have an `rdf:type` relation with the given class. Multiple classes will
+result in multiple constraints and thus objects will have to have `rdf:type` relations with all given classes. By defining
+an `sh:or` around multiple `sh:class` constraints, it is possible to state that only one of the constraints has to be met
+in order for an object to fit the shape. 
 
 ## 1.9 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
