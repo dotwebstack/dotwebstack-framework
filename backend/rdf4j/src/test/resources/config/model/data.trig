@@ -13,7 +13,7 @@
 @prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 
-beer_brewery:123 a beer_def:Brewery ;
+beer_brewery:123 a beer_def:Brewery, beer_def:Abdij ;
   beer_def:identifier "123" ;
   schema:name "Brouwerij 1923"^^xsd:string ;
   beer_def:number 1;

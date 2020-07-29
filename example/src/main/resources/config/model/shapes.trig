@@ -37,14 +37,12 @@
 
   beer_sh:Brewery a sh:NodeShape ;
     sh:name "Brewery";
-    sh:or (
-      [
-        sh:class beer_def:Brewery ;
-      ]
-      [
-        sh:class beer_def:Abdij ;
-      ]
-    ) ;
+    sh:or([
+      sh:class beer_def:Brewery ;
+    ]
+    [
+      sh:class beer_def:Abdij ;
+    ]);
     dws:inherits beer_sh:Identifiable ;
     sh:property
       beer_sh:Brewery_localName ,
@@ -228,14 +226,7 @@
   beer_sh:Ingredient a sh:NodeShape ;
     sh:name "Ingredient";
     dws:inherits beer_sh:Identifiable ;
-    sh:or(
-        [
-          sh:class beer_def:Ingredient ;
-        ]
-        [
-          sh:class beer_def:Test ;
-        ]
-        ) ;
+    sh:class beer_def:Ingredient ;
     sh:nodeKind sh:IRI
   .
 
@@ -257,14 +248,7 @@
   beer_sh:Supplement a sh:NodeShape ;
     sh:name "Supplement";
     dws:inherits beer_sh:Identifiable ;
-    sh:or(
-    [
-      sh:class beer_def:Supplement ;
-    ]
-    [
-      sh:class beer_def:Test ;
-    ]
-    ) ;
+    sh:class beer_def:Supplement ;
     sh:nodeKind sh:IRI
   .
 }

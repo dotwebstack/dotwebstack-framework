@@ -11,7 +11,7 @@
 @prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 
 {
-  brewery_id:1 a beer_def:Brewery ;
+  brewery_id:1 a beer_def:Brewery, beer_def:Abdij ;
     beer_def:identifier "1" ;
     beer_def:brewmasters "Jeroen van Hees" ;
     beer_def:founded "2014-05-03"^^xsd:date ;

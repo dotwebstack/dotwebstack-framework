@@ -60,11 +60,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape)) {
+    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape) || hasUnion(query)) {
       return this.query.distinct()
           .getQueryString();
     }
     return this.query.getQueryString();
+  }
+
+  private boolean hasUnion(SelectQuery query) {
+    return query.getQueryString()
+        .contains("UNION");
   }
 
   private boolean distinctQuery(NodeShape nodeShape) {
