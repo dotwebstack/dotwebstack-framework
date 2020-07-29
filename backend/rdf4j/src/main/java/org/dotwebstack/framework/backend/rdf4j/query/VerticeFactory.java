@@ -36,6 +36,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.model.Filter;
 import org.dotwebstack.framework.backend.rdf4j.query.model.FilterRule;
 import org.dotwebstack.framework.backend.rdf4j.query.model.OrderBy;
 import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.QueryType;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -68,7 +69,7 @@ public class VerticeFactory {
   public Vertice buildConstructQuery(@NonNull NodeShape nodeShape, @NonNull List<SelectedField> fields,
       @NonNull OuterQuery<?> query) {
     Vertice root = createVertice(nodeShape, fields, null, query);
-    buildConstraints(root, query);
+    buildConstraints(root, QueryType.CONSTRUCT, query);
     return root;
   }
 
@@ -80,7 +81,7 @@ public class VerticeFactory {
     orderBys.forEach(orderBy -> addOrderBy(root, nodeShape, query, orderBy));
     filterRules.forEach(filterRule -> addFilterRule(root, nodeShape, query, filterRule));
 
-    buildConstraints(root, query);
+    buildConstraints(root, QueryType.SELECT, query);
     return root;
   }
 

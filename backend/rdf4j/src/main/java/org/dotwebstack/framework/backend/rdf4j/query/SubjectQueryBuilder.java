@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.NonNull;
@@ -19,6 +21,8 @@ import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
@@ -60,11 +64,22 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     root.getOrderables()
         .forEach(query::orderBy);
 
-    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape)) {
+    if (distinctQuery(sparqlDirective) || distinctQuery(nodeShape) || hasOrConstraint(root)) {
       return this.query.distinct()
           .getQueryString();
     }
     return this.query.getQueryString();
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean hasOrConstraint(Vertice root) {
+    return root.getConstraints()
+        .stream()
+        .filter(constraint -> Objects.equals(constraint.getPredicate()
+            .getQueryString(), stringify(RDF.TYPE)))
+        .anyMatch(typeConstraint -> typeConstraint.getValues()
+            .stream()
+            .anyMatch(orTypes -> orTypes instanceof Set && ((Set<IRI>) orTypes).size() > 1));
   }
 
   private boolean distinctQuery(NodeShape nodeShape) {

@@ -139,7 +139,7 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_ForSimpleBreweryNodeShape() {
     // Arrange
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -157,7 +157,7 @@ public class VerticeFactoryTest {
         .getQueryString(), is(stringify(RDF.TYPE)));
     assertThat(constraint.getValues()
         .iterator()
-        .next(), is(equalTo(BREWERY_TARGET_CLASS)));
+        .next(), is(equalTo(Set.of(BREWERY_TARGET_CLASS))));
   }
 
   @Test
@@ -173,7 +173,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -208,7 +208,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -248,7 +248,7 @@ public class VerticeFactoryTest {
     NodeShape ingredientShape = NodeShape.builder()
         .name("Ingredient")
         .propertyShapes(ImmutableMap.of("name", ingredientName))
-        .classes(Set.of(INGREDIENTS_TARGET_CLASS))
+        .classes(Set.of(Set.of(INGREDIENTS_TARGET_CLASS)))
         .build();
 
     PropertyShape beerIngredients = PropertyShape.builder()
@@ -263,7 +263,7 @@ public class VerticeFactoryTest {
     NodeShape beersShape = NodeShape.builder()
         .name("Beer")
         .propertyShapes(ImmutableMap.of("ingredients", beerIngredients))
-        .classes(Set.of(BEERS_TARGET_CLASS))
+        .classes(Set.of(Set.of(BEERS_TARGET_CLASS)))
         .build();
 
     PropertyShape breweryBeers = PropertyShape.builder()
@@ -278,7 +278,7 @@ public class VerticeFactoryTest {
 
     when(nodeShape.getPropertyShape("beers")).thenReturn(breweryBeers);
     when(nodeShape.getChildNodeShape(any())).thenReturn(Optional.of(beersShape));
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
 
     SelectQuery query = Queries.SELECT();
 
@@ -364,7 +364,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -416,7 +416,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(BREWERY_NAME_FIELD)).thenReturn(breweryName);
-    when(nodeShape.getClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+    when(nodeShape.getClasses()).thenReturn(Set.of(Set.of(BREWERY_TARGET_CLASS)));
     SelectQuery query = Queries.SELECT();
 
     when(selectedField.getName()).thenReturn(BREWERY_NAME_FIELD);
@@ -428,11 +428,17 @@ public class VerticeFactoryTest {
     Vertice vertice = verticeFactory.buildConstructQuery(nodeShape, fields, query);
 
     // Assert
-    assertThat(vertice.getEdges(), hasSize(1));
-    Edge edge = vertice.getEdges()
+    assertThat(vertice.getEdges(), hasSize(2));
+    Edge nameEdge = vertice.getEdges()
         .get(0);
-    assertThat(edge.getPredicate()
+    assertThat(nameEdge.getPredicate()
         .getQueryString(), is(stringify(BREWERY_LABEL)));
+
+    Edge typeEdge = vertice.getEdges()
+        .get(1);
+    assertThat(typeEdge.getPredicate()
+        .getQueryString(), is(stringify(RDF.TYPE)));
+
     assertThat(vertice.getConstraints(), hasSize(1));
     Constraint constraint = vertice.getConstraints()
         .iterator()

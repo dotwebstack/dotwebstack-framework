@@ -34,7 +34,7 @@ public class EdgeHelperTest {
             .build()))
         .build();
     NodeShape shape = NodeShape.builder()
-        .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
+        .classes(Set.of(Set.of(VF.createIRI("http://www.example.com#testType"))))
         .build();
 
     Assertions.assertTrue(EdgeHelper.hasEqualTargetClass(vertice, shape));
@@ -50,7 +50,7 @@ public class EdgeHelperTest {
             .build()))
         .build();
     NodeShape shape = NodeShape.builder()
-        .classes(Set.of(VF.createIRI("http://www.example.com#testType")))
+        .classes(Set.of(Set.of(VF.createIRI("http://www.example.com#testType"))))
         .build();
 
     assertFalse(EdgeHelper.hasEqualTargetClass(vertice, shape));

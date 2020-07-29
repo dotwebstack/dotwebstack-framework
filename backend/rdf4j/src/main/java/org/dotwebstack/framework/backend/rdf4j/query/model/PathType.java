@@ -10,13 +10,13 @@ public enum PathType {
 
   private boolean reusablePaths;
 
-  private boolean visible;
+  private boolean visibleInConstruct;
 
   private boolean required;
 
-  PathType(boolean reusablePaths, boolean visible, boolean required) {
+  PathType(boolean reusablePaths, boolean visibleInConstruct, boolean required) {
     this.reusablePaths = reusablePaths;
-    this.visible = visible;
+    this.visibleInConstruct = visibleInConstruct;
     this.required = required;
   }
 
@@ -25,7 +25,7 @@ public enum PathType {
   }
 
   public boolean isVisible() {
-    return this.visible;
+    return this.visibleInConstruct;
   }
 
   public boolean isRequired() {

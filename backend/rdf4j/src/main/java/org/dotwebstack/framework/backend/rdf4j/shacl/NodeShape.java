@@ -22,8 +22,11 @@ public final class NodeShape {
 
   private final Resource identifier;
 
+  /**
+   * The entries in the outer set are joined by AND, the entries in the inner set are joined by OR.
+   */
   @Builder.Default
-  private final Set<IRI> classes = new HashSet<>();
+  private final Set<Set<IRI>> classes = new HashSet<>();
 
   private final IRI parent;
 

@@ -19,6 +19,7 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Constraint;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Edge;
 import org.dotwebstack.framework.backend.rdf4j.query.model.PathType;
+import org.dotwebstack.framework.backend.rdf4j.query.model.QueryType;
 import org.dotwebstack.framework.backend.rdf4j.query.model.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.shacl.ConstraintType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -120,7 +121,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act & Assert
-    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, Set.of(restaurantIri)));
+    assertFalse(ConstraintHelper.hasConstraintOfType(vertice, Set.of(Set.of(restaurantIri))));
   }
 
   @Test
@@ -134,7 +135,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act & Assert
-    assertTrue(ConstraintHelper.hasConstraintOfType(vertice, Set.of(breweryIri)));
+    assertTrue(ConstraintHelper.hasConstraintOfType(vertice, Set.of(Set.of(breweryIri))));
   }
 
   @Test
@@ -152,7 +153,7 @@ public class ConstraintHelperTest {
   void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithSingleType() {
     // Arrange
     NodeShape nodeShape = NodeShape.builder()
-        .classes(Set.of(breweryIri))
+        .classes(Set.of(Set.of(breweryIri)))
         .build();
 
     // Act
@@ -162,15 +163,17 @@ public class ConstraintHelperTest {
     // Assert
     assertThat(constraint.getPredicate()
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
-    assertThat(constraint.getValues(), is(equalTo(Set.of(breweryIri))));
+    assertThat(constraint.getValues(), is(equalTo(Set.of(Set.of(breweryIri)))));
     assertThat(constraint.getConstraintType(), is(equalTo(ConstraintType.RDF_TYPE)));
   }
 
   @Test
   void buildTypeConstraint_ReturnsConstraint_forNodeShapeWithMultipleTypes() {
     // Arrange
+    Set<Set<IRI>> classes = Set.of(Set.of(breweryIri, restaurantIri));
+
     NodeShape nodeShape = NodeShape.builder()
-        .classes(Set.of(breweryIri, restaurantIri))
+        .classes(classes)
         .build();
 
     // Act
@@ -180,7 +183,7 @@ public class ConstraintHelperTest {
     // Assert
     assertThat(constraint.getPredicate()
         .getQueryString(), is(equalTo(stringify(RDF.TYPE))));
-    assertThat(constraint.getValues(), is(equalTo(Set.of(breweryIri, restaurantIri))));
+    assertThat(constraint.getValues(), is(equalTo(classes)));
     assertThat(constraint.getConstraintType(), is(equalTo(ConstraintType.RDF_TYPE)));
   }
 
@@ -472,7 +475,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    ConstraintHelper.buildConstraints(vertice, outerQueryMock);
+    ConstraintHelper.buildConstraints(vertice, QueryType.CONSTRUCT, outerQueryMock);
 
     // Assert
     assertTrue(vertice.getConstraints()
@@ -482,21 +485,24 @@ public class ConstraintHelperTest {
   @Test
   void buildConstraints_ReturnsVerticeWithConstraints_ForConstrainedNodeShape() {
     // Arrange
+    when(outerQueryMock.var()).thenReturn(variableMock);
+
     NodeShape beerShape = NodeShape.builder()
         .name("Beer")
         .propertyShapes(Collections.emptyMap())
-        .classes(Set.of(beerIri))
+        .classes(Set.of(Set.of(beerIri)))
         .build();
 
     NodeShape breweryShape = NodeShape.builder()
         .name("Brewery")
         .propertyShapes(Collections.emptyMap())
-        .classes(Set.of(breweryIri))
+        .classes(Set.of(Set.of(breweryIri)))
         .build();
     Vertice vertice = Vertice.builder()
         .edges(List.of(Edge.builder()
             .propertyShape(PropertyShape.builder()
                 .build())
+            .predicate(() -> stringify(RDF.TYPE))
             .object(Vertice.builder()
                 .nodeShape(beerShape)
                 .build())
@@ -505,7 +511,7 @@ public class ConstraintHelperTest {
         .build();
 
     // Act
-    ConstraintHelper.buildConstraints(vertice, outerQueryMock);
+    ConstraintHelper.buildConstraints(vertice, QueryType.CONSTRUCT, outerQueryMock);
 
     // Assert
     assertThat(vertice.getConstraints(), hasSize(1));
