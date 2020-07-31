@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.CONTAINS;
 import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
 
 import com.google.common.collect.ImmutableList;
@@ -60,6 +61,10 @@ public class FilterHelper {
     // filtering with en language tag will result in "FILTER LANG( ?x0 ) = 'en'"
     if (LANGUAGE.equals(operator)) {
       return Expressions.equals(Expressions.function(LANG, subject), operand);
+    }
+    // filtering with contains will result in "FILTER CONTAINS( ?x0 ,'str')
+    if (FilterOperator.CONTAINS.equals(operator)) {
+      return Expressions.function(CONTAINS, subject, operand);
     }
 
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);
