@@ -6,12 +6,14 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LANGUAGE;
+import static org.dotwebstack.framework.core.directives.FilterOperator.LIKE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.CONTAINS;
 import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
+import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LCASE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +67,11 @@ public class FilterHelper {
     // filtering with contains will result in "FILTER CONTAINS( ?x0 ,'str')
     if (FilterOperator.CONTAINS.equals(operator)) {
       return Expressions.function(CONTAINS, subject, operand);
+    }
+    // case-insensitive filtering
+    // with 'like' will result in "FILTER CONTAINS( LCASE(?x0) , LCASE('str'))
+    if (LIKE.equals(operator)) {
+      return Expressions.function(CONTAINS, Expressions.function(LCASE, subject), Expressions.function(LCASE, operand));
     }
 
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);
