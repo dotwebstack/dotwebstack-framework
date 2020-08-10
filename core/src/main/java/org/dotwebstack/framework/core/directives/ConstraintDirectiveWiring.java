@@ -27,6 +27,7 @@ public class ConstraintDirectiveWiring implements AutoRegisteredSchemaDirectiveW
       constraintValidator.validateSchema(DirectiveContainerObject.builder()
           .container(argument)
           .value(argument.getDefaultValue())
+          .fieldDefinition(environment.getFieldDefinition())
           .build());
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
@@ -42,6 +43,7 @@ public class ConstraintDirectiveWiring implements AutoRegisteredSchemaDirectiveW
       constraintValidator.validateSchema(DirectiveContainerObject.builder()
           .container(inputObjectField)
           .value(inputObjectField.getDefaultValue())
+          .fieldDefinition(environment.getFieldDefinition())
           .build());
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);

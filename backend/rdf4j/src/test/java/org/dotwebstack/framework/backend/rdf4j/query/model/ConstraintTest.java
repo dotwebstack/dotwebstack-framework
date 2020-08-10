@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.hamcrest.MatcherAssert.assertThat;

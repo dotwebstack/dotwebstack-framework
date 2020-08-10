@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPro
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredProperty;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
+import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -30,6 +32,8 @@ import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.eclipse.rdf4j.sail.memory.model.MemStatement;
+import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
+import org.eclipse.rdf4j.sail.memory.model.MemValue;
 
 public class NodeShapeFactory {
 
@@ -50,10 +54,19 @@ public class NodeShapeFactory {
     NodeShape nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
-        .classes(Models.getPropertyIRIs(shapeModel, identifier, SHACL.CLASS))
+        .classes(Models.getPropertyIRIs(shapeModel, identifier, SHACL.CLASS)
+            .stream()
+            .map(Set::of)
+            .collect(Collectors.toSet()))
         .parent(findOptionalPropertyIri(shapeModel, identifier, Rdf4jConstants.DOTWEBSTACK_INHERITS).orElse(null))
         .propertyShapes(propertyShapes)
         .build();
+
+    Set<IRI> orClasses = getOrClassConstraints(shapeModel, identifier);
+    if (!orClasses.isEmpty()) {
+      nodeShape.getClasses()
+          .add(orClasses);
+    }
 
     nodeShapeMap.put(identifier, nodeShape);
 
@@ -107,8 +120,39 @@ public class NodeShapeFactory {
         });
   }
 
-  private static List<Resource> getOrPropertyShapes(Model shapeModel, Resource nodeShape) {
-    return Models.getPropertyResources(shapeModel, nodeShape, SHACL.OR)
+  private static List<Resource> getOrPropertyShapes(Model shapeModel, Resource identifier) {
+    return getShaclOrShapes(shapeModel, identifier).stream()
+        .filter(NodeShapeFactory::hasPathPropery)
+        .collect(Collectors.toList());
+  }
+
+  private static Set<IRI> getOrClassConstraints(Model shapeModel, Resource identifier) {
+    return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
+        .stream()
+        .map(or -> unwrapOrStatements(shapeModel, or))
+        .flatMap(List::stream)
+        .map(NodeShapeFactory::getClassIri)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+  }
+
+  static IRI getClassIri(Resource resource) {
+    if (resource instanceof MemBNode) {
+      MemStatementList subjectStatements = ((MemBNode) resource).getSubjectStatementList();
+      if (subjectStatements.size() == 1 && Objects.equals(SHACL.CLASS, subjectStatements.get(0)
+          .getPredicate())) {
+        MemValue value = subjectStatements.get(0)
+            .getObject();
+        if (value instanceof IRI) {
+          return (IRI) value;
+        }
+      }
+    }
+    return null;
+  }
+
+  private static List<Resource> getShaclOrShapes(Model shapeModel, Resource identifier) {
+    return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
         .stream()
         .map(or -> unwrapOrStatements(shapeModel, or).stream()
             .peek(resource ->
@@ -117,7 +161,7 @@ public class NodeShapeFactory {
              * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
              * to the model for later reuse.
              */
-            shapeModel.filter(nodeShape, null, null)
+            shapeModel.filter(identifier, null, null)
                 .stream()
                 .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
                 .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
@@ -136,6 +180,12 @@ public class NodeShapeFactory {
             .collect(Collectors.toList()))
         .flatMap(List::stream)
         .collect(Collectors.toList());
+  }
+
+  private static boolean hasPathPropery(Resource orShape) {
+    return listOf(((MemBNode) orShape).getSubjectStatementList()).stream()
+        .map(MemStatement::getPredicate)
+        .anyMatch(SHACL.PATH::equals);
   }
 
   private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape,

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.model;
 
 import lombok.Builder;
 import lombok.Data;

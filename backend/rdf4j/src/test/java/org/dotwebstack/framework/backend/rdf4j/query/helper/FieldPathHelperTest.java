@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.query.context;
+package org.dotwebstack.framework.backend.rdf4j.query.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

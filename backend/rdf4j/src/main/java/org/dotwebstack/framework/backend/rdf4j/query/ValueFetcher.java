@@ -100,13 +100,13 @@ public final class ValueFetcher extends SourceDataFetcher {
     Set<Value> values = propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject());
     Stream<Value> stream = values.stream()
-        .filter(result -> validPropertyShapeConstraints(result, nodeShape, propertyShape, source.getModel(),
+        .filter(result -> hasValidPropertyShapeConstraints(result, nodeShape, propertyShape, source.getModel(),
             new HashSet<String>()))
         .filter(result -> nodeShape == null || nodeShape.getClasses()
             .isEmpty() || result instanceof SimpleLiteral
             || (result instanceof Resource
-                ? resultIsOfType((Resource) result, source.getModel(), nodeShape.getClasses())
-                : resultIsOfType(result, nodeShape.getClasses())));
+                ? resultIsOfAndType((Resource) result, source.getModel(), nodeShape.getClasses())
+                : resultIsOfAndType(result, nodeShape.getClasses())));
 
     Optional<GraphQLArgument> sortArgumentOptional = environment.getFieldDefinition()
         .getArguments()
@@ -140,25 +140,34 @@ public final class ValueFetcher extends SourceDataFetcher {
     return Objects.equals(SORT_FIELD_ORDER_ASC, fieldOrder.toString());
   }
 
-  private boolean resultIsOfType(Resource resource, Model model, Set<IRI> types) {
-    return model.filter(resource, RDF.TYPE, null)
-        .stream()
-        .anyMatch(statement -> types.stream()
-            .anyMatch(type -> statement.getObject()
+  private boolean resultIsOfAndType(Resource resource, Model model, Set<Set<IRI>> andTypes) {
+    return andTypes.stream()
+        .allMatch(type -> resultIsOfOrType(resource, model, type));
+  }
+
+  private boolean resultIsOfAndType(Value value, Set<Set<IRI>> andTypes) {
+    return andTypes.stream()
+        .allMatch(type -> resultisOfOrType((MemResource) value, type));
+  }
+
+  private boolean resultIsOfOrType(Resource resource, Model model, Set<IRI> orTypes) {
+    return orTypes.stream()
+        .anyMatch(type -> model.filter(resource, RDF.TYPE, null)
+            .stream()
+            .anyMatch(statement -> statement.getObject()
                 .equals(type)));
   }
 
-
-  private boolean resultIsOfType(Value value, Set<IRI> types) {
-    return listOf(((MemResource) value).getSubjectStatementList()).stream()
-        .anyMatch(statement -> statement.getPredicate()
-            .equals(RDF.TYPE)
-            && types.stream()
-                .anyMatch(type -> statement.getObject()
+  private boolean resultisOfOrType(MemResource value, Set<IRI> orTypes) {
+    return orTypes.stream()
+        .anyMatch(type -> listOf(value.getSubjectStatementList()).stream()
+            .anyMatch(statement -> statement.getPredicate()
+                .equals(RDF.TYPE)
+                && statement.getObject()
                     .equals(type)));
   }
 
-  private boolean validPropertyShapeConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape,
+  private boolean hasValidPropertyShapeConstraints(Object value, NodeShape nodeShape, PropertyShape propertyShape,
       Model model, HashSet<String> checked) {
 
     checked.add(getKey(nodeShape, propertyShape));
@@ -166,16 +175,16 @@ public final class ValueFetcher extends SourceDataFetcher {
         .entrySet()
         .stream()
         .allMatch((entry) -> {
-          boolean valid = validConstraint(entry.getKey(), entry.getValue(), value);
+          boolean valid = hasValidConstraint(entry.getKey(), entry.getValue(), value);
           NodeShape targetNode = propertyShape.getNode();
           if (valid && value instanceof Resource && targetNode != null) {
-            return validNodeShapeConstraints((Resource) value, targetNode, model, checked);
+            valid = hasValidNodeShapeConstraints((Resource) value, targetNode, model, checked);
           }
           return valid;
         });
   }
 
-  private boolean validNodeShapeConstraints(Resource subject, NodeShape nodeShape, Model model,
+  private boolean hasValidNodeShapeConstraints(Resource subject, NodeShape nodeShape, Model model,
       HashSet<String> checked) {
     return nodeShape.getPropertyShapes()
         .values()
@@ -184,9 +193,16 @@ public final class ValueFetcher extends SourceDataFetcher {
         .allMatch(propertyShape -> {
           Set<Value> values = propertyShape.getPath()
               .resolvePath(model, subject);
-          return values.stream()
-              .allMatch(
-                  childValue -> validPropertyShapeConstraints(childValue, nodeShape, propertyShape, model, checked));
+
+          boolean valid;
+          if (values.isEmpty()) {
+            valid = hasValidPropertyShapeConstraints(null, nodeShape, propertyShape, model, checked);
+          } else {
+            valid = values.stream()
+                .anyMatch(childValue -> hasValidPropertyShapeConstraints(childValue, nodeShape, propertyShape, model,
+                    checked));
+          }
+          return valid;
         });
   }
 
@@ -195,7 +211,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     return nodeShapeKey + "_" + propertyShape.getName();
   }
 
-  private boolean validConstraint(ConstraintType type, Object constraintValue, Object value) {
+  private boolean hasValidConstraint(ConstraintType type, Object constraintValue, Object value) {
     if (type == ConstraintType.HASVALUE) {
       return Objects.equals(Objects.toString(constraintValue), Objects.toString(value));
     }

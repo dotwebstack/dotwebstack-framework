@@ -329,25 +329,25 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void openApiRequest_ReturnsUnexpectedError_ForInvalidPageSize() {
+  void openApiRequest_400_ForInvalidPageSize() {
     this.webClient.get()
         .uri("/breweries?pageSize=3")
         .exchange()
         .expectStatus()
-        .is5xxServerError()
+        .is4xxClientError()
         .expectBody(String.class)
-        .value(containsString("An error occured from which the server was unable to recover"));
+        .value(containsString("Validation of request parameters failed"));
   }
 
   @Test
-  void openApiRequest_ReturnsUnexpectedError_ForInvalidPage() {
+  void openApiRequest_400_ForInvalidPage() {
     this.webClient.get()
         .uri("/breweries?page=0")
         .exchange()
         .expectStatus()
-        .is5xxServerError()
+        .is4xxClientError()
         .expectBody(String.class)
-        .value(containsString("An error occured from which the server was unable to recover"));
+        .value(containsString("Validation of request parameters failed"));
   }
 
   @Test

@@ -110,7 +110,7 @@ public class JsonResponseMapper {
          * After the object is mapped, we check if it was a composed schema. If that is the case one layer
          * is unwrapped in the response. This layer only exist in the schema, not in the response.
          */
-        if (!writeContext.getResponseObject()
+        if (object != null && !writeContext.getResponseObject()
             .getSummary()
             .getComposedOf()
             .isEmpty()) {
@@ -169,17 +169,27 @@ public class JsonResponseMapper {
       return null;
     }
 
-    Map<String, Object> results = new HashMap<>();
+    Map<String, Object> result = new HashMap<>();
     parentContext.getResponseObject()
         .getSummary()
         .getComposedOf()
         .forEach(composedSchema -> {
           ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
-          mergeComposedResponse(path, results, writeContext, writeContext.getResponseObject()
+          mergeComposedResponse(path, result, writeContext, writeContext.getResponseObject()
               .getIdentifier());
         });
 
-    return results;
+
+    return createResponseObject(result);
+  }
+
+  private Object createResponseObject(Map<String, Object> result) {
+    if (result.isEmpty() || result.values()
+        .stream()
+        .allMatch(Objects::isNull)) {
+      return null;
+    }
+    return result;
   }
 
   String removeRoot(String path) {
@@ -218,15 +228,20 @@ public class JsonResponseMapper {
         .getChildren()
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
-
-          boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, childSchema.getIdentifier()));
-          Object object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
-
-          if (Objects.nonNull(object) || writeContext.isSchemaRequiredNillable() || isExpanded) {
-            result.put(childSchema.getIdentifier(), convertType(writeContext, object));
-          }
+          addDataToResponse(path, result, childSchema.getIdentifier(), writeContext);
         });
-    return result;
+
+    return createResponseObject(result);
+  }
+
+  private void addDataToResponse(String path, Map<String, Object> response, String identifier,
+      ResponseWriteContext writeContext) {
+    boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, identifier));
+    Object object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
+
+    if (Objects.nonNull(object) || (writeContext.isSchemaRequiredNillable() || isExpanded)) {
+      response.put(identifier, convertType(writeContext, object));
+    }
   }
 
   private String childPath(String path, String identifier) {
@@ -268,11 +283,8 @@ public class JsonResponseMapper {
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
-    unwrapChildSchema(parentContext).forEach(child -> {
-      Object object = mapDataToResponse(child, path);
-      result.put(child.getResponseObject()
-          .getIdentifier(), object);
-    });
+    unwrapChildSchema(parentContext).forEach(child -> addDataToResponse(path, result, child.getResponseObject()
+        .getIdentifier(), child));
 
     // for a composed envelope schema, we need to merge the underlying schema's into one result
     unwrapComposedSchema(parentContext).forEach(child -> {
@@ -280,7 +292,8 @@ public class JsonResponseMapper {
           .getIdentifier();
       mergeComposedResponse(path, result, child, identifier);
     });
-    return result;
+
+    return createResponseObject(result);
   }
 
   @SuppressWarnings("unchecked")
@@ -295,7 +308,7 @@ public class JsonResponseMapper {
     if ((result.containsKey(identifier))) {
       ((Map<String, Object>) result.get(identifier)).putAll(childResponse);
     } else {
-      result.put(identifier, childResponse);
+      addDataToResponse(path, result, identifier, child);
     }
   }
 

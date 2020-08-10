@@ -82,6 +82,10 @@ public class JexlHelper {
     return jexlContext;
   }
 
+  public static void updateContext(@NonNull JexlContext context, @NonNull Map<String, Object> requestArguments) {
+    requestArguments.forEach((key, value) -> context.set(ARGUMENT_PREFIX + key, value));
+  }
+
   public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, String fallbackString,
       @NonNull JexlContext context, @NonNull Class<T> clazz) {
     try {
@@ -136,4 +140,5 @@ public class JexlHelper {
       return evaluateExpression(expressionString, context, clazz);
     }
   }
+
 }

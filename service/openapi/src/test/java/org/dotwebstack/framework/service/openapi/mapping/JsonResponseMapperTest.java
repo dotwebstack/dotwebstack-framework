@@ -419,8 +419,9 @@ class JsonResponseMapperTest {
     assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
+  // Empty arrays, when not expanded, are by default not retrieved from the response
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NotFoundException {
+  void toResponse_throwsNotFoundException_forNonRequiredNonNillableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -441,15 +442,12 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":{}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
-  void toResponse_returnsNoElement_forNonRequiredNullableEmptyArray() throws NotFoundException {
+  void toResponse_returnsNoElement_forNonRequiredNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -470,15 +468,12 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":{}}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
-  void toResponse_returnsEmptyList_forRequiredNonNullableEmptyArray() throws NotFoundException {
+  void toResponse_returnsEmptyList_forRequiredNonNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -507,7 +502,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_returnsNull_forRequiredNullableEmptyArray() throws NotFoundException {
+  void toResponse_throwsNotFoundException_forRequiredNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -528,11 +523,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    // Assert
-    assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
+    // Act & Assert
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
