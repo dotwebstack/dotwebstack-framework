@@ -408,8 +408,12 @@ The `@filter` directive takes two arguments, the `field` and the `operator` argu
 sets the field to which the filter is applied, in the example above this is the `name` property of the `Brewery`. 
 If the directive is assigned to a nonexistent field, an exception will be thrown at compile time. The `operator` 
 argument is used to describe the filter condition that is used to set the relation between the field and the value provided
-by the user. The following operators are currently supported: `=`, `!=`, `<`, `<=`, `>`, `>=`. It is possible 
+by the user. The following operators are currently supported: `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains` and `like`. It is possible 
 to omit the `operator` argument, in that case the default value (`=`) will be used.
+
+Relational operators are self-explanatory, `contains` and `like` operators are explanation below: 
+The `contains` operator indicates a case-sensitive search for any of the specified words or phrases within a particular `field`.
+The `like` operator indicates a case-insensitive search for any of the specified words or phrases within a particular `field`.
 
 It is also possible to add a filter to a nested input object, as illustrated in the example below. While the example
 shows a nesting of only one layer, there is currently no restriction in how deep you can nest your `@filter` directives. 
