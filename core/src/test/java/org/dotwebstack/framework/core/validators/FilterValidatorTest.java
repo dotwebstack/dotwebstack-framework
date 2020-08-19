@@ -87,7 +87,7 @@ class FilterValidatorTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"=", "!=", "<", "<=", ">", ">=", "contains", "like"})
+  @ValueSource(strings = {"=", "!=", "<", "<=", ">", ">=", "contains", "iContains"})
   void checkOperator_DoesNotThrowException_ForValidOperator(String operatorValue) {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()

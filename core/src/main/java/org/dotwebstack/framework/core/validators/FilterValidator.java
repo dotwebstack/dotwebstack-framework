@@ -123,7 +123,7 @@ public class FilterValidator {
         .isPresent()) {
       throw new DirectiveValidationException(
           "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
-              + " '>=', contains, like",
+              + " '>=', contains, iContains",
           argument.getValue(), name);
     }
   }

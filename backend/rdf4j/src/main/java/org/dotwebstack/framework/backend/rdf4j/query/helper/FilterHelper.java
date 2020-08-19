@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LANGUAGE;
-import static org.dotwebstack.framework.core.directives.FilterOperator.LIKE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
@@ -69,8 +68,8 @@ public class FilterHelper {
       return Expressions.function(CONTAINS, subject, operand);
     }
     // case-insensitive filtering
-    // with 'like' will result in "FILTER CONTAINS( LCASE(?x0) , LCASE('str'))
-    if (LIKE.equals(operator)) {
+    // with 'iContains' will result in "FILTER CONTAINS( LCASE(?x0) , LCASE('str'))
+    if (FilterOperator.ICONTAINS.equals(operator)) {
       return Expressions.function(CONTAINS, Expressions.function(LCASE, subject), Expressions.function(LCASE, operand));
     }
 
