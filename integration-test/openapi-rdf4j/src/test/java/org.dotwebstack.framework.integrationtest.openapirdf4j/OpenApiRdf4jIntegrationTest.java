@@ -129,6 +129,22 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  void openApiRequest_ReturnsBrewery_withCaseInsensitiveSearchNameFromQueryParam() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?searchName=BROUWERIJ")
+        .exchange()
+        .expectHeader()
+        .contentType("application/hal+json")
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_searchName.json");
+  }
+
+  @Test
   void openApiRequest_ReturnsBrewery_withSearchPostalCodeFromQueryParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()
