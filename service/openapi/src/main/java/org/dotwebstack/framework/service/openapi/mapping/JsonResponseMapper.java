@@ -152,10 +152,7 @@ public class JsonResponseMapper {
       if (summary.isEnvelope()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
-      if (!writeContext.getResponseObject()
-          .getSummary()
-          .getComposedOf()
-          .isEmpty()) {
+      if (writeContext.isComposedOf()) {
         return mapComposedDataToResponse(writeContext, newPath);
       }
       return mapObjectDataToResponse(writeContext, newPath);
@@ -179,16 +176,31 @@ public class JsonResponseMapper {
               .getIdentifier());
         });
 
-
-    return createResponseObject(result);
+    return createResponseObject(result, parentContext, path);
   }
 
-  private Object createResponseObject(Map<String, Object> result) {
-    if (result.isEmpty() || result.values()
-        .stream()
-        .allMatch(Objects::isNull)) {
+  private Map<String, Object> createResponseObject(Map<String, Object> result, ResponseWriteContext parentContext,
+      String path) {
+    if (result.isEmpty()) {
       return null;
     }
+    List<ResponseWriteContext> children;
+    if (parentContext.isComposedOf()) {
+      children = unwrapComposedSchema(parentContext);
+    } else {
+      children = unwrapChildSchema(parentContext);
+    }
+
+    // Objects with an identifying field that have no data are considered null
+    boolean hasIdentifyingfield = children.stream()
+        .anyMatch(ResponseWriteContext::isSchemaRequiredNonNillable);
+
+    if ((result.values()
+        .stream()
+        .allMatch(Objects::isNull)) && hasIdentifyingfield) {
+      return null;
+    }
+    validateObjectData(parentContext, path, result);
     return result;
   }
 
@@ -231,7 +243,7 @@ public class JsonResponseMapper {
           addDataToResponse(path, result, childSchema.getIdentifier(), writeContext);
         });
 
-    return createResponseObject(result);
+    return createResponseObject(result, parentContext, path);
   }
 
   private void addDataToResponse(String path, Map<String, Object> response, String identifier,
@@ -293,7 +305,7 @@ public class JsonResponseMapper {
       mergeComposedResponse(path, result, child, identifier);
     });
 
-    return createResponseObject(result);
+    return createResponseObject(result, parentContext, path);
   }
 
   @SuppressWarnings("unchecked")
@@ -320,18 +332,36 @@ public class JsonResponseMapper {
     return typeConverterRouter.convert(item, writeContext.getParameters());
   }
 
+  private void validateObjectData(ResponseWriteContext context, String path, Map<String, Object> data) {
+    List<ResponseWriteContext> responseWriteContexts;
+    if (context.isComposedOf()) {
+      responseWriteContexts = unwrapComposedSchema(context);
+    } else {
+      responseWriteContexts = unwrapChildSchema(context);
+    }
+    responseWriteContexts.forEach(writeContext -> {
+      String childIdentifier = writeContext.getResponseObject()
+          .getIdentifier();
+      boolean isExpanded = isExpanded(context.getParameters(), childPath(path, childIdentifier));
+      if (isRequiredOrExpandedAndNullOrEmpty(writeContext, data.get(childIdentifier), isExpanded)
+          && !writeContext.getResponseObject()
+              .getSummary()
+              .isNillable()) {
+        throw mappingException(
+            "Could not map GraphQL response: Required and non-nillable "
+                + "property '{}' was not returned in GraphQL response.",
+            writeContext.getResponseObject()
+                .getIdentifier());
+      }
+    });
+  }
+
   private Object mapObject(ResponseWriteContext writeContext, Object object, boolean isExpanded) {
     if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded)) {
       if (writeContext.getResponseObject()
           .getSummary()
           .isNillable()) {
         return null;
-      } else {
-        throw mappingException(
-            "Could not map GraphQL response: Required and non-nillable "
-                + "property '{}' was not returned in GraphQL response.",
-            writeContext.getResponseObject()
-                .getIdentifier());
       }
     }
 
