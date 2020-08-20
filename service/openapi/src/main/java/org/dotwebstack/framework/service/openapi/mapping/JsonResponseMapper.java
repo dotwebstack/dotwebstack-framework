@@ -191,7 +191,11 @@ public class JsonResponseMapper {
       children = unwrapChildSchema(parentContext);
     }
 
-    // Objects with an identifying field that have no data are considered null
+    /*
+     * Objects with an identifying field that have no data are considered null. An identifying field is
+     * a field that determines the existence of the associated object.
+     */
+
     boolean hasIdentifyingfield = children.stream()
         .anyMatch(ResponseWriteContext::isSchemaRequiredNonNillable);
 
@@ -200,7 +204,7 @@ public class JsonResponseMapper {
         .allMatch(Objects::isNull)) && hasIdentifyingfield) {
       return null;
     }
-    validateObjectData(parentContext, path, result);
+    validateRequiredProperties(parentContext, path, result);
     return result;
   }
 
@@ -332,7 +336,7 @@ public class JsonResponseMapper {
     return typeConverterRouter.convert(item, writeContext.getParameters());
   }
 
-  private void validateObjectData(ResponseWriteContext context, String path, Map<String, Object> data) {
+  private void validateRequiredProperties(ResponseWriteContext context, String path, Map<String, Object> data) {
     List<ResponseWriteContext> responseWriteContexts;
     if (context.isComposedOf()) {
       responseWriteContexts = unwrapComposedSchema(context);
@@ -357,12 +361,10 @@ public class JsonResponseMapper {
   }
 
   private Object mapObject(ResponseWriteContext writeContext, Object object, boolean isExpanded) {
-    if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded)) {
-      if (writeContext.getResponseObject()
-          .getSummary()
-          .isNillable()) {
-        return null;
-      }
+    if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded) && writeContext.getResponseObject()
+        .getSummary()
+        .isNillable()) {
+      return null;
     }
 
     return object;
