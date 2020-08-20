@@ -16,4 +16,9 @@ public class ResponseObject {
   @Setter
   private SchemaSummary summary;
 
+  public boolean isComposedOf() {
+    return !getSummary().getComposedOf()
+        .isEmpty();
+  }
+
 }
