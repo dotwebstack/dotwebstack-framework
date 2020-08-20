@@ -122,7 +122,8 @@ public class FilterValidator {
         .toString())
         .isPresent()) {
       throw new DirectiveValidationException(
-          "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>'," + " '>='",
+          "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
+              + " '>=', contains, iContains",
           argument.getValue(), name);
     }
   }

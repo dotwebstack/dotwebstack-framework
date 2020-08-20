@@ -185,6 +185,18 @@ paths:
           in: query
           schema:
             type: string
+        - name: searchName
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: searchPostalCode
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: OK

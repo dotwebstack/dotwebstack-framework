@@ -32,6 +32,8 @@ type Query {
             foundedAfter: Date @filter(field: "founded", operator: ">"),
             foundedBefore: Date @filter(field: "founded", operator: "<"),
             name: [String] @filter(field: "name"),
+            searchName: [String] @filter(field: "name", operator: "iContains"),
+            searchPostalCode: [String] @filter(field: "postalCode", operator: "contains"),
             withAddressSubject: String @filter(field: "address.subject")): [Brewery!]!
     @sparql(
       repository: "local"
