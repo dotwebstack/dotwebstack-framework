@@ -45,8 +45,6 @@ class JsonResponseMapperTest {
 
   private static final ResponseObject REQUIRED_NON_NILLABLE_STRING = getProperty("prop2", "string", true, false, null);
 
-  private static final ResponseObject NOT_REQUIRED_NILLABLE_STRING = getProperty("prop3", "string", false, true, null);
-
   private static final ResponseObject DWS_TEMPLATE = getProperty("prop4", "string", true, false,
       "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}_${args._parent"
           + "._parent.arg1}_${data}`");
@@ -126,7 +124,7 @@ class JsonResponseMapperTest {
         .build();
 
     // Act / Assert
-    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
+    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
@@ -419,9 +417,8 @@ class JsonResponseMapperTest {
     assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
-  // Empty arrays, when not expanded, are by default not retrieved from the response
   @Test
-  void toResponse_throwsNotFoundException_forNonRequiredNonNillableNullArray() throws NotFoundException {
+  void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -442,8 +439,11 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act & Assert
-    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":null}"));
   }
 
   @Test
@@ -468,8 +468,11 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act & Assert
-    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":null}"));
   }
 
   @Test
@@ -502,7 +505,7 @@ class JsonResponseMapperTest {
   }
 
   @Test
-  void toResponse_throwsNotFoundException_forRequiredNullableNullArray() throws NotFoundException {
+  void toResponse_returnsNull_forRequiredNullableNullArray() throws NotFoundException {
     // Arrange
     ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
     ResponseObject child1 = getObject("child1", ImmutableList.of(array));
@@ -523,8 +526,11 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    // Act & Assert
-    assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
   }
 
   @Test
@@ -592,6 +598,82 @@ class JsonResponseMapperTest {
 
     // Assert
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
+  }
+
+  @Test
+  void map_returnsNullObject_forEmptyObjectWithIdentifyingField() throws NotFoundException {
+    // Arrange
+    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = Collections.emptyMap();
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":null}"));
+  }
+
+  @Test
+  void map_returnsObjectWithNullFields_forEmptyObjectWithoutIdentifyingField() throws NotFoundException {
+    // Arrange
+    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NILLABLE_STRING));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = Collections.emptyMap();
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"prop1\":null}}"));
+  }
+
+  @Test
+  void map_throwsException_forMissingNonNillableRequiredField() throws NotFoundException {
+    // Arrange
+    ResponseObject child1 =
+        getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, REQUIRED_NILLABLE_STRING));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = Map.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v1");
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act / Assert
+    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test

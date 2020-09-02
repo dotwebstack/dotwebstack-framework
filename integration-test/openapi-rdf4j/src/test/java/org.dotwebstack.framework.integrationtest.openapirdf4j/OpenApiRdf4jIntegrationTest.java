@@ -112,6 +112,54 @@ class OpenApiRdf4jIntegrationTest {
     assertResult(result, "/results/breweries_filter_name.json");
   }
 
+  @Test
+  void openApiRequest_ReturnsBrewery_withSearchNameFromQueryParam() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?searchName=Brouwerij")
+        .exchange()
+        .expectHeader()
+        .contentType("application/hal+json")
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_searchName.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsBrewery_withCaseInsensitiveSearchNameFromQueryParam() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?searchName=BROUWERIJ")
+        .exchange()
+        .expectHeader()
+        .contentType("application/hal+json")
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_searchName.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsBrewery_withSearchPostalCodeFromQueryParam() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries?searchPostalCode=2841&expand=postalCode")
+        .exchange()
+        .expectHeader()
+        .contentType("application/hal+json")
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries_filter_searchPostCode.json");
+  }
+
   @ParameterizedTest
   @CsvSource(value = {"*/*:brewery_model_turtle_identifier.json", "text/html:brewery_model_jsonld_filtered.txt",
       "application/n-triples:brewery_model_n-triples_identifier.json"}, delimiter = ':')

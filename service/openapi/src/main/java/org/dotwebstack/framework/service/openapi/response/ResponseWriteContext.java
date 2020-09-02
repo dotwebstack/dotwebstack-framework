@@ -40,4 +40,8 @@ public class ResponseWriteContext {
         && getResponseObject().getSummary()
             .isNillable();
   }
+
+  public boolean isComposedOf() {
+    return getResponseObject().isComposedOf();
+  }
 }
