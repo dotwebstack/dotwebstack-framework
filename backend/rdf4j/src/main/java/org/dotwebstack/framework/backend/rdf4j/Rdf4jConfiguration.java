@@ -8,7 +8,6 @@ import graphql.schema.DataFetchingEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -157,11 +156,12 @@ class Rdf4jConfiguration {
   public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
     Map<String, String> result = new HashMap<>();
 
-    Optional<URI> sparqlLocation = ResourceLoaderUtils.getResourceLocation(SPARQL_PATH);
+    Optional<Resource> sparqlLocationResource = ResourceLoaderUtils.getResource(SPARQL_PATH);
 
-    if (sparqlLocation.isPresent()) {
+    if (sparqlLocationResource.isPresent()) {
       Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-          .getResources(sparqlLocation.get() + SPARQL_PATTERN);
+          .getResources(sparqlLocationResource.get()
+              .getURI() + SPARQL_PATTERN);
 
       for (Resource resource : resourceList) {
         String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
@@ -191,13 +191,14 @@ class Rdf4jConfiguration {
   }
 
   private static void populateLocalRepository(Repository repository, ResourceLoader resourceLoader) {
-    ResourceLoaderUtils.getResourceLocation(MODEL_PATH)
-        .ifPresent(modelPath -> {
+    ResourceLoaderUtils.getResource(MODEL_PATH)
+        .ifPresent(resource -> {
           Resource[] resourceList;
 
           try {
             resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-                .getResources(modelPath.toString() + MODEL_PATTERN);
+                .getResources(resource.getURI()
+                    .toString() + MODEL_PATTERN);
           } catch (IOException e) {
             throw new UncheckedIOException("Error while loading local model.", e);
           }
@@ -207,7 +208,7 @@ class Rdf4jConfiguration {
 
           Arrays.stream(resourceList)
               .filter(Resource::isReadable)
-              .filter(resource -> resource.getFilename() != null)
+              .filter(fileResource -> fileResource.getFilename() != null)
               .forEach(modelResource -> {
                 String fileExtension = Arrays.stream(modelResource.getFilename()
                     .split("\\."))

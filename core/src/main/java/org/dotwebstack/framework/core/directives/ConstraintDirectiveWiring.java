@@ -3,17 +3,20 @@ package org.dotwebstack.framework.core.directives;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerObject;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 public class ConstraintDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
-  private ConstraintValidator constraintValidator;
+  private final ConstraintValidator constraintValidator;
+
+  public ConstraintDirectiveWiring(@NonNull ConstraintValidator constraintValidator) {
+    this.constraintValidator = constraintValidator;
+  }
 
   @Override
   public String getDirectiveName() {

@@ -11,7 +11,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,7 @@ import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.Resource;
 
 @Slf4j
 @Configuration
@@ -51,13 +50,13 @@ public class CoreConfiguration {
 
   @Profile("!test")
   @Bean
-  public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
-    Optional<URI> schemaLocation = ResourceLoaderUtils.getResourceLocation(FIXED_SCHEMA_NAME);
-    if (schemaLocation.isEmpty()) {
-      throw invalidConfigurationException("Graphql schema not found on location: {}", schemaLocation);
+  public TypeDefinitionRegistry typeDefinitionRegistry() throws IOException {
+    Optional<Resource> schemaLocationResource = ResourceLoaderUtils.getResource(FIXED_SCHEMA_NAME);
+    if (schemaLocationResource.isEmpty() || !schemaLocationResource.get()
+        .exists()) {
+      throw invalidConfigurationException("Graphql schema not found on location: {}", FIXED_SCHEMA_NAME);
     }
-    Reader reader = new InputStreamReader(resourceLoader.getResource(schemaLocation.get()
-        .toString())
+    Reader reader = new InputStreamReader(schemaLocationResource.get()
         .getInputStream());
 
     return new SchemaParser().parse(reader);
