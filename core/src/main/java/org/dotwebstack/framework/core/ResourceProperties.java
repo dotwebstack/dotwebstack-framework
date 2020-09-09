@@ -12,6 +12,10 @@ public class ResourceProperties {
 
   private static final String CONFIG_PATH = "config/";
 
+  public static String getConfigPath() {
+    return CONFIG_PATH;
+  }
+
   public static URI getFileConfigPath() {
     return URI.create(FILE_PREFIX + CONFIG_PATH);
   }

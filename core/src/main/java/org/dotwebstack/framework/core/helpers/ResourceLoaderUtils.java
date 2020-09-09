@@ -1,32 +1,29 @@
 package org.dotwebstack.framework.core.helpers;
 
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.dotwebstack.framework.core.ResourceProperties;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 public class ResourceLoaderUtils {
 
   private ResourceLoaderUtils() {}
 
   @SneakyThrows
-  public static Optional<URI> getResourceLocation(@NonNull String resourceLocation) {
+  public static Optional<Resource> getResource(@NonNull String resourceLocation) {
     URI uri = resolve(ResourceProperties.getFileConfigPath(), resourceLocation);
     if (uriExists(uri)) {
-      return Optional.of(uri);
+      return Optional.of(new UrlResource(uri));
     } else {
-      uri = resolve(ResourceProperties.getResourcePath(), resourceLocation);
-      URL classpathUrl = ResourceLoaderUtils.class.getResource(uri.getPath());
-      if (classpathUrl != null) {
-        uri = classpathUrl.toURI();
-
-        if (uriExists(uri)) {
-          return Optional.of(uri);
-        }
+      ClassPathResource resource = new ClassPathResource(ResourceProperties.getConfigPath() + resourceLocation);
+      if (resource.exists()) {
+        return Optional.of(resource);
       }
     }
     return Optional.empty();

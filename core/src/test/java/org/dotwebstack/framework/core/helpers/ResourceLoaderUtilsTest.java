@@ -9,13 +9,14 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.Resource;
 
 class ResourceLoaderUtilsTest {
 
   @Test
   void assert_notNull_ClassPathResource() {
     // Arrange & Act
-    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation("assets/");
+    Optional<Resource> resource = ResourceLoaderUtils.getResource("assets/");
 
     // Assert
     assertNotNull(resource);
@@ -25,7 +26,7 @@ class ResourceLoaderUtilsTest {
   @Test
   void test_nonExistingResource() {
     // Arrange & Act
-    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation("invalid/");
+    Optional<Resource> resource = ResourceLoaderUtils.getResource("invalid/");
 
     // Assert
     assertNotNull(resource);
@@ -42,7 +43,7 @@ class ResourceLoaderUtilsTest {
         .toURI();
 
     // Act
-    Optional<URI> resource = ResourceLoaderUtils.getResourceLocation(assertUri.getPath());
+    Optional<Resource> resource = ResourceLoaderUtils.getResource(assertUri.getPath());
 
     // Assert
     assertNotNull(resource);
