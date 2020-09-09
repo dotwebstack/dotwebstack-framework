@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>templating</artifactId>
-        <version>0.2.9-SNAPSHOT</version>
+        <version>0.2.9</version>
     </parent>
 
     <artifactId>templating-pebble-rdf4j</artifactId>
-    <version>0.2.9-SNAPSHOT</version>
+    <version>0.2.9</version>
 
     <dependencies>
         <dependency>
