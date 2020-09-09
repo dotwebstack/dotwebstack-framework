@@ -7,22 +7,20 @@ import com.mitchellbosecke.pebble.loader.DelegatingLoader;
 import com.mitchellbosecke.pebble.loader.FileLoader;
 import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
 
 @Configuration
 
@@ -36,11 +34,14 @@ public class PebbleTemplatingConfiguration {
 
   private PebbleEngine pebbleEngine;
 
-  private URI templatesLocation;
+  private Resource templatesResource;
 
-  public PebbleTemplatingConfiguration(List<Extension> extensions) {
+  private final ResourceLoader resourceLoader;
 
-    templatesLocation = ResourceLoaderUtils.getResourceLocation(TEMPLATES_LOCATION)
+  public PebbleTemplatingConfiguration(@NonNull ResourceLoader resourceLoader, List<Extension> extensions) {
+    this.resourceLoader = resourceLoader;
+
+    this.templatesResource = ResourceLoaderUtils.getResource(TEMPLATES_LOCATION)
         .orElse(null);
 
     this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
@@ -59,18 +60,14 @@ public class PebbleTemplatingConfiguration {
   }
 
   @Bean
-  public Map<String, PebbleTemplate> htmlTemplates() {
-    return Stream.ofNullable(templatesLocation)
-        .map(Paths::get)
-        .filter(Files::exists)
+  public Map<String, PebbleTemplate> htmlTemplates() throws IOException {
+    Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+        .getResources(templatesResource.getURI() + "**.html");
+
+    return Stream.of(resourceList)
+        .filter(Resource::exists)
         .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
-        .map(Path::toFile)
-        .map(File::listFiles)
-        .filter(Objects::nonNull)
-        .flatMap(Arrays::stream)
-        .map(File::toPath)
-        .map(Path::getFileName)
-        .map(Path::toString)
+        .map(Resource::getFilename)
         .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
         .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
   }

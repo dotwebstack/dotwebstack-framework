@@ -43,7 +43,6 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -109,9 +108,8 @@ public class OpenApiConfiguration {
   }
 
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
-    return ResourceLoaderUtils.getResourceLocation(STATIC_ASSETS_LOCATION)
-        .map(staticResourceLocation -> RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**",
-            new FileSystemResource(staticResourceLocation.getPath())));
+    return ResourceLoaderUtils.getResource(STATIC_ASSETS_LOCATION)
+        .map(staticResource -> RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**", staticResource));
   }
 
   @Bean
