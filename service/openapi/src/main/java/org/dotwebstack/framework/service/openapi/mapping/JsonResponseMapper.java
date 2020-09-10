@@ -472,6 +472,11 @@ public class JsonResponseMapper {
   private boolean isDefaultValue(ResponseObject responseObject) {
     Schema<?> schema = responseObject.getSummary()
         .getSchema();
+
+    if (schema == null) {
+      return false;
+    }
+
     return Objects.equals(getDwsExtension(schema, OasConstants.X_DWS_ENVELOPE), Boolean.TRUE)
         && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
   }
