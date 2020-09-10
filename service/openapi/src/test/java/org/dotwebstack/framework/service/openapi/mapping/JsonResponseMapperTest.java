@@ -327,7 +327,7 @@ class JsonResponseMapperTest {
     // Arrange
     ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
     ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 = getObject("array1", "array", false, false, true, null,
+    ResponseObject array1 = getObject("array1", "array", true, false, true, null,
         ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema(List.of("defaultvalue")));
     ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
     ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
