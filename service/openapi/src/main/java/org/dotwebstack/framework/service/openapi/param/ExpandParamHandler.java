@@ -107,7 +107,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
     Schema<?> propertySchema = objectSchema.getProperties()
         .get(fieldName);
 
-    if (getDwsExtension(propertySchema, OasConstants.X_DWS_ENVELOPE) != null) {
+    if (propertySchema != null && getDwsExtension(propertySchema, OasConstants.X_DWS_ENVELOPE) != null) {
       return;
     }
 

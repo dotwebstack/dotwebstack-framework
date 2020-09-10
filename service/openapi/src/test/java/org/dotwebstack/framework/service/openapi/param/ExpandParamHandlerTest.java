@@ -45,7 +45,10 @@ public class ExpandParamHandlerTest {
         .name("beers")
         .build()));
 
+    when(graphQlField.getType()).thenReturn("Object1");
+
     when(parameter.getSchema()).thenReturn(schema);
+
     when(schema.getDefault()).thenReturn("beers");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
@@ -58,10 +61,14 @@ public class ExpandParamHandlerTest {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
+        .type("Object1")
         .fields(ImmutableList.of(GraphQlField.builder()
             .name("ingredients")
+            .type("Object1")
             .build()))
         .build()));
+
+    when(graphQlField.getType()).thenReturn("Object1");
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getDefault()).thenReturn("beers.ingredients");
@@ -77,6 +84,8 @@ public class ExpandParamHandlerTest {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .build()));
+
+    when(graphQlField.getType()).thenReturn("Object1");
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getDefault()).thenReturn("beers");
@@ -97,6 +106,8 @@ public class ExpandParamHandlerTest {
             .name("postalCode")
             .build()))
         .build()));
+
+    when(graphQlField.getType()).thenReturn("Object1");
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getDefault()).thenReturn("beers.ingredients");
