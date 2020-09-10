@@ -145,6 +145,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
     return getPropertySchema(schema, fieldName);
   }
 
+  @SuppressWarnings("rawtypes")
   private List<Schema> getComposedChilds(ComposedSchema composedSchema) {
     if (composedSchema.getAllOf() != null) {
       return composedSchema.getAllOf();
