@@ -1,9 +1,0 @@
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-
-select ?begrip ?label ?definition
-{ ?begrip a skos:Concept ;
-   rdfs:label ?label ;
-   skos:definition ?definition
- }
