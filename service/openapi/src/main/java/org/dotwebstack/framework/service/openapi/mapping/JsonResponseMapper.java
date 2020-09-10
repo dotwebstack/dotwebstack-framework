@@ -273,7 +273,7 @@ public class JsonResponseMapper {
     SchemaSummary summary = writeContext.getResponseObject()
         .getSummary();
 
-    if (summary.isEnvelope()) {
+    if (summary.isEnvelope() && getDwsExtension(summary.getSchema(), OasConstants.X_DWS_EXPR) == null) {
       return getScalarDefaultValue(writeContext, summary);
     }
 
