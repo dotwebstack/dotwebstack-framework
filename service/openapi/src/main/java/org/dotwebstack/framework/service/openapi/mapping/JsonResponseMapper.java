@@ -326,14 +326,11 @@ public class JsonResponseMapper {
               .getType());
     }
 
-    if (getDwsExtension(summary.getSchema(), OasConstants.X_DWS_EXPR) == null) {
-      throw mappingException("Missing required '{}' value for property '{}' of type '{}' with x-dws-envelope=true!",
-          OasConstants.X_DWS_DEFAULT, writeContext.getResponseObject()
-              .getIdentifier(),
-          summary.getSchema()
-              .getType());
-    }
-    return null;
+    throw mappingException("Missing required '{}' value for property '{}' of type '{}' with x-dws-envelope=true!",
+        OasConstants.X_DWS_DEFAULT, writeContext.getResponseObject()
+            .getIdentifier(),
+        summary.getSchema()
+            .getType());
   }
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {

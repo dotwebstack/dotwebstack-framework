@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+
 @ExtendWith(MockitoExtension.class)
 public class ExpandParamHandlerTest {
 
@@ -57,19 +58,55 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_doesNotThrowError_withValidNestedExpandParameter() throws ParameterValidationException {
+  public void validate_doesNotThrowError_withValidExpand_DefaultValue() throws ParameterValidationException {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
-        .type("Object1")
-        .fields(ImmutableList.of(GraphQlField.builder()
-            .name("ingredients")
-            .type("Object1")
-            .build()))
         .build()));
 
     when(graphQlField.getType()).thenReturn("Object1");
 
+    when(parameter.getSchema()).thenReturn(schema);
+
+    when(schema.getDefault()).thenReturn("beers");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+
+    // Act & Assert
+    assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
+  }
+
+  @Test
+  public void validate_doesNotThrowError_withDefaultComposedSchemaAllOf() throws ParameterValidationException {
+    // Arrange
+    when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
+        .name("beers")
+        .type("Object4")
+        .fields(ImmutableList.of(GraphQlField.builder()
+            .name("ingredients")
+            .build()))
+        .build()));
+
+    when(graphQlField.getType()).thenReturn("Object1");
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getDefault()).thenReturn("beers.ingredients");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+
+    // Act & Assert
+    assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
+  }
+
+  @Test
+  public void validate_doesNotThrowError_withDefaultComposedSchemaOneOf() throws ParameterValidationException {
+    // Arrange
+    when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
+        .name("beers")
+        .type("Object5")
+        .fields(ImmutableList.of(GraphQlField.builder()
+            .name("ingredients")
+            .build()))
+        .build()));
+
+    when(graphQlField.getType()).thenReturn("Object1");
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getDefault()).thenReturn("beers.ingredients");
     when(schema.getType()).thenReturn(TYPE_STRING);

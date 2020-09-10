@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -354,6 +355,90 @@ class JsonResponseMapperTest {
 
     // Assert
     assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
+  }
+
+  @Test
+  void map_returnsValue_forResponseWithDefaultScalarForEnvelope() throws NotFoundException {
+    // Arrange
+    StringSchema stringSchema = new StringSchema();
+    stringSchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, "defaultValue"));
+
+    ResponseObject prop1 = getProperty("prop1", "string", true, true, null, true, stringSchema);
+    ResponseObject child1 = getObject("child1", ImmutableList.of(prop1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = ImmutableMap.of("prop2", "");
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertTrue(response.contains("{\"child1\":{\"prop1\":\"defaultValue\"}}"));
+  }
+
+  @Test
+  void map_returnsValue_forResponseWithDefaultScalarForEnvelopeMissingXDwsDefault() throws NotFoundException {
+    // Arrange
+    StringSchema stringSchema = new StringSchema();
+
+    ResponseObject prop1 = getProperty("prop1", "string", true, true, null, true, stringSchema);
+    ResponseObject child1 = getObject("child1", ImmutableList.of(prop1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = ImmutableMap.of("prop2", "");
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act && Assert
+    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
+  }
+
+  @Test
+  void map_returnsValue_forResponseWithDefaultScalarForEnvelopeTypeMismatch() throws NotFoundException {
+    // Arrange
+    StringSchema stringSchema = new StringSchema();
+    stringSchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, 1));
+
+    ResponseObject prop1 = getProperty("prop1", "string", true, true, null, true, stringSchema);
+    ResponseObject child1 = getObject("child1", ImmutableList.of(prop1));
+    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+
+    Map<String, Object> child1Data = ImmutableMap.of("prop2", "");
+    Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    ResponseWriteContext writeContext = ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
+
+    // Act && Assert
+    assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
   @Test
@@ -757,14 +842,21 @@ class JsonResponseMapperTest {
 
   private static ResponseObject getProperty(String identifier, String type, boolean required, boolean nillable,
       String dwsTemplate) {
+    return getProperty(identifier, type, required, nillable, dwsTemplate, false, null);
+  }
+
+  private static ResponseObject getProperty(String identifier, String type, boolean required, boolean nillable,
+      String dwsTemplate, boolean envelope, Schema<?> schema) {
     return ResponseObject.builder()
         .identifier(identifier)
         .summary(SchemaSummary.builder()
             .type(type)
             .required(true)
+            .isEnvelope(envelope)
             .required(required)
             .nillable(nillable)
             .dwsExpr(Objects.nonNull(dwsTemplate) ? Map.of("value", dwsTemplate) : null)
+            .schema(schema)
             .build())
         .build();
   }
