@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
@@ -24,6 +25,7 @@ import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -99,6 +101,16 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
+    Schema<?> objectSchema = openApi.getComponents()
+        .getSchemas()
+        .get(graphQlField.getType());
+    Schema<?> propertySchema = objectSchema.getProperties()
+        .get(fieldName);
+
+    if (getDwsExtension(propertySchema, OasConstants.X_DWS_ENVELOPE) != null) {
+      return;
+    }
+
     if (graphQlField.getFields()
         .stream()
         .noneMatch(field -> field.getName()
@@ -111,6 +123,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   private void validateExpandParam(GraphQlField graphQlField, String expandValue, String pathName) {
     String[] pathParams = expandValue.split("\\.");
+
     validate(graphQlField, pathParams[0], pathName);
 
     if (pathParams.length > 1) {

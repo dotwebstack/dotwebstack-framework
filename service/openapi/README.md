@@ -222,6 +222,31 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
+It's also possible to define default (static) values for OAS properties as shown below.
+
+```
+Brewery:
+  type: object
+  required:
+    - identifier
+    - name
+    - countries
+  properties:
+    identifier:
+      type: string
+    countries:
+      type: array
+      x-dws-envelope: true
+      x-dws-default: ['Netherlands','Belgium']
+      items:
+        type: string
+        x-dws-envelope: true
+    class:
+      type: string
+      x-dws-envelope: true
+      x-dws-default: 'Brewery'
+```
+
 # 1.1.9 Response properties expression
 By using a response property expression, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. An expression can be assigned to a property by adding the extension field `x-dws-expr` to a property of type `string`:
 ```yaml
