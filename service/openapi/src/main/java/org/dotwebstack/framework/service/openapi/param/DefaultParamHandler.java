@@ -48,7 +48,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
 
-  private final OpenAPI openApi;
+  protected final OpenAPI openApi;
 
   public DefaultParamHandler(OpenAPI openApi) {
     this.openApi = openApi;
