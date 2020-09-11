@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
@@ -65,10 +66,15 @@ public class DwsExtensionHelper {
     return getDwsExtension(schema, X_DWS_EXPR) != null;
   }
 
+  public static boolean isDefault(@NonNull Schema<?> schema) {
+    return getDwsExtension(schema, X_DWS_DEFAULT) != null;
+  }
+
   public static boolean isEnvelope(@NonNull Schema<?> schema) {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
-    return (isEnvelope != null && isEnvelope) || isExpr(schema);
+    return (isEnvelope != null && isEnvelope) || isExpr(schema) || isDefault(schema);
   }
+
 
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
     if (operation.getExtensions() == null || !operation.getExtensions()

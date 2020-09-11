@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDefault;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 
@@ -40,7 +41,10 @@ public class ResponseContextValidator {
           if (item.getSummary()
               .isEnvelope()
               || !Objects.isNull(item.getSummary()
-                  .getDwsExpr())) {
+                  .getDwsExpr())
+              || isDefault(item.getParent()
+                  .getSummary()
+                  .getSchema())) {
             validate(item, field, validatedReferences, copy, isArrayRoot);
           } else {
             validate(item, getChildFieldWithName(isArrayRoot, field, responseObject, copy), validatedReferences, copy,
@@ -64,7 +68,7 @@ public class ResponseContextValidator {
 
               ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
               if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isEnvelope()
-                  || !Objects.isNull(summary.getDwsExpr())) {
+                  || !Objects.isNull(summary.getDwsExpr()) || isDefault(summary.getSchema())) {
                 validate(child, field, validatedReferences, copy, isArrayRoot);
               } else {
                 validate(child, getChildFieldWithName(isArrayRoot, field, child, copy), validatedReferences, copy,
@@ -75,7 +79,10 @@ public class ResponseContextValidator {
       default:
         // Skip 'static' paths in the OAS specification. (all nodes are envelopes)
         if (responseObject.getSummary()
-            .isEnvelope()) {
+            .isEnvelope()
+            || isDefault(responseObject.getParent()
+                .getSummary()
+                .getSchema())) {
           return;
         }
         if (!Objects.equals(field.getName(), responseObject.getIdentifier())) {

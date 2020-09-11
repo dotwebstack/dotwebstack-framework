@@ -2,7 +2,7 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
@@ -27,8 +27,8 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -106,7 +106,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
     Schema<?> propertySchema = getPropertySchema(graphQlField, fieldName);
 
-    if (propertySchema != null && getDwsExtension(propertySchema, OasConstants.X_DWS_ENVELOPE) != null) {
+    if (propertySchema != null && isEnvelope(propertySchema)) {
       return;
     }
 
@@ -126,7 +126,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
       return getComposedChilds(composedSchema).stream()
           .filter(subSchema -> subSchema instanceof ObjectSchema)
-          .filter(subSchema -> getDwsExtension(subSchema, OasConstants.X_DWS_ENVELOPE) != null)
+          .filter(DwsExtensionHelper::isEnvelope)
           .map(subSchema -> getPropertySchema(subSchema, fieldName))
           .filter(Objects::nonNull)
           .findFirst()
