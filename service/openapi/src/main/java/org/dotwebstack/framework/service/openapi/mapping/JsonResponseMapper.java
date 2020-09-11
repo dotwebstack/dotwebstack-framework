@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.mapping;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
@@ -474,7 +475,6 @@ public class JsonResponseMapper {
       return false;
     }
 
-    return Objects.equals(getDwsExtension(schema, OasConstants.X_DWS_ENVELOPE), Boolean.TRUE)
-        && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
+    return isEnvelope(schema) && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
   }
 }

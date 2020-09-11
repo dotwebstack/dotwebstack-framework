@@ -222,31 +222,6 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
-It's also possible to define default (static) values for OAS properties as shown below.
-
-```
-Brewery:
-  type: object
-  required:
-    - identifier
-    - name
-    - countries
-  properties:
-    identifier:
-      type: string
-    countries:
-      type: array
-      x-dws-envelope: true
-      x-dws-default: ['Netherlands','Belgium']
-      items:
-        type: string
-        x-dws-envelope: true
-    class:
-      type: string
-      x-dws-envelope: true
-      x-dws-default: 'Brewery'
-```
-
 # 1.1.9 Response properties expression
 By using a response property expression, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. An expression can be assigned to a property by adding the extension field `x-dws-expr` to a property of type `string`:
 ```yaml
@@ -331,6 +306,30 @@ It is possible to configure (multiple) contents to allow different response type
 ```
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
 The default is set by using `x-dws-default: true` on a content configuration. 
+
+# 1.1.13 Default values
+
+It's possible to define default (static) values for OAS properties as shown below.
+
+```yaml
+Brewery:
+  type: object
+  required:
+    - identifier
+    - name
+    - countries
+  properties:
+    identifier:
+      type: string
+    countries:
+      type: array
+      x-dws-default: ['Netherlands','Belgium']
+      items:
+        type: string
+    class:
+      type: string
+      x-dws-default: 'Brewery'
+```
 
 # 1.2 Templating
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,

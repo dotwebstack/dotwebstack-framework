@@ -26,7 +26,6 @@ components:
           x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
         class:
           type: string
-          x-dws-envelope: true
           x-dws-default: 'Beer'
     BreweryCollection:
       type: object
@@ -91,14 +90,11 @@ components:
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
         countries:
           type: array
-          x-dws-envelope: true
           x-dws-default: ['Netherlands','Belgium']
           items:
             type: string
-            x-dws-envelope: true
         class:
           type: string
-          x-dws-envelope: true
           x-dws-default: 'Brewery'
     Ingredient:
       type: object

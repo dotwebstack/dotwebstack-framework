@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 @Builder
@@ -321,16 +322,40 @@ public class ResponseTemplateBuilder {
           .summary(createSchemaSummary(new StringSchema(), ref, isRequired, isNillable))
           .build();
     }
+
+    SchemaSummary summary;
+    if (parent != null && Objects.equals(parent.getSummary()
+        .getType(), OasConstants.ARRAY_TYPE) && DwsExtensionHelper.isDefault(parent.getSummary()
+            .getSchema())) {
+      summary = createSchemaSummary(schema, ref, isRequired, isNillable, true);
+    } else {
+      summary = createSchemaSummary(schema, ref, isRequired, isNillable);
+    }
+
     return ResponseObject.builder()
         .identifier(identifier)
         .parent(parent)
-        .summary(createSchemaSummary(schema, ref, isRequired, isNillable))
+        .summary(summary)
         .build();
   }
 
   private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
     return SchemaSummary.builder()
         .isEnvelope(isEnvelope(schema))
+        .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
+        .dwsType(getDwsType(schema))
+        .nillable(isNillable)
+        .dwsExpr(getDwsExpression(schema))
+        .required(isRequired)
+        .schema(schema)
+        .ref(ref)
+        .build();
+  }
+
+  private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable,
+      boolean isEnvelope) {
+    return SchemaSummary.builder()
+        .isEnvelope(isEnvelope)
         .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
         .dwsType(getDwsType(schema))
         .nillable(isNillable)
