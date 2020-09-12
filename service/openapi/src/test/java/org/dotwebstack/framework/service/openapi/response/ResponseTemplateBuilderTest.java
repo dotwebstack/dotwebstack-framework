@@ -364,6 +364,4 @@ public class ResponseTemplateBuilderTest {
         .getSummary()
         .isEnvelope());
   }
-
-
 }
