@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +21,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -330,4 +332,38 @@ public class ResponseTemplateBuilderTest {
         .operation(operation)
         .build());
   }
+
+  @Test
+  void build_returns_withArrayDefaultValue() {
+    // Act
+    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query12", HttpMethod.GET);
+
+    // Assert
+    assertNotNull(templates);
+    assertEquals(1, templates.size());
+    ResponseObject responseObject = templates.get(0)
+        .getResponseObject();
+    assertEquals("query12", responseObject.getIdentifier());
+    assertEquals(2, responseObject.getSummary()
+        .getChildren()
+        .size());
+    ResponseObject prop2 = responseObject.getSummary()
+        .getChildren()
+        .get(1);
+    assertEquals("o12_prop2", prop2.getIdentifier());
+    assertEquals(OasConstants.ARRAY_TYPE, prop2.getSummary()
+        .getType());
+    assertTrue(prop2.getSummary()
+        .isEnvelope());
+    assertEquals(1, prop2.getSummary()
+        .getItems()
+        .size());
+    assertTrue(prop2.getSummary()
+        .getItems()
+        .get(0)
+        .getSummary()
+        .isEnvelope());
+  }
+
+
 }
