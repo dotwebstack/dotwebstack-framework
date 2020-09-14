@@ -2,6 +2,8 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
@@ -10,6 +12,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_NAME;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_VALUEEXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_REQUIRED_FIELDS;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TRANSIENT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import io.swagger.v3.oas.models.Operation;
@@ -65,9 +68,14 @@ public class DwsExtensionHelper {
     return getDwsExtension(schema, X_DWS_EXPR) != null;
   }
 
-  public static boolean isEnvelope(@NonNull Schema<?> schema) {
+  public static boolean isDefault(@NonNull Schema<?> schema) {
+    return getDwsExtension(schema, X_DWS_DEFAULT) != null;
+  }
+
+  public static boolean isTransient(@NonNull Schema<?> schema) {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
-    return (isEnvelope != null && isEnvelope) || isExpr(schema);
+    Boolean isTransient = (Boolean) getDwsExtension(schema, X_DWS_TRANSIENT);
+    return isTrue(isEnvelope) || isTrue(isTransient) || isExpr(schema) || isDefault(schema);
   }
 
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {

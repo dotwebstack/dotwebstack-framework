@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
@@ -10,6 +12,8 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -23,6 +27,7 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
@@ -99,6 +104,12 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
+    Schema<?> propertySchema = getPropertySchema(graphQlField, fieldName);
+
+    if (propertySchema != null && isTransient(propertySchema)) {
+      return;
+    }
+
     if (graphQlField.getFields()
         .stream()
         .noneMatch(field -> field.getName()
@@ -109,8 +120,47 @@ public class ExpandParamHandler extends DefaultParamHandler {
     }
   }
 
+  private Schema<?> getPropertySchema(Schema<?> schema, String fieldName) {
+    if (schema instanceof ComposedSchema) {
+      ComposedSchema composedSchema = (ComposedSchema) schema;
+
+      return getComposedChilds(composedSchema).stream()
+          .filter(subSchema -> subSchema instanceof ObjectSchema)
+          .filter(DwsExtensionHelper::isTransient)
+          .map(subSchema -> getPropertySchema(subSchema, fieldName))
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse(null);
+    }
+
+    return (Schema<?>) schema.getProperties()
+        .get(fieldName);
+  }
+
+  private Schema<?> getPropertySchema(GraphQlField graphQlField, String fieldName) {
+    Schema<?> schema = openApi.getComponents()
+        .getSchemas()
+        .get(graphQlField.getType());
+
+    return getPropertySchema(schema, fieldName);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private List<Schema> getComposedChilds(ComposedSchema composedSchema) {
+    if (composedSchema.getAllOf() != null) {
+      return composedSchema.getAllOf();
+    } else if (composedSchema.getAnyOf() != null) {
+      return composedSchema.getAnyOf();
+    } else if (composedSchema.getOneOf() != null) {
+      return composedSchema.getOneOf();
+    }
+
+    throw illegalStateException("Composed Schema is empty!");
+  }
+
   private void validateExpandParam(GraphQlField graphQlField, String expandValue, String pathName) {
     String[] pathParams = expandValue.split("\\.");
+
     validate(graphQlField, pathParams[0], pathName);
 
     if (pathParams.length > 1) {

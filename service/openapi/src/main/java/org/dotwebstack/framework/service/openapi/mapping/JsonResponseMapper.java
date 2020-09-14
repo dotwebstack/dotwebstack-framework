@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.mapping;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
@@ -19,6 +20,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseWriteCo
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JsonResponseMapper {
+
+  private static final Map<String, Class<?>> TYPE_CLASS_MAPPING =
+      Map.of("string", String.class, "integer", Integer.class);
 
   private final ObjectMapper objectMapper;
 
@@ -91,13 +96,12 @@ public class JsonResponseMapper {
 
     switch (summary.getType()) {
       case ARRAY_TYPE:
-
-        if (summary.isEnvelope()) {
-          return mapDefaultArrayToResponse(responseObject);
-        }
-
         if ((summary.isRequired()
             || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
+
+          if (isDefaultValue(summary)) {
+            return mapDefaultArrayToResponse(responseObject);
+          }
 
           return mapArrayDataToResponse(writeContext, newPath);
         }
@@ -148,8 +152,9 @@ public class JsonResponseMapper {
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
-    if (summary.isRequired() || summary.isEnvelope() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-      if (summary.isEnvelope()) {
+    if (summary.isRequired() || summary.isTransient()
+        || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+      if (summary.isTransient()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
       if (writeContext.isComposedOf()) {
@@ -266,6 +271,14 @@ public class JsonResponseMapper {
   }
 
   Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
+
+    SchemaSummary summary = writeContext.getResponseObject()
+        .getSummary();
+
+    if (isDefaultValue(summary)) {
+      return getScalarDefaultValue(writeContext, summary);
+    }
+
     if (Objects.isNull(writeContext.getResponseObject()
         .getSummary()
         .getDwsExpr())) {
@@ -295,6 +308,24 @@ public class JsonResponseMapper {
     }
 
     return null;
+  }
+
+  private Object getScalarDefaultValue(@NonNull ResponseWriteContext writeContext, SchemaSummary summary) {
+    Object defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT);
+
+    String oasType = summary.getSchema()
+        .getType();
+    Class<?> typeClass = TYPE_CLASS_MAPPING.get(oasType);
+    if (typeClass != null && typeClass.isAssignableFrom(defaultValue.getClass())) {
+      return defaultValue;
+    }
+
+    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT,
+        writeContext.getResponseObject()
+            .getIdentifier(),
+        summary.getSchema()
+            .getType());
+
   }
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
@@ -391,7 +422,6 @@ public class JsonResponseMapper {
               .filter(entry -> !(entry.getValue() instanceof Map))
               .forEach(entry -> context.set(fieldsBuilder.toString() + entry.getKey(), entry.getValue()));
           fieldsBuilder.append("_parent.");
-
         });
 
     StringBuilder argsBuilder = new StringBuilder("args.");
@@ -424,10 +454,21 @@ public class JsonResponseMapper {
 
   private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {
     if ((!Objects.equals(ARRAY_TYPE, responseObject.getSummary()
-        .getType()) || canAddArray) && !responseObject.getSummary()
-            .isEnvelope()) {
+        .getType()) || canAddArray) && (!responseObject.getSummary()
+            .isTransient() || isDefaultValue(responseObject.getSummary()))) {
       return getPathString(path, responseObject);
     }
     return path;
+  }
+
+  private boolean isDefaultValue(@NonNull SchemaSummary schemaSummary) {
+    Schema<?> schema = schemaSummary.getSchema();
+
+    if (schema == null) {
+      return false;
+    }
+
+    return isTransient(schema) && getDwsExtension(schema, OasConstants.X_DWS_EXPR) == null
+        && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
   }
 }

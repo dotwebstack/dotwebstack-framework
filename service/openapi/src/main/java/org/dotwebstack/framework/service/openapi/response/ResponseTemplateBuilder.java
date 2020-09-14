@@ -4,7 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 @Builder
@@ -321,16 +322,40 @@ public class ResponseTemplateBuilder {
           .summary(createSchemaSummary(new StringSchema(), ref, isRequired, isNillable))
           .build();
     }
+
+    SchemaSummary summary;
+    if (parent != null && Objects.equals(parent.getSummary()
+        .getType(), OasConstants.ARRAY_TYPE) && DwsExtensionHelper.isDefault(parent.getSummary()
+            .getSchema())) {
+      summary = createSchemaSummary(schema, ref, isRequired, isNillable, true);
+    } else {
+      summary = createSchemaSummary(schema, ref, isRequired, isNillable);
+    }
+
     return ResponseObject.builder()
         .identifier(identifier)
         .parent(parent)
-        .summary(createSchemaSummary(schema, ref, isRequired, isNillable))
+        .summary(summary)
         .build();
   }
 
   private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
     return SchemaSummary.builder()
-        .isEnvelope(isEnvelope(schema))
+        .isTransient(isTransient(schema))
+        .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
+        .dwsType(getDwsType(schema))
+        .nillable(isNillable)
+        .dwsExpr(getDwsExpression(schema))
+        .required(isRequired)
+        .schema(schema)
+        .ref(ref)
+        .build();
+  }
+
+  private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable,
+      boolean isTransient) {
+    return SchemaSummary.builder()
+        .isTransient(isTransient)
         .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
         .dwsType(getDwsType(schema))
         .nillable(isNillable)
@@ -342,7 +367,7 @@ public class ResponseTemplateBuilder {
   }
 
   private boolean isNillable(Schema<?> schema) {
-    return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
+    return schema != null && (isTransient(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
   @SuppressWarnings("unchecked")

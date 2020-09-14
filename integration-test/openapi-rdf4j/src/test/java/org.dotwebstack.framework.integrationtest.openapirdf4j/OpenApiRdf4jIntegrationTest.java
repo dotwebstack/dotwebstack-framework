@@ -55,17 +55,17 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void openApiRequest_ReturnsBreweriesInWrappedResult_withDefaultResponse() throws IOException {
+  void openApiRequest_ReturnsBreweries_withStaticFields() throws IOException {
     // Arrange & Act
     String result = webClient.get()
-        .uri("/breweriesWrappedResult")
+        .uri("/breweries?expand=countries&expand=class&expand=beers.class")
         .exchange()
         .expectBody(String.class)
         .returnResult()
         .getResponseBody();
 
     // Assert
-    assertResult(result, "/results/breweries_in_wrapped_result.json");
+    assertResult(result, "/results/breweries_withStaticFields.json");
   }
 
   @Test

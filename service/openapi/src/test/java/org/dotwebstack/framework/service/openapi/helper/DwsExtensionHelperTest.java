@@ -6,7 +6,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsRequiredFields;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -150,7 +150,7 @@ class DwsExtensionHelperTest {
   }
 
   @Test
-  void isEnvelope_returnsFalse_withObject1() {
+  void isTransient_returnsFalse_withObject1() {
     // Arrange
     Schema<?> schema = TestResources.openApi()
         .getComponents()
@@ -158,7 +158,7 @@ class DwsExtensionHelperTest {
         .get("Object1");
 
     // Act / Assert
-    assertFalse(isEnvelope(schema));
+    assertFalse(isTransient(schema));
   }
 
   @Test

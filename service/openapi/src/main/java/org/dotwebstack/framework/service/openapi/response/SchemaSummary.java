@@ -18,7 +18,7 @@ public class SchemaSummary {
 
   private boolean nillable;
 
-  private boolean isEnvelope;
+  private boolean isTransient;
 
   private String dwsType;
 

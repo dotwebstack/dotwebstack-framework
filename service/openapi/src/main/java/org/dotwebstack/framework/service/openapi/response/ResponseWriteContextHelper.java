@@ -41,7 +41,7 @@ public class ResponseWriteContextHelper {
         .getComposedOf()
         .isEmpty()
         && !child.getSummary()
-            .isEnvelope()
+            .isTransient()
         && data instanceof Map) {
       data = ((Map) data).get(child.getIdentifier());
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
@@ -82,7 +82,7 @@ public class ResponseWriteContextHelper {
     Object data = parentContext.getData();
 
     if (!childSchema.getSummary()
-        .isEnvelope()) {
+        .isTransient()) {
       if (!parentContext.getDataStack()
           .isEmpty()) {
         data = ((Map) parentContext.getDataStack()

@@ -91,6 +91,18 @@ components:
           items:
             $ref: '#/components/schemas/Object8'
 
+    Object12:
+      type: object
+      required:
+        - o12_prop2
+      properties:
+        o12_prop1:
+          type: string
+        o12_prop2:
+          type: array
+          x-dws-default: ['default']
+          items:
+            type: string
 
   headers:
     HeaderRef:
@@ -308,3 +320,14 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object1'
+  /query12:
+    get:
+      x-dws-query:
+        field: query12
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object12'

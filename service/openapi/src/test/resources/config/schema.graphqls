@@ -22,6 +22,8 @@ type Query {
     query9: Object9
 
     query11(argument1: String): Object11
+
+    query12: Object12
 }
 
 type Object1 {
@@ -66,4 +68,9 @@ type Object9 {
 
 type Object11 {
     children: [Object11]
+}
+
+type Object12 {
+    field1: String
+    children: [Object12]
 }

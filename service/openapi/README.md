@@ -307,6 +307,30 @@ It is possible to configure (multiple) contents to allow different response type
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
 The default is set by using `x-dws-default: true` on a content configuration. 
 
+# 1.1.13 Default values
+
+It's possible to define default (static) values for OAS properties as shown below.
+
+```yaml
+Brewery:
+  type: object
+  required:
+    - identifier
+    - name
+    - countries
+  properties:
+    identifier:
+      type: string
+    countries:
+      type: array
+      x-dws-default: ['Netherlands','Belgium']
+      items:
+        type: string
+    class:
+      type: string
+      x-dws-default: 'Brewery'
+```
+
 # 1.2 Templating
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
 configure a response like the following:
