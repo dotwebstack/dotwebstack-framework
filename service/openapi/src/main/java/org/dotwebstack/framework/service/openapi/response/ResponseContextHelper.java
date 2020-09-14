@@ -56,7 +56,7 @@ public class ResponseContextHelper {
     SchemaSummary summary = responseObject.getSummary();
     boolean isExpanded = isExpanded(inputParams, getPathString(prefix, responseObject));
     addPrefixToPath(summary, responseObject, joiner, responseObjects, isExpanded);
-    if (summary.isRequired() || summary.isEnvelope() || isExpanded) {
+    if (summary.isRequired() || summary.isTransient() || isExpanded) {
       handleSubSchemas(graphQlField, inputParams, responseObjects, joiner, responseObject);
     }
     return responseObjects;
@@ -71,7 +71,7 @@ public class ResponseContextHelper {
      */
 
     // envelope objects do not exist in graphql, no prefix should be added
-    if (summary.isEnvelope()) {
+    if (summary.isTransient()) {
       return;
     }
 
@@ -100,7 +100,7 @@ public class ResponseContextHelper {
     ResponseObject parent = responseObject.getParent();
     while (parent != null) {
       if (!parent.getSummary()
-          .isEnvelope()
+          .isTransient()
           && !Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
               .getType())) {
         return false;

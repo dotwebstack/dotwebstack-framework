@@ -3,7 +3,7 @@ package org.dotwebstack.framework.service.openapi.mapping;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
@@ -99,7 +99,7 @@ public class JsonResponseMapper {
         if ((summary.isRequired()
             || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
 
-          if (summary.isEnvelope()) {
+          if (isDefaultValue(summary)) {
             return mapDefaultArrayToResponse(responseObject);
           }
 
@@ -152,8 +152,9 @@ public class JsonResponseMapper {
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
-    if (summary.isRequired() || summary.isEnvelope() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-      if (summary.isEnvelope()) {
+    if (summary.isRequired() || summary.isTransient()
+        || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+      if (summary.isTransient()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
       if (writeContext.isComposedOf()) {
@@ -274,7 +275,7 @@ public class JsonResponseMapper {
     SchemaSummary summary = writeContext.getResponseObject()
         .getSummary();
 
-    if (summary.isEnvelope() && getDwsExtension(summary.getSchema(), OasConstants.X_DWS_EXPR) == null) {
+    if (isDefaultValue(summary)) {
       return getScalarDefaultValue(writeContext, summary);
     }
 
@@ -310,28 +311,21 @@ public class JsonResponseMapper {
   }
 
   private Object getScalarDefaultValue(@NonNull ResponseWriteContext writeContext, SchemaSummary summary) {
-    Object defaultValue;
-    if ((defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT)) != null) {
+    Object defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT);
 
-      String oasType = summary.getSchema()
-          .getType();
-      Class<?> typeClass = TYPE_CLASS_MAPPING.get(oasType);
-      if (typeClass != null && typeClass.isAssignableFrom(defaultValue.getClass())) {
-        return defaultValue;
-      }
-
-      throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT,
-          writeContext.getResponseObject()
-              .getIdentifier(),
-          summary.getSchema()
-              .getType());
+    String oasType = summary.getSchema()
+        .getType();
+    Class<?> typeClass = TYPE_CLASS_MAPPING.get(oasType);
+    if (typeClass != null && typeClass.isAssignableFrom(defaultValue.getClass())) {
+      return defaultValue;
     }
 
-    throw mappingException("Missing required '{}' value for property '{}' of type '{}' with x-dws-envelope=true!",
-        OasConstants.X_DWS_DEFAULT, writeContext.getResponseObject()
+    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT,
+        writeContext.getResponseObject()
             .getIdentifier(),
         summary.getSchema()
             .getType());
+
   }
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
@@ -461,20 +455,20 @@ public class JsonResponseMapper {
   private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {
     if ((!Objects.equals(ARRAY_TYPE, responseObject.getSummary()
         .getType()) || canAddArray) && (!responseObject.getSummary()
-            .isEnvelope() || isDefaultValue(responseObject))) {
+            .isTransient() || isDefaultValue(responseObject.getSummary()))) {
       return getPathString(path, responseObject);
     }
     return path;
   }
 
-  private boolean isDefaultValue(ResponseObject responseObject) {
-    Schema<?> schema = responseObject.getSummary()
-        .getSchema();
+  private boolean isDefaultValue(@NonNull SchemaSummary schemaSummary) {
+    Schema<?> schema = schemaSummary.getSchema();
 
     if (schema == null) {
       return false;
     }
 
-    return isEnvelope(schema) && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
+    return isTransient(schema) && getDwsExtension(schema, OasConstants.X_DWS_EXPR) == null
+        && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
   }
 }

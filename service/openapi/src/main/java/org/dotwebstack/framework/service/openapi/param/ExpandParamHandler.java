@@ -2,7 +2,7 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
@@ -106,7 +106,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
     Schema<?> propertySchema = getPropertySchema(graphQlField, fieldName);
 
-    if (propertySchema != null && isEnvelope(propertySchema)) {
+    if (propertySchema != null && isTransient(propertySchema)) {
       return;
     }
 
@@ -126,7 +126,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
       return getComposedChilds(composedSchema).stream()
           .filter(subSchema -> subSchema instanceof ObjectSchema)
-          .filter(DwsExtensionHelper::isEnvelope)
+          .filter(DwsExtensionHelper::isTransient)
           .map(subSchema -> getPropertySchema(subSchema, fieldName))
           .filter(Objects::nonNull)
           .findFirst()

@@ -39,7 +39,7 @@ public class ResponseContextValidator {
             .getRef())) {
           ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
           if (item.getSummary()
-              .isEnvelope()
+              .isTransient()
               || !Objects.isNull(item.getSummary()
                   .getDwsExpr())
               || isDefault(item.getParent()
@@ -67,7 +67,7 @@ public class ResponseContextValidator {
               SchemaSummary childSummary = child.getSummary();
 
               ArrayList<ResponseObject> copy = copyAndAddToList(parents, responseObject);
-              if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isEnvelope()
+              if (Objects.equals(childSummary.getType(), ARRAY_TYPE) || childSummary.isTransient()
                   || !Objects.isNull(summary.getDwsExpr()) || isDefault(summary.getSchema())) {
                 validate(child, field, validatedReferences, copy, isArrayRoot);
               } else {
@@ -79,7 +79,7 @@ public class ResponseContextValidator {
       default:
         // Skip 'static' paths in the OAS specification. (all nodes are envelopes)
         if (responseObject.getSummary()
-            .isEnvelope()
+            .isTransient()
             || isDefault(responseObject.getParent()
                 .getSummary()
                 .getSchema())) {
@@ -126,7 +126,7 @@ public class ResponseContextValidator {
       } else {
         StringBuilder builder = new StringBuilder(parent.getIdentifier());
         if (parent.getSummary()
-            .isEnvelope()) {
+            .isTransient()) {
           builder.insert(0, "<")
               .append(">");
         }

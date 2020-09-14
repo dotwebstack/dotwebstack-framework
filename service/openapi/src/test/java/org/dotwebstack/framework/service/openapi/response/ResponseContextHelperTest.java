@@ -407,7 +407,7 @@ class ResponseContextHelperTest {
         .parent(parent)
         .summary(SchemaSummary.builder()
             .type(type)
-            .isEnvelope(envelope)
+            .isTransient(envelope)
             .required(required)
             .build())
         .build();

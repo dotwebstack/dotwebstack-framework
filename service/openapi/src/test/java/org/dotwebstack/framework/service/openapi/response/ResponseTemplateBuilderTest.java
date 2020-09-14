@@ -354,7 +354,7 @@ public class ResponseTemplateBuilderTest {
     assertEquals(OasConstants.ARRAY_TYPE, prop2.getSummary()
         .getType());
     assertTrue(prop2.getSummary()
-        .isEnvelope());
+        .isTransient());
     assertEquals(1, prop2.getSummary()
         .getItems()
         .size());
@@ -362,6 +362,6 @@ public class ResponseTemplateBuilderTest {
         .getItems()
         .get(0)
         .getSummary()
-        .isEnvelope());
+        .isTransient());
   }
 }

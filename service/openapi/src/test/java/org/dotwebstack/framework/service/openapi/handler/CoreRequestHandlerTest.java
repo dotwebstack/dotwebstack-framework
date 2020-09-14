@@ -562,7 +562,7 @@ class CoreRequestHandlerTest {
 
   private SchemaSummary schemaSummaryBuilder() {
     return SchemaSummary.builder()
-        .isEnvelope(false)
+        .isTransient(false)
         .required(false)
         .build();
   }
