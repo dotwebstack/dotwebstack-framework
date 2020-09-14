@@ -8,8 +8,10 @@ import com.mitchellbosecke.pebble.loader.FileLoader;
 import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,15 +36,14 @@ public class PebbleTemplatingConfiguration {
 
   private PebbleEngine pebbleEngine;
 
-  private Resource templatesResource;
+  private Optional<Resource> templatesResource;
 
   private final ResourceLoader resourceLoader;
 
   public PebbleTemplatingConfiguration(@NonNull ResourceLoader resourceLoader, List<Extension> extensions) {
     this.resourceLoader = resourceLoader;
 
-    this.templatesResource = ResourceLoaderUtils.getResource(TEMPLATES_LOCATION)
-        .orElse(null);
+    this.templatesResource = ResourceLoaderUtils.getResource(TEMPLATES_LOCATION);
 
     this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
         .loader(getTemplateLoader())
@@ -61,15 +62,19 @@ public class PebbleTemplatingConfiguration {
 
   @Bean
   public Map<String, PebbleTemplate> htmlTemplates() throws IOException {
-    Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-        .getResources(templatesResource.getURI() + "**.html");
+    Map<String, PebbleTemplate> htmlTemplates = new HashMap<>();
+    if (templatesResource.isPresent()) {
+      Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(templatesResource.get()
+              .getURI() + "**.html");
 
-    return Stream.of(resourceList)
-        .filter(Resource::exists)
-        .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
-        .map(Resource::getFilename)
-        .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
-        .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
+      htmlTemplates = Stream.of(resourceList)
+          .filter(Resource::exists)
+          .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
+          .map(Resource::getFilename)
+          .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
+          .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
+    }
+    return htmlTemplates;
   }
-
 }
