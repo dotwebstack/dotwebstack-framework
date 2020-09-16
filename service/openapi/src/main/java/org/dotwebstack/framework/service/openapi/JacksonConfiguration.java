@@ -29,8 +29,9 @@ public class JacksonConfiguration {
     builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT)
         .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .modules(modules);
-    if (!openApiProperties.isSerializeNull()) {
+    if (!openApiProperties.isSerializeNullAndEmpty()) {
       builder.serializationInclusion(Include.NON_NULL);
+      builder.serializationInclusion(Include.NON_EMPTY);
     }
     return builder;
   }

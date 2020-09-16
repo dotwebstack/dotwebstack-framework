@@ -380,7 +380,7 @@ dotwebstack:
       timezone: Europe/Amsterdam
 ```
 # 2.3 Serialization of null fields
-`dotwebstack.openapi.serializeNull` is an optional property that can be set to true/false to include/exclude null fields in the openAPI response. By default, i.e. if this property is not set, null fields will be serialized.   
+`dotwebstack.openapi.serializeNullAndEmpty` is an optional property that can be set to true/false to include/exclude null and empty fields in the openAPI response. By default, i.e. if this property is not set, null and empty fields will be serialized.   
 
 # 2.4 Static Resources
 To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.

@@ -17,8 +17,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @ExtendWith(SpringExtension.class)
 @AutoConfigureWebTestClient
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "dotwebstack.openapi.serializeNull=false")
-class SerializeNullTest {
+    properties = "dotwebstack.openapi.serializeNullAndEmpty=false")
+class SerializeNullAndEmptyTest {
 
   @Autowired
   private WebTestClient webClient;
@@ -26,19 +26,19 @@ class SerializeNullTest {
   private ObjectMapper mapper = new ObjectMapper();
 
   @Test
-  void openApiRequest_returnsBreweriesWithoutNullValues_whenSerializeNullIsFalse() throws IOException {
+  void openApiRequest_returnsBreweriesWithoutNullValues_whenSerializeNullAndEmptyIsFalse() throws IOException {
 
     // Arrange & Act
     String result = webClient.get()
-        .uri("/breweries?expand=postalCode")
+        .uri("/breweries?expand=postalCode&expand=beers.ingredients")
         .header("sort", "-postalCode", "name")
         .exchange()
         .expectBody(String.class)
         .returnResult()
         .getResponseBody();
 
-    JsonNode expectedObj = mapper.readTree(
-        getClass().getResourceAsStream("/results/breweries_sorted_on_postalCode_desc_and_name_asc_without_null.json"));
+    JsonNode expectedObj = mapper.readTree(getClass()
+        .getResourceAsStream("/results/breweries_sorted_on_postalCode_desc_and_name_asc_without_null_and_empty.json"));
     JsonNode actualObj = mapper.readTree(result);
 
     // Assert
