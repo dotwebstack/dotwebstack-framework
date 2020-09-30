@@ -13,6 +13,7 @@
 
   <modules>
     <module>rdf4j</module>
+    <module>json</module>
   </modules>
 
 </project>

@@ -1,0 +1,73 @@
+schema {
+  query: Query
+}
+
+type Query {
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
+  @json(file: "data.json", path: "$.breweries[?]", predicates: ["args.identifier"])
+
+  beer(identifier: ID! @constraint(pattern: "[0-9]+")): Beer
+  @json(file: "data.json", path: "$.beers[?]", predicates: ["args.identifier"])
+
+  beers: [Beer!]!
+  @json(file: "data.json", path: "$.beers")
+}
+
+type Brewery {
+  identifier: ID!
+  subject: String
+  name: String!
+  localName: String
+  founded: Date
+  openinghours: String
+  owners(sort: [SortField!] = [{order: ASC}]): [String]
+  url: String!
+  @transform(expr: "url.getLocalName()")
+  address: Address
+  postalCode: String
+  sponsorship: Sponsorship
+  #beers(name: [SortField!] = [{order: ASC}], ingredient: String, supplement: String): [Beer!]
+  lemonBeers: [Beer]
+  beerCount: Int!
+}
+
+type Address {
+  postalCode: String
+  streetAddress: String!
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  created: DateTime
+  brewery: Brewery
+  #  beerTypes: [String]!
+  ingredients(name: [String]): [Ingredient!]
+  supplements: [Supplement!]
+}
+
+type Ingredient {
+  identifier: ID!
+  name: String
+}
+
+type Supplement {
+  name: String
+}
+
+input PageQueryInput {
+  page: Int = 1
+  pageSize: Int = 10
+}
+
+type Sponsorship {
+  identifier: ID!
+  name: String!
+  numbers: [Int]
+}
+
+input FilterQueryInput {
+  page: Int = 1
+  sinceBefore: Date
+  sinceAfter: Date
+}
