@@ -12,7 +12,6 @@ components:
         - identifier
         - name
         - brewery
-#        - created
       properties:
         identifier:
           type: string
@@ -21,17 +20,6 @@ components:
         name:
           type: string
           nullable: true
-#        created:
-#          type: string
-#          nullable: true
-#        ingredients:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/Ingredient'
-#        supplements:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/Ingredient'
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
@@ -95,23 +83,10 @@ components:
         openinghours:
           type: string
           nullable: true
-        contextPostalCode:
-          type: string
-          x-dws-expr:
-            value: '`${fields.postalCode}`'
-            fallback: null
         owners:
           type: array
           items:
             type: string
-#        beers:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/Beer'
-#        lemonBeers:
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/Beer'
         beerCount:
           type: integer
         sponsorship:
@@ -204,120 +179,6 @@ components:
 
 
 paths:
-#  /breweries:
-#    get:
-#      x-dws-query:
-#        field: breweries
-#        requiredFields:
-#          - postalCode
-#      parameters:
-#        - name: expand
-#          x-dws-type: expand
-#          in: query
-#          schema:
-#            type: array
-#            default: ['beers']
-#            items:
-#              type: string
-#              enum: ['beers', 'beers.ingredients', 'beers.supplements']
-#        - name: name
-#          in: query
-#          explode: false
-#          required: false
-#          schema:
-#            type: array
-#            items:
-#              type: string
-#        - name: sinceAfter
-#          in: header
-#          required: false
-#          schema:
-#            type: string
-#        - name: "X-Api-Key"
-#          description: "Geldige API Key om deze request uit te kunnen voeren."
-#          in: "header"
-#          required: true
-#          x-dws-transient: true
-#          x-dws-validate: false
-#          schema:
-#            type: "string"
-#        - name: sort
-#          in: header
-#          x-dws-type: sort
-#          required: true
-#          schema:
-#            type: array
-#            default: ['name']
-#            items:
-#              type: string
-#              enum: ['name', 'localName', '-founded', '-beerCount','beerCount','subject','-subject']
-#        - name: pageSize
-#          in: query
-#          schema:
-#            type: string
-#        - name: page
-#          in: query
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/hal+json:
-#              x-dws-default: true
-#              schema:
-#                $ref: '#/components/schemas/BreweryCollection'
-#            application/stream+json:
-#              schema:
-#                $ref: '#/components/schemas/BreweryCollection'
-#          headers:
-#            X-Pagination-Limit:
-#              schema:
-#                type: integer
-#                x-dws-expr: args.pageSize
-#            X-Pagination-Page:
-#              schema:
-#                type: integer
-#                x-dws-expr: args.page
-#            OS:
-#              schema:
-#                type: string
-#                x-dws-expr: env.OS
-#            API-version:
-#              schema:
-#                type: string
-#                x-dws-expr: '`v1`'
-#        400:
-#          description: error
-#          content:
-#            application/hal+json:
-#              schema:
-#                $ref: "#/components/schemas/Error"
-#  /brewery_with_subject:
-#    get:
-#      x-dws-query: brewery_with_subject
-#      parameters:
-#        - name: expand
-#          x-dws-type: expand
-#          in: query
-#          schema:
-#            type: array
-#            default: ['beers']
-#            items:
-#              type: string
-#              enum: ['beers', 'beers.ingredients', 'beers.supplements']
-#        - name: subject
-#          in: query
-#          required: true
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/hal+json:
-#              schema:
-#                $ref: '#/components/schemas/Brewery'
   /brewery/{identifier}:
     get:
       x-dws-query: brewery
@@ -380,86 +241,3 @@ paths:
             application/hal+json:
               schema:
                 $ref: "#/components/schemas/Error"
-
-#  /brewery_post:
-#    post:
-#      x-dws-query: brewery
-#      requestBody:
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#              required:
-#                - identifier
-#              properties:
-#                identifier:
-#                  type: string
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/hal+json:
-#              schema:
-#                $ref: '#/components/schemas/Brewery'
-#  /breweries/{identifier}:
-#    get:
-#      x-dws-query: brewery
-#      parameters:
-#        - name: identifier
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#      responses:
-#        303:
-#          description: "300 response"
-#          headers:
-#            Location:
-#              schema:
-#                type: string
-#                x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
-#  /brewery/{identifier}/model:
-#    get:
-#      x-dws-query: breweryModel
-#      parameters:
-#        - name: identifier
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#        - name: iri
-#          in: header
-#          required: true
-#          schema:
-#            type: string
-#            format: uri
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/ld+json: {}
-#            text/n3: {}
-#            application/n-quads: {}
-#            application/n-triples: {}
-#            application/rdf+xml: {}
-#            application/trig: {}
-#            application/sparql-result+json: {}
-#            application/sparql-result+xml: {}
-#            text/turtle:
-#              x-dws-default: true
-#  /brewery/{identifier}/sparql:
-#    get:
-#      x-dws-query: brewerySparql
-#      parameters:
-#        - name: identifier
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/sparql-results+json: {}
-#            application/sparql-results+xml:
-#              x-dws-default: true

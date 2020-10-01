@@ -9,13 +9,12 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import net.minidev.json.JSONArray;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class JsonQueryFetcher implements DataFetcher<Object> {
@@ -37,7 +36,8 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
     JsonNode jsonNode = getJsonDocumentByFile(jsonDirective);
 
     GraphQLArgument jsonPathTemplate = jsonDirective.getArgument(JsonDirectives.ARGS_PATH);
-    String jsonPath = createJsonPathWithArguments(jsonPathTemplate.getValue().toString(), environment.getArguments());
+    String jsonPath = createJsonPathWithArguments(jsonPathTemplate.getValue()
+        .toString(), environment.getArguments());
 
     JSONArray jsonPathResult = JsonPath.read(jsonNode.toString(), jsonPath);
 
@@ -57,13 +57,14 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
   private JsonNode getJsonDocumentByFile(GraphQLDirective jsonDirective) {
     GraphQLArgument fileName = jsonDirective.getArgument(JsonDirectives.ARGS_FILE);
 
-    return jsonDataService.getJsonSourceData(fileName.getValue().toString());
+    return jsonDataService.getJsonSourceData(fileName.getValue()
+        .toString());
   }
 
   private String createJsonPathWithArguments(String jsonPath, Map<String, Object> arguments) {
     String result = jsonPath;
 
-    for(Map.Entry<String, Object> entry : arguments.entrySet()) {
+    for (Map.Entry<String, Object> entry : arguments.entrySet()) {
       result = jsonPath.replace("?", String.format("?(@.%s == %s)", entry.getKey(), entry.getValue()));
     }
 

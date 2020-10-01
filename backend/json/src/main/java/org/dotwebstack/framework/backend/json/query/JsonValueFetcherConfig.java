@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ValueFetcherConfig {
+public class JsonValueFetcherConfig {
   @Bean
-  public ValueFetcher getValueFetcher(@NonNull JsonConverterRouter router) {
-    return new ValueFetcher(router);
+  public JsonValueFetcher getValueFetcher(@NonNull JsonConverterRouter router) {
+    return new JsonValueFetcher(router);
   }
 }

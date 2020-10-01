@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.backend.json;
 
+import static graphql.language.DirectiveLocation.newDirectiveLocation;
+import static graphql.language.InputValueDefinition.newInputValueDefinition;
+
 import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
@@ -11,9 +14,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
-
-import static graphql.language.DirectiveLocation.newDirectiveLocation;
-import static graphql.language.InputValueDefinition.newInputValueDefinition;
 
 @Component
 public class JsonConfigurer implements GraphqlConfigurer {

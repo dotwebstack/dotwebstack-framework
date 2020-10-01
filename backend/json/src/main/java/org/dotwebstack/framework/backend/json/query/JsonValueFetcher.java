@@ -3,15 +3,14 @@ package org.dotwebstack.framework.backend.json.query;
 import com.fasterxml.jackson.databind.JsonNode;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.ArrayList;
+import java.util.List;
 import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 
-import java.util.ArrayList;
-import java.util.List;
+public class JsonValueFetcher extends SourceDataFetcher {
 
-public class ValueFetcher extends SourceDataFetcher {
-
-  public ValueFetcher(CoreConverterRouter converterRouter) {
+  public JsonValueFetcher(CoreConverterRouter converterRouter) {
     super(converterRouter);
   }
 

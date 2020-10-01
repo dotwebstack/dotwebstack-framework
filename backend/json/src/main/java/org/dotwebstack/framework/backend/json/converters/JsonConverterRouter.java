@@ -15,4 +15,3 @@ public class JsonConverterRouter implements CoreConverterRouter {
     throw new UnsupportedOperationException("not yet implemented.");
   }
 }
-

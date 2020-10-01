@@ -26,7 +26,6 @@ type Brewery {
   address: Address
   postalCode: String
   sponsorship: Sponsorship
-  #beers(name: [SortField!] = [{order: ASC}], ingredient: String, supplement: String): [Beer!]
   lemonBeers: [Beer]
   beerCount: Int!
 }
