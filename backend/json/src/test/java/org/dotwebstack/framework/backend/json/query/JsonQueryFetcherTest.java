@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ResourceLoader;
 
 @ExtendWith(MockitoExtension.class)
-public class JsonQueryFetcherTest {
+class JsonQueryFetcherTest {
 
   @Mock
   private DataFetchingEnvironment environmentMock;

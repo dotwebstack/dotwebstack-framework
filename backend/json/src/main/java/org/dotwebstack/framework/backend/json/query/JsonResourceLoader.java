@@ -8,6 +8,8 @@ import org.springframework.core.io.Resource;
 
 public class JsonResourceLoader {
 
+  private JsonResourceLoader() {}
+
   public static final String JSON_DATA_PATH = "data/";
 
   public static Optional<Resource> loadJsonResource(String fileName) {

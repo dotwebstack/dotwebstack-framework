@@ -16,7 +16,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 @ExtendWith(MockitoExtension.class)
-public class JsonDataServiceTest {
+class JsonDataServiceTest {
 
   @Mock
   private ResourcePatternResolver resourceLoader;

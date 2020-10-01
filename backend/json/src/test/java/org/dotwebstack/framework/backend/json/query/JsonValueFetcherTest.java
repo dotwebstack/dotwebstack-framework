@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.ArrayList;
-import org.dotwebstack.framework.backend.json.TestHelper;
 import org.dotwebstack.framework.backend.json.converters.JsonConverterRouter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class JsonValueFetcherTest {
+class JsonValueFetcherTest {
 
   @Mock
-  private DataFetchingEnvironment environment;
+  private DataFetchingEnvironment environmentMock;
 
   private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -35,21 +34,21 @@ public class JsonValueFetcherTest {
   void setup() throws JsonProcessingException {
     jsonValueFetcher = new JsonValueFetcher(jsonConverterRouter);
 
-    JsonNode jsonNode = objectMapper.readTree(TestHelper.getSingleBrewery());
+    JsonNode jsonNode = objectMapper.readTree(getSingleBreweryAsJson());
     JsonSolution jsonSolution = new JsonSolution(jsonNode);
 
-    when(environment.getSource()).thenReturn(jsonSolution);
+    when(environmentMock.getSource()).thenReturn(jsonSolution);
   }
 
   @Test
   void getIdentifierFromBreweryTest() throws Exception {
     // Arrange
-    when(environment.getField()).thenReturn(Field.newField()
+    when(environmentMock.getField()).thenReturn(Field.newField()
         .name("identifier")
         .build());
 
     // Act
-    Object result = jsonValueFetcher.get(environment);
+    Object result = jsonValueFetcher.get(environmentMock);
 
     // Assert
     assertThat(result.toString(), is(equalTo("1")));
@@ -58,12 +57,12 @@ public class JsonValueFetcherTest {
   @Test
   void getOwnersFromBreweryTest() throws Exception {
     // Arrange
-    when(environment.getField()).thenReturn(Field.newField()
+    when(environmentMock.getField()).thenReturn(Field.newField()
         .name("owners")
         .build());
 
     // Act
-    ArrayList<?> result = (ArrayList<?>) jsonValueFetcher.get(environment);
+    ArrayList<?> result = (ArrayList<?>) jsonValueFetcher.get(environmentMock);
 
     // Assert
     assertThat(result.size(), is(4));
@@ -72,12 +71,12 @@ public class JsonValueFetcherTest {
   @Test
   void returnNullWhenFieldIsNotFoundTest() throws Exception {
     // Arrange
-    when(environment.getField()).thenReturn(Field.newField()
+    when(environmentMock.getField()).thenReturn(Field.newField()
         .name("unknownField")
         .build());
 
     // Act
-    Object result = jsonValueFetcher.get(environment);
+    Object result = jsonValueFetcher.get(environmentMock);
 
     // Assert
     assertThat(result, is(equalTo(null)));
@@ -86,10 +85,17 @@ public class JsonValueFetcherTest {
   @Test
   void supportsJsonNodeTest() {
     // Act
-    boolean supportsJsonNode = jsonValueFetcher.supports(environment);
+    boolean supportsJsonNode = jsonValueFetcher.supports(environmentMock);
 
     // Assert
     assertThat(supportsJsonNode, is(true));
+  }
+
+  private String getSingleBreweryAsJson() {
+    return "{\n" + "      \"identifier\": 1,\n" + "      \"brewmasters\": \"Jeroen van Hees\",\n"
+        + "      \"founded\": \"2014-05-03\",\n" + "      \"name\": \"De Brouwerij\",\n" + "      \"beerCount\": 3,\n"
+        + "      \"group\": \"Onafhankelijk\",\n" + "      \"owners\": [\n" + "        \"J.v.Hees\",\n"
+        + "        \"I.Verhoef\",\n" + "        \"L.du Clou\",\n" + "        \"M.Kuijpers\"\n" + "      ]\n" + "    }";
   }
 
 }

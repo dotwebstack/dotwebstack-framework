@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 @ExtendWith(MockitoExtension.class)
-public class JsonDirectivesWiringTest {
+class JsonDirectivesWiringTest {
 
   @Mock
   private ResourcePatternResolver resourceLoaderMock;
@@ -43,7 +43,7 @@ public class JsonDirectivesWiringTest {
   private GraphQLDirective jsonDirectiveMock;
 
   @Mock
-  private SchemaDirectiveWiringEnvironment environmentMock;
+  private SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environmentMock;
 
   @Mock
   private GraphQLCodeRegistry.Builder codeRegistryBuilderMock;
@@ -57,16 +57,12 @@ public class JsonDirectivesWiringTest {
   @Mock
   private GraphQLArgument graphQlPredicatesArgumentMock;
 
-  private JsonDataService jsonDataService;
-
-  private JsonQueryFetcher jsonQueryFetcher;
-
   private JsonDirectiveWiring jsonDirectiveWiring;
 
   @BeforeEach
   void setup() {
-    jsonDataService = new JsonDataService(resourceLoaderMock);
-    jsonQueryFetcher = new JsonQueryFetcher(jsonDataService);
+    JsonDataService jsonDataService = new JsonDataService(resourceLoaderMock);
+    JsonQueryFetcher jsonQueryFetcher = new JsonQueryFetcher(jsonDataService);
     jsonDirectiveWiring = new JsonDirectiveWiring(jsonQueryFetcher);
   }
 
