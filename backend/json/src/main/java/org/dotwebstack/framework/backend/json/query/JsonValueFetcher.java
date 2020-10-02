@@ -3,8 +3,8 @@ package org.dotwebstack.framework.backend.json.query;
 import com.fasterxml.jackson.databind.JsonNode;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 
@@ -31,11 +31,10 @@ public class JsonValueFetcher extends SourceDataFetcher {
       return null;
     }
 
-    if (fieldNode.isArray() && fieldNode.size() > 0 && fieldNode.get(0)
-        .isValueNode()) {
-      List<Object> items = new ArrayList<>();
-      fieldNode.forEach(item -> items.add(item.asText()));
-      return items;
+    if (fieldNode.isArray() && fieldNode.size() > 0) {
+      return StreamSupport.stream(fieldNode.spliterator(), false)
+          .map(subject -> subject.isObject() ? subject : subject.asText())
+          .collect(Collectors.toList());
     }
 
     return fieldNode.isValueNode() ? fieldNode.asText() : new JsonSolution(fieldNode);
