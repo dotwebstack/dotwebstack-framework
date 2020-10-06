@@ -12,9 +12,11 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
+import org.dotwebstack.framework.backend.json.directives.PredicateDirectives;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +37,7 @@ class JsonQueryFetcherTest {
   private GraphQLFieldDefinition graphQlFieldDefinitionMock;
 
   @Mock
-  private GraphQLDirective graphQlDirectiveMock;
+  private GraphQLDirective jsonGraphQlDirectiveMock;
 
   @Mock
   private GraphQLArgument graphQlFileArgumentMock;
@@ -47,15 +49,11 @@ class JsonQueryFetcherTest {
 
   @BeforeEach
   void setup() {
-    Map<String, Object> arguments = new HashMap<>();
-    arguments.put("identifier", 1);
+    when(jsonGraphQlDirectiveMock.getArgument(JsonDirectives.ARGS_FILE)).thenReturn(graphQlFileArgumentMock);
+    when(jsonGraphQlDirectiveMock.getArgument(JsonDirectives.ARGS_PATH)).thenReturn(graphQlPathArgumentMock);
 
-    when(graphQlDirectiveMock.getArgument(JsonDirectives.ARGS_FILE)).thenReturn(graphQlFileArgumentMock);
-    when(graphQlDirectiveMock.getArgument(JsonDirectives.ARGS_PATH)).thenReturn(graphQlPathArgumentMock);
+    when(graphQlFieldDefinitionMock.getDirective(JsonDirectives.JSON_NAME)).thenReturn(jsonGraphQlDirectiveMock);
 
-    when(graphQlFieldDefinitionMock.getDirective(JsonDirectives.JSON_NAME)).thenReturn(graphQlDirectiveMock);
-
-    when(environmentMock.getArguments()).thenReturn(arguments);
     when(environmentMock.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
 
     JsonDataService jsonDataService = new JsonDataService(resourceLoaderMock);
@@ -68,7 +66,16 @@ class JsonQueryFetcherTest {
     GraphQLList graphQlObjectTypeMock = mock(GraphQLList.class);
 
     when(graphQlFileArgumentMock.getValue()).thenReturn("test.json");
-    when(graphQlPathArgumentMock.getValue()).thenReturn("$.beers");
+    when(graphQlPathArgumentMock.getValue()).thenReturn("$..beers");
+
+    GraphQLArgument graphQlArgument = mock(GraphQLArgument.class);
+    GraphQLDirective predicateDirective = mock(GraphQLDirective.class);
+    GraphQLArgument propertyArgument = mock(GraphQLArgument.class);
+
+    when(predicateDirective.getArgument(PredicateDirectives.ARGS_PROPERTY)).thenReturn(propertyArgument);
+    when(graphQlArgument.getDirective(PredicateDirectives.PREDICATE_NAME)).thenReturn(predicateDirective);
+
+    when(graphQlFieldDefinitionMock.getArguments()).thenReturn(Collections.singletonList(graphQlArgument));
     when(environmentMock.getFieldType()).thenReturn(graphQlObjectTypeMock);
 
     // Act
@@ -81,10 +88,24 @@ class JsonQueryFetcherTest {
   @Test
   void getBeerByIdReturnsJsonSolutionTest() throws Exception {
     // Arrange
-    GraphQLNonNull graphQlObjectTypeMock = mock(GraphQLNonNull.class);
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("identifier", 1);
 
+    when(environmentMock.getArguments()).thenReturn(arguments);
     when(graphQlFileArgumentMock.getValue()).thenReturn("test.json");
-    when(graphQlPathArgumentMock.getValue()).thenReturn("$.beers[?]");
+    when(graphQlPathArgumentMock.getValue()).thenReturn("$..beers[?]");
+
+    GraphQLNonNull graphQlObjectTypeMock = mock(GraphQLNonNull.class);
+    GraphQLArgument graphQlArgument = mock(GraphQLArgument.class);
+    GraphQLDirective predicateDirective = mock(GraphQLDirective.class);
+    GraphQLArgument propertyArgument = mock(GraphQLArgument.class);
+
+    when(graphQlArgument.getName()).thenReturn("identifier");
+    when(propertyArgument.getValue()).thenReturn("identifier");
+    when(predicateDirective.getArgument(PredicateDirectives.ARGS_PROPERTY)).thenReturn(propertyArgument);
+    when(graphQlArgument.getDirective(PredicateDirectives.PREDICATE_NAME)).thenReturn(predicateDirective);
+
+    when(graphQlFieldDefinitionMock.getArguments()).thenReturn(Collections.singletonList(graphQlArgument));
     when(environmentMock.getFieldType()).thenReturn(graphQlObjectTypeMock);
 
     // Act

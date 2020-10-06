@@ -11,9 +11,12 @@ components:
       required:
         - identifier
         - name
+        - brewery
       properties:
         identifier:
           type: string
+        brewery:
+          $ref: '#/components/schemas/Brewery'
         name:
           type: string
           nullable: true
@@ -176,29 +179,6 @@ components:
 
 
 paths:
-  /breweries:
-    get:
-      x-dws-query:
-        field: breweries
-        requiredFields:
-          - name
-      responses:
-        200:
-          description: OK
-          content:
-            application/hal+json:
-              x-dws-default: true
-              schema:
-                $ref: '#/components/schemas/BreweryCollection'
-            application/stream+json:
-              schema:
-                $ref: '#/components/schemas/BreweryCollection'
-        400:
-          description: error
-          content:
-            application/hal+json:
-              schema:
-                $ref: "#/components/schemas/Error"
   /brewery/{identifier}:
     get:
       x-dws-query: brewery

@@ -14,7 +14,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import java.util.ArrayList;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.json.query.JsonQueryFetcher;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 public class JsonDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
   private final JsonQueryFetcher jsonQueryFetcher;
-
 
   public JsonDirectiveWiring(@NonNull JsonQueryFetcher jsonQueryFetcher) {
     this.jsonQueryFetcher = jsonQueryFetcher;
@@ -40,10 +38,9 @@ public class JsonDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
   public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
     GraphQLType outputType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-    GraphQLDirective directive = environment.getDirective();
 
     validateOutputType(outputType);
-    validateDirective(directive);
+    validateDirective(environment);
 
     registerDataFetcher(environment);
 
@@ -57,10 +54,12 @@ public class JsonDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
     }
   }
 
-  private void validateDirective(GraphQLDirective graphQlDirective) {
-    validateDirectiveName(graphQlDirective);
-    validateDirectiveFile(graphQlDirective);
-    validateDirectivePathAndPredicate(graphQlDirective);
+  private void validateDirective(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+    GraphQLDirective directive = environment.getDirective();
+
+    validateDirectiveName(directive);
+    validateDirectiveFile(directive);
+    validateDirectivePathAndPredicate(environment);
   }
 
   private void validateDirectiveName(GraphQLDirective graphQlDirective) {
@@ -79,30 +78,42 @@ public class JsonDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
     }
   }
 
-  private void validateDirectivePathAndPredicate(GraphQLDirective graphQlDirective) {
-    GraphQLArgument pathArgument = graphQlDirective.getArgument(JsonDirectives.ARGS_PATH);
+  private void validateDirectivePathAndPredicate(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+    GraphQLDirective jsonDirective = environment.getDirective();
+    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
+
+    GraphQLArgument pathArgument = jsonDirective.getArgument(JsonDirectives.ARGS_PATH);
     if (pathArgument != null) {
       String jsonPathTemplate = String.valueOf(pathArgument.getValue());
 
       validateJsonPath(jsonPathTemplate);
 
-      validatePredicates(graphQlDirective, jsonPathTemplate);
+      validatePredicates(fieldDefinition, jsonPathTemplate);
     }
   }
 
-  private void validatePredicates(GraphQLDirective graphQlDirective, String jsonPathTemplate) {
+  private void validatePredicates(GraphQLFieldDefinition fieldDefinition, String jsonPathTemplate) {
     int expectedNumberOfPredicates = StringUtils.countMatches(jsonPathTemplate, "?");
-    GraphQLArgument predicatesArgument = graphQlDirective.getArgument(JsonDirectives.ARGS_PREDICATES);
 
-    ArrayList<?> predicates = new ArrayList<>();
+    long amountOfPredicateDirectives = fieldDefinition.getArguments()
+        .stream()
+        .filter(argument -> argument.getDirective(PredicateDirectives.PREDICATE_NAME) != null)
+        .map(argument -> {
+          validateMandatoryArguments(argument);
+          return argument;
+        })
+        .count();
 
-    if (predicatesArgument != null && predicatesArgument.getValue() != null) {
-      predicates = (ArrayList<?>) predicatesArgument.getValue();
-    }
-
-    if (expectedNumberOfPredicates != predicates.size()) {
+    if (expectedNumberOfPredicates != amountOfPredicateDirectives) {
       throw invalidConfigurationException("Expected %s predicate(s), found: %s.", expectedNumberOfPredicates,
-          predicates.size());
+          amountOfPredicateDirectives);
+    }
+  }
+
+  private void validateMandatoryArguments(GraphQLArgument argument) {
+    if (!GraphQLTypeUtil.isNonNull(argument.getType())) {
+      throw invalidConfigurationException("Argument: %s with type: '%s' should be mandatory.", argument.getName(),
+          argument.getType());
     }
   }
 

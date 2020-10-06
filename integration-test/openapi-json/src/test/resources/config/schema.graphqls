@@ -7,14 +7,14 @@ type Query {
   breweries: [Brewery!]!
   @json(file: "data.json", path: "$.brewery")
 
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Brewery
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
   @json(file: "data.json", path: "$.brewery[?]")
 
-  beer(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Beer
-  @json(file: "data.json", path: "$..beers[?]")
+  beer(identifier: ID! @constraint(pattern: "[0-9]+")): Beer
+  @json(file: "data.json", path: "$.beers[?]", predicates: ["args.identifier"])
 
   beers: [Beer!]!
-  @json(file: "data.json", path: "$..beers")
+  @json(file: "data.json", path: "$.beers")
 }
 
 type Brewery {
@@ -29,7 +29,6 @@ type Brewery {
   @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
-  beers: [Beer!]!
   sponsorship: Sponsorship
   lemonBeers: [Beer]
   beerCount: Int!
@@ -41,9 +40,11 @@ type Address {
 }
 
 type Beer {
-  identifier: ID
-  name: String
+  identifier: ID!
+  name: String!
   created: DateTime
+  brewery: Brewery
+  #  beerTypes: [String]!
   ingredients(name: [String]): [Ingredient!]
   supplements: [Supplement!]
 }

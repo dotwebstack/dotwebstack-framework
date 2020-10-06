@@ -1,0 +1,50 @@
+{
+  "_embedded": {
+    "breweries": [
+      {
+        "identifier": "789",
+        "beers": [
+          {
+            "identifier": "6",
+            "name": "Alfa Edel Pils",
+            "link": "https://github.com/dotwebstack/api/v1/beers/6",
+            "ingredients": [
+              {
+                "name": "Hop"
+              },
+              {
+                "name": "Gerst"
+              },
+              {
+                "name": "Sinasappel"
+              },
+              {
+                "name": "Citroen"
+              }
+            ]
+          },
+          {
+            "identifier": "9",
+            "name": "Alfa Krachtig Dort",
+            "link": "https://github.com/dotwebstack/api/v1/beers/9",
+            "ingredients": [
+              {
+                "name": "Sinasappel"
+              },
+              {
+                "name": "Citroen"
+              }
+            ]
+          }
+        ],
+        "name": "Alfa Brouwerij",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/789"
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://github.com/dotwebstack/api/v1/breweries"
+    }
+  }
+}

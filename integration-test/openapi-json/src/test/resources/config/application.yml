@@ -1,0 +1,13 @@
+logging:
+  level.org.dotwebstack: DEBUG
+
+server.port: 8080
+
+dotwebstack:
+  base_url: http://localhost:8080
+  openapi:
+    dateproperties:
+      dateformat: dd-MM-yyyy
+      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+      timezone: Europe/Amsterdam
+    apiDocPublicationPath: /
