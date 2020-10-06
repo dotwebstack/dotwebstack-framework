@@ -1,10 +1,8 @@
 logging:
   level.org.dotwebstack: DEBUG
 
-server.port: 8080
-
 dotwebstack:
-  base_url: http://localhost:8080
+  base_url: https://github.com/dotwebstack/api/v1
   openapi:
     dateproperties:
       dateformat: dd-MM-yyyy

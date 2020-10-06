@@ -11,7 +11,6 @@ components:
       required:
         - identifier
         - name
-        - brewery
       properties:
         identifier:
           type: string
@@ -65,7 +64,6 @@ components:
         - localName
         - owners
         - sponsorship
-        - lemonBeers
         - beerCount
       properties:
         identifier:
@@ -208,6 +206,14 @@ paths:
           required: true
           schema:
             type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [ 'brewery' ]
       responses:
         200:
           description: OK
@@ -224,6 +230,15 @@ paths:
         field: beers
         requiredFields:
           - name
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [ 'brewery' ]
       responses:
         200:
           description: OK

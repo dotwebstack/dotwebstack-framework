@@ -107,15 +107,15 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
     return filterCriteria;
   }
 
-  private Pair<String, Object> getArgumentsPair(Map<String, Object> arguments, GraphQLArgument graphQLArgument) {
-    GraphQLDirective predicate = graphQLArgument.getDirective(PredicateDirectives.PREDICATE_NAME);
+  private Pair<String, Object> getArgumentsPair(Map<String, Object> arguments, GraphQLArgument argument) {
+    GraphQLDirective predicate = argument.getDirective(PredicateDirectives.PREDICATE_NAME);
 
     String key = Optional.ofNullable(predicate.getArgument(PredicateDirectives.ARGS_PROPERTY))
         .map(GraphQLArgument::getValue)
         .map(Object::toString)
-        .orElse(graphQLArgument.getName());
+        .orElse(argument.getName());
 
-    return Pair.of(key, arguments.get(graphQLArgument.getName()));
+    return Pair.of(key, arguments.get(argument.getName()));
   }
 
 }

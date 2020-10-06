@@ -7,11 +7,11 @@ type Query {
   breweries: [Brewery!]!
   @json(file: "data.json", path: "$.brewery")
 
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @predicate): Brewery
   @json(file: "data.json", path: "$.brewery[?]")
 
-  beer(identifier: ID! @constraint(pattern: "[0-9]+")): Beer
-  @json(file: "data.json", path: "$.beers[?]", predicates: ["args.identifier"])
+  beer(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Beer
+  @json(file: "data.json", path: "$.beers[?]")
 
   beers: [Beer!]!
   @json(file: "data.json", path: "$.beers")

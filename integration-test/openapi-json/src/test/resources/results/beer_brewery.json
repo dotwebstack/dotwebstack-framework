@@ -1,0 +1,25 @@
+{
+  "brewery": {
+    "beerCount": 3,
+    "founded": "03-05-2014",
+    "identifier": "3",
+    "link": "https://github.com/dotwebstack/api/v1/brewery/3",
+    "localName": null,
+    "name": "De Brouwerij",
+    "owners": [
+      "J.v.Hees",
+      "I.Verhoef",
+      "L.du Clou",
+      "M.Kuijpers"
+    ],
+    "sponsorship": {
+      "identifier": "3",
+      "name": "De Brouwerij",
+      "numbers": []
+    },
+    "subject": "test"
+  },
+  "identifier": "1",
+  "link": "https://github.com/dotwebstack/api/v1/beers/1",
+  "name": "Alfa Edel Pils"
+}
