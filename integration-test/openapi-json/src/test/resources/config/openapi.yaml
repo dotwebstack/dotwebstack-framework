@@ -191,7 +191,6 @@ paths:
           description: OK
           content:
             text/html:
-              x-dws-template: brewery.html
               schema:
                 $ref: '#/components/schemas/Brewery'
             application/hal+json:
