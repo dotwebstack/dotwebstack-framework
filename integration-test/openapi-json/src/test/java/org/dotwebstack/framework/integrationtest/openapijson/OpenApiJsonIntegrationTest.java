@@ -39,6 +39,20 @@ class OpenApiJsonIntegrationTest {
   }
 
   @Test
+  void openApiRequest_ReturnsBeers_byCountryAndName_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/beers/Germany/Becks")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/beer_by_country_and_name.json");
+  }
+
+  @Test
   void openApiRequest_ReturnsBeer_withExpandedBrewery() throws IOException {
     // Arrange & Act
     String result = webClient.get()

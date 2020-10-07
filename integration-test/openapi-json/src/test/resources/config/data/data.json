@@ -1,29 +1,12 @@
 {
-  "breweries": [
-    {
-      "identifier": 1,
-      "brewmasters": "Jeroen van Hees",
-      "subject" : "test",
-      "founded": "2014-05-03",
-      "name": "De Brouwerij",
-      "beerCount": 3,
-      "group": "Onafhankelijk",
-      "owners": [
-        "J.v.Hees",
-        "I.Verhoef",
-        "L.du Clou",
-        "M.Kuijpers"
-      ]
-    }
-  ],
   "beers": [
     {
       "identifier": 1,
+      "country": "Holland",
       "name": "Alfa Edel Pils",
       "brewery" : {
         "identifier": 3,
         "brewmasters": "Jeroen van Hees",
-        "subject" : "test",
         "founded": "2014-05-03",
         "name": "De Brouwerij",
         "beerCount": 3,
@@ -38,12 +21,11 @@
     },
     {
       "identifier": 2,
+      "country": "Holland",
       "name": "Alfa Radler",
-      "test" :"qwerty",
       "brewery" : {
         "identifier": 3,
         "brewmasters": "Jeroen van Hees",
-        "subject" : "test",
         "founded": "2014-05-03",
         "name": "De Brouwerij",
         "beerCount": 3,
@@ -53,6 +35,22 @@
           "I.Verhoef",
           "L.du Clou",
           "M.Kuijpers"
+        ]
+      }
+    },
+    {
+      "identifier": 3,
+      "country": "Germany",
+      "name": "Becks",
+      "brewery" : {
+        "identifier": 4,
+        "brewmasters": "Karel von Zauphen",
+        "founded": "2015-05-03",
+        "name": "Das Bier",
+        "beerCount": 3,
+        "group": "Onafhankelijk",
+        "owners": [
+          "Karel.v.Zauphen"
         ]
       }
     }

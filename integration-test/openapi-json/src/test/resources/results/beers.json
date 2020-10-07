@@ -3,13 +3,18 @@
     "beers": [
       {
         "identifier": "1",
-        "link": "https://github.com/dotwebstack/api/v1/beers/1",
-        "name": "Alfa Edel Pils"
+        "name": "Alfa Edel Pils",
+        "link": "https://github.com/dotwebstack/api/v1/beers/1"
       },
       {
         "identifier": "2",
-        "link": "https://github.com/dotwebstack/api/v1/beers/2",
-        "name": "Alfa Radler"
+        "name": "Alfa Radler",
+        "link": "https://github.com/dotwebstack/api/v1/beers/2"
+      },
+      {
+        "identifier": "3",
+        "name": "Becks",
+        "link": "https://github.com/dotwebstack/api/v1/beers/3"
       }
     ]
   },

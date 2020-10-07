@@ -1,0 +1,14 @@
+{
+  "_embedded" : {
+    "beers" : [ {
+      "identifier" : "3",
+      "name" : "Becks",
+      "link" : "https://github.com/dotwebstack/api/v1/beers/3"
+    } ]
+  },
+  "_links" : {
+    "self" : {
+      "href" : "https://github.com/dotwebstack/api/v1/beers"
+    }
+  }
+}

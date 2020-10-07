@@ -58,7 +58,6 @@ components:
       type: object
       required:
         - identifier
-        - subject
         - name
         - founded
         - localName
@@ -69,8 +68,6 @@ components:
         identifier:
           type: string
         founded:
-          type: string
-        subject:
           type: string
         name:
           type: string
@@ -223,6 +220,48 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Beer'
+  /beers/{country}/{name}:
+    get:
+      x-dws-query:
+        field: beers_by_country_and_name
+        requiredFields:
+          - name
+      parameters:
+        -   name: name
+            in: path
+            required: true
+            schema:
+              type: string
+        -   name: country
+            in: path
+            required: true
+            schema:
+              type: string
+        -   name: expand
+            x-dws-type: expand
+            in: query
+            schema:
+              type: array
+              items:
+                type: string
+                enum: [ 'brewery' ]
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              x-dws-default: true
+              schema:
+                $ref: '#/components/schemas/BeerCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BeerCollection'
+        400:
+          description: error
+          content:
+            application/hal+json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /beers:
     get:
       x-dws-query:
