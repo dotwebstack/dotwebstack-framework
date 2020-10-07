@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.backend.json.query;
 
 import static com.jayway.jsonpath.Criteria.where;
-import static com.jayway.jsonpath.Filter.filter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.Criteria;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import graphql.schema.DataFetcher;
@@ -47,11 +45,12 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
     JsonNode jsonNode = getJsonDocumentByFile(jsonDirective);
 
     GraphQLArgument jsonPathTemplate = jsonDirective.getArgument(JsonDirectives.ARGS_PATH);
-    Filter jsonPathFilter = createJsonPathWithArguments(environment.getArguments(), environment.getFieldDefinition());
+    List<Filter> jsonPathFilters =
+        createJsonPathWithArguments(environment.getArguments(), environment.getFieldDefinition());
 
     JSONArray jsonPathResult = JsonPath.parse(jsonNode.toString())
         .read(jsonPathTemplate.getValue()
-            .toString(), jsonPathFilter);
+            .toString(), jsonPathFilters.toArray(new Filter[jsonPathFilters.size()]));
 
     if (jsonPathResult.isEmpty()) {
       return null;
@@ -79,7 +78,8 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
         .toString());
   }
 
-  private Filter createJsonPathWithArguments(Map<String, Object> arguments, GraphQLFieldDefinition fieldDefinition) {
+  private List<Filter> createJsonPathWithArguments(Map<String, Object> arguments,
+      GraphQLFieldDefinition fieldDefinition) {
     List<Pair<String, Object>> predicateFilters = fieldDefinition.getArguments()
         .stream()
         .filter(argument -> argument.getDirective(PredicateDirectives.PREDICATE_NAME) != null)
@@ -87,24 +87,10 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
         .filter(pair -> pair.getLeft() != null && pair.getRight() != null)
         .collect(Collectors.toList());
 
-    Criteria criteria = getFilterCriteria(predicateFilters);
-
-    return criteria != null ? filter(criteria) : null;
-  }
-
-  private Criteria getFilterCriteria(List<Pair<String, Object>> predicateFilters) {
-    Criteria filterCriteria = null;
-    int i = 0;
-    for (Pair<String, Object> predicate : predicateFilters) {
-      if (i == 0) {
-        filterCriteria = where(predicate.getLeft()).is(predicate.getRight());
-      } else {
-        filterCriteria.and(predicate.getLeft())
-            .is(predicate.getRight());
-      }
-      i++;
-    }
-    return filterCriteria;
+    return predicateFilters.stream()
+        .map(predicateFilter -> where(predicateFilter.getLeft()).is(predicateFilter.getRight()))
+        .map(Filter::filter)
+        .collect(Collectors.toList());
   }
 
   private Pair<String, Object> getArgumentsPair(Map<String, Object> arguments, GraphQLArgument argument) {
