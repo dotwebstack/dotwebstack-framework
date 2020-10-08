@@ -1,14 +1,21 @@
 package org.dotwebstack.framework.backend.json.query;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.dotwebstack.framework.backend.json.scalars.JsonScalars;
 import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 
 public class JsonValueFetcher extends SourceDataFetcher {
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public JsonValueFetcher(CoreConverterRouter converterRouter) {
     super(converterRouter);
@@ -29,6 +36,12 @@ public class JsonValueFetcher extends SourceDataFetcher {
     JsonNode fieldNode = result.get(name);
     if (fieldNode == null || fieldNode.isNull()) {
       return null;
+    }
+
+    if (JsonScalars.OBJECT.getName()
+        .equals(TypeHelper.getTypeName(dataFetchingEnvironment.getFieldDefinition()
+            .getType()))) {
+      return mapper.<Map<String, Object>>convertValue(fieldNode, new TypeReference<>() {});
     }
 
     if (fieldNode.isArray() && fieldNode.size() > 0) {
