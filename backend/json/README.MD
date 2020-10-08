@@ -37,4 +37,16 @@ type Query {
 ```
 
 The `@predicate` directive takes one optional argument, the `property` argument. The `property` argument
-sets the matching json property name to which the filter is applied. If this directive argument is not set the graphql query argument name is used. 
+sets the matching json property name to which the filter is applied. If this directive argument is not set the graphql query argument name is used.
+
+## 1.4 JsonObject scalar
+
+It is possible to make use of a special scalar type named `JsonObject` which maps a JsonNode to a backed Java map implementation 
+
+```graphql
+type Beer {
+  identifier: ID
+  name: String
+  ingredients: JsonObject
+}
+``` 

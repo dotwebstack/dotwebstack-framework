@@ -243,6 +243,13 @@ public class JsonResponseMapper {
       return parentContext.getData();
     }
 
+    if (parentContext.getResponseObject()
+        .getSummary()
+        .getChildren()
+        .isEmpty()) {
+      return parentContext.getData();
+    }
+
     Map<String, Object> result = new HashMap<>();
     parentContext.getResponseObject()
         .getSummary()

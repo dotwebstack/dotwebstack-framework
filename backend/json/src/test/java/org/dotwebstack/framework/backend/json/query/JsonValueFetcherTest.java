@@ -3,13 +3,16 @@ package org.dotwebstack.framework.backend.json.query;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.Scalars;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLFieldDefinition;
 import java.util.ArrayList;
 import org.dotwebstack.framework.backend.json.converters.JsonConverterRouter;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +27,9 @@ class JsonValueFetcherTest {
   @Mock
   private DataFetchingEnvironment environmentMock;
 
-  private ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-  private JsonConverterRouter jsonConverterRouter = new JsonConverterRouter();
+  private final JsonConverterRouter jsonConverterRouter = new JsonConverterRouter();
 
   private JsonValueFetcher jsonValueFetcher;
 
@@ -47,6 +50,8 @@ class JsonValueFetcherTest {
         .name("identifier")
         .build());
 
+    mockFieldDefinition();
+
     // Act
     Object result = jsonValueFetcher.get(environmentMock);
 
@@ -61,11 +66,20 @@ class JsonValueFetcherTest {
         .name("owners")
         .build());
 
+    mockFieldDefinition();
+
     // Act
     ArrayList<?> result = (ArrayList<?>) jsonValueFetcher.get(environmentMock);
 
     // Assert
     assertThat(result.size(), is(4));
+  }
+
+  private void mockFieldDefinition() {
+    GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
+    when(fieldDefinition.getType()).thenReturn(Scalars.GraphQLString);
+
+    when(environmentMock.getFieldDefinition()).thenReturn(fieldDefinition);
   }
 
   @Test
