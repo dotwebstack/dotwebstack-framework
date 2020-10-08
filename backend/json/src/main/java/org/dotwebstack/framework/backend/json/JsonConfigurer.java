@@ -15,14 +15,13 @@ import graphql.language.TypeName;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.dotwebstack.framework.backend.json.directives.PredicateDirectives;
 import org.dotwebstack.framework.backend.json.scalars.JsonScalars;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Stream;
 
 @Component
 public class JsonConfigurer implements GraphqlConfigurer {
