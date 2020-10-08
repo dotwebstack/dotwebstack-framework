@@ -1,0 +1,80 @@
+{
+  "_embedded": {
+    "beers": [
+      {
+        "identifier": "1",
+        "brewery": {
+          "identifier": "3",
+          "localName": null,
+          "beerCount": 3,
+          "founded": "03-05-2014",
+          "name": "De Brouwerij",
+          "sponsorship": {
+            "identifier": "3",
+            "numbers": [],
+            "name": "De Brouwerij"
+          },
+          "link": "https://github.com/dotwebstack/api/v1/brewery/3",
+          "owners": [
+            "J.v.Hees",
+            "I.Verhoef",
+            "L.du Clou",
+            "M.Kuijpers"
+          ]
+        },
+        "name": "Alfa Edel Pils",
+        "link": "https://github.com/dotwebstack/api/v1/beers/1"
+      },
+      {
+        "identifier": "2",
+        "brewery": {
+          "identifier": "3",
+          "localName": null,
+          "beerCount": 3,
+          "founded": "03-05-2014",
+          "name": "De Brouwerij",
+          "sponsorship": {
+            "identifier": "3",
+            "numbers": [],
+            "name": "De Brouwerij"
+          },
+          "link": "https://github.com/dotwebstack/api/v1/brewery/3",
+          "owners": [
+            "J.v.Hees",
+            "I.Verhoef",
+            "L.du Clou",
+            "M.Kuijpers"
+          ]
+        },
+        "name": "Alfa Radler",
+        "link": "https://github.com/dotwebstack/api/v1/beers/2"
+      },
+      {
+        "identifier": "3",
+        "brewery": {
+          "identifier": "4",
+          "localName": null,
+          "beerCount": 3,
+          "founded": "03-05-2015",
+          "name": "Das Bier",
+          "sponsorship": {
+            "identifier": "4",
+            "numbers": [],
+            "name": "Das Bier"
+          },
+          "link": "https://github.com/dotwebstack/api/v1/brewery/4",
+          "owners": [
+            "Karel.v.Zauphen"
+          ]
+        },
+        "name": "Becks",
+        "link": "https://github.com/dotwebstack/api/v1/beers/3"
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://github.com/dotwebstack/api/v1/beers"
+    }
+  }
+}

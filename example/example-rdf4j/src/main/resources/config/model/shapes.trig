@@ -1,0 +1,254 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dws: <http://www.dotwebstack.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+@prefix beer: <https://github.com/dotwebstack/beer/> .
+@prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
+@prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
+@prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
+
+<https://github.com/dotwebstack/beer/shapes> {
+  beer_sh:Identifiable a sh:NodeShape ;
+    sh:name "Identifiable" ;
+    sh:property
+      beer_sh:Identifier ,
+      beer_sh:Name
+  .
+
+  beer_sh:Identifier a sh:PropertyShape ;
+    sh:name "identifier" ;
+    sh:path beer_def:identifier ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+   beer_sh:Name a sh:PropertyShape ;
+     sh:name "name" ;
+     sh:path [ sh:alternativePath ( schema:name beer_def:label ) ] ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:nodeKind sh:Literal ;
+     sh:datatype xsd:string
+   .
+
+  beer_sh:Brewery a sh:NodeShape ;
+    sh:name "Brewery";
+    sh:or([
+      sh:class beer_def:Brewery ;
+    ]
+    [
+      sh:class beer_def:Abdij ;
+    ]);
+    dws:inherits beer_sh:Identifiable ;
+    sh:property
+      beer_sh:Brewery_localName ,
+      beer_sh:Brewery_founded ,
+      beer_sh:Brewery_owners ,
+      beer_sh:Brewery_years ,
+      beer_sh:Brewery_openinghours ,
+      beer_sh:Brewery_postalCode ,
+      beer_sh:Brewery_beers ,
+      beer_sh:Brewery_lemonBeers ,
+      beer_sh:Brewery_beerCount ,
+      beer_sh:Brewery_sponsorship ,
+      beer_sh:Brewery_url ,
+      beer_sh:Brewery_address
+  .
+
+ beer_sh:Brewery_postalCode a sh:PropertyShape ;
+   sh:name "postalCode" ;
+   sh:path ( schema:address schema:postalCode ) ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string
+ .
+
+  beer_sh:Brewery_localName a sh:PropertyShape ;
+    sh:name "localName" ;
+    sh:path beer_def:localName ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype rdf:langString
+  .
+
+  beer_sh:Brewery_owners a sh:PropertyShape ;
+    sh:name "owners" ;
+    sh:path beer_def:owners ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_years a sh:PropertyShape ;
+    sh:name "years" ;
+    sh:path beer_def:years ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:float
+  .
+
+  beer_sh:Brewery_founded a sh:PropertyShape ;
+    sh:name "founded" ;
+    sh:path beer_def:founded ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:date
+  .
+
+  beer_sh:Brewery_openinghours a sh:PropertyShape ;
+    sh:name "openinghours" ;
+    sh:path beer_def:openinghours ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+ .
+
+  beer_sh:Brewery_url a sh:PropertyShape ;
+    sh:name "url" ;
+    sh:path schema:url ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_beers a sh:PropertyShape ;
+    sh:name "beers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_lemonBeers a sh:PropertyShape ;
+    sh:name "lemonBeers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node [
+      sh:name "LemonBeer" ;
+      dws:inherits beer_sh:Beer ;
+      sh:property [
+        sh:name "hasCitroenIngredient" ;
+        sh:path (beer_def:ingredient [ sh:alternativePath ( schema:name beer_def:label ) ]) ;
+        sh:hasValue "Citroen" ;
+        sh:minCount 1 ;
+      ]
+    ]
+  .
+
+  beer_sh:Brewery_beerCount a sh:PropertyShape ;
+    sh:name "beerCount" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_sponsorship a sh:PropertyShape ;
+    sh:name "sponsorship" ;
+    sh:path beer_def:sponsorship;
+    sh:node beer_sh:Sponsorship
+  .
+
+  beer_sh:Beer a sh:NodeShape ;
+    sh:name "Beer";
+    sh:class beer_def:Beer ;
+    dws:inherits beer_sh:Identifiable ;
+    sh:property
+      beer_sh:Beer_created ,
+      beer_sh:Beer_brewery ,
+      beer_sh:Beer_beerTypes ;
+    sh:property [
+      sh:path beer_def:ingredient ;
+      sh:or (
+        [
+          sh:name "ingredients" ;
+          sh:node beer_sh:Ingredient
+        ]
+        [
+          sh:name "supplements" ;
+          sh:node beer_sh:Supplement
+        ]
+      )
+    ]
+ .
+
+ beer_sh:Beer_brewery a sh:PropertyShape ;
+   sh:name "brewery" ;
+   sh:path beer_def:brewery ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:IRI
+ .
+
+  beer_sh:Beer_created a sh:PropertyShape ;
+    sh:name "created" ;
+    sh:path beer_def:created ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:dateTime
+  .
+
+ beer_sh:Beer_beerTypes a sh:PropertyShape ;
+   sh:name "beerTypes" ;
+   sh:path ( [ sh:oneOrMorePath beer_def:beertype ] schema:name );
+   sh:minCount 0 ;
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string
+ .
+
+ beer_sh:Brewery_address a sh:PropertyShape ;
+   sh:name "address" ;
+   sh:path schema:address ;
+   sh:maxCount 1 ;
+   sh:node beer_sh:Address
+ .
+
+ beer_sh:Address a sh:NodeShape ;
+   sh:name "Address" ;
+   sh:class beer_def:Address ;
+   sh:property
+     beer_sh:Address_postalcode,
+     beer_sh:Address_streetAddress
+ .
+
+  beer_sh:Address_postalcode a sh:PropertyShape ;
+    sh:name "postalCode" ;
+    sh:path schema:postalCode ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Address_streetAddress a sh:PropertyShape ;
+    sh:name "streetAddress" ;
+    sh:path schema:streetAddress ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Ingredient a sh:NodeShape ;
+    sh:name "Ingredient";
+    dws:inherits beer_sh:Identifiable ;
+    sh:class beer_def:Ingredient ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Sponsorship a sh:NodeShape ;
+    sh:name "Sponsorship";
+    dws:inherits beer_sh:Identifiable ;
+    sh:property beer_sh:Numbers ;
+    sh:class beer_def:Sponsorship ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Numbers a sh:PropertyShape ;
+    sh:name "numbers" ;
+    sh:path beer_def:number ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Supplement a sh:NodeShape ;
+    sh:name "Supplement";
+    dws:inherits beer_sh:Identifiable ;
+    sh:class beer_def:Supplement ;
+    sh:nodeKind sh:IRI
+  .
+}

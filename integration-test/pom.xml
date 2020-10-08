@@ -13,6 +13,7 @@
     <modules>
         <module>graphql-rdf4j</module>
         <module>openapi-rdf4j</module>
+        <module>openapi-json</module>
     </modules>
 
     <dependencies>

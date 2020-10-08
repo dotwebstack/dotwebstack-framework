@@ -1,0 +1,26 @@
+{
+  "_embedded": {
+    "beers": [
+      {
+        "identifier": "1",
+        "name": "Alfa Edel Pils",
+        "link": "https://github.com/dotwebstack/api/v1/beers/1"
+      },
+      {
+        "identifier": "2",
+        "name": "Alfa Radler",
+        "link": "https://github.com/dotwebstack/api/v1/beers/2"
+      },
+      {
+        "identifier": "3",
+        "name": "Becks",
+        "link": "https://github.com/dotwebstack/api/v1/beers/3"
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://github.com/dotwebstack/api/v1/beers"
+    }
+  }
+}

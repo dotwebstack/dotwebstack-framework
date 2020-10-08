@@ -1,0 +1,80 @@
+schema {
+  query: Query
+}
+
+type Query {
+
+  breweries: [Brewery!]!
+  @json(file: "data.json", path: "$..brewery")
+
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @predicate): Brewery
+  @json(file: "data.json", path: "$..brewery[?]")
+
+  beer(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Beer
+  @json(file: "data.json", path: "$.beers[?]")
+
+  beers_by_country_and_name(
+    country: String! @predicate,
+    name: String! @predicate): [Beer!]!
+  @json(file: "data.json", path: "$.beers[?][?]")
+
+  beers: [Beer!]!
+  @json(file: "data.json", path: "$.beers")
+}
+
+type Brewery {
+  identifier: ID!
+  name: String!
+  localName: String
+  founded: Date
+  openinghours: String
+  owners(sort: [SortField!] = [{order: ASC}]): [String]
+  url: String!
+  @transform(expr: "url.getLocalName()")
+  address: Address
+  postalCode: String
+  sponsorship: Sponsorship
+  lemonBeers: [Beer]
+  beerCount: Int!
+}
+
+type Address {
+  postalCode: String
+  streetAddress: String!
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  created: DateTime
+  brewery: Brewery
+  #  beerTypes: [String]!
+  ingredients(name: [String]): [Ingredient!]
+  supplements: [Supplement!]
+}
+
+type Ingredient {
+  identifier: ID!
+  name: String
+}
+
+type Supplement {
+  name: String
+}
+
+input PageQueryInput {
+  page: Int = 1
+  pageSize: Int = 10
+}
+
+type Sponsorship {
+  identifier: ID!
+  name: String!
+  numbers: [Int]
+}
+
+input FilterQueryInput {
+  page: Int = 1
+  sinceBefore: Date
+  sinceAfter: Date
+}

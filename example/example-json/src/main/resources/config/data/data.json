@@ -1,0 +1,27 @@
+{
+  "brewery" : {
+    "identifier": 3,
+    "brewmasters": "Jeroen van Hees",
+    "subject" : "test",
+    "founded": "2014-05-03",
+    "name": "De Brouwerij",
+    "beerCount": 3,
+    "beers": [
+      {
+        "identifier": 1,
+        "name": "Alfa Edel Pils"
+      },
+      {
+        "identifier": 2,
+        "name": "Alfa Radler"
+      }
+    ],
+    "group": "Onafhankelijk",
+    "owners": [
+      "J.v.Hees",
+      "I.Verhoef",
+      "L.du Clou",
+      "M.Kuijpers"
+    ]
+  }
+}

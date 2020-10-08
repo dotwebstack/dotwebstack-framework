@@ -8,12 +8,12 @@
     <version>0.2.10-SNAPSHOT</version>
   </parent>
 
-  <artifactId>example</artifactId>
+  <artifactId>example-rdf4j</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>backend-json</artifactId>
+      <artifactId>backend-rdf4j</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -27,5 +27,22 @@
       <version>${project.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
