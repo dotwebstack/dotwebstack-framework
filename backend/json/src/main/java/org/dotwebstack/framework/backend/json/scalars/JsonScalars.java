@@ -4,6 +4,8 @@ import graphql.schema.GraphQLScalarType;
 
 public final class JsonScalars {
 
+  private JsonScalars() {};
+
   public static final GraphQLScalarType OBJECT = GraphQLScalarType.newScalar()
       .name("JsonObject")
       .description("Object type")
