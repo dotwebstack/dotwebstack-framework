@@ -122,11 +122,11 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     validatePropertyType(propertyName, schema.getType(), unwrapped);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
-      InputObjectTypeDefinition typeDefinition = (InputObjectTypeDefinition) this.typeDefinitionRegistry
-          .getType(unwrapped)
-          .orElseThrow(
-              () -> invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
-      validateProperties(pathName, schema, typeDefinition);
+//      InputObjectTypeDefinition typeDefinition = (InputObjectTypeDefinition) this.typeDefinitionRegistry
+//          .getType(unwrapped)
+//          .orElseThrow(
+//              () -> invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
+//      validateProperties(pathName, schema, typeDefinition);
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
