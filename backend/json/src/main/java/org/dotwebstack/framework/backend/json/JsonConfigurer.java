@@ -15,6 +15,7 @@ import graphql.language.TypeName;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.dotwebstack.framework.backend.json.directives.PredicateDirectives;
