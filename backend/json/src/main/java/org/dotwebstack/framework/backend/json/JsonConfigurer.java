@@ -10,20 +10,13 @@ import graphql.language.DirectiveDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
-import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
-import graphql.schema.GraphQLScalarType;
-import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.dotwebstack.framework.backend.json.directives.PredicateDirectives;
-import org.dotwebstack.framework.backend.json.scalars.JsonScalars;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Stream;
 
 @Component
 public class JsonConfigurer implements GraphqlConfigurer {
@@ -32,11 +25,6 @@ public class JsonConfigurer implements GraphqlConfigurer {
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     registry.add(createPredicateDefinition());
     registry.add(createJsonDefinition());
-
-    Stream.of(JsonScalars.OBJECT)
-        .map(GraphQLScalarType::getName)
-        .map(ScalarTypeDefinition::new)
-        .forEach(registry::add);
   }
 
   private DirectiveDefinition createPredicateDefinition() {
@@ -82,11 +70,4 @@ public class JsonConfigurer implements GraphqlConfigurer {
             .build())
         .build();
   }
-
-  @Override
-  public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
-    Stream.of(JsonScalars.OBJECT)
-        .forEach(builder::scalar);
-  }
-
 }

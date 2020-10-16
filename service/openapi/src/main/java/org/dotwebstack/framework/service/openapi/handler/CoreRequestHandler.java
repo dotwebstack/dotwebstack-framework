@@ -271,9 +271,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
         .validate(field, parameter, pathName));
-//    field.getArguments()
-//        .forEach(
-//            argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
+    // field.getArguments()
+    // .forEach(
+    // argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName,
+    // requestBodyProperties));
   }
 
   @SuppressWarnings({"rawtypes"})
