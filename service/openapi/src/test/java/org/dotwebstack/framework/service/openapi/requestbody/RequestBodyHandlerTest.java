@@ -204,8 +204,8 @@ public class RequestBodyHandlerTest {
         .isEmpty());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
+  @SuppressWarnings("unchecked")
   public void validateRequestBody_throwsException_forExtensionsInSchema() {
     this.requestBody.getContent()
         .get(MediaType.APPLICATION_JSON.toString())

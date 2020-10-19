@@ -8,10 +8,10 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.dotwebstack.framework.backend.json.scalars.JsonScalars;
 import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.scalars.CoreScalars;
 
 public class JsonValueFetcher extends SourceDataFetcher {
 
@@ -38,7 +38,7 @@ public class JsonValueFetcher extends SourceDataFetcher {
       return null;
     }
 
-    if (JsonScalars.OBJECT.getName()
+    if (CoreScalars.OBJECT.getName()
         .equals(TypeHelper.getTypeName(dataFetchingEnvironment.getFieldDefinition()
             .getType()))) {
       return mapper.<Map<String, Object>>convertValue(fieldNode, new TypeReference<>() {});

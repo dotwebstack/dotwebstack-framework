@@ -55,7 +55,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  private List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings;
+  private final List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings;
 
   public CoreConfigurer(final DataFetcherRouter dataFetcher,
       final List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings,
@@ -67,6 +67,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.OBJECT.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     typeDefinitionRegistry.add(createSortEnumDefinition());
@@ -195,6 +196,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder.codeRegistry(registerDataFetchers())
+        .scalar(CoreScalars.OBJECT)
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME);
 
