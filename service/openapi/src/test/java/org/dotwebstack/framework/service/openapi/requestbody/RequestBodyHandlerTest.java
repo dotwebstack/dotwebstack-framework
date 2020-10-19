@@ -99,43 +99,39 @@ public class RequestBodyHandlerTest {
         () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
   }
 
-  // @Test
-  // public void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
-  // // Arrange
-  // this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3:
-  // String");
-  // this.requestBodyHandler =
-  // new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new
-  // Jackson2ObjectMapperBuilder());
-  //
-  // RequestBody requestBody = this.openApi.getPaths()
-  // .get("/query4")
-  // .getGet()
-  // .getRequestBody();
-  //
-  // // Act / Assert
-  // assertThrows(InvalidConfigurationException.class,
-  // () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
-  // }
+  @Test
+  public void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
+    // Arrange
+    this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3: String");
+    this.requestBodyHandler =
+        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
 
-  // @Test
-  // public void validate_throwsException_forGraphQlTypeMismatch() {
-  // // Arrange
-  // this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1:
-  // Boolean");
-  // this.requestBodyHandler =
-  // new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new
-  // Jackson2ObjectMapperBuilder());
-  //
-  // RequestBody requestBody = this.openApi.getPaths()
-  // .get("/query4")
-  // .getGet()
-  // .getRequestBody();
-  //
-  // // Act / Assert
-  // assertThrows(InvalidConfigurationException.class,
-  // () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
-  // }
+    RequestBody requestBody = this.openApi.getPaths()
+        .get("/query4")
+        .getGet()
+        .getRequestBody();
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
+  }
+
+  @Test
+  public void validate_throwsException_forGraphQlTypeMismatch() {
+    // Arrange
+    this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1: Boolean");
+    this.requestBodyHandler =
+        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
+
+    RequestBody requestBody = this.openApi.getPaths()
+        .get("/query4")
+        .getGet()
+        .getRequestBody();
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
+  }
 
   @Test
   public void getValue_returns_Map_forValidJson() throws BadRequestException {
@@ -208,7 +204,6 @@ public class RequestBodyHandlerTest {
         .isEmpty());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void validateRequestBody_throwsException_forExtensionsInSchema() {
     this.requestBody.getContent()
