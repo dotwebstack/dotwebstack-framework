@@ -74,7 +74,7 @@ import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
-import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
+import org.dotwebstack.framework.service.openapi.mapping.MappingException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
@@ -155,7 +155,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(NotAcceptableException.class, getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
         .onErrorResume(ParameterValidationException.class,
             getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
-        .onErrorResume(ResponseMapperException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
+        .onErrorResume(MappingException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
         .onErrorResume(GraphQlErrorException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
         .onErrorResume(NoContentException.class, getMonoError(NO_CONTENT))
         .onErrorResume(NotFoundException.class, getMonoError(NOT_FOUND, "No results found."))
