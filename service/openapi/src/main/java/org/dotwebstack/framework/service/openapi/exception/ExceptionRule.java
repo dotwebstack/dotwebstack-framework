@@ -10,10 +10,9 @@ class ExceptionRule {
 
   private final Class<?> exception;
 
-  private final HttpStatus httpStatus;
+  private final HttpStatus responseStatus;
 
-  private final String reason;
+  private final String title;
 
-  @Builder.Default
-  private final boolean details = true;
+  private final boolean detail;
 }

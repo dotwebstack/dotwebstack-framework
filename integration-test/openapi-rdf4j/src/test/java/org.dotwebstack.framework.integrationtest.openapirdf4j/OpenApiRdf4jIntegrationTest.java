@@ -3,6 +3,7 @@ package org.dotwebstack.framework.integrationtest.openapirdf4j;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.dotwebstack.framework.integrationtest.openapirdf4j.matcher.IsEqualIgnoringLineBreaks.equalToIgnoringLineBreaks;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -357,7 +359,7 @@ class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertTrue(result.contains("An error occured from which the server was unable to recover"));
+    assertThat(result, is(CoreMatchers.containsString("Internal server error")));
   }
 
   @Test
