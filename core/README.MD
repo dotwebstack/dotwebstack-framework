@@ -45,7 +45,7 @@ public interface CoreConverterRouter {
 ```
 
 ## 1.3 Scalar Types
-Dotwebstack offers support for the *Date* and *DateTime* scalars besides the scalar types that have built-in support 
+Dotwebstack offers support for the *Object*, *Date* and *DateTime* scalars besides the scalar types that have built-in support 
 from GraphQL *(Int, Float, String, Boolean, ID)*. It is also possible to create a custom Scalar Type:
 
 - Create the new scalar

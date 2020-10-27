@@ -67,7 +67,7 @@ public class JsonResponseMapper {
       try {
         return toJson((ResponseWriteContext) input);
       } catch (JsonProcessingException jpe) {
-        throw new ResponseMapperException("An exception occurred when serializing to JSON.", jpe);
+        throw new MappingException("An exception occurred when serializing to JSON.", jpe);
       }
     } else {
       throw new IllegalArgumentException("Input can only be of the type ResponseWriteContext.");
@@ -240,6 +240,13 @@ public class JsonResponseMapper {
     if (Objects.nonNull(parentContext.getResponseObject()
         .getSummary()
         .getDwsType())) {
+      return parentContext.getData();
+    }
+
+    if (parentContext.getResponseObject()
+        .getSummary()
+        .getChildren()
+        .isEmpty()) {
       return parentContext.getData();
     }
 

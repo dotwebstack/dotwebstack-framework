@@ -70,5 +70,4 @@ public class JsonConfigurer implements GraphqlConfigurer {
             .build())
         .build();
   }
-
 }

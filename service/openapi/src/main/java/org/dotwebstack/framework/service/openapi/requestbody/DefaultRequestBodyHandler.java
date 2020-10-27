@@ -12,6 +12,7 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.Type;
+import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -43,13 +44,13 @@ import reactor.core.publisher.Mono;
 @Component
 public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
-  private OpenAPI openApi;
+  private final OpenAPI openApi;
 
-  private TypeDefinitionRegistry typeDefinitionRegistry;
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  private TypeValidator typeValidator;
+  private final TypeValidator typeValidator;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   public DefaultRequestBodyHandler(@NonNull OpenAPI openApi, @NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder) {
@@ -122,11 +123,13 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     validatePropertyType(propertyName, schema.getType(), unwrapped);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
-      InputObjectTypeDefinition typeDefinition = (InputObjectTypeDefinition) this.typeDefinitionRegistry
-          .getType(unwrapped)
+      TypeDefinition<?> typeDefinition = this.typeDefinitionRegistry.getType(unwrapped)
           .orElseThrow(
               () -> invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
-      validateProperties(pathName, schema, typeDefinition);
+
+      if (typeDefinition instanceof InputObjectTypeDefinition) {
+        validateProperties(pathName, schema, (InputObjectTypeDefinition) typeDefinition);
+      }
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);

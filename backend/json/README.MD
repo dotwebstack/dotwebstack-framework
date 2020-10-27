@@ -37,4 +37,4 @@ type Query {
 ```
 
 The `@predicate` directive takes one optional argument, the `property` argument. The `property` argument
-sets the matching json property name to which the filter is applied. If this directive argument is not set the graphql query argument name is used. 
+sets the matching json property name to which the filter is applied. If this directive argument is not set the graphql query argument name is used.
