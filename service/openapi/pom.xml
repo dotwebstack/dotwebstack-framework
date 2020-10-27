@@ -17,6 +17,10 @@
     <artifactId>service-openapi</artifactId>
     <dependencies>
         <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>problem-spring-webflux</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.dotwebstack.framework</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>

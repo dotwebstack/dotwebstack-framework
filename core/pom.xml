@@ -12,6 +12,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.zalando</groupId>
+      <artifactId>problem</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>test</artifactId>
       <version>${project.parent.version}</version>

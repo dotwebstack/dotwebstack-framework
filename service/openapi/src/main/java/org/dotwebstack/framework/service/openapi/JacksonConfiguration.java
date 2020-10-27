@@ -8,11 +8,12 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.zalando.problem.ProblemModule;
 
 @Configuration
 public class JacksonConfiguration {
 
-  private OpenApiProperties openApiProperties;
+  private final OpenApiProperties openApiProperties;
 
   public JacksonConfiguration(OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;
@@ -21,6 +22,11 @@ public class JacksonConfiguration {
   @Bean
   public Module javaTimeModule() {
     return new JavaTimeModule();
+  }
+
+  @Bean
+  public Module problemModule() {
+    return new ProblemModule();
   }
 
   @Bean

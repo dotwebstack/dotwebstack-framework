@@ -77,11 +77,11 @@ public class OpenApiConfiguration {
 
   private final JexlHelper jexlHelper;
 
-  private QueryFieldHelper queryFieldHelper;
+  private final QueryFieldHelper queryFieldHelper;
 
-  private OpenApiProperties openApiProperties;
+  private final OpenApiProperties openApiProperties;
 
-  private EnvironmentProperties environmentProperties;
+  private final EnvironmentProperties environmentProperties;
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
@@ -110,6 +110,15 @@ public class OpenApiConfiguration {
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
     return ResourceLoaderUtils.getResource(STATIC_ASSETS_LOCATION)
         .map(staticResource -> RouterFunctions.resources("/" + STATIC_ASSETS_LOCATION + "**", staticResource));
+  }
+
+  public static class HttpAdviceTrait implements org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait {
+
+  }
+
+  @Bean
+  public HttpAdviceTrait httpAdviceTrait() {
+    return new HttpAdviceTrait();
   }
 
   @Bean
