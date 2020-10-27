@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.templating.TemplatingException;
-import org.dotwebstack.framework.service.openapi.mapping.ResponseMapperException;
+import org.dotwebstack.framework.service.openapi.mapping.MappingException;
 import org.springframework.http.HttpStatus;
 import org.zalando.problem.StatusType;
 import org.zalando.problem.ThrowableProblem;
@@ -28,7 +28,7 @@ public class ExceptionRuleHelper {
           .reason("Error while obtaining request parameters.")
           .build(),
       ExceptionRule.builder()
-          .exception(ResponseMapperException.class)
+          .exception(MappingException.class)
           .httpStatus(INTERNAL_SERVER_ERROR)
           .details(false)
           .build(),

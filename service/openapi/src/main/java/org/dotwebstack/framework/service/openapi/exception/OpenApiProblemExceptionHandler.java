@@ -42,7 +42,7 @@ public class OpenApiProblemExceptionHandler {
   private final JexlHelper jexlHelper;
 
   public OpenApiProblemExceptionHandler(@NonNull final ObjectMapper mapper, @NonNull final HttpAdviceTrait advice,
-                                        @NonNull final JexlEngine jexlEngine) {
+      @NonNull final JexlEngine jexlEngine) {
     this.mapper = mapper;
     this.advice = advice;
     this.jexlHelper = new JexlHelper(jexlEngine);

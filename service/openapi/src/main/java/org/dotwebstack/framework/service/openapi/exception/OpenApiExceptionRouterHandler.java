@@ -33,8 +33,9 @@ public class OpenApiExceptionRouterHandler implements WebExceptionHandler {
 
   private final OpenApiProblemExceptionHandler openApiProblemExceptionHandler;
 
-  public OpenApiExceptionRouterHandler(final OpenAPI openApi, final OpenApiDefaultExceptionHandler openApiDefaultExceptionHandler,
-                                       final OpenApiProblemExceptionHandler openApiProblemExceptionHandler) {
+  public OpenApiExceptionRouterHandler(final OpenAPI openApi,
+      final OpenApiDefaultExceptionHandler openApiDefaultExceptionHandler,
+      final OpenApiProblemExceptionHandler openApiProblemExceptionHandler) {
     this.openApi = openApi;
     this.openApiDefaultExceptionHandler = openApiDefaultExceptionHandler;
     this.openApiProblemExceptionHandler = openApiProblemExceptionHandler;

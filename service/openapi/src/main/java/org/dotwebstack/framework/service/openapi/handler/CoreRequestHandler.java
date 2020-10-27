@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -47,7 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
@@ -79,7 +77,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.server.ResponseStatusException;
 import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -91,7 +88,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String MDC_REQUEST_ID = "requestId";
 
-  private OpenAPI openApi;
+  private final OpenAPI openApi;
 
   private final ResponseSchemaContext responseSchemaContext;
 
@@ -113,7 +110,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JexlHelper jexlHelper;
 
-  private EnvironmentProperties properties;
+  private final EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
@@ -140,33 +137,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .toString();
     return Mono.fromCallable(() -> getResponse(request, requestId))
         .publishOn(Schedulers.elastic());
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> problemToMonoError(ServerRequest request) {
-    return exception -> Mono.error(exception);
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status) {
-    return exception -> Mono.error(new ResponseStatusException(status));
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
-    return exception -> {
-      String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason [%s]",
-          exception.getMessage(), status.value(), reason);
-      return Mono.error(new ResponseStatusException(status, message));
-    };
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoErrorWithoutDetails(HttpStatus status,
-      String requestId) {
-    return exception -> {
-      LOG.info(
-          format("[OpenApi] An Exception occurred [%s] resulting in [%d]", exception.getMessage(), status.value()));
-      String message = format("An error occured from which the server was unable to recover. "
-          + "Please contact the API maintainer with the following details: '%s'", requestId);
-      return Mono.error(new ResponseStatusException(status, message));
-    };
   }
 
   public void validateSchema() {
