@@ -42,8 +42,6 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
   public static final String APPLICATION_PROBLEM_JSON_MIMETYPE = "application/problem+json";
 
-  private final OpenAPI openApi;
-
   public static final String OAS_JSON_PROBLEM_TYPE = "type";
 
   public static final String OAS_JSON_PROBLEM_TITLE = "title";
@@ -51,6 +49,8 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
   public static final String OAS_JSON_PROBLEM_DETAIL = "detail";
 
   public static final String OAS_JSON_PROBLEM_INSTANCE = "instance";
+
+  private final OpenAPI openApi;
 
   private final ObjectMapper mapper;
 
@@ -162,7 +162,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
   }
 
   private boolean filter(String key, String requestPath) {
-    String keyPattern = key.replaceAll("\\{([a-zA-Z0-9]*)}", "(.*)");
+    String keyPattern = key.replaceAll("\\{([a-zA-Z0-9_]*)}", "(.*)");
     keyPattern = keyPattern.replaceAll("\\/", "\\\\/");
 
     return requestPath.matches(keyPattern);
