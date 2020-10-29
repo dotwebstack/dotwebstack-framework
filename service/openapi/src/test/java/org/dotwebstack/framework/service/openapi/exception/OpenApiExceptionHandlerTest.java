@@ -125,7 +125,7 @@ class OpenApiExceptionHandlerTest {
   }
 
   @Test
-  void handle_exceptionRuleWithDWSExpression_returnsEntity() {
+  void handle_exceptionRuleWithDwsExpression_returnsEntity() {
     // Arrange
     Throwable throwable = mock(NotFoundException.class);
 
@@ -162,7 +162,6 @@ class OpenApiExceptionHandlerTest {
     JexlEngine sjexl = new JexlBuilder().silent(false)
         .strict(true)
         .create();
-    JexlScript script = sjexl.createScript(scriptText);
-    return script;
+    return sjexl.createScript(scriptText);
   }
 }
