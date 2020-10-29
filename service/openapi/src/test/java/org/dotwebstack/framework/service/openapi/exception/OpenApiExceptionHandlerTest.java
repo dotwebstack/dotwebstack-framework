@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.service.openapi.exception;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -9,18 +12,25 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlScript;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 import org.zalando.problem.ThrowableProblem;
 import org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait;
 import reactor.core.publisher.Mono;
@@ -53,11 +63,13 @@ class OpenApiExceptionHandlerTest {
   void handle_throwableProblem_returnsEntity() {
     // Arrange
     ThrowableProblem throwableProblem = mock(ThrowableProblem.class);
-    Problem problem = Problem.builder()
-        .build();
-    ResponseEntity<Problem> responseEntity = ResponseEntity.badRequest()
-        .body(problem);
-    when(advice.create(throwableProblem, serverWebExchange)).thenReturn(Mono.just(responseEntity));
+
+    when(advice.create(throwableProblem, serverWebExchange)).thenAnswer(invocationOnMock -> {
+      Problem problem = Problem.builder()
+          .build();
+      return Mono.just(ResponseEntity.badRequest()
+          .body(problem));
+    });
 
     // Act
     openApiExceptionHandler.handle(serverWebExchange, throwableProblem);
@@ -70,17 +82,24 @@ class OpenApiExceptionHandlerTest {
   void handle_responseStatusException_returnsEntity() {
     // Arrange
     ResponseStatusException throwable = mock(ResponseStatusException.class);
-    Problem problem = Problem.builder()
-        .build();
-    ResponseEntity<Problem> responseEntity = ResponseEntity.badRequest()
-        .body(problem);
-    when(advice.create(throwable.getStatus(), throwable, serverWebExchange)).thenReturn(Mono.just(responseEntity));
+    when(throwable.getStatus()).thenReturn(HttpStatus.BAD_REQUEST);
+
+    AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
+    when(advice.create(throwable.getStatus(), throwable, serverWebExchange)).thenAnswer(invocationOnMock -> {
+      Problem problem = Problem.builder()
+          .build();
+      responseEntity.set(ResponseEntity.status(throwable.getStatus())
+          .body(problem));
+      return Mono.just(responseEntity);
+    });
 
     // Act
     openApiExceptionHandler.handle(serverWebExchange, throwable);
 
     // Assert
     verify(advice, times(1)).create(throwable.getStatus(), throwable, serverWebExchange);
+    assertThat(responseEntity.get()
+        .getStatusCode(), is(HttpStatus.BAD_REQUEST));
   }
 
   @Test
@@ -92,17 +111,58 @@ class OpenApiExceptionHandlerTest {
         .build();
     when(serverWebExchange.getRequest()).thenReturn(mockServerHttpRequest);
 
-    Problem problem = Problem.builder()
-        .build();
-    ResponseEntity<Problem> responseEntity = ResponseEntity.badRequest()
-        .body(problem);
-
-    when(advice.create(eq(throwable), any(Problem.class), eq(serverWebExchange))).thenReturn(Mono.just(responseEntity));
+    when(advice.create(eq(throwable), any(Problem.class), eq(serverWebExchange))).thenAnswer(invocationOnMock -> {
+      Problem problem = invocationOnMock.getArgument(1);
+      return Mono.just(ResponseEntity.badRequest()
+          .body(problem));
+    });
 
     // Act
     openApiExceptionHandler.handle(serverWebExchange, throwable);
 
     // Assert
     verify(advice, times(1)).create(eq(throwable), any(Problem.class), eq(serverWebExchange));
+  }
+
+  @Test
+  void handle_exceptionRuleWithDWSExpression_returnsEntity() {
+    // Arrange
+    Throwable throwable = mock(NotFoundException.class);
+
+    MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/query3/123")
+        .build();
+    when(serverWebExchange.getRequest()).thenReturn(mockServerHttpRequest);
+
+    JexlScript script = getJexlScript("`Not Found OAS`");
+    when(jexlEngine.createScript("`Not Found OAS`")).thenReturn(script);
+
+    AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
+    when(advice.create(eq(throwable), any(Problem.class), eq(serverWebExchange))).thenAnswer(invocationOnMock -> {
+      responseEntity.set(ResponseEntity.notFound()
+          .build());
+      return Mono.just(responseEntity);
+    });
+
+    // Act
+    openApiExceptionHandler.handle(serverWebExchange, throwable);
+
+    // Assert
+    ArgumentCaptor<Problem> captor = ArgumentCaptor.forClass(Problem.class);
+    verify(advice, times(1)).create(eq(throwable), captor.capture(), eq(serverWebExchange));
+
+    List<Problem> actualProblem = captor.getAllValues();
+    assertThat(actualProblem.get(0)
+        .getTitle(), is(equalTo("Not Found OAS")));
+    assertThat(actualProblem.get(0)
+        .getStatus(), is(Status.NOT_FOUND));
+  }
+
+  // Because JexlEngine is mocked, .createScript returns null. This method returns a valid JexlScript.
+  private JexlScript getJexlScript(String scriptText) {
+    JexlEngine sjexl = new JexlBuilder().silent(false)
+        .strict(true)
+        .create();
+    JexlScript script = sjexl.createScript(scriptText);
+    return script;
   }
 }
