@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -24,12 +23,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_ACCEPTABLE;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
 import graphql.ExceptionWhileDataFetching;
@@ -37,6 +30,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
+import graphql.GraphQLError;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -52,29 +46,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
-import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
-import org.dotwebstack.framework.service.openapi.exception.NoContentException;
-import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
-import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
-import org.dotwebstack.framework.service.openapi.mapping.MappingException;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
@@ -88,11 +74,10 @@ import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.server.ResponseStatusException;
+import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -103,7 +88,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String MDC_REQUEST_ID = "requestId";
 
-  private OpenAPI openApi;
+  private final OpenAPI openApi;
 
   private final ResponseSchemaContext responseSchemaContext;
 
@@ -125,7 +110,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final JexlHelper jexlHelper;
 
-  private EnvironmentProperties properties;
+  private final EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, List<ResponseMapper> responseMappers,
@@ -151,41 +136,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     String requestId = UUID.randomUUID()
         .toString();
     return Mono.fromCallable(() -> getResponse(request, requestId))
-        .publishOn(Schedulers.elastic())
-        .onErrorResume(NotAcceptableException.class, getMonoError(NOT_ACCEPTABLE, "Unsupported media type requested."))
-        .onErrorResume(ParameterValidationException.class,
-            getMonoError(BAD_REQUEST, "Error while obtaining request parameters."))
-        .onErrorResume(MappingException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
-        .onErrorResume(GraphQlErrorException.class, getMonoErrorWithoutDetails(INTERNAL_SERVER_ERROR, requestId))
-        .onErrorResume(NoContentException.class, getMonoError(NO_CONTENT))
-        .onErrorResume(NotFoundException.class, getMonoError(NOT_FOUND, "No results found."))
-        .onErrorResume(UnsupportedMediaTypeException.class, getMonoError(UNSUPPORTED_MEDIA_TYPE, "Not supported."))
-        .onErrorResume(BadRequestException.class, getMonoError(BAD_REQUEST, "Error while processing the request."))
-        .onErrorResume(InvalidConfigurationException.class, getMonoError(BAD_REQUEST, "Bad configuration"))
-        .onErrorResume(TemplatingException.class, getMonoError(INTERNAL_SERVER_ERROR, "Templating went wrong"));
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status) {
-    return exception -> Mono.error(new ResponseStatusException(status));
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoError(HttpStatus status, String reason) {
-    return exception -> {
-      String message = format("[OpenApi] An Exception occurred [%s] resulting in [%d] reason [%s]",
-          exception.getMessage(), status.value(), reason);
-      return Mono.error(new ResponseStatusException(status, message));
-    };
-  }
-
-  private Function<Exception, Mono<? extends ServerResponse>> getMonoErrorWithoutDetails(HttpStatus status,
-      String requestId) {
-    return exception -> {
-      LOG.info(
-          format("[OpenApi] An Exception occurred [%s] resulting in [%d]", exception.getMessage(), status.value()));
-      String message = format("An error occured from which the server was unable to recover. "
-          + "Please contact the API maintainer with the following details: '%s'", requestId);
-      return Mono.error(new ResponseStatusException(status, message));
-    };
+        .publishOn(Schedulers.elastic());
   }
 
   public void validateSchema() {
@@ -349,7 +300,25 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       throw parameterValidationException("Validation of request parameters failed");
     }
 
-    throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+    throw unwrapExceptionWhileNeeded(result);
+  }
+
+  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) {
+    GraphQLError graphQlError = result.getErrors()
+        .get(0);
+
+    Optional<ThrowableProblem> throwableProblem = Optional.of(graphQlError)
+        .filter(error -> error instanceof ExceptionWhileDataFetching)
+        .map(ExceptionWhileDataFetching.class::cast)
+        .map(ExceptionWhileDataFetching::getException)
+        .filter(throwable -> throwable instanceof ThrowableProblem)
+        .map(ThrowableProblem.class::cast);
+
+    if (throwableProblem.isPresent()) {
+      throw throwableProblem.get();
+    }
+
+    return graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
   private boolean hasDirectiveValidationException(ExecutionResult result) {

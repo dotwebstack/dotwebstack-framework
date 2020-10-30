@@ -191,6 +191,47 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object2'
+        400:
+          description: bad request
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    format: uri
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                    format: int32
+                  detail:
+                    type: string
+                  instance:
+                    type: string
+                    format: uri
+        404:
+          description: not found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    format: uri
+                  title:
+                    type: string
+                    x-dws-expr: "`Not Found OAS`"
+                  status:
+                    type: integer
+                    format: int32
+                  detail:
+                    type: string
+                  instance:
+                    type: string
+                    format: uri
   /query4:
     get:
       x-dws-query: query4

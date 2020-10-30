@@ -65,6 +65,8 @@
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <mockito.junit.jupiter.version>2.28.2</mockito.junit.jupiter.version>
     <jakarta.validation.api>2.0.2</jakarta.validation.api>
+    <problem.version>0.25.0</problem.version>
+    <spring-problem-webflux.version>0.26.2</spring-problem-webflux.version>
   </properties>
 
   <modules>
@@ -79,6 +81,21 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.zalando</groupId>
+        <artifactId>problem-spring-webflux</artifactId>
+        <version>${spring-problem-webflux.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.zalando</groupId>
+        <artifactId>problem</artifactId>
+        <version>${problem.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.zalando</groupId>
+        <artifactId>jackson-datatype-problem</artifactId>
+        <version>${problem.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -117,11 +134,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons.lang3.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.zalando</groupId>
-        <artifactId>problem-spring-webflux</artifactId>
-        <version>${problem.spring.webflux.version}</version>
       </dependency>
       <dependency>
         <groupId>io.pebbletemplates</groupId>
