@@ -22,7 +22,7 @@ class OpenApiJsonIntegrationTest {
   @Autowired
   private WebTestClient webClient;
 
-  private ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   void openApiRequest_ReturnsBeer_withDefaultResponse() throws IOException {

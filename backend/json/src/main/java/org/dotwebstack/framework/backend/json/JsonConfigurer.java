@@ -49,9 +49,6 @@ public class JsonConfigurer implements GraphqlConfigurer {
     NonNullType requiredString = NonNullType.newNonNullType(optionalString)
         .build();
 
-    ListType predicateType = ListType.newListType(requiredString)
-        .build();
-
     return DirectiveDefinition.newDirectiveDefinition()
         .name(JsonDirectives.JSON_NAME)
         .inputValueDefinition(newInputValueDefinition().name(JsonDirectives.ARGS_FILE)
@@ -60,8 +57,9 @@ public class JsonConfigurer implements GraphqlConfigurer {
         .inputValueDefinition(newInputValueDefinition().name(JsonDirectives.ARGS_PATH)
             .type(requiredString)
             .build())
-        .inputValueDefinition(newInputValueDefinition().name(JsonDirectives.ARGS_PREDICATES)
-            .type(predicateType)
+        .inputValueDefinition(newInputValueDefinition().name(JsonDirectives.ARGS_EXCLUDE)
+            .type(ListType.newListType(requiredString)
+                .build())
             .build())
 
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
