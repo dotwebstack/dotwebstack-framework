@@ -15,8 +15,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -118,7 +116,8 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
         .withType(problem.getType())
         .withStatus(problem.getStatus());
 
-    problem.getParameters().forEach(builder::with);
+    problem.getParameters()
+        .forEach(builder::with);
 
     HttpStatus responseStatus = ofNullable(problem.getStatus()).map(StatusType::getStatusCode)
         .map(HttpStatus::valueOf)
