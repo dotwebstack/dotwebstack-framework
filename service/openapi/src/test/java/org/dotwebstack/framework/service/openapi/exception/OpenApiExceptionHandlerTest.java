@@ -63,19 +63,21 @@ class OpenApiExceptionHandlerTest {
   void handle_throwableProblem_returnsEntity() {
     // Arrange
     ThrowableProblem throwableProblem = mock(ThrowableProblem.class);
+    when(throwableProblem.getStatus()).thenReturn(Status.BAD_REQUEST);
 
-    when(advice.create(throwableProblem, serverWebExchange)).thenAnswer(invocationOnMock -> {
-      Problem problem = Problem.builder()
-          .build();
-      return Mono.just(ResponseEntity.badRequest()
-          .body(problem));
-    });
+    AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
+    when(advice.create(eq(throwableProblem), any(Problem.class), eq(serverWebExchange)))
+        .thenAnswer(invocationOnMock -> {
+          Problem problem = invocationOnMock.getArgument(1);
+          return Mono.just(ResponseEntity.badRequest()
+              .body(problem));
+        });
 
     // Act
     openApiExceptionHandler.handle(serverWebExchange, throwableProblem);
 
     // Assert
-    verify(advice, times(1)).create(throwableProblem, serverWebExchange);
+    verify(advice, times(1)).create(eq(throwableProblem), any(Problem.class), eq(serverWebExchange));
   }
 
   @Test
