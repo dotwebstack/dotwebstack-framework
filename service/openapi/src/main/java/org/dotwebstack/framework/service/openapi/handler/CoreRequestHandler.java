@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noContentException;
@@ -31,6 +32,8 @@ import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
 import graphql.GraphQLError;
+import graphql.execution.InputMapDefinesTooManyFieldsException;
+import graphql.execution.NonNullableValueCoercedAsNullException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -303,7 +306,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw unwrapExceptionWhileNeeded(result);
   }
 
-  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) {
+  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws BadRequestException {
     GraphQLError graphQlError = result.getErrors()
         .get(0);
 
@@ -312,10 +315,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .map(ExceptionWhileDataFetching.class::cast)
         .map(ExceptionWhileDataFetching::getException)
         .filter(throwable -> throwable instanceof ThrowableProblem)
-        .map(ThrowableProblem.class::cast);
+        .map(throwable -> (ThrowableProblem) throwable);
 
     if (throwableProblem.isPresent()) {
       throw throwableProblem.get();
+    }
+
+    if (graphQlError instanceof InputMapDefinesTooManyFieldsException) {
+      throw badRequestException("Too many request fields", graphQlError);
+    }
+
+    if (graphQlError instanceof NonNullableValueCoercedAsNullException) {
+      throw badRequestException("Missing request fields", graphQlError);
     }
 
     return graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());

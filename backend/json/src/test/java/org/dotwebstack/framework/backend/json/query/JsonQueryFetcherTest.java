@@ -14,6 +14,7 @@ import graphql.schema.GraphQLNonNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.json.directives.JsonDirectives;
 import org.dotwebstack.framework.backend.json.directives.PredicateDirectives;
@@ -44,6 +45,9 @@ class JsonQueryFetcherTest {
 
   @Mock
   private GraphQLArgument graphQlPathArgumentMock;
+
+  @Mock
+  private GraphQLArgument graphQlExcludedArgumentMock;
 
   private JsonQueryFetcher jsonQueryFetcher;
 
@@ -94,6 +98,41 @@ class JsonQueryFetcherTest {
     when(environmentMock.getArguments()).thenReturn(arguments);
     when(graphQlFileArgumentMock.getValue()).thenReturn("test.json");
     when(graphQlPathArgumentMock.getValue()).thenReturn("$..beers[?]");
+
+    GraphQLNonNull graphQlObjectTypeMock = mock(GraphQLNonNull.class);
+    GraphQLArgument graphQlArgument = mock(GraphQLArgument.class);
+    GraphQLDirective predicateDirective = mock(GraphQLDirective.class);
+    GraphQLArgument propertyArgument = mock(GraphQLArgument.class);
+
+    when(graphQlArgument.getName()).thenReturn("identifier");
+    when(propertyArgument.getValue()).thenReturn("identifier");
+    when(predicateDirective.getArgument(PredicateDirectives.ARGS_PROPERTY)).thenReturn(propertyArgument);
+    when(graphQlArgument.getDirective(PredicateDirectives.PREDICATE_NAME)).thenReturn(predicateDirective);
+
+    when(graphQlFieldDefinitionMock.getArguments()).thenReturn(Collections.singletonList(graphQlArgument));
+    when(environmentMock.getFieldType()).thenReturn(graphQlObjectTypeMock);
+
+    // Act
+    JsonSolution result = (JsonSolution) jsonQueryFetcher.get(environmentMock);
+
+    // Assert
+    String beerResult = "{\"identifier\":1,\"brewery\":1,\"name\":\"Alfa Edel Pils\",\"_metadata\":\"metadata\"}";
+    assertThat(result.getJsonNode()
+        .toString(), equalTo(beerResult));
+  }
+
+  @Test
+  void getBeerByIdReturnsJsonSolutionWithExcludedFieldsTest() throws Exception {
+    // Arrange
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("identifier", 1);
+
+    when(jsonGraphQlDirectiveMock.getArgument(JsonDirectives.ARGS_EXCLUDE)).thenReturn(graphQlExcludedArgumentMock);
+
+    when(environmentMock.getArguments()).thenReturn(arguments);
+    when(graphQlFileArgumentMock.getValue()).thenReturn("test.json");
+    when(graphQlPathArgumentMock.getValue()).thenReturn("$..beers[?]");
+    when(graphQlExcludedArgumentMock.getValue()).thenReturn(List.of("_metadata"));
 
     GraphQLNonNull graphQlObjectTypeMock = mock(GraphQLNonNull.class);
     GraphQLArgument graphQlArgument = mock(GraphQLArgument.class);

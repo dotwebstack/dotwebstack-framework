@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.backend.json.query;
 
 import static com.jayway.jsonpath.Criteria.where;
+import static java.util.Optional.ofNullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import graphql.schema.DataFetcher;
@@ -13,9 +15,10 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -28,7 +31,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JsonQueryFetcher implements DataFetcher<Object> {
 
-  private ObjectMapper jsonMapper = new ObjectMapper();
+  private final ObjectMapper jsonMapper = new ObjectMapper();
 
   private final JsonDataService jsonDataService;
 
@@ -56,19 +59,44 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
       return null;
     }
 
+    Stream<JsonSolution> stream = jsonPathResult.stream()
+        .flatMap(subject -> {
+          if (subject instanceof JSONArray) {
+            return ((JSONArray) subject).stream();
+          }
+          return Stream.of(subject);
+        })
+        .map(jsonMapper::valueToTree)
+        .map(JsonNode.class::cast)
+        .peek(subject -> excludeFields(jsonDirective, subject))
+        .map(JsonSolution::new);
+
     if (GraphQLTypeUtil.isList(outputType)) {
-      return jsonPathResult.stream()
-          .flatMap(subject -> {
-            if (subject instanceof JSONArray) {
-              return ((JSONArray) subject).stream();
-            }
-            return Stream.of(subject);
-          })
-          .map(subject -> new JsonSolution(jsonMapper.valueToTree(subject)))
-          .collect(Collectors.toList());
+      return stream.collect(Collectors.toList());
     }
 
-    return new JsonSolution(jsonMapper.valueToTree(jsonPathResult.get(0)));
+    return stream.findFirst()
+        .orElseThrow();
+  }
+
+  private void excludeFields(GraphQLDirective jsonDirective, JsonNode subject) {
+    if (!(subject instanceof ObjectNode)) {
+      return;
+    }
+
+    ofNullable(jsonDirective.getArgument(JsonDirectives.ARGS_EXCLUDE))
+        .filter(argument -> Objects.nonNull(argument.getValue()))
+        .ifPresent(argument -> excludeField(subject, argument));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void excludeField(JsonNode subject, GraphQLArgument argument) {
+    ((Collection<String>) argument.getValue()).forEach(value -> {
+      ObjectNode objectNode = (ObjectNode) subject.findParent(value);
+      if (objectNode != null) {
+        objectNode.remove(value);
+      }
+    });
   }
 
   private JsonNode getJsonDocumentByFile(GraphQLDirective jsonDirective) {
@@ -96,8 +124,7 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
   private Pair<String, Object> getArgumentsPair(Map<String, Object> arguments, GraphQLArgument argument) {
     GraphQLDirective predicate = argument.getDirective(PredicateDirectives.PREDICATE_NAME);
 
-    String key = Optional.ofNullable(predicate.getArgument(PredicateDirectives.ARGS_PROPERTY))
-        .map(GraphQLArgument::getValue)
+    String key = ofNullable(predicate.getArgument(PredicateDirectives.ARGS_PROPERTY)).map(GraphQLArgument::getValue)
         .map(Object::toString)
         .orElse(argument.getName());
 

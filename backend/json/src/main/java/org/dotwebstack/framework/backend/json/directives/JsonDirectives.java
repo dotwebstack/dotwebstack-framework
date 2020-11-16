@@ -7,7 +7,7 @@ public final class JsonDirectives {
 
   public static final String ARGS_PATH = "path";
 
-  public static final String ARGS_PREDICATES = "predicates";
+  public static final String ARGS_EXCLUDE = "exclude";
 
   private JsonDirectives() {}
 }

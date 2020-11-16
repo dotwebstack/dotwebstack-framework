@@ -157,7 +157,7 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_JSON);
 
     // Act / Assert
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(BadRequestException.class,
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 

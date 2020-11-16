@@ -22,7 +22,18 @@ type Query {
 ## 1.2 Json directive
 
 The Json backend introduces the `@json` directive which can be added to a query in the `schema.graphqls` file. It allows 
-you to specify an json file and path expression for this specific query. 
+you to specify an json file, path expression for this specific query. 
+
+Optional you can exclude fields on json level by using the `field` directive argument. 
+
+THe following example will return all json nodes under the `$.beers` path where the `_metadata` field is excluded.
+
+```graphql
+type Query {
+  beers: [Beer!]!
+  @json(file: "data.json", path: "$.beers", exclude: ["_metadata"])
+}
+```
 
 
 ## 1.3 Predicate directive

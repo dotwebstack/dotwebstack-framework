@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
 import static java.util.Collections.singletonList;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.InputObjectTypeDefinition;
@@ -19,7 +19,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -79,8 +78,8 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
         node.fields()
             .forEachRemaining(field -> result.put(field.getKey(), JsonNodeUtils.toObject(field.getValue())));
         return result;
-      } catch (IOException e) {
-        throw illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
+      } catch (JsonProcessingException e) {
+        throw badRequestException("Request body is invalid", e);
       }
     }
   }

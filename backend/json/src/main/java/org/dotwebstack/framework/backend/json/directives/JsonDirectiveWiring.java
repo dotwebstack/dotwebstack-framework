@@ -98,10 +98,7 @@ public class JsonDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
     long amountOfPredicateDirectives = fieldDefinition.getArguments()
         .stream()
         .filter(argument -> argument.getDirective(PredicateDirectives.PREDICATE_NAME) != null)
-        .map(argument -> {
-          validateMandatoryArguments(argument);
-          return argument;
-        })
+        .peek(this::validateMandatoryArguments)
         .count();
 
     if (expectedNumberOfPredicates != amountOfPredicateDirectives) {

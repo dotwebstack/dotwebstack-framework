@@ -10,7 +10,8 @@
       {
         "identifier": 1,
         "brewery": 1,
-        "name": "Alfa Edel Pils"
+        "name": "Alfa Edel Pils",
+        "_metadata": "metadata"
       },
       {
         "identifier": 2,
