@@ -167,20 +167,20 @@ public class OpenApiConfiguration {
     HttpMethodOperation.HttpMethodOperationBuilder builder = HttpMethodOperation.builder()
         .name(name);
 
-    List<HttpMethodOperation> list = new ArrayList<>();
+    List<HttpMethodOperation> httpMethodOperations = new ArrayList<>();
 
     if (Objects.nonNull(pathItem.getGet())) {
-      list.add(builder.httpMethod(HttpMethod.GET)
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.GET)
           .operation(pathItem.getGet())
           .build());
     }
     if (Objects.nonNull(pathItem.getPost())) {
-      list.add(builder.httpMethod(HttpMethod.POST)
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.POST)
           .operation(pathItem.getPost())
           .build());
     }
 
-    return list.stream()
+    return httpMethodOperations.stream()
         .filter(httpMethodOperation -> getDwsQueryName(httpMethodOperation.getOperation()).isPresent())
         .collect(Collectors.toList());
   }
