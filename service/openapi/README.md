@@ -331,6 +331,24 @@ Brewery:
       x-dws-default: 'Brewery'
 ```
 
+# 1.1.14 Conditional include response objects
+By using the `x-dws-include` extension, it is possible to decide with a condition whether the object needs to be included in the response. This is useful in the case when you are constructing an object with jexl evaluated properties. A condition can be assigned to a response object by adding the extension field `x-dws-include` to an object:
+```yaml
+Brewery:
+  type: object
+  required:
+    - identifier
+    - name
+    - countries
+  x-dws-include: "identifier != null"
+  properties:
+    identifier:
+      type: string
+```
+The content of `x-dws-include` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression and should return a boolean. The expression is evaluated while translating the GraphQL response to the REST response and supports the following variables:
+* `<property>`: A scalar field of the object containing the `x-dws-include` property.
+* `<nestedobject>.<property>`: Same as above, but using the property of an nested object.
+
 # 1.2 Templating
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
 configure a response like the following:
