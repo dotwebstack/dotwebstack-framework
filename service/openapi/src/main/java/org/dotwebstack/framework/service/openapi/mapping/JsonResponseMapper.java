@@ -115,7 +115,6 @@ public class JsonResponseMapper {
          * After the object is mapped, we check if it was a composed schema. If that is the case one layer
          * is unwrapped in the response. This layer only exist in the schema, not in the response.
          */
-
         if (object != null && !writeContext.getResponseObject()
             .getSummary()
             .getComposedOf()
