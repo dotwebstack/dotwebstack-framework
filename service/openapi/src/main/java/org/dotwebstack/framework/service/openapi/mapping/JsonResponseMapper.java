@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -122,7 +123,7 @@ public class JsonResponseMapper {
               .iterator()
               .next());
         }
-        return object;
+        return isObjectIncluded(object, responseObject.getSummary()) ? object : null;
       default:
         if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
             || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
@@ -130,6 +131,22 @@ public class JsonResponseMapper {
         }
         return null;
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean isObjectIncluded(Object objectResult, SchemaSummary schemaSummary) {
+    if (schemaSummary.hasIncludeCondition() && objectResult instanceof Map) {
+      JexlContext jexlContext = new MapContext();
+      ((Map<String, Object>) objectResult).forEach(jexlContext::set);
+
+      return jexlHelper.evaluateScript(schemaSummary.getSchema()
+          .getExtensions()
+          .get(OasConstants.X_DWS_INCLUDE)
+          .toString(), jexlContext, Boolean.class)
+          .orElse(true);
+    }
+
+    return true;
   }
 
   private Object mapDefaultArrayToResponse(ResponseObject responseObject) {
@@ -152,8 +169,8 @@ public class JsonResponseMapper {
   }
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
-    if (summary.isRequired() || summary.isTransient()
-        || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+    if (summary.isRequired() || summary.isTransient() || isExpanded(writeContext.getParameters(), removeRoot(newPath))
+        || summary.hasIncludeCondition()) {
       if (summary.isTransient()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }

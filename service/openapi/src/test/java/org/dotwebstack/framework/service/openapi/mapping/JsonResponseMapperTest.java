@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
@@ -657,6 +658,57 @@ class JsonResponseMapperTest {
 
     // Assert
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
+  }
+
+  @Test
+  void map_returnsValue_withoutIncludedObject() {
+    // Arrange
+    ResponseWriteContext writeContext = arrangeIncludeWriteContext("prop2 != `v3`");
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertEquals(response, "{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\"}}");
+  }
+
+  @Test
+  void map_returnsValue_withIncludedObject() {
+    // Arrange
+    ResponseWriteContext writeContext = arrangeIncludeWriteContext("prop2 == `v3`");
+
+    // Act
+    String response = jsonResponseMapper.toResponse(writeContext);
+
+    // Assert
+    assertEquals(response, "{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}");
+  }
+
+  private ResponseWriteContext arrangeIncludeWriteContext(String condition) {
+    ObjectSchema objectSchema = new ObjectSchema();
+    objectSchema.addExtension(OasConstants.X_DWS_INCLUDE, condition);
+
+    ResponseObject child2 = getObject("child2", "object", false, false, false, null,
+        ImmutableList.of(REQUIRED_NON_NILLABLE_STRING), new ArrayList<>(), objectSchema);
+    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
+
+    ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child1));
+
+    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> child1Data =
+        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2", "child2", child2Data);
+    Map<String, Object> rootData =
+        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    return ResponseWriteContext.builder()
+        .graphQlField(graphQlField)
+        .responseObject(responseObject)
+        .data(rootData)
+        .dataStack(dataStack)
+        .build();
   }
 
   @Test
