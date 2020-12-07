@@ -27,6 +27,8 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,6 +85,8 @@ import reactor.core.publisher.Mono;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CoreRequestHandlerTest {
+
+  private static final String URI_STRING = "http://dotwebstack.org/CoreRequestHandlerTest";
 
   @Mock
   private ResponseSchemaContext responseSchemaContext;
@@ -151,7 +155,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void handle_ReturnsHeaders() {
+  void handle_ReturnsHeaders() throws URISyntaxException {
     // Act
     coreRequestHandler.handle(getServerRequest())
         .doOnSuccess(response -> {
@@ -165,7 +169,7 @@ class CoreRequestHandlerTest {
 
   @ParameterizedTest
   @CsvSource({"application/xml, application/xml", "application/json, application/json"})
-  void getResponseTemplateTest(String acceptHeader, String expected) {
+  void getResponseTemplateTest(String acceptHeader, String expected) throws URISyntaxException {
     // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf(acceptHeader));
@@ -177,7 +181,7 @@ class CoreRequestHandlerTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"application/xml;q=0.4,application/json", "application/*"})
-  void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) {
+  void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) throws URISyntaxException {
     // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Arrays.stream(acceptHeader.split(","))
@@ -191,7 +195,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() {
+  void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() throws URISyntaxException {
     // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf("*/*"));
@@ -234,7 +238,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getParameterValidationExceptionTest() {
+  void getParameterValidationExceptionTest() throws URISyntaxException {
     // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
@@ -252,7 +256,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNotFoundExceptionTest() {
+  void shouldThrowNotFoundExceptionTest() throws URISyntaxException {
     // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", null);
@@ -264,7 +268,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNoContentExceptionTest() {
+  void shouldThrowNoContentExceptionTest() throws URISyntaxException {
     // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "data");
@@ -287,9 +291,12 @@ class CoreRequestHandlerTest {
     assertThrows(NoContentException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
-  private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates) {
+  private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates)
+      throws URISyntaxException {
+    URI uri = new URI(URI_STRING);
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     ServerRequest request = mock(ServerRequest.class);
+    when(request.uri()).thenReturn(uri);
     when(request.queryParams()).thenReturn(queryParams);
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
@@ -312,7 +319,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNotAcceptedExceptionTest() {
+  void shouldThrowNotAcceptedExceptionTest() throws URISyntaxException {
     // Act
     getServerRequest();
     List<MediaType> acceptHeader = Collections.singletonList(MediaType.valueOf("application/not_supported"));
@@ -436,7 +443,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void resolveUrlAndHeaderParameters_returnsValue() {
+  void resolveUrlAndHeaderParameters_returnsValue() throws URISyntaxException {
     // Arrange
     ServerRequest request = getServerRequest();
 
@@ -444,7 +451,7 @@ class CoreRequestHandlerTest {
     Map<String, Object> params = this.coreRequestHandler.resolveUrlAndHeaderParameters(request);
 
     // Assert
-    assertEquals(1, params.size());
+    assertEquals(2, params.size());
   }
 
   @SuppressWarnings("rawtypes")
@@ -475,7 +482,7 @@ class CoreRequestHandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException {
+  void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException, URISyntaxException {
     // Arrange
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query1")
@@ -489,28 +496,30 @@ class CoreRequestHandlerTest {
         any(RequestBody.class), any(Map.class))).thenReturn(Map.of("key", "value"));
 
     // Act / Assert
-    assertEquals(Map.of("query6_param1", "value1", "key", "value"),
+    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1", "key", "value"),
         this.coreRequestHandler.resolveParameters(getServerRequest()));
   }
 
   @Test
-  public void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException {
+  void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException, URISyntaxException {
     // Arrange
     ServerRequest request = getServerRequest();
     when(request.bodyToMono(String.class)).thenReturn(Mono.empty());
     when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
 
     // Act / Assert
-    assertEquals(Map.of("query6_param1", "value1"), this.coreRequestHandler.resolveParameters(request));
+    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1"),
+        this.coreRequestHandler.resolveParameters(request));
   }
 
-  ServerRequest getServerRequest() {
-    ServerRequest request = mock(ServerRequest.class);
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
+  ServerRequest getServerRequest() throws URISyntaxException {
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     queryParams.put("query6_param1", ImmutableList.of("value1"));
+    ServerRequest request = mock(ServerRequest.class);
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
 
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+    when(request.uri()).thenReturn(new URI(URI_STRING));
     when(request.headers()).thenReturn(headers);
     when(request.queryParams()).thenReturn(queryParams);
     return request;
