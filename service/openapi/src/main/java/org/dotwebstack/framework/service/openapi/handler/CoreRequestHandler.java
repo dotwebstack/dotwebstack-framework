@@ -91,6 +91,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private static final String MDC_REQUEST_ID = "requestId";
 
+  private static final String REQUEST_URI = "request_uri";
+
   private final OpenAPI openApi;
 
   private final ResponseSchemaContext responseSchemaContext;
@@ -426,6 +428,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+      result.put(REQUEST_URI, request.uri()
+          .toString());
 
       validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
           request.queryParams()
