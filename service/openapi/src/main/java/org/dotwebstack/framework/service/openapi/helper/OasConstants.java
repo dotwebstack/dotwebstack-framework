@@ -46,6 +46,8 @@ public class OasConstants {
 
   public static final String X_DWS_TRANSIENT = "x-dws-transient";
 
+  public static final String X_DWS_OPERATION = "x-dws-operation";
+
   public static final String X_DWS_ENVELOPE = "x-dws-envelope";
 
   public static final String X_DWS_INCLUDE = "x-dws-include";

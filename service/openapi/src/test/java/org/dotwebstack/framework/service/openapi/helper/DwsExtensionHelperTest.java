@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsRequiredFields;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -254,5 +255,29 @@ class DwsExtensionHelperTest {
 
     // Act / Assert
     assertTrue(hasDwsExtensionWithValue(parameter, OasConstants.X_DWS_TYPE, "specialtype"));
+  }
+
+  @Test
+  void isDwsOperation_returnsFalse_withoutDwsOperation() {
+    // Arrange
+    Operation operation = TestResources.openApi()
+        .getPaths()
+        .get("/query12")
+        .getGet();
+
+    // Act / Assert
+    assertTrue(isDwsOperation(operation));
+  }
+
+  @Test
+  void isDwsOperation_returnsTrue_withDwsOperationFalse() {
+    // Arrange
+    Operation operation = TestResources.openApi()
+        .getPaths()
+        .get("/query13")
+        .getGet();
+
+    // Act / Assert
+    assertFalse(isDwsOperation(operation));
   }
 }
