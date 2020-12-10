@@ -62,7 +62,7 @@ responses:
 
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
 
-Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. (default=true)
+Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. If you want DWS to ignore this operation set to `false`. Default value is `true`
 
 ```yaml
 paths:

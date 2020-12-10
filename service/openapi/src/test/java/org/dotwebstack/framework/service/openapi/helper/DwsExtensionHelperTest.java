@@ -2,7 +2,13 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import static graphql.Assert.assertTrue;
 import static java.util.Collections.emptyMap;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.*;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsRequiredFields;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 

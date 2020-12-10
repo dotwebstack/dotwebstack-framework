@@ -2,7 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.*;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
