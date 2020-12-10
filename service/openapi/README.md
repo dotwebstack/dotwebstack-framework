@@ -62,6 +62,15 @@ responses:
 
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
 
+Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. If you want DWS to ignore this operation set to `false`. Default value is `true`
+
+```yaml
+paths:
+  /breweries:
+    get:
+      x-dws-operation: false
+```
+
 # 1.1.2 Operation parameters
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
 
@@ -238,6 +247,7 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 * `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used recursively to access parents of parents: `fields._parent._parent.<property>`.
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
+* `args.request_uri`: The requested URI is available via this argument.
 
 In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to specify
 a `fallback` for an `x-dws-expr`:

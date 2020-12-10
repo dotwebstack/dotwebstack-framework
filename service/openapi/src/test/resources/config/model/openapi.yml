@@ -298,7 +298,6 @@ paths:
                 x-dws-expr: args.nonExistent
             X-Response-Header-Ref:
               $ref: '#/components/headers/HeaderRef'
-
   /query7:
     get:
       x-dws-query: query7
@@ -372,3 +371,14 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object12'
+  /query13:
+    get:
+      x-dws-operation: false
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`http://any/url`'

@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_OPERATION;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_FIELD;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
@@ -76,6 +77,20 @@ public class DwsExtensionHelper {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
     Boolean isTransient = (Boolean) getDwsExtension(schema, X_DWS_TRANSIENT);
     return isTrue(isEnvelope) || isTrue(isTransient) || isExpr(schema) || isDefault(schema);
+  }
+
+  public static boolean isDwsOperation(@NonNull Operation operation) {
+    if (operation.getExtensions() == null || !operation.getExtensions()
+        .containsKey(X_DWS_OPERATION)) {
+      return true;
+    }
+    Object operationValue = operation.getExtensions()
+        .get(X_DWS_OPERATION);
+
+    if (operationValue instanceof Boolean) {
+      return (boolean) operationValue;
+    }
+    return true;
   }
 
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
