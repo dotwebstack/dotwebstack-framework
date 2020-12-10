@@ -62,6 +62,15 @@ responses:
 
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
 
+Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. (default=true)
+
+```yaml
+paths:
+  /breweries:
+    get:
+      x-dws-operation: false
+```
+
 # 1.1.2 Operation parameters
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
 

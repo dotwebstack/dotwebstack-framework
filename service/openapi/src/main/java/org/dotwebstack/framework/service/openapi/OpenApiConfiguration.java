@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.*;
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
@@ -166,19 +167,22 @@ public class OpenApiConfiguration {
     HttpMethodOperation.HttpMethodOperationBuilder builder = HttpMethodOperation.builder()
         .name(name);
 
-    List<HttpMethodOperation> result = new ArrayList<>();
+    List<HttpMethodOperation> httpMethodOperations = new ArrayList<>();
 
     if (Objects.nonNull(pathItem.getGet())) {
-      result.add(builder.httpMethod(HttpMethod.GET)
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.GET)
           .operation(pathItem.getGet())
           .build());
     }
     if (Objects.nonNull(pathItem.getPost())) {
-      result.add(builder.httpMethod(HttpMethod.POST)
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.POST)
           .operation(pathItem.getPost())
           .build());
     }
-    return result;
+
+    return httpMethodOperations.stream()
+        .filter(httpMethodOperation -> isDwsOperation(httpMethodOperation.getOperation()))
+        .collect(Collectors.toList());
   }
 
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,

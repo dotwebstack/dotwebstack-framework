@@ -3,17 +3,7 @@ package org.dotwebstack.framework.service.openapi.helper;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_FIELD;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_NAME;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETER_VALUEEXPR;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_REQUIRED_FIELDS;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TRANSIENT;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.*;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
@@ -76,6 +66,20 @@ public class DwsExtensionHelper {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
     Boolean isTransient = (Boolean) getDwsExtension(schema, X_DWS_TRANSIENT);
     return isTrue(isEnvelope) || isTrue(isTransient) || isExpr(schema) || isDefault(schema);
+  }
+
+  public static boolean isDwsOperation(@NonNull Operation operation) {
+    if (operation.getExtensions() == null || !operation.getExtensions()
+        .containsKey(X_DWS_OPERATION)) {
+      return true;
+    }
+    Object operationValue = operation.getExtensions()
+        .get(X_DWS_OPERATION);
+
+    if (operationValue instanceof Boolean) {
+      return (boolean) operationValue;
+    }
+    return true;
   }
 
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
