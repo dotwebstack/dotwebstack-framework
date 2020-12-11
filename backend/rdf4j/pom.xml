@@ -6,6 +6,7 @@
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>backend</artifactId>
     <version>0.3.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>backend-rdf4j</artifactId>

@@ -6,7 +6,10 @@
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>service</artifactId>
         <version>0.3.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+
+    <artifactId>service-openapi</artifactId>
 
     <properties>
         <swagger.version>2.0.19</swagger.version>
@@ -14,7 +17,6 @@
         <hamcrest.version>1.3</hamcrest.version>
     </properties>
 
-    <artifactId>service-openapi</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.zalando</groupId>
@@ -51,4 +53,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>

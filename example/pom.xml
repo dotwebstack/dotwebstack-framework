@@ -6,26 +6,16 @@
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
     <version>0.3.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>example</artifactId>
+  <packaging>pom</packaging>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>backend-json</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-openapi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>templating-pebble</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>example-json</module>
+    <module>example-postgres</module>
+    <module>example-rdf4j</module>
+  </modules>
 
 </project>

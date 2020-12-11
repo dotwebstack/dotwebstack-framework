@@ -6,10 +6,10 @@
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>integration-test</artifactId>
         <version>0.3.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>graphql-rdf4j</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
 
     <dependencies>
         <dependency>

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.example;
+package org.dotwebstack.framework.example.rdf4j;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
