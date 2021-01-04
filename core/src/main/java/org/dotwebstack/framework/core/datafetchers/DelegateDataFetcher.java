@@ -6,6 +6,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.function.Supplier;
 
+@Deprecated
 public abstract class DelegateDataFetcher implements CoreDataFetcher<Object> {
 
   protected DataFetcher<Object> getDelegate(DataFetchingEnvironment dataFetchingEnvironment) {

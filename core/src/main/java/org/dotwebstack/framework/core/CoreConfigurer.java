@@ -10,7 +10,6 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
-import static graphql.schema.FieldCoordinates.coordinates;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -21,10 +20,8 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
-import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
-import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
@@ -195,25 +192,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
-    builder.codeRegistry(registerDataFetchers())
-        .scalar(CoreScalars.OBJECT)
+    builder.scalar(CoreScalars.OBJECT)
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME);
 
-    autoRegisteredSchemaDirectiveWirings.forEach(wiring -> builder.directive(wiring.getDirectiveName(), wiring));
-  }
-
-  private GraphQLCodeRegistry registerDataFetchers() {
-    GraphQLCodeRegistry.Builder builder = GraphQLCodeRegistry.newCodeRegistry();
-
-    this.typeDefinitionRegistry.types()
-        .values()
-        .stream()
-        .filter(type -> type instanceof ObjectTypeDefinition)
-        .forEach(type -> ((ObjectTypeDefinition) type).getFieldDefinitions()
-            .forEach(fieldDefinition -> builder.dataFetcher(coordinates(type.getName(), fieldDefinition.getName()),
-                dataFetcher)));
-
-    return builder.build();
+//    autoRegisteredSchemaDirectiveWirings.forEach(wiring -> builder.directive(wiring.getDirectiveName(), wiring));
   }
 }

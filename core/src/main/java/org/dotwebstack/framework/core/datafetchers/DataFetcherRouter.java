@@ -11,6 +11,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.stereotype.Component;
 
 @Component
+@Deprecated
 public class DataFetcherRouter implements DataFetcher<Object> {
 
   private final Set<CoreDataFetcher<Object>> dataFetchers;

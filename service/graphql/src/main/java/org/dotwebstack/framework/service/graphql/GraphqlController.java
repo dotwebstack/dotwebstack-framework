@@ -3,7 +3,10 @@ package org.dotwebstack.framework.service.graphql;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import java.util.Map;
+import org.dataloader.DataLoaderRegistry;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,13 +21,15 @@ class GraphqlController {
     this.graphQL = graphQL;
   }
 
+  @CrossOrigin
   @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Mono<ExecutionResult> handleGet(@RequestParam("query") String query) {
+  public Mono<Map<String, Object>> handleGet(@RequestParam("query") String query) {
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
-    return Mono.fromFuture(graphQL.executeAsync(executionInput));
+    return Mono.fromFuture(graphQL.executeAsync(executionInput))
+        .map(ExecutionResult::toSpecification);
   }
-
 }

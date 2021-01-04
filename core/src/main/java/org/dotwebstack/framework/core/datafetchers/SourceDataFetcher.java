@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.datafetchers;
 
 import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 
+@Deprecated
 public abstract class SourceDataFetcher implements CoreDataFetcher<Object> {
 
   protected final CoreConverterRouter converterRouter;

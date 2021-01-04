@@ -4,10 +4,12 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.WiringFactory;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -33,11 +35,18 @@ public class CoreConfiguration {
 
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
+  private final List<WiringFactory> wiringFactories;
+
+  public CoreConfiguration(List<WiringFactory> wiringFactories) {
+    this.wiringFactories = wiringFactories;
+  }
+
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators) {
+    RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
+        .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
-    RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
 
     graphqlConfigurers

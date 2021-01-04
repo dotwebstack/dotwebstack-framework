@@ -14,6 +14,7 @@ import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.springframework.stereotype.Component;
 
 @Component
+@Deprecated
 public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
   private final JexlEngine jexlEngine;
