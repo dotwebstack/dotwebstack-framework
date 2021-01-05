@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import graphql.GraphQL;
+import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
@@ -74,6 +75,8 @@ public class CoreConfiguration {
   @Bean
   public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
     return GraphQL.newGraphQL(graphqlSchema)
+        .instrumentation(new TracingInstrumentation(
+            TracingInstrumentation.Options.newOptions().includeTrivialDataFetchers(false)))
         .build();
   }
 
