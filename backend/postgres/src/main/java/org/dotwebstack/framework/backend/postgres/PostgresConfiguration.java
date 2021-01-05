@@ -1,8 +1,13 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.jooq.impl.DSL.*;
+
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.spi.ConnectionFactory;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +21,12 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
 
   public PostgresConfiguration(PostgresProperties postgresProperties) {
     this.postgresProperties = postgresProperties;
+  }
+
+  @Bean
+  public DSLContext dslContext() {
+    System.getProperties().setProperty("org.jooq.no-logo", "true");
+    return DSL.using(SQLDialect.POSTGRES);
   }
 
   @Bean
@@ -36,8 +47,8 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
     postgresProperties.getTypeMapping()
         .forEach((typeName, typeConfiguration) -> {
           tableRegistry.register(typeName, TableRegistry.TableMapping.builder()
-              .name(typeConfiguration.getTable())
-              .keyColumn(postgresProperties.getKeyColumn())
+              .table(table(typeConfiguration.getTable()))
+              .keyColumn(field(postgresProperties.getKeyColumn()))
               .build());
         });
 

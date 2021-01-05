@@ -3,12 +3,17 @@ package org.dotwebstack.framework.backend.postgres;
 import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.dotwebstack.framework.backend.postgres.query.SchemaTable;
-import org.dotwebstack.framework.backend.postgres.query.SelectQuery;
-import org.dotwebstack.framework.backend.postgres.query.WhereCondition;
+import java.util.Objects;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.jooq.DSLContext;
+import org.jooq.Param;
+import org.jooq.Query;
+import org.jooq.Record;
+import org.jooq.SelectJoinStep;
+import org.jooq.conf.ParamType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -19,13 +24,18 @@ import reactor.util.function.Tuples;
 @Component
 public class PostgresDataLoader implements BackendDataLoader {
 
+  private static final Logger LOG = LoggerFactory.getLogger(PostgresDataLoader.class);
+
   private final TableRegistry tableRegistry;
 
   private final DatabaseClient databaseClient;
 
-  public PostgresDataLoader(TableRegistry tableRegistry, DatabaseClient databaseClient) {
+  private final DSLContext dslContext;
+
+  public PostgresDataLoader(TableRegistry tableRegistry, DatabaseClient databaseClient, DSLContext dslContext) {
     this.tableRegistry = tableRegistry;
     this.databaseClient = databaseClient;
+    this.dslContext = dslContext;
   }
 
   @Override
@@ -33,10 +43,28 @@ public class PostgresDataLoader implements BackendDataLoader {
     return tableRegistry.contains(objectType.getName());
   }
 
+  private DatabaseClient.GenericExecuteSpec execute(Query query) {
+    String sql = query.getSQL(ParamType.NAMED);
+    Map<String, Param<?>> params = query.getParams();
+
+    LOG.debug("PostgreSQL query: {}", sql);
+    LOG.debug("Binding variables: {}", params);
+
+    DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
+
+    for (Map.Entry<String, Param<?>> param : params.entrySet()) {
+      executeSpec = executeSpec.bind(param.getKey(),
+          Objects.requireNonNull(param.getValue().getValue()));
+    }
+
+    return executeSpec;
+  }
+
   @Override
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
-    return this.createQuery(key, environment)
-        .execute(databaseClient)
+    Query query = createQuery(key, environment);
+
+    return this.execute(query)
         .fetch()
         .one();
   }
@@ -50,8 +78,9 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
-    return this.createQuery(null, environment)
-        .execute(databaseClient)
+    Query query = createQuery(key, environment);
+
+    return this.execute(query)
         .fetch()
         .all();
   }
@@ -62,26 +91,17 @@ public class PostgresDataLoader implements BackendDataLoader {
         .map(key -> this.loadMany(key, environment));
   }
 
-  private SelectQuery createQuery(Object key, LoadEnvironment environment) {
-    AtomicInteger tableCounter = new AtomicInteger();
-    TableRegistry.TableMapping tableMapping = tableRegistry.get(environment.getObjectType().getName());
+  private Query createQuery(Object key, LoadEnvironment environment) {
+    TableRegistry.TableMapping tableMapping = tableRegistry.get(
+        environment.getObjectType().getName());
 
-    SchemaTable fromTable = SchemaTable.builder()
-        .name(tableMapping.getName())
-        .alias("t".concat(String.valueOf(tableCounter.incrementAndGet())))
-        .build();
-
-    SelectQuery.SelectQueryBuilder queryBuilder = SelectQuery.builder()
-        .fromTable(fromTable);
+    SelectJoinStep<Record> query = dslContext.select()
+        .from(tableMapping.getTable());
 
     if (key != null) {
-      queryBuilder.whereCondition(
-          WhereCondition.builder()
-              .column(fromTable.newColumn(tableMapping.getKeyColumn()))
-              .value(key)
-              .build());
+      query.where(tableMapping.getKeyColumn().eq(key));
     }
 
-    return queryBuilder.build();
+    return query;
   }
 }

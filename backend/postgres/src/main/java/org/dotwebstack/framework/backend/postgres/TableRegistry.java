@@ -5,6 +5,9 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 
 public class TableRegistry {
 
@@ -27,9 +30,9 @@ public class TableRegistry {
   public static class TableMapping {
 
     @NonNull
-    private final String name;
+    private final Table<Record> table;
 
     @NonNull
-    private final String keyColumn;
+    private final Field<Object> keyColumn;
   }
 }
