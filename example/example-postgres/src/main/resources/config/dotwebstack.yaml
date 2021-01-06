@@ -1,0 +1,28 @@
+typeMapping:
+  Beer:
+    backend: postgres
+    table: dbeerpedia.beers
+    keyFields:
+      - identifier
+    fields:
+      brewery:
+        joinColumns:
+          - name: brewery
+            referencedField: identifier
+
+  Brewery:
+    backend: postgres
+    table: dbeerpedia.breweries
+    keyFields:
+      - identifier
+    fields:
+      postalAddress:
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+      beers:
+        mappedBy: brewery
