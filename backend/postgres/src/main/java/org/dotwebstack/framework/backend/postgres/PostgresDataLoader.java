@@ -1,9 +1,14 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.jooq.impl.DSL.*;
+
 import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.jooq.DSLContext;
@@ -26,21 +31,26 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostgresDataLoader.class);
 
-  private final TableRegistry tableRegistry;
+  private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final DatabaseClient databaseClient;
 
   private final DSLContext dslContext;
 
-  public PostgresDataLoader(TableRegistry tableRegistry, DatabaseClient databaseClient, DSLContext dslContext) {
-    this.tableRegistry = tableRegistry;
+  public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
+      DSLContext dslContext) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.databaseClient = databaseClient;
     this.dslContext = dslContext;
   }
 
   @Override
   public boolean supports(GraphQLObjectType objectType) {
-    return tableRegistry.contains(objectType.getName());
+    // TODO: Refactor matching?
+    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
+        .get(objectType.getName());
+
+    return typeConfiguration instanceof PostgresTypeConfiguration;
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {
@@ -92,14 +102,14 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   private Query createQuery(Object key, LoadEnvironment environment) {
-    TableRegistry.TableMapping tableMapping = tableRegistry.get(
-        environment.getObjectType().getName());
+    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) dotWebStackConfiguration.getTypeMapping()
+        .get(environment.getObjectType().getName());
 
     SelectJoinStep<Record> query = dslContext.select()
-        .from(tableMapping.getTable());
+        .from(table(typeConfiguration.getTable()));
 
     if (key != null) {
-      query.where(tableMapping.getKeyColumn().eq(key));
+      query.where(field(typeConfiguration.getKeyFields().get(0)).eq(key));
     }
 
     return query;

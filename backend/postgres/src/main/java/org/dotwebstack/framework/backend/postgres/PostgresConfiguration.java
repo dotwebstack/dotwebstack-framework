@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.jooq.impl.DSL.*;
-
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.spi.ConnectionFactory;
@@ -38,20 +36,5 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
         .username(postgresProperties.getUsername())
         .password(postgresProperties.getPassword())
         .build());
-  }
-
-  @Bean
-  public TableRegistry tableMapping() {
-    TableRegistry tableRegistry = new TableRegistry();
-
-    postgresProperties.getTypeMapping()
-        .forEach((typeName, typeConfiguration) -> {
-          tableRegistry.register(typeName, TableRegistry.TableMapping.builder()
-              .table(table(typeConfiguration.getTable()))
-              .keyColumn(field(postgresProperties.getKeyColumn()))
-              .build());
-        });
-
-    return tableRegistry;
   }
 }
