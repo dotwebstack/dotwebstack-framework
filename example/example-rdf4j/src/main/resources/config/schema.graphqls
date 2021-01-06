@@ -3,136 +3,28 @@ schema {
 }
 
 type Query {
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
-    @sparql(
-      repository: "local",
-      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
-
-  brewerySparql(identifier: ID! @constraint(pattern: "[0-9]+")
-  ): SparqlQueryResult!
-    @sparql(
-      repository: "local",
-      queryRef: "breweries-sparql"
-      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}"
-  )
-
-  breweryModel(identifier: ID! @constraint(pattern: "[0-9]+"),
-    iri: IRI
-  ): Model
-    @sparql(
-      repository: "local",
-      queryRef: "breweries-model")
-
-  brewery_with_subject(subject: String! @filter) : Brewery
-    @sparql(repository: "local")
-
-  breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
-            page: Int = 1 @constraint(expr: " args.page > 0 && args.page <= ( 1000 / args.pageSize )"),
-            pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
-            sinceAfter: Date @filter(field: "founded", operator: ">"),
-            sinceBefore: Date @filter(field: "founded", operator: "<")
-            name: [String] @filter(field: "name"),
-            beerCount: Int @filter,
-            beerName: String @filter(field: "beers.name")): [Brewery!]!
-    @sparql(
-      repository: "local"
-      limit: "pageSize"
-      offset: "(page - 1) * pageSize"
-    )
-
-  default_breweries : [Brewery!]!
-    @sparql(
-      repository: "local"
-    )
-
-  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }] @sort):[Brewery!]
-   @sparql(
-      repository: "local"
-   )
-
-  breweries_paging_input(input: PageQueryInput): [Brewery!]!
-    @sparql(
-      repository: "local"
-      limit: "input.pageSize"
-      offset: "(input.page - 1) * input.pageSize"
-    )
-
-  breweries_filter_input(input: FilterQueryInput): [Brewery!]!
-   @sparql(
-     repository: "local",
-     limit: "input.pageSize",
-     offset: "(input.page - 1) * input.pageSize"
-   )
-
-  beers(sort: [SortField!] =[{field: "name", order: ASC}] @sort): [Beer!]!
-    @sparql(
-      repository: "local"
-    )
-
-  voorkomen(
-      subject: IRI
-    ): Model
-    @sparql(repository: "local",
-    queryRef: "breweries-model")
+  beers: [Beer!]!
+  brewery(identifier: ID!): Brewery
+  breweries: [Brewery!]!
 }
 
 type Brewery {
   identifier: ID!
-  subject: IRI! @resource
   name: String!
-  localName: String
-  founded: Date
-  openinghours: String
-  owners(sort: [SortField!] = [{order: ASC}] @sort): [String]
-  url: String!
-    @transform(expr: "url.getLocalName()")
-  address: Address
-  postalCode: String
-  sponsorship: Sponsorship
-  beers(name: [SortField!] = [{order: ASC}] @sort, ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
-  lemonBeers: [Beer]
-  beerCount: Int! @aggregate(type: COUNT)
-}
-
-type Address {
-  postalCode: String
-  streetAddress: String!
+  beers: [Beer!]!
+  postalAddress: Address
+  visitAddress: Address
 }
 
 type Beer {
   identifier: ID!
   name: String!
-  created: DateTime!
-  brewery: String!
-  beerTypes: [String]!
-  ingredients(name: [String] @filter(field: "name")): [Ingredient!]
-  supplements: [Supplement!]
+  abv: Float!
+  brewery: Brewery!
 }
 
-type Ingredient {
+type Address {
   identifier: ID!
-  name: String
-}
-
-type Supplement {
-  name: String
-}
-
-input PageQueryInput {
-  page: Int = 1 @constraint(min: 1)
-  pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])
-}
-
-type Sponsorship {
-  identifier: ID!
-  name: String!
-  numbers: [Int]
-}
-
-input FilterQueryInput {
-  page: Int = 1
-  sinceBefore: Date
-    @filter(field: "founded", operator: "<=")
-  sinceAfter: Date
-    @filter(field: "founded", operator: ">=")
+  street: String!
+  city: String!
 }

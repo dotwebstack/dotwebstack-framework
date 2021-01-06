@@ -2,16 +2,25 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
+
+import com.google.common.collect.ImmutableMap;
+import graphql.schema.DataFetchingEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
@@ -19,10 +28,14 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
+import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
 import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -47,9 +60,45 @@ class Rdf4jConfiguration {
 
   private static final String MODEL_PATTERN = "/**.trig";
 
+  private static final String SPARQL_PATH = "sparql";
+
+  private static final String SPARQL_PATTERN = "/**.rq";
+
   @Bean
   public ConfigFactory configFactory() {
     return new ConfigFactoryImpl();
+  }
+
+  @Bean
+  RepositoryAdapter localRepositoryAdapter(LocalRepositoryManager localRepositoryManager) {
+    return new RepositoryAdapter() {
+      @Override
+      public TupleQuery prepareTupleQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareTupleQuery(query);
+      }
+
+      @Override
+      public GraphQuery prepareGraphQuery(String repositoryId, DataFetchingEnvironment environment, String query,
+          List<String> subjectIris) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareGraphQuery(query);
+      }
+
+      @Override
+      public BooleanQuery prepareBooleanQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareBooleanQuery(query);
+      }
+
+      @Override
+      public boolean supports(String repositoryId) {
+        return localRepositoryManager.hasRepositoryConfig(repositoryId);
+      }
+    };
   }
 
   @Bean
@@ -67,12 +116,21 @@ class Rdf4jConfiguration {
 
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader);
 
+    // Add repositories from external config
+    if (rdf4jProperties.getRepositories() != null) {
+      rdf4jProperties.getRepositories()
+          .entrySet()
+          .stream()
+          .map(repositoryProperty -> createRepositoryConfig(repositoryProperty, configFactory))
+          .forEach(repositoryManager::addRepositoryConfig);
+    }
+
     return repositoryManager;
   }
 
   @Bean
   NodeShapeRegistry nodeShapeRegistry(@NonNull LocalRepositoryManager localRepositoryManager,
-                                      @NonNull Rdf4jProperties rdf4jProperties) {
+      @NonNull Rdf4jProperties rdf4jProperties) {
     Repository repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
 
     Model shapeModel = QueryResults.asModel(repository.getConnection()
@@ -92,6 +150,39 @@ class Rdf4jConfiguration {
         });
 
     return registry;
+  }
+
+  @Bean
+  public Map<String, String> queryReferenceRegistry(@NonNull ResourceLoader resourceLoader) throws IOException {
+    Map<String, String> result = new HashMap<>();
+
+    Optional<Resource> sparqlLocationResource = ResourceLoaderUtils.getResource(SPARQL_PATH);
+
+    if (sparqlLocationResource.isPresent()) {
+      Resource[] resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(sparqlLocationResource.get()
+              .getURI() + SPARQL_PATTERN);
+
+      for (Resource resource : resourceList) {
+        String content = IOUtils.toString(resource.getInputStream(), StandardCharsets.UTF_8);
+        String fileName = resource.getFilename();
+        result.put(fileName.substring(0, fileName.lastIndexOf('.')), content);
+      }
+    }
+
+    return result;
+  }
+
+  private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
+      ConfigFactory configFactory) {
+    String repositoryId = repositoryEntry.getKey();
+    RepositoryProperties repository = repositoryEntry.getValue();
+
+    RepositoryImplConfig repositoryImplConfig = configFactory.create(repository.getType(),
+        repository.getArgs() != null ? repository.getArgs() : ImmutableMap.of());
+    repositoryImplConfig.validate();
+
+    return new RepositoryConfig(repositoryId, repositoryImplConfig);
   }
 
   private static RepositoryConfig createLocalRepositoryConfig() {
@@ -138,4 +229,5 @@ class Rdf4jConfiguration {
         });
 
   }
+
 }

@@ -1,3 +1,0 @@
-DESCRIBE ?subject WHERE {
-    ?subject ?p ?o
-}
