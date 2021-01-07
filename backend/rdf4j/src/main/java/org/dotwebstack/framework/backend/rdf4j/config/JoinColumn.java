@@ -1,15 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j.config;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.extern.jackson.Jacksonized;
+import javax.validation.constraints.NotBlank;
+import lombok.Data;
 
-@Getter
-@Builder
-@Jacksonized
+@Data
 public class JoinColumn {
 
-  private final String name;
+  @NotBlank
+  private String name;
 
-  private final String referencedField;
+  @NotBlank
+  private String referencedField;
 }

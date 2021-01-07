@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.core.config;
 
 import java.util.Map;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.extern.jackson.Jacksonized;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import lombok.Data;
 
-@Getter
-@Builder
-@Jacksonized
+@Data
 public class DotWebStackConfiguration {
 
-  private final Map<String, TypeConfiguration<? extends FieldConfiguration>> typeMapping;
+  @NotNull
+  @Valid
+  private Map<String, TypeConfiguration<? extends FieldConfiguration>> typeMapping;
 }

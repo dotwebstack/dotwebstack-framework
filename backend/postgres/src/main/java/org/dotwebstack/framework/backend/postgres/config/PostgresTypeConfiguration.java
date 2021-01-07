@@ -1,16 +1,16 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
-import lombok.extern.jackson.Jacksonized;
+import javax.validation.constraints.NotBlank;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
-@Getter
-@SuperBuilder
-@Jacksonized
+@Data
+@EqualsAndHashCode(callSuper = true)
 @JsonTypeName("postgres")
 public class PostgresTypeConfiguration extends TypeConfiguration<PostgresFieldConfiguration> {
 
-  private final String table;
+  @NotBlank
+  private String table;
 }

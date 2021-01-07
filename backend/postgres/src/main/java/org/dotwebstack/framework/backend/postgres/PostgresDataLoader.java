@@ -109,7 +109,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .from(table(typeConfiguration.getTable()));
 
     if (key != null) {
-      query.where(field(typeConfiguration.getKeyFields().get(0)).eq(key));
+      query.where(field(typeConfiguration.getKeys().get(0).getField()).eq(key));
     }
 
     return query;

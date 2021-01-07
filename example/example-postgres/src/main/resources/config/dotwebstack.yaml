@@ -2,8 +2,8 @@ typeMapping:
   Beer:
     backend: postgres
     table: dbeerpedia.beers
-    keyFields:
-      - identifier
+    keys:
+      - field: identifier
     fields:
       brewery:
         joinColumns:
@@ -13,8 +13,8 @@ typeMapping:
   Brewery:
     backend: postgres
     table: dbeerpedia.breweries
-    keyFields:
-      - identifier
+    keys:
+      - field: identifier
     fields:
       postalAddress:
         joinColumns:

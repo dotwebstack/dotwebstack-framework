@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -41,8 +44,19 @@ public class CoreConfiguration {
           try {
             return objectMapper.readValue(resource.getFile(), DotWebStackConfiguration.class);
           } catch (IOException e) {
-            throw illegalStateException("Error while reading config file: {}", CONFIG_FILE);
+            throw new InvalidConfigurationException("Error while reading config file.", e);
           }
+        })
+        .map(dotWebStackConfiguration -> {
+          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
+              .getValidator()
+              .validate(dotWebStackConfiguration);
+
+          if (!violations.isEmpty()) {
+            throw invalidConfigurationException("Config file contains validation errors: {}", violations);
+          }
+
+          return dotWebStackConfiguration;
         })
         .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", CONFIG_FILE));
   }

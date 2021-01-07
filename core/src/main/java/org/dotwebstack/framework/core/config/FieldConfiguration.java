@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.core.config;
 
-import lombok.experimental.SuperBuilder;
+import lombok.Data;
 
-@SuperBuilder
+@Data
 public abstract class FieldConfiguration {
 
-  private final String mappedBy;
+  private String mappedBy;
 }

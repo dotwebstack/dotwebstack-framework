@@ -3,15 +3,22 @@ package org.dotwebstack.framework.core.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
 import java.util.Map;
-import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import lombok.Data;
 
-@Getter
-@SuperBuilder
+@Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
 public abstract class TypeConfiguration<T extends FieldConfiguration> {
 
-  private final List<String> keyFields;
+  @NotNull
+  @Valid
+  @Size(min = 1, max = 1)
+  private List<KeyConfiguration> keys;
 
-  private final Map<String, T> fields;
+  @NotNull
+  @Valid
+  @Size(min = 1)
+  private Map<String, T> fields;
 }
