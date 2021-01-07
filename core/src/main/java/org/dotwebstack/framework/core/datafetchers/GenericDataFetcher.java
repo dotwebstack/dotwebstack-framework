@@ -34,12 +34,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // Geen van allen
 
     if (source != null) {
-      String dataLoaderKey = String.join("/", executionStepInfo.getPath().getKeysOnly());
+      String dataLoaderKey = String.join("/", executionStepInfo.getPath()
+          .getKeysOnly());
 
       DataLoader<Object, List<Map<String, Object>>> dataLoader = environment.getDataLoaderRegistry()
           .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment));
 
-      String fieldName = environment.getFieldDefinition().getName();
+      String fieldName = environment.getFieldDefinition()
+          .getName();
 
       return dataLoader.load(source.get(fieldName));
     }
@@ -57,7 +59,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment) {
-    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo().getUnwrappedNonNullType();
+    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
+        .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
     BackendDataLoader backendDataLoader = getBackendDataLoader(objectType).orElseThrow();
 
@@ -65,16 +68,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .objectType(objectType)
         .build();
 
-//    if (GraphQLTypeUtil.isList(unwrappedType)) {
-//      return DataLoader.newDataLoader(requests ->
-//          backendDataLoader.batchLoadMany(requests, loadEnvironment)
-//              .flatMapSequential(Flux::collectList)
-//              .collectList()
-//              .toFuture());
-//    }
+    // if (GraphQLTypeUtil.isList(unwrappedType)) {
+    // return DataLoader.newDataLoader(requests ->
+    // backendDataLoader.batchLoadMany(requests, loadEnvironment)
+    // .flatMapSequential(Flux::collectList)
+    // .collectList()
+    // .toFuture());
+    // }
 
-    return DataLoader.newMappedDataLoader(keys ->
-        backendDataLoader.batchLoadSingle(Flux.fromIterable(keys), loadEnvironment)
+    return DataLoader
+        .newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(Flux.fromIterable(keys), loadEnvironment)
             .collectMap(Tuple2::getT1, Tuple2::getT2)
             .toFuture());
   }

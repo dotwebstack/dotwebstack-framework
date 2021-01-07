@@ -63,8 +63,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
 
     for (Map.Entry<String, Param<?>> param : params.entrySet()) {
-      executeSpec = executeSpec.bind(param.getKey(),
-          Objects.requireNonNull(param.getValue().getValue()));
+      executeSpec = executeSpec.bind(param.getKey(), Objects.requireNonNull(param.getValue()
+          .getValue()));
     }
 
     return executeSpec;
@@ -80,10 +80,8 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys,
-      LoadEnvironment environment) {
-    return keys.flatMap(key ->
-        loadSingle(key, environment).map(item -> Tuples.of(key, item)));
+  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys, LoadEnvironment environment) {
+    return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
@@ -103,7 +101,8 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private Query createQuery(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) dotWebStackConfiguration.getTypeMapping()
-        .get(environment.getObjectType().getName());
+        .get(environment.getObjectType()
+            .getName());
 
     SelectJoinStep<Record> query = dslContext.select()
         .from(table(typeConfiguration.getTable()));

@@ -23,7 +23,8 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
 
   @Bean
   public DSLContext dslContext() {
-    System.getProperties().setProperty("org.jooq.no-logo", "true");
+    System.getProperties()
+        .setProperty("org.jooq.no-logo", "true");
     return DSL.using(SQLDialect.POSTGRES);
   }
 

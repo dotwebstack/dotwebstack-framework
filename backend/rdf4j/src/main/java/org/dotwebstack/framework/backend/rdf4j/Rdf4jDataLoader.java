@@ -1,19 +1,32 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import graphql.schema.GraphQLObjectType;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
+import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
+import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
+import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
+import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,7 +44,8 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  public Rdf4jDataLoader(@NonNull LocalRepositoryManager localRepositoryManager, @NonNull NodeShapeRegistry nodeShapeRegistry) {
+  public Rdf4jDataLoader(@NonNull LocalRepositoryManager localRepositoryManager,
+      @NonNull NodeShapeRegistry nodeShapeRegistry) {
     this.localRepositoryManager = localRepositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
   }
@@ -43,42 +57,111 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
+    TupleQueryResult queryResult = executeQuery(key, environment);
+
+    BindingSet bindingSet = queryResult.next();
+
+    return Mono.just(convertToMap(bindingSet));
+  }
+
+  private TupleQueryResult executeQuery(Object key, LoadEnvironment environment) {
     String query = createQuery(key, environment);
     String repositoryId = "local";
 
-    TupleQueryResult queryResult = localRepositoryManager.getRepository(repositoryId)
+    return localRepositoryManager.getRepository(repositoryId)
         .getConnection()
         .prepareTupleQuery(query)
         .evaluate();
-
-    List result = queryResult.stream().collect(Collectors.toList());
-    return null; // TODO Resultaat naar map
   }
 
   private String createQuery(Object key, LoadEnvironment environment) {
-    NodeShape nodeShape = nodeShapeRegistry.get(
-        environment.getObjectType());
+    NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 
-    Map<String, PropertyShape> propertyShapes = nodeShape.getPropertyShapes();
+    Collection<PropertyShape> propertyShapes = new ArrayList<>(nodeShape.getPropertyShapes()
+        .values());
 
-    List<IRI> propertyIris = propertyShapes.values().stream().map(propertyShape -> ((PredicatePath) propertyShape.getPath()).getIri()).collect(Collectors.toList());
+    SelectQuery query = Queries.SELECT();
 
-    // TODO Query opmaken
+    Variable subject = SparqlBuilder.var("subject");
 
-    return "SELECT ?subject ?predicate ?object \n";
+    List<GraphPattern> graphPatterns = getWherePatterns(nodeShape, propertyShapes, subject);
+
+    GraphPatternNotTriples wherePatterns =
+        GraphPatterns.and(graphPatterns.toArray(new GraphPattern[graphPatterns.size()]));
+
+    if (key != null) {
+      Operand filterValue;
+      if (key instanceof IRI) {
+        filterValue = Rdf.iri((IRI) key);
+      } else {
+        filterValue = Rdf.literalOf(key.toString());
+      }
+
+      wherePatterns.filter(Expressions.equals(SparqlBuilder.var("identifier"), filterValue));
+    }
+
+    return query.select(getProjectables(propertyShapes).toArray(new Projectable[propertyShapes.size()]))
+        .where(wherePatterns)
+        .limit(10)
+        .getQueryString();
+  }
+
+  private List<Projectable> getProjectables(Collection<PropertyShape> propertyShapes) {
+    return propertyShapes.stream()
+        .map(propertyShape -> SparqlBuilder.var(propertyShape.getName()))
+        .collect(Collectors.toList());
+  }
+
+  private List<GraphPattern> getWherePatterns(NodeShape nodeShape, Collection<PropertyShape> propertyShapes,
+      Variable subject) {
+    List<GraphPattern> graphPatterns = new ArrayList<>();
+
+    graphPatterns.addAll(nodeShape.getClasses()
+        .stream()
+        .flatMap(Collection::stream)
+        .map(classIri -> GraphPatterns.tp(subject, RDF.TYPE, classIri))
+        .collect(Collectors.toList()));
+
+    graphPatterns.addAll(propertyShapes.stream()
+        .map(propertyShape -> GraphPatterns.tp(subject, propertyShape.getPath()
+            .toPredicate(), SparqlBuilder.var(propertyShape.getName())))
+        .collect(Collectors.toList()));
+
+    return graphPatterns;
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys,
-      LoadEnvironment environment) {
-    return keys.flatMap(key ->
-        loadSingle(key, environment).map(item -> Tuples.of(key, item)));
+  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys, LoadEnvironment environment) {
+    return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
-    loadSingle(key, environment);
-    return null; // TODO Resultaat naar map
+    TupleQueryResult queryResult = executeQuery(key, environment);
+
+    Stream<Map<String, Object>> stream = queryResult.stream()
+        .map(this::convertToMap);
+
+    return Flux.fromStream(stream);
+  }
+
+  public Map<String, Object> convertToMap(BindingSet bindingSet) {
+    Map<String, Object> dataMap = new HashMap<>();
+    bindingSet.getBindingNames()
+        .forEach(bindingName -> {
+          Value value = bindingSet.getValue(bindingName);
+
+          Object objectValue;
+
+          if (value instanceof IRI) {
+            objectValue = ((IRI) value).getLocalName();
+          } else {
+            objectValue = value.stringValue();
+          }
+          dataMap.put(bindingName, objectValue);
+        });
+
+    return dataMap;
   }
 
   @Override

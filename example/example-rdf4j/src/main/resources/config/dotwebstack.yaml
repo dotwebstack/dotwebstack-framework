@@ -1,0 +1,5 @@
+typeMapping:
+  Beer:
+    backend: rdf4j
+  Brewery:
+    backend: rdf4j

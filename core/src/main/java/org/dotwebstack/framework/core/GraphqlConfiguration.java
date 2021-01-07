@@ -75,8 +75,8 @@ public class GraphqlConfiguration {
   @Bean
   public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
     return GraphQL.newGraphQL(graphqlSchema)
-        .instrumentation(new TracingInstrumentation(
-            TracingInstrumentation.Options.newOptions().includeTrivialDataFetchers(false)))
+        .instrumentation(new TracingInstrumentation(TracingInstrumentation.Options.newOptions()
+            .includeTrivialDataFetchers(false)))
         .build();
   }
 
