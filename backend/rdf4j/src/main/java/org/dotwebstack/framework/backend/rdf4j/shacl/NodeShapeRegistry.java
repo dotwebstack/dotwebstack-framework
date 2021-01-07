@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import graphql.schema.GraphQLObjectType;
 import java.util.Collection;
 import java.util.HashMap;

@@ -5,203 +5,70 @@
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 @prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
-@prefix sponsorship_id: <https://github.com/dotwebstack/beer/id/sponsorship/> .
-@prefix ingredient_id: <https://github.com/dotwebstack/beer/id/ingredient/> .
-@prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
-@prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 
 {
-  brewery_id:1 a beer_def:Brewery, beer_def:Abdij ;
-    beer_def:identifier "1" ;
-    beer_def:brewmasters "Jeroen van Hees" ;
-    beer_def:founded "2014-05-03"^^xsd:date ;
-    beer_def:group "Onafhankelijk" ;
-    beer_def:label "1923 Brouwerij";
-    beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
-    schema:state "Zuid-Holland" ;
-    schema:address address_id:1 ;
-    schema:email "bier@brouwerij1923.nl" ;
-    schema:taxID "61195251" ;
-    schema:telephone "06-10816700" ;
-    beer_def:sponsorship sponsorship_id:1 ;
-    schema:url <http://www.brouwerij1923.nl>
+  brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b a beer_def:Brewery ;
+    beer_def:identifier "d3654375-95fa-46b4-8529-08b0f777bd6b" ;
+    schema:name "Brewery X" ;
+    schema:postalAddress "fcb73181-a1b0-4748-8ae0-b7b51dd6497f" ;
+    schema:visitAddress "fcb73181-a1b0-4748-8ae0-b7b51dd6497f" ;
   .
 
-  address_id:1 a beer_def:Address ;
-    schema:addressLocality "Moordrecht" ;
-    schema:latitude "51.98776545" ;
-    schema:longitude "4.67090183" ;
-    schema:postalCode "2841 XB" ;
-    schema:streetAddress "Burgemeester Brandtstraat 23"
+  brewery_id:6e8f89da-9676-4cb9-801b-aeb6e2a59ac9 a beer_def:Brewery ;
+    beer_def:identifier "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9" ;
+    schema:name "Brewery Y" ;
+    schema:postalAddress "3fe6c706-54af-4420-89c4-926ff719236a" ;
   .
 
-  brewery_id:2 a beer_def:Brewery ;
-    beer_def:identifier "2" ;
-    beer_def:founded "2017-01-31"^^xsd:date ;
-    beer_def:group "Onafhankelijk" ;
-    beer_def:label "Brouwerij Het 58e Genot i.o." ;
-    schema:state "Noord-Brabant" ;
-    schema:address address_id:2 ;
-    schema:email "info@58egenot.nl" ;
-    schema:taxID "67452701" ;
-    schema:url <http://www.58egenot.nl>
+  brewery_id:28649f76-ddcf-417a-8c1d-8e5012c31959 a beer_def:Brewery ;
+    beer_def:identifier "28649f76-ddcf-417a-8c1d-8e5012c31959" ;
+    schema:name "Brewery Z" ;
   .
 
-  address_id:2 a beer_def:Address ;
-    schema:addressLocality "Zundert" ;
-    schema:latitude "51.46376967" ;
-    schema:longitude "4.60958924" ;
-    schema:postalCode "4881 AZ" ;
-    schema:streetAddress "Achtaalseweg 137A"
+  address_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f a beer_def:Address ;
+    beer_def:identifier "fcb73181-a1b0-4748-8ae0-b7b51dd6497f" ;
+    schema:street "Church Street" ;
+    schema:city "Dublin" ;
   .
 
-  brewery_id:3 a beer_def:Brewery ;
-    beer_def:identifier "3" ;
-    beer_def:annualproduction "140000 hl." ;
-    beer_def:brewmasters "Erik Bielders" ;
-    beer_def:fax "046-4432835" ;
-    beer_def:founded "1870-05-15"^^xsd:date ;
-    beer_def:group "Onafhankelijk" ;
-    beer_def:openinghours "Alle dagen van de week op aanvraag (12.30-16.00 uur)" ;
-    beer_def:owners "Harry Meens" ;
-    schema:state "Limburg" ;
-    schema:name "Alfa Brouwerij" ;
-    schema:taxID "14034012" ;
-    schema:telephone "046-4432888" ;
-    schema:url <http://www.alfabier.nl>
+  address_id:3fe6c706-54af-4420-89c4-926ff719236a a beer_def:Address ;
+    beer_def:identifier "3fe6c706-54af-4420-89c4-926ff719236a" ;
+    schema:street "5th Avenue" ;
+    schema:city "New York" ;
   .
 
- address_id:4 a beer_def:Address ;
-    schema:addressLocality "Schinnen" ;
-    schema:latitude "50.93621081" ;
-    schema:longitude "5.89316555" ;
-    schema:postalCode "6365 AC" ;
-    schema:streetAddress "Thull 15"
+  beer_id:b0e7cf18-e3ce-439b-a63e-034c8452f59c a beer_def:Beer ;
+    beer_def:identifier "b0e7cf18-e3ce-439b-a63e-034c8452f59c";
+    schema:name "Beer 1" ;
+    beer_def:abv 5.4 ;
+    beer_def:brewery brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b ;
   .
 
-  brewery_id:4 a beer_def:Brewery ;
-    beer_def:identifier "4" ;
-    beer_def:brewmasters "Max Schreuder" , "Yvonne van Breda" ;
-    beer_def:founded "2014-01-01"^^xsd:date ;
-    beer_def:group "Onafhankelijk" ;
-    beer_def:owners "Max Schreuder" , "Yvonne van Breda" ;
-    schema:state "Limburg" ;
-    schema:address address_id:5 ;
-    schema:email "info@ambrass.nl" ;
-    schema:name "Ambrass Bierbrouwerij" ;
-    beer_def:localName "Ambrass Beer Brewery"@en ;
-    beer_def:localName "Ambrass Brauerei"@de ;
-    beer_def:localName "Ambrass Bierbrouwerij"@nl ;
-    schema:taxID "52966534" ;
-    beer_def:sponsorship sponsorship_id:2 ;
-    schema:telephone "046-4009300" ;
-    schema:url <http://www.ambrass.nl>
+  beer_id:1295f4c1-846b-440c-b302-80bbc1f9f3a9 a beer_def:Beer ;
+    beer_def:identifier "1295f4c1-846b-440c-b302-80bbc1f9f3a9";
+    schema:name "Beer 2" ;
+    beer_def:abv 4.7 ;
+    beer_def:brewery brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b ;
   .
 
-  address_id:5 a beer_def:Address ;
-    schema:addressLocality "Sittard" ;
-    schema:latitude "50.99279662" ;
-    schema:longitude "5.86118305" ;
-    schema:postalCode "6133 WZ" ;
-    schema:streetAddress "Berkenlaan 8"
+  beer_id:973832e7-1dd9-4683-a039-22390b1c1995 a beer_def:Beer ;
+    beer_def:identifier "973832e7-1dd9-4683-a039-22390b1c1995";
+    schema:name "Beer 3" ;
+    beer_def:abv 8.0 ;
+    beer_def:brewery brewery_id:6e8f89da-9676-4cb9-801b-aeb6e2a59ac9 ;
   .
 
-  brewery_id:5 a beer_def:Brewery ;
-    beer_def:identifier "5" ;
-    beer_def:brewmasters "Doeke Visser" ;
-    beer_def:founded "2008-01-01"^^xsd:date ;
-    beer_def:group "Onafhankelijk" ;
-    beer_def:openinghours "Bezoek op afspraak." ;
-    beer_def:owners "Doeke" , "Eva Visser" ;
-    schema:state "Friesland" ;
-    schema:address address_id:6 ;
-    schema:email "info@amelanderbier.nl" ;
-    schema:name "Amelander Bierbrouwerij" ;
-    schema:taxID "01138714" ;
-    schema:telephone "0519-554365" ;
-    schema:url <http://www.amelanderbier.nl>
+  beer_id:a5148422-be13-452a-b9fa-e72c155df3b2 a beer_def:Beer ;
+    beer_def:identifier "a5148422-be13-452a-b9fa-e72c155df3b2";
+    schema:name "Beer 4" ;
+    beer_def:abv 9.5 ;
+    beer_def:brewery brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b ;
   .
 
-  address_id:6 a beer_def:Address ;
-    schema:addressLocality "Ballum" ;
-    schema:latitude "53.44025996" ;
-    schema:longitude "5.70644929" ;
-    schema:postalCode "9162 EC" ;
-    schema:streetAddress "Smitteweg 6"
+  beer_id:766883b5-3482-41cf-a66d-a81e79a4f0ed a beer_def:Beer ;
+    beer_def:identifier "766883b5-3482-41cf-a66d-a81e79a4f0ed";
+    schema:name "Beer 5" ;
+    beer_def:abv 6.2 ;
+    beer_def:brewery brewery_id:6e8f89da-9676-4cb9-801b-aeb6e2a59ac9 ;
   .
-
-  beer_id:1 a beer_def:Beer ;
-    beer_def:identifier "1";
-    beer_def:created "1991-05-12T23:12:00.000+02:00"^^xsd:dateTime ;
-    beer_def:brewery brewery_id:3 ;
-    schema:name "Alfa Edel Pils" ;
-    beer_def:beertype beer_type_id:1 ;
-    beer_def:ingredient ingredient_id:1 ;
-    beer_def:ingredient ingredient_id:2 ;
-    beer_def:ingredient supplement_id:1
-  .
-
-  beer_id:2 a beer_def:Beer ;
-    beer_def:identifier "2";
-    beer_def:created "1953-02-25T10:15:00.000+02:00"^^xsd:dateTime ;
-    beer_def:brewery brewery_id:3;
-    schema:name "Alfa Krachtig Dort"
-  .
-
-  beer_id:3 a beer_def:Beer ;
-    beer_def:identifier "3";
-    beer_def:created "1999-02-02T10:15:00.000+02:00"^^xsd:dateTime ;
-    beer_def:brewery brewery_id:3;
-    schema:name "Alfa Radler";
-    beer_def:ingredient ingredient_id:1 ;
-    beer_def:ingredient ingredient_id:2 ;
-    beer_def:ingredient ingredient_id:3 ;
-  .
-
-  beer_type_id:1 a beer_def:BeerType ;
-    beer_def:identifier "1" ;
-  	schema:name "Bitter" ;
-  	beer_def:beertype beer_type_id:2
-  .
-
-  beer_type_id:2 a beer_def:BeerType ;
-    beer_def:identifier "2" ;
-    schema:name "Ale"
-  .
-
-  supplement_id:1 a beer_def:Supplement ;
-    beer_def:identifier "1" ;
-    schema:name "Gist"
-  .
-
-  ingredient_id:1 a beer_def:Ingredient ;
-    beer_def:identifier "1" ;
-    schema:name "Hop"
-  .
-
-  ingredient_id:2 a beer_def:Ingredient ;
-    beer_def:identifier "2" ;
-    schema:name "Gerst"
-  .
-
-  ingredient_id:3 a beer_def:Ingredient ;
-    beer_def:identifier "3" ;
-    schema:name "Citroen"
-  .
-
-  sponsorship_id:1 a beer_def:Sponsorship ;
-    beer_def:identifier "1" ;
-    beer_def:label "Formula 1" ;
-    beer_def:number 102 ;
-    beer_def:number 100
-  .
-
-  sponsorship_id:2 a beer_def:Sponsorship ;
-    beer_def:identifier "2" ;
-    beer_def:label "Women's Rugby" ;
-    beer_def:number 1 ;
-    beer_def:number 12 ;
-    beer_def:number 10
-  .
-
 }

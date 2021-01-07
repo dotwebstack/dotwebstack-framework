@@ -31,8 +31,7 @@ public class CoreConfiguration {
 
     scanner.findCandidateComponents("org.dotwebstack.framework.backend")
         .stream()
-        .map(beanDefinition -> ClassUtils.resolveClassName(
-            Objects.requireNonNull(beanDefinition.getBeanClassName()),
+        .map(beanDefinition -> ClassUtils.resolveClassName(Objects.requireNonNull(beanDefinition.getBeanClassName()),
             ClassLoader.getSystemClassLoader()))
         .forEach(objectMapper::registerSubtypes);
 

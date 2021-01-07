@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -72,7 +73,7 @@ class Rdf4jConfiguration {
 
   @Bean
   NodeShapeRegistry nodeShapeRegistry(@NonNull LocalRepositoryManager localRepositoryManager,
-                                      @NonNull Rdf4jProperties rdf4jProperties) {
+      @NonNull Rdf4jProperties rdf4jProperties) {
     Repository repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
 
     Model shapeModel = QueryResults.asModel(repository.getConnection()
