@@ -5,12 +5,16 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -18,9 +22,12 @@ import reactor.util.function.Tuple2;
 @Component
 public final class GenericDataFetcher implements DataFetcher<Object> {
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final Collection<BackendDataLoader> backendDataLoaders;
 
-  public GenericDataFetcher(Collection<BackendDataLoader> backendDataLoaders) {
+  public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration, Collection<BackendDataLoader> backendDataLoaders) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoaders = backendDataLoaders;
   }
 
@@ -28,17 +35,25 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     ExecutionStepInfo executionStepInfo = environment.getExecutionStepInfo();
     Map<String, Object> source = environment.getSource();
 
-    // ID argument (alleen op root level?)
-    // Source object met FK (owning side)
-    // Source object met PK (non-owning side)
-    // Geen van allen
+    // TODO: improve type safety & error handling
+    GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
+    GraphQLObjectType rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(outputType);
+    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
+        .get(rawType.getName());
+
+    System.out.println(typeConfiguration);
+
+    // Loop through keys (max 1 currently)
+    // Check presence of argument with corresponding field name
+    // If present, apply key condition
+    // Validate field is non-list object field
 
     if (source != null) {
       String dataLoaderKey = String.join("/", executionStepInfo.getPath()
           .getKeysOnly());
 
       DataLoader<Object, List<Map<String, Object>>> dataLoader = environment.getDataLoaderRegistry()
-          .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment));
+          .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
       String fieldName = environment.getFieldDefinition()
           .getName();
@@ -47,9 +62,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-    BackendDataLoader backendDataLoader = getBackendDataLoader(objectType).orElseThrow();
+    BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
+    LoadEnvironment<?> loadEnvironment = LoadEnvironment.builder()
+        .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .build();
 
@@ -58,13 +74,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .toFuture();
   }
 
-  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment) {
+  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment, TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
-    BackendDataLoader backendDataLoader = getBackendDataLoader(objectType).orElseThrow();
+    BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
+    LoadEnvironment<?> loadEnvironment = LoadEnvironment.builder()
+        .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .build();
 
@@ -82,9 +99,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .toFuture());
   }
 
-  private Optional<BackendDataLoader> getBackendDataLoader(GraphQLObjectType objectType) {
+  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
     return backendDataLoaders.stream()
-        .filter(loader -> loader.supports(objectType))
+        .filter(loader -> loader.supports(typeConfiguration))
         .findFirst();
   }
 }

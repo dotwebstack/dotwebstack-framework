@@ -1,13 +1,19 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import graphql.schema.GraphQLObjectType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.model.IRI;
@@ -51,12 +57,12 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public boolean supports(GraphQLObjectType objectType) {
-    return nodeShapeRegistry.contains(objectType);
+  public boolean supports(TypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+    return typeConfiguration instanceof Rdf4jTypeConfiguration;
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment<?> environment) {
     TupleQueryResult queryResult = executeQuery(key, environment);
 
     BindingSet bindingSet = queryResult.next();
@@ -64,7 +70,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
     return Mono.just(convertToMap(bindingSet));
   }
 
-  private TupleQueryResult executeQuery(Object key, LoadEnvironment environment) {
+  private TupleQueryResult executeQuery(Object key, LoadEnvironment<?> environment) {
     String query = createQuery(key, environment);
     String repositoryId = "local";
 
@@ -74,7 +80,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
         .evaluate();
   }
 
-  private String createQuery(Object key, LoadEnvironment environment) {
+  private String createQuery(Object key, LoadEnvironment<?> environment) {
     NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 
     Collection<PropertyShape> propertyShapes = new ArrayList<>(nodeShape.getPropertyShapes()
@@ -131,7 +137,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys, LoadEnvironment environment) {
+  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys, LoadEnvironment<?> environment) {
     return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
@@ -165,9 +171,8 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
+  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment<?> environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
   }
-
 }
