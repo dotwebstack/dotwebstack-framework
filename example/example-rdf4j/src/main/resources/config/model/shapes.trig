@@ -59,6 +59,7 @@
   beer_sh:Beer_brewery a sh:PropertyShape ;
    sh:name "brewery" ;
    sh:path beer_def:brewery ;
+   sh:minCount 1 ;
    sh:maxCount 1 ;
    sh:nodeKind sh:IRI
  .
@@ -79,6 +80,7 @@
    sh:name "Address" ;
    sh:class beer_def:Address ;
    sh:property
+     beer_sh:Identifier ,
      beer_sh:Address_street ,
      beer_sh:Address_city
  .

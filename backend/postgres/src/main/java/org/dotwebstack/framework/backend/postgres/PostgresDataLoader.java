@@ -6,11 +6,13 @@ import static org.jooq.impl.DSL.table;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.keys.Key;
 import org.jooq.DSLContext;
 import org.jooq.Param;
 import org.jooq.Query;
@@ -41,7 +43,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public boolean supports(TypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+  public boolean supports(TypeConfiguration<?> typeConfiguration) {
     return typeConfiguration instanceof PostgresTypeConfiguration;
   }
 
@@ -63,43 +65,71 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment<?> environment) {
+  public Mono<Map<String, Object>> loadSingle(Key key, LoadEnvironment environment) {
     Query query = createQuery(key, environment);
+
+    final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
+        ((PostgresTypeConfiguration) environment.getTypeConfiguration()).getFields();
 
     return this.execute(query)
         .fetch()
-        .one();
+        .one()
+        .map(map -> updateKeys(fieldConfigurationMap, map));
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Flux<Object> keys, LoadEnvironment<?> environment) {
+  public Flux<Tuple2<Key, Map<String, Object>>> batchLoadSingle(Flux<Key> keys, LoadEnvironment environment) {
     return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment<?> environment) {
+  public Flux<Map<String, Object>> loadMany(Key key, LoadEnvironment environment) {
     Query query = createQuery(key, environment);
+
+    final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
+        ((PostgresTypeConfiguration) environment.getTypeConfiguration()).getFields();
 
     return this.execute(query)
         .fetch()
-        .all();
+        .all()
+        .map(map -> updateKeys(fieldConfigurationMap, map));
+  }
+
+  // Experimental code
+  private Map<String, Object> updateKeys(Map<String, PostgresFieldConfiguration> fieldConfigurationMap,
+      Map<String, Object> map) {
+    map.keySet()
+        .forEach(fieldName -> {
+          fieldConfigurationMap.values()
+              .stream()
+              .filter(v -> v.getJoinColumns() != null)
+              .flatMap(v -> v.getJoinColumns()
+                  .stream())
+              .filter(joinColumn -> Objects.equals(joinColumn.getName(), fieldName))
+              .findFirst()
+              .ifPresent(joinColumn -> map.put(fieldName, FieldKey.builder()
+                  .name(joinColumn.getReferencedField())
+                  .value(map.get(fieldName))
+                  .build()));
+        });
+    return map;
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment<?> environment) {
+  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Key> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
   }
 
-  private Query createQuery(Object key, LoadEnvironment<?> environment) {
-    // TODO: Improve type safety
+  private Query createQuery(Key key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     SelectJoinStep<Record> query = dslContext.select()
         .from(table(typeConfiguration.getTable()));
 
-    if (key != null) {
-      query.where(field(typeConfiguration.getKeys().get(0).getField()).eq(key));
+    if (key instanceof FieldKey) {
+      FieldKey fieldKey = (FieldKey) key;
+      query.where(field(fieldKey.getName()).eq(fieldKey.getValue()));
     }
 
     return query;

@@ -1,32 +1,33 @@
 package org.dotwebstack.framework.core.datafetchers;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.keys.CompositeKey;
+import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.keys.Key;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 @Component
+@Slf4j
 public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final Collection<BackendDataLoader> backendDataLoaders;
 
-  public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration, Collection<BackendDataLoader> backendDataLoaders) {
+  public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration,
+      Collection<BackendDataLoader> backendDataLoaders) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoaders = backendDataLoaders;
   }
@@ -40,8 +41,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     GraphQLObjectType rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(outputType);
     TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
         .get(rawType.getName());
-
-    System.out.println(typeConfiguration);
 
     // Loop through keys (max 1 currently)
     // Check presence of argument with corresponding field name
@@ -58,31 +57,92 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       String fieldName = environment.getFieldDefinition()
           .getName();
 
-      return dataLoader.load(source.get(fieldName));
+      if (source.containsKey(fieldName)) {
+        return dataLoader.load(source.get(fieldName));
+      }
     }
 
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment<?> loadEnvironment = LoadEnvironment.builder()
+    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
+        .selectedFields(environment.getSelectionSet()
+            .getImmediateFields()
+            .stream()
+            .map(SelectedField::getName)
+            .collect(Collectors.toList()))
         .build();
+
+    Optional<Key> key = getKey(environment);
+
+    if (key.isPresent()) {
+      return backendDataLoader.loadSingle(key.get(), loadEnvironment)
+          .toFuture();
+    }
 
     return backendDataLoader.loadMany(null, loadEnvironment)
         .collectList()
         .toFuture();
   }
 
-  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment, TypeConfiguration<?> typeConfiguration) {
+  private Optional<Key> getKey(DataFetchingEnvironment environment) {
+    List<FieldKey> fieldKeys = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> argument.getDirectives("key") != null)
+        .map(argument -> getFieldKey(environment, argument))
+        .collect(Collectors.toList());
+
+    if (fieldKeys.size() > 1) {
+      return Optional.of(CompositeKey.builder()
+          .fieldKeys(fieldKeys)
+          .build());
+    }
+
+    if (fieldKeys.size() == 1) {
+      return Optional.of(fieldKeys.get(0));
+    }
+
+    return Optional.empty();
+  }
+
+  private FieldKey getFieldKey(DataFetchingEnvironment environment, GraphQLArgument argument) {
+    // FIXME: magic word
+    GraphQLDirective directive = argument.getDirective("key");
+
+    String keyName = argument.getName();
+    if (directive.getArgument("field") != null) {
+      keyName = directive.getArgument("field")
+          .getValue()
+          .toString();
+    }
+
+    Object keyValue = environment.getArguments()
+        .get(keyName);
+
+    return FieldKey.builder()
+        .name(keyName)
+        .value(keyValue)
+        .build();
+  }
+
+  private DataLoader<Key, ?> createDataLoader(DataFetchingEnvironment environment,
+      TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment<?> loadEnvironment = LoadEnvironment.builder()
+    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
+        .selectedFields(environment.getSelectionSet()
+            .getImmediateFields()
+            .stream()
+            .map(SelectedField::getName)
+            .collect(Collectors.toList()))
         .build();
 
     // if (GraphQLTypeUtil.isList(unwrappedType)) {
@@ -99,7 +159,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .toFuture());
   }
 
-  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
     return backendDataLoaders.stream()
         .filter(loader -> loader.supports(typeConfiguration))
         .findFirst();

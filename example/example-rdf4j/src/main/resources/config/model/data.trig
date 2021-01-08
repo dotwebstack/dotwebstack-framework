@@ -10,14 +10,14 @@
   brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b a beer_def:Brewery ;
     beer_def:identifier "d3654375-95fa-46b4-8529-08b0f777bd6b" ;
     schema:name "Brewery X" ;
-    schema:postalAddress "fcb73181-a1b0-4748-8ae0-b7b51dd6497f" ;
-    schema:visitAddress "fcb73181-a1b0-4748-8ae0-b7b51dd6497f" ;
+    schema:postalAddress brewery_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f ;
+    schema:visitAddress brewery_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f ;
   .
 
   brewery_id:6e8f89da-9676-4cb9-801b-aeb6e2a59ac9 a beer_def:Brewery ;
     beer_def:identifier "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9" ;
     schema:name "Brewery Y" ;
-    schema:postalAddress "3fe6c706-54af-4420-89c4-926ff719236a" ;
+    schema:postalAddress brewery_id:3fe6c706-54af-4420-89c4-926ff719236a ;
   .
 
   brewery_id:28649f76-ddcf-417a-8c1d-8e5012c31959 a beer_def:Brewery ;

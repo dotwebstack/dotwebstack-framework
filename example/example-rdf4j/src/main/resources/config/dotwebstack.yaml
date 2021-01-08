@@ -1,5 +1,22 @@
 typeMapping:
   Beer:
     backend: rdf4j
+    keys:
+      - field: identifier
+    fields:
+      Brewery:
   Brewery:
     backend: rdf4j
+    keys:
+      - field: identifier
+    fields:
+      postalAddress:
+      visitAddress:
+      Beer:
+  Address:
+    backend: rdf4j
+    keys:
+      - field: identifier
+    fields:
+      street:
+      city:

@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +26,7 @@ public class CoreConfiguration {
   private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
+
   public DotWebStackConfiguration dotWebStackConfiguration() {
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
