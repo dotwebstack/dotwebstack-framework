@@ -4,15 +4,26 @@ typeMapping:
     keys:
       - field: identifier
     fields:
-      Brewery:
+      brewery:
+        joinColumns:
+          - name: brewery
+            referencedField: identifier
+
   Brewery:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
       postalAddress:
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
       visitAddress:
-      Beer:
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+      beers:
+        mappedBy: brewery
   Address:
     backend: rdf4j
     keys:

@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.keys.CompositeKey;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.keys.FilterKey;
 import org.dotwebstack.framework.core.datafetchers.keys.Key;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -33,6 +33,35 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   public Object get(DataFetchingEnvironment environment) {
+    // Is nested field (source not null)?
+    // => Is relationship owned by left-side?
+    // => get foreign key from source object (??)
+    // => apply key as primary key condition in where clause
+    // => Is relationship owned by right-side? (only applicable for one-to-one?)
+    // => get primary key from source object (??)
+    // => apply key as foreign key condition in where clause
+    // => Is relationship owned by junction table?
+    // => get primary key from source object (??)
+    // => inner join with junction table, qualified by join column
+    // => apply key as additional key condition in ON clause
+    // => Throw exception when more than one rows is returned
+    // Is batching request?
+    // => Rewrite key condition from "=" to "IN"
+    // Is list?
+    // => loadMany (cardinality is one-to-many or many-to-many)
+    // => filtering / sorting / paginering is relevant
+    // Is nested field (source not null)?
+    // => Is relationship owned by right-side?
+    // =>
+    // => Is relationship owned by junction table?
+    // =>
+    // Is batching request?
+    // => Put source keys in temporary constant table (VALUES)
+    // => Wrap query in lateral sub-query (left-joined)
+    // TBD: Composite keys
+    // TBD: how to deal with rich value-objects (e.g. Geometry)
+
+
     ExecutionStepInfo executionStepInfo = environment.getExecutionStepInfo();
     Map<String, Object> source = environment.getSource();
 
@@ -57,7 +86,31 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       String fieldName = environment.getFieldDefinition()
           .getName();
 
-      if (source.containsKey(fieldName)) {
+      TypeConfiguration<?> parentTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
+          .get(GraphQLTypeUtil.unwrapAll(environment.getParentType())
+              .getName());
+
+      // Experimental support for right-side relationship (mappedBy)
+      if (parentTypeConfiguration.getFields()
+          .get(fieldName)
+          .getMappedBy() != null) {
+
+        String keyFieldName = parentTypeConfiguration.getKeys()
+            .get(0)
+            .getField();
+        Object key = source.get(keyFieldName);
+
+        String mappedBy = parentTypeConfiguration.getFields()
+            .get(fieldName)
+            .getMappedBy();
+
+        FilterKey filterKey = FilterKey.builder()
+            .path(List.of(mappedBy, keyFieldName))
+            .value(key)
+            .build();
+
+        return dataLoader.load(filterKey);
+      } else if (source.containsKey(fieldName)) {
         return dataLoader.load(source.get(fieldName));
       }
     }
@@ -77,14 +130,18 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     Optional<Key> key = getKey(environment);
 
-    if (key.isPresent()) {
-      return backendDataLoader.loadSingle(key.get(), loadEnvironment)
+    // R: loadSingle (cardinality is one-to-one or many-to-one)
+    // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
+    // => get key from field argument
+    if (key.isPresent() || !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+      return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
           .toFuture();
     }
 
     return backendDataLoader.loadMany(null, loadEnvironment)
         .collectList()
         .toFuture();
+
   }
 
   private Optional<Key> getKey(DataFetchingEnvironment environment) {
@@ -94,12 +151,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .filter(argument -> argument.getDirectives("key") != null)
         .map(argument -> getFieldKey(environment, argument))
         .collect(Collectors.toList());
-
-    if (fieldKeys.size() > 1) {
-      return Optional.of(CompositeKey.builder()
-          .fieldKeys(fieldKeys)
-          .build());
-    }
 
     if (fieldKeys.size() == 1) {
       return Optional.of(fieldKeys.get(0));
@@ -128,7 +179,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .build();
   }
 
-  private DataLoader<Key, ?> createDataLoader(DataFetchingEnvironment environment,
+  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
@@ -145,18 +196,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .collect(Collectors.toList()))
         .build();
 
-    // if (GraphQLTypeUtil.isList(unwrappedType)) {
-    // return DataLoader.newDataLoader(requests ->
-    // backendDataLoader.batchLoadMany(requests, loadEnvironment)
-    // .flatMapSequential(Flux::collectList)
-    // .collectList()
-    // .toFuture());
-    // }
+    if (GraphQLTypeUtil.isList(unwrappedType)) {
+      return DataLoader.newDataLoader(requests -> backendDataLoader.batchLoadMany(requests, loadEnvironment)
+          .flatMapSequential(Flux::collectList)
+          .collectList()
+          .toFuture());
+    }
 
-    return DataLoader
-        .newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(Flux.fromIterable(keys), loadEnvironment)
-            .collectMap(Tuple2::getT1, Tuple2::getT2)
-            .toFuture());
+    return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
+        .collectMap(Tuple2::getT1, Tuple2::getT2)
+        .toFuture());
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {

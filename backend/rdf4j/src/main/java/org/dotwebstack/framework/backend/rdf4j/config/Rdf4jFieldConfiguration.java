@@ -11,5 +11,5 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public class Rdf4jFieldConfiguration extends FieldConfiguration {
 
   @Valid
-  private final List<JoinColumn> joinProperties;
+  private List<JoinColumn> joinColumns;
 }

@@ -4,6 +4,7 @@ import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 @Builder

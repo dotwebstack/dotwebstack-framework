@@ -3,21 +3,15 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
-import org.dotwebstack.framework.core.datafetchers.keys.Key;
-import org.jooq.DSLContext;
-import org.jooq.Param;
-import org.jooq.Query;
-import org.jooq.Record;
-import org.jooq.SelectJoinStep;
+import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +20,21 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 @Component
 public class PostgresDataLoader implements BackendDataLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostgresDataLoader.class);
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final DatabaseClient databaseClient;
 
   private final DSLContext dslContext;
 
-  public PostgresDataLoader(DatabaseClient databaseClient, DSLContext dslContext) {
+  public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
+      DSLContext dslContext) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.databaseClient = databaseClient;
     this.dslContext = dslContext;
   }
@@ -65,7 +62,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Key key, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
     Query query = createQuery(key, environment);
 
     final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
@@ -78,12 +75,13 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Tuple2<Key, Map<String, Object>>> batchLoadSingle(Flux<Key> keys, LoadEnvironment environment) {
-    return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
+  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
+    return null;
+    // return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Key key, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
     Query query = createQuery(key, environment);
 
     final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
@@ -116,13 +114,14 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Key> keys, LoadEnvironment environment) {
+  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
   }
 
-  private Query createQuery(Key key, LoadEnvironment environment) {
+  private Query createQuery(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+
 
     SelectJoinStep<Record> query = dslContext.select()
         .from(table(typeConfiguration.getTable()));

@@ -26,7 +26,6 @@ public class CoreConfiguration {
   private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
-
   public DotWebStackConfiguration dotWebStackConfiguration() {
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));

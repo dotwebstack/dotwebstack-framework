@@ -37,7 +37,8 @@
     dws:inherits beer_sh:Identifiable ;
     sh:property
       beer_sh:Brewery_postalAddress ,
-      beer_sh:Brewery_visitAddress
+      beer_sh:Brewery_visitAddress ,
+      beer_sh:Brewery_beers
   .
   beer_sh:Beer a sh:NodeShape ;
     sh:name "Beer";
@@ -61,8 +62,16 @@
    sh:path beer_def:brewery ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:IRI
+   sh:nodeKind sh:IRI ;
+   sh:node beer_sh:Brewery
  .
+
+ beer_sh:Brewery_beers a sh:PropertyShape ;
+     sh:name "beers" ;
+     sh:path [ sh:inversePath beer_def:brewery ] ;
+     sh:node beer_sh:Beer
+   .
+
  beer_sh:Brewery_postalAddress a sh:PropertyShape ;
    sh:name "postalAddress" ;
    sh:path schema:postalAddress ;

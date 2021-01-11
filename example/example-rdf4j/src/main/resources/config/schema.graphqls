@@ -9,6 +9,7 @@ directive @key(
 type Query {
   beers: [Beer!]!
   brewery(identifier: ID! @key(field : "identifier")): Brewery
+  breweryOne: Brewery
   breweries: [Brewery!]!
 }
 
