@@ -1,7 +1,15 @@
 package org.dotwebstack.framework.core.datafetchers;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.schema.*;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.SelectedField;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

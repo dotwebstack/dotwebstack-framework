@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.integrationtest.openapirdf4j;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.dotwebstack.framework.integrationtest.openapirdf4j.matcher.IsEqualIgnoringLineBreaks.equalToIgnoringLineBreaks;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -294,7 +292,7 @@ class OpenApiRdf4jIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertTrue(result.contains("Parameter 'sort' has (an) invalid value(s)"));
+    assertThat(result.contains("Parameter 'sort' has (an) invalid value(s)"), is(true));
   }
 
   @Test
@@ -498,9 +496,9 @@ class OpenApiRdf4jIntegrationTest {
     String openApiSpec = builder.toString();
 
     // Assert
-    assertTrue(openApiSpec.contains("/breweries:"));
-    assertFalse(openApiSpec.contains("x-dws-expr"));
-    assertFalse(openApiSpec.contains("x-dws-envelope: true"));
+    assertThat(openApiSpec.contains("/breweries:"), is(true));
+    assertThat(openApiSpec.contains("x-dws-expr"), is(false));
+    assertThat(openApiSpec.contains("x-dws-envelope: true"), is(false));
   }
 
   @Test

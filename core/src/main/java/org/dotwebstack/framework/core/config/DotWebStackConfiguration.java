@@ -10,5 +10,5 @@ public class DotWebStackConfiguration {
 
   @NotNull
   @Valid
-  private Map<String, TypeConfiguration> typeMapping;
+  private Map<String, TypeConfiguration<?>> typeMapping;
 }
