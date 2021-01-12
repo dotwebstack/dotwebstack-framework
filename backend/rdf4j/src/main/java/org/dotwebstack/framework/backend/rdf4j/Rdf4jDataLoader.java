@@ -14,8 +14,8 @@ import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
@@ -64,7 +64,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public boolean supports(TypeConfiguration<?> typeConfiguration) {
+  public boolean supports(AbstractTypeConfiguration<?> typeConfiguration) {
     return typeConfiguration instanceof Rdf4jTypeConfiguration;
   }
 

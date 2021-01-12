@@ -4,14 +4,15 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -26,9 +27,9 @@ public class CoreConfiguration {
   private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
-  public DotWebStackConfiguration dotWebStackConfiguration() {
+  public DotWebStackConfiguration dotWebStackConfiguration(TypeDefinitionRegistry typeDefinitionRegistry) {
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
+    scanner.addIncludeFilter(new AssignableTypeFilter(AbstractTypeConfiguration.class));
     ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
     scanner.findCandidateComponents("org.dotwebstack.framework.backend")
@@ -45,16 +46,20 @@ public class CoreConfiguration {
             throw new InvalidConfigurationException("Error while reading config file.", e);
           }
         })
-        .map(dotWebStackConfiguration -> {
+        .map(configuration -> {
           Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
               .getValidator()
-              .validate(dotWebStackConfiguration);
+              .validate(configuration);
 
           if (!violations.isEmpty()) {
             throw invalidConfigurationException("Config file contains validation errors: {}", violations);
           }
 
-          return dotWebStackConfiguration;
+          configuration.getTypeMapping()
+              .values()
+              .forEach(typeConfiguration -> typeConfiguration.init(typeDefinitionRegistry));
+
+          return configuration;
         })
         .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", CONFIG_FILE));
   }

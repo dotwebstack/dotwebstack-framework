@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.core.config;
 
-import lombok.Data;
+public interface FieldConfiguration {
 
-@Data
-public abstract class FieldConfiguration {
-
-  private String mappedBy;
+  String getMappedBy();
 }

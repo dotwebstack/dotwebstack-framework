@@ -36,15 +36,10 @@ public class GraphqlConfiguration {
 
   private static final String SCHEMA_FILE = "schema.graphqls";
 
-  private final List<WiringFactory> wiringFactories;
-
-  public GraphqlConfiguration(List<WiringFactory> wiringFactories) {
-    this.wiringFactories = wiringFactories;
-  }
-
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
-      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators) {
+      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators,
+      @NonNull List<WiringFactory> wiringFactories) {
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 

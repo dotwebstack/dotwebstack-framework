@@ -17,8 +17,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
 import org.dotwebstack.framework.core.datafetchers.keys.FilterKey;
 import org.dotwebstack.framework.core.datafetchers.keys.Key;
@@ -76,7 +76,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // TODO: improve type safety & error handling
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     GraphQLObjectType rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(outputType);
-    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
+    AbstractTypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
         .get(rawType.getName());
 
     // Loop through keys (max 1 currently)
@@ -94,7 +94,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       String fieldName = environment.getFieldDefinition()
           .getName();
 
-      TypeConfiguration<?> parentTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
+      AbstractTypeConfiguration<?> parentTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
           .get(GraphQLTypeUtil.unwrapAll(environment.getParentType())
               .getName());
 
@@ -188,7 +188,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment,
-      TypeConfiguration<?> typeConfiguration) {
+      AbstractTypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
@@ -216,7 +216,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .toFuture());
   }
 
-  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
+  private Optional<BackendDataLoader> getBackendDataLoader(AbstractTypeConfiguration<?> typeConfiguration) {
     return backendDataLoaders.stream()
         .filter(loader -> loader.supports(typeConfiguration))
         .findFirst();
