@@ -84,6 +84,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // Validate field is non-list object field
 
     if (source != null) {
+      String resultKey = executionStepInfo.getResultKey();
+
+      // Check if data is already present (eager-loaded)
+      if (source.containsKey(resultKey)) {
+        return source.get(resultKey);
+      }
+
       String dataLoaderKey = String.join("/", executionStepInfo.getPath()
           .getKeysOnly());
 
