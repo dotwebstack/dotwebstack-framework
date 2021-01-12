@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
@@ -47,7 +47,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public boolean supports(AbstractTypeConfiguration<?> typeConfiguration) {
+  public boolean supports(TypeConfiguration<?> typeConfiguration) {
     return typeConfiguration instanceof PostgresTypeConfiguration;
   }
 
