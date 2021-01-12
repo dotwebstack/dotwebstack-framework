@@ -13,8 +13,8 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -30,8 +30,9 @@ public class CoreConfiguration {
 
   @Bean
   public DotWebStackConfiguration dotWebStackConfiguration(TypeDefinitionRegistry typeDefinitionRegistry) {
+    // TODO: refactor matching? Annotation-based?
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(AbstractTypeConfiguration.class));
+    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
     ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
     scanner.findCandidateComponents("org.dotwebstack.framework.backend")

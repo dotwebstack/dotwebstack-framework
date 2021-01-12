@@ -5,13 +5,13 @@ import graphql.schema.SelectedField;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 @Builder
 @Getter
 public final class LoadEnvironment {
 
-  private final AbstractTypeConfiguration<?> typeConfiguration;
+  private final TypeConfiguration<?> typeConfiguration;
 
   private final GraphQLObjectType objectType;
 
