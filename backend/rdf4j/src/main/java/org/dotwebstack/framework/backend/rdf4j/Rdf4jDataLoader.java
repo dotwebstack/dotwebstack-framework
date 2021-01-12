@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -182,7 +183,8 @@ public class Rdf4jDataLoader implements BackendDataLoader {
         .stream()
         .map(KeyConfiguration::getField),
         environment.getSelectedFields()
-            .stream())
+            .stream()
+            .map(SelectedField::getName))
         .collect(Collectors.toSet());
   }
 
