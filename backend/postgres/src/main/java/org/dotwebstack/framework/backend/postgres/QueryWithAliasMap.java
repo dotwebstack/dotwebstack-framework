@@ -11,5 +11,5 @@ public class QueryWithAliasMap {
 
   private final Query query;
 
-  private final Map<Object, Object> columnAliasMap;
+  private final Map<String, Object> columnAliasMap;
 }

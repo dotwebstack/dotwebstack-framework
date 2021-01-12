@@ -95,18 +95,24 @@ public class PostgresDataLoader implements BackendDataLoader {
         .map(map -> rowMapToGraphQlMap(map, queryWithAliasMap.getColumnAliasMap()));
   }
 
+  @Override
+  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
+    return Flux.fromIterable(keys)
+        .map(key -> this.loadMany(key, environment));
+  }
+
   public static <K, V> Map<V, K> inverseMap(Map<K, V> sourceMap) {
     return sourceMap.entrySet()
         .stream()
         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
   }
 
-  private Map<String, Object> rowMapToGraphQlMap(Map<String, Object> rowMap, Map<Object, Object> columnAliasMap) {
+  private Map<String, Object> rowMapToGraphQlMap(Map<String, Object> rowMap, Map<String, Object> columnAliasMap) {
     Map<String, Object> result = new HashMap<>();
 
     for (Object fieldName : columnAliasMap.keySet()) {
       if (columnAliasMap.get(fieldName) instanceof Map) {
-        Map<Object, Object> nestedAliasMap = (Map<Object, Object>) columnAliasMap.get(fieldName);
+        Map<String, Object> nestedAliasMap = (Map<String, Object>) columnAliasMap.get(fieldName);
         Map<String, Object> nestedResult = rowMapToGraphQlMap(rowMap, nestedAliasMap);
         result.put(fieldName.toString(), nestedResult);
         continue;
@@ -117,11 +123,4 @@ public class PostgresDataLoader implements BackendDataLoader {
     }
     return result;
   }
-
-  @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
-    return Flux.fromIterable(keys)
-        .map(key -> this.loadMany(key, environment));
-  }
-
 }

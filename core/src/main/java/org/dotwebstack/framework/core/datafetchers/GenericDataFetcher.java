@@ -9,6 +9,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.GraphQLUnmodifiedType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
 import org.dotwebstack.framework.core.datafetchers.keys.FilterKey;
 import org.dotwebstack.framework.core.datafetchers.keys.Key;
@@ -40,48 +42,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   public Object get(DataFetchingEnvironment environment) {
-    // Is nested field (source not null)?
-    // => Is relationship owned by left-side?
-    // => get foreign key from source object (??)
-    // => apply key as primary key condition in where clause
-    // => Is relationship owned by right-side? (only applicable for one-to-one?)
-    // => get primary key from source object (??)
-    // => apply key as foreign key condition in where clause
-    // => Is relationship owned by junction table?
-    // => get primary key from source object (??)
-    // => inner join with junction table, qualified by join column
-    // => apply key as additional key condition in ON clause
-    // => Throw exception when more than one rows is returned
-    // Is batching request?
-    // => Rewrite key condition from "=" to "IN"
-    // Is list?
-    // => loadMany (cardinality is one-to-many or many-to-many)
-    // => filtering / sorting / paginering is relevant
-    // Is nested field (source not null)?
-    // => Is relationship owned by right-side?
-    // =>
-    // => Is relationship owned by junction table?
-    // =>
-    // Is batching request?
-    // => Put source keys in temporary constant table (VALUES)
-    // => Wrap query in lateral sub-query (left-joined)
-    // TBD: Composite keys
-    // TBD: how to deal with rich value-objects (e.g. Geometry)
-
-
     ExecutionStepInfo executionStepInfo = environment.getExecutionStepInfo();
     Map<String, Object> source = environment.getSource();
-
-    // TODO: improve type safety & error handling
-    GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
-    GraphQLObjectType rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(outputType);
-    AbstractTypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeMapping()
-        .get(rawType.getName());
-
-    // Loop through keys (max 1 currently)
-    // Check presence of argument with corresponding field name
-    // If present, apply key condition
-    // Validate field is non-list object field
+    TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
     if (source != null) {
       String resultKey = executionStepInfo.getResultKey();
@@ -91,9 +54,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         return source.get(resultKey);
       }
 
+      // Create separate dataloader for every unique path, since evert path can have different arguments or selection
       String dataLoaderKey = String.join("/", executionStepInfo.getPath()
           .getKeysOnly());
 
+      // Retrieve dataloader instance for key, or create new instance when it does not exist yet
       DataLoader<Object, List<Map<String, Object>>> dataLoader = environment.getDataLoaderRegistry()
           .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
@@ -152,7 +117,19 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return backendDataLoader.loadMany(null, loadEnvironment)
         .collectList()
         .toFuture();
+  }
 
+  private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
+    GraphQLType nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
+    GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(nullableType);
+
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw new IllegalArgumentException("Output is not an object type.");
+    }
+
+    return Optional.ofNullable(
+        dotWebStackConfiguration.getTypeMapping()
+            .get(rawType.getName()));
   }
 
   private Optional<Key> getKey(DataFetchingEnvironment environment) {
@@ -190,8 +167,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .build();
   }
 
-  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment,
-      AbstractTypeConfiguration<?> typeConfiguration) {
+  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment, TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
@@ -214,10 +190,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
         .collectMap(Tuple2::getT1, Tuple2::getT2)
         .toFuture());
-
   }
 
-  private Optional<BackendDataLoader> getBackendDataLoader(AbstractTypeConfiguration<?> typeConfiguration) {
+  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
     return backendDataLoaders.stream()
         .filter(loader -> loader.supports(typeConfiguration))
         .findFirst();

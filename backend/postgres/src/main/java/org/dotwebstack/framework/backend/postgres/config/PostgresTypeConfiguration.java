@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
+import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.CaseFormat;
 import graphql.language.ObjectTypeDefinition;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
@@ -19,14 +21,26 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   @NotBlank
   private String table;
 
-  private Table<Record> tableQueryPart;
+  private Table<Record> sqlTable;
 
   @Override
   public void init(ObjectTypeDefinition objectTypeDefinition) {
-    tableQueryPart = table(table);
+    sqlTable = table(table);
+
+    // Calculate the column names once on init
+    objectTypeDefinition.getFieldDefinitions()
+        .forEach(fieldDefinition -> {
+          String columnName = CaseFormat.LOWER_CAMEL.to(
+              CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
+
+          PostgresFieldConfiguration fieldConfiguration = fields.computeIfAbsent(fieldDefinition.getName(),
+              fieldName -> new PostgresFieldConfiguration());
+
+          fieldConfiguration.setSqlField(field(columnName));
+        });
   }
 
-  public Table<Record> tableAlias(int alias) {
-    return tableQueryPart.as(String.format("%s%s", "t", alias));
+  public Table<Record> getSqlTable() {
+    return sqlTable;
   }
 }
