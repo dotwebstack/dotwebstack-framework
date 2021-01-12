@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.core.config;
 
-import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.language.ObjectTypeDefinition;
 import java.util.List;
 import java.util.Map;
 
@@ -10,5 +10,5 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   Map<String, T> getFields();
 
-  void init(TypeDefinitionRegistry typeDefinitionRegistry);
+  void init(ObjectTypeDefinition objectTypeDefinition);
 }

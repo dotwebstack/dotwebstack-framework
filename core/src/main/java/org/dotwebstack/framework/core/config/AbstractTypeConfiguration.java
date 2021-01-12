@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.core.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.language.ObjectTypeDefinition;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -23,5 +23,5 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   @Size(min = 1)
   private Map<String, T> fields;
 
-  public void init(TypeDefinitionRegistry typeDefinitionRegistry) {}
+  public void init(ObjectTypeDefinition objectTypeDefinition) {}
 }

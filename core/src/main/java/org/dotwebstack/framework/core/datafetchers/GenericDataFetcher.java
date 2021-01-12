@@ -9,7 +9,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.SelectedField;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -130,10 +129,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .selectedFields(environment.getSelectionSet()
-            .getImmediateFields()
-            .stream()
-            .map(SelectedField::getName)
-            .collect(Collectors.toList()))
+            .getImmediateFields())
         .build();
 
     Optional<Key> key = getKey(environment);
@@ -198,10 +194,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .selectedFields(environment.getSelectionSet()
-            .getImmediateFields()
-            .stream()
-            .map(SelectedField::getName)
-            .collect(Collectors.toList()))
+            .getImmediateFields())
         .build();
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
@@ -214,6 +207,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
         .collectMap(Tuple2::getT1, Tuple2::getT2)
         .toFuture());
+
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(AbstractTypeConfiguration<?> typeConfiguration) {

@@ -4,9 +4,11 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -56,8 +58,13 @@ public class CoreConfiguration {
           }
 
           configuration.getTypeMapping()
-              .values()
-              .forEach(typeConfiguration -> typeConfiguration.init(typeDefinitionRegistry));
+              .keySet()
+              .stream()
+              .map(typeDefinitionRegistry::getType)
+              .map(Optional::get)
+              .forEach(typeDefinition -> configuration.getTypeMapping()
+                  .get(typeDefinition.getName())
+                  .init((ObjectTypeDefinition) typeDefinition));
 
           return configuration;
         })

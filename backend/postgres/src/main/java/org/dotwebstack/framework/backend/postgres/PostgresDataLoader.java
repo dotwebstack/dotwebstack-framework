@@ -1,24 +1,13 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.table;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
-import org.jooq.DSLContext;
-import org.jooq.Param;
-import org.jooq.Query;
-import org.jooq.Record;
-import org.jooq.SelectJoinStep;
+import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,15 +59,15 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
-    Query query = createQuery(key, environment);
+    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
-    final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
-        ((PostgresTypeConfiguration) environment.getTypeConfiguration()).getFields();
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
+    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields());
 
-    return this.execute(query)
+    return this.execute(queryWithAliasMap.getQuery())
         .fetch()
-        .one()
-        .map(map -> updateKeys(fieldConfigurationMap, map));
+        .one();
+    // .map(map -> updateKeys(fieldConfigurationMap, map));
   }
 
   @Override
@@ -89,35 +78,38 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
-    Query query = createQuery(key, environment);
+    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
-    final Map<String, PostgresFieldConfiguration> fieldConfigurationMap =
-        ((PostgresTypeConfiguration) environment.getTypeConfiguration()).getFields();
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
+    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields());
 
-    return this.execute(query)
+    return this.execute(queryWithAliasMap.getQuery())
         .fetch()
         .all()
-        .map(map -> updateKeys(fieldConfigurationMap, map));
+        .map(map -> rowMapToGraphQlMap(map, queryWithAliasMap.getColumnAliasMap()));
   }
 
-  // Experimental code
-  private Map<String, Object> updateKeys(Map<String, PostgresFieldConfiguration> fieldConfigurationMap,
-      Map<String, Object> map) {
-    map.keySet()
-        .forEach(fieldName -> {
-          fieldConfigurationMap.values()
-              .stream()
-              .filter(v -> v.getJoinColumns() != null)
-              .flatMap(v -> v.getJoinColumns()
-                  .stream())
-              .filter(joinColumn -> Objects.equals(joinColumn.getName(), fieldName))
-              .findFirst()
-              .ifPresent(joinColumn -> map.put(fieldName, FieldKey.builder()
-                  .name(joinColumn.getReferencedField())
-                  .value(map.get(fieldName))
-                  .build()));
-        });
-    return map;
+  public static <K, V> Map<V, K> inverseMap(Map<K, V> sourceMap) {
+    return sourceMap.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
+  }
+
+  private Map<String, Object> rowMapToGraphQlMap(Map<String, Object> rowMap, Map<Object, Object> columnAliasMap) {
+    Map<String, Object> result = new HashMap<>();
+
+    for (Object fieldName : columnAliasMap.keySet()) {
+      if (columnAliasMap.get(fieldName) instanceof Map) {
+        Map<Object, Object> nestedAliasMap = (Map<Object, Object>) columnAliasMap.get(fieldName);
+        Map<String, Object> nestedResult = rowMapToGraphQlMap(rowMap, nestedAliasMap);
+        result.put(fieldName.toString(), nestedResult);
+        continue;
+      }
+
+      result.put(fieldName.toString(), rowMap.get(columnAliasMap.get(fieldName)
+          .toString()));
+    }
+    return result;
   }
 
   @Override
@@ -126,18 +118,4 @@ public class PostgresDataLoader implements BackendDataLoader {
         .map(key -> this.loadMany(key, environment));
   }
 
-  private Query createQuery(Object key, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
-
-
-    SelectJoinStep<Record> query = dslContext.select()
-        .from(table(typeConfiguration.getTable()));
-
-    if (key instanceof FieldKey) {
-      FieldKey fieldKey = (FieldKey) key;
-      query.where(field(fieldKey.getName()).eq(fieldKey.getValue()));
-    }
-
-    return query;
-  }
 }
