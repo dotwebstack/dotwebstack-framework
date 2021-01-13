@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 @Component
 public class PostgresDataLoader implements BackendDataLoader {
@@ -73,13 +73,12 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryWithAliasMap.getQuery())
         .fetch()
         .one();
-    // .map(map -> updateKeys(fieldConfigurationMap, map));
   }
 
   @Override
   public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
-    return null;
-    // return keys.flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
+    return Flux.fromIterable(keys)
+        .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
@@ -92,7 +91,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryWithAliasMap.getQuery())
         .fetch()
         .all()
-        .map(map -> rowMapToGraphQlMap(map, queryWithAliasMap.getColumnAliasMap()));
+        .map(map -> toGraphQlMap(map, queryWithAliasMap.getColumnAliasMap()));
   }
 
   @Override
@@ -101,26 +100,23 @@ public class PostgresDataLoader implements BackendDataLoader {
         .map(key -> this.loadMany(key, environment));
   }
 
-  public static <K, V> Map<V, K> inverseMap(Map<K, V> sourceMap) {
-    return sourceMap.entrySet()
+  private Map<String, Object> toGraphQlMap(Map<String, Object> rowMap, Map<String, Object> columnAliasMap) {
+    return columnAliasMap.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
+        .map(entry -> mapResultDataEntry(rowMap, entry))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private Map<String, Object> rowMapToGraphQlMap(Map<String, Object> rowMap, Map<String, Object> columnAliasMap) {
-    Map<String, Object> result = new HashMap<>();
+  @SuppressWarnings("unchecked")
+  private Map.Entry<String, Object> mapResultDataEntry(Map<String, Object> rowMap, Map.Entry<String, Object> entry) {
+    if (entry.getValue() instanceof Map) {
+      Map<String, Object> nestedColumnAliasMap = (Map<String, Object>) entry.getValue();
+      Map<String, Object> nestedResult = toGraphQlMap(rowMap, nestedColumnAliasMap);
 
-    for (Object fieldName : columnAliasMap.keySet()) {
-      if (columnAliasMap.get(fieldName) instanceof Map) {
-        Map<String, Object> nestedAliasMap = (Map<String, Object>) columnAliasMap.get(fieldName);
-        Map<String, Object> nestedResult = rowMapToGraphQlMap(rowMap, nestedAliasMap);
-        result.put(fieldName.toString(), nestedResult);
-        continue;
-      }
-
-      result.put(fieldName.toString(), rowMap.get(columnAliasMap.get(fieldName)
-          .toString()));
+      return Map.entry(entry.getKey(), nestedResult);
     }
-    return result;
+
+    return Map.entry(entry.getKey(), rowMap.get(entry.getValue()
+        .toString()));
   }
 }

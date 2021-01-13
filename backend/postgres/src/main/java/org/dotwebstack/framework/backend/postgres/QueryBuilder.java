@@ -6,12 +6,13 @@ import static org.jooq.impl.DSL.trueCondition;
 
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -39,60 +40,35 @@ class QueryBuilder {
   }
 
   public QueryWithAliasMap build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields) {
-    return internalBuild(typeConfiguration, selectedFields);
+    return build(typeConfiguration, selectedFields, null);
   }
 
-  public QueryWithAliasMap internalBuild(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields) {
-    Table<Record> fromTable = typeConfiguration.getSqlTable().as(newTableAlias());
+  private QueryWithAliasMap build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+      JoinInformation joinInformation) {
+    Table<Record> fromTable = typeConfiguration.getSqlTable()
+        .as(newTableAlias());
     Map<String, Object> columnAliasMap = new HashMap<>();
 
-    List<Field<Object>> selectedColumns = selectedFields.stream()
-        .filter(selectedField -> GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition().getType()))
-        .map(selectedField -> {
-          Field<Object> column = createSelectedColumn(typeConfiguration, selectedField);
-          columnAliasMap.put(selectedField.getResultKey(), column.getName());
-          return column;
-        })
-        .collect(Collectors.toList());
+    List<Field<Object>> selectedColumns = getDirectFields(typeConfiguration, selectedFields, columnAliasMap);
 
-    List<Table<Record>> joinTables = new ArrayList<>();
-
-    selectedFields.stream()
-        .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition().getType()))
-        .forEach(nestedField -> {
-          String nestedName = GraphQLTypeUtil.unwrapAll(nestedField.getFieldDefinition()
-              .getType())
-              .getName();
-
-          TypeConfiguration<?> nestedTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
-              .get(nestedName);
-
-          // Non-Postgres-backed objects can never be eager-loaded
-          if (!(nestedTypeConfiguration instanceof PostgresTypeConfiguration)) {
-            return;
-          }
-
-          List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
-              .getImmediateFields();
-
-          QueryWithAliasMap queryWithAliasMap = internalBuild(
-              (PostgresTypeConfiguration) nestedTypeConfiguration, nestedSelectedFields);
-
-          String joinAlias = newTableAlias();
-
-          joinTables.add(lateral(
-              ((TableLike<Record>) queryWithAliasMap.getQuery()).asTable(joinAlias)));
-
-          selectedColumns.add(field(joinAlias.concat(".*")));
-          columnAliasMap.put(nestedField.getResultKey(), queryWithAliasMap.getColumnAliasMap());
-        });
+    List<NestedQueryResult> nestedQueryResults =
+        getNestedResults(typeConfiguration, selectedFields, fromTable, columnAliasMap, selectedColumns);
 
     SelectJoinStep<Record> query = dslContext.select(selectedColumns)
         .from(fromTable);
 
-    for (Table<Record> joinTable : joinTables) {
-      query = query.leftJoin(joinTable)
+    for (NestedQueryResult nestedResult : nestedQueryResults) {
+      Table<Record> nestedQuery = nestedResult.getTable();
+      query.leftJoin(lateral(nestedQuery))
           .on(trueCondition());
+    }
+
+    if (joinInformation != null) {
+      Field<Object> self = field(fromTable.getName()
+          .concat(".")
+          .concat(joinInformation.getReferencedField()));
+      query.where(joinInformation.getParent()
+          .eq(self));
     }
 
     return QueryWithAliasMap.builder()
@@ -101,11 +77,86 @@ class QueryBuilder {
         .build();
   }
 
+  private List<NestedQueryResult> getNestedResults(PostgresTypeConfiguration typeConfiguration,
+      List<SelectedField> selectedFields, Table<Record> fromTable, Map<String, Object> columnAliasMap,
+      List<Field<Object>> selectedColumns) {
+    return selectedFields.stream()
+        .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
+            .getType()))
+        .map(selectedField -> processNested(getJoinColumn(typeConfiguration, selectedField, fromTable), selectedField))
+        .map(Optional::get)
+        .peek(nestedQueryResult -> {
+          columnAliasMap.put(nestedQueryResult.getSelectedField()
+              .getResultKey(), nestedQueryResult.getColumnAliasMap());
+          selectedColumns.add(nestedQueryResult.getSelectedColumn());
+        })
+        .collect(Collectors.toList());
+  }
+
+  private JoinInformation getJoinColumn(PostgresTypeConfiguration typeConfiguration, SelectedField selectedField,
+      Table<Record> table) {
+    PostgresFieldConfiguration postgresFieldConfiguration = typeConfiguration.getFields()
+        .get(selectedField.getName());
+    JoinColumn joinColumn = postgresFieldConfiguration.getJoinColumns()
+        .get(0);
+
+    return JoinInformation.builder()
+        .parent(field(table.getName()
+            .concat(".")
+            .concat(joinColumn.getName())))
+        .referencedField(joinColumn.getReferencedField())
+        .build();
+  }
+
+  private List<Field<Object>> getDirectFields(PostgresTypeConfiguration typeConfiguration,
+      List<SelectedField> selectedFields, Map<String, Object> columnAliasMap) {
+    return selectedFields.stream()
+        .filter(selectedField -> GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
+            .getType()))
+        .map(selectedField -> {
+          Field<Object> column = createSelectedColumn(typeConfiguration, selectedField);
+          columnAliasMap.put(selectedField.getResultKey(), column.getName());
+          return column;
+        })
+        .collect(Collectors.toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  private Optional<NestedQueryResult> processNested(JoinInformation joinInformation, SelectedField nestedField) {
+    String nestedName = GraphQLTypeUtil.unwrapAll(nestedField.getFieldDefinition()
+        .getType())
+        .getName();
+
+    TypeConfiguration<?> nestedTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
+        .get(nestedName);
+
+    // Non-Postgres-backed objects can never be eager-loaded
+    if (!(nestedTypeConfiguration instanceof PostgresTypeConfiguration)) {
+      return Optional.empty();
+    }
+
+    List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
+        .getImmediateFields();
+
+    QueryWithAliasMap queryWithAliasMap =
+        build((PostgresTypeConfiguration) nestedTypeConfiguration, nestedSelectedFields, joinInformation);
+
+    String joinAlias = newTableAlias();
+
+    return Optional.of(NestedQueryResult.builder()
+        .selectedField(nestedField)
+        .selectedColumn(field(joinAlias.concat(".*")))
+        .typeConfiguration((PostgresTypeConfiguration) nestedTypeConfiguration)
+        .table(((TableLike<Record>) queryWithAliasMap.getQuery()).asTable(joinAlias))
+        .columnAliasMap(queryWithAliasMap.getColumnAliasMap())
+        .build());
+  }
+
   private Field<Object> createSelectedColumn(PostgresTypeConfiguration typeConfiguration, SelectedField selectedField) {
     PostgresFieldConfiguration fieldConfiguration = typeConfiguration.getFields()
         .get(selectedField.getName());
 
-    return fieldConfiguration.getSqlField().as(newSelectAlias());
+    return field(fieldConfiguration.getSqlColumnName()).as(newSelectAlias());
   }
 
   private String newTableAlias() {

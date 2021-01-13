@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -30,13 +29,12 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
-          String columnName = CaseFormat.LOWER_CAMEL.to(
-              CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
+          String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
 
-          PostgresFieldConfiguration fieldConfiguration = fields.computeIfAbsent(fieldDefinition.getName(),
-              fieldName -> new PostgresFieldConfiguration());
+          PostgresFieldConfiguration fieldConfiguration =
+              fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
 
-          fieldConfiguration.setSqlField(field(columnName));
+          fieldConfiguration.setSqlColumnName(columnName);
         });
   }
 

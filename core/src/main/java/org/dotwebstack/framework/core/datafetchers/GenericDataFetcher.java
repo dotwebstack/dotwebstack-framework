@@ -54,7 +54,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         return source.get(resultKey);
       }
 
-      // Create separate dataloader for every unique path, since evert path can have different arguments or selection
+      // Create separate dataloader for every unique path, since evert path can have different arguments
+      // or selection
       String dataLoaderKey = String.join("/", executionStepInfo.getPath()
           .getKeysOnly());
 
@@ -127,9 +128,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       throw new IllegalArgumentException("Output is not an object type.");
     }
 
-    return Optional.ofNullable(
-        dotWebStackConfiguration.getTypeMapping()
-            .get(rawType.getName()));
+    return Optional.ofNullable(dotWebStackConfiguration.getTypeMapping()
+        .get(rawType.getName()));
   }
 
   private Optional<Key> getKey(DataFetchingEnvironment environment) {
@@ -167,7 +167,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .build();
   }
 
-  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment, TypeConfiguration<?> typeConfiguration) {
+  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment,
+      TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(unwrappedType);
