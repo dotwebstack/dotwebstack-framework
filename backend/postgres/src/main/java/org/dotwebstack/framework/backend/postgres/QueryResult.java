@@ -7,7 +7,7 @@ import org.jooq.Query;
 
 @Builder
 @Getter
-public class QueryWithAliasMap {
+public class QueryResult {
 
   private final Query query;
 

@@ -40,22 +40,21 @@ class QueryBuilder {
     this.dslContext = dslContext;
   }
 
-  public QueryWithAliasMap build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+  public QueryResult build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
       Object key) {
-
     return build(typeConfiguration, selectedFields, null, key);
   }
 
-  private QueryWithAliasMap build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+  private QueryResult build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
       JoinInformation joinInformation, Object key) {
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
-    Map<String, Object> columnAliasMap = new HashMap<>();
+    Map<String, Object> fieldAliasMap = new HashMap<>();
 
-    List<Field<Object>> selectedColumns = getDirectFields(typeConfiguration, selectedFields, columnAliasMap);
+    List<Field<Object>> selectedColumns = getDirectFields(typeConfiguration, selectedFields, fieldAliasMap);
 
     List<NestedQueryResult> nestedQueryResults =
-        getNestedResults(typeConfiguration, selectedFields, fromTable.getName(), columnAliasMap, selectedColumns);
+        getNestedResults(typeConfiguration, selectedFields, fromTable.getName(), fieldAliasMap, selectedColumns);
 
     SelectJoinStep<Record> query = dslContext.select(selectedColumns)
         .from(fromTable);
@@ -81,14 +80,14 @@ class QueryBuilder {
           .concat(fieldKey.getName())).eq(fieldKey.getValue()));
     }
 
-    return QueryWithAliasMap.builder()
+    return QueryResult.builder()
         .query(query)
-        .fieldAliasMap(columnAliasMap)
+        .fieldAliasMap(fieldAliasMap)
         .build();
   }
 
   private List<NestedQueryResult> getNestedResults(PostgresTypeConfiguration typeConfiguration,
-      List<SelectedField> selectedFields, String tableName, Map<String, Object> columnAliasMap,
+      List<SelectedField> selectedFields, String tableName, Map<String, Object> fieldAliasMap,
       List<Field<Object>> selectedColumns) {
     return selectedFields.stream()
         .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
@@ -96,7 +95,7 @@ class QueryBuilder {
         .map(selectedField -> processNested(getJoinColumn(typeConfiguration, selectedField, tableName), selectedField))
         .map(Optional::get)
         .peek(nestedQueryResult -> {
-          columnAliasMap.put(nestedQueryResult.getSelectedField()
+          fieldAliasMap.put(nestedQueryResult.getSelectedField()
               .getResultKey(), nestedQueryResult.getColumnAliasMap());
           selectedColumns.add(nestedQueryResult.getSelectedColumn());
         })
@@ -118,13 +117,13 @@ class QueryBuilder {
   }
 
   private List<Field<Object>> getDirectFields(PostgresTypeConfiguration typeConfiguration,
-      List<SelectedField> selectedFields, Map<String, Object> columnAliasMap) {
+      List<SelectedField> selectedFields, Map<String, Object> fieldAliasMap) {
     return selectedFields.stream()
         .filter(selectedField -> GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
             .getType()))
         .map(selectedField -> {
           Field<Object> column = createSelectedColumn(typeConfiguration, selectedField);
-          columnAliasMap.put(selectedField.getResultKey(), column.getName());
+          fieldAliasMap.put(selectedField.getResultKey(), column.getName());
           return column;
         })
         .collect(Collectors.toList());
@@ -147,7 +146,7 @@ class QueryBuilder {
     List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
         .getImmediateFields();
 
-    QueryWithAliasMap queryWithAliasMap =
+    QueryResult queryResult =
         build((PostgresTypeConfiguration) nestedTypeConfiguration, nestedSelectedFields, joinInformation, null);
 
     String joinAlias = newTableAlias();
@@ -156,8 +155,8 @@ class QueryBuilder {
         .selectedField(nestedField)
         .selectedColumn(field(joinAlias.concat(".*")))
         .typeConfiguration((PostgresTypeConfiguration) nestedTypeConfiguration)
-        .table(((TableLike<Record>) queryWithAliasMap.getQuery()).asTable(joinAlias))
-        .columnAliasMap(queryWithAliasMap.getFieldAliasMap())
+        .table(((TableLike<Record>) queryResult.getQuery()).asTable(joinAlias))
+        .columnAliasMap(queryResult.getFieldAliasMap())
         .build());
   }
 

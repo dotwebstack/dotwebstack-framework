@@ -69,12 +69,12 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    QueryResult queryResult = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
-    return this.execute(queryWithAliasMap.getQuery())
+    return this.execute(queryResult.getQuery())
         .fetch()
         .one()
-        .map(map -> toGraphQlMap(map, queryWithAliasMap.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, queryResult.getFieldAliasMap()));
   }
 
   @Override
@@ -88,12 +88,12 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    QueryResult queryResult = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
-    return this.execute(queryWithAliasMap.getQuery())
+    return this.execute(queryResult.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, queryWithAliasMap.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, queryResult.getFieldAliasMap()));
   }
 
   @Override
