@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -68,11 +69,12 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields());
+    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
     return this.execute(queryWithAliasMap.getQuery())
         .fetch()
-        .one();
+        .one()
+        .map(map -> toGraphQlMap(map, queryWithAliasMap.getFieldAliasMap()));
   }
 
   @Override
@@ -86,37 +88,17 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields());
+    QueryWithAliasMap queryWithAliasMap = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
     return this.execute(queryWithAliasMap.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, queryWithAliasMap.getColumnAliasMap()));
+        .map(map -> toGraphQlMap(map, queryWithAliasMap.getFieldAliasMap()));
   }
 
   @Override
   public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
-  }
-
-  private Map<String, Object> toGraphQlMap(Map<String, Object> rowMap, Map<String, Object> columnAliasMap) {
-    return columnAliasMap.entrySet()
-        .stream()
-        .map(entry -> mapResultDataEntry(rowMap, entry))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map.Entry<String, Object> mapResultDataEntry(Map<String, Object> rowMap, Map.Entry<String, Object> entry) {
-    if (entry.getValue() instanceof Map) {
-      Map<String, Object> nestedColumnAliasMap = (Map<String, Object>) entry.getValue();
-      Map<String, Object> nestedResult = toGraphQlMap(rowMap, nestedColumnAliasMap);
-
-      return Map.entry(entry.getKey(), nestedResult);
-    }
-
-    return Map.entry(entry.getKey(), rowMap.get(entry.getValue()
-        .toString()));
   }
 }
