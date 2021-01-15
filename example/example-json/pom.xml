@@ -19,12 +19,7 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-openapi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>templating-pebble</artifactId>
+      <artifactId>service-graphql</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

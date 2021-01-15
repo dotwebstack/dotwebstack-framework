@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.json.query;
+package org.dotwebstack.framework.backend.json;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
