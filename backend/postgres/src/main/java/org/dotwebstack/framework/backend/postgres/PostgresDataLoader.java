@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.backend.postgres.query.PostgresQueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -68,13 +70,13 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
-    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryResult queryResult = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
-    return this.execute(queryResult.getQuery())
+    return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .one()
-        .map(map -> toGraphQlMap(map, queryResult.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
   }
 
   @Override
@@ -87,13 +89,13 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
-    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
-    QueryResult queryResult = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
 
-    return this.execute(queryResult.getQuery())
+    return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, queryResult.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
   }
 
   @Override

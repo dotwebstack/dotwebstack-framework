@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.Map;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import org.jooq.Query;
 
 @Builder
 @Getter
-public class QueryResult {
+public class PostgresQueryHolder {
 
   private final Query query;
 

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import lombok.Builder;
 import lombok.Getter;

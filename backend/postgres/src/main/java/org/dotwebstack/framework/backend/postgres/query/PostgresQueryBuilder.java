@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.lateral;
@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
@@ -25,7 +26,7 @@ import org.jooq.SelectJoinStep;
 import org.jooq.Table;
 import org.jooq.TableLike;
 
-class QueryBuilder {
+public class PostgresQueryBuilder {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
@@ -35,18 +36,18 @@ class QueryBuilder {
 
   private final AtomicInteger selectCounter = new AtomicInteger();
 
-  public QueryBuilder(DotWebStackConfiguration dotWebStackConfiguration, DSLContext dslContext) {
+  public PostgresQueryBuilder(DotWebStackConfiguration dotWebStackConfiguration, DSLContext dslContext) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.dslContext = dslContext;
   }
 
-  public QueryResult build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
-      Object key) {
+  public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+                                   Object key) {
     return build(typeConfiguration, selectedFields, null, key);
   }
 
-  private QueryResult build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
-      JoinInformation joinInformation, Object key) {
+  private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+                                    JoinInformation joinInformation, Object key) {
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
     Map<String, Object> fieldAliasMap = new HashMap<>();
@@ -80,7 +81,7 @@ class QueryBuilder {
           .concat(fieldKey.getName())).eq(fieldKey.getValue()));
     }
 
-    return QueryResult.builder()
+    return PostgresQueryHolder.builder()
         .query(query)
         .fieldAliasMap(fieldAliasMap)
         .build();
@@ -146,7 +147,7 @@ class QueryBuilder {
     List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
         .getImmediateFields();
 
-    QueryResult queryResult =
+    PostgresQueryHolder queryHolder =
         build((PostgresTypeConfiguration) nestedTypeConfiguration, nestedSelectedFields, joinInformation, null);
 
     String joinAlias = newTableAlias();
@@ -155,8 +156,8 @@ class QueryBuilder {
         .selectedField(nestedField)
         .selectedColumn(field(joinAlias.concat(".*")))
         .typeConfiguration((PostgresTypeConfiguration) nestedTypeConfiguration)
-        .table(((TableLike<Record>) queryResult.getQuery()).asTable(joinAlias))
-        .columnAliasMap(queryResult.getFieldAliasMap())
+        .table(((TableLike<Record>) queryHolder.getQuery()).asTable(joinAlias))
+        .columnAliasMap(queryHolder.getFieldAliasMap())
         .build());
   }
 
