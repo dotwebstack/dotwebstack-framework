@@ -1,27 +1,6 @@
-package org.dotwebstack.framework.integrationtest.graphqlrdf4j;
+package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERS_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERS_NAME_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEERTYPES_RAW_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BEER_NAME_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERIES_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_ADDRESS_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_NAME_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_SUBJECT_EXAMPLE_1;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_SUBJECT_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.INGREDIENTS_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.INGREDIENTS_NAME_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SCHEMA_NAME;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SUPPLEMENTS_FIELD;
-import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,15 +9,20 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import java.time.LocalDate;
+import graphql.language.StringValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,18 +30,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.helper.IriHelper;
+import org.dotwebstack.framework.backend.rdf4j.serializers.Rdf4jStringSerializer;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.junit.jupiter.api.Disabled;
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
-public class GraphQlRdf4jIntegrationTest {
+class Rdf4jModuleTest {
 
   private static final Map<String, Object> NAME_NULL_MAP = new HashMap<>();
 
@@ -69,48 +58,29 @@ public class GraphQlRdf4jIntegrationTest {
   private GraphQL graphQL;
 
   @Test
-  void graphQlQuery_ReturnsBreweries_Default() {
-    // Arrange
-    String query = "{breweries{name}}";
-
-    // Act
-    ExecutionResult result = graphQL.execute(query);
-
-    // Assert
-    assertTrue(result.getErrors()
-        .isEmpty());
-    Map<String, Object> data = result.getData();
-
-    assertThat(data.size(), is(1));
-    assertTrue(data.containsKey("breweries"));
-
-    List<Map<String, Object>> breweries = ((List<Map<String, Object>>) data.get("breweries"));
-    assertThat(breweries.size(), is(5));
-    assertThat(breweries.get(0)
-        .get("name"), is("Brouwerij 1923"));
-  }
-
-  @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
     // Arrange
-    String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, subject, founded }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
     assertResultHasNoErrors(result);
-
     Map<String, Object> data = result.getData();
-    Map<String, Object> resultMap = (Map<String, Object>) data.get(BREWERY_FIELD);
 
-    assertThat(resultMap, hasEntry(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
-    assertThat(resultMap, hasEntry(BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()));
-    assertThat(resultMap, hasEntry(BREWERY_FOUNDED_FIELD, LocalDate.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
+    IRI subject = IriHelper.createIri(Constants.BREWERY_SUBJECT_EXAMPLE_1);
+    Map<String, Object> resultMap = (Map<String, Object>) data.get(Constants.BREWERY_FIELD);
+
+    assertThat(resultMap, hasEntry(Constants.BREWERY_SUBJECT_FIELD, subject));
+    MatcherAssert.assertThat(resultMap, IsMapContaining.hasEntry(Constants.BREWERY_IDENTIFIER_FIELD, Constants.BREWERY_IDENTIFIER_EXAMPLE_1.stringValue()));
+    MatcherAssert.assertThat(resultMap, IsMapContaining.hasEntry(Constants.BREWERY_NAME_FIELD, Constants.BREWERY_NAME_EXAMPLE_1.stringValue()));
+    MatcherAssert.assertThat(resultMap, IsMapContaining.hasEntry(Constants.BREWERY_FOUNDED_FIELD, Constants.BREWERY_FOUNDED_EXAMPLE_1.calendarValue()
+        .toGregorianCalendar()
+        .toZonedDateTime()));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForNestedListNonNullQuery() {
     // Arrange
     String query = "{ beer(identifier: \"6\") { identifier, beerTypesRaw { name }  }}";
@@ -121,11 +91,11 @@ public class GraphQlRdf4jIntegrationTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry(BEER_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BEER_IDENTIFIER_EXAMPLE_1.stringValue(), BEERTYPES_RAW_FIELD,
-                ImmutableList.of(ImmutableMap.of(SCHEMA_NAME.getLocalName(), "Bitter"),
-                    ImmutableMap.of(SCHEMA_NAME.getLocalName(), "Ale")))));
+    MatcherAssert.assertThat(data,
+        IsMapContaining.hasEntry(Constants.BEER_FIELD,
+            ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, Constants.BEER_IDENTIFIER_EXAMPLE_1.stringValue(), Constants.BEERTYPES_RAW_FIELD,
+                ImmutableList.of(ImmutableMap.of(Constants.SCHEMA_NAME.getLocalName(), "Bitter"),
+                    ImmutableMap.of(Constants.SCHEMA_NAME.getLocalName(), "Ale")))));
   }
 
   @Test
@@ -139,15 +109,14 @@ public class GraphQlRdf4jIntegrationTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_ADDRESS_FIELD,
+    MatcherAssert.assertThat(data,
+        IsMapContaining.hasEntry(Constants.BREWERY_FIELD,
+            ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, Constants.BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), Constants.BREWERY_NAME_FIELD,
+                Constants.BREWERY_NAME_EXAMPLE_1.stringValue(), Constants.BREWERY_ADDRESS_FIELD,
                 ImmutableMap.of("postalCode", "2841 XB"))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForQueryWithFilterWithoutOperatorOnStringField() {
     // Arrange
     String query = "{ breweries(name: \"Brouwerij 1923\") { identifier, name }}";
@@ -159,18 +128,14 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList.of(
-        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
+    MatcherAssert.assertThat(data, IsMapContaining.hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "123", Constants.BREWERY_NAME_FIELD, Constants.BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsResult_forQueryWithNesting() {
     // Arrange
     String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients { name }}}}";
-    Map<String, Object> nullMap = new HashMap<>();
-    nullMap.put(INGREDIENTS_NAME_FIELD, null);
-
     // Act
     ExecutionResult result = graphQL.execute(query);
 
@@ -179,21 +144,50 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(
-            ImmutableMap.of(INGREDIENTS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))),
-            ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
+        hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BEERS_FIELD, ImmutableList.of(
+            ImmutableMap.of(Constants.INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Citroen"))),
+            ImmutableMap.of(Constants.INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
+  @Test
+  void graphqlQuery_ReturnsResult_forQueryMultipleFilteredFieldsBasedOnSamePath() {
+    // Arrange
+    String query = "{ breweries(name: \"Alfa Brouwerij\"){ edelPils { name }, krachtigDort { name }}}";
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        hasEntry(Constants.BREWERIES_FIELD,
+            ImmutableList.of(
+                ImmutableMap.of(Constants.EDELPILS_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BEERS_NAME_FIELD, "Alfa Edel Pils")),
+                    Constants.KRACHTIGDORT_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BEERS_NAME_FIELD, "Alfa Krachtig Dort"))))));
+  }
 
   @Test
-  @Disabled
-  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateField() {
+  void serializeIri_DoesNotThrowException() {
+    StringValue stringValue = StringValue.newStringValue(Constants.BREWERY_SHAPE.stringValue())
+        .build();
+
+    IRI iri = IriHelper.createIri(stringValue.toString());
+
+    Rdf4jStringSerializer rdf4jStringSerializer = new Rdf4jStringSerializer();
+    JsonGenerator jsonGenerator = mock(JsonGenerator.class);
+    SerializerProvider serializerProvider = mock(SerializerProvider.class);
+    assertDoesNotThrow(() -> rdf4jStringSerializer.serialize(iri, jsonGenerator, serializerProvider));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() {
     // Arrange
-    String query = "{ breweries(foundedAfter: \"2018-05-29\") { identifier, name }}";
+    String query = "{ breweries(foundedAfter: \"2018-05-29T09:30:10+02:00\") { identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -202,16 +196,16 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList.of(
-        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
+    MatcherAssert.assertThat(data, IsMapContaining.hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "123", Constants.BREWERY_NAME_FIELD, Constants.BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 
   @Test
-  @Disabled
-  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateField() {
+  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() {
     // Arrange
     String query =
-        "{ breweries(foundedAfter: \"1990-01-01\", foundedBefore: \"2011-01-01\") " + "{ identifier, name }}";
+        "{ breweries(foundedAfter: \"1990-01-01T00:00:00+02:00\", foundedBefore: \"2011-01-01T00:00:00+02:00\") "
+            + "{ identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -221,18 +215,17 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456", BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."))));
+        hasEntry(Constants.BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "2", Constants.BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "456", Constants.BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForQueryWithFilterWithListInNestedInputObjects() {
     // Arrange
     String query = "{ breweriesWithInputObject(input: {nestedInput: {nestedNestedInput: {"
         + "name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"]},"
-        + "foundedAfter: \"1800-01-01\"}}) { identifier, name }}";
+        + "foundedAfter: \"1800-01-01T00:00:00+02:00\"}}) { identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -243,12 +236,11 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry("breweriesWithInputObject",
-            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1", BREWERY_NAME_FIELD, "Heineken Nederland"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "1", Constants.BREWERY_NAME_FIELD, "Heineken Nederland"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "2", Constants.BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithDefaultSorting() {
     // Arrange
     String query = "{ breweries{ name }}";
@@ -262,15 +254,14 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
-                ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"))));
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Alfa Brouwerij"),
+                ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij 1923"),
+                ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+                ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+                ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Heineken Nederland"))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierAscSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"identifier\", order: ASC }]){ identifier }}";
@@ -284,9 +275,9 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"))));
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "1"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "123"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "2"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "789"))));
   }
 
   @Test
@@ -308,7 +299,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithNameDescSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"name\", order: DESC}]){ name }}";
@@ -320,15 +310,14 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
-        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
-        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
-        ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"), ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
+    assertThat(data, hasEntry("breweries", ImmutableList.of(ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Heineken Nederland"),
+        ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+        ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+        ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Brouwerij 1923"), ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
 
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithNameNestedSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}]){ identifier }}";
@@ -342,13 +331,12 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"))));
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "456"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "123"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "1"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "2"))));
   }
 
   @Test()
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithNameMultipleSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}, {field: \"name\", order: ASC}]){"
@@ -363,13 +351,12 @@ public class GraphQlRdf4jIntegrationTest {
 
     assertThat(data,
         hasEntry("breweries",
-            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"))));
+            ImmutableList.of(ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "789"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "123"),
+                ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "2"), ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD, "1"))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForSortQueryWithUnexistingSortField() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"unexisting\", order: DESC}]){ identifier }}";
@@ -405,7 +392,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter2() {
     // Arrange
     String query =
@@ -419,15 +405,14 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
+        hasEntry(Constants.BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(Constants.BEERS_FIELD, ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter3() {
     // Arrange
     String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers(ingredient: [\"Hop\", \"Gerst\"]) { name }}}";
@@ -439,12 +424,11 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD, ImmutableList
-        .of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_NAME_FIELD, "Alfa Edel Pils"))))));
+    assertThat(data, hasEntry(Constants.BREWERIES_FIELD, ImmutableList
+        .of(ImmutableMap.of(Constants.BEERS_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BEERS_NAME_FIELD, "Alfa Edel Pils"))))));
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter() {
     // Arrange
     String query =
@@ -458,13 +442,13 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+        hasEntry(Constants.BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(Constants.BEERS_FIELD,
                 ImmutableList.of(
-                    ImmutableMap.of(INGREDIENTS_FIELD,
-                        ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
-                            ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))),
-                    ImmutableMap.of(INGREDIENTS_FIELD, Collections.emptyList()))))));
+                    ImmutableMap.of(Constants.INGREDIENTS_FIELD,
+                        ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Hop"),
+                            ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Gerst"))),
+                    ImmutableMap.of(Constants.INGREDIENTS_FIELD, Collections.emptyList()))))));
   }
 
   /*
@@ -474,7 +458,6 @@ public class GraphQlRdf4jIntegrationTest {
    * for this specific use case.
    */
   @Test
-  @Disabled
   void graphqlQuery_ReturnsMap_WithNonOptionalFields() {
     // Arrange
     String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: \"Hop\"){name, ingredients{ name }}}}";
@@ -487,15 +470,14 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen"))))))));
+        hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Alfa Brouwerij", Constants.BEERS_FIELD,
+            ImmutableList.of(ImmutableMap.of(Constants.BEER_NAME_FIELD, "Alfa Edel Pils", Constants.INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Citroen"))))))));
   }
 
   @Test
-  @Disabled
   @SuppressWarnings({"unchecked", "rawtypes"})
   void graphqlQuery_ReturnsMap_WithFiltersOnShOrField() {
     // Arrange
@@ -510,23 +492,22 @@ public class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
-            ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
-                ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
-                    ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Citroen")),
-                SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
+        hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(Constants.BREWERY_NAME_FIELD, "Alfa Brouwerij", Constants.BEERS_FIELD,
+            ImmutableList.of(ImmutableMap.of(Constants.BEER_NAME_FIELD, "Alfa Edel Pils", Constants.INGREDIENTS_FIELD,
+                ImmutableList.of(ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Sinasappel"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Gerst"),
+                    ImmutableMap.of(Constants.INGREDIENTS_NAME_FIELD, "Citroen")),
+                Constants.SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(Constants.SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
 
-    List breweries = (List<Map<String, Object>>) data.get(BREWERIES_FIELD);
+    List breweries = (List<Map<String, Object>>) data.get(Constants.BREWERIES_FIELD);
     Map<String, Object> edelPils =
-        (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(BEERS_FIELD)).get(0);
-    List<String> ingredients = (List<String>) edelPils.get(INGREDIENTS_FIELD);
+        (Map<String, Object>) ((List<Object>) ((Map<String, Object>) breweries.get(0)).get(Constants.BEERS_FIELD)).get(0);
+    List<String> ingredients = (List<String>) edelPils.get(Constants.INGREDIENTS_FIELD);
 
     assertThat(ingredients, IsCollectionWithSize.hasSize(4));
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnLocalName_WithConfiguredLanguage() {
     // Arrange
     String query = "{breweries(name: \"Heineken Nederland\"){name, localName}}";
@@ -538,12 +519,44 @@ public class GraphQlRdf4jIntegrationTest {
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
 
-    assertThat(data, hasEntry(BREWERIES_FIELD,
+    assertThat(data, hasEntry(Constants.BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of("name", "Heineken Nederland", "localName", "Heineken Niederlande"))));
   }
 
   @Test
-  @Disabled
+  void graphQlQuery_ReturnNull_WithNonExistingFilter() {
+    // Arrange
+    String query = "{breweries(name: \"Brouwerij De Leckere\", localName: \"nonexisting\"){name, localName}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, hasEntry(Constants.BREWERIES_FIELD, Collections.emptyList()));
+  }
+
+  @Test
+  void graphQlQuery_ReturnNull_WithConfiguredLanguageWithoutLocalName() {
+    // Arrange
+    String query = "{breweries(name: \"Brouwerij De Leckere\"){name, localName}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+
+    Map<String, String> breweriesMap = new HashMap<>();
+    breweriesMap.put("name", "Brouwerij De Leckere");
+    breweriesMap.put("localName", null);
+    assertThat(data, hasEntry(Constants.BREWERIES_FIELD, ImmutableList.of(breweriesMap)));
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   void graphQlQuery_ReturnOwners_WithSortAnnotation() {
     List<String> expected =
@@ -565,7 +578,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   @SuppressWarnings("unchecked")
   void graphQlQuery_ReturnIngredients_WithDescSortAnnotation() {
     // Arrange
@@ -587,11 +599,9 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(ingredients.get(1), is(equalTo("Hop")));
     assertThat(ingredients.get(2), is(equalTo("Gerst")));
     assertThat(ingredients.get(3), is(equalTo("Citroen")));
-
   }
 
   @Test
-  @Disabled
   @SuppressWarnings("unchecked")
   void graphQlQuery_ReturnBreweries_WithNullValuesInAscSort() {
     // Arrange
@@ -612,11 +622,9 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(numbers.get(2), is(2));
     assertThat(numbers.get(3), is(20));
     assertThat(numbers.get(4), is(100));
-
   }
 
   @Test
-  @Disabled
   @SuppressWarnings("unchecked")
   void graphQlQuery_ReturnBreweries_WithNullValuesInDescSort() {
     // Arrange
@@ -643,9 +651,7 @@ public class GraphQlRdf4jIntegrationTest {
     assertThat(result.getErrors(), is(empty()));
   }
 
-
   @Test
-  @Disabled
   void graphQlQuery_ReturnsBreweries_WithCount() {
     // Arrange
     String query = "{breweries(name: \"Brouwerij 1923\"){beerCount}}";
@@ -662,7 +668,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_SortedByBeerCountDesc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"beerCount\", order: DESC}]){beerCount}}";
@@ -682,7 +687,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_SortedByBeerCountAsc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"beerCount\", order: ASC}]){beerCount}}";
@@ -702,7 +706,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2() {
     // Arrange
     String query = "{breweries(beerCount: 2){name, beerCount}}";
@@ -722,7 +725,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_FilteredByBeerCount0() {
     // Arrange
     String query = "{breweries(beerCount: 0){name, beerCount}}";
@@ -743,7 +745,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnesBreweries_FilteredByBeerCount2MissingEdge() {
     // Arrange
     String query = "{breweries(beerCount: 2){name}}";
@@ -763,7 +764,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnsBreweries_WithTransformedAggregate() {
     // Arrange
     String query = "{breweries(sort: [{field: \"name\", order: ASC}]){name, beerCount, hasBeers}}";
@@ -783,11 +783,9 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphqlQuery_ReturnsBrewery_FilteredBySubject() {
     // Arrange
-    String query =
-        "{ brewery_with_subject(subject: \"https://github.com/dotwebstack/beer/id/brewery/123\") { subject }}";
+    String query = "{ brewery_with_subject(subject: \"" + Constants.BREWERY_SUBJECT_EXAMPLE_2 + "\") { subject }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -795,12 +793,12 @@ public class GraphQlRdf4jIntegrationTest {
     // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    IRI subject = IriHelper.createIri(BREWERY_SUBJECT_EXAMPLE_1);
-    assertThat(data, hasEntry("brewery_with_subject", ImmutableMap.of(BREWERY_SUBJECT_FIELD, subject)));
+    IRI subject = IriHelper.createIri(Constants.BREWERY_SUBJECT_EXAMPLE_2);
+
+    assertThat(data, hasEntry("brewery_with_subject", ImmutableMap.of(Constants.BREWERY_SUBJECT_FIELD, subject)));
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnsBreweries_SortedOnSubjectAsc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"subject\", order: ASC}]){subject}}";
@@ -825,7 +823,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_ReturnsBreweries_SortedOnSubjectDesc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"subject\", order: DESC}]){subject}}";
@@ -865,7 +862,30 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  void graphQlQuery_returnsLemonBeers_WithoutTheOtherBeers() {
+    // Arrange
+    String query = "{breweries(name: \"Alfa Brouwerij\"){ lemonBeers { name }, edelPils {name}, krachtigDort{ name }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    Map<String, Object> data = result.getData();
+
+    List<Object> breweries = (List<Object>) data.get("breweries");
+    assertThat(breweries, hasSize(1));
+
+    List<Object> lemonBeers = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("lemonBeers");
+    assertThat(lemonBeers, hasSize(2));
+
+    List<Object> edelPils = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("edelPils");
+    assertThat(edelPils, hasSize(1));
+
+    List<Object> krachtigDort = (List<Object>) ((Map<String, Object>) breweries.get(0)).get("krachtigDort");
+    assertThat(krachtigDort, hasSize(1));
+  }
+
+  @Test
   void graphQlQuery_returnsBreweries_SortedOnAddressSubjectDesc() {
     // Arrange
     String query = "{breweries(sort: [{field: \"address.subject\", order: DESC}]){address { subject }}}";
@@ -892,7 +912,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_returnsBreweries_FilterOnAddressSubject() {
     // Arrange
     String query =
@@ -919,7 +938,6 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
   void graphQlQuery_returnsBreweries_FilterOnAddressSubjectNested() {
     // Arrange
     String query = "{ breweries(withAddressSubject: \"https://github.com/dotwebstack/beer/id/address/1\") { subject }}";
@@ -941,24 +959,104 @@ public class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
-  void graphQlQuery_returnsBreweries_FilterOnHavingOptionalBeerName() {
+  void graphQlQuery_returnsModel_FilterOnAddressSubjectNested() {
     // Arrange
-    String query = "{ breweries(withBeer: \"Alfa Edel Pils\") { identifier }}";
+    String query = "{ breweriesModel(subject: \"https://github.com/dotwebstack/beer/id/address/1\") }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("breweriesModel");
+
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/brewery/123");
+  }
+
+  @Test
+  void graphQlQuery_returnsIri_withQueryReference() {
+    // Arrange
+    String query = "{ breweries_with_query_ref_as_iri (beerIRI: \"https://github.com/dotwebstack/beer/id/beer/6\")}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    IRI iri = result.<Map<String, IRI>>getData()
+        .get("breweries_with_query_ref_as_iri");
+
+    assertThat(iri.toString(), containsString("https://github.com/dotwebstack/beer/id/brewery/789"));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @CsvSource({"breweries_with_query_ref_with_String, (beerString: %s)",
+      "breweries_with_query_ref_with_ID, (beerID: %s)", "breweries_with_query_ref_with_IRI, (beerIRI: %s)"})
+  void graphQlQuery_returnsModel_withQueryReferenceWithDescribe(String graphQlField, String parameter) {
+    // Arrange
+    String param = String.format(parameter, "\"https://github.com/dotwebstack/beer/id/beer/6\"");
+    String query = String.format("{ %s %s }", graphQlField, param);
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get(graphQlField);
+
+    assertContainsObject(model, "https://github.com/dotwebstack/beer/id/brewery/789");
+  }
+
+  @Test
+  void graphQlQuery_returnsModel_withQueryReferenceWithConstruct() {
+    // Arrange
+    String query = "{ beers_with_query_ref_as_model_construct }";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors(), hasSize(0));
+
+    Model model = result.<Map<String, Model>>getData()
+        .get("beers_with_query_ref_as_model_construct");
+
+    assertContainsSubject(model, "https://github.com/dotwebstack/beer/id/beer/6");
+  }
+
+  @Test
+  void graphQlQuery_returnsBeer_ForBlankNodeMapping() {
+    // Arrange
+    String query = "{ beer(identifier: \"6\") { inspiredBy {person} }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
     Map<String, Object> data = result.getData();
-    List<String> identifiers = ((List<Object>) data.get("breweries")).stream()
-        .map(ObjectHelper::castToMap)
-        .map(map -> map.get("identifier")
-            .toString())
-        .collect(Collectors.toList());
 
-    assertThat(identifiers, hasSize(1));
-    assertThat(identifiers, contains("789"));
     assertThat(result.getErrors(), hasSize(0));
+    assertThat(data.size(), equalTo(1));
+    assertThat(data.containsKey("beer"), equalTo(true));
+    assertThat(castToMap(data.get("beer")).containsKey("inspiredBy"), equalTo(true));
+    assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).containsKey("person"), equalTo(true));
+    assertThat(castToMap(castToMap(data.get("beer")).get("inspiredBy")).get("person"), equalTo("Erik Bierhof"));
+  }
+
+  private void assertContainsObject(Model model, String object) {
+    assertTrue(model.objects()
+        .stream()
+        .anyMatch(modelObject -> Objects.equals(modelObject.stringValue(), object)));
+  }
+
+  private void assertContainsSubject(Model model, String subject) {
+    assertTrue(model.subjects()
+        .stream()
+        .anyMatch(modelSubject -> Objects.equals(modelSubject.stringValue(), subject)));
   }
 }

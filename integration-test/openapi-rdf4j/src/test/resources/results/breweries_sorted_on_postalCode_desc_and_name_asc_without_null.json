@@ -2,32 +2,32 @@
   "_embedded": {
     "breweries": [
       {
-        "identifier": "789",
-        "postalCode": "4881 AZ",
-        "name": "Alfa Brouwerij",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/789"
+        "identifier": "123",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/123",
+        "name": "Brouwerij 1923",
+        "postalCode": "2841 XB"
       },
       {
         "identifier": "456",
-        "postalCode": "4881 AZ",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/456",
         "name": "Brouwerij Het 58e Genot i.o.",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/456"
-      },
-      {
-        "identifier": "123",
-        "postalCode": "2841 XB",
-        "name": "Brouwerij 1923",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/123"
-      },
-      {
-        "identifier": "2",
-        "name": "Brouwerij De Leckere",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/2"
+        "postalCode": "4881 AZ"
       },
       {
         "identifier": "1",
-        "name": "Heineken Nederland",
-        "link": "https://github.com/dotwebstack/api/v1/brewery/1"
+        "link": "https://github.com/dotwebstack/api/v1/brewery/1",
+        "name": "Heineken Nederland"
+      },
+      {
+        "identifier": "2",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/2",
+        "name": "Brouwerij De Leckere"
+      },
+      {
+        "identifier": "789",
+        "link": "https://github.com/dotwebstack/api/v1/brewery/789",
+        "name": "Alfa Brouwerij",
+        "postalCode": "4881 AZ"
       }
     ]
   },

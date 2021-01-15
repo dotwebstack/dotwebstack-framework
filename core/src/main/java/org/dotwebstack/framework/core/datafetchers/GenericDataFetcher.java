@@ -13,6 +13,7 @@ import graphql.schema.GraphQLUnmodifiedType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -110,12 +111,12 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
-    if (key.isPresent() || !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+    if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
           .toFuture();
     }
 
-    return backendDataLoader.loadMany(null, loadEnvironment)
+    return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
         .collectList()
         .toFuture();
   }
@@ -136,8 +137,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     List<FieldKey> fieldKeys = environment.getFieldDefinition()
         .getArguments()
         .stream()
-        .filter(argument -> argument.getDirectives("key") != null)
+        .filter(argument -> argument.getDirectives("key")
+            .size() > 0)
         .map(argument -> getFieldKey(environment, argument))
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
     if (fieldKeys.size() == 1) {
@@ -152,7 +155,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     GraphQLDirective directive = argument.getDirective("key");
 
     String keyName = argument.getName();
-    if (directive.getArgument("field") != null) {
+    if (directive.getArgument("field")
+        .getValue() != null) {
       keyName = directive.getArgument("field")
           .getValue()
           .toString();
@@ -160,6 +164,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     Object keyValue = environment.getArguments()
         .get(keyName);
+
+    if (keyValue == null) {
+      return null;
+    }
 
     return FieldKey.builder()
         .name(keyName)

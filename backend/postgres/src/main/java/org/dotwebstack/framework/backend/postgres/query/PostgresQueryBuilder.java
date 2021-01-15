@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
@@ -42,12 +41,12 @@ public class PostgresQueryBuilder {
   }
 
   public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
-                                   Object key) {
+      Object key) {
     return build(typeConfiguration, selectedFields, null, key);
   }
 
   private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
-                                    JoinInformation joinInformation, Object key) {
+      JoinInformation joinInformation, Object key) {
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
     Map<String, Object> fieldAliasMap = new HashMap<>();

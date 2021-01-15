@@ -67,8 +67,6 @@ components:
       properties:
         identifier:
           type: string
-        subject:
-          type: string
         name:
           type: string
           nullable: true
@@ -205,30 +203,6 @@ paths:
               schema:
                 type: integer
                 x-dws-expr: args.page
-  /brewery_with_subject:
-    get:
-      x-dws-query: brewery_with_subject
-      parameters:
-        - name: expand
-          x-dws-type: expand
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-              enum: ['beers', 'beers.ingredients', 'subject']
-        - name: subject
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: OK
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/Brewery'
   /brewery/{identifier}:
     get:
       x-dws-query: brewery
@@ -282,48 +256,3 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
-  /brewery/{identifier}/model:
-    get:
-      x-dws-query: breweryModel
-      parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: iri
-          in: header
-          required: true
-          schema:
-            type: string
-            format: uri
-      responses:
-        200:
-          description: OK
-          content:
-            text/html:
-              x-dws-template: filtered.html
-            application/ld+json: {}
-            text/n3: {}
-            application/n-quads: {}
-            application/n-triples: {}
-            application/rdf+xml: {}
-            application/trig: {}
-            text/turtle:
-              x-dws-default: true
-  /brewery/{identifier}/sparql:
-    get:
-      x-dws-query: brewerySparql
-      parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: OK
-          content:
-            application/sparql-results+json: {}
-            application/sparql-results+xml:
-              x-dws-default: true
