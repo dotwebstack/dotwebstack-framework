@@ -1,3 +1,6 @@
+shape:
+  graph: https://github.com/dotwebstack/beer/shapes
+  prefix: https://github.com/dotwebstack/beer/shapes#
 typeMapping:
   Beer:
     backend: rdf4j
@@ -5,25 +8,14 @@ typeMapping:
       - field: identifier
     fields:
       brewery:
-        joinColumns:
-          - name: brewery
-            referencedField: identifier
 
   Brewery:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
-      postalAddress:
-        joinColumns:
-          - name: postal_address
-            referencedField: identifier
-      visitAddress:
-        joinColumns:
-          - name: visit_address
-            referencedField: identifier
-      beers:
-        mappedBy: brewery
+      identifier:
+
   Address:
     backend: rdf4j
     keys:
