@@ -1,6 +1,3 @@
-shape:
-  graph: https://github.com/dotwebstack/beer/shapes
-  prefix: https://github.com/dotwebstack/beer/shapes#
 typeMapping:
   Beer:
     backend: rdf4j
