@@ -8,13 +8,12 @@ typeMapping:
       name:
       abv:
       brewery:
-
-  Brewery:
-    backend: json
-    path: "$..brewery"
-    keys:
-      - field: identifier
-    fields:
-      name:
-      postalAddress:
-      visitAddress:
+#  Brewery:
+#    backend: json
+#    path: "$..brewery"
+#    keys:
+#      - field: identifier
+#    fields:
+#      name:
+#      visistAddress:
+#      postalAddress:
