@@ -24,10 +24,7 @@ import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.List;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
-import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -48,17 +45,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
   private static final NonNullType requiredSortEnum = NonNullType.newNonNullType(optionalSortEnum)
       .build();
 
-  private final DataFetcherRouter dataFetcher;
-
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  private final List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings;
 
-  public CoreConfigurer(final DataFetcherRouter dataFetcher,
-      final List<AutoRegisteredSchemaDirectiveWiring> autoRegisteredSchemaDirectiveWirings,
-      TypeDefinitionRegistry typeDefinitionRegistry) {
-    this.dataFetcher = dataFetcher;
-    this.autoRegisteredSchemaDirectiveWirings = autoRegisteredSchemaDirectiveWirings;
+  public CoreConfigurer(TypeDefinitionRegistry typeDefinitionRegistry) {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 

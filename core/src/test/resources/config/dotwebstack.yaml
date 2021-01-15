@@ -1,7 +1,0 @@
-typeMapping:
-  Brewery:
-    backend: postgres
-    table: dbeerpedia.breweries
-    keys:
-      - field: identifier
-    fields: []
