@@ -1,0 +1,15 @@
+typeMapping:
+  Beer:
+    backend: json
+    path: "$..beers"
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+  Brewery:
+    backend: json
+    path: "$..brewery"
+    keys:
+      - field: identifier
+    fields:
+      identifier:
