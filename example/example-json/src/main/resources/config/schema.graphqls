@@ -2,74 +2,37 @@ schema {
   query: Query
 }
 
+directive @key(
+  field: String
+) on ARGUMENT_DEFINITION
+
 type Query {
-
-  breweries: [Brewery!]!
-  @json(file: "data.json", path: "$.brewery")
-
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Brewery
-  @json(file: "data.json", path: "$.brewery[?]")
-
-  beer(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Beer
-  @json(file: "data.json", path: "$..beers[?]")
-
   beers: [Beer!]!
-  @json(file: "data.json", path: "$..beers")
+  beer(identifier: String! @key(field: "identifier")): Beer
+  breweries: [Brewery!]!
+
+#  Voor nu in comment omdat het resulteert in een lijst waar meerdere objecten in kunnen zitten,
+#  moet nog verder naar gekeken worden.
+#  brewery(identifier: String! @key(field: "identifier")): Brewery
 }
 
 type Brewery {
   identifier: ID!
-  subject: String
   name: String!
-  localName: String
-  founded: Date
-  openinghours: String
-  owners(sort: [SortField!] = [{order: ASC}]): [String]
-  url: String!
-  @transform(expr: "url.getLocalName()")
-  address: Address
-  postalCode: String
   beers: [Beer!]!
-  sponsorship: Sponsorship
-  lemonBeers: [Beer]
-  beerCount: Int!
-}
-
-type Address {
-  postalCode: String
-  streetAddress: String!
+  postalAddress: Address
+  visitAddress: Address
 }
 
 type Beer {
-  identifier: ID
-  name: String
-  created: DateTime
-  ingredients(name: [String]): [Ingredient!]
-  supplements: [Supplement!]
-}
-
-type Ingredient {
-  identifier: ID!
-  name: String
-}
-
-type Supplement {
-  name: String
-}
-
-input PageQueryInput {
-  page: Int = 1
-  pageSize: Int = 10
-}
-
-type Sponsorship {
   identifier: ID!
   name: String!
-  numbers: [Int]
+  abv: Float!
+  brewery: Brewery!
 }
 
-input FilterQueryInput {
-  page: Int = 1
-  sinceBefore: Date
-  sinceAfter: Date
+type Address {
+  identifier: ID!
+  street: String!
+  city: String!
 }

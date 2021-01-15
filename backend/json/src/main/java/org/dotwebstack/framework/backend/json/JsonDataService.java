@@ -1,7 +1,7 @@
-package org.dotwebstack.framework.backend.json.query;
+package org.dotwebstack.framework.backend.json;
 
-import static org.dotwebstack.framework.backend.json.query.JsonResourceLoader.JSON_DATA_PATH;
-import static org.dotwebstack.framework.backend.json.query.JsonResourceLoader.loadJsonResource;
+import static org.dotwebstack.framework.backend.json.JsonResourceLoader.JSON_DATA_PATH;
+import static org.dotwebstack.framework.backend.json.JsonResourceLoader.loadJsonResource;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import com.fasterxml.jackson.databind.JsonNode;
