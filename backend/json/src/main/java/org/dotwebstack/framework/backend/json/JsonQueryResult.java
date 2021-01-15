@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.json;
 
+import static com.jayway.jsonpath.Criteria.where;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
@@ -46,18 +47,14 @@ public final class JsonQueryResult {
   }
 
   public Optional<Map<String, Object>> getResult(Object key) {
-    List<Filter> jsonPathFilters = new ArrayList<>();
-
     if (!(key instanceof FieldKey)) {
       throw illegalArgumentException("Unsupported key");
     }
 
     FieldKey fieldKey = ((FieldKey) key);
+    String jsonPathTemplate = String.format("%s%s", typeConfiguration.getPath(), "[?]");
 
-    String fieldFilter = "[?(@." + fieldKey.getName() + "==" + "'" + fieldKey.getValue()
-        .toString() + "'" + " )]";
-
-    String jsonPathTemplate = typeConfiguration.getPath() + fieldFilter;
+    List<Filter> jsonPathFilters = createJsonPathWithArguments(fieldKey);
 
     JSONArray jsonPathResult = getJsonPathResult(jsonPathFilters, jsonPathTemplate);
 
@@ -91,5 +88,13 @@ public final class JsonQueryResult {
   private JSONArray getJsonPathResult(List<Filter> jsonPathFilters, String jsonPathTemplate) {
     return JsonPath.parse(jsonNode.toString())
         .read(jsonPathTemplate, jsonPathFilters.toArray(new Filter[jsonPathFilters.size()]));
+  }
+
+  private List<Filter> createJsonPathWithArguments(FieldKey fieldKey) {
+    return List.of(fieldKey)
+        .stream()
+        .map(predicateFilter -> where(fieldKey.getName()).is(fieldKey.getValue()))
+        .map(Filter::filter)
+        .collect(Collectors.toList());
   }
 }
