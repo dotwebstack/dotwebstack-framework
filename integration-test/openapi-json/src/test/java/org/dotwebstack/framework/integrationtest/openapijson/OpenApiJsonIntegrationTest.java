@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.dotwebstack.framework.test.TestApplication;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,19 +81,20 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beers_brewery.json");
   }
 
-  // @Test
-  // void openApiRequest_ReturnsBeers_byCountryAndName_withDefaultResponse() throws IOException {
-  // // Arrange & Act
-  // String result = webClient.get()
-  // .uri("/beers/Germany/Becks")
-  // .exchange()
-  // .expectBody(String.class)
-  // .returnResult()
-  // .getResponseBody();
-  //
-  // // Assert
-  // assertResult(result, "/results/beer_by_country_and_name.json");
-  // }
+  @Test
+  @Disabled("Multiple arguments not supported yet!")
+  void openApiRequest_ReturnsBeers_byCountryAndName_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/beers/Germany/Becks")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/beer_by_country_and_name.json");
+  }
 
   private void assertResult(String result, String jsonResultPath) throws IOException {
     JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream(jsonResultPath));
