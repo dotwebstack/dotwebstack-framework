@@ -1,8 +1,5 @@
 package org.dotwebstack.framework.core.datafetchers;
 
-import static java.util.Optional.ofNullable;
-
-import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -20,9 +17,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.keys.FilterKey;
 import org.dotwebstack.framework.core.datafetchers.keys.Key;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -67,7 +66,31 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       String fieldName = environment.getFieldDefinition()
           .getName();
 
-      if (source.containsKey(fieldName)) {
+      AbstractTypeConfiguration<?> parentTypeConfiguration = dotWebStackConfiguration.getTypeMapping()
+          .get(GraphQLTypeUtil.unwrapAll(environment.getParentType())
+              .getName());
+
+      // Experimental support for right-side relationship (mappedBy)
+      if (parentTypeConfiguration.getFields()
+          .get(fieldName)
+          .getMappedBy() != null) {
+
+        String keyFieldName = parentTypeConfiguration.getKeys()
+            .get(0)
+            .getField();
+        Object key = source.get(keyFieldName);
+
+        String mappedBy = parentTypeConfiguration.getFields()
+            .get(fieldName)
+            .getMappedBy();
+
+        FilterKey filterKey = FilterKey.builder()
+            .path(List.of(mappedBy, keyFieldName))
+            .value(key)
+            .build();
+
+        return dataLoader.load(filterKey);
+      } else if (source.containsKey(fieldName)) {
         return dataLoader.load(source.get(fieldName));
       }
     }
@@ -89,17 +112,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (key.isPresent() || !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
-          .map(objectResult -> DataFetcherResult.newResult()
-              .data(objectResult)
-              .build())
           .toFuture();
     }
 
     return backendDataLoader.loadMany(null, loadEnvironment)
         .collectList()
-        .map(objectResult -> DataFetcherResult.newResult()
-            .data(objectResult)
-            .build())
         .toFuture();
   }
 
@@ -111,7 +128,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       throw new IllegalArgumentException("Output is not an object type.");
     }
 
-    return ofNullable(dotWebStackConfiguration.getTypeMapping()
+    return Optional.ofNullable(dotWebStackConfiguration.getTypeMapping()
         .get(rawType.getName()));
   }
 

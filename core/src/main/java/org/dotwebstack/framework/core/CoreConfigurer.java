@@ -26,6 +26,7 @@ import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.AutoRegisteredSchemaDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
