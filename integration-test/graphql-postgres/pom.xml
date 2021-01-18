@@ -3,27 +3,32 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>dotwebstack-framework</artifactId>
         <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>integration-test</artifactId>
         <version>0.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>integration-test</artifactId>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>graphql-postgres</module>
-        <module>graphql-rdf4j</module>
-        <module>openapi-rdf4j</module>
-        <module>openapi-json</module>
-    </modules>
+    <artifactId>graphql-postgres</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>org.dotwebstack.framework</groupId>
-            <artifactId>test</artifactId>
+            <artifactId>backend-postgres</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.15.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.15.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
