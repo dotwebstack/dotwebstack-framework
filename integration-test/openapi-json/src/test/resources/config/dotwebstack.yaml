@@ -1,14 +1,19 @@
 typeMapping:
   Beer:
     backend: json
-    path: "$..beers"
+    queryPaths:
+      beer: $.beers[?]
+      beers: $.beers
+      beers_by_country_and_name: $.beers[?][?]
     keys:
       - field: identifier
     fields:
       identifier:
   Brewery:
     backend: json
-    path: "$..brewery"
+    queryPaths:
+      brewery: $..brewery[?]
+      breweries: $..brewery
     keys:
       - field: identifier
     fields:

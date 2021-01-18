@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.Collections.emptyList;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.lateral;
 import static org.jooq.impl.DSL.trueCondition;
@@ -17,7 +18,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -40,21 +41,22 @@ public class PostgresQueryBuilder {
     this.dslContext = dslContext;
   }
 
-  public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+  public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
       Object key) {
-    return build(typeConfiguration, selectedFields, null, key);
+    return build(typeConfiguration, loadEnvironment, null, key);
   }
 
-  private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+  private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
       JoinInformation joinInformation, Object key) {
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
     Map<String, Object> fieldAliasMap = new HashMap<>();
 
-    List<Field<Object>> selectedColumns = getDirectFields(typeConfiguration, selectedFields, fieldAliasMap);
+    List<Field<Object>> selectedColumns =
+        getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
 
-    List<NestedQueryResult> nestedQueryResults =
-        getNestedResults(typeConfiguration, selectedFields, fromTable.getName(), fieldAliasMap, selectedColumns);
+    List<NestedQueryResult> nestedQueryResults = getNestedResults(typeConfiguration,
+        loadEnvironment.getSelectedFields(), fromTable.getName(), fieldAliasMap, selectedColumns);
 
     SelectJoinStep<Record> query = dslContext.select(selectedColumns)
         .from(fromTable);
@@ -73,12 +75,10 @@ public class PostgresQueryBuilder {
           .eq(self));
     }
 
-    if (key instanceof FieldKey) {
-      FieldKey fieldKey = (FieldKey) key;
-      query.where(field(fromTable.getName()
-          .concat(".")
-          .concat(fieldKey.getName())).eq(fieldKey.getValue()));
-    }
+    loadEnvironment.getKeyArguments()
+        .forEach(keyArgument -> query.where(field(fromTable.getName()
+            .concat(".")
+            .concat(keyArgument.getName())).eq(keyArgument.getValue())));
 
     return PostgresQueryHolder.builder()
         .query(query)
@@ -146,8 +146,13 @@ public class PostgresQueryBuilder {
     List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
         .getImmediateFields();
 
+    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
+        .selectedFields(nestedSelectedFields)
+        .keyArguments(emptyList())
+        .build();
+
     PostgresQueryHolder queryHolder =
-        build((PostgresTypeConfiguration) nestedTypeConfiguration, nestedSelectedFields, joinInformation, null);
+        build((PostgresTypeConfiguration) nestedTypeConfiguration, loadEnvironment, joinInformation, null);
 
     String joinAlias = newTableAlias();
 

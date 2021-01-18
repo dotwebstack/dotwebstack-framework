@@ -12,7 +12,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -26,7 +26,6 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.dotwebstack.framework.backend.rdf4j.Constants;
 
 public class PropertyPathFactoryTest {
 
@@ -44,7 +43,8 @@ public class PropertyPathFactoryTest {
 
     // Assert
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(Constants.SCHEMA_ADDRESS, Constants.SCHEMA_POSTAL_CODE, RDF.NIL)));
+    assertThat(resolveIris(propertyPath),
+        equalTo(Arrays.asList(Constants.SCHEMA_ADDRESS, Constants.SCHEMA_POSTAL_CODE, RDF.NIL)));
   }
 
   @Test
@@ -64,7 +64,8 @@ public class PropertyPathFactoryTest {
 
     // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(Constants.BREWERY_BEERS_PATH, Constants.SCHEMA_NAME, RDF.NIL)));
+    assertThat(resolveIris(propertyPath),
+        equalTo(Arrays.asList(Constants.BREWERY_BEERS_PATH, Constants.SCHEMA_NAME, RDF.NIL)));
 
     // Assert inverse path
     final PropertyPath first = ((SequencePath) propertyPath).getFirst();

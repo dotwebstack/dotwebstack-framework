@@ -16,4 +16,8 @@ public final class LoadEnvironment {
   private final GraphQLObjectType objectType;
 
   private final List<SelectedField> selectedFields;
+
+  private final String queryName;
+
+  private final List<KeyArgument> keyArguments;
 }

@@ -97,7 +97,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
     NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 
-    return new Rdf4jQueryBuilder().build(typeConfiguration, nodeShape, environment.getSelectedFields(), key);
+    return new Rdf4jQueryBuilder().build(typeConfiguration, nodeShape, environment, key);
   }
 
   public Map<String, Object> toDataMap(BindingSet bindingSet) {

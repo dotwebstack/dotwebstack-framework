@@ -3,39 +3,37 @@ package org.dotwebstack.framework.backend.json;
 import static com.jayway.jsonpath.Criteria.where;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.NonNull;
 import net.minidev.json.JSONArray;
-import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 
 @Getter
 public final class JsonQueryResult {
 
   private final JsonNode jsonNode;
 
-  private final JsonTypeConfiguration typeConfiguration;
+  private final String jsonPathTemplate;
 
-  public JsonQueryResult(JsonNode jsonNode, JsonTypeConfiguration typeConfiguration) {
+  public JsonQueryResult(JsonNode jsonNode, String jsonPathTemplate) {
     this.jsonNode = jsonNode;
-    this.typeConfiguration = typeConfiguration;
+    this.jsonPathTemplate = jsonPathTemplate;
   }
 
-  public List<Map<String, Object>> getResults() {
-    List<Filter> jsonPathFilters = new ArrayList<>();
-
-    String jsonPathTemplate = typeConfiguration.getPath();
+  public List<Map<String, Object>> getResults(@NonNull List<KeyArgument> keyArguments) {
+    List<Filter> jsonPathFilters = keyArguments.stream()
+        .map(this::createFilter)
+        .collect(Collectors.toList());
 
     JSONArray jsonPathResult = getJsonPathResult(jsonPathFilters, jsonPathTemplate);
 
@@ -46,19 +44,8 @@ public final class JsonQueryResult {
     return getResultList(jsonPathResult);
   }
 
-  public Optional<Map<String, Object>> getResult(Object key) {
-    if (!(key instanceof FieldKey)) {
-      throw illegalArgumentException("Unsupported key");
-    }
-
-    FieldKey fieldKey = ((FieldKey) key);
-    String jsonPathTemplate = String.format("%s%s", typeConfiguration.getPath(), "[?]");
-
-    List<Filter> jsonPathFilters = createJsonPathWithArguments(fieldKey);
-
-    JSONArray jsonPathResult = getJsonPathResult(jsonPathFilters, jsonPathTemplate);
-
-    List<Map<String, Object>> resultList = getResultList(jsonPathResult);
+  public Optional<Map<String, Object>> getResult(List<KeyArgument> keyArguments) {
+    List<Map<String, Object>> resultList = getResults(keyArguments);
 
     if (resultList.isEmpty()) {
       return empty();
@@ -90,11 +77,10 @@ public final class JsonQueryResult {
         .read(jsonPathTemplate, jsonPathFilters.toArray(new Filter[jsonPathFilters.size()]));
   }
 
-  private List<Filter> createJsonPathWithArguments(FieldKey fieldKey) {
-    return List.of(fieldKey)
-        .stream()
-        .map(predicateFilter -> where(fieldKey.getName()).is(fieldKey.getValue()))
+  private Filter createFilter(KeyArgument keyArgument) {
+    return Optional.of(keyArgument)
+        .map(predicateFilter -> where(keyArgument.getName()).is(keyArgument.getValue()))
         .map(Filter::filter)
-        .collect(Collectors.toList());
+        .orElseThrow(() -> illegalStateException("Unable to create filter for fieldKey!"));
   }
 }

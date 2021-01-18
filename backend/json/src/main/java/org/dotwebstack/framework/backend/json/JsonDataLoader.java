@@ -36,9 +36,11 @@ public class JsonDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = (JsonTypeConfiguration) environment.getTypeConfiguration();
 
-    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, typeConfiguration);
+    String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
 
-    return jsonQueryResult.getResult(key)
+    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
+
+    return jsonQueryResult.getResult(environment.getKeyArguments())
         .map(Mono::just)
         .orElse(Mono.empty());
   }
@@ -53,9 +55,11 @@ public class JsonDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = (JsonTypeConfiguration) environment.getTypeConfiguration();
 
-    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, typeConfiguration);
+    String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
 
-    return Flux.fromIterable(jsonQueryResult.getResults());
+    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
+
+    return Flux.fromIterable(jsonQueryResult.getResults(environment.getKeyArguments()));
   }
 
   @Override

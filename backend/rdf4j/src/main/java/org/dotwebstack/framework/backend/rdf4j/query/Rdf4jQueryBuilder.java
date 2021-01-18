@@ -16,7 +16,7 @@ import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
+import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -36,11 +36,11 @@ public class Rdf4jQueryBuilder {
   private final AtomicInteger aliasCounter = new AtomicInteger();
 
   public Rdf4jQueryHolder build(Rdf4jTypeConfiguration typeConfiguration, NodeShape nodeShape,
-      List<SelectedField> selectedFields, Object key) {
+      LoadEnvironment loadEnvironment, Object key) {
     Map<String, Object> fieldAliasMap = new HashMap<>();
 
     GraphPatternNotTriples wherePatterns =
-        getWherePatterns(typeConfiguration, nodeShape, selectedFields, key, fieldAliasMap);
+        getWherePatterns(typeConfiguration, nodeShape, loadEnvironment, key, fieldAliasMap);
 
     String query = Queries.SELECT(createProjectables(fieldAliasMap).toArray(new Projectable[0]))
         .where(wherePatterns)
@@ -72,37 +72,37 @@ public class Rdf4jQueryBuilder {
   }
 
   private GraphPatternNotTriples getWherePatterns(Rdf4jTypeConfiguration typeConfiguration, NodeShape nodeShape,
-      List<SelectedField> selectedFields, Object key, Map<String, Object> fieldAliasMap) {
+      LoadEnvironment loadEnvironment, Object key, Map<String, Object> fieldAliasMap) {
     RdfSubject subject = SparqlBuilder.var(newAlias());
 
     GraphPattern[] graphPatterns =
-        createGraphPatterns(typeConfiguration, nodeShape, selectedFields, fieldAliasMap, subject);
+        createGraphPatterns(typeConfiguration, nodeShape, loadEnvironment.getSelectedFields(), fieldAliasMap, subject);
 
-    return createFilterPatterns(typeConfiguration, key, graphPatterns, fieldAliasMap);
+    return createFilterPatterns(typeConfiguration, loadEnvironment, key, graphPatterns, fieldAliasMap);
   }
 
-  private GraphPatternNotTriples createFilterPatterns(Rdf4jTypeConfiguration typeConfiguration, Object key,
-      GraphPattern[] graphPatterns, Map<String, Object> fieldAliasMap) {
+  private GraphPatternNotTriples createFilterPatterns(Rdf4jTypeConfiguration typeConfiguration,
+      LoadEnvironment loadEnvironment, Object key, GraphPattern[] graphPatterns, Map<String, Object> fieldAliasMap) {
     List<Expression<?>> operands = new ArrayList<>();
 
     if (key != null) {
-      if (key instanceof FieldKey) {
-        FieldKey fieldKey = (FieldKey) key;
 
-        Variable variable = SparqlBuilder.var(fieldAliasMap.get(fieldKey.getName())
-            .toString());
+      loadEnvironment.getKeyArguments()
+          .forEach(keyArgument -> {
+            Variable variable = SparqlBuilder.var(fieldAliasMap.get(keyArgument.getName())
+                .toString());
 
-        Operand value;
-        if (fieldKey.getValue() instanceof List) {
-          List<String> values = (List<String>) fieldKey.getValue();
-          value = Rdf.literalOf(values.get(0));
-        } else {
-          value = Rdf.literalOf(fieldKey.getValue()
-              .toString());
-        }
+            Operand value;
+            if (keyArgument.getValue() instanceof List) {
+              List<String> values = (List<String>) keyArgument.getValue();
+              value = Rdf.literalOf(values.get(0));
+            } else {
+              value = Rdf.literalOf(keyArgument.getValue()
+                  .toString());
+            }
 
-        operands.add(Expressions.equals(variable, value));
-      }
+            operands.add(Expressions.equals(variable, value));
+          });
 
       if (key instanceof String) {
         Variable variable = SparqlBuilder.var(typeConfiguration.getKeys()

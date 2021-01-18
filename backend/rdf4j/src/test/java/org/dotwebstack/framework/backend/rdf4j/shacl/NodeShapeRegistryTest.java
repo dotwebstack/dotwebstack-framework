@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import graphql.schema.GraphQLObjectType;
+import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.dotwebstack.framework.backend.rdf4j.Constants;
 
 @ExtendWith(MockitoExtension.class)
 class NodeShapeRegistryTest {

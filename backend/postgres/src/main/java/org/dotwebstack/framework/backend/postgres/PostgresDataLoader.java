@@ -71,8 +71,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder =
-        queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, key);
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
@@ -91,8 +90,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder =
-        queryBuilder.build(typeConfiguration, environment.getSelectedFields(), key);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, key);
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()

@@ -20,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.keys.FieldKey;
-import org.dotwebstack.framework.core.datafetchers.keys.Key;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -74,23 +72,24 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
+        .queryName(environment.getFieldDefinition()
+            .getName())
+        .keyArguments(getKeyArguments(environment))
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .selectedFields(environment.getSelectionSet()
             .getImmediateFields())
         .build();
 
-    Optional<Key> key = getKey(environment);
-
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
     if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
+      return backendDataLoader.loadSingle(null, loadEnvironment)
           .toFuture();
     }
 
-    return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
+    return backendDataLoader.loadMany(null, loadEnvironment)
         .collectList()
         .toFuture();
   }
@@ -107,25 +106,18 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .get(rawType.getName()));
   }
 
-  private Optional<Key> getKey(DataFetchingEnvironment environment) {
-    List<FieldKey> fieldKeys = environment.getFieldDefinition()
+  private List<KeyArgument> getKeyArguments(DataFetchingEnvironment environment) {
+    return environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> argument.getDirectives("key")
             .size() > 0)
-        .map(argument -> getFieldKey(environment, argument))
+        .map(argument -> getKeyArgument(environment, argument))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-
-    if (fieldKeys.size() == 1) {
-      return Optional.of(fieldKeys.get(0));
-    }
-
-    return Optional.empty();
   }
 
-  private FieldKey getFieldKey(DataFetchingEnvironment environment, GraphQLArgument argument) {
-    // FIXME: magic word
+  public KeyArgument getKeyArgument(DataFetchingEnvironment environment, GraphQLArgument argument) {
     GraphQLDirective directive = argument.getDirective("key");
 
     String keyName = argument.getName();
@@ -136,16 +128,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .toString();
     }
 
-    Object keyValue = environment.getArguments()
-        .get(keyName);
-
-    if (keyValue == null) {
-      return null;
-    }
-
-    return FieldKey.builder()
+    return KeyArgument.builder()
         .name(keyName)
-        .value(keyValue)
+        .value(environment.getArguments()
+            .get(argument.getName()))
         .build();
   }
 
