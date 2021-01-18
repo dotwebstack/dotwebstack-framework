@@ -118,6 +118,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   public KeyArgument getKeyArgument(DataFetchingEnvironment environment, GraphQLArgument argument) {
+    Object value = environment.getArguments()
+        .get(argument.getName());
+
+    if (value == null) {
+      return null;
+    }
+
     GraphQLDirective directive = argument.getDirective("key");
 
     String keyName = argument.getName();
@@ -130,8 +137,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     return KeyArgument.builder()
         .name(keyName)
-        .value(environment.getArguments()
-            .get(argument.getName()))
+        .value(value)
         .build();
   }
 

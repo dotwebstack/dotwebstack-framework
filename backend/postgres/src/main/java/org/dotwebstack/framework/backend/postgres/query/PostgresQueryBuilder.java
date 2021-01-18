@@ -75,10 +75,12 @@ public class PostgresQueryBuilder {
           .eq(self));
     }
 
-    loadEnvironment.getKeyArguments()
-        .forEach(keyArgument -> query.where(field(fromTable.getName()
-            .concat(".")
-            .concat(keyArgument.getName())).eq(keyArgument.getValue())));
+    if (loadEnvironment.getKeyArguments() != null) {
+      loadEnvironment.getKeyArguments()
+          .forEach(keyArgument -> query.where(field(fromTable.getName()
+              .concat(".")
+              .concat(keyArgument.getName())).eq(keyArgument.getValue())));
+    }
 
     return PostgresQueryHolder.builder()
         .query(query)

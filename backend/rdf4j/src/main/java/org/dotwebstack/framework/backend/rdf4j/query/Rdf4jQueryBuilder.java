@@ -85,8 +85,7 @@ public class Rdf4jQueryBuilder {
       LoadEnvironment loadEnvironment, Object key, GraphPattern[] graphPatterns, Map<String, Object> fieldAliasMap) {
     List<Expression<?>> operands = new ArrayList<>();
 
-    if (key != null) {
-
+    if (loadEnvironment.getKeyArguments() != null) {
       loadEnvironment.getKeyArguments()
           .forEach(keyArgument -> {
             Variable variable = SparqlBuilder.var(fieldAliasMap.get(keyArgument.getName())
@@ -103,7 +102,9 @@ public class Rdf4jQueryBuilder {
 
             operands.add(Expressions.equals(variable, value));
           });
+    }
 
+    if (key != null) {
       if (key instanceof String) {
         Variable variable = SparqlBuilder.var(typeConfiguration.getKeys()
             .get(0)
@@ -112,19 +113,19 @@ public class Rdf4jQueryBuilder {
         Operand value = Rdf.literalOf(key.toString());
         operands.add(Expressions.equals(variable, value));
       }
-
-      GraphPatternNotTriples wherePatterns = GraphPatterns.and(graphPatterns);
-
-      if (operands.size() > 1) {
-        throw unsupportedOperationException("Multiple filter values not supported yet!");
-      }
-
-      wherePatterns.filter(operands.get(0));
-
-      return wherePatterns;
     }
 
-    return GraphPatterns.and(graphPatterns);
+    GraphPatternNotTriples wherePatterns = GraphPatterns.and(graphPatterns);
+
+    if (operands.size() > 1) {
+      throw unsupportedOperationException("Multiple filter values not supported yet!");
+    }
+
+    if (operands.size() == 1) {
+      wherePatterns.filter(operands.get(0));
+    }
+
+    return wherePatterns;
   }
 
   private GraphPattern[] createGraphPatterns(Rdf4jTypeConfiguration typeConfiguration, NodeShape nodeShape,
