@@ -1,11 +1,11 @@
-package org.dotwebstack.framework.core.datafetchers.keys;
+package org.dotwebstack.framework.core.datafetchers;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
-public class FieldKey implements Key {
+public class KeyArgument {
 
   private final String name;
 
