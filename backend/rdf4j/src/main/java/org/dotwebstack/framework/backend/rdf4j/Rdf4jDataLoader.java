@@ -17,13 +17,10 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,8 +28,6 @@ import reactor.util.function.Tuple2;
 
 @Component
 public class Rdf4jDataLoader implements BackendDataLoader {
-
-  private static final Logger LOG = LoggerFactory.getLogger(Rdf4jDataLoader.class);
 
   private final LocalRepositoryManager localRepositoryManager;
 
@@ -81,8 +76,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
-    return Flux.fromIterable(keys)
-        .map(key -> this.loadMany(key, environment));
+    throw unsupportedOperationException("Not implemented yet!");
   }
 
   private TupleQueryResult executeQuery(String query) {
@@ -105,15 +99,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
     bindingSet.getBindingNames()
         .forEach(bindingName -> {
           Value value = bindingSet.getValue(bindingName);
-
-          Object objectValue;
-
-          if (value instanceof IRI) {
-            objectValue = ((IRI) value).getLocalName();
-          } else {
-            objectValue = value.stringValue();
-          }
-          dataMap.put(bindingName, objectValue);
+          dataMap.put(bindingName, value.stringValue());
         });
 
     return dataMap;

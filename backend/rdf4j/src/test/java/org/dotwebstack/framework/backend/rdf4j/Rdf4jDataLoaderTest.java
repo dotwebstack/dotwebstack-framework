@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -42,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,7 +104,7 @@ class Rdf4jDataLoaderTest {
     Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
 
     // Assert
-    assertThat(queryCapture.getValue(), is(getQuery(identifier)));
+    assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
 
     assertThat(result.hasElement()
         .block(), is(true));
@@ -128,11 +130,69 @@ class Rdf4jDataLoaderTest {
         .block(), is(false));
   }
 
-  private String getQuery(String identifier) {
+  @Test
+  void batchLoadSingle_ThrowsException_ForEveryCall() {
+    assertThrows(UnsupportedOperationException.class, () -> rdf4jDataLoader.batchLoadSingle(null, null));
+  }
+
+  @Test
+  void loadMany_Breweries_ForKeys() {
+    // Arrange
+    String breweryX_identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
+    String breweryX_name = "Brewery X";
+    QueryBindingSet breweryX = createBindingSet(breweryX_identifier, breweryX_name);
+
+    String breweryY_identifier = "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9";
+    String breweryY_name = "Brewery y";
+    QueryBindingSet breweryY = createBindingSet(breweryY_identifier, breweryY_name);
+
+    String breweryZ_identifier = "28649f76-ddcf-417a-8c1d-8e5012c31959";
+    String breweryZ_name = "Brewery z";
+    QueryBindingSet breweryZ = createBindingSet(breweryZ_identifier, breweryZ_name);
+
+    LoadEnvironment loadEnvironment = createLoadEnvironment(null);
+    mockRepository(breweryX, breweryY, breweryZ);
+
+    // Act
+    Flux<Map<String, Object>> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
+
+    // Assert
+    assertThat(queryCapture.getValue(), is(getManyQuery()));
+
+    List<Map<String, Object>> resultList = result.toStream()
+        .collect(Collectors.toList());
+    assertThat(resultList.size(), is(3));
+    assertThat(resultList.get(0)
+        .get(FIELD_IDENTIFIER), is(breweryX_identifier));
+    assertThat(resultList.get(0)
+        .get(FIELD_NAME), is(breweryX_name));
+    assertThat(resultList.get(1)
+        .get(FIELD_IDENTIFIER), is(breweryY_identifier));
+    assertThat(resultList.get(1)
+        .get(FIELD_NAME), is(breweryY_name));
+    assertThat(resultList.get(2)
+        .get(FIELD_IDENTIFIER), is(breweryZ_identifier));
+    assertThat(resultList.get(2)
+        .get(FIELD_NAME), is(breweryZ_name));
+  }
+
+  @Test
+  void batchLoadMany_ThrowsException_ForEveryCall() {
+    assertThrows(UnsupportedOperationException.class, () -> rdf4jDataLoader.batchLoadMany(null, null));
+  }
+
+  private String getSingleQuery(String identifier) {
     return String.format("SELECT ?x2 ?x3\n"
         + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .\n"
         + "?x1 <https://github.com/dotwebstack/beer/def#identifier> ?x2 .\n?x1 <http://schema.org/name> ?x3 .\n"
         + "FILTER ( ?x2 = \"%s\" ) }\nLIMIT 10\n", identifier);
+  }
+
+  private String getManyQuery() {
+    return "SELECT ?x2 ?x3\n"
+        + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Brewery> .\n"
+        + "?x1 <https://github.com/dotwebstack/beer/def#identifier> ?x2 .\n?x1 <http://schema.org/name> ?x3 . }\n"
+        + "LIMIT 10\n";
   }
 
   private LoadEnvironment createLoadEnvironment(String identifier) {
@@ -148,17 +208,20 @@ class Rdf4jDataLoaderTest {
         .build();
     when(nodeShapeRegistry.get(eq(graphQLObjectType))).thenReturn(nodeShape);
 
-    KeyArgument keyArgument = KeyArgument.builder()
-        .name("identifier")
-        .value(identifier)
-        .build();
-
-    return LoadEnvironment.builder()
+    LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .objectType(graphQLObjectType)
         .typeConfiguration(rdf4jTypeConfiguration)
-        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
-        .keyArguments(List.of(keyArgument))
-        .build();
+        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+
+    if (identifier != null) {
+      KeyArgument keyArgument = KeyArgument.builder()
+          .name("identifier")
+          .value(identifier)
+          .build();
+      loadEnvironmentBuilder.keyArguments(List.of(keyArgument));
+    }
+
+    return loadEnvironmentBuilder.build();
   }
 
   private Rdf4jTypeConfiguration createRdf4jTypeConfiguration() {
