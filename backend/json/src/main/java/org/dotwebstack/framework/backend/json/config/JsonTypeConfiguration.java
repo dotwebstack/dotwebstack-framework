@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Map;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
@@ -17,11 +18,19 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   @Valid
   private Map<String, String> queryPaths;
 
+  @Valid
+  @NotBlank
+  private String file;
+
   public String getJsonPathTemplate(String queryName) {
     if (queryPaths.containsKey(queryName)) {
       return queryPaths.get(queryName);
     }
 
     throw illegalArgumentException("No path configured for query with name '{}'", queryName);
+  }
+
+  public String getDataSourceFile() {
+    return file;
   }
 }

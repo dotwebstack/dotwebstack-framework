@@ -16,15 +16,10 @@ import reactor.util.function.Tuple2;
 @Component
 public class JsonDataLoader implements BackendDataLoader {
 
-  private static final String JSON_DATA_FILE = "data.json";
-
   private final JsonDataService jsonDataService;
-
-  private final JsonNode jsonData;
 
   public JsonDataLoader(JsonDataService jsonDataService) {
     this.jsonDataService = jsonDataService;
-    this.jsonData = getJsonDocumentByFile();
   }
 
   @Override
@@ -37,6 +32,8 @@ public class JsonDataLoader implements BackendDataLoader {
     JsonTypeConfiguration typeConfiguration = (JsonTypeConfiguration) environment.getTypeConfiguration();
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
+
+    JsonNode jsonData = getJsonDocumentByFile(typeConfiguration.getDataSourceFile());
 
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
@@ -57,6 +54,8 @@ public class JsonDataLoader implements BackendDataLoader {
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
 
+    JsonNode jsonData = getJsonDocumentByFile(typeConfiguration.getDataSourceFile());
+
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
     return Flux.fromIterable(jsonQueryResult.getResults(environment.getKeyArguments()));
@@ -67,7 +66,7 @@ public class JsonDataLoader implements BackendDataLoader {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }
 
-  private JsonNode getJsonDocumentByFile() {
-    return jsonDataService.getJsonSourceData(JsonDataLoader.JSON_DATA_FILE);
+  private JsonNode getJsonDocumentByFile(String fileName) {
+    return jsonDataService.getJsonSourceData(fileName);
   }
 }
