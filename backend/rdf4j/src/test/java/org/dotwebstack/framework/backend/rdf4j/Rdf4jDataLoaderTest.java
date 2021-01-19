@@ -138,17 +138,17 @@ class Rdf4jDataLoaderTest {
   @Test
   void loadMany_Breweries_ForKeys() {
     // Arrange
-    String breweryX_identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
-    String breweryX_name = "Brewery X";
-    QueryBindingSet breweryX = createBindingSet(breweryX_identifier, breweryX_name);
+    String identifierOfBreweryX = "d3654375-95fa-46b4-8529-08b0f777bd6b";
+    String nameOfBreweryX = "Brewery X";
+    QueryBindingSet breweryX = createBindingSet(identifierOfBreweryX, nameOfBreweryX);
 
-    String breweryY_identifier = "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9";
-    String breweryY_name = "Brewery y";
-    QueryBindingSet breweryY = createBindingSet(breweryY_identifier, breweryY_name);
+    String identifierOfBreweryY = "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9";
+    String nameOfBreweryY = "Brewery y";
+    QueryBindingSet breweryY = createBindingSet(identifierOfBreweryY, nameOfBreweryY);
 
-    String breweryZ_identifier = "28649f76-ddcf-417a-8c1d-8e5012c31959";
-    String breweryZ_name = "Brewery z";
-    QueryBindingSet breweryZ = createBindingSet(breweryZ_identifier, breweryZ_name);
+    String identifierOfBreweryZ = "28649f76-ddcf-417a-8c1d-8e5012c31959";
+    String nameOfBreweryZ = "Brewery z";
+    QueryBindingSet breweryZ = createBindingSet(identifierOfBreweryZ, nameOfBreweryZ);
 
     LoadEnvironment loadEnvironment = createLoadEnvironment(null);
     mockRepository(breweryX, breweryY, breweryZ);
@@ -163,17 +163,17 @@ class Rdf4jDataLoaderTest {
         .collect(Collectors.toList());
     assertThat(resultList.size(), is(3));
     assertThat(resultList.get(0)
-        .get(FIELD_IDENTIFIER), is(breweryX_identifier));
+        .get(FIELD_IDENTIFIER), is(identifierOfBreweryX));
     assertThat(resultList.get(0)
-        .get(FIELD_NAME), is(breweryX_name));
+        .get(FIELD_NAME), is(nameOfBreweryX));
     assertThat(resultList.get(1)
-        .get(FIELD_IDENTIFIER), is(breweryY_identifier));
+        .get(FIELD_IDENTIFIER), is(identifierOfBreweryY));
     assertThat(resultList.get(1)
-        .get(FIELD_NAME), is(breweryY_name));
+        .get(FIELD_NAME), is(nameOfBreweryY));
     assertThat(resultList.get(2)
-        .get(FIELD_IDENTIFIER), is(breweryZ_identifier));
+        .get(FIELD_IDENTIFIER), is(identifierOfBreweryZ));
     assertThat(resultList.get(2)
-        .get(FIELD_NAME), is(breweryZ_name));
+        .get(FIELD_NAME), is(nameOfBreweryZ));
   }
 
   @Test
@@ -203,13 +203,13 @@ class Rdf4jDataLoaderTest {
     PropertyShape propertyShapeName = createPropertyShape("http://schema.org/", FIELD_NAME);
     NodeShape nodeShape = createNodeShape(propertyShapeIdentifier, propertyShapeName);
 
-    GraphQLObjectType graphQLObjectType = GraphQLObjectType.newObject()
+    GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
         .name(NODE_BREWERY)
         .build();
-    when(nodeShapeRegistry.get(eq(graphQLObjectType))).thenReturn(nodeShape);
+    when(nodeShapeRegistry.get(eq(graphQlObjectType))).thenReturn(nodeShape);
 
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
-        .objectType(graphQLObjectType)
+        .objectType(graphQlObjectType)
         .typeConfiguration(rdf4jTypeConfiguration)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
 
