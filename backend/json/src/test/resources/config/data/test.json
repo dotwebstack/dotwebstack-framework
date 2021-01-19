@@ -1,29 +1,31 @@
-[
-  {
-    "identifier": 1,
-    "brewmasters": "Jeroen van Hees",
-    "founded": "2014-05-03",
-    "name": "De Brouwerij",
-    "beerCount": 3,
-    "group": "Onafhankelijk",
-    "beers": [
-      {
-        "identifier": 1,
-        "brewery": 1,
-        "name": "Alfa Edel Pils",
-        "_metadata": "metadata"
-      },
-      {
-        "identifier": 2,
-        "brewery": 1,
-        "name": "Alfa Radler"
-      }
-    ],
-    "owners": [
-      "J.v.Hees",
-      "I.Verhoef",
-      "L.du Clou",
-      "M.Kuijpers"
-    ]
-  }
-]
+{
+  "breweries": [
+    {
+      "identifier": 1,
+      "brewmasters": "Jeroen van Hees",
+      "founded": "2014-05-03",
+      "name": "De Brouwerij",
+      "beerCount": 3,
+      "group": "Onafhankelijk",
+      "beers": [
+        {
+          "identifier": 1,
+          "brewery": 1,
+          "name": "Alfa Edel Pils",
+          "_metadata": "metadata"
+        },
+        {
+          "identifier": 2,
+          "brewery": 1,
+          "name": "Alfa Radler"
+        }
+      ],
+      "owners": [
+        "J.v.Hees",
+        "I.Verhoef",
+        "L.du Clou",
+        "M.Kuijpers"
+      ]
+    }
+  ]
+}
