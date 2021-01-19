@@ -11,7 +11,7 @@ type Query {
 
   breweries: [Brewery!]!
 
-  brewery: Brewery
+  brewery(identifier: String! @key(field: "identifier")): Brewery
 
   beer(identifier: String! @key(field: "identifier")): Beer
 
@@ -31,6 +31,7 @@ type Brewery {
   sponsorship: Sponsorship
   lemonBeers: [Beer]
   beerCount: Int!
+  beers: [Beer!]
 }
 
 type Address {

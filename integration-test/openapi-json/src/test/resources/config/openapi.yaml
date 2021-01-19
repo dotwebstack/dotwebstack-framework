@@ -75,9 +75,6 @@ components:
         localName:
           type: string
           nullable: true
-        openinghours:
-          type: string
-          nullable: true
         owners:
           type: array
           items:
@@ -99,7 +96,6 @@ components:
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
-
     BeerCollection:
       type: object
       x-dws-envelope: true
@@ -172,27 +168,26 @@ components:
         errorCode:
           type: string
 
-
 paths:
-#  /brewery/{identifier}:
-#    get:
-#      x-dws-query: brewery
-#      parameters:
-#        - name: identifier
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            text/html:
-#              schema:
-#                $ref: '#/components/schemas/Brewery'
-#            application/hal+json:
-#              schema:
-#                $ref: '#/components/schemas/Brewery'
+  /brewery/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            text/html:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
   /beer/{identifier}:
     get:
       x-dws-query: beer
@@ -227,24 +222,24 @@ paths:
         requiredFields:
           - name
       parameters:
-        -   name: name
-            in: path
-            required: true
-            schema:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: country
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
               type: string
-        -   name: country
-            in: path
-            required: true
-            schema:
-              type: string
-        -   name: expand
-            x-dws-type: expand
-            in: query
-            schema:
-              type: array
-              items:
-                type: string
-                enum: [ 'brewery' ]
+              enum: [ 'brewery' ]
       responses:
         200:
           description: OK
@@ -288,6 +283,34 @@ paths:
             application/stream+json:
               schema:
                 $ref: '#/components/schemas/BeerCollection'
+        400:
+          description: error
+          content:
+            application/hal+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /breweries:
+    get:
+      x-dws-query: breweries
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [ 'beers' ]
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
         400:
           description: error
           content:

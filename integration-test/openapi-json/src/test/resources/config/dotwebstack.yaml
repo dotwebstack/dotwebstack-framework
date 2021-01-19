@@ -1,6 +1,7 @@
 typeMapping:
   Beer:
     backend: json
+    file: beers.json
     queryPaths:
       beer: $.beers[?]
       beers: $.beers
@@ -11,9 +12,10 @@ typeMapping:
       identifier:
   Brewery:
     backend: json
+    file: breweries.json
     queryPaths:
-      brewery: $..brewery[?]
-      breweries: $..brewery
+      brewery: $..breweries[?]
+      breweries: $..breweries
     keys:
       - field: identifier
     fields:

@@ -94,6 +94,34 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beer_by_country_and_name.json");
   }
 
+  @Test
+  void openApiRequest_ReturnsBrewery_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/brewery/1")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/brewery.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsBreweries_withDefaultResponse() throws IOException {
+    // Arrange & Act
+    String result = webClient.get()
+        .uri("/breweries")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "/results/breweries.json");
+  }
+
   private void assertResult(String result, String jsonResultPath) throws IOException {
     JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream(jsonResultPath));
     JsonNode actualObj = mapper.readTree(result);

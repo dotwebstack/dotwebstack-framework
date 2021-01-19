@@ -1,0 +1,30 @@
+{
+  "_embedded": {
+    "breweries": [
+      {
+        "identifier": "1",
+        "localName": null,
+        "beerCount": 3,
+        "founded": "2014-05-03",
+        "name": "De Brouwerij",
+        "sponsorship": {
+          "identifier": "1",
+          "numbers": [],
+          "name": "De Brouwerij"
+        },
+        "link": "https://github.com/dotwebstack/api/v1/brewery/1",
+        "owners": [
+          "J.v.Hees",
+          "I.Verhoef",
+          "L.du Clou",
+          "M.Kuijpers"
+        ]
+      }
+    ]
+  },
+  "_links": {
+    "self": {
+      "href": "https://github.com/dotwebstack/api/v1/breweries"
+    }
+  }
+}
