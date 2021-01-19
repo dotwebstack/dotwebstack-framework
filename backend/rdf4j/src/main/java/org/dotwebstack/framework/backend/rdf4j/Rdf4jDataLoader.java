@@ -100,7 +100,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
     return new Rdf4jQueryBuilder().build(typeConfiguration, nodeShape, environment, key);
   }
 
-  public Map<String, Object> toDataMap(BindingSet bindingSet) {
+  private Map<String, Object> toDataMap(BindingSet bindingSet) {
     Map<String, Object> dataMap = new HashMap<>();
     bindingSet.getBindingNames()
         .forEach(bindingName -> {
