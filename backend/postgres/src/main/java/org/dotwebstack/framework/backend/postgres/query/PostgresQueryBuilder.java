@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static java.util.Collections.emptyList;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.notImplementedException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.lateral;
 import static org.jooq.impl.DSL.trueCondition;
@@ -94,7 +97,8 @@ public class PostgresQueryBuilder {
     return selectedFields.stream()
         .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
             .getType()))
-        .map(selectedField -> processNested(getJoinColumn(typeConfiguration, selectedField, tableName), selectedField))
+        .map(selectedField -> processNested(getJoinInformation(typeConfiguration, selectedField, tableName),
+            selectedField))
         .map(Optional::get)
         .peek(nestedQueryResult -> {
           fieldAliasMap.put(nestedQueryResult.getSelectedField()
@@ -104,10 +108,25 @@ public class PostgresQueryBuilder {
         .collect(Collectors.toList());
   }
 
-  private JoinInformation getJoinColumn(PostgresTypeConfiguration typeConfiguration, SelectedField selectedField,
+  private JoinInformation getJoinInformation(PostgresTypeConfiguration typeConfiguration, SelectedField selectedField,
       String tableName) {
     PostgresFieldConfiguration postgresFieldConfiguration = typeConfiguration.getFields()
         .get(selectedField.getName());
+
+    if (postgresFieldConfiguration.getMappedBy() != null) {
+      throw notImplementedException("The 'mappedBy' configuration item is not implemented yet!");
+    }
+
+    if (postgresFieldConfiguration.getJoinColumns() == null) {
+      throw invalidConfigurationException("Missing relation configuration for table '{}' and field `{}`", tableName,
+          selectedField.getName());
+    }
+
+    if (postgresFieldConfiguration.getJoinColumns()
+        .size() > 1) {
+      throw unsupportedOperationException("Multiple joinColumns for a single property aren't supported yet!");
+    }
+
     JoinColumn joinColumn = postgresFieldConfiguration.getJoinColumns()
         .get(0);
 

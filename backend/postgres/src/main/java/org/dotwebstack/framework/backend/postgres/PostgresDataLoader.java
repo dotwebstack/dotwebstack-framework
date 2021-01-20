@@ -49,23 +49,6 @@ public class PostgresDataLoader implements BackendDataLoader {
     return typeConfiguration instanceof PostgresTypeConfiguration;
   }
 
-  private DatabaseClient.GenericExecuteSpec execute(Query query) {
-    String sql = query.getSQL(ParamType.NAMED);
-    Map<String, Param<?>> params = query.getParams();
-
-    LOG.debug("PostgreSQL query: {}", sql);
-    LOG.debug("Binding variables: {}", params);
-
-    DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
-
-    for (Map.Entry<String, Param<?>> param : params.entrySet()) {
-      executeSpec = executeSpec.bind(param.getKey(), Objects.requireNonNull(param.getValue()
-          .getValue()));
-    }
-
-    return executeSpec;
-  }
-
   @Override
   public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
@@ -102,5 +85,22 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
+  }
+
+  private DatabaseClient.GenericExecuteSpec execute(Query query) {
+    String sql = query.getSQL(ParamType.NAMED);
+    Map<String, Param<?>> params = query.getParams();
+
+    LOG.debug("PostgreSQL query: {}", sql);
+    LOG.debug("Binding variables: {}", params);
+
+    DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
+
+    for (Map.Entry<String, Param<?>> param : params.entrySet()) {
+      executeSpec = executeSpec.bind(param.getKey(), Objects.requireNonNull(param.getValue()
+          .getValue()));
+    }
+
+    return executeSpec;
   }
 }
