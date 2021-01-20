@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -135,7 +136,7 @@ public class Rdf4jQueryBuilder {
 
     // Create patterns for selected fields
     List<GraphPattern> selectedPatterns = selectedFields.stream()
-        .flatMap(selectedField -> createGraphPatterns(subject, selectedField, nodeShape, fieldAliasMap).stream())
+        .map(selectedField -> createGraphPatterns(subject, selectedField, nodeShape, fieldAliasMap))
         .collect(Collectors.toList());
 
     // Create patterns for keys
@@ -151,7 +152,7 @@ public class Rdf4jQueryBuilder {
         .toArray(GraphPattern[]::new);
   }
 
-  private List<GraphPattern> createGraphPatterns(RdfSubject subject, SelectedField selectedField, NodeShape nodeShape,
+  private GraphPattern createGraphPatterns(RdfSubject subject, SelectedField selectedField, NodeShape nodeShape,
       Map<String, Object> fieldAliasMap) {
     String alias = newAlias();
 
@@ -169,33 +170,52 @@ public class Rdf4jQueryBuilder {
       List<GraphPattern> nested = selectedField.getSelectionSet()
           .getImmediateFields()
           .stream()
-          .flatMap(nestedSelectedField -> {
-            Map<String, Object> nestedFieldAliasMap = new HashMap<>();
-            List<GraphPattern> nestedResult = createGraphPatterns(SparqlBuilder.var(alias), nestedSelectedField,
+          .map(nestedSelectedField -> {
+            Map<String, Object> nestedFieldAliasMap =
+                (Map<String, Object>) fieldAliasMap.get(selectedField.getResultKey());
+            if (nestedFieldAliasMap == null) {
+              nestedFieldAliasMap = new HashMap<>();
+            }
+
+            GraphPattern nestedResult = createGraphPatterns(SparqlBuilder.var(alias), nestedSelectedField,
                 propertyShape.getNode(), nestedFieldAliasMap);
 
             fieldAliasMap.put(selectedField.getResultKey(), nestedFieldAliasMap);
 
-            return nestedResult.stream();
+            return nestedResult;
           })
           .collect(Collectors.toList());
 
-      return Stream.concat(List.of(current)
+      GraphPattern[] patternBlock = Stream.concat(List.of(current)
           .stream(), nested.stream())
-          .collect(Collectors.toList());
+          .toArray(GraphPattern[]::new);
+      return makeOptionalIfNeeded(propertyShape, patternBlock);
     }
 
-    return List.of(current);
+    return makeOptionalIfNeeded(propertyShape, current);
+  }
+
+  private GraphPattern makeOptionalIfNeeded(PropertyShape propertyShape, GraphPattern... graphPatterns) {
+    if (graphPatterns.length == 0) {
+      throw illegalArgumentException("Graph pattern array size must be at least 1.");
+    }
+
+    GraphPattern graphPattern = graphPatterns[0];
+    if (graphPatterns.length > 1) {
+      graphPattern = GraphPatterns.and(graphPatterns);
+    }
+
+    return isPropertyOptional(propertyShape) ? GraphPatterns.optional(graphPattern) : graphPattern;
+  }
+
+  private boolean isPropertyOptional(PropertyShape propertyShape) {
+    return propertyShape.getMinCount() == null || propertyShape.getMinCount() == 0;
   }
 
   private GraphPattern createGraphPattern(RdfSubject subject, PropertyShape propertyShape, String alias,
       Map<String, Object> fieldAliasMap) {
     GraphPattern graphPattern = GraphPatterns.tp(subject, propertyShape.getPath()
         .toPredicate(), SparqlBuilder.var(alias));
-
-    if (propertyShape.getMinCount() == null || propertyShape.getMinCount() == 0) {
-      graphPattern = GraphPatterns.optional(graphPattern);
-    }
 
     if (propertyShape.getNode() == null) {
       fieldAliasMap.put(propertyShape.getName(), alias);
