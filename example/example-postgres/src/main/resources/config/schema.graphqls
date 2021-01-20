@@ -1,0 +1,30 @@
+schema {
+  query: Query
+}
+
+type Query {
+  beers: [Beer!]!
+  brewery(identifier: ID!): Brewery
+  breweries: [Brewery!]!
+}
+
+type Brewery {
+  identifier: ID!
+  name: String!
+  beers: [Beer!]!
+  postalAddress: Address
+  visitAddress: Address
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  abv: Float!
+  brewery: Brewery!
+}
+
+type Address {
+  identifier: ID!
+  street: String!
+  city: String!
+}

@@ -264,8 +264,7 @@ public class NodeShapeFactory {
     return shapes;
   }
 
-  private static void chainSuperclasses(NodeShape nodeShape,
-      Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap, List<IRI> parents) {
+  private static void chainSuperclasses(NodeShape nodeShape, Map<Resource, NodeShape> nodeShapeMap, List<IRI> parents) {
     if (Objects.nonNull(nodeShape.getParent())) {
       if (nodeShapeMap.containsKey(nodeShape.getParent())) {
         if (parents.contains(nodeShape.getParent())) {
@@ -281,8 +280,7 @@ public class NodeShapeFactory {
     }
   }
 
-  public static void processInheritance(@NonNull NodeShape nodeShape,
-      @NonNull Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap) {
+  public static void processInheritance(@NonNull NodeShape nodeShape, @NonNull Map<Resource, NodeShape> nodeShapeMap) {
     ArrayList<IRI> parents = new ArrayList<>();
     chainSuperclasses(nodeShape, nodeShapeMap, parents);
     parents.forEach(parent -> {

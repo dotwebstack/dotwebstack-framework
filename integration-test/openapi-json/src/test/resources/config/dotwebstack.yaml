@@ -1,0 +1,22 @@
+typeMapping:
+  Beer:
+    backend: json
+    file: beers.json
+    queryPaths:
+      beer: $.beers[?]
+      beers: $.beers
+      beers_by_country_and_name: $.beers[?][?]
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+  Brewery:
+    backend: json
+    file: breweries.json
+    queryPaths:
+      brewery: $..breweries[?]
+      breweries: $..breweries
+    keys:
+      - field: identifier
+    fields:
+      identifier:

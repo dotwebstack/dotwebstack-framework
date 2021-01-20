@@ -43,7 +43,7 @@ public class ExampleApplication {
 ```
 
 In the `resource` folder, there should be a properties file (`application.yml`) and a `config` folder.
-The config folder contains a GraphQL schema file (`schema.graphqls`) and adapter files for the specific service and 
+The config folder contains a GraphQL schema file (`schema.graphqls`), `dotwebstack.yaml` configuration file and adapter files for the specific service and 
 backend. The service adapter files contain the mapping rules to get from a request for a specific service to the 
 GraphQL core and back from the GraphQL core to a response for a specific service. The backend adapter files are defined 
 in a folder called `model` and contain the rules to generate a backend specific query from GraphQL and read a GraphQL 
@@ -65,5 +65,3 @@ result from the query response. See the specific service and backend modules to 
 ## License
 
 The DotWebStack Framework is published under the [MIT License](LICENSE.md).
-
-

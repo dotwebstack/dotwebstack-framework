@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>graphql-postgres</module>
         <module>graphql-rdf4j</module>
         <module>openapi-rdf4j</module>
         <module>openapi-json</module>

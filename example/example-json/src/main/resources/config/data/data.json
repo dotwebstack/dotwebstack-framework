@@ -1,27 +1,99 @@
 {
-  "brewery" : {
-    "identifier": 3,
-    "brewmasters": "Jeroen van Hees",
-    "subject" : "test",
-    "founded": "2014-05-03",
-    "name": "De Brouwerij",
-    "beerCount": 3,
-    "beers": [
-      {
-        "identifier": 1,
-        "name": "Alfa Edel Pils"
-      },
-      {
-        "identifier": 2,
-        "name": "Alfa Radler"
+  "beers": [
+    {
+      "beer": {
+        "identifier": "b0e7cf18-e3ce-439b-a63e-034c8452f59c",
+        "name": "Beer 1",
+        "abv": 5.4,
+        "brewery": {
+          "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+          "name": "Brewery X",
+          "postalAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          },
+          "visitAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          }
+        }
       }
-    ],
-    "group": "Onafhankelijk",
-    "owners": [
-      "J.v.Hees",
-      "I.Verhoef",
-      "L.du Clou",
-      "M.Kuijpers"
-    ]
-  }
+    },
+    {
+      "beer": {
+        "identifier": "1295f4c1-846b-440c-b302-80bbc1f9f3a9",
+        "name": "Beer 2",
+        "abv": 4.7,
+        "brewery": {
+          "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+          "name": "Brewery X",
+          "postalAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          },
+          "visitAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          }
+        }
+      }
+    },
+    {
+      "beer": {
+        "identifier": "973832e7-1dd9-4683-a039-22390b1c1995",
+        "name": "Beer 3",
+        "abv": 8.0,
+        "brewery": {
+          "identifier": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
+          "name": "Brewery Y",
+          "postalAddress": {
+            "identifier": "3fe6c706-54af-4420-89c4-926ff719236a",
+            "street": "5th Avenue",
+            "city": "New York"
+          }
+        }
+      }
+    },
+    {
+      "beer": {
+        "identifier": "a5148422-be13-452a-b9fa-e72c155df3b2",
+        "name": "Beer 4",
+        "abv": 9.5,
+        "brewery": {
+          "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+          "name": "Brewery X",
+          "postalAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          },
+          "visitAddress": {
+            "identifier": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+            "street": "Church Street",
+            "city": "Dublin"
+          }
+        }
+      }
+    },
+    {
+      "beer": {
+        "identifier": "766883b5-3482-41cf-a66d-a81e79a4f0ed",
+        "name": "Beer 5",
+        "abv": 5.4,
+        "brewery": {
+          "identifier": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
+          "name": "Brewery Y",
+          "postalAddress": {
+            "identifier": "3fe6c706-54af-4420-89c4-926ff719236a",
+            "street": "5th Avenue",
+            "city": "New York"
+          }
+        }
+      }
+    }
+  ]
 }

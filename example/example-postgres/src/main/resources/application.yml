@@ -1,0 +1,6 @@
+logging:
+  level:
+    org.dotwebstack: DEBUG
+
+dotwebstack:
+  postgres:

@@ -1,0 +1,34 @@
+typeMapping:
+  Beer:
+    table: db.beer
+    backend: postgres
+    keys:
+      - field: identifier
+    fields:
+      brewery:
+        joinColumns:
+          - name: brewery
+            referencedField: identifier
+
+  Brewery:
+    backend: postgres
+    table: db.brewery
+    keys:
+      - field: identifier
+    fields:
+      postalAddress:
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+  Address:
+    backend: postgres
+    table: db.address
+    keys:
+      - field: identifier
+    fields:
+      street:
+      city:

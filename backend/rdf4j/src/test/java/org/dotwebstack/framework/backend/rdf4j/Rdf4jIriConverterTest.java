@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_CLASS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,13 +15,13 @@ class Rdf4jIriConverterTest {
   @Test
   void convert_ConvertsToIri_ForValidString() {
     // Arrange
-    String input = BREWERY_CLASS.stringValue();
+    String input = Constants.BREWERY_CLASS.stringValue();
 
     // Act
     IRI result = rdf4jIriConverter.convert(input);
 
     // Assert
-    assertThat(result, is(equalTo(BREWERY_CLASS)));
+    assertThat(result, is(equalTo(Constants.BREWERY_CLASS)));
   }
 
   @Test

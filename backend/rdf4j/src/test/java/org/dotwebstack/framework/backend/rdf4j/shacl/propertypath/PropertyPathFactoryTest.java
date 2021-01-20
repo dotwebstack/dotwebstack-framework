@@ -1,14 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERNAMES_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_CODE_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACH_SHAPE_GRAPH;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +12,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -47,31 +39,33 @@ public class PropertyPathFactoryTest {
   @Test
   void createPropertyPath_ReturnsSequencePath() {
     // Act
-    final PropertyPath propertyPath = createPropertyPath(BREWERY_POSTAL_CODE_SHAPE);
+    final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_POSTAL_CODE_SHAPE);
 
     // Assert
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(SCHEMA_ADDRESS, SCHEMA_POSTAL_CODE, RDF.NIL)));
+    assertThat(resolveIris(propertyPath),
+        equalTo(Arrays.asList(Constants.SCHEMA_ADDRESS, Constants.SCHEMA_POSTAL_CODE, RDF.NIL)));
   }
 
   @Test
   void createPropertyPath_ReturnsPredicatePath() {
     // Act
-    final PropertyPath propertyPath = createPropertyPath(BREWERY_FOUNDED_SHAPE);
+    final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_FOUNDED_SHAPE);
 
     // Assert
     assertTrue(propertyPath instanceof PredicatePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_FOUNDED_PATH)));
+    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(Constants.BREWERY_FOUNDED_PATH)));
   }
 
   @Test
   void createPropertyPath_ReturnsInversePathInsideSequencePath() {
     // Act
-    final PropertyPath propertyPath = createPropertyPath(BREWERY_BEERNAMES_SHAPE);
+    final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_BEERNAMES_SHAPE);
 
     // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_BEERS_PATH, SCHEMA_NAME, RDF.NIL)));
+    assertThat(resolveIris(propertyPath),
+        equalTo(Arrays.asList(Constants.BREWERY_BEERS_PATH, Constants.SCHEMA_NAME, RDF.NIL)));
 
     // Assert inverse path
     final PropertyPath first = ((SequencePath) propertyPath).getFirst();
@@ -116,11 +110,11 @@ public class PropertyPathFactoryTest {
         Reader shaclRules = new InputStreamReader(is)) {
 
       connection.begin();
-      connection.add(shaclRules, "", RDFFormat.TRIG, SHACH_SHAPE_GRAPH);
+      connection.add(shaclRules, "", RDFFormat.TRIG, Constants.SHACH_SHAPE_GRAPH);
       connection.commit();
     }
 
     return QueryResults.asModel(repo.getConnection()
-        .getStatements(null, null, null, SHACH_SHAPE_GRAPH));
+        .getStatements(null, null, null, Constants.SHACH_SHAPE_GRAPH));
   }
 }

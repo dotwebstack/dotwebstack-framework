@@ -4,19 +4,4 @@ logging:
 server.port: 8080
 
 dotwebstack:
-  base_url: http://localhost:8080
-  rdf4j:
-    shape:
-      language: nl
-      graph: https://github.com/dotwebstack/beer/shapes
-      prefix: https://github.com/dotwebstack/beer/shapes#
-    prefixes:
-      rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
-      beer_def: https://github.com/dotwebstack/beer/def#
-      brewery_id: https://github.com/dotwebstack/beer/id/brewery/
-  openapi:
-    dateproperties:
-      dateformat: dd-MM-yyyy
-      datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
-      timezone: Europe/Amsterdam
-    apiDocPublicationPath: /
+  json:

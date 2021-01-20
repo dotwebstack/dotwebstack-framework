@@ -2,40 +2,36 @@ schema {
   query: Query
 }
 
+directive @key(
+  field: String
+) on ARGUMENT_DEFINITION
+
 type Query {
+  beers: [Beer!]!
 
   breweries: [Brewery!]!
-  @json(file: "data.json", path: "$..brewery")
 
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @predicate): Brewery
-  @json(file: "data.json", path: "$..brewery[?]")
+  brewery(identifier: String! @key(field: "identifier")): Brewery
 
-  beer(identifier: ID! @constraint(pattern: "[0-9]+") @predicate(property: "identifier")): Beer
-  @json(file: "data.json", path: "$.beers[?]")
+  beer(identifier: String! @key(field: "identifier")): Beer
 
-  beers_by_country_and_name(
-    country: String! @predicate,
-    name: String! @predicate): [Beer!]!
-  @json(file: "data.json", path: "$.beers[?][?]")
-
-  beers: [Beer!]!
-  @json(file: "data.json", path: "$.beers")
+  beers_by_country_and_name(country: String! @key,name: String! @key): [Beer!]!
 }
 
 type Brewery {
   identifier: ID!
   name: String!
   localName: String
-  founded: Date
+  founded: String
   openinghours: String
-  owners(sort: [SortField!] = [{order: ASC}]): [String]
+  owners: [String]
   url: String!
-  @transform(expr: "url.getLocalName()")
   address: Address
   postalCode: String
   sponsorship: Sponsorship
   lemonBeers: [Beer]
   beerCount: Int!
+  beers: [Beer!]
 }
 
 type Address {
@@ -46,9 +42,8 @@ type Address {
 type Beer {
   identifier: ID!
   name: String!
-  created: DateTime
+  created: String
   brewery: Brewery
-  #  beerTypes: [String]!
   ingredients(name: [String]): [Ingredient!]
   supplements: [Supplement!]
 }
@@ -71,10 +66,4 @@ type Sponsorship {
   identifier: ID!
   name: String!
   numbers: [Int]
-}
-
-input FilterQueryInput {
-  page: Int = 1
-  sinceBefore: Date
-  sinceAfter: Date
 }

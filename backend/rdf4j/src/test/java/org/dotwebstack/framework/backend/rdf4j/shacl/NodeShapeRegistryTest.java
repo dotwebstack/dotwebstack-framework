@@ -1,15 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SHAPE_PREFIX;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import graphql.schema.GraphQLObjectType;
+import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,16 +25,16 @@ class NodeShapeRegistryTest {
 
   @BeforeEach
   void setUp() {
-    nodeShapeRegistry = new NodeShapeRegistry(SHAPE_PREFIX);
+    nodeShapeRegistry = new NodeShapeRegistry(Constants.SHAPE_PREFIX);
   }
 
   @Test
   void register_addsNodeShapeToRegistry() {
     // Act
-    nodeShapeRegistry.register(BREWERY_SHAPE, nodeShape);
+    nodeShapeRegistry.register(Constants.BREWERY_SHAPE, nodeShape);
 
     // Assert
-    assertThat(nodeShapeRegistry.get(BREWERY_SHAPE), is(equalTo(nodeShape)));
+    MatcherAssert.assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(equalTo(nodeShape)));
   }
 
   @Test
@@ -50,10 +49,10 @@ class NodeShapeRegistryTest {
   @Test
   void get_returnsNodeShape_ForGivenObjectType() {
     // Arrange
-    nodeShapeRegistry.register(BREWERY_SHAPE, nodeShape);
+    nodeShapeRegistry.register(Constants.BREWERY_SHAPE, nodeShape);
 
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
-        .name(BREWERY_TYPE)
+        .name(Constants.BREWERY_TYPE)
         .build();
 
     // Act

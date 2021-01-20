@@ -1,10 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.backend.rdf4j.ConfigFactoryImpl.SPARQL_REPOSITORY_ARG_ENDPOINT_URL;
-import static org.dotwebstack.framework.backend.rdf4j.ConfigFactoryImpl.SPARQL_REPOSITORY_TYPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.CUSTOM_REPOSITORY_ID;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SHAPE_GRAPH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SHAPE_PREFIX;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -15,22 +10,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Map;
 import lombok.Cleanup;
-import org.apache.commons.io.IOUtils;
-import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
-import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,8 +45,8 @@ class Rdf4jConfigurationTest {
   @BeforeEach
   void setUp() {
     ShapeProperties shapeProperties = new ShapeProperties();
-    shapeProperties.setGraph(SHAPE_GRAPH);
-    shapeProperties.setPrefix(SHAPE_PREFIX);
+    shapeProperties.setGraph(Constants.SHAPE_GRAPH);
+    shapeProperties.setPrefix(Constants.SHAPE_PREFIX);
     rdf4jProperties = new Rdf4jProperties();
     rdf4jProperties.setShape(shapeProperties);
   }
@@ -158,28 +146,6 @@ class Rdf4jConfigurationTest {
   }
 
   @Test
-  void repositoryManager_CreatesNewRepository_ForExternalConfiguration() throws IOException {
-    // Arrange
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
-
-    Map<String, Object> repositoryArgs = ImmutableMap.of(SPARQL_REPOSITORY_ARG_ENDPOINT_URL, "http://example/sparql");
-    RepositoryProperties repositoryProperties = new RepositoryProperties();
-    repositoryProperties.setType(SPARQL_REPOSITORY_TYPE);
-    repositoryProperties.setArgs(repositoryArgs);
-    rdf4jProperties.setRepositories(ImmutableMap.of(CUSTOM_REPOSITORY_ID, repositoryProperties));
-    when(configFactory.create(SPARQL_REPOSITORY_TYPE, repositoryArgs))
-        .thenReturn(new SPARQLRepositoryConfig((String) repositoryArgs.get(SPARQL_REPOSITORY_ARG_ENDPOINT_URL)));
-
-    // Act
-    RepositoryResolver result =
-        rdf4jConfiguration.localRepositoryManager(rdf4jProperties, configFactory, resourceLoader);
-
-    // Assert
-    Repository repository = result.getRepository(CUSTOM_REPOSITORY_ID);
-    assertThat(repository.toString(), is("http://example/sparql"));
-  }
-
-  @Test
   void nodeShapeRegistry_ReturnsRegistry_ForNoShapes() throws IOException {
     // Arrange
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
@@ -208,33 +174,4 @@ class Rdf4jConfigurationTest {
     // Assert
     assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));
   }
-
-  @Test
-  void return_EmptyQueryReferenceRegistry_When_FilesNotMatchPattern() throws IOException {
-    // Arrange
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
-
-    // Act
-    Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
-
-    // Assert
-    assertThat(result.size(), is(0));
-  }
-
-  @Test
-  void return_QueryReferenceRegistry_When_FilesMatchPattern() throws IOException {
-    // Arrange
-    Resource scriptResource = mock(Resource.class);
-    when(scriptResource.getInputStream()).thenReturn(IOUtils.toInputStream("script", Charsets.UTF_8.name()));
-    when(scriptResource.getFilename()).thenReturn("script.rq");
-
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {scriptResource});
-
-    // Act
-    Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
-
-    // Assert
-    assertThat(result.size(), is(1));
-  }
-
 }
