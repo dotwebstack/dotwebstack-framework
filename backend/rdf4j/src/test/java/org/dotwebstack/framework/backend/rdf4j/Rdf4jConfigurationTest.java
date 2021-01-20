@@ -145,31 +145,6 @@ class Rdf4jConfigurationTest {
         () -> rdf4jConfiguration.localRepositoryManager(rdf4jProperties, configFactory, resourceLoader));
   }
 
-  // @Test
-  // void repositoryManager_CreatesNewRepository_ForExternalConfiguration() throws IOException {
-  // // Arrange
-  // when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
-  //
-  // Map<String, Object> repositoryArgs = ImmutableMap.of(SPARQL_REPOSITORY_ARG_ENDPOINT_URL,
-  // "http://example/sparql");
-  // RepositoryProperties repositoryProperties = new RepositoryProperties();
-  // repositoryProperties.setType(SPARQL_REPOSITORY_TYPE);
-  // repositoryProperties.setArgs(repositoryArgs);
-  // rdf4jProperties.setRepositories(ImmutableMap.of(Constants.CUSTOM_REPOSITORY_ID,
-  // repositoryProperties));
-  // when(configFactory.create(SPARQL_REPOSITORY_TYPE, repositoryArgs))
-  // .thenReturn(new SPARQLRepositoryConfig((String)
-  // repositoryArgs.get(SPARQL_REPOSITORY_ARG_ENDPOINT_URL)));
-  //
-  // // Act
-  // RepositoryResolver result =
-  // rdf4jConfiguration.localRepositoryManager(rdf4jProperties, configFactory, resourceLoader);
-  //
-  // // Assert
-  // Repository repository = result.getRepository(Constants.CUSTOM_REPOSITORY_ID);
-  // assertThat(repository.toString(), is("http://example/sparql"));
-  // }
-
   @Test
   void nodeShapeRegistry_ReturnsRegistry_ForNoShapes() throws IOException {
     // Arrange
@@ -199,34 +174,4 @@ class Rdf4jConfigurationTest {
     // Assert
     assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));
   }
-
-  // @Test
-  // void return_EmptyQueryReferenceRegistry_When_FilesNotMatchPattern() throws IOException {
-  // // Arrange
-  // when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
-  //
-  // // Act
-  // Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
-  //
-  // // Assert
-  // assertThat(result.size(), is(0));
-  // }
-  //
-  // @Test
-  // void return_QueryReferenceRegistry_When_FilesMatchPattern() throws IOException {
-  // // Arrange
-  // Resource scriptResource = mock(Resource.class);
-  // when(scriptResource.getInputStream()).thenReturn(IOUtils.toInputStream("script",
-  // Charsets.UTF_8.name()));
-  // when(scriptResource.getFilename()).thenReturn("script.rq");
-  //
-  // when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {scriptResource});
-  //
-  // // Act
-  // Map<String, String> result = rdf4jConfiguration.queryReferenceRegistry(resourceLoader);
-  //
-  // // Assert
-  // assertThat(result.size(), is(1));
-  // }
-
 }

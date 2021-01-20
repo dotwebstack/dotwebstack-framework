@@ -4,13 +4,3 @@ logging:
 
 dotwebstack:
   postgres:
-    keyColumn: identifier
-    typeMapping:
-      Brewery:
-        table: dbeerpedia.breweries
-
-      Beer:
-        table: dbeerpedia.beers
-
-      Address:
-        table: dbeerpedia.addresses
