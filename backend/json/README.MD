@@ -29,8 +29,8 @@ typeMapping:
     fields:
       identifier:
 ```
-In the `file` property you provided the name of the datafile.<br/>
-You can provide a variety of JSONPath expressions to you needs in the queryPaths property.<br/>
+In the `file` property you provide the name of the datafile.<br/>
+You can provide a variety of JSONPath expressions to your needs in the queryPaths property.<br/>
 You need to add a `schema.graphqls` file that defines the GraphQL schema. 
 
 The following example shows the GraphQL description for several queries to retrieve data from a json file:

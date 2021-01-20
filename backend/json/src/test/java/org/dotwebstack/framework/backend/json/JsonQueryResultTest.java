@@ -24,7 +24,7 @@ class JsonQueryResultTest {
 
   private List<KeyArgument> keyArguments = new ArrayList<>();
 
-  JsonQueryResult jsonQueryResult;
+  private JsonQueryResult jsonQueryResult;
 
   void setup(String jsonPathTemplate, String data) throws JsonProcessingException {
     JsonNode jsonNode = objectMapper.readTree(data);
