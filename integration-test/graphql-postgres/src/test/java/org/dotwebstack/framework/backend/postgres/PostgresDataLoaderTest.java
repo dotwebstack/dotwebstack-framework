@@ -23,6 +23,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.jooq.DSLContext;
@@ -101,13 +102,15 @@ class PostgresDataLoaderTest {
     LoadEnvironment loadEnvironment = createLoadEnvironment(identifier);
 
     // Act
-    Map<String, Object> result = postgresDataLoader.loadSingle("identifier", loadEnvironment)
+    DataLoaderResult result = postgresDataLoader.loadSingle("identifier", loadEnvironment)
         .block(Duration.ofSeconds(5));
 
     // Assert
     assertThat(result, notNullValue());
-    assertThat(result.entrySet(), equalTo(Map.of("identifier", identifier, "name", name)
-        .entrySet()));
+    assertThat(result.getData()
+        .entrySet(),
+        equalTo(Map.of("identifier", identifier, "name", name)
+            .entrySet()));
 
     verify(databaseClient)
         .sql("select identifier as \"x1\", name as \"x2\" from db.brewery as \"t1\" where t1.identifier = :1");
@@ -126,12 +129,13 @@ class PostgresDataLoaderTest {
     LoadEnvironment loadEnvironment = createLoadEnvironment(null);
 
     // Act
-    Map<String, Object> result = postgresDataLoader.loadMany(null, loadEnvironment)
+    DataLoaderResult result = postgresDataLoader.loadMany(null, loadEnvironment)
         .blockLast(Duration.ofSeconds(5));
 
     // Assert
     assertThat(result, notNullValue());
-    assertThat(result.entrySet(),
+    assertThat(result.getData()
+        .entrySet(),
         equalTo(Map.of("identifier", "d3654375-95fa-46b4-8529-08b0f777bd6c", "name", "Brewery Y")
             .entrySet()));
 

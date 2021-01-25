@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jFieldConfiguration;
@@ -26,6 +27,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -101,17 +103,21 @@ class Rdf4jDataLoaderTest {
     mockRepository(createBindingSet(identifier, name));
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
+    Mono<DataLoaderResult> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
 
     assertThat(result.hasElement()
         .block(), is(true));
-    Map<String, Object> resultMap = result.block();
-    assertThat(resultMap.size(), is(2));
-    assertThat(resultMap.get(FIELD_IDENTIFIER), is(identifier));
-    assertThat(resultMap.get(FIELD_NAME), is(name));
+    DataLoaderResult dataLoaderResult = result.block();
+    assertThat(Objects.requireNonNull(dataLoaderResult)
+        .getData()
+        .size(), is(2));
+    assertThat(dataLoaderResult.getData()
+        .get(FIELD_IDENTIFIER), is(identifier));
+    assertThat(dataLoaderResult.getData()
+        .get(FIELD_NAME), is(name));
   }
 
   @Test
@@ -123,7 +129,7 @@ class Rdf4jDataLoaderTest {
     mockRepository();
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
+    Mono<DataLoaderResult> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -154,25 +160,31 @@ class Rdf4jDataLoaderTest {
     mockRepository(breweryX, breweryY, breweryZ);
 
     // Act
-    Flux<Map<String, Object>> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
+    Flux<DataLoaderResult> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getManyQuery()));
 
-    List<Map<String, Object>> resultList = result.toStream()
+    List<DataLoaderResult> resultList = result.toStream()
         .collect(Collectors.toList());
     assertThat(resultList.size(), is(3));
     assertThat(resultList.get(0)
+        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryX));
     assertThat(resultList.get(0)
+        .getData()
         .get(FIELD_NAME), is(nameOfBreweryX));
     assertThat(resultList.get(1)
+        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryY));
     assertThat(resultList.get(1)
+        .getData()
         .get(FIELD_NAME), is(nameOfBreweryY));
     assertThat(resultList.get(2)
+        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryZ));
     assertThat(resultList.get(2)
+        .getData()
         .get(FIELD_NAME), is(nameOfBreweryZ));
   }
 

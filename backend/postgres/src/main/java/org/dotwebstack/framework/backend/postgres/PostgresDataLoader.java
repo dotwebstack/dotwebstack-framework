@@ -12,6 +12,7 @@ import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.jooq.DSLContext;
 import org.jooq.Param;
@@ -50,7 +51,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
+  public Mono<DataLoaderResult> loadSingle(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
@@ -59,17 +60,20 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .one()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
+        .map(map -> DataLoaderResult.builder()
+            .data(map)
+            .build());
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
+  public Flux<Tuple2<Object, DataLoaderResult>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
+  public Flux<DataLoaderResult> loadMany(Object key, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
@@ -78,11 +82,14 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
+        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
+        .map(map -> DataLoaderResult.builder()
+            .data(map)
+            .build());
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
+  public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
     return Flux.fromIterable(keys)
         .map(key -> this.loadMany(key, environment));
   }

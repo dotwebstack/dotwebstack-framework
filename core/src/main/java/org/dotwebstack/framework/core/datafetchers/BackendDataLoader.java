@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import reactor.core.publisher.Flux;
@@ -14,11 +13,11 @@ public interface BackendDataLoader {
     return false;
   }
 
-  Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment);
+  Mono<DataLoaderResult> loadSingle(Object key, LoadEnvironment environment);
 
-  Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment);
+  Flux<Tuple2<Object, DataLoaderResult>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment);
 
-  Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment);
+  Flux<DataLoaderResult> loadMany(Object key, LoadEnvironment environment);
 
-  Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment);
+  Flux<Flux<DataLoaderResult>> batchLoadMany(List<Object> keys, LoadEnvironment environment);
 }

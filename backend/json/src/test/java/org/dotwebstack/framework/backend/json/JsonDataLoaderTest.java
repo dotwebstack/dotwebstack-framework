@@ -22,6 +22,7 @@ import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,16 +90,19 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(null, environment);
+    Mono<DataLoaderResult> result = jsonDataLoader.loadSingle(null, environment);
 
     // Assert
     assertThat(result.hasElement()
         .block(), is(true));
-    Map<String, Object> resultMap = result.block();
-    assertThat(Objects.requireNonNull(resultMap)
+    DataLoaderResult dataLoaderResult = result.block();
+    assertThat(Objects.requireNonNull(dataLoaderResult)
+        .getData()
         .size(), is(3));
-    assertThat(resultMap.get(FIELD_IDENTIFIER), is(1));
-    assertThat(resultMap.get(FIELD_NAME), is("Alfa Edel Pils"));
+    assertThat(dataLoaderResult.getData()
+        .get(FIELD_IDENTIFIER), is(1));
+    assertThat(dataLoaderResult.getData()
+        .get(FIELD_NAME), is("Alfa Edel Pils"));
   }
 
   @Test
@@ -113,7 +117,7 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(null, loadEnvironment);
+    Mono<DataLoaderResult> result = jsonDataLoader.loadSingle(null, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -130,20 +134,19 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Flux<Map<String, Object>> result = jsonDataLoader.loadMany(null, loadEnvironment);
+    Flux<DataLoaderResult> result = jsonDataLoader.loadMany(null, loadEnvironment);
 
     // Assert
-    List<Map<String, Object>> resultList = new ArrayList<>(result.collectList()
+    List<DataLoaderResult> resultList = new ArrayList<>(result.collectList()
         .toFuture()
         .get());
 
-    assertThat(result.collectList()
-        .toFuture()
-        .get()
-        .size(), is(2));
+    assertThat(resultList.size(), is(2));
     assertThat(resultList.get(0)
+        .getData()
         .get("name"), is("Alfa Edel Pils"));
     assertThat(resultList.get(1)
+        .getData()
         .get("name"), is("Alfa Radler"));
   }
 
