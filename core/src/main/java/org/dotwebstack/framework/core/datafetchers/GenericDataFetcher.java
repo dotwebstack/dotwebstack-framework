@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -60,7 +61,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .getKeysOnly());
 
       // Retrieve dataloader instance for key, or create new instance when it does not exist yet
-      DataLoader<Object, List<Map<String, Object>>> dataLoader = environment.getDataLoaderRegistry()
+      DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
           .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
       String fieldName = environment.getFieldDefinition()
@@ -90,10 +91,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
+          .map(result -> DataFetcherResult.newResult()
+              .data(result.getData())
+              .build())
           .toFuture();
     }
 
     return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
+        .map(result -> DataFetcherResult.newResult()
+            .data(result.getData())
+            .build())
         .collectList()
         .toFuture();
   }
@@ -122,7 +129,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (filters.size() > 1) {
       return Optional.of(CompositeFilter.builder()
-          .keys(filters)
+          .filters(filters)
           .build());
     }
 
@@ -174,12 +181,19 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newDataLoader(requests -> backendDataLoader.batchLoadMany(requests, loadEnvironment)
           .flatMapSequential(Flux::collectList)
+          .map(map -> map.stream()
+              .map(DataLoaderResult::getData)
+              .map(data -> DataFetcherResult.newResult()
+                  .data(data)
+                  .build()))
           .collectList()
           .toFuture());
     }
 
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
-        .collectMap(Tuple2::getT1, Tuple2::getT2)
+        .collectMap(Tuple2::getT1, tuple -> DataFetcherResult.newResult()
+            .data(tuple.getT2())
+            .build())
         .toFuture());
   }
 

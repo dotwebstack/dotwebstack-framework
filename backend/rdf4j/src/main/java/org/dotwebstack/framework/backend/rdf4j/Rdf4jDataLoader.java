@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryBuilder;
@@ -16,6 +15,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.eclipse.rdf4j.model.Value;
@@ -46,37 +46,42 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
+  public Mono<DataLoaderResult> loadSingle(Filter filter, LoadEnvironment environment) {
     Rdf4jQueryHolder queryHolder = getQueryHolder(filter, environment);
 
     try (TupleQueryResult queryResult = executeQuery(queryHolder.getQuery())) {
       if (queryResult.hasNext()) {
         return Mono.just(toDataMap(queryResult.next()))
-            .map(dataMap -> toGraphQlMap(dataMap, queryHolder.getFieldAliasMap()));
+            .map(dataMap -> toGraphQlMap(dataMap, queryHolder.getFieldAliasMap()))
+            .map(map -> DataLoaderResult.builder()
+                .data(map)
+                .build());
       }
       return Mono.empty();
     }
   }
 
   @Override
-  public Flux<Tuple2<Filter, Map<String, Object>>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
+  public Flux<Tuple2<Filter, DataLoaderResult>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
+  public Flux<DataLoaderResult> loadMany(Filter filter, LoadEnvironment environment) {
     Rdf4jQueryHolder queryHolder = getQueryHolder(filter, environment);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
 
-    return Flux.fromIterable(queryResult.stream()
+    return Flux.fromStream(queryResult.stream()
         .map(this::toDataMap)
         .map(dataMap -> toGraphQlMap(dataMap, queryHolder.getFieldAliasMap()))
-        .collect(Collectors.toList()));
+        .map(map -> DataLoaderResult.builder()
+            .data(map)
+            .build()));
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
+  public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
