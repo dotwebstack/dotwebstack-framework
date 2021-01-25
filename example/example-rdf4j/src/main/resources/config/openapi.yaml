@@ -256,6 +256,22 @@ paths:
             application/hal+json:
               schema:
                 $ref: "#/components/schemas/Error"
+        406:
+          description: error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    format: int32
+                  acceptable:
+                    type: array
+                    x-dws-expr: "acceptableMimeTypes"
+                  customparam:
+                    type: string
+                    x-dws-expr: "`foo`"
   /brewery_with_subject:
     get:
       x-dws-query: brewery_with_subject
