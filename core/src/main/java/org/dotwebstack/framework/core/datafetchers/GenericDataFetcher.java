@@ -20,6 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.filters.CompositeFilter;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -71,10 +74,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
+    Optional<Filter> key = getKey(environment);
+
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .queryName(environment.getFieldDefinition()
             .getName())
-        .keyArguments(getKeyArguments(environment))
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .selectedFields(environment.getSelectionSet()
@@ -85,11 +89,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
     if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      return backendDataLoader.loadSingle(null, loadEnvironment)
+      return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
           .toFuture();
     }
 
-    return backendDataLoader.loadMany(null, loadEnvironment)
+    return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
         .collectList()
         .toFuture();
   }
@@ -106,18 +110,30 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .get(rawType.getName()));
   }
 
-  private List<KeyArgument> getKeyArguments(DataFetchingEnvironment environment) {
-    return environment.getFieldDefinition()
+  private Optional<Filter> getKey(DataFetchingEnvironment environment) {
+    List<Filter> filters = environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> argument.getDirectives("key")
             .size() > 0)
-        .map(argument -> getKeyArgument(environment, argument))
+        .map(argument -> getFieldKey(environment, argument))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
+
+    if (filters.size() > 1) {
+      return Optional.of(CompositeFilter.builder()
+          .keys(filters)
+          .build());
+    }
+
+    if (filters.size() == 1) {
+      return Optional.of(filters.get(0));
+    }
+
+    return Optional.empty();
   }
 
-  public KeyArgument getKeyArgument(DataFetchingEnvironment environment, GraphQLArgument argument) {
+  public FieldFilter getFieldKey(DataFetchingEnvironment environment, GraphQLArgument argument) {
     Object value = environment.getArguments()
         .get(argument.getName());
 
@@ -127,21 +143,21 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     GraphQLDirective directive = argument.getDirective("key");
 
-    String keyName = argument.getName();
+    String fieldName = argument.getName();
     if (directive.getArgument("field")
         .getValue() != null) {
-      keyName = directive.getArgument("field")
+      fieldName = directive.getArgument("field")
           .getValue()
           .toString();
     }
 
-    return KeyArgument.builder()
-        .name(keyName)
+    return FieldFilter.builder()
+        .field(fieldName)
         .value(value)
         .build();
   }
 
-  private DataLoader<Object, ?> createDataLoader(DataFetchingEnvironment environment,
+  private DataLoader<Filter, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();

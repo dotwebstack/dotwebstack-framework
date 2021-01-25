@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.notImplementedException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -22,6 +21,8 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -45,12 +46,12 @@ public class PostgresQueryBuilder {
   }
 
   public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
-      Object key) {
-    return build(typeConfiguration, loadEnvironment, null, key);
+      Filter filter) {
+    return build(typeConfiguration, loadEnvironment, null, filter);
   }
 
   private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
-      JoinInformation joinInformation, Object key) {
+      JoinInformation joinInformation, Filter filter) {
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
     Map<String, Object> fieldAliasMap = new HashMap<>();
@@ -78,11 +79,13 @@ public class PostgresQueryBuilder {
           .eq(self));
     }
 
-    if (loadEnvironment.getKeyArguments() != null) {
-      loadEnvironment.getKeyArguments()
-          .forEach(keyArgument -> query.where(field(fromTable.getName()
+    if (filter != null) {
+      filter.flatten()
+          .stream()
+          .map(FieldFilter.class::cast)
+          .forEach(fieldKey -> query.where(field(fromTable.getName()
               .concat(".")
-              .concat(keyArgument.getName())).eq(keyArgument.getValue())));
+              .concat(fieldKey.getField())).eq(fieldKey.getValue())));
     }
 
     return PostgresQueryHolder.builder()
@@ -169,7 +172,6 @@ public class PostgresQueryBuilder {
 
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .selectedFields(nestedSelectedFields)
-        .keyArguments(emptyList())
         .build();
 
     PostgresQueryHolder queryHolder =

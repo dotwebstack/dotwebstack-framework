@@ -7,12 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.dotwebstack.framework.core.datafetchers.KeyArgument;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,8 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class JsonQueryResultTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
-
-  private List<KeyArgument> keyArguments = new ArrayList<>();
 
   private JsonQueryResult jsonQueryResult;
 
@@ -35,10 +31,9 @@ class JsonQueryResultTest {
   void getBeersReturnsArrayListTest() throws Exception {
     // Arrange
     setup("$.beers", getSingleBreweryAsJson());
-    keyArguments = Collections.emptyList();
 
     // Act
-    List<Map<String, Object>> result = jsonQueryResult.getResults(keyArguments);
+    List<Map<String, Object>> result = jsonQueryResult.getResults(List.of());
 
     // Assert
     assertThat(result.size(), equalTo(2));
@@ -48,10 +43,9 @@ class JsonQueryResultTest {
   void getBeersFromBreweryWithoutBeersShouldReturnEmptyListTest() throws Exception {
     // Arrange
     setup("$.beers", getSingleBreweryWithoutBeersAsJson());
-    keyArguments = Collections.emptyList();
 
     // Act
-    List<Map<String, Object>> result = jsonQueryResult.getResults(keyArguments);
+    List<Map<String, Object>> result = jsonQueryResult.getResults(List.of());
 
     // Assert
     assertThat(result.size(), equalTo(0));
@@ -62,13 +56,14 @@ class JsonQueryResultTest {
   void getBeerByIdShouldReturnOneBeerTest() throws Exception {
     // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
-    keyArguments.add(KeyArgument.builder()
-        .name("identifier")
+
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
         .value("1")
-        .build());
+        .build();
 
     // Act
-    Optional<Map<String, Object>> result = jsonQueryResult.getResult(keyArguments);
+    Optional<Map<String, Object>> result = jsonQueryResult.getResult(List.of(fieldFilter));
 
     // Assert
     assertThat((int) result.stream()
@@ -79,13 +74,14 @@ class JsonQueryResultTest {
   void getBeerByNotExistingIdShouldReturnEmptyListTest() throws Exception {
     // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
-    keyArguments.add(KeyArgument.builder()
-        .name("identifier")
+
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
         .value("3")
-        .build());
+        .build();
 
     // Act
-    Optional<Map<String, Object>> result = jsonQueryResult.getResult(keyArguments);
+    Optional<Map<String, Object>> result = jsonQueryResult.getResult(List.of(fieldFilter));
 
     // Assert
     assertThat((int) result.stream()
@@ -96,13 +92,14 @@ class JsonQueryResultTest {
   void getBeerByIdShouldThrowExceptionIfSizeIsGreaterThanOneTest() throws Exception {
     // Arrange
     setup("$.beers[?]", getBreweryWithBeersAsJson());
-    keyArguments.add(KeyArgument.builder()
-        .name("identifier")
+
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
         .value("1")
-        .build());
+        .build();
 
     // Act & Assert
-    assertThrows(IllegalStateException.class, () -> jsonQueryResult.getResult(keyArguments));
+    assertThrows(IllegalStateException.class, () -> jsonQueryResult.getResult(List.of(fieldFilter)));
   }
 
   private String getSingleBreweryAsJson() {

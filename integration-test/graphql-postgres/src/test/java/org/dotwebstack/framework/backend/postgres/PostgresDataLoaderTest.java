@@ -23,8 +23,8 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -94,14 +94,19 @@ class PostgresDataLoaderTest {
     String identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
     String name = "Brewery X";
 
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
+        .value(identifier)
+        .build();
+
     when(fetchSpec.one()).thenReturn(Mono.just(Map.of("x1", identifier, "x2", name)));
 
     when(genericExecuteSpec.bind(any(String.class), any(String.class))).thenReturn(genericExecuteSpec);
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(identifier);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act
-    Map<String, Object> result = postgresDataLoader.loadSingle("identifier", loadEnvironment)
+    Map<String, Object> result = postgresDataLoader.loadSingle(fieldFilter, loadEnvironment)
         .block(Duration.ofSeconds(5));
 
     // Assert
@@ -123,7 +128,7 @@ class PostgresDataLoaderTest {
 
     when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(null);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act
     Map<String, Object> result = postgresDataLoader.loadMany(null, loadEnvironment)
@@ -149,20 +154,12 @@ class PostgresDataLoaderTest {
     when(databaseClient.sql(any(String.class))).thenReturn(genericExecuteSpec);
   }
 
-  private LoadEnvironment createLoadEnvironment(String identifier) {
+  private LoadEnvironment createLoadEnvironment() {
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration();
 
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .typeConfiguration(typeConfiguration)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
-
-    if (identifier != null) {
-      KeyArgument keyArgument = KeyArgument.builder()
-          .name(FIELD_IDENTIFIER)
-          .value(identifier)
-          .build();
-      loadEnvironmentBuilder.keyArguments(List.of(keyArgument));
-    }
 
     return loadEnvironmentBuilder.build();
   }

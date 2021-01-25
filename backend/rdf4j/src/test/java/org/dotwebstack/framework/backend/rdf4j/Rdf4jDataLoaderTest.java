@@ -26,8 +26,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -97,11 +97,18 @@ class Rdf4jDataLoaderTest {
     String identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
     String name = "Brewery X";
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(identifier);
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
+        .value(identifier)
+        .build();
+
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
+
+
     mockRepository(createBindingSet(identifier, name));
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
@@ -119,11 +126,16 @@ class Rdf4jDataLoaderTest {
     // Arrange
     String identifier = "not-existing-identifier";
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(identifier);
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
+        .value(identifier)
+        .build();
+
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
     mockRepository();
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(null, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -150,7 +162,7 @@ class Rdf4jDataLoaderTest {
     String nameOfBreweryZ = "Brewery z";
     QueryBindingSet breweryZ = createBindingSet(identifierOfBreweryZ, nameOfBreweryZ);
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(null);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
     mockRepository(breweryX, breweryY, breweryZ);
 
     // Act
@@ -195,7 +207,7 @@ class Rdf4jDataLoaderTest {
         + "LIMIT 10\n";
   }
 
-  private LoadEnvironment createLoadEnvironment(String identifier) {
+  private LoadEnvironment createLoadEnvironment() {
     Rdf4jTypeConfiguration rdf4jTypeConfiguration = createRdf4jTypeConfiguration();
 
     PropertyShape propertyShapeIdentifier =
@@ -212,14 +224,6 @@ class Rdf4jDataLoaderTest {
         .objectType(graphQlObjectType)
         .typeConfiguration(rdf4jTypeConfiguration)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
-
-    if (identifier != null) {
-      KeyArgument keyArgument = KeyArgument.builder()
-          .name("identifier")
-          .value(identifier)
-          .build();
-      loadEnvironmentBuilder.keyArguments(List.of(keyArgument));
-    }
 
     return loadEnvironmentBuilder.build();
   }

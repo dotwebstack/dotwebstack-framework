@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.json;
 
-import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,8 +21,8 @@ import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyArgument;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,18 +77,21 @@ class JsonDataLoaderTest {
   @Test
   void loadSingle_Beer1_ForKey() throws JsonProcessingException {
     // Arrange
-    Map<String, String> arguments = Map.of("identifier", "1");
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
+        .value("1")
+        .build();
 
     JsonNode jsonNode = getDataAsJsonNode();
 
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers[?]");
 
-    LoadEnvironment environment = createLoadEnvironment(arguments, jsonTypeConfiguration);
+    LoadEnvironment environment = createLoadEnvironment(jsonTypeConfiguration);
 
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(null, environment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, environment);
 
     // Assert
     assertThat(result.hasElement()
@@ -104,16 +106,19 @@ class JsonDataLoaderTest {
   @Test
   void loadSingle_Empty_ForNonExistingKey() throws JsonProcessingException {
     // Arrange
-    Map<String, String> arguments = Map.of("identifier", "not-existing-identifier");
+    FieldFilter fieldFilter = FieldFilter.builder()
+        .field("identifier")
+        .value("not-existing-identifier")
+        .build();
 
     JsonNode jsonNode = getDataAsJsonNode();
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers[?]");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(arguments, jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(null, loadEnvironment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -126,7 +131,7 @@ class JsonDataLoaderTest {
     JsonNode jsonNode = getDataAsJsonNode();
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(null, jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
@@ -152,7 +157,7 @@ class JsonDataLoaderTest {
     // Arrange
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(null, jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadSingle(null, loadEnvironment));
@@ -163,7 +168,7 @@ class JsonDataLoaderTest {
     // Arrange
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(null, jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadMany(null, loadEnvironment));
@@ -183,8 +188,7 @@ class JsonDataLoaderTest {
     return jsonTypeConfiguration;
   }
 
-  private LoadEnvironment createLoadEnvironment(Map<String, String> argumentsMap,
-      JsonTypeConfiguration jsonTypeConfiguration) {
+  private LoadEnvironment createLoadEnvironment(JsonTypeConfiguration jsonTypeConfiguration) {
     GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
         .name(NODE_BEER)
         .build();
@@ -194,24 +198,9 @@ class JsonDataLoaderTest {
         .typeConfiguration(jsonTypeConfiguration)
         .queryName(BEERS_QUERY_NAME)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
-        .keyArguments(getKeyArguments(argumentsMap))
         .build();
   }
 
-  private List<KeyArgument> getKeyArguments(Map<String, String> argumentsMap) {
-    List<KeyArgument> keyArguments = new ArrayList<>();
-
-    if (argumentsMap == null) {
-      return emptyList();
-    }
-
-    argumentsMap.forEach((key, value) -> keyArguments.add(KeyArgument.builder()
-        .name(key)
-        .value(value)
-        .build()));
-
-    return keyArguments;
-  }
 
   private SelectedField createSelectedField(String name) {
     return mock(SelectedField.class);
