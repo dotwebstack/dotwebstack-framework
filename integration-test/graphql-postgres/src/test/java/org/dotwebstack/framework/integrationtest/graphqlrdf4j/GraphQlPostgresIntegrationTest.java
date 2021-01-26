@@ -27,7 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
 @Testcontainers
-public class GraphQlPostgresIntegrationTest {
+class GraphQlPostgresIntegrationTest {
 
   @Autowired
   private GraphQL graphQL;
@@ -53,7 +53,6 @@ public class GraphQlPostgresIntegrationTest {
   static class TestConfiguration {
     @Bean
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
-
       ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
       initializer.setConnectionFactory(connectionFactory);
 
@@ -135,7 +134,7 @@ public class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweries_Default() {
     // Arrange
-    String query = "{breweries{name}}";
+    String query = "{breweries{name status}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -152,5 +151,7 @@ public class GraphQlPostgresIntegrationTest {
     assertThat(breweries.size(), is(3));
     assertThat(breweries.get(0)
         .get("name"), is("Brewery X"));
+    assertThat(breweries.get(1)
+        .get("status"), is("active"));
   }
 }

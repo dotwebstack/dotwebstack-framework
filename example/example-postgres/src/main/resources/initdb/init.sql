@@ -10,17 +10,20 @@ INSERT INTO dbeerpedia.addresses(identifier, street, city) VALUES
   ('fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'Church Street', 'Dublin'),
   ('3fe6c706-54af-4420-89c4-926ff719236a', '5th Avenue', 'New York');
 
+CREATE TYPE dbeerpedia.brewery_status AS ENUM ('active', 'inactive');
+
 CREATE TABLE dbeerpedia.breweries (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
+  status dbeerpedia.brewery_status NOT NULL,
   postal_address character varying REFERENCES dbeerpedia.addresses (identifier),
   visit_address character varying REFERENCES dbeerpedia.addresses (identifier)
 );
 
-INSERT INTO dbeerpedia.breweries(identifier, name, postal_address, visit_address) VALUES
-  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f'),
-  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', '3fe6c706-54af-4420-89c4-926ff719236a', NULL),
-  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', NULL, NULL);
+INSERT INTO dbeerpedia.breweries(identifier, name, status, postal_address, visit_address) VALUES
+  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'active', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f'),
+  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL),
+  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL);
 
 CREATE TABLE dbeerpedia.beers (
   identifier character varying NOT NULL PRIMARY KEY,
