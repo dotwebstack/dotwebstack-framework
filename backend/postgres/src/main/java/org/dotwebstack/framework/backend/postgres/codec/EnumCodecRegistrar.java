@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnumCodecRegistrar implements CodecRegistrar {
 
-  private static final String ENUM_OID_STMT = "SELECT t.oid\n" + "FROM pg_type t\n" + "WHERE t.typcategory = 'E'";
+  private static final String ENUM_OID_STMT = "SELECT t.oid FROM pg_type t WHERE t.typcategory = 'E'";
 
   @Override
   public Publisher<Void> register(PostgresqlConnection connection, ByteBufAllocator allocator, CodecRegistry registry) {
