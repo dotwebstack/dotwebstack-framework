@@ -10,6 +10,7 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.PostgresQueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
+import org.dotwebstack.framework.backend.postgres.query.QueryConstants;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -101,7 +102,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .all()
-        .groupBy(map -> map.get("beers_identifier"))
+        .groupBy(map -> map.get(QueryConstants.AGGREGATE_KEY))
         .map(groupedFlux -> createGroupBuffer(groupedFlux, postgresQueryHolder.getFieldAliasMap()));
   }
 

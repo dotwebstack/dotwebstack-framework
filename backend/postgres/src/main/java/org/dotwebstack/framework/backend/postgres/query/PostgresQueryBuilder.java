@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.QueryConstants.AGGREGATE_KEY;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.lateral;
 import static org.jooq.impl.DSL.trueCondition;
 
 import graphql.schema.GraphQLTypeUtil;
@@ -25,6 +26,7 @@ import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -55,17 +57,100 @@ public class PostgresQueryBuilder {
 
   private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
       JoinInformation joinInformation, List<Filter> filters) {
+
+    Map<String, Object> fieldAliasMap = new HashMap<>();
     List<Table<Record>> fromTables = new ArrayList<>();
 
-    JoinTable joinTable = null;
+    Optional<JoinTable> joinTable = getJoinTable(loadEnvironment);
+
+    List<Field<?>> selectedColumns =
+        getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
+
+    Table<Record> fromTable = typeConfiguration.getSqlTable()
+        .as(newTableAlias());
+    fromTables.add(fromTable);
+
+    final Table<Record> fromJoinTable;
+    if (joinTable.isPresent()) {
+      fromJoinTable = DSL.table(joinTable.get()
+          .getName())
+          .as(newTableAlias());
+
+      // TODO: alle joinColumns verwerken
+      Field<?> aggregateKey = QueryHelper.field(fromJoinTable, joinTable.get()
+          .getJoinColumns()
+          .get(0)
+          .getName(), AGGREGATE_KEY);
+      selectedColumns.add(0, aggregateKey);
+
+      fromTables.add(fromJoinTable);
+    } else {
+      fromJoinTable = null;
+    }
+
+    List<TableLike<?>> leftJoins = getNestedResults(typeConfiguration, loadEnvironment.getSelectedFields(),
+        fromTable.getName(), fieldAliasMap, selectedColumns).stream()
+            .map(NestedQueryResult::getTable)
+            .map(DSL::lateral)
+            .collect(Collectors.toList());
+
+    List<Condition> conditions =
+        joinTable.map(table -> createJoinTableConditions(table, fromTable, fromJoinTable, filters))
+            .orElse(new ArrayList<>());
+
+    if (joinInformation != null) {
+      Field<Object> self = field(fromTable.getName()
+          .concat(".")
+          .concat(joinInformation.getReferencedField()));
+      conditions.add(joinInformation.getParent()
+          .eq(self));
+    }
+
+    if (filters != null && filters.size() > 0 && joinTable.isEmpty()) {
+      // TODO: Filter concept moet anders
+      // TODO: alle filters verwerken
+      String field = Optional.of(filters.get(0))
+          .map(FieldFilter.class::cast)
+          .map(FieldFilter::getField)
+          .orElseThrow(() -> illegalStateException("No filter field name found!"));
+
+      Object[] values = filters.stream()
+          .map(FieldFilter.class::cast)
+          .map(FieldFilter::getValue)
+          .toArray(Object[]::new);
+
+      Field<Object> matchField = QueryHelper.field(fromTable, field);
+
+      selectedColumns.add(0, matchField.as(AGGREGATE_KEY));
+
+      conditions.add(matchField.in(values));
+    }
+
+    SelectJoinStep<Record> query = dslContext.select(selectedColumns)
+        .from(fromTables);
+
+    leftJoins.forEach(leftJoin -> query.leftJoin(leftJoin)
+        .on(trueCondition()));
+
+    conditions.forEach(query::where);
+
+    return PostgresQueryHolder.builder()
+        .query(query)
+        .fieldAliasMap(fieldAliasMap)
+        .build();
+  }
+
+  private Optional<JoinTable> getJoinTable(LoadEnvironment loadEnvironment) {
     if (loadEnvironment.getExecutionStepInfo()
         .getParent()
         .getFieldDefinition() != null) {
+
       String parentTypeName = TypeHelper.getTypeName(loadEnvironment.getExecutionStepInfo()
           .getParent()
           .getFieldDefinition()
           .getType());
-      TypeConfiguration parentType = dotWebStackConfiguration.getTypeMapping()
+
+      TypeConfiguration<?> parentType = dotWebStackConfiguration.getTypeMapping()
           .get(parentTypeName);
 
       String fieldName = loadEnvironment.getExecutionStepInfo()
@@ -76,61 +161,18 @@ public class PostgresQueryBuilder {
           .get(fieldName);
 
       if (fieldConfiguration.getJoinTable() != null) {
-        joinTable = fieldConfiguration.getJoinTable();
+        return Optional.of(fieldConfiguration.getJoinTable());
 
       }
     }
+    return Optional.empty();
+  }
 
-    Map<String, Object> fieldAliasMap = new HashMap<>();
-
-    List<Field<Object>> selectedColumns =
-        getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
-
-    Table<Record> fromTable = typeConfiguration.getSqlTable()
-        .as(newTableAlias());
-    fromTables.add(fromTable);
-
-    Table<Record> fromJoinTable = null;
-    if (joinTable != null) {
-      fromJoinTable = DSL.table(joinTable.getName())
-          .as(newTableAlias());
-
-      Field<Object> aggregateKey = DSL.field(fromJoinTable.getName()
-          .concat(".")
-          .concat(joinTable.getJoinColumns()
-              .get(0)
-              .getName()));
-      selectedColumns.add(aggregateKey);
-
-      fromTables.add(fromJoinTable);
-    }
-
-
-    List<NestedQueryResult> nestedQueryResults = getNestedResults(typeConfiguration,
-        loadEnvironment.getSelectedFields(), fromTable.getName(), fieldAliasMap, selectedColumns);
-
-    SelectJoinStep<Record> query = dslContext.select(selectedColumns)
-        .from(fromTables);
-
-    for (NestedQueryResult nestedResult : nestedQueryResults) {
-      Table<Record> nestedQuery = nestedResult.getTable();
-      query.leftJoin(lateral(nestedQuery))
-          .on(trueCondition());
-    }
-
-    if (joinInformation != null) {
-      Field<Object> self = field(fromTable.getName()
-          .concat(".")
-          .concat(joinInformation.getReferencedField()));
-      query.where(joinInformation.getParent()
-          .eq(self));
-    }
+  private List<Condition> createJoinTableConditions(JoinTable joinTable, Table<Record> fromTable,
+      Table<Record> fromJoinTable, List<Filter> filters) {
+    List<Condition> conditions = new ArrayList<>();
 
     if (joinTable != null) {
-      // t3.beers_identifier = t1.identifier
-      // AND t3.ingredients_identifier = t4.identifier
-      System.out.println();
-
       for (JoinColumn joinColumn : joinTable.getJoinColumns()) {
         Field<Object> left = DSL.field(fromJoinTable.getName()
             .concat(".")
@@ -141,7 +183,7 @@ public class PostgresQueryBuilder {
             .map(FieldFilter::getValue)
             .toArray(Object[]::new);
 
-        query.where(left.in(values));
+        conditions.add(left.in(values));
       }
 
       for (JoinColumn joinColumn : joinTable.getInverseJoinColumns()) {
@@ -151,30 +193,17 @@ public class PostgresQueryBuilder {
         Field<Object> right = DSL.field(fromTable.getName()
             .concat(".")
             .concat(joinColumn.getReferencedField()));
-        query.where(left.eq(right));
+
+        conditions.add(left.eq(right));
       }
-
     }
 
-    if (filters != null && filters.size() > 0 && joinTable == null) {
-      filters.forEach(filter -> filter.flatten()
-          .stream()
-          .map(FieldFilter.class::cast)
-          .forEach(fieldKey -> query.where(field(fromTable.getName()
-              .concat(".")
-              .concat(fieldKey.getField())).eq(fieldKey.getValue()))));;
-    }
-
-
-    return PostgresQueryHolder.builder()
-        .query(query)
-        .fieldAliasMap(fieldAliasMap)
-        .build();
+    return conditions;
   }
 
   private List<NestedQueryResult> getNestedResults(PostgresTypeConfiguration typeConfiguration,
       List<SelectedField> selectedFields, String tableName, Map<String, Object> fieldAliasMap,
-      List<Field<Object>> selectedColumns) {
+      List<Field<?>> selectedColumns) {
     return selectedFields.stream()
         .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
             .getType()))
@@ -222,7 +251,7 @@ public class PostgresQueryBuilder {
         .build();
   }
 
-  private List<Field<Object>> getDirectFields(PostgresTypeConfiguration typeConfiguration,
+  private List<Field<?>> getDirectFields(PostgresTypeConfiguration typeConfiguration,
       List<SelectedField> selectedFields, Map<String, Object> fieldAliasMap) {
     return selectedFields.stream()
         .filter(selectedField -> GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
