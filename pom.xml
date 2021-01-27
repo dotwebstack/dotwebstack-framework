@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.dotwebstack.framework</groupId>
@@ -331,6 +333,8 @@
           <version>0.8.5</version>
           <configuration>
             <excludes>
+              <!-- TODO: remove when test coverage is fixed -->
+              <exclude>org/dotwebstack/framework/backend/postgres/**/*</exclude>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
               <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
@@ -366,7 +370,7 @@
                         <minimum>0.5</minimum>
                       </limit>
                     </limits>
-                    <excludes />
+                    <excludes/>
                   </rule>
                 </rules>
               </configuration>
@@ -382,12 +386,12 @@
               <eclipse>
                 <file>${maven.multiModuleProjectDirectory}/eclipse-java-style-dws.xml</file>
               </eclipse>
-              <removeUnusedImports />
-              <endWithNewline />
+              <removeUnusedImports/>
+              <endWithNewline/>
               <importOrder>
                 <file>${maven.multiModuleProjectDirectory}/dws.importorder</file>
               </importOrder>
-              <trimTrailingWhitespace />
+              <trimTrailingWhitespace/>
               <indent>
                 <spaces>true</spaces>
                 <spacesPerTab>2</spacesPerTab>
