@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres;
 
 import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,29 +94,24 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
+    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, filters);
 
-    // TODO: BatchLoad many zal o.b.v een Flux stream een groupBy moeten doen om een Flux van Flux te
-    // maken o.b.v enkele query
+    return this.execute(postgresQueryHolder.getQuery())
+        .fetch()
+        .all()
+        .groupBy(map -> map.get("beers_identifier"))
+        .map(groupedFlux -> createGroupBuffer(groupedFlux, postgresQueryHolder.getFieldAliasMap()));
+  }
 
-    // PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration)
-    // environment.getTypeConfiguration();
-    // PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration,
-    // dslContext);
-    // PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment,
-    // filters);
-    //
-    // return this.execute(postgresQueryHolder.getQuery())
-    // .fetch()
-    // .all()
-    // .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
-    // .map(map -> DataLoaderResult.builder()
-    // .data(map)
-    // .build())
-    // .groupBy()
-    // );
-
-    return Flux.fromIterable(filters)
-        .map(key -> this.loadMany(key, environment));
+  protected Flux<DataLoaderResult> createGroupBuffer(Flux<Map<String, Object>> groupFlux,
+      Map<String, Object> fieldAliasMap) {
+    return groupFlux.take(Duration.ofSeconds(5))
+        .map(map -> toGraphQlMap(map, fieldAliasMap))
+        .map(map -> DataLoaderResult.builder()
+            .data(map)
+            .build());
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

@@ -73,11 +73,20 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       if (!source.containsKey(fieldName)) {
         LocalDataFetcherContext localDataFetcherContext = environment.getLocalContext();
-        FieldFilter fieldFilter = FieldFilter.builder()
-            .field("beers_identifier")
-            .value(source.get("identifier"))
-            .build();
-        return dataLoader.load(fieldFilter);
+        Filter filter;
+
+        if (localDataFetcherContext.getFieldFilters()
+            .containsKey(fieldName)) {
+          filter = localDataFetcherContext.getFieldFilters()
+              .get(fieldName);
+        } else {
+          filter = FieldFilter.builder()
+              .field("beers_identifier")
+              .value(source.get("identifier"))
+              .build();
+        }
+
+        return dataLoader.load(filter);
       }
     }
 

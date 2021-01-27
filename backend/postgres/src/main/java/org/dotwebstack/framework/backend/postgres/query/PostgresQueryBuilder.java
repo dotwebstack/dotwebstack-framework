@@ -77,8 +77,14 @@ public class PostgresQueryBuilder {
 
       if (fieldConfiguration.getJoinTable() != null) {
         joinTable = fieldConfiguration.getJoinTable();
+
       }
     }
+
+    Map<String, Object> fieldAliasMap = new HashMap<>();
+
+    List<Field<Object>> selectedColumns =
+        getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
 
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
@@ -88,13 +94,17 @@ public class PostgresQueryBuilder {
     if (joinTable != null) {
       fromJoinTable = DSL.table(joinTable.getName())
           .as(newTableAlias());
+
+      Field<Object> aggregateKey = DSL.field(fromJoinTable.getName()
+          .concat(".")
+          .concat(joinTable.getJoinColumns()
+              .get(0)
+              .getName()));
+      selectedColumns.add(aggregateKey);
+
       fromTables.add(fromJoinTable);
     }
 
-    Map<String, Object> fieldAliasMap = new HashMap<>();
-
-    List<Field<Object>> selectedColumns =
-        getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
 
     List<NestedQueryResult> nestedQueryResults = getNestedResults(typeConfiguration,
         loadEnvironment.getSelectedFields(), fromTable.getName(), fieldAliasMap, selectedColumns);
@@ -146,15 +156,13 @@ public class PostgresQueryBuilder {
 
     }
 
-    if (filters != null && filters.size() > 0 && loadEnvironment.getExecutionStepInfo()
-        .getParent()
-        .getFieldDefinition() == null) {
-      // filter.flatten()
-      // .stream()
-      // .map(FieldFilter.class::cast)
-      // .forEach(fieldKey -> query.where(field(fromTable.getName()
-      // .concat(".")
-      // .concat(fieldKey.getField())).eq(fieldKey.getValue())));
+    if (filters != null && filters.size() > 0 && joinTable == null) {
+      filters.forEach(filter -> filter.flatten()
+          .stream()
+          .map(FieldFilter.class::cast)
+          .forEach(fieldKey -> query.where(field(fromTable.getName()
+              .concat(".")
+              .concat(fieldKey.getField())).eq(fieldKey.getValue()))));;
     }
 
 
