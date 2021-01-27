@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.notImplementedException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.lateral;
@@ -117,7 +116,8 @@ public class PostgresQueryBuilder {
         .get(selectedField.getName());
 
     if (postgresFieldConfiguration.getMappedBy() != null) {
-      throw notImplementedException("The 'mappedBy' configuration item is not implemented yet!");
+      // throw notImplementedException("The 'mappedBy' configuration item is not implemented yet!");
+      return null;
     }
 
     if (postgresFieldConfiguration.getJoinColumns() == null) {

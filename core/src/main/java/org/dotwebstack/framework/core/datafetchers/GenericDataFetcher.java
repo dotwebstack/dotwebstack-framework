@@ -11,7 +11,9 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
+import graphql.schema.SelectedField;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filters.CompositeFilter;
@@ -27,6 +30,7 @@ import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
+
 
 @Component
 @Slf4j
@@ -69,21 +73,27 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       if (source.containsKey(fieldName)) {
         return dataLoader.load(source.get(fieldName));
+      } else {
+
+        Filter filter = FieldFilter.builder()
+            .field("beers_identifier")
+            .value(source.get("identifier"))
+            .build();
+        return dataLoader.load(filter);
       }
     }
 
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    Optional<Filter> key = getKey(environment);
+    Optional<Filter> key = getFilter(environment);
 
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .queryName(environment.getFieldDefinition()
             .getName())
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
-        .selectedFields(environment.getSelectionSet()
-            .getImmediateFields())
+        .selectedFields(getDirectSelectedFields(environment))
         .build();
 
     // R: loadSingle (cardinality is one-to-one or many-to-one)
@@ -98,11 +108,76 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
-        .map(result -> DataFetcherResult.newResult()
-            .data(result.getData())
-            .build())
+        .map(dataLoaderResult -> getDataFetcherResult(dataLoaderResult.getData(), typeConfiguration,
+            getListSelectedFields(environment)))
         .collectList()
         .toFuture();
+  }
+
+  private List<SelectedField> getDirectSelectedFields(DataFetchingEnvironment environment) {
+    return environment.getSelectionSet()
+        .getImmediateFields()
+        .stream()
+        .filter(
+            selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
+                .getType())))
+        .collect(Collectors.toList());
+  }
+
+  private List<SelectedField> getListSelectedFields(DataFetchingEnvironment environment) {
+    return environment.getSelectionSet()
+        .getImmediateFields()
+        .stream()
+        .filter(selectedField -> GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
+            .getType())))
+        .collect(Collectors.toList());
+  }
+
+
+  private DataFetcherResult<Object> getDataFetcherResult(Map<String, Object> data,
+      TypeConfiguration<?> typeConfiguration, List<SelectedField> selectedFields) {
+    return DataFetcherResult.newResult()
+        .data(data)
+        .localContext(LocalDataFetcherContext.builder()
+            .fieldFilters(createFilters(data, typeConfiguration, selectedFields))
+            .build())
+        .build();
+  }
+
+  private Map<String, Filter> createFilters(Map<String, Object> data, TypeConfiguration<?> typeConfiguration,
+      List<SelectedField> selectedFields) {
+    Map<String, Filter> filters = new HashMap<>();
+
+    for (SelectedField selectedField : selectedFields) {
+      createFilter(typeConfiguration, data, selectedField).ifPresent(f -> filters.put(selectedField.getName(), f));
+    }
+
+    return filters;
+  }
+
+  public Optional<Filter> createFilter(TypeConfiguration<?> typeConfiguration, Map<String, Object> data,
+      SelectedField selectedField) {
+    AbstractFieldConfiguration fieldConfiguration = typeConfiguration.getFields()
+        .get(selectedField.getName());
+
+    // one-to-many (mappedBy)
+    if (fieldConfiguration.getMappedBy() != null) {
+      String typeName = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+          .getType())
+          .getName();
+      TypeConfiguration<?> type = dotWebStackConfiguration.getTypeMapping()
+          .get(typeName);
+
+      String mappedBy = fieldConfiguration.getMappedBy();
+
+      return Optional.of(type.getFields()
+          .get(mappedBy)
+          .createMappedByFilter(data));
+    }
+
+    return Optional.empty();
+    // throw unsupportedOperationException("Unable to create filter for selectedField
+    // '{}'",selectedField.getName());
   }
 
   private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
@@ -117,13 +192,27 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .get(rawType.getName()));
   }
 
-  private Optional<Filter> getKey(DataFetchingEnvironment environment) {
+  private Optional<Filter> getFilter(DataFetchingEnvironment environment) {
+
+    if (environment.getLocalContext() != null) {
+      String fieldName = environment.getFieldDefinition()
+          .getName();
+
+      LocalDataFetcherContext context = environment.getLocalContext();
+
+      if (context.getFieldFilters()
+          .containsKey(fieldName)) {
+        return Optional.of(context.getFieldFilters()
+            .get(fieldName));
+      }
+    }
+
     List<Filter> filters = environment.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> argument.getDirectives("key")
             .size() > 0)
-        .map(argument -> getFieldKey(environment, argument))
+        .map(argument -> getFieldFilter(environment, argument))
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
 
@@ -140,7 +229,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return Optional.empty();
   }
 
-  public FieldFilter getFieldKey(DataFetchingEnvironment environment, GraphQLArgument argument) {
+  public FieldFilter getFieldFilter(DataFetchingEnvironment environment, GraphQLArgument argument) {
     Object value = environment.getArguments()
         .get(argument.getName());
 

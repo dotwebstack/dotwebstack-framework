@@ -33,4 +33,5 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   public String getDataSourceFile() {
     return file;
   }
+
 }

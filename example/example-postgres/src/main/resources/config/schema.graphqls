@@ -21,10 +21,16 @@ type Beer {
   name: String!
   abv: Float!
   brewery: Brewery!
+  ingredients: [Ingredient!]!
 }
 
 type Address {
   identifier: ID!
   street: String!
   city: String!
+}
+
+type Ingredient {
+  identifier: ID!
+  name: String!
 }

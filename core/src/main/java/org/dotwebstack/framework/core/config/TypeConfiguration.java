@@ -11,4 +11,5 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
   Map<String, T> getFields();
 
   void init(ObjectTypeDefinition objectTypeDefinition);
+
 }

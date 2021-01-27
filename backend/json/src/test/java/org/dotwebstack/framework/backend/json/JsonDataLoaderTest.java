@@ -24,6 +24,7 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -227,6 +228,10 @@ class JsonDataLoaderTest {
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
+    @Override
+    public Filter createMappedByFilter(Map<String, Object> referenceData) {
+      return null;
+    }
   }
 
 }

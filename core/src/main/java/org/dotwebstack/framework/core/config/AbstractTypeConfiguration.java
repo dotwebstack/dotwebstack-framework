@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Data;
 
+
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
 public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfiguration> implements TypeConfiguration<T> {
@@ -24,4 +25,5 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   protected Map<String, T> fields;
 
   public void init(ObjectTypeDefinition objectTypeDefinition) {}
+
 }

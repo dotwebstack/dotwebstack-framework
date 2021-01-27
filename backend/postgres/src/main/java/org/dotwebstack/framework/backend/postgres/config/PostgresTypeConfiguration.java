@@ -12,6 +12,7 @@ import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.jooq.Record;
 import org.jooq.Table;
 
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @JsonTypeName("postgres")
@@ -41,4 +42,5 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   public Table<Record> getSqlTable() {
     return sqlTable;
   }
+
 }

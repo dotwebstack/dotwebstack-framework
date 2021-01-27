@@ -26,4 +26,14 @@ public interface Filter {
 
     return List.of();
   }
+
+  static Filter wrap(List<Filter> filters) {
+    if (filters.size() > 1) {
+      return CompositeFilter.builder()
+          .filters(filters)
+          .build();
+    }
+
+    return filters.get(0);
+  }
 }

@@ -30,6 +30,7 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -306,5 +307,9 @@ class Rdf4jDataLoaderTest {
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
+    @Override
+    public Filter createMappedByFilter(Map<String, Object> referenceData) {
+      return null;
+    }
   }
 }
