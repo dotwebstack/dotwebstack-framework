@@ -71,15 +71,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       String fieldName = environment.getFieldDefinition()
           .getName();
 
-      if (source.containsKey(fieldName)) {
-        return dataLoader.load(source.get(fieldName));
-      } else {
-
-        Filter filter = FieldFilter.builder()
+      if (!source.containsKey(fieldName)) {
+        LocalDataFetcherContext localDataFetcherContext = environment.getLocalContext();
+        FieldFilter fieldFilter = FieldFilter.builder()
             .field("beers_identifier")
             .value(source.get("identifier"))
             .build();
-        return dataLoader.load(filter);
+        return dataLoader.load(fieldFilter);
       }
     }
 
@@ -93,7 +91,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .getName())
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
-        .selectedFields(getDirectSelectedFields(environment))
+        .executionStepInfo(environment.getExecutionStepInfo())
+        .selectedFields(environment.getSelectionSet()
+            .getImmediateFields())
         .build();
 
     // R: loadSingle (cardinality is one-to-one or many-to-one)
@@ -263,6 +263,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .typeConfiguration(typeConfiguration)
         .objectType(objectType)
+        .executionStepInfo(environment.getExecutionStepInfo())
         .selectedFields(environment.getSelectionSet()
             .getImmediateFields())
         .build();

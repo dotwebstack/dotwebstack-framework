@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.List;
@@ -12,6 +13,8 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 public final class LoadEnvironment {
 
   private final TypeConfiguration<?> typeConfiguration;
+
+  private final ExecutionStepInfo executionStepInfo;
 
   private final GraphQLObjectType objectType;
 

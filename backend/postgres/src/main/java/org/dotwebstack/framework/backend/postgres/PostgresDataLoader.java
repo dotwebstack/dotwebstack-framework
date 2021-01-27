@@ -56,7 +56,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, filter);
+    PostgresQueryHolder postgresQueryHolder =
+        queryBuilder.build(typeConfiguration, environment, Filter.flatten(filter));
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
@@ -78,7 +79,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, filter);
+    PostgresQueryHolder postgresQueryHolder =
+        queryBuilder.build(typeConfiguration, environment, Filter.flatten(filter));
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
@@ -91,6 +93,27 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
+
+    // TODO: BatchLoad many zal o.b.v een Flux stream een groupBy moeten doen om een Flux van Flux te
+    // maken o.b.v enkele query
+
+    // PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration)
+    // environment.getTypeConfiguration();
+    // PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration,
+    // dslContext);
+    // PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment,
+    // filters);
+    //
+    // return this.execute(postgresQueryHolder.getQuery())
+    // .fetch()
+    // .all()
+    // .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
+    // .map(map -> DataLoaderResult.builder()
+    // .data(map)
+    // .build())
+    // .groupBy()
+    // );
+
     return Flux.fromIterable(filters)
         .map(key -> this.loadMany(key, environment));
   }
