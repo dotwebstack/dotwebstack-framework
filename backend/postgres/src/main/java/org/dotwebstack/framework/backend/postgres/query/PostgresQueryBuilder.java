@@ -213,7 +213,7 @@ public class PostgresQueryBuilder {
             selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
                 .getType())))
         .map(selectedField -> processNested(getJoinInformation(typeConfiguration, selectedField, tableName),
-            selectedField, loadEnvironment.getExecutionStepInfo()))
+            selectedField, loadEnvironment))
         .map(Optional::get)
         .peek(nestedQueryResult -> {
           fieldAliasMap.put(nestedQueryResult.getSelectedField()
@@ -262,7 +262,7 @@ public class PostgresQueryBuilder {
 
   @SuppressWarnings("unchecked")
   private Optional<NestedQueryResult> processNested(JoinInformation joinInformation, SelectedField nestedField,
-      ExecutionStepInfo executionStepInfo) {
+      LoadEnvironment environment) {
     String nestedName = GraphQLTypeUtil.unwrapAll(nestedField.getFieldDefinition()
         .getType())
         .getName();
@@ -278,13 +278,14 @@ public class PostgresQueryBuilder {
     List<SelectedField> nestedSelectedFields = nestedField.getSelectionSet()
         .getImmediateFields();
 
-    LoadEnvironment loadEnvironment = LoadEnvironment.builder()
+    LoadEnvironment childEnvironment = LoadEnvironment.builder()
+        .typeConfiguration(environment.getTypeConfiguration())
         .selectedFields(nestedSelectedFields)
-        .executionStepInfo(executionStepInfo)
+        .executionStepInfo(environment.getExecutionStepInfo())
         .build();
 
     PostgresQueryHolder queryHolder =
-        buildJoin((PostgresTypeConfiguration) nestedTypeConfiguration, loadEnvironment, joinInformation);
+        buildJoin((PostgresTypeConfiguration) nestedTypeConfiguration, childEnvironment, joinInformation);
 
     String joinAlias = newTableAlias();
 

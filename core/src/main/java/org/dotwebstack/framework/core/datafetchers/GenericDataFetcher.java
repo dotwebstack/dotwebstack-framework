@@ -159,18 +159,20 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .get(selectedField.getName());
 
     // one-to-many (mappedBy)
-    if (fieldConfiguration.getMappedBy() != null) {
-      String typeName = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
-          .getType())
-          .getName();
-      TypeConfiguration<?> type = dotWebStackConfiguration.getTypeMapping()
-          .get(typeName);
+    if (fieldConfiguration != null) {
+      if (fieldConfiguration.getMappedBy() != null) {
+        String typeName = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+            .getType())
+            .getName();
+        TypeConfiguration<?> type = dotWebStackConfiguration.getTypeMapping()
+            .get(typeName);
 
-      String mappedBy = fieldConfiguration.getMappedBy();
+        String mappedBy = fieldConfiguration.getMappedBy();
 
-      return Optional.of(type.getFields()
-          .get(mappedBy)
-          .createMappedByFilter(data));
+        return Optional.of(type.getFields()
+            .get(mappedBy)
+            .createMappedByFilter(data));
+      }
     }
 
     return Optional.empty();
