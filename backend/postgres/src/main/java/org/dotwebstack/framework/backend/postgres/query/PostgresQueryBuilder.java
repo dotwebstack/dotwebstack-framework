@@ -54,6 +54,8 @@ public class PostgresQueryBuilder {
       List<Filter> filters) {
 
     //TODO: filters hier implementeren en niet delegeren
+    //TODO: Als we dit gemaakt hebben zouden we overweg kunnen met het scenario dat een Brouwerij geen bieren heeft. Brewery>beer query
+    //TODO: Brewery Z heeft nu wel een bier maar dient dat niet te hebben. -> verwijderen uit init script
     /* SELECT t1.identifier AS x1, t2.*
           FROM (
             VALUES ('b0e7cf18-e3ce-439b-a63e-034c8452f59c')
