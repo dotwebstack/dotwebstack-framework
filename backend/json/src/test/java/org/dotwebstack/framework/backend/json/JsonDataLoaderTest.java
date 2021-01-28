@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
@@ -21,7 +22,6 @@ import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
@@ -93,19 +93,16 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<DataLoaderResult> result = jsonDataLoader.loadSingle(fieldFilter, environment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, environment);
 
     // Assert
     assertThat(result.hasElement()
         .block(), is(true));
-    DataLoaderResult dataLoaderResult = result.block();
-    assertThat(Objects.requireNonNull(dataLoaderResult)
-        .getData()
+    Map<String, Object> data = result.block();
+    assertThat(Objects.requireNonNull(data)
         .size(), is(3));
-    assertThat(dataLoaderResult.getData()
-        .get(FIELD_IDENTIFIER), is(1));
-    assertThat(dataLoaderResult.getData()
-        .get(FIELD_NAME), is("Alfa Edel Pils"));
+    assertThat(data.get(FIELD_IDENTIFIER), is(1));
+    assertThat(data.get(FIELD_NAME), is("Alfa Edel Pils"));
   }
 
   @Test
@@ -123,7 +120,7 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<DataLoaderResult> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -140,19 +137,17 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Flux<DataLoaderResult> result = jsonDataLoader.loadMany(null, loadEnvironment);
+    Flux<Map<String, Object>> result = jsonDataLoader.loadMany(null, loadEnvironment);
 
     // Assert
-    List<DataLoaderResult> resultList = new ArrayList<>(result.collectList()
+    List<Map<String, Object>> resultList = new ArrayList<>(result.collectList()
         .toFuture()
         .get());
 
     assertThat(resultList.size(), is(2));
     assertThat(resultList.get(0)
-        .getData()
         .get("name"), is("Alfa Edel Pils"));
     assertThat(resultList.get(1)
-        .getData()
         .get("name"), is("Alfa Radler"));
   }
 
@@ -200,6 +195,7 @@ class JsonDataLoaderTest {
     return LoadEnvironment.builder()
         .objectType(graphQlObjectType)
         .typeConfiguration(jsonTypeConfiguration)
+        .executionStepInfo(mock(ExecutionStepInfo.class))
         .queryName(BEERS_QUERY_NAME)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
         .build();

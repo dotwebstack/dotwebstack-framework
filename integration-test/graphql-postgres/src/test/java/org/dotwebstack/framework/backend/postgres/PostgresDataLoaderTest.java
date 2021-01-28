@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.time.Duration;
@@ -23,7 +24,6 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.jooq.DSLContext;
@@ -107,18 +107,18 @@ class PostgresDataLoaderTest {
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act
-    DataLoaderResult result = postgresDataLoader.loadSingle(fieldFilter, loadEnvironment)
+    Map<String, Object> row = postgresDataLoader.loadSingle(fieldFilter, loadEnvironment)
         .block(Duration.ofSeconds(5));
 
     // Assert
-    assertThat(result, notNullValue());
-    assertThat(result.getData()
-        .entrySet(),
-        equalTo(Map.of("identifier", identifier, "name", name)
-            .entrySet()));
+    assertThat(row, notNullValue());
+    assertThat(row.entrySet(), equalTo(Map.of("identifier", identifier, "name", name)
+        .entrySet()));
 
     verify(databaseClient)
-        .sql("select identifier as \"x1\", name as \"x2\" from db.brewery as \"t1\" where t1.identifier = :1");
+        .sql("select t1.identifier, t3.* from (values (:1)) as \"t1\" (\"identifier\") join lateral (select "
+            + "identifier as \"x1\", name as \"x2\" from db.brewery as \"t2\" where t2.identifier "
+            + "in (t1.identifier)) as \"t3\" on true");
   }
 
   @Test
@@ -134,13 +134,12 @@ class PostgresDataLoaderTest {
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act
-    DataLoaderResult result = postgresDataLoader.loadMany(null, loadEnvironment)
+    Map<String, Object> result = postgresDataLoader.loadMany(null, loadEnvironment)
         .blockLast(Duration.ofSeconds(5));
 
     // Assert
     assertThat(result, notNullValue());
-    assertThat(result.getData()
-        .entrySet(),
+    assertThat(result.entrySet(),
         equalTo(Map.of("identifier", "d3654375-95fa-46b4-8529-08b0f777bd6c", "name", "Brewery Y")
             .entrySet()));
 
@@ -161,9 +160,13 @@ class PostgresDataLoaderTest {
   private LoadEnvironment createLoadEnvironment() {
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration();
 
+    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
+
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .typeConfiguration(typeConfiguration)
-        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
+        .executionStepInfo(mock(ExecutionStepInfo.class));
+
 
     return loadEnvironmentBuilder.build();
   }

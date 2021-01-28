@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -12,7 +12,6 @@ import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
-import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
@@ -54,7 +53,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<DataLoaderResult> loadSingle(Filter filter, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
@@ -64,20 +63,17 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .one()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
-        .map(map -> DataLoaderResult.builder()
-            .data(map)
-            .build());
+        .map(row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
   }
 
   @Override
-  public Flux<Tuple2<Filter, DataLoaderResult>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
+  public Flux<Tuple2<Filter, Map<String, Object>>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
     return Flux.fromIterable(filters)
         .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<DataLoaderResult> loadMany(Filter filter, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
@@ -87,14 +83,11 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()))
-        .map(map -> DataLoaderResult.builder()
-            .data(map)
-            .build());
+        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
   }
 
   @Override
-  public Flux<GroupedFlux<Filter, DataLoaderResult>> batchLoadMany(final Set<Filter> filters,
+  public Flux<GroupedFlux<Filter, Map<String, Object>>> batchLoadMany(final Set<Filter> filters,
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
@@ -105,20 +98,8 @@ public class PostgresDataLoader implements BackendDataLoader {
         .all()
         .groupBy(row -> getFilterByKey(filters, row.get(row.keySet()
             .iterator()
-            .next())), row -> createValue(row, postgresQueryHolder.getFieldAliasMap()));
+            .next())), row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
   }
-
-  private DataLoaderResult createValue(Map<String, Object> row, Map<String, Object> fieldAliasMap) {
-    return DataLoaderResult.builder()
-        .data(toGraphQlMap(row, fieldAliasMap))
-        .build();
-  }
-
-  private Tuple2<Filter, Flux<DataLoaderResult>> createTuple(GroupedFlux<Filter, DataLoaderResult> groupedFlux,
-      Map<String, Object> fieldAliasMap) {
-    return Tuples.of(groupedFlux.key(), groupedFlux);
-  }
-
 
   private Filter getFilterByKey(Set<Filter> filters, Object key) {
     return filters.stream()
@@ -126,16 +107,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .filter(filter -> filter.getValue()
             .equals(key.toString()))
         .findFirst()
-        .get();
-  }
-
-  protected Flux<DataLoaderResult> createGroupBuffer(Flux<Map<String, Object>> groupFlux,
-      Map<String, Object> fieldAliasMap) {
-    return groupFlux.take(Duration.ofSeconds(5))
-        .map(map -> toGraphQlMap(map, fieldAliasMap))
-        .map(map -> DataLoaderResult.builder()
-            .data(map)
-            .build());
+        .orElseThrow(() -> illegalStateException("Unable to find filter for key {}", key));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

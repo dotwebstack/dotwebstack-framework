@@ -159,31 +159,31 @@ public class PostgresQueryBuilder {
   }
 
   private Optional<JoinTable> getJoinTable(LoadEnvironment loadEnvironment) {
-    if (loadEnvironment.getExecutionStepInfo()
-        .getParent()
-        .getFieldDefinition() != null) {
+    return Optional.ofNullable(loadEnvironment.getExecutionStepInfo())
+        .map(ExecutionStepInfo::getParent)
+        .map(ExecutionStepInfo::getFieldDefinition)
+        .map(fieldDefinition -> {
+          String parentTypeName = TypeHelper.getTypeName(loadEnvironment.getExecutionStepInfo()
+              .getParent()
+              .getFieldDefinition()
+              .getType());
 
-      String parentTypeName = TypeHelper.getTypeName(loadEnvironment.getExecutionStepInfo()
-          .getParent()
-          .getFieldDefinition()
-          .getType());
+          TypeConfiguration<?> parentType = dotWebStackConfiguration.getTypeMapping()
+              .get(parentTypeName);
 
-      TypeConfiguration<?> parentType = dotWebStackConfiguration.getTypeMapping()
-          .get(parentTypeName);
+          String fieldName = loadEnvironment.getExecutionStepInfo()
+              .getFieldDefinition()
+              .getName();
 
-      String fieldName = loadEnvironment.getExecutionStepInfo()
-          .getFieldDefinition()
-          .getName();
+          PostgresFieldConfiguration fieldConfiguration = (PostgresFieldConfiguration) parentType.getFields()
+              .get(fieldName);
 
-      PostgresFieldConfiguration fieldConfiguration = (PostgresFieldConfiguration) parentType.getFields()
-          .get(fieldName);
+          if (fieldConfiguration.getJoinTable() != null) {
+            return fieldConfiguration.getJoinTable();
+          }
 
-      if (fieldConfiguration.getJoinTable() != null) {
-        return Optional.of(fieldConfiguration.getJoinTable());
-
-      }
-    }
-    return Optional.empty();
+          return null;
+        });
   }
 
   private List<Condition> createJoinTableConditions(JoinTable joinTable, Table<Record> fromTable,

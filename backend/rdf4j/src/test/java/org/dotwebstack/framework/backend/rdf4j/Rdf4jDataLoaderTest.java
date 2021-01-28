@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
@@ -27,7 +28,6 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.DataLoaderResult;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
@@ -111,21 +111,18 @@ class Rdf4jDataLoaderTest {
     mockRepository(createBindingSet(identifier, name));
 
     // Act
-    Mono<DataLoaderResult> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
 
     assertThat(result.hasElement()
         .block(), is(true));
-    DataLoaderResult dataLoaderResult = result.block();
-    assertThat(Objects.requireNonNull(dataLoaderResult)
-        .getData()
+    Map<String, Object> row = result.block();
+    assertThat(Objects.requireNonNull(row)
         .size(), is(2));
-    assertThat(dataLoaderResult.getData()
-        .get(FIELD_IDENTIFIER), is(identifier));
-    assertThat(dataLoaderResult.getData()
-        .get(FIELD_NAME), is(name));
+    assertThat(row.get(FIELD_IDENTIFIER), is(identifier));
+    assertThat(row.get(FIELD_NAME), is(name));
   }
 
   @Test
@@ -142,7 +139,7 @@ class Rdf4jDataLoaderTest {
     mockRepository();
 
     // Act
-    Mono<DataLoaderResult> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -173,31 +170,25 @@ class Rdf4jDataLoaderTest {
     mockRepository(breweryX, breweryY, breweryZ);
 
     // Act
-    Flux<DataLoaderResult> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
+    Flux<Map<String, Object>> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getManyQuery()));
 
-    List<DataLoaderResult> resultList = result.toStream()
+    List<Map<String, Object>> resultList = result.toStream()
         .collect(Collectors.toList());
     assertThat(resultList.size(), is(3));
     assertThat(resultList.get(0)
-        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryX));
     assertThat(resultList.get(0)
-        .getData()
         .get(FIELD_NAME), is(nameOfBreweryX));
     assertThat(resultList.get(1)
-        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryY));
     assertThat(resultList.get(1)
-        .getData()
         .get(FIELD_NAME), is(nameOfBreweryY));
     assertThat(resultList.get(2)
-        .getData()
         .get(FIELD_IDENTIFIER), is(identifierOfBreweryZ));
     assertThat(resultList.get(2)
-        .getData()
         .get(FIELD_NAME), is(nameOfBreweryZ));
   }
 
@@ -236,6 +227,7 @@ class Rdf4jDataLoaderTest {
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .objectType(graphQlObjectType)
         .typeConfiguration(rdf4jTypeConfiguration)
+        .executionStepInfo(mock(ExecutionStepInfo.class))
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
 
     return loadEnvironmentBuilder.build();

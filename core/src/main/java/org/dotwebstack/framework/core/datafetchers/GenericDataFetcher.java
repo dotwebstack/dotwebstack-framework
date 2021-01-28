@@ -113,15 +113,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(key.orElse(null), loadEnvironment)
-          .map(result -> DataFetcherResult.newResult()
-              .data(result.getData())
-              .build())
           .toFuture();
     }
 
     return backendDataLoader.loadMany(key.orElse(null), loadEnvironment)
-        .map(dataLoaderResult -> getDataFetcherResult(dataLoaderResult.getData(), typeConfiguration,
-            getListSelectedFields(environment)))
+        .map(row -> getDataFetcherResult(row, typeConfiguration, getListSelectedFields(environment)))
         .collectList()
         .toFuture();
   }
@@ -273,7 +269,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
           .flatMap(group -> group.map(data -> DataFetcherResult.newResult()
-              .data(data.getData())
+              .data(data)
               .build())
               .collectList()
               .map(list -> createEntry(group.key(), list)))
