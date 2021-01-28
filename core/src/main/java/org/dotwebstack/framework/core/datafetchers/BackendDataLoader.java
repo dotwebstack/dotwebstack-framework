@@ -20,5 +20,6 @@ public interface BackendDataLoader {
 
   Flux<DataLoaderResult> loadMany(Filter filter, LoadEnvironment environment);
 
+  //TODO: proberen aan te passen naar Flux<GroupedFlux<DataLoaderResult>>
   Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment);
 }

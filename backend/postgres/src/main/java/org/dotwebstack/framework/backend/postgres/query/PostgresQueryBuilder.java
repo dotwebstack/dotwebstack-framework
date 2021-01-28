@@ -52,9 +52,18 @@ public class PostgresQueryBuilder {
 
   public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
       List<Filter> filters) {
+
+    //TODO: filters hier implementeren en niet delegeren
+    /* SELECT t1.identifier AS x1, t2.*
+          FROM (
+            VALUES ('b0e7cf18-e3ce-439b-a63e-034c8452f59c')
+          ) AS t1 (identifier)
+          LEFT JOIN LATERAL ( innerQuery ) */
+
     return build(typeConfiguration, loadEnvironment, null, filters);
   }
 
+  //TODO: deze methode verder opknippen
   private PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
       JoinInformation joinInformation, List<Filter> filters) {
 
@@ -76,7 +85,7 @@ public class PostgresQueryBuilder {
           .getName())
           .as(newTableAlias());
 
-      // TODO: alle joinColumns verwerken
+      // TODO: alle joinColumns verwerken, niet enkel 0
       Field<?> aggregateKey = QueryHelper.field(fromJoinTable, joinTable.get()
           .getJoinColumns()
           .get(0)
@@ -99,6 +108,7 @@ public class PostgresQueryBuilder {
             .orElse(new ArrayList<>());
 
     if (joinInformation != null) {
+      //TODO: QueryHelper gebruiken om field te maken
       Field<Object> self = field(fromTable.getName()
           .concat(".")
           .concat(joinInformation.getReferencedField()));
@@ -107,8 +117,7 @@ public class PostgresQueryBuilder {
     }
 
     if (filters != null && filters.size() > 0 && joinTable.isEmpty()) {
-      // TODO: Filter concept moet anders
-      // TODO: alle filters verwerken
+      // TODO: Filters moeten hier weg zie andere build methode
       String field = Optional.of(filters.get(0))
           .map(FieldFilter.class::cast)
           .map(FieldFilter::getField)

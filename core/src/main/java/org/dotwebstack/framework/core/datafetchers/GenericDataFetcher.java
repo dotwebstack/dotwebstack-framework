@@ -80,6 +80,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           filter = localDataFetcherContext.getFieldFilters()
               .get(fieldName);
         } else {
+          //TODO: Filter moet uit de parent komen of dynamisch bepaald moeten kunnen worden
           filter = FieldFilter.builder()
               .field("beers_identifier")
               .value(source.get("identifier"))
@@ -121,16 +122,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             getListSelectedFields(environment)))
         .collectList()
         .toFuture();
-  }
-
-  private List<SelectedField> getDirectSelectedFields(DataFetchingEnvironment environment) {
-    return environment.getSelectionSet()
-        .getImmediateFields()
-        .stream()
-        .filter(
-            selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
-                .getType())))
-        .collect(Collectors.toList());
   }
 
   private List<SelectedField> getListSelectedFields(DataFetchingEnvironment environment) {
