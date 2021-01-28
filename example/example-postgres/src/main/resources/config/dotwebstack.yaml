@@ -43,3 +43,11 @@ typeMapping:
             referencedField: identifier
       beers:
         mappedBy: brewery
+
+  Address:
+    backend: postgres
+    table: dbeerpedia.addresses
+    keys:
+      - field: identifier
+    fields:
+      street:

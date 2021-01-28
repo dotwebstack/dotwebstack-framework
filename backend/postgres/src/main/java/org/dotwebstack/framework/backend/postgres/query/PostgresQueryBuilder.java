@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.trueCondition;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
@@ -56,8 +57,12 @@ public class PostgresQueryBuilder {
 
     if (filters != null && filters.size() > 0) {
       String tableName = newTableAlias();
-      String identifierColumn = ((FieldFilter) filters.iterator()
+      String fieldName = ((FieldFilter) filters.iterator()
           .next()).getField();
+      String identifierColumn = typeConfiguration.getFields()
+          .get(fieldName)
+          .getSqlColumnName();
+
       Field<?> fieldIdentifier = QueryHelper.field(DSL.table(tableName), identifierColumn);
 
       Row1[] rows = filters.stream()
@@ -122,8 +127,9 @@ public class PostgresQueryBuilder {
       fromJoinTable = null;
     }
 
-    List<TableLike<?>> leftJoins = getNestedResults(typeConfiguration, loadEnvironment.getSelectedFields(),
-        fromTable.getName(), fieldAliasMap, selectedColumns).stream()
+    List<TableLike<?>> leftJoins =
+        getNestedResults(typeConfiguration, loadEnvironment, fromTable.getName(), fieldAliasMap, selectedColumns)
+            .stream()
             .map(NestedQueryResult::getTable)
             .map(DSL::lateral)
             .collect(Collectors.toList());
@@ -197,16 +203,17 @@ public class PostgresQueryBuilder {
   }
 
   private List<NestedQueryResult> getNestedResults(PostgresTypeConfiguration typeConfiguration,
-      List<SelectedField> selectedFields, String tableName, Map<String, Object> fieldAliasMap,
+      LoadEnvironment loadEnvironment, String tableName, Map<String, Object> fieldAliasMap,
       List<Field<?>> selectedColumns) {
-    return selectedFields.stream()
+    return loadEnvironment.getSelectedFields()
+        .stream()
         .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
             .getType()))
         .filter(
             selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
                 .getType())))
         .map(selectedField -> processNested(getJoinInformation(typeConfiguration, selectedField, tableName),
-            selectedField))
+            selectedField, loadEnvironment.getExecutionStepInfo()))
         .map(Optional::get)
         .peek(nestedQueryResult -> {
           fieldAliasMap.put(nestedQueryResult.getSelectedField()
@@ -254,7 +261,8 @@ public class PostgresQueryBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  private Optional<NestedQueryResult> processNested(JoinInformation joinInformation, SelectedField nestedField) {
+  private Optional<NestedQueryResult> processNested(JoinInformation joinInformation, SelectedField nestedField,
+      ExecutionStepInfo executionStepInfo) {
     String nestedName = GraphQLTypeUtil.unwrapAll(nestedField.getFieldDefinition()
         .getType())
         .getName();
@@ -272,6 +280,7 @@ public class PostgresQueryBuilder {
 
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .selectedFields(nestedSelectedFields)
+        .executionStepInfo(executionStepInfo)
         .build();
 
     PostgresQueryHolder queryHolder =

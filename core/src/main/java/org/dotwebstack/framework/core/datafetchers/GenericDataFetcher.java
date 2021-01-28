@@ -55,7 +55,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       // Check if data is already present (eager-loaded)
       if (source.containsKey(resultKey)) {
-        return source.get(resultKey);
+        if (source.get(resultKey) instanceof Map && ((Map<?, ?>) source.get(resultKey)).size() > 0) {
+          return source.get(resultKey);
+        }
+        return null;
       }
 
       // Create separate dataloader for every unique path, since evert path can have different arguments
@@ -175,8 +178,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     return Optional.empty();
-    // throw unsupportedOperationException("Unable to create filter for selectedField
-    // '{}'",selectedField.getName());
   }
 
   private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {

@@ -11,7 +11,7 @@ import org.jooq.Table;
 
 @Builder
 @Getter
-class NestedQueryResult {
+public class NestedQueryResult {
 
   private final SelectedField selectedField;
 
