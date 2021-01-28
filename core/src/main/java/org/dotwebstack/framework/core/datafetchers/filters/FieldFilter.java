@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Builder
 @Getter
-// @EqualsAndHashCode(of = "value")
 public class FieldFilter implements Filter {
 
   private final String field;

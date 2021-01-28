@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -17,9 +18,12 @@ import reactor.util.function.Tuple2;
 @Component
 public class JsonDataLoader implements BackendDataLoader {
 
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
   private final JsonDataService jsonDataService;
 
-  public JsonDataLoader(JsonDataService jsonDataService) {
+  public JsonDataLoader(DotWebStackConfiguration dotWebStackConfiguration, JsonDataService jsonDataService) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.jsonDataService = jsonDataService;
   }
 
@@ -30,7 +34,7 @@ public class JsonDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
-    JsonTypeConfiguration typeConfiguration = (JsonTypeConfiguration) environment.getTypeConfiguration();
+    JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
 
@@ -50,7 +54,7 @@ public class JsonDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
-    JsonTypeConfiguration typeConfiguration = (JsonTypeConfiguration) environment.getTypeConfiguration();
+    JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
 

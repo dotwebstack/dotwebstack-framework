@@ -101,7 +101,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
         .queryName(environment.getFieldDefinition()
             .getName())
-        .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectedFields(environment.getSelectionSet()
@@ -259,14 +258,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
     LoadEnvironment loadEnvironment = LoadEnvironment.builder()
-        .typeConfiguration(typeConfiguration)
         .objectType(objectType)
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectedFields(environment.getSelectionSet()
             .getImmediateFields())
         .build();
-
-    // .flatMap(group -> group.collectList().map(list -> new Map.Entry(group.key(), list))
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)

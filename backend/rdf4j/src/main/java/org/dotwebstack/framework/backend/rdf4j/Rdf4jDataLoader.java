@@ -12,6 +12,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryBuilder;
 import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryHolder;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -29,12 +30,15 @@ import reactor.util.function.Tuple2;
 @Component
 public class Rdf4jDataLoader implements BackendDataLoader {
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final LocalRepositoryManager localRepositoryManager;
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  public Rdf4jDataLoader(@NonNull LocalRepositoryManager localRepositoryManager,
-      @NonNull NodeShapeRegistry nodeShapeRegistry) {
+  public Rdf4jDataLoader(@NonNull DotWebStackConfiguration dotWebStackConfiguration,
+      @NonNull LocalRepositoryManager localRepositoryManager, @NonNull NodeShapeRegistry nodeShapeRegistry) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.localRepositoryManager = localRepositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
   }
@@ -87,7 +91,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   private Rdf4jQueryHolder getQueryHolder(Filter filter, LoadEnvironment environment) {
-    Rdf4jTypeConfiguration typeConfiguration = (Rdf4jTypeConfiguration) environment.getTypeConfiguration();
+    Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 

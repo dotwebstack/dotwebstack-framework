@@ -21,6 +21,7 @@ import org.dotwebstack.framework.backend.json.config.JsonFieldConfiguration;
 import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
@@ -49,13 +50,16 @@ class JsonDataLoaderTest {
   @Mock
   private JsonDataService jsonDataService;
 
+  @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
   private JsonDataLoader jsonDataLoader;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   void init() {
-    jsonDataLoader = new JsonDataLoader(jsonDataService);
+    jsonDataLoader = new JsonDataLoader(dotWebStackConfiguration, jsonDataService);
   }
 
   @Test
@@ -88,12 +92,14 @@ class JsonDataLoaderTest {
 
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers[?]");
 
-    LoadEnvironment environment = createLoadEnvironment(jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
+
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(jsonTypeConfiguration);
 
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, environment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -116,7 +122,10 @@ class JsonDataLoaderTest {
     JsonNode jsonNode = getDataAsJsonNode();
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers[?]");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
+
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(jsonTypeConfiguration);
+
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
@@ -133,7 +142,10 @@ class JsonDataLoaderTest {
     JsonNode jsonNode = getDataAsJsonNode();
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
+
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(jsonTypeConfiguration);
+
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
@@ -154,9 +166,7 @@ class JsonDataLoaderTest {
   @Test
   void batchLoadSingle_ThrowsException() {
     // Arrange
-    JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
-
-    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadSingle(null, loadEnvironment));
@@ -165,9 +175,7 @@ class JsonDataLoaderTest {
   @Test
   void batchLoadMany_ThrowsException() {
     // Arrange
-    JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
-
-    LoadEnvironment loadEnvironment = createLoadEnvironment(jsonTypeConfiguration);
+    LoadEnvironment loadEnvironment = createLoadEnvironment();
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadMany(null, loadEnvironment));
@@ -187,14 +195,13 @@ class JsonDataLoaderTest {
     return jsonTypeConfiguration;
   }
 
-  private LoadEnvironment createLoadEnvironment(JsonTypeConfiguration jsonTypeConfiguration) {
+  private LoadEnvironment createLoadEnvironment() {
     GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
         .name(NODE_BEER)
         .build();
 
     return LoadEnvironment.builder()
         .objectType(graphQlObjectType)
-        .typeConfiguration(jsonTypeConfiguration)
         .executionStepInfo(mock(ExecutionStepInfo.class))
         .queryName(BEERS_QUERY_NAME)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))

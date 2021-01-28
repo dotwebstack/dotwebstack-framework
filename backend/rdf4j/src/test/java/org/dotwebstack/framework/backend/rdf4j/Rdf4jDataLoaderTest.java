@@ -27,6 +27,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
@@ -67,13 +68,16 @@ class Rdf4jDataLoaderTest {
   private LocalRepositoryManager localRepositoryManager;
 
   @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
+  @Mock
   private NodeShapeRegistry nodeShapeRegistry;
 
   private Rdf4jDataLoader rdf4jDataLoader;
 
   @BeforeEach
   void init() {
-    rdf4jDataLoader = new Rdf4jDataLoader(localRepositoryManager, nodeShapeRegistry);
+    rdf4jDataLoader = new Rdf4jDataLoader(dotWebStackConfiguration, localRepositoryManager, nodeShapeRegistry);
   }
 
   @Test
@@ -107,6 +111,7 @@ class Rdf4jDataLoaderTest {
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createRdf4jTypeConfiguration());
 
     mockRepository(createBindingSet(identifier, name));
 
@@ -138,6 +143,8 @@ class Rdf4jDataLoaderTest {
     LoadEnvironment loadEnvironment = createLoadEnvironment();
     mockRepository();
 
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createRdf4jTypeConfiguration());
+
     // Act
     Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
 
@@ -168,6 +175,8 @@ class Rdf4jDataLoaderTest {
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
     mockRepository(breweryX, breweryY, breweryZ);
+
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createRdf4jTypeConfiguration());
 
     // Act
     Flux<Map<String, Object>> result = rdf4jDataLoader.loadMany(null, loadEnvironment);
@@ -212,8 +221,6 @@ class Rdf4jDataLoaderTest {
   }
 
   private LoadEnvironment createLoadEnvironment() {
-    Rdf4jTypeConfiguration rdf4jTypeConfiguration = createRdf4jTypeConfiguration();
-
     PropertyShape propertyShapeIdentifier =
         createPropertyShape("https://github.com/dotwebstack/beer/def#", FIELD_IDENTIFIER);
     PropertyShape propertyShapeName = createPropertyShape("http://schema.org/", FIELD_NAME);
@@ -226,7 +233,6 @@ class Rdf4jDataLoaderTest {
 
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .objectType(graphQlObjectType)
-        .typeConfiguration(rdf4jTypeConfiguration)
         .executionStepInfo(mock(ExecutionStepInfo.class))
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
 

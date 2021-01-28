@@ -106,6 +106,8 @@ class PostgresDataLoaderTest {
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createTypeConfiguration());
+
     // Act
     Map<String, Object> row = postgresDataLoader.loadSingle(fieldFilter, loadEnvironment)
         .block(Duration.ofSeconds(5));
@@ -133,6 +135,8 @@ class PostgresDataLoaderTest {
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
+    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createTypeConfiguration());
+
     // Act
     Map<String, Object> result = postgresDataLoader.loadMany(null, loadEnvironment)
         .blockLast(Duration.ofSeconds(5));
@@ -158,12 +162,7 @@ class PostgresDataLoaderTest {
   }
 
   private LoadEnvironment createLoadEnvironment() {
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration();
-
-    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
-
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
-        .typeConfiguration(typeConfiguration)
         .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
         .executionStepInfo(mock(ExecutionStepInfo.class));
 

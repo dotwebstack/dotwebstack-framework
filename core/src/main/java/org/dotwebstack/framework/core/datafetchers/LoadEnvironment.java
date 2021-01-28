@@ -7,14 +7,10 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 @Builder
 @Getter
 public final class LoadEnvironment {
-
-  @NonNull
-  private final TypeConfiguration<?> typeConfiguration;
 
   @NonNull
   private final ExecutionStepInfo executionStepInfo;

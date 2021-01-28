@@ -279,7 +279,6 @@ public class PostgresQueryBuilder {
         .getImmediateFields();
 
     LoadEnvironment childEnvironment = LoadEnvironment.builder()
-        .typeConfiguration(environment.getTypeConfiguration())
         .selectedFields(nestedSelectedFields)
         .executionStepInfo(environment.getExecutionStepInfo())
         .build();

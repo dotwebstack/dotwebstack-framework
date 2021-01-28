@@ -54,7 +54,7 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
     PostgresQueryHolder postgresQueryHolder =
@@ -74,7 +74,7 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
     PostgresQueryHolder postgresQueryHolder =
@@ -89,7 +89,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<Filter, Map<String, Object>>> batchLoadMany(final Set<Filter> filters,
       LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
     PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, filters);
 
