@@ -28,7 +28,6 @@ import org.dotwebstack.framework.core.datafetchers.filters.CompositeFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 
@@ -80,7 +79,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           filter = localDataFetcherContext.getFieldFilters()
               .get(fieldName);
         } else {
-          //TODO: Filter moet uit de parent komen of dynamisch bepaald moeten kunnen worden
+          // TODO: Filter moet uit de parent komen of dynamisch bepaald moeten kunnen worden
           filter = FieldFilter.builder()
               .field("beers_identifier")
               .value(source.get("identifier"))
@@ -268,15 +267,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .getImmediateFields())
         .build();
 
+    // .flatMap(group -> group.collectList().map(list -> new Map.Entry(group.key(), list))
+
     if (GraphQLTypeUtil.isList(unwrappedType)) {
-      return DataLoader.newDataLoader(requests -> backendDataLoader.batchLoadMany(requests, loadEnvironment)
-          .flatMapSequential(Flux::collectList)
-          .map(map -> map.stream()
-              .map(DataLoaderResult::getData)
-              .map(data -> DataFetcherResult.newResult()
-                  .data(data)
-                  .build()))
-          .collectList()
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
+          .flatMap(group -> group.map(data -> DataFetcherResult.newResult()
+              .data(data.getData())
+              .build())
+              .collectList()
+              .map(list -> createEntry(group.key(), list)))
+          .collectMap(Map.Entry::getKey, Map.Entry::getValue)
           .toFuture());
     }
 
@@ -285,6 +285,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .data(tuple.getT2())
             .build())
         .toFuture());
+  }
+
+  private Map.Entry<Filter, List<DataFetcherResult<Object>>> createEntry(Filter filter,
+      List<DataFetcherResult<Object>> list) {
+    return Map.entry(filter, list);
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.List;
 import java.util.Set;
 import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -11,6 +10,7 @@ import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -69,7 +69,7 @@ public class JsonDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
+  public Flux<GroupedFlux<Filter, DataLoaderResult>> batchLoadMany(Set<Filter> filters, LoadEnvironment environment) {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }
 

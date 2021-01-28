@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
@@ -24,6 +23,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -81,7 +81,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Flux<DataLoaderResult>> batchLoadMany(List<Filter> filters, LoadEnvironment environment) {
+  public Flux<GroupedFlux<Filter, DataLoaderResult>> batchLoadMany(Set<Filter> filters, LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
