@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.execution.ExecutionStepInfo;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
@@ -23,9 +24,10 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
+import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -83,9 +85,9 @@ class JsonDataLoaderTest {
   @Test
   void loadSingle_Beer1_ForKey() throws JsonProcessingException {
     // Arrange
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value("1")
+
+    FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", "1"))
         .build();
 
     JsonNode jsonNode = getDataAsJsonNode();
@@ -99,7 +101,7 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldKeyCondition, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -114,9 +116,9 @@ class JsonDataLoaderTest {
   @Test
   void loadSingle_Empty_ForNonExistingKey() throws JsonProcessingException {
     // Arrange
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value("not-existing-identifier")
+
+    FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", "not-existing-identifier"))
         .build();
 
     JsonNode jsonNode = getDataAsJsonNode();
@@ -129,7 +131,7 @@ class JsonDataLoaderTest {
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
     // Act
-    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldKeyCondition, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -228,13 +230,23 @@ class JsonDataLoaderTest {
   }
 
   private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
+    @Override
+    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
+      return null;
+    }
+
+    @Override
+    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
+      return null;
+    }
+
+    @Override
+    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
+      return null;
+    }
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
-    @Override
-    public Filter createMappedByFilter(Map<String, Object> referenceData) {
-      return null;
-    }
   }
 
 }

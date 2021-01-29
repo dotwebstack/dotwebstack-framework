@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,7 +33,7 @@ class JsonQueryResultTest {
     setup("$.beers", getSingleBreweryAsJson());
 
     // Act
-    List<Map<String, Object>> result = jsonQueryResult.getResults(List.of());
+    List<Map<String, Object>> result = jsonQueryResult.getResults(null);
 
     // Assert
     assertThat(result.size(), equalTo(2));
@@ -45,7 +45,7 @@ class JsonQueryResultTest {
     setup("$.beers", getSingleBreweryWithoutBeersAsJson());
 
     // Act
-    List<Map<String, Object>> result = jsonQueryResult.getResults(List.of());
+    List<Map<String, Object>> result = jsonQueryResult.getResults(null);
 
     // Assert
     assertThat(result.size(), equalTo(0));
@@ -57,13 +57,12 @@ class JsonQueryResultTest {
     // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value("1")
+    FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", "1"))
         .build();
 
     // Act
-    Optional<Map<String, Object>> result = jsonQueryResult.getResult(List.of(fieldFilter));
+    Optional<Map<String, Object>> result = jsonQueryResult.getResult(fieldKeyCondition);
 
     // Assert
     assertThat((int) result.stream()
@@ -75,13 +74,12 @@ class JsonQueryResultTest {
     // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value("3")
+    FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", "3"))
         .build();
 
     // Act
-    Optional<Map<String, Object>> result = jsonQueryResult.getResult(List.of(fieldFilter));
+    Optional<Map<String, Object>> result = jsonQueryResult.getResult(fieldKeyCondition);
 
     // Assert
     assertThat((int) result.stream()
@@ -93,13 +91,12 @@ class JsonQueryResultTest {
     // Arrange
     setup("$.beers[?]", getBreweryWithBeersAsJson());
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value("1")
+    FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", "1"))
         .build();
 
     // Act & Assert
-    assertThrows(IllegalStateException.class, () -> jsonQueryResult.getResult(List.of(fieldFilter)));
+    assertThrows(IllegalStateException.class, () -> jsonQueryResult.getResult(fieldKeyCondition));
   }
 
   private String getSingleBreweryAsJson() {

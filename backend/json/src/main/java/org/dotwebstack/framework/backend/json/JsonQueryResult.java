@@ -13,10 +13,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
-import lombok.NonNull;
 import net.minidev.json.JSONArray;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
+import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 
 @Getter
 public final class JsonQueryResult {
@@ -30,8 +28,10 @@ public final class JsonQueryResult {
     this.jsonPathTemplate = jsonPathTemplate;
   }
 
-  public List<Map<String, Object>> getResults(@NonNull List<Filter> keys) {
-    List<com.jayway.jsonpath.Filter> jsonPathFilters = keys.stream()
+  public List<Map<String, Object>> getResults(FieldKeyCondition fieldKeyCondition) {
+    List<com.jayway.jsonpath.Filter> jsonPathFilters = fieldKeyCondition.getFieldValues()
+        .entrySet()
+        .stream()
         .map(this::createFilter)
         .collect(Collectors.toList());
 
@@ -44,8 +44,8 @@ public final class JsonQueryResult {
     return getResultList(jsonPathResult);
   }
 
-  public Optional<Map<String, Object>> getResult(List<Filter> keys) {
-    List<Map<String, Object>> resultList = getResults(keys);
+  public Optional<Map<String, Object>> getResult(FieldKeyCondition fieldKeyCondition) {
+    List<Map<String, Object>> resultList = getResults(fieldKeyCondition);
 
     if (resultList.isEmpty()) {
       return empty();
@@ -77,10 +77,9 @@ public final class JsonQueryResult {
         .read(jsonPathTemplate, jsonPathFilters.toArray(new com.jayway.jsonpath.Filter[jsonPathFilters.size()]));
   }
 
-  private com.jayway.jsonpath.Filter createFilter(Filter key) {
+  private com.jayway.jsonpath.Filter createFilter(Map.Entry<String, Object> key) {
     return Optional.of(key)
-        .map(FieldFilter.class::cast)
-        .map(fieldKey -> where(fieldKey.getField()).is(fieldKey.getValue()))
+        .map(entry -> where(entry.getKey()).is(entry.getValue()))
         .map(com.jayway.jsonpath.Filter::filter)
         .orElseThrow(() -> illegalStateException("Unable to create filter for key!"));
   }

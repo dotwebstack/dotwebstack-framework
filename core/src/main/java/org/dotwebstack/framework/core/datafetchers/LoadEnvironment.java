@@ -4,6 +4,7 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -21,4 +22,6 @@ public final class LoadEnvironment {
   private final List<SelectedField> selectedFields;
 
   private final String queryName;
+
+  private Map<String, Object> source;
 }

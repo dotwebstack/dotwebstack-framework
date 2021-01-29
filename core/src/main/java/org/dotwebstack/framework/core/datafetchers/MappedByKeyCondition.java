@@ -5,9 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class KeyArgument {
+public class MappedByKeyCondition implements KeyCondition {
 
-  private final String name;
-
-  private final Object value;
+  private final String fieldName;
 }

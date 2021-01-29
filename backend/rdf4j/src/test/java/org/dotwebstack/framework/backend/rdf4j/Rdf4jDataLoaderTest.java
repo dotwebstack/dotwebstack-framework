@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
@@ -29,9 +30,10 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
+import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -104,9 +106,8 @@ class Rdf4jDataLoaderTest {
     String identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
     String name = "Brewery X";
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value(identifier)
+    KeyCondition keyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", identifier))
         .build();
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
@@ -116,7 +117,7 @@ class Rdf4jDataLoaderTest {
     mockRepository(createBindingSet(identifier, name));
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(keyCondition, loadEnvironment);
 
     // Assert
     assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
@@ -135,9 +136,8 @@ class Rdf4jDataLoaderTest {
     // Arrange
     String identifier = "not-existing-identifier";
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value(identifier)
+    FieldKeyCondition keyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", identifier))
         .build();
 
     LoadEnvironment loadEnvironment = createLoadEnvironment();
@@ -146,7 +146,7 @@ class Rdf4jDataLoaderTest {
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createRdf4jTypeConfiguration());
 
     // Act
-    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(fieldFilter, loadEnvironment);
+    Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(keyCondition, loadEnvironment);
 
     // Assert
     assertThat(result.hasElement()
@@ -302,12 +302,22 @@ class Rdf4jDataLoaderTest {
   }
 
   private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
+    @Override
+    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
+      return null;
+    }
+
+    @Override
+    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
+      return null;
+    }
+
+    @Override
+    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
+      return null;
+    }
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
-    @Override
-    public Filter createMappedByFilter(Map<String, Object> referenceData) {
-      return null;
-    }
   }
 }

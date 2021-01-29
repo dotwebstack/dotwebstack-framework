@@ -14,24 +14,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Getter;
+import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
+import org.dotwebstack.framework.core.helpers.MapNode;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.Row1;
+import org.jooq.RowN;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
 import org.jooq.TableLike;
@@ -53,35 +58,44 @@ public class PostgresQueryBuilder {
   }
 
   public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
-      Collection<Filter> filters) {
+      KeyCondition keyCondition) {
+    return build(typeConfiguration, loadEnvironment, keyCondition != null ? List.of(keyCondition) : List.of());
+  }
 
-    if (filters != null && filters.size() > 0) {
+  public PostgresQueryHolder build(PostgresTypeConfiguration typeConfiguration, LoadEnvironment loadEnvironment,
+      Collection<KeyCondition> keyConditions) {
+    if (keyConditions != null && keyConditions.size() > 0) {
       String tableName = newTableAlias();
-      String fieldName = ((FieldFilter) filters.iterator()
-          .next()).getField();
-      String identifierColumn = typeConfiguration.getFields()
-          .get(fieldName)
-          .getSqlColumnName();
 
-      Field<?> fieldIdentifier = QueryHelper.field(DSL.table(tableName), identifierColumn);
+      ColumnKeyCondition first = (ColumnKeyCondition) keyConditions.iterator()
+          .next();
 
-      Row1[] rows = filters.stream()
-          .map(FieldFilter.class::cast)
-          .map(filter -> DSL.row(filter.getValue()))
-          .toArray(Row1[]::new);
+      RowN[] rows = keyConditions.stream()
+          .map(ColumnKeyCondition.class::cast)
+          .map(columnKeyCondition -> DSL.row(columnKeyCondition.getColumnValues()
+              .values()))
+          .toArray(RowN[]::new);
 
       TableLike<?> fromTable = DSL.values(rows)
-          .as(tableName, identifierColumn);
+          .as(tableName, first.getColumnValues()
+              .keySet()
+              .toArray(new String[0]));
+
+      String identifierColumn = first.getColumnValues()
+          .keySet()
+          .iterator()
+          .next();
 
       JoinInformation joinInformation = JoinInformation.builder()
           .parent(QueryHelper.field(DSL.table(tableName), identifierColumn))
-          .referencedField(((FieldFilter) filters.iterator()
-              .next()).getField())
+          .referencedField(identifierColumn)
           .build();
 
       PostgresQueryHolder queryHolder = buildJoin(typeConfiguration, loadEnvironment, joinInformation);
 
       String joinAlias = newTableAlias();
+
+      Field<?> fieldIdentifier = QueryHelper.field(DSL.table(tableName), identifierColumn);
 
       SelectJoinStep<Record> query = dslContext.select()
           .select(fieldIdentifier, DSL.field(joinAlias.concat(".")
@@ -107,25 +121,12 @@ public class PostgresQueryBuilder {
     Map<String, Object> fieldAliasMap = new HashMap<>();
     List<Table<Record>> fromTables = new ArrayList<>();
 
-    Optional<JoinTable> joinTable = getJoinTable(loadEnvironment);
-
-    List<Field<?>> selectedColumns =
+    Set<Field<?>> selectedColumns =
         getDirectFields(typeConfiguration, loadEnvironment.getSelectedFields(), fieldAliasMap);
 
     Table<Record> fromTable = typeConfiguration.getSqlTable()
         .as(newTableAlias());
     fromTables.add(fromTable);
-
-    final Table<Record> fromJoinTable;
-    if (joinTable.isPresent()) {
-      fromJoinTable = DSL.table(joinTable.get()
-          .getName())
-          .as(newTableAlias());
-
-      fromTables.add(fromJoinTable);
-    } else {
-      fromJoinTable = null;
-    }
 
     List<TableLike<?>> leftJoins =
         getNestedResults(typeConfiguration, loadEnvironment, fromTable.getName(), fieldAliasMap, selectedColumns)
@@ -136,10 +137,14 @@ public class PostgresQueryBuilder {
 
     List<Condition> conditions = new ArrayList<>();
 
-    joinTable.ifPresent(
-        table -> conditions.addAll(createJoinTableConditions(table, fromTable, fromJoinTable, joinInformation)));
+    Optional<JoinTableInformation> joinTableInformation =
+        getJoinTableInformation(loadEnvironment, fromTable, joinInformation);
 
-    if (joinInformation != null && joinTable.isEmpty()) {
+    if (joinTableInformation.isPresent()) {
+      JoinTableInformation joinTableInformation1 = joinTableInformation.get();
+      fromTables.add(joinTableInformation1.getTable());
+      conditions.addAll(joinTableInformation1.getConditions());
+    } else if (joinInformation != null) {
       Field<Object> matchField = QueryHelper.field(fromTable, joinInformation.getReferencedField());
       conditions.add(matchField.in(joinInformation.getParent()));
     }
@@ -156,6 +161,26 @@ public class PostgresQueryBuilder {
         .query(query)
         .fieldAliasMap(fieldAliasMap)
         .build();
+  }
+
+  private Optional<JoinTableInformation> getJoinTableInformation(LoadEnvironment loadEnvironment,
+      Table<Record> parentTable, JoinInformation joinInformation) {
+    return getJoinTable(loadEnvironment).map(joinTable -> {
+      Table<Record> table = DSL.table(joinTable.getName())
+          .as(newTableAlias());
+      return JoinTableInformation.builder()
+          .table(table)
+          .conditions(createJoinTableConditions(joinTable, parentTable, table, joinInformation))
+          .build();
+    });
+  }
+
+  @Builder
+  @Getter
+  private static class JoinTableInformation {
+    private final Table<Record> table;
+
+    private final List<Condition> conditions;
   }
 
   private Optional<JoinTable> getJoinTable(LoadEnvironment loadEnvironment) {
@@ -204,7 +229,7 @@ public class PostgresQueryBuilder {
 
   private List<NestedQueryResult> getNestedResults(PostgresTypeConfiguration typeConfiguration,
       LoadEnvironment loadEnvironment, String tableName, Map<String, Object> fieldAliasMap,
-      List<Field<?>> selectedColumns) {
+      Set<Field<?>> selectedColumns) {
     return loadEnvironment.getSelectedFields()
         .stream()
         .filter(selectedField -> !GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
@@ -216,8 +241,14 @@ public class PostgresQueryBuilder {
             selectedField, loadEnvironment))
         .map(Optional::get)
         .peek(nestedQueryResult -> {
+          MapNode mapNode = MapNode.builder()
+              .typeConfiguration(nestedQueryResult.getTypeConfiguration())
+              .fieldAliasMap(nestedQueryResult.getColumnAliasMap())
+              .build();
+
           fieldAliasMap.put(nestedQueryResult.getSelectedField()
-              .getResultKey(), nestedQueryResult.getColumnAliasMap());
+              .getFieldDefinition()
+              .getName(), mapNode);
           selectedColumns.add(nestedQueryResult.getSelectedColumn());
         })
         .collect(Collectors.toList());
@@ -247,17 +278,27 @@ public class PostgresQueryBuilder {
         .build();
   }
 
-  private List<Field<?>> getDirectFields(PostgresTypeConfiguration typeConfiguration,
-      List<SelectedField> selectedFields, Map<String, Object> fieldAliasMap) {
-    return selectedFields.stream()
+  private Set<Field<?>> getDirectFields(PostgresTypeConfiguration typeConfiguration, List<SelectedField> selectedFields,
+      Map<String, Object> fieldAliasMap) {
+    Set<String> fieldNames = selectedFields.stream()
         .filter(selectedField -> GraphQLTypeUtil.isLeaf(selectedField.getFieldDefinition()
             .getType()))
-        .map(selectedField -> {
-          Field<Object> column = createSelectedColumn(typeConfiguration, selectedField);
-          fieldAliasMap.put(selectedField.getResultKey(), column.getName());
-          return column;
+        .map(SelectedField::getName)
+        .collect(Collectors.toSet());
+
+    typeConfiguration.getKeys()
+        .stream()
+        .map(KeyConfiguration::getField)
+        .forEach(fieldNames::add);
+
+    return fieldNames.stream()
+        .map(fieldName -> {
+          String aliasName = newSelectAlias();
+          Field<?> field = createSqlField(typeConfiguration, fieldName).as(aliasName);
+          fieldAliasMap.put(fieldName, aliasName);
+          return field;
         })
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
   }
 
   @SuppressWarnings("unchecked")
@@ -297,11 +338,11 @@ public class PostgresQueryBuilder {
         .build());
   }
 
-  private Field<Object> createSelectedColumn(PostgresTypeConfiguration typeConfiguration, SelectedField selectedField) {
+  private Field<Object> createSqlField(PostgresTypeConfiguration typeConfiguration, String fieldName) {
     PostgresFieldConfiguration fieldConfiguration = typeConfiguration.getFields()
-        .get(selectedField.getName());
+        .get(fieldName);
 
-    return field(fieldConfiguration.getSqlColumnName()).as(newSelectAlias());
+    return field(fieldConfiguration.getSqlColumnName());
   }
 
   private String newTableAlias() {

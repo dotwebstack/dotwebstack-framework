@@ -12,9 +12,8 @@ import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.jooq.DSLContext;
 import org.jooq.Param;
 import org.jooq.Query;
@@ -53,12 +52,11 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder =
-        queryBuilder.build(typeConfiguration, environment, Filter.flatten(filter));
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyCondition);
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
@@ -67,18 +65,18 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Tuple2<Filter, Map<String, Object>>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+      LoadEnvironment environment) {
     return Flux.fromIterable(filters)
         .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder =
-        queryBuilder.build(typeConfiguration, environment, Filter.flatten(filter));
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyCondition);
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
@@ -87,27 +85,32 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<GroupedFlux<Filter, Map<String, Object>>> batchLoadMany(final Set<Filter> filters,
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
     PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, filters);
+    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyConditions);
 
     return this.execute(postgresQueryHolder.getQuery())
         .fetch()
         .all()
-        .groupBy(row -> getFilterByKey(filters, row.get(row.keySet()
-            .iterator()
-            .next())), row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
+        .groupBy(row -> getKeyConditionByKey(keyConditions, row),
+            row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
   }
 
-  private Filter getFilterByKey(Set<Filter> filters, Object key) {
-    return filters.stream()
-        .map(FieldFilter.class::cast)
-        .filter(filter -> filter.getValue()
-            .equals(key.toString()))
+  private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row) {
+    return keyConditions.stream()
+        .map(ColumnKeyCondition.class::cast)
+        .filter(columnKeyCondition -> row.get(columnKeyCondition.getColumnValues()
+            .keySet()
+            .iterator()
+            .next())
+            .equals(columnKeyCondition.getColumnValues()
+                .values()
+                .iterator()
+                .next()))
         .findFirst()
-        .orElseThrow(() -> illegalStateException("Unable to find filter for key {}", key));
+        .orElseThrow(() -> illegalStateException("Unable to find keyCondition"));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

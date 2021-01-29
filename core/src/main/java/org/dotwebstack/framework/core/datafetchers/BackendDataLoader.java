@@ -3,7 +3,6 @@ package org.dotwebstack.framework.core.datafetchers;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -15,11 +14,13 @@ public interface BackendDataLoader {
     return false;
   }
 
-  Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment);
+  Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment);
 
-  Flux<Tuple2<Filter, Map<String, Object>>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment);
+  Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
+      LoadEnvironment environment);
 
-  Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment);
+  Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment);
 
-  Flux<GroupedFlux<Filter, Map<String, Object>>> batchLoadMany(Set<Filter> filters, LoadEnvironment environment);
+  Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
+      LoadEnvironment environment);
 }

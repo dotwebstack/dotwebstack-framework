@@ -7,8 +7,8 @@ import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.Filter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
@@ -33,7 +33,7 @@ public class JsonDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Filter filter, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(KeyCondition filter, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
@@ -42,18 +42,20 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
-    return jsonQueryResult.getResult(Filter.flatten(filter))
-        .map(Mono::just)
-        .orElse(Mono.empty());
+    return null;
+    // return jsonQueryResult.getResult(KeyCondition.flatten(filter))
+    // .map(Mono::just)
+    // .orElse(Mono.empty());
   }
 
   @Override
-  public Flux<Tuple2<Filter, Map<String, Object>>> batchLoadSingle(Set<Filter> filters, LoadEnvironment environment) {
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+      LoadEnvironment environment) {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Filter filter, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(KeyCondition filter, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
@@ -62,11 +64,12 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
-    return Flux.fromIterable(jsonQueryResult.getResults(Filter.flatten(filter)));
+    return null;
+    // return Flux.fromIterable(jsonQueryResult.getResults(KeyCondition.flatten(filter)));
   }
 
   @Override
-  public Flux<GroupedFlux<Filter, Map<String, Object>>> batchLoadMany(Set<Filter> filters,
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> filters,
       LoadEnvironment environment) {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }

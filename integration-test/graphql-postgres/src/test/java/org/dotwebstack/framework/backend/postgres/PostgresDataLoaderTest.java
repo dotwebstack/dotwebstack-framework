@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.time.Duration;
@@ -24,8 +25,10 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.filters.FieldFilter;
+import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -81,7 +84,22 @@ class PostgresDataLoaderTest {
   @Test
   void supports_returnsFalse_withNonPostgresTypeConfiguration() {
     // Arrange & Act
-    boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {});
+    boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {
+      @Override
+      public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
+        return null;
+      }
+
+      @Override
+      public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
+        return null;
+      }
+
+      @Override
+      public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
+        return null;
+      }
+    });
 
     // Assert
     assertThat(supported, is(Boolean.FALSE));
@@ -95,9 +113,8 @@ class PostgresDataLoaderTest {
     String identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
     String name = "Brewery X";
 
-    FieldFilter fieldFilter = FieldFilter.builder()
-        .field("identifier")
-        .value(identifier)
+    FieldKeyCondition keyCondition = FieldKeyCondition.builder()
+        .fieldValues(Map.of("identifier", identifier))
         .build();
 
     when(fetchSpec.one()).thenReturn(Mono.just(Map.of("x1", identifier, "x2", name)));
@@ -109,7 +126,7 @@ class PostgresDataLoaderTest {
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(createTypeConfiguration());
 
     // Act
-    Map<String, Object> row = postgresDataLoader.loadSingle(fieldFilter, loadEnvironment)
+    Map<String, Object> row = postgresDataLoader.loadSingle(keyCondition, loadEnvironment)
         .block(Duration.ofSeconds(5));
 
     // Assert
