@@ -142,8 +142,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .getName())
         .objectType(objectType)
         .executionStepInfo(environment.getExecutionStepInfo())
-        .selectedFields(environment.getSelectionSet()
-            .getImmediateFields())
+        .selectionSet(environment.getSelectionSet())
         .build();
   }
 

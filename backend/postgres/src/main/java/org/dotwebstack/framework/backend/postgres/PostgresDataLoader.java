@@ -1,14 +1,12 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
-
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.PostgresQueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
+import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -55,13 +53,13 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyCondition);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
 
-    return this.execute(postgresQueryHolder.getQuery())
+    return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
+        .map(queryHolder.getRowAssembler()::assemble);
   }
 
   @Override
@@ -75,42 +73,48 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyCondition);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
 
-    return this.execute(postgresQueryHolder.getQuery())
+    return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
+        .map(queryHolder.getRowAssembler()::assemble);
   }
 
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, keyConditions);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions);
 
-    return this.execute(postgresQueryHolder.getQuery())
+    return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .groupBy(row -> getKeyConditionByKey(keyConditions, row),
-            row -> toGraphQlMap(row, postgresQueryHolder.getFieldAliasMap()));
+        .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
+            queryHolder.getRowAssembler()::assemble);
   }
 
-  private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row) {
+  private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row,
+      Map<String, String> keyColumnNames) {
     return keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
-        .filter(columnKeyCondition -> row.get(columnKeyCondition.getColumnValues()
-            .keySet()
-            .iterator()
-            .next())
-            .equals(columnKeyCondition.getColumnValues()
-                .values()
-                .iterator()
-                .next()))
+        .filter(keyCondition -> {
+          for (Entry<String, Object> valueEntry : keyCondition.getValueMap()
+              .entrySet()) {
+            String columnAlias = keyColumnNames.get(valueEntry.getKey());
+
+            if (valueEntry.getValue()
+                .equals(row.get(columnAlias))) {
+              return false;
+            }
+          }
+
+          return true;
+        })
         .findFirst()
-        .orElseThrow(() -> illegalStateException("Unable to find keyCondition"));
+        .orElseThrow(() -> new IllegalStateException("Unable to find keyCondition."));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

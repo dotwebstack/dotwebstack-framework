@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,17 +32,16 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   @NotNull
   @Valid
-  @Size(min = 1)
-  protected Map<String, T> fields;
+  protected Map<String, T> fields = new HashMap<>();
 
   public void init(ObjectTypeDefinition objectTypeDefinition) {}
 
   public KeyCondition getKeyCondition(String fieldName) {
-    if (!getFields().containsKey(fieldName)) {
-      throw invalidConfigurationException("Field with name {} not found in configuration!", fieldName);
+    if (!fields.containsKey(fieldName)) {
+      throw invalidConfigurationException("Field with name {} not found in configuration", fieldName);
     }
 
-    AbstractFieldConfiguration fieldConfiguration = getFields().get(fieldName);
+    AbstractFieldConfiguration fieldConfiguration = fields.get(fieldName);
 
     if (fieldConfiguration.getMappedBy() != null) {
       return MappedByKeyCondition.builder()
@@ -77,8 +77,6 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
       return null;
     }
 
-    String fieldName = argument.getName();
-
-    return Map.entry(fieldName, value);
+    return Map.entry(argument.getName(), value);
   }
 }

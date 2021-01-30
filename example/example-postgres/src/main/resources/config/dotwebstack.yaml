@@ -24,8 +24,6 @@ typeMapping:
     table: dbeerpedia.ingredients
     keys:
       - field: identifier
-    fields:
-      name:
 
   Brewery:
     backend: postgres
@@ -49,5 +47,3 @@ typeMapping:
     table: dbeerpedia.addresses
     keys:
       - field: identifier
-    fields:
-      street:

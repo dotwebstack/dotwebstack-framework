@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-
 import java.util.List;
 import javax.validation.Valid;
 import lombok.Data;
@@ -17,5 +16,9 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   @Valid
   private JoinTable joinTable;
 
-  private String sqlColumnName;
+  private String column;
+
+  public boolean isForeignType() {
+    return getJoinColumns() != null || getJoinTable() != null || getMappedBy() != null;
+  }
 }

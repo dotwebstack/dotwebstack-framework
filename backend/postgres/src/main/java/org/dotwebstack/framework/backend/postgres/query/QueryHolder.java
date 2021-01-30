@@ -8,11 +8,13 @@ import org.jooq.Query;
 
 @Builder
 @Getter
-public class PostgresQueryHolder {
+public class QueryHolder {
 
   private final Query query;
 
-  private final Map<String, Object> fieldAliasMap;
+  private final RowAssembler rowAssembler;
 
-  private final List<PostgresQueryHolder> joinTableQueries;
+  private final Map<String, String> keyColumnNames;
+
+  private final List<QueryHolder> joinTableQueries;
 }

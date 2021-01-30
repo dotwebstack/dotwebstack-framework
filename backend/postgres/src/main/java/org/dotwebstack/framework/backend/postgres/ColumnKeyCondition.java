@@ -11,5 +11,5 @@ import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 @EqualsAndHashCode
 public class ColumnKeyCondition implements KeyCondition {
 
-  private final Map<String, Object> columnValues;
+  private final Map<String, Object> valueMap;
 }
