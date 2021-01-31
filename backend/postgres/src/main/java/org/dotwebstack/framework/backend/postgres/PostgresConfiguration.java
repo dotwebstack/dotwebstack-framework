@@ -9,11 +9,11 @@ import org.jooq.impl.DSL;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
+import org.springframework.r2dbc.core.DatabaseClient;
 
 @Configuration
 @EnableConfigurationProperties(PostgresProperties.class)
-public class PostgresConfiguration extends AbstractR2dbcConfiguration {
+public class PostgresConfiguration {
 
   private final PostgresProperties postgresProperties;
 
@@ -29,7 +29,6 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
   }
 
   @Bean
-  @Override
   public ConnectionFactory connectionFactory() {
     return new PostgresqlConnectionFactory(PostgresqlConnectionConfiguration.builder()
         .host(postgresProperties.getHost())
@@ -37,5 +36,10 @@ public class PostgresConfiguration extends AbstractR2dbcConfiguration {
         .username(postgresProperties.getUsername())
         .password(postgresProperties.getPassword())
         .build());
+  }
+
+  @Bean
+  public DatabaseClient databaseClient(ConnectionFactory connectionFactory) {
+    return DatabaseClient.create(connectionFactory);
   }
 }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
@@ -202,14 +203,17 @@ class JsonDataLoaderTest {
         .name(NODE_BEER)
         .build();
 
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+    when(selectionSet.getImmediateFields())
+        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+
     return LoadEnvironment.builder()
         .objectType(graphQlObjectType)
         .executionStepInfo(mock(ExecutionStepInfo.class))
         .queryName(BEERS_QUERY_NAME)
-        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
+        .selectionSet(selectionSet)
         .build();
   }
-
 
   private SelectedField createSelectedField(String name) {
     return mock(SelectedField.class);

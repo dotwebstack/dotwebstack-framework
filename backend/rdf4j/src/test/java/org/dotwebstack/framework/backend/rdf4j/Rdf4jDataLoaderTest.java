@@ -226,6 +226,10 @@ class Rdf4jDataLoaderTest {
     PropertyShape propertyShapeName = createPropertyShape("http://schema.org/", FIELD_NAME);
     NodeShape nodeShape = createNodeShape(propertyShapeIdentifier, propertyShapeName);
 
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+    when(selectionSet.getImmediateFields())
+        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+
     GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
         .name(NODE_BREWERY)
         .build();
@@ -234,7 +238,7 @@ class Rdf4jDataLoaderTest {
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .objectType(graphQlObjectType)
         .executionStepInfo(mock(ExecutionStepInfo.class))
-        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+        .selectionSet(selectionSet);
 
     return loadEnvironmentBuilder.build();
   }

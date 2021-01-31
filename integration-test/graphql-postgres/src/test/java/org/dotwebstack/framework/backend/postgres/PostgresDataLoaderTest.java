@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.time.Duration;
@@ -179,10 +180,13 @@ class PostgresDataLoaderTest {
   }
 
   private LoadEnvironment createLoadEnvironment() {
-    LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
-        .selectedFields(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)))
-        .executionStepInfo(mock(ExecutionStepInfo.class));
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+    when(selectionSet.getImmediateFields())
+        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
 
+    LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
+        .selectionSet(selectionSet)
+        .executionStepInfo(mock(ExecutionStepInfo.class));
 
     return loadEnvironmentBuilder.build();
   }

@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,7 +84,7 @@ public class Rdf4jQueryBuilder {
     RdfSubject subject = SparqlBuilder.var(newAlias());
 
     GraphPattern[] graphPatterns =
-        createGraphPatterns(typeConfiguration, nodeShape, loadEnvironment.getSelectedFields(), fieldAliasMap, subject);
+        createGraphPatterns(typeConfiguration, nodeShape, loadEnvironment.getSelectionSet(), fieldAliasMap, subject);
 
     return createFilterPatterns(keyConditions, graphPatterns, fieldAliasMap);
   }
@@ -130,12 +131,13 @@ public class Rdf4jQueryBuilder {
   }
 
   private GraphPattern[] createGraphPatterns(Rdf4jTypeConfiguration typeConfiguration, NodeShape nodeShape,
-      List<SelectedField> selectedFields, Map<String, Object> fieldAliasMap, RdfSubject subject) {
+      DataFetchingFieldSelectionSet selectionSet, Map<String, Object> fieldAliasMap, RdfSubject subject) {
     // Create class patterns
     List<GraphPattern> classPatterns = createClassPatterns(subject, nodeShape);
 
     // Create patterns for selected fields
-    List<GraphPattern> selectedPatterns = selectedFields.stream()
+    List<GraphPattern> selectedPatterns = selectionSet.getImmediateFields()
+        .stream()
         .map(selectedField -> createGraphPatterns(subject, selectedField, nodeShape, fieldAliasMap))
         .collect(Collectors.toList());
 
