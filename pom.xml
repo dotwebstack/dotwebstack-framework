@@ -61,11 +61,13 @@
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.11</commons.lang3.version>
     <pebble.version>3.1.4</pebble.version>
+    <swagger-parser.version>2.0.24</swagger-parser.version>
     <lombok.version>1.18.18</lombok.version>
     <guava.version>30.1-jre</guava.version>
     <problem.spring.webflux.version>0.26.2</problem.spring.webflux.version>
     <json-path.version>2.5.0</json-path.version>
     <jooq.version>3.14.6</jooq.version>
+    <testcontainers.version>1.15.1</testcontainers.version>
   </properties>
 
   <modules>
@@ -140,6 +142,11 @@
         <version>${pebble.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.swagger.parser.v3</groupId>
+        <artifactId>swagger-parser-v3</artifactId>
+        <version>${swagger-parser.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
@@ -149,6 +156,18 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
