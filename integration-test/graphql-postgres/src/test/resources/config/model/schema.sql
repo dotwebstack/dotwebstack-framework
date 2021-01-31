@@ -1,5 +1,7 @@
 CREATE SCHEMA db;
 
+CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
+
 CREATE TABLE db.address (
   identifier character varying NOT NULL PRIMARY KEY,
   street character varying NOT NULL,
@@ -9,6 +11,7 @@ CREATE TABLE db.address (
 CREATE TABLE db.brewery (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
+  status db.brewery_status NOT NULL,
   postal_address character varying REFERENCES db.address (identifier),
   visit_address character varying REFERENCES db.address (identifier)
 );

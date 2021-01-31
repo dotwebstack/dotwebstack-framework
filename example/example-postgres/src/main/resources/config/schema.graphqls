@@ -12,6 +12,7 @@ type Query {
 type Brewery {
   identifier: ID!
   name: String!
+  status: String!
   beers: [Beer]
   postalAddress: Address
   visitAddress: Address

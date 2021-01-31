@@ -24,6 +24,7 @@ typeMapping:
         joinColumns:
           - name: visit_address
             referencedField: identifier
+
   Address:
     backend: postgres
     table: db.address
