@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.jooq.impl.DSL.trueCondition;
 
-import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
@@ -12,7 +11,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -58,8 +56,7 @@ public class QueryBuilder {
     this.loadEnvironment = loadEnvironment;
   }
 
-  private QueryHolder build(Select<Record> query,
-      Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler) {
+  private QueryHolder build(Select<Record> query, Function<Map<String, Object>, Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
         .rowAssembler(rowAssembler)
@@ -67,7 +64,7 @@ public class QueryBuilder {
   }
 
   private QueryHolder build(Select<Record> query, Map<String, String> keyColumnNames,
-      Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler) {
+      Function<Map<String, Object>, Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
         .rowAssembler(rowAssembler)
@@ -152,6 +149,10 @@ public class QueryBuilder {
               .orElseThrow(() -> new IllegalStateException(String.format("Field '%s' is unknown.", fieldName)));
 
           if (fieldConfiguration.isForeignType()) {
+            if (fieldConfiguration.getMappedBy() != null) {
+              return;
+            }
+
             joinTable(selectedField, fieldConfiguration, fromTable).ifPresent(joinTableWrapper -> {
               selectColumns.add(DSL.field(joinTableWrapper.getTable()
                   .getName()
@@ -169,8 +170,7 @@ public class QueryBuilder {
               .as(newSelectAlias());
 
           selectColumns.add(column);
-
-          assembleFns.put(fieldName, row -> Optional.ofNullable(row.get(column.getName())));
+          assembleFns.put(fieldName, row -> row.get(column.getName()));
         });
 
     SelectJoinStep<Record> query = dslContext.select(selectColumns)
@@ -185,13 +185,13 @@ public class QueryBuilder {
         .query(query)
         .rowAssembler(row -> {
           if (row.get(keyColumn.getName()) == null) {
-            return Optional.empty();
+            return null;
           }
 
-          return Optional.of(assembleFns.entrySet()
+          return assembleFns.entrySet()
               .stream()
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, stepEntry -> stepEntry.getValue()
-                  .apply(row))));
+              .collect(HashMap::new, (acc, entry) -> acc.put(entry.getKey(), entry.getValue()
+                  .apply(row)), HashMap::putAll);
         })
         .build();
   }
@@ -261,7 +261,7 @@ public class QueryBuilder {
 
     private final SelectJoinStep<Record> query;
 
-    private final Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler;
+    private final Function<Map<String, Object>, Map<String, Object>> rowAssembler;
   }
 
   @Builder
@@ -270,6 +270,6 @@ public class QueryBuilder {
 
     private final Table<Record> table;
 
-    private final Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler;
+    private final Function<Map<String, Object>, Map<String, Object>> rowAssembler;
   }
 }
