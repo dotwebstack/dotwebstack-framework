@@ -67,7 +67,6 @@ class OpenApiExceptionHandlerTest {
     ThrowableProblem throwableProblem = mock(ThrowableProblem.class);
     when(throwableProblem.getStatus()).thenReturn(Status.BAD_REQUEST);
 
-    AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
     when(advice.create(eq(throwableProblem), any(Problem.class), eq(serverWebExchange)))
         .thenAnswer(invocationOnMock -> {
           Problem problem = invocationOnMock.getArgument(1);
