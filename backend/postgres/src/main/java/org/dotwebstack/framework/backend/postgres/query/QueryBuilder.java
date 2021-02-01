@@ -2,12 +2,14 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.jooq.impl.DSL.trueCondition;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,13 +17,12 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Getter;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.RowAssembler.RowAssemblerBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -31,7 +32,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Select;
-import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectJoinStep;
 import org.jooq.SelectOnConditionStep;
 import org.jooq.Table;
@@ -51,8 +51,6 @@ public class QueryBuilder {
 
   private final AtomicInteger selectCounter = new AtomicInteger();
 
-  private final RowAssemblerBuilder rowAssemblerBuilder = RowAssembler.builder();
-
   public QueryBuilder(DotWebStackConfiguration dotWebStackConfiguration, DSLContext dslContext,
       LoadEnvironment loadEnvironment) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
@@ -60,17 +58,19 @@ public class QueryBuilder {
     this.loadEnvironment = loadEnvironment;
   }
 
-  private QueryHolder build(Select<Record> query) {
+  private QueryHolder build(Select<Record> query,
+      Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
-        .rowAssembler(rowAssemblerBuilder.build())
+        .rowAssembler(rowAssembler)
         .build();
   }
 
-  private QueryHolder build(Select<Record> query, Map<String, String> keyColumnNames) {
+  private QueryHolder build(Select<Record> query, Map<String, String> keyColumnNames,
+      Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
-        .rowAssembler(rowAssemblerBuilder.build())
+        .rowAssembler(rowAssembler)
         .keyColumnNames(keyColumnNames)
         .build();
   }
@@ -82,35 +82,11 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, Collection<KeyCondition> keyConditions) {
-    Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
-        .as(newTableAlias());
-
-    Map<String, Field<Object>> selectColumnMap =
-        createSelectColumnMap(typeConfiguration, loadEnvironment.getSelectionSet()
-            .getImmediateFields(), fromTable);
-
-    selectColumnMap.forEach((fieldName, column) -> rowAssemblerBuilder.step(fieldName,
-        row -> Optional.ofNullable(row.get(column.getName()))));
-
-    List<Table<Record>> joinTables = createJoinTables(typeConfiguration, "", fromTable);
-
-    List<SelectFieldOrAsterisk> select = new ArrayList<>(selectColumnMap.values());
-
-    select.addAll(joinTables.stream()
-        .map(joinTable -> DSL.field(joinTable.getName()
-            .concat(".*")))
-        .collect(Collectors.toList()));
-
-    SelectJoinStep<Record> query = dslContext.select(select)
-        .from(fromTable);
-
-    for (Table<Record> joinTable : joinTables) {
-      query = query.leftJoin(joinTable)
-          .on(trueCondition());
-    }
+    SelectWrapper selectWrapper = selectTable(typeConfiguration, "");
 
     if (keyConditions.isEmpty()) {
-      return build(query.limit(HARD_LIMIT));
+      return build(selectWrapper.getQuery()
+          .limit(HARD_LIMIT), selectWrapper.getRowAssembler());
     }
 
     RowN[] valuesTableRows = keyConditions.stream()
@@ -134,11 +110,12 @@ public class QueryBuilder {
 
     Condition joinCondition = keyColumnNames.entrySet()
         .stream()
-        .map(entry -> DSL.field(DSL.name(fromTable.getName(), entry.getKey()))
+        .map(entry -> DSL.field(entry.getKey())
             .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
         .reduce(DSL.noCondition(), Condition::and);
 
-    Table<Record> lateralTable = DSL.lateral(query.where(joinCondition)
+    Table<Record> lateralTable = DSL.lateral(selectWrapper.getQuery()
+        .where(joinCondition)
         .limit(HARD_LIMIT))
         .asTable(newTableAlias());
 
@@ -147,136 +124,127 @@ public class QueryBuilder {
         .join(lateralTable)
         .on(trueCondition());
 
-    return build(valuesQuery, keyColumnNames);
+    return build(valuesQuery, keyColumnNames, selectWrapper.getRowAssembler());
   }
 
-  private Map<String, Field<Object>> createSelectColumnMap(PostgresTypeConfiguration typeConfiguration,
-      List<SelectedField> selectedFields, Table<Record> table) {
-    Stream<String> keyFieldNames = typeConfiguration.getKeys()
-        .stream()
-        .map(KeyConfiguration::getField);
+  private SelectWrapper selectTable(PostgresTypeConfiguration typeConfiguration, String fieldPathPrefix) {
+    Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
+        .as(newTableAlias());
 
-    Stream<String> selectedFieldNames = selectedFields.stream()
-        .map(SelectedField::getName);
+    List<Field<Object>> selectColumns = new ArrayList<>();
+    List<Table<Record>> joinTables = new ArrayList<>();
+    Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
-    return Stream.concat(keyFieldNames, selectedFieldNames)
-        .distinct()
-        .flatMap(fieldName -> {
+    Field<Object> keyColumn = DSL.field(DSL.name(fromTable.getName(), typeConfiguration.getKeys()
+        .get(0)
+        .getField()))
+        .as(newSelectAlias());
+
+    selectColumns.add(keyColumn);
+
+    loadEnvironment.getSelectionSet()
+        .getFields(fieldPathPrefix.concat("*"))
+        .forEach(selectedField -> {
+          String fieldName = selectedField.getName();
+
           PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
               .get(fieldName))
-              .orElseThrow(() -> new IllegalArgumentException("Field '{}' unknown."));
+              .orElseThrow(() -> new IllegalStateException(String.format("Field '%s' is unknown.", fieldName)));
 
           if (fieldConfiguration.isForeignType()) {
-            return Stream.empty();
+            joinTable(selectedField, fieldConfiguration, fromTable).ifPresent(joinTableWrapper -> {
+              selectColumns.add(DSL.field(joinTableWrapper.getTable()
+                  .getName()
+                  .concat(".*")));
+
+              joinTables.add(joinTableWrapper.getTable());
+
+              assembleFns.put(fieldName, joinTableWrapper.getRowAssembler()::apply);
+            });
+
+            return;
           }
 
-          Field<Object> column = DSL.field(DSL.name(table.getName(), fieldConfiguration.getColumn()))
+          Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldConfiguration.getColumn()))
               .as(newSelectAlias());
 
-          return Stream.of(Map.entry(fieldName, column));
+          selectColumns.add(column);
+
+          assembleFns.put(fieldName, row -> Optional.ofNullable(row.get(column.getName())));
+        });
+
+    SelectJoinStep<Record> query = dslContext.select(selectColumns)
+        .from(fromTable);
+
+    for (Table<Record> joinTable : joinTables) {
+      query = query.leftJoin(joinTable)
+          .on(trueCondition());
+    }
+
+    return SelectWrapper.builder()
+        .query(query)
+        .rowAssembler(row -> {
+          if (row.get(keyColumn.getName()) == null) {
+            return Optional.empty();
+          }
+
+          return Optional.of(assembleFns.entrySet()
+              .stream()
+              .collect(ImmutableMap.toImmutableMap(Entry::getKey, stepEntry -> stepEntry.getValue()
+                  .apply(row))));
         })
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .build();
   }
 
-  private List<Table<Record>> createJoinTables(PostgresTypeConfiguration typeConfiguration, String fieldPathPrefix,
+  private Optional<TableWrapper> joinTable(SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
       Table<Record> fromTable) {
-    return loadEnvironment.getSelectionSet()
-        .getFields(fieldPathPrefix.concat("*"))
-        .stream()
-        .flatMap(selectedField -> {
-          PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
-              .get(selectedField.getName()))
-              .orElseThrow(() -> new IllegalArgumentException("Field '{}' unknown."));
+    GraphQLUnmodifiedType foreignType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+        .getType());
 
-          if (!fieldConfiguration.isForeignType()) {
-            return Stream.empty();
-          }
+    if (!(foreignType instanceof GraphQLObjectType)) {
+      throw new IllegalStateException("Foreign output type is not an object type.");
+    }
 
-          GraphQLUnmodifiedType foreignType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
-              .getType());
+    TypeConfiguration<?> typeConfiguration = Optional.ofNullable(dotWebStackConfiguration.getTypeMapping()
+        .get(foreignType.getName()))
+        .orElseThrow(() -> new IllegalStateException("Output type is unknown."));
 
-          if (!(foreignType instanceof GraphQLObjectType)) {
-            throw new IllegalStateException("Foreign output type is not an object type.");
-          }
+    // Non-Postgres backends can never be eager loaded
+    if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
+      return Optional.empty();
+    }
 
-          TypeConfiguration<?> foreignTypeConfiguration = Optional.ofNullable(dotWebStackConfiguration.getTypeMapping()
-              .get(((GraphQLObjectType) foreignType).getName()))
-              .orElseThrow(() -> new IllegalStateException("Output type is unknown."));
+    SelectWrapper selectWrapper =
+        selectTable((PostgresTypeConfiguration) typeConfiguration, selectedField.getQualifiedName()
+            .concat("/"));
 
-          // Non-Postgres backends cannot be eager loaded
-          if (!(foreignTypeConfiguration instanceof PostgresTypeConfiguration)) {
-            return Stream.empty();
-          }
+    if (fieldConfiguration.getJoinColumns() != null) {
+      Condition whereCondition = fieldConfiguration.getJoinColumns()
+          .stream()
+          .map(joinColumn -> {
+            PostgresFieldConfiguration rightFieldConfiguration =
+                ((PostgresTypeConfiguration) typeConfiguration).getFields()
+                    .get(joinColumn.getReferencedField());
 
-          Table<Record> foreignTable = DSL.table(((PostgresTypeConfiguration) foreignTypeConfiguration).getTable())
-              .as(newTableAlias());
+            Field<Object> leftColumn = DSL.field(DSL.name(fromTable.getName(), joinColumn.getName()));
+            Field<Object> rightColumn = DSL.field(DSL.name(rightFieldConfiguration.getColumn()));
 
-          Map<String, Field<Object>> foreignSelectColumnMap =
-              createSelectColumnMap(((PostgresTypeConfiguration) foreignTypeConfiguration),
-                  loadEnvironment.getSelectionSet()
-                      .getFields(selectedField.getQualifiedName()
-                          .concat("/*")),
-                  foreignTable);
+            return leftColumn.eq(rightColumn);
+          })
+          .reduce(DSL.noCondition(), Condition::and);
 
-          List<Table<Record>> joinTables = createJoinTables((PostgresTypeConfiguration) foreignTypeConfiguration,
-              fieldPathPrefix.concat(selectedField.getName())
-                  .concat("/"),
-              foreignTable);
+      TableWrapper tableWrapper = TableWrapper.builder()
+          .table(DSL.lateral(selectWrapper.getQuery()
+              .where(whereCondition)
+              .limit(1))
+              .asTable(newTableAlias()))
+          .rowAssembler(selectWrapper.getRowAssembler()::apply)
+          .build();
 
-          List<SelectFieldOrAsterisk> select = new ArrayList<>(foreignSelectColumnMap.values());
+      return Optional.of(tableWrapper);
+    }
 
-          select.addAll(joinTables.stream()
-              .map(joinTable -> DSL.field(joinTable.getName()
-                  .concat(".*")))
-              .collect(Collectors.toList()));
-
-          Field<Object> firstKeyColumn = foreignSelectColumnMap.get(typeConfiguration.getKeys()
-              .get(0)
-              .getField());
-
-          rowAssemblerBuilder.step(selectedField.getName(), row -> {
-            if (row.get(firstKeyColumn.getName()) == null) {
-              return Optional.empty();
-            }
-
-            return foreignSelectColumnMap.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Entry::getKey, entry -> row.get(entry.getValue()
-                    .getName())));
-          });
-
-          if (fieldConfiguration.getJoinColumns() != null) {
-            Condition whereCondition = fieldConfiguration.getJoinColumns()
-                .stream()
-                .map(joinColumn -> {
-                  PostgresFieldConfiguration rightFieldConfiguration = typeConfiguration.getFields()
-                      .get(joinColumn.getReferencedField());
-
-                  Field<Object> leftColumn = DSL.field(DSL.name(fromTable.getName(), joinColumn.getName()));
-
-                  Field<Object> rightColumn =
-                      DSL.field(DSL.name(foreignTable.getName(), rightFieldConfiguration.getColumn()));
-
-                  return leftColumn.eq(rightColumn);
-                })
-                .reduce(DSL.noCondition(), Condition::and);
-
-            SelectJoinStep<Record> subQuery = dslContext.select(select)
-                .from(foreignTable);
-
-            for (Table<Record> joinTable : joinTables) {
-              subQuery = subQuery.leftJoin(joinTable)
-                  .on(trueCondition());
-            }
-
-            return Stream.of(DSL.lateral(subQuery.where(whereCondition)
-                .limit(1))
-                .asTable(newTableAlias()));
-          }
-
-          throw new UnsupportedOperationException("JoinTable is not yet supported.");
-        })
-        .collect(Collectors.toList());
+    throw new UnsupportedOperationException("JoinTable is not yet supported.");
   }
 
   private String newTableAlias() {
@@ -285,5 +253,23 @@ public class QueryBuilder {
 
   private String newSelectAlias() {
     return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
+  }
+
+  @Builder
+  @Getter
+  static class SelectWrapper {
+
+    private final SelectJoinStep<Record> query;
+
+    private final Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler;
+  }
+
+  @Builder
+  @Getter
+  static class TableWrapper {
+
+    private final Table<Record> table;
+
+    private final Function<Map<String, Object>, Optional<Map<String, Object>>> rowAssembler;
   }
 }

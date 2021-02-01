@@ -59,7 +59,9 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(queryHolder.getRowAssembler()::assemble);
+        .map(row -> queryHolder.getRowAssembler()
+            .apply(row)
+            .orElseThrow());
   }
 
   @Override
@@ -79,7 +81,9 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(queryHolder.getRowAssembler()::assemble);
+        .map(row -> queryHolder.getRowAssembler()
+            .apply(row)
+            .orElseThrow());
   }
 
   @Override
@@ -93,7 +97,9 @@ public class PostgresDataLoader implements BackendDataLoader {
         .fetch()
         .all()
         .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
-            queryHolder.getRowAssembler()::assemble);
+            row -> queryHolder.getRowAssembler()
+                .apply(row)
+                .orElseThrow());
   }
 
   private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row,
