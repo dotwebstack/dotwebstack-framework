@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Select;
+import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectJoinStep;
 import org.jooq.SelectOnConditionStep;
 import org.jooq.Table;
@@ -116,7 +118,8 @@ public class QueryBuilder {
         .limit(HARD_LIMIT))
         .asTable(newTableAlias());
 
-    SelectOnConditionStep<Record> valuesQuery = dslContext.select()
+    SelectOnConditionStep<Record> valuesQuery = dslContext.select(Set.of(DSL.field(lateralTable.getName()
+        .concat(".*"))))
         .from(valuesTable)
         .join(lateralTable)
         .on(trueCondition());
@@ -128,7 +131,7 @@ public class QueryBuilder {
     Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
         .as(newTableAlias());
 
-    List<Field<Object>> selectColumns = new ArrayList<>();
+    List<SelectFieldOrAsterisk> selectColumns = new ArrayList<>();
     List<Table<Record>> joinTables = new ArrayList<>();
     Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
@@ -159,7 +162,6 @@ public class QueryBuilder {
                   .concat(".*")));
 
               joinTables.add(joinTableWrapper.getTable());
-
               assembleFns.put(fieldName, joinTableWrapper.getRowAssembler()::apply);
             });
 
@@ -215,7 +217,7 @@ public class QueryBuilder {
     }
 
     SelectWrapper selectWrapper =
-        selectTable((PostgresTypeConfiguration) typeConfiguration, selectedField.getQualifiedName()
+        selectTable((PostgresTypeConfiguration) typeConfiguration, selectedField.getFullyQualifiedName()
             .concat("/"));
 
     if (fieldConfiguration.getJoinColumns() != null) {
