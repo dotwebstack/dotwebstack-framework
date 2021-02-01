@@ -134,8 +134,15 @@ public class QueryBuilder {
         .limit(HARD_LIMIT))
         .asTable(newTableAlias());
 
-    SelectOnConditionStep<Record> valuesQuery = dslContext.select(Set.of(DSL.field(lateralTable.getName()
-        .concat(".*"))))
+    List<Field<Object>> selectedColumns = Stream.concat(keyColumnNames.values()
+        .stream()
+        .map(keyColumnAlias -> DSL.field(keyColumnAlias)),
+        Set.of(DSL.field(lateralTable.getName()
+            .concat(".*")))
+            .stream())
+        .collect(Collectors.toList());
+
+    SelectOnConditionStep<Record> valuesQuery = dslContext.select(selectedColumns)
         .from(valuesTable)
         .join(lateralTable)
         .on(trueCondition());

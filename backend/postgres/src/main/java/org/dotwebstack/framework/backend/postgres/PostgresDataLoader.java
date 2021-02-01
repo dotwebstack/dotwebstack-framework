@@ -106,6 +106,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .filter(keyCondition -> {
           for (Entry<String, Object> valueEntry : keyCondition.getValueMap()
               .entrySet()) {
+
             String columnAlias = keyColumnNames.get(valueEntry.getKey());
 
             if (valueEntry.getValue()
