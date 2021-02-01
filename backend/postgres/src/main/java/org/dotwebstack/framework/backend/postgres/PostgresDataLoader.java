@@ -110,11 +110,11 @@ public class PostgresDataLoader implements BackendDataLoader {
 
             if (valueEntry.getValue()
                 .equals(row.get(columnAlias))) {
-              return false;
+              return true;
             }
           }
 
-          return true;
+          return false;
         })
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("Unable to find keyCondition."));

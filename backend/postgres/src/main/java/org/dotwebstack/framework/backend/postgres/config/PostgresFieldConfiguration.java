@@ -18,7 +18,7 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  public boolean isForeignType() {
-    return getJoinColumns() != null || getJoinTable() != null || getMappedBy() != null;
+  public boolean isScalar() {
+    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null;
   }
 }

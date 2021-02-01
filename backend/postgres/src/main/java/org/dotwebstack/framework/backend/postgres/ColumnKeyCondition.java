@@ -4,6 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 
 @Builder
@@ -12,4 +13,6 @@ import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 public class ColumnKeyCondition implements KeyCondition {
 
   private final Map<String, Object> valueMap;
+
+  private final JoinTable joinTable;
 }

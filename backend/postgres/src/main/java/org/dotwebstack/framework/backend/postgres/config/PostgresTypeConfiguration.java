@@ -30,7 +30,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
 
-          if (fieldConfiguration.getColumn() == null && !fieldConfiguration.isForeignType()) {
+          if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
             String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
             fieldConfiguration.setColumn(columnName);
           }
@@ -49,6 +49,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
       return ColumnKeyCondition.builder()
           .valueMap(columnValues)
+          .joinTable(fieldConfiguration.getJoinTable())
           .build();
     }
 
