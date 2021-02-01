@@ -16,7 +16,6 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -56,7 +55,8 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
   public static final String OAS_JSON_PROBLEM_STATUS = "status";
 
-  public static final List<String> OAS_JSON_PROBLEM_PROPERTIES = List.of(OAS_JSON_PROBLEM_INSTANCE,OAS_JSON_PROBLEM_TITLE,OAS_JSON_PROBLEM_TYPE,OAS_JSON_PROBLEM_DETAIL,OAS_JSON_PROBLEM_STATUS);
+  public static final List<String> OAS_JSON_PROBLEM_PROPERTIES = List.of(OAS_JSON_PROBLEM_INSTANCE,
+      OAS_JSON_PROBLEM_TITLE, OAS_JSON_PROBLEM_TYPE, OAS_JSON_PROBLEM_DETAIL, OAS_JSON_PROBLEM_STATUS);
 
   private final OpenAPI openApi;
 
@@ -131,33 +131,29 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
     MapContext mapContext = getMapContext(exchange);
 
-    getSchema(exchange, responseStatus)
-        .ifPresent(
-            schema -> {
-              resolveExpressionUri(schema, mapContext, OAS_JSON_PROBLEM_TYPE)
-                  .ifPresent(builder::withType);
-              resolveExpression(schema, mapContext, OAS_JSON_PROBLEM_TITLE)
-                  .map(Object::toString)
-                  .ifPresent(builder::withTitle);
-              resolveExpression(schema, mapContext, OAS_JSON_PROBLEM_DETAIL)
-                  .map(Object::toString)
-                  .ifPresent(builder::withDetail);
-              resolveExpressionUri(schema, mapContext, OAS_JSON_PROBLEM_INSTANCE)
-                  .ifPresent(builder::withInstance);
+    getSchema(exchange, responseStatus).ifPresent(schema -> {
+      resolveExpressionUri(schema, mapContext, OAS_JSON_PROBLEM_TYPE).ifPresent(builder::withType);
+      resolveExpression(schema, mapContext, OAS_JSON_PROBLEM_TITLE).map(Object::toString)
+          .ifPresent(builder::withTitle);
+      resolveExpression(schema, mapContext, OAS_JSON_PROBLEM_DETAIL).map(Object::toString)
+          .ifPresent(builder::withDetail);
+      resolveExpressionUri(schema, mapContext, OAS_JSON_PROBLEM_INSTANCE).ifPresent(builder::withInstance);
 
-              schema.getProperties().keySet().stream()
-                  .filter(property -> !OAS_JSON_PROBLEM_PROPERTIES.contains(property))
-                  .forEach(
-                      property -> {
-                        if (schema.getProperties().get(property).getType().equals("array")) {
-                          resolveExpressionArray(schema, mapContext, property)
-                              .ifPresent(value -> builder.with(property, value));
-                        } else {
-                          resolveExpression(schema, mapContext, property)
-                              .ifPresent(value -> builder.with(property, value));
-                        }
-                      });
-            });
+      schema.getProperties()
+          .keySet()
+          .stream()
+          .filter(property -> !OAS_JSON_PROBLEM_PROPERTIES.contains(property))
+          .forEach(property -> {
+            if (schema.getProperties()
+                .get(property)
+                .getType()
+                .equals("array")) {
+              resolveExpressionArray(schema, mapContext, property).ifPresent(value -> builder.with(property, value));
+            } else {
+              resolveExpression(schema, mapContext, property).ifPresent(value -> builder.with(property, value));
+            }
+          });
+    });
 
     return builder.build();
   }
@@ -167,10 +163,11 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
     String[] acceptableMimeTypes = getApiResponse(exchange, HttpStatus.OK).stream()
         .map(ApiResponse::getContent)
-        .flatMap(content -> content.keySet().stream())
+        .flatMap(content -> content.keySet()
+            .stream())
         .toArray(String[]::new);
 
-    mapContext.set("acceptableMimeTypes",acceptableMimeTypes);
+    mapContext.set("acceptableMimeTypes", acceptableMimeTypes);
 
     return mapContext;
   }
@@ -185,18 +182,17 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
   @SuppressWarnings("rawtypes")
   private Optional<URI> resolveExpressionUri(Schema<?> schema, MapContext mapContext, String property) {
-    return resolveExpression(schema, mapContext, property).map(Object::toString).map(URI::create);
+    return resolveExpression(schema, mapContext, property).map(Object::toString)
+        .map(URI::create);
   }
 
   @SuppressWarnings("rawtypes")
   private Optional<Object> resolveExpression(Schema<?> schema, MapContext mapContext, String property) {
-    return resolveScript(schema,property)
-        .flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object.class));
+    return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object.class));
   }
 
   private Optional<Object[]> resolveExpressionArray(Schema<?> schema, MapContext mapContext, String property) {
-    return resolveScript(schema,property)
-        .flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object[].class));
+    return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object[].class));
   }
 
   private Optional<String> resolveScript(Schema<?> schema, String property) {
@@ -213,7 +209,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
   }
 
 
-    private Optional<ApiResponse> getApiResponse(ServerWebExchange exchange, HttpStatus responseStatus) {
+  private Optional<ApiResponse> getApiResponse(ServerWebExchange exchange, HttpStatus responseStatus) {
     if (exchange == null || exchange.getRequest() == null) {
       return Optional.empty();
     }

@@ -164,14 +164,34 @@ components:
             type: string
           order:
             type: string
-    Error:
+    BadRequest:
       type: object
       properties:
-        message:
+        type:
           type: string
-        errorCode:
+          format: uri
+        title:
           type: string
-
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+    NotAcceptable:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        acceptable:
+          type: array
+          x-dws-expr: "acceptableMimeTypes"
+        customparam:
+          type: string
+          x-dws-expr: "`foo`"
 
 paths:
   /brewery/{identifier}:
@@ -257,11 +277,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/BeerCollection'
         400:
-          description: error
+          description: bad request
           content:
-            application/hal+json:
+            application/problem+json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/BadRequest"
   /beers:
     get:
       x-dws-query:
@@ -289,8 +309,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/BeerCollection'
         400:
-          description: error
+          description: bad request
           content:
-            application/hal+json:
+            application/problem+json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/BadRequest"
+        406:
+          description: not acceptable
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptable"

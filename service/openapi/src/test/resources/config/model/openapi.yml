@@ -232,6 +232,22 @@ paths:
                   instance:
                     type: string
                     format: uri
+        406:
+          description: not acceptable
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    format: int32
+                  acceptable:
+                    type: array
+                    x-dws-expr: "acceptableMimeTypes"
+                  customparam:
+                    type: string
+                    x-dws-expr: "`foo`"
   /query4:
     get:
       x-dws-query: query4

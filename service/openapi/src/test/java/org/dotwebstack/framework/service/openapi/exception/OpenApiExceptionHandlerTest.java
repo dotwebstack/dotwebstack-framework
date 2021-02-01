@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.exception;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +46,7 @@ class OpenApiExceptionHandlerTest {
   @Mock
   private HttpAdviceTrait advice;
 
-  @Mock
+  @Spy
   private JexlEngine jexlEngine;
 
   @Mock
@@ -157,6 +159,48 @@ class OpenApiExceptionHandlerTest {
         .getTitle(), is(equalTo("Not Found OAS")));
     assertThat(actualProblem.get(0)
         .getStatus(), is(Status.NOT_FOUND));
+  }
+
+  @Test
+  void handle_exceptionRuleWithAcceptableMimeTypes_returnsEntity() {
+    // Arrange
+    Throwable throwable = mock(NotAcceptableException.class);
+
+    MockServerHttpRequest mockServerHttpRequest = MockServerHttpRequest.get("/query3/123")
+        .build();
+    when(serverWebExchange.getRequest()).thenReturn(mockServerHttpRequest);
+
+    JexlScript customParamScript = getJexlScript("`foo`");
+    when(jexlEngine.createScript("`foo`")).thenReturn(customParamScript);
+
+    JexlScript acceptableScript = getJexlScript("acceptableMimeTypes");
+    when(jexlEngine.createScript("acceptableMimeTypes")).thenReturn(acceptableScript);
+
+    AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
+    when(advice.create(eq(throwable), any(Problem.class), eq(serverWebExchange))).thenAnswer(invocationOnMock -> {
+      responseEntity.set(ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+          .build());
+      return Mono.just(responseEntity);
+    });
+
+    // Act
+    openApiExceptionHandler.handle(serverWebExchange, throwable);
+
+    // Assert
+    ArgumentCaptor<Problem> captor = ArgumentCaptor.forClass(Problem.class);
+    verify(advice, times(1)).create(eq(throwable), captor.capture(), eq(serverWebExchange));
+
+    List<Problem> actualProblem = captor.getAllValues();
+    assertThat(actualProblem.get(0)
+        .getTitle(), is(equalTo("Unsupported media type requested")));
+    assertThat(actualProblem.get(0)
+        .getStatus(), is(Status.NOT_ACCEPTABLE));
+    assertThat((String[]) actualProblem.get(0)
+        .getParameters()
+        .get("acceptable"), arrayContaining("application/hal+json"));
+    assertThat(actualProblem.get(0)
+        .getParameters()
+        .get("customparam"), is("foo"));
   }
 
   // Because JexlEngine is mocked, .createScript returns null. This method returns a valid JexlScript.

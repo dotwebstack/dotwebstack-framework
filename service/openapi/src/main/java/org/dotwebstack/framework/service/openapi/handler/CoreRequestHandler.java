@@ -59,7 +59,6 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
-import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -413,8 +412,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .collect(Collectors.toList());
 
     CoreRequestHelper.validateResponseMediaTypesAreConfigured(supportedMediaTypes);
-
-    if(true) throw new NotAcceptableException("bleh!!",null);
 
     MediaType responseContentType =
         isAcceptHeaderProvided(acceptHeaders) ? getResponseContentType(acceptHeaders, supportedMediaTypes)
