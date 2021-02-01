@@ -359,6 +359,39 @@ The content of `x-dws-include` should be a valid [JEXL](http://commons.apache.or
 * `<property>`: A scalar field of the object containing the `x-dws-include` property.
 * `<nestedobject>.<property>`: Same as above, but using the property of an nested object.
 
+# 1.1.15 Problem+json
+By using `application/problem+json` is it possible to return any error as `application/problem+json` content-type. The following properties can be used:
+
+- type
+- title
+- detail
+- instance
+- status
+
+It is also possible to use a custom property which will be returned in the problem response (key/value). The value must be defined in an `x-dws-expr`.
+For _not acceptable_ errors it is possible to use `acceptableMimeTypes` which will return all acceptable mime types as array.
+
+Example:
+
+```yaml
+        406:
+          description: not acceptable
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    format: int32
+                  acceptable:
+                    type: array
+                    x-dws-expr: "acceptableMimeTypes"
+                  customparam:
+                    type: string
+                    x-dws-expr: "`foo`"
+```
+
 # 1.2 Templating
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
 configure a response like the following:
