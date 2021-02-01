@@ -13,7 +13,6 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -204,8 +203,6 @@ class JsonDataLoaderTest {
         .build();
 
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
-    when(selectionSet.getImmediateFields())
-        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
 
     return LoadEnvironment.builder()
         .objectType(graphQlObjectType)
@@ -213,10 +210,6 @@ class JsonDataLoaderTest {
         .queryName(BEERS_QUERY_NAME)
         .selectionSet(selectionSet)
         .build();
-  }
-
-  private SelectedField createSelectedField(String name) {
-    return mock(SelectedField.class);
   }
 
   private JsonNode getDataAsJsonNode() throws JsonProcessingException {

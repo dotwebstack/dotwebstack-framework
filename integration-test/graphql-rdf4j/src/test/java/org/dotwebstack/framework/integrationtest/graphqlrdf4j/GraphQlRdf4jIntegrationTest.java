@@ -128,7 +128,7 @@ public class GraphQlRdf4jIntegrationTest {
                     ImmutableMap.of(SCHEMA_NAME.getLocalName(), "Ale")))));
   }
 
-  @Test
+  @Test()
   void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() {
     // Arrange
     String query = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";

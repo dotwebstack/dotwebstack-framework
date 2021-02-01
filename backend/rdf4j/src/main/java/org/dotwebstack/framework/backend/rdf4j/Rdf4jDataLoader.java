@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
+import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryBuilder;
 import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryHolder;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -27,6 +29,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 @Component
+@Slf4j
 public class Rdf4jDataLoader implements BackendDataLoader {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
@@ -48,8 +51,8 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(KeyCondition filter, LoadEnvironment environment) {
-    Rdf4jQueryHolder queryHolder = getQueryHolder(filter, environment);
+  public Mono<Map<String, Object>> loadSingle(KeyCondition keyConditions, LoadEnvironment environment) {
+    Rdf4jQueryHolder queryHolder = getQueryHolder(keyConditions, environment);
 
     try (TupleQueryResult queryResult = executeQuery(queryHolder.getQuery())) {
       if (queryResult.hasNext()) {
@@ -61,14 +64,14 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(KeyCondition filter, LoadEnvironment environment) {
-    Rdf4jQueryHolder queryHolder = getQueryHolder(filter, environment);
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyConditions, LoadEnvironment environment) {
+    Rdf4jQueryHolder queryHolder = getQueryHolder(keyConditions, environment);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
 
@@ -78,25 +81,28 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> filters,
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
   private TupleQueryResult executeQuery(String query) {
+
+    LOG.debug("Sparql query: {}", query);
+
     return localRepositoryManager.getRepository("local")
         .getConnection()
         .prepareTupleQuery(query)
         .evaluate();
   }
 
-  private Rdf4jQueryHolder getQueryHolder(KeyCondition filter, LoadEnvironment environment) {
+  private Rdf4jQueryHolder getQueryHolder(KeyCondition keyCondition, LoadEnvironment environment) {
     Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 
-    return null;
-    // return new Rdf4jQueryBuilder().build(typeConfiguration, nodeShape, environment, filter);
+    return new Rdf4jQueryBuilder(dotWebStackConfiguration).build(typeConfiguration, nodeShape, environment,
+        keyCondition);
   }
 
   private Map<String, Object> toRowMap(BindingSet bindingSet) {

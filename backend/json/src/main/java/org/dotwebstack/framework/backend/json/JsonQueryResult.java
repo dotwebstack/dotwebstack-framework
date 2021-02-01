@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import net.minidev.json.JSONArray;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 
 @Getter
 public final class JsonQueryResult {
@@ -28,10 +29,13 @@ public final class JsonQueryResult {
     this.jsonPathTemplate = jsonPathTemplate;
   }
 
-  public List<Map<String, Object>> getResults(FieldKeyCondition fieldKeyCondition) {
-    List<com.jayway.jsonpath.Filter> jsonPathFilters = fieldKeyCondition.getFieldValues()
-        .entrySet()
+  public List<Map<String, Object>> getResults(KeyCondition keyCondition) {
+    List<com.jayway.jsonpath.Filter> jsonPathFilters = Optional.ofNullable(keyCondition)
+        .map(FieldKeyCondition.class::cast)
         .stream()
+        .flatMap(fieldKeyCondition -> fieldKeyCondition.getFieldValues()
+            .entrySet()
+            .stream())
         .map(this::createFilter)
         .collect(Collectors.toList());
 
@@ -44,8 +48,8 @@ public final class JsonQueryResult {
     return getResultList(jsonPathResult);
   }
 
-  public Optional<Map<String, Object>> getResult(FieldKeyCondition fieldKeyCondition) {
-    List<Map<String, Object>> resultList = getResults(fieldKeyCondition);
+  public Optional<Map<String, Object>> getResult(KeyCondition keyCondition) {
+    List<Map<String, Object>> resultList = getResults(keyCondition);
 
     if (resultList.isEmpty()) {
       return empty();
@@ -74,7 +78,7 @@ public final class JsonQueryResult {
 
   private JSONArray getJsonPathResult(List<com.jayway.jsonpath.Filter> jsonPathFilters, String jsonPathTemplate) {
     return JsonPath.parse(jsonNode.toString())
-        .read(jsonPathTemplate, jsonPathFilters.toArray(new com.jayway.jsonpath.Filter[jsonPathFilters.size()]));
+        .read(jsonPathTemplate, jsonPathFilters.toArray(new com.jayway.jsonpath.Filter[0]));
   }
 
   private com.jayway.jsonpath.Filter createFilter(Map.Entry<String, Object> key) {

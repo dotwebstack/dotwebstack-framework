@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -118,7 +120,7 @@ public class PostgresDataLoader implements BackendDataLoader {
           return false;
         })
         .findFirst()
-        .orElseThrow(() -> new IllegalStateException("Unable to find keyCondition."));
+        .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

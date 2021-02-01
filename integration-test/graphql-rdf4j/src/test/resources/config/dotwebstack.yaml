@@ -29,5 +29,4 @@ typeMapping:
     keys:
       - field: identifier
     fields:
-      street:
-      city:
+      postalCode:

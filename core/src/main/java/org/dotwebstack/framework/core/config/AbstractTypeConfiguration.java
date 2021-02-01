@@ -10,6 +10,7 @@ import graphql.schema.GraphQLArgument;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -57,6 +58,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
         .getArguments()
         .stream()
         .map(argument -> getQueryArgumentEntry(environment, argument))
+        .filter(Objects::nonNull)
+        .map(entry -> entry)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (entries.size() > 0) {

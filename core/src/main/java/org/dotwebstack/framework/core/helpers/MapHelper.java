@@ -33,18 +33,6 @@ public class MapHelper {
     if (value instanceof MapNode) {
       MapNode mapNode = (MapNode) value;
 
-      String keyField = mapNode.getTypeConfiguration()
-          .getKeys()
-          .get(0)
-          .getField();
-      String keyAlias = mapNode.getFieldAliasMap()
-          .get(keyField)
-          .toString();
-
-      if (dataMap.get(keyAlias) == null) {
-        return null;
-      }
-
       return toGraphQlMap(dataMap, mapNode.getFieldAliasMap());
     }
 

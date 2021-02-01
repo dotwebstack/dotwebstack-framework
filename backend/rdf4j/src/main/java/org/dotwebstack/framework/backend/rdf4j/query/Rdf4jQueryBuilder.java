@@ -17,12 +17,15 @@ import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.helpers.MapNode;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
@@ -31,11 +34,18 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfSubject;
 
 public class Rdf4jQueryBuilder {
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final AtomicInteger aliasCounter = new AtomicInteger();
+
+  public Rdf4jQueryBuilder(DotWebStackConfiguration dotWebStackConfiguration) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
+  }
 
   public Rdf4jQueryHolder build(Rdf4jTypeConfiguration typeConfiguration, NodeShape nodeShape,
       LoadEnvironment loadEnvironment, KeyCondition keyCondition) {
@@ -61,7 +71,6 @@ public class Rdf4jQueryBuilder {
         .build();
   }
 
-  @SuppressWarnings("unchecked")
   private List<Projectable> createProjectables(Map<String, Object> fieldAliasMap) {
     List<Projectable> projectables = fieldAliasMap.values()
         .stream()
@@ -71,8 +80,8 @@ public class Rdf4jQueryBuilder {
 
     fieldAliasMap.values()
         .stream()
-        .filter(value -> value instanceof Map)
-        .map(value -> (Map<String, Object>) value)
+        .filter(value -> value instanceof MapNode)
+        .map(value -> ((MapNode) value).getFieldAliasMap())
         .flatMap(map -> createProjectables(map).stream())
         .forEach(projectables::add);
 
@@ -96,24 +105,31 @@ public class Rdf4jQueryBuilder {
     if (keyConditions != null && keyConditions.size() > 0) {
       keyConditions.stream()
           .map(FieldKeyCondition.class::cast)
-          .forEach(fieldKeyCondition -> {
-            Variable variable = SparqlBuilder.var(fieldAliasMap.get(fieldKeyCondition.getFieldValues()
-                .keySet()
-                .iterator()
-                .next())
-                .toString());
+          .map(FieldKeyCondition::getFieldValues)
+          .forEach(valuesMap -> {
+            Operand[] entryOperands = valuesMap.entrySet()
+                .stream()
+                .filter(valueEntry -> fieldAliasMap.get(valueEntry.getKey()) != null)
+                .map(valueEntry -> {
+                  Variable variable = SparqlBuilder.var(fieldAliasMap.get(valueEntry.getKey())
+                      .toString());
 
-            Operand value;
-            // FIX
-            // if (fieldKeyCondition.getFieldValues().values().iterator().next() instanceof List) {
-            // List<String> values = (List<String>) fieldKeyCondition.getValue();
-            // value = Rdf.literalOf(values.get(0));
-            // } else {
-            // value = Rdf.literalOf(fieldKeyCondition.getValue()
-            // .toString());
-            // }
+                  Operand value;
+                  if (valueEntry.getValue() instanceof List) {
+                    value = Rdf.literalOf(((List<?>) valueEntry.getValue()).get(0)
+                        .toString());
+                  } else {
+                    value = Rdf.literalOf(valueEntry.getValue()
+                        .toString());
+                  }
 
-            // operands.add(Expressions.equals(variable, value));
+                  return Expressions.equals(variable, value);
+                })
+                .toArray(Operand[]::new);
+
+            if (entryOperands.length > 0) {
+              operands.add(Expressions.and(entryOperands));
+            }
           });
     }
 
@@ -182,7 +198,14 @@ public class Rdf4jQueryBuilder {
             GraphPattern nestedResult = createGraphPatterns(SparqlBuilder.var(alias), nestedSelectedField,
                 propertyShape.getNode(), nestedFieldAliasMap);
 
-            fieldAliasMap.put(selectedField.getResultKey(), nestedFieldAliasMap);
+            MapNode mapNode = MapNode.builder()
+                .typeConfiguration(dotWebStackConfiguration.getTypeMapping()
+                    .get(propertyShape.getNode()
+                        .getName()))
+                .fieldAliasMap(nestedFieldAliasMap)
+                .build();
+
+            fieldAliasMap.put(selectedField.getResultKey(), mapNode);
 
             return nestedResult;
           })

@@ -18,7 +18,7 @@ import reactor.util.function.Tuple2;
 @Component
 public class JsonDataLoader implements BackendDataLoader {
 
-  private DotWebStackConfiguration dotWebStackConfiguration;
+  private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final JsonDataService jsonDataService;
 
@@ -33,7 +33,7 @@ public class JsonDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(KeyCondition filter, LoadEnvironment environment) {
+  public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
@@ -42,20 +42,19 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
-    return null;
-    // return jsonQueryResult.getResult(KeyCondition.flatten(filter))
-    // .map(Mono::just)
-    // .orElse(Mono.empty());
+    return jsonQueryResult.getResult(keyCondition)
+        .map(Mono::just)
+        .orElse(Mono.empty());
   }
 
   @Override
-  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(KeyCondition filter, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     JsonTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     String jsonPathTemplate = typeConfiguration.getJsonPathTemplate(environment.getQueryName());
@@ -64,12 +63,11 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
-    return null;
-    // return Flux.fromIterable(jsonQueryResult.getResults(KeyCondition.flatten(filter)));
+    return Flux.fromIterable(jsonQueryResult.getResults(keyCondition));
   }
 
   @Override
-  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> filters,
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     throw new UnsupportedOperationException("This method is not yet implemented");
   }

@@ -136,7 +136,7 @@ public class QueryBuilder {
 
     List<Field<Object>> selectedColumns = Stream.concat(keyColumnNames.values()
         .stream()
-        .map(keyColumnAlias -> DSL.field(keyColumnAlias)),
+        .map(DSL::field),
         Set.of(DSL.field(lateralTable.getName()
             .concat(".*")))
             .stream())

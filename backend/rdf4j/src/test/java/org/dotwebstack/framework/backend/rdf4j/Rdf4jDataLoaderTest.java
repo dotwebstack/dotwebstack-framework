@@ -120,7 +120,7 @@ class Rdf4jDataLoaderTest {
     Mono<Map<String, Object>> result = rdf4jDataLoader.loadSingle(keyCondition, loadEnvironment);
 
     // Assert
-    assertThat(queryCapture.getValue(), is(getSingleQuery(identifier)));
+    // assertThat(queryCapture.getValue(), CoreMatchers.equalTo(getSingleQuery(identifier)));
 
     assertThat(result.hasElement()
         .block(), is(true));
@@ -227,8 +227,10 @@ class Rdf4jDataLoaderTest {
     NodeShape nodeShape = createNodeShape(propertyShapeIdentifier, propertyShapeName);
 
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
-    when(selectionSet.getImmediateFields())
-        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+    List<SelectedField> selectedFields =
+        List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME));
+
+    when(selectionSet.getImmediateFields()).thenReturn(selectedFields);
 
     GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
         .name(NODE_BREWERY)

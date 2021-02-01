@@ -11,11 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.time.Duration;
 import java.util.HashMap;
@@ -26,7 +24,6 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -114,8 +111,8 @@ class PostgresDataLoaderTest {
     String identifier = "d3654375-95fa-46b4-8529-08b0f777bd6b";
     String name = "Brewery X";
 
-    FieldKeyCondition keyCondition = FieldKeyCondition.builder()
-        .fieldValues(Map.of("identifier", identifier))
+    ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
+        .valueMap(Map.of("identifier", identifier))
         .build();
 
     when(fetchSpec.one()).thenReturn(Mono.just(Map.of("x1", identifier, "x2", name)));
@@ -136,9 +133,9 @@ class PostgresDataLoaderTest {
         .entrySet()));
 
     verify(databaseClient)
-        .sql("select t1.identifier, t3.* from (values (:1)) as \"t1\" (\"identifier\") join lateral (select "
-            + "identifier as \"x1\", name as \"x2\" from db.brewery as \"t2\" where t2.identifier "
-            + "in (t1.identifier)) as \"t3\" on true");
+        .sql("select x3, t3.* from (values (:1)) as \"t2\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
+            + "as \"x1\", \"t1\".\"name\" as \"x2\" from db.brewery as \"t1\" where identifier = \"t2\".\"x3\" "
+            + "limit :2) as \"t3\" on true");
   }
 
   @Test
@@ -165,7 +162,8 @@ class PostgresDataLoaderTest {
         equalTo(Map.of("identifier", "d3654375-95fa-46b4-8529-08b0f777bd6c", "name", "Brewery Y")
             .entrySet()));
 
-    verify(databaseClient).sql("select identifier as \"x1\", name as \"x2\" from db.brewery as \"t1\"");
+    verify(databaseClient)
+        .sql("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\" from db.brewery as \"t1\" limit :1");
   }
 
   @SuppressWarnings("unchecked")
@@ -176,13 +174,18 @@ class PostgresDataLoaderTest {
 
     when(genericExecuteSpec.fetch()).thenReturn(fetchSpec);
 
+    when(genericExecuteSpec.bind(any(), any())).thenReturn(genericExecuteSpec);
+
     when(databaseClient.sql(any(String.class))).thenReturn(genericExecuteSpec);
   }
 
   private LoadEnvironment createLoadEnvironment() {
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
-    when(selectionSet.getImmediateFields())
-        .thenReturn(List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME)));
+
+    List<SelectedField> selectedFields =
+        List.of(createSelectedField(FIELD_IDENTIFIER), createSelectedField(FIELD_NAME));
+
+    when(selectionSet.getFields(any())).thenReturn(selectedFields);
 
     LoadEnvironment.LoadEnvironmentBuilder loadEnvironmentBuilder = LoadEnvironment.builder()
         .selectionSet(selectionSet)
@@ -194,12 +197,6 @@ class PostgresDataLoaderTest {
   private SelectedField createSelectedField(String name) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
-    when(selectedField.getResultKey()).thenReturn(name);
-
-    when(selectedField.getFieldDefinition()).thenReturn(GraphQLFieldDefinition.newFieldDefinition()
-        .name(name)
-        .type(Scalars.GraphQLString)
-        .build());
 
     return selectedField;
   }

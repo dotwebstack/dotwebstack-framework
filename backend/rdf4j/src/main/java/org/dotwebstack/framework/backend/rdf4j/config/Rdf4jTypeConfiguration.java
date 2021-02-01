@@ -19,7 +19,7 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
 
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-    return null;
+    return getQueryArgumentKeyConditions(environment).orElse(null);
   }
 
   @Override
