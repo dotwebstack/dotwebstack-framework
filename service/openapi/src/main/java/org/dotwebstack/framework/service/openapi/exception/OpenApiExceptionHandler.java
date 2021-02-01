@@ -191,10 +191,12 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
     return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object.class));
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<Object[]> resolveExpressionArray(Schema<?> schema, MapContext mapContext, String property) {
     return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object[].class));
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<String> resolveScript(Schema<?> schema, String property) {
     return Optional.of(schema)
         .map(Schema::getProperties)
