@@ -140,7 +140,7 @@ public class QueryBuilder {
     selectColumns.add(keyColumn);
 
     loadEnvironment.getSelectionSet()
-        .getFields(fieldPathPrefix.concat("*"))
+        .getFields(fieldPathPrefix.concat("*.*"))
         .forEach(selectedField -> {
           String fieldName = selectedField.getName();
 
