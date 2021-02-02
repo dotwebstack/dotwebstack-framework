@@ -26,13 +26,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.pebbletemplates</groupId>
-      <artifactId>pebble</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.pebbletemplates</groupId>
+      <artifactId>pebble</artifactId>
     </dependency>
   </dependencies>
 
