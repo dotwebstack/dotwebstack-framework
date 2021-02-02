@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noContentException;
@@ -249,6 +248,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .variables(inputParams)
           .build();
 
+
       return graphQL.execute(executionInput);
     })
         .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
@@ -308,7 +308,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw unwrapExceptionWhileNeeded(result);
   }
 
-  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws BadRequestException {
+  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws GraphQlErrorException {
     GraphQLError graphQlError = result.getErrors()
         .get(0);
 
@@ -324,11 +324,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
 
     if (graphQlError instanceof InputMapDefinesTooManyFieldsException) {
-      throw badRequestException("Too many request fields", graphQlError);
+      throw graphQlErrorException("Too many request fields", graphQlError);
     }
 
     if (graphQlError instanceof NonNullableValueCoercedAsNullException) {
-      throw badRequestException("Missing request fields", graphQlError);
+      throw graphQlErrorException("Missing request fields", graphQlError);
     }
 
     return graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());

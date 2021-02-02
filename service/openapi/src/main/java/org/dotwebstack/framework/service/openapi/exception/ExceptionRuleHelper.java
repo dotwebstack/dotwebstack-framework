@@ -54,6 +54,7 @@ public class ExceptionRuleHelper {
           .exception(BadRequestException.class)
           .responseStatus(BAD_REQUEST)
           .title("Error while processing the request")
+          .detail(true)
           .build(),
       ExceptionRule.builder()
           .exception(InvalidConfigurationException.class)

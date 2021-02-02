@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.integrationtest.openapijson;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @ExtendWith(SpringExtension.class)
@@ -120,6 +125,23 @@ class OpenApiJsonIntegrationTest {
 
     // Assert
     assertResult(result, "/results/breweries.json");
+  }
+
+  @Test
+  void openApiRequest_ReturnsProblem_withNotAcceptedContentType() throws IOException {
+    // Arrange & Act
+    EntityExchangeResult<String> result = webClient.get()
+        .uri("/beers")
+        .accept(MediaType.APPLICATION_PDF)
+        .exchange()
+        .expectBody(String.class)
+        .returnResult();
+
+    // Assert
+    assertThat(result.getStatus(), is(HttpStatus.NOT_ACCEPTABLE));
+    assertThat(result.getResponseHeaders()
+        .getContentType(), is(MediaType.valueOf("application/problem+json")));
+    assertResult(result.getResponseBody(), "/results/beers_not_acceptable.json");
   }
 
   private void assertResult(String result, String jsonResultPath) throws IOException {

@@ -378,9 +378,8 @@ public class ResponseTemplateBuilder {
       return null;
     }
 
-    if ((Objects.equals(OasConstants.ARRAY_TYPE, schema.getType())
-        || Objects.equals(OasConstants.OBJECT_TYPE, schema.getType()))) {
-      throw invalidConfigurationException("Extension '{}' is only allowed for scalar types.", X_DWS_EXPR);
+    if (Objects.equals(OasConstants.OBJECT_TYPE, schema.getType())) {
+      throw invalidConfigurationException("Extension '{}' is not allowed for `object` type", X_DWS_EXPR);
     }
 
     if (result instanceof String) {
