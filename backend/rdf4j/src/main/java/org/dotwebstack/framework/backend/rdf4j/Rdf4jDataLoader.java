@@ -4,18 +4,19 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryBuilder;
 import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQueryHolder;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -23,18 +24,23 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 @Component
+@Slf4j
 public class Rdf4jDataLoader implements BackendDataLoader {
+
+  private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final LocalRepositoryManager localRepositoryManager;
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  public Rdf4jDataLoader(@NonNull LocalRepositoryManager localRepositoryManager,
-      @NonNull NodeShapeRegistry nodeShapeRegistry) {
+  public Rdf4jDataLoader(@NonNull DotWebStackConfiguration dotWebStackConfiguration,
+      @NonNull LocalRepositoryManager localRepositoryManager, @NonNull NodeShapeRegistry nodeShapeRegistry) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.localRepositoryManager = localRepositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
   }
@@ -45,56 +51,61 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
-    Rdf4jQueryHolder queryHolder = getQueryHolder(key, environment);
+  public Mono<Map<String, Object>> loadSingle(KeyCondition keyConditions, LoadEnvironment environment) {
+    Rdf4jQueryHolder queryHolder = getQueryHolder(keyConditions, environment);
 
     try (TupleQueryResult queryResult = executeQuery(queryHolder.getQuery())) {
       if (queryResult.hasNext()) {
-        return Mono.just(toDataMap(queryResult.next()))
-            .map(dataMap -> toGraphQlMap(dataMap, queryHolder.getFieldAliasMap()));
+        return Mono.just(toRowMap(queryResult.next()))
+            .map(row -> toGraphQlMap(row, queryHolder.getFieldAliasMap()));
       }
       return Mono.empty();
     }
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
+      LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
-    Rdf4jQueryHolder queryHolder = getQueryHolder(key, environment);
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyConditions, LoadEnvironment environment) {
+    Rdf4jQueryHolder queryHolder = getQueryHolder(keyConditions, environment);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
 
-    return Flux.fromIterable(queryResult.stream()
-        .map(this::toDataMap)
-        .map(dataMap -> toGraphQlMap(dataMap, queryHolder.getFieldAliasMap()))
-        .collect(Collectors.toList()));
+    return Flux.fromStream(queryResult.stream()
+        .map(this::toRowMap)
+        .map(row -> toGraphQlMap(row, queryHolder.getFieldAliasMap())));
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
+      LoadEnvironment environment) {
     throw unsupportedOperationException("Not implemented yet!");
   }
 
   private TupleQueryResult executeQuery(String query) {
+
+    LOG.debug("Sparql query: {}", query);
+
     return localRepositoryManager.getRepository("local")
         .getConnection()
         .prepareTupleQuery(query)
         .evaluate();
   }
 
-  private Rdf4jQueryHolder getQueryHolder(Object key, LoadEnvironment environment) {
-    Rdf4jTypeConfiguration typeConfiguration = (Rdf4jTypeConfiguration) environment.getTypeConfiguration();
+  private Rdf4jQueryHolder getQueryHolder(KeyCondition keyCondition, LoadEnvironment environment) {
+    Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
     NodeShape nodeShape = nodeShapeRegistry.get(environment.getObjectType());
 
-    return new Rdf4jQueryBuilder().build(typeConfiguration, nodeShape, environment, key);
+    return new Rdf4jQueryBuilder(dotWebStackConfiguration).build(typeConfiguration, nodeShape, environment,
+        keyCondition);
   }
 
-  private Map<String, Object> toDataMap(BindingSet bindingSet) {
+  private Map<String, Object> toRowMap(BindingSet bindingSet) {
     Map<String, Object> dataMap = new HashMap<>();
     bindingSet.getBindingNames()
         .forEach(bindingName -> {

@@ -1,13 +1,9 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
-import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLByte;
 import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLID;
 import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLShort;
 import static graphql.Scalars.GraphQLString;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.BOOLEAN_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
@@ -37,16 +33,13 @@ public class TypeValidator {
         }
         break;
       case NUMBER_TYPE:
-        if (!ImmutableList
-            .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
-                GraphQLShort.getName(), GraphQLBigDecimal.getName(), GraphQLString.getName())
+        if (!ImmutableList.of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
-        if (!ImmutableList
-            .of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName(), GraphQLString.getName())
+        if (!ImmutableList.of(GraphQLInt.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
@@ -68,15 +61,13 @@ public class TypeValidator {
       case STRING_TYPE:
         break;
       case NUMBER_TYPE:
-        if (!ImmutableList
-            .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
-                GraphQLShort.getName(), GraphQLBigDecimal.getName())
+        if (!ImmutableList.of(GraphQLFloat.getName(), GraphQLInt.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
-        if (!ImmutableList.of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName())
+        if (!ImmutableList.of(GraphQLInt.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }

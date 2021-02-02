@@ -2,18 +2,15 @@ schema {
   query: Query
 }
 
-directive @key(
-  field: String
-) on ARGUMENT_DEFINITION
-
 type Query {
-  brewery(identifier: ID! @constraint(pattern: "[0-9]+") @key): Brewery
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
 
-  breweries(sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
+  breweries(
+      sort: [SortField!] = [{ field: "name", order: ASC }] @sort,
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [1, 2, 5, 10]),
             foundedAfter: Date ,
             foundedBefore: Date,
-            name: [String] @key,
+            name: [String],
             searchName: [String],
             searchPostalCode: [String],
             withAddressSubject: String): [Brewery!]!

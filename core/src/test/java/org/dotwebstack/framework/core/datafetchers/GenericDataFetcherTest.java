@@ -13,7 +13,6 @@ import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
@@ -52,9 +51,6 @@ class GenericDataFetcherTest {
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.empty());
 
     DataFetchingFieldSelectionSet dataFetchingFieldSelectionSet = mock(DataFetchingFieldSelectionSet.class);
-    when(dataFetchingFieldSelectionSet.getImmediateFields()).thenReturn(Collections.emptyList());
-
-    when(graphQlFieldDefinitionMock.getArguments()).thenReturn(Collections.emptyList());
 
     ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
 

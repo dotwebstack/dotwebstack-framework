@@ -4,9 +4,8 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class MapHelper {
 
@@ -20,30 +19,29 @@ public class MapHelper {
   }
 
   public static Map<String, Object> toGraphQlMap(Map<String, Object> dataMap, Map<String, Object> fieldAliasMap) {
-    return fieldAliasMap.entrySet()
-        .stream()
-        .map(entry -> toGraphQlResultEntry(dataMap, entry))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
+    Map<String, Object> result = new HashMap<>();
+    for (String fieldName : fieldAliasMap.keySet()) {
+      Object value = toGraphQlResultEntry(dataMap, fieldAliasMap.get(fieldName));
 
-  @SuppressWarnings("unchecked")
-  private static Optional<Map.Entry<String, Object>> toGraphQlResultEntry(Map<String, Object> dataMap,
-      Map.Entry<String, Object> fieldAlias) {
-    if (fieldAlias.getValue() instanceof Map) {
-      return Optional
-          .of(Map.entry(fieldAlias.getKey(), toGraphQlMap(dataMap, (Map<String, Object>) fieldAlias.getValue())));
+      result.put(fieldName, value);
     }
 
-    if (fieldAlias.getValue() instanceof String) {
-      String alias = (String) fieldAlias.getValue();
+    return result;
+  }
+
+  private static Object toGraphQlResultEntry(Map<String, Object> dataMap, Object value) {
+    if (value instanceof MapNode) {
+      MapNode mapNode = (MapNode) value;
+
+      return toGraphQlMap(dataMap, mapNode.getFieldAliasMap());
+    }
+
+    if (value instanceof String) {
+      String alias = (String) value;
 
       if (dataMap.containsKey(alias) && dataMap.get(alias) != null) {
-        return Optional.of(Map.entry(fieldAlias.getKey(), dataMap.get(alias)));
+        return dataMap.get(alias);
       }
-
-      return Optional.empty();
     }
 
     throw illegalStateException("Only Map or String instance is allowed as entry value");

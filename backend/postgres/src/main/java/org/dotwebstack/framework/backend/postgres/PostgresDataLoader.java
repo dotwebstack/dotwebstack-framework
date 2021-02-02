@@ -1,17 +1,18 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.dotwebstack.framework.core.helpers.MapHelper.toGraphQlMap;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.PostgresQueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.PostgresQueryHolder;
+import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
+import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.jooq.DSLContext;
 import org.jooq.Param;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -50,41 +52,75 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(Object key, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+  public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, key);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
 
-    return this.execute(postgresQueryHolder.getQuery())
+    return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
+        .map(row -> queryHolder.getRowAssembler()
+            .apply(row));
   }
 
   @Override
-  public Flux<Tuple2<Object, Map<String, Object>>> batchLoadSingle(Set<Object> keys, LoadEnvironment environment) {
-    return Flux.fromIterable(keys)
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+      LoadEnvironment environment) {
+    return Flux.fromIterable(filters)
         .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(Object key, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) environment.getTypeConfiguration();
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    PostgresQueryBuilder queryBuilder = new PostgresQueryBuilder(dotWebStackConfiguration, dslContext);
-    PostgresQueryHolder postgresQueryHolder = queryBuilder.build(typeConfiguration, environment, key);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
 
-    return this.execute(postgresQueryHolder.getQuery())
+    return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(map -> toGraphQlMap(map, postgresQueryHolder.getFieldAliasMap()));
+        .map(row -> queryHolder.getRowAssembler()
+            .apply(row));
   }
 
   @Override
-  public Flux<Flux<Map<String, Object>>> batchLoadMany(List<Object> keys, LoadEnvironment environment) {
-    return Flux.fromIterable(keys)
-        .map(key -> this.loadMany(key, environment));
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
+      LoadEnvironment environment) {
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
+    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions);
+
+    return this.execute(queryHolder.getQuery())
+        .fetch()
+        .all()
+        .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
+            row -> queryHolder.getRowAssembler()
+                .apply(row));
+  }
+
+  private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row,
+      Map<String, String> keyColumnNames) {
+    return keyConditions.stream()
+        .map(ColumnKeyCondition.class::cast)
+        .filter(keyCondition -> {
+          for (Entry<String, Object> valueEntry : keyCondition.getValueMap()
+              .entrySet()) {
+
+            String columnAlias = keyColumnNames.get(valueEntry.getKey());
+
+            if (valueEntry.getValue()
+                .equals(row.get(columnAlias))) {
+              return true;
+            }
+          }
+
+          return false;
+        })
+        .findFirst()
+        .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

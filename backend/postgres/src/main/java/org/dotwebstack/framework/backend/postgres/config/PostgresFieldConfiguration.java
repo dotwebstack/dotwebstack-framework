@@ -13,5 +13,12 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   @Valid
   private List<JoinColumn> joinColumns;
 
-  private String sqlColumnName;
+  @Valid
+  private JoinTable joinTable;
+
+  private String column;
+
+  public boolean isScalar() {
+    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null;
+  }
 }

@@ -1,23 +1,26 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import graphql.execution.ExecutionStepInfo;
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.SelectedField;
-import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
+import lombok.NonNull;
 
 @Builder
 @Getter
 public final class LoadEnvironment {
 
-  private final TypeConfiguration<?> typeConfiguration;
+  @NonNull
+  private final ExecutionStepInfo executionStepInfo;
 
   private final GraphQLObjectType objectType;
 
-  private final List<SelectedField> selectedFields;
+  @NonNull
+  private final DataFetchingFieldSelectionSet selectionSet;
 
   private final String queryName;
 
-  private final List<KeyArgument> keyArguments;
+  private Map<String, Object> source;
 }

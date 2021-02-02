@@ -12,4 +12,5 @@ public class Rdf4jFieldConfiguration extends AbstractFieldConfiguration {
 
   @Valid
   private List<JoinColumn> joinColumns;
+
 }
