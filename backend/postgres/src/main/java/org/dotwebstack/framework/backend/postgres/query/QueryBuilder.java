@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
@@ -65,7 +66,7 @@ public class QueryBuilder {
     this.loadEnvironment = loadEnvironment;
   }
 
-  private QueryHolder build(Select<Record> query, Function<Map<String, Object>, Map<String, Object>> rowAssembler) {
+  private QueryHolder build(Select<Record> query, UnaryOperator<Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
         .rowAssembler(rowAssembler)
@@ -73,7 +74,7 @@ public class QueryBuilder {
   }
 
   private QueryHolder build(Select<Record> query, Map<String, String> keyColumnNames,
-      Function<Map<String, Object>, Map<String, Object>> rowAssembler) {
+      UnaryOperator<Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
         .rowAssembler(rowAssembler)
@@ -88,11 +89,10 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, Collection<KeyCondition> keyConditions) {
-
     JoinTable joinTable = keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
-        .filter(columnKeyCondition -> columnKeyCondition.getJoinTable() != null)
         .map(ColumnKeyCondition::getJoinTable)
+        .filter(Objects::nonNull)
         .findFirst()
         .orElse(null);
 
@@ -318,7 +318,7 @@ public class QueryBuilder {
 
     private final SelectJoinStep<Record> query;
 
-    private final Function<Map<String, Object>, Map<String, Object>> rowAssembler;
+    private final UnaryOperator<Map<String, Object>> rowAssembler;
   }
 
   @Builder
@@ -327,6 +327,6 @@ public class QueryBuilder {
 
     private final Table<Record> table;
 
-    private final Function<Map<String, Object>, Map<String, Object>> rowAssembler;
+    private final UnaryOperator<Map<String, Object>> rowAssembler;
   }
 }
