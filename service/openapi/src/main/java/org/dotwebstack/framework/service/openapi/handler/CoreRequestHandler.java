@@ -248,6 +248,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .variables(inputParams)
           .build();
 
+
       return graphQL.execute(executionInput);
     })
         .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));

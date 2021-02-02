@@ -150,21 +150,6 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  void build_throwsException_ArrayXdwsTemplateType() {
-    // Arrange
-    Schema<?> property1 = (Schema) openApi.getComponents()
-        .getSchemas()
-        .get("Object1")
-        .getProperties()
-        .get("o1_prop1");
-    property1.setType("array");
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
-  }
-
-  @Test
   void build_throwsException_IntegerXdwsTemplateType() {
     // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()

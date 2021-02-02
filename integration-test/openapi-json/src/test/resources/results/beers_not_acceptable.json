@@ -1,0 +1,9 @@
+{
+  "title": "Unsupported media type requested",
+  "status": 406,
+  "acceptable": [
+    "application/hal+json",
+    "application/stream+json"
+  ],
+  "customparam": "foo"
+}
