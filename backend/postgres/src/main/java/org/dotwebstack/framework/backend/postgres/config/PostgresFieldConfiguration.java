@@ -4,10 +4,12 @@ import java.util.List;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   @Valid
@@ -17,6 +19,14 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   private JoinTable joinTable;
 
   private String column;
+
+  public PostgresFieldConfiguration(List<JoinColumn> joinColumns) {
+    this.joinColumns = joinColumns;
+  }
+
+  public PostgresFieldConfiguration(JoinTable joinTable) {
+    this.joinTable = joinTable;
+  }
 
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null;

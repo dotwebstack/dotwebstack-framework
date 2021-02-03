@@ -38,4 +38,11 @@ public class DotWebStackConfiguration {
         .map(type -> (T) type)
         .orElseThrow(() -> illegalStateException(""));
   }
+
+  @SuppressWarnings("unchecked")
+  public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(String typeName) {
+    return Optional.ofNullable(typeMapping.get(typeName))
+        .map(type -> (T) type)
+        .orElseThrow(() -> illegalStateException(""));
+  }
 }
