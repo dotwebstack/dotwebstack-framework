@@ -19,6 +19,7 @@ import java.util.Optional;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
@@ -42,6 +43,8 @@ import reactor.core.publisher.Mono;
 @Component
 @Order(-2)
 public class OpenApiExceptionHandler implements WebExceptionHandler {
+
+  private static final String MDC_REQUEST_ID = "requestId";
 
   public static final String APPLICATION_PROBLEM_JSON_MIMETYPE = "application/problem+json";
 
@@ -168,6 +171,8 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
         .toArray(String[]::new);
 
     mapContext.set("acceptableMimeTypes", acceptableMimeTypes);
+
+    mapContext.set(MDC_REQUEST_ID, MDC.get(MDC_REQUEST_ID));
 
     return mapContext;
   }
