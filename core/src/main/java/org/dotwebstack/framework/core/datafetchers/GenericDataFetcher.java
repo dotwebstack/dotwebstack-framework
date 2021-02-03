@@ -118,19 +118,15 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
-          .flatMap(group -> group.map(data -> DataFetcherResult.newResult()
-              .data(data)
-              .build())
+          .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
               .collectList()
-              .map(list -> createEntry(group.key(), list)))
+              .map(list -> Map.entry(group.key(), list)))
           .collectMap(Map.Entry::getKey, Map.Entry::getValue)
           .toFuture());
     }
 
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
-        .collectMap(Tuple2::getT1, tuple -> DataFetcherResult.newResult()
-            .data(tuple.getT2())
-            .build())
+        .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
         .toFuture());
   }
 
@@ -144,11 +140,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectionSet(environment.getSelectionSet())
         .build();
-  }
-
-  private Map.Entry<KeyCondition, List<DataFetcherResult<Object>>> createEntry(KeyCondition keyCondition,
-      List<DataFetcherResult<Object>> list) {
-    return Map.entry(keyCondition, list);
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
