@@ -370,6 +370,7 @@ By using `application/problem+json` is it possible to return any error as `appli
 
 It is also possible to use a custom property which will be returned in the problem response (key/value). The value must be defined in an `x-dws-expr`.
 For _not acceptable_ errors it is possible to use `acceptableMimeTypes` which will return all acceptable mime types as array.
+For requests it is possible to get the request id with _requestId_.
 
 Example:
 
@@ -389,7 +390,7 @@ Example:
                     x-dws-expr: "acceptableMimeTypes"
                   customparam:
                     type: string
-                    x-dws-expr: "`foo`"
+                    x-dws-expr: "`Request: ${requestId}`"
 ```
 
 # 1.2 Templating
