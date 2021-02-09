@@ -8,11 +8,8 @@ directive @key(
 
 type Query {
   beers: [Beer!]!
-
   beer(identifier: ID! @key): Beer!
-
   breweries: [Brewery!]!
-
   brewery(identifier: ID! @key): Brewery!
 }
 
@@ -34,4 +31,10 @@ type Beer {
   name: String!
   abv: String
   brewery: Brewery!
+  ingredients: [Ingredient!]!
+}
+
+type Ingredient {
+  identifier: ID!
+  name: String!
 }

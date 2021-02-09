@@ -1,4 +1,5 @@
 DROP SCHEMA IF EXISTS db CASCADE;
+
 CREATE SCHEMA db;
 
 CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
@@ -22,4 +23,15 @@ CREATE TABLE db.beer (
   name character varying NOT NULL,
   abv NUMERIC(3,1) NOT NULL,
   brewery character varying NOT NULL REFERENCES db.brewery (identifier)
+);
+
+CREATE TABLE db.ingredient (
+  identifier character varying NOT NULL PRIMARY KEY,
+  name character varying NOT NULL
+);
+
+CREATE TABLE db.beer_ingredient (
+  beer_identifier character varying NOT NULL REFERENCES db.beer (identifier),
+  ingredient_identifier character varying NOT NULL REFERENCES db.ingredient (identifier),
+  PRIMARY KEY (beer_identifier,ingredient_identifier)
 );

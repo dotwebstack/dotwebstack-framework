@@ -9,6 +9,21 @@ typeMapping:
         joinColumns:
           - name: brewery
             referencedField: identifier
+      ingredients:
+        joinTable:
+          name: db.beer_ingredient
+          joinColumns:
+            - name: beer_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredient_identifier
+              referencedField: identifier
+
+  Ingredient:
+    backend: postgres
+    table: db.ingredient
+    keys:
+      - field: identifier
 
   Brewery:
     backend: postgres

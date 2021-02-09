@@ -161,11 +161,11 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBeerWithMappedBy_default() {
+  void graphQlQuery_returnsBreweriesrWithMappedBy_default() {
     // Arrange
     String query = "{breweries{name status beers{name}}}";
-    // Act
 
+    // Act
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
@@ -206,5 +206,133 @@ class GraphQlPostgresIntegrationTest {
         .map(map -> map.get("name"))
         .map(Objects::toString)
         .collect(Collectors.toList()), equalTo(List.of("Beer 3", "Beer 5")));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweryWithMappedBy_forIdentifier() {
+    // Arrange
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
+
+    // Act
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+            .query(query)
+            .dataLoaderRegistry(new DataLoaderRegistry())
+            .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    // Assert
+    assertTrue(result.getErrors()
+            .isEmpty());
+
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+
+    Map<String, Object> brewery  = ((Map<String, Object>) data.get("brewery"));
+    assertThat(brewery.size(), is(3));
+    assertThat(brewery
+            .get("name"), is("Brewery X"));
+    assertThat(brewery
+            .get("status"), is("active"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) brewery
+            .get("beers"));
+    assertThat(beers.size(), is(3));
+
+    assertThat(beers.stream()
+            .map(map -> map.get("name"))
+            .map(Objects::toString)
+            .collect(Collectors.toList()), equalTo(List.of("Beer 1", "Beer 2", "Beer 4")));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeersJoinTable_default() {
+    // Arrange
+    String query = "{beers{name ingredients{name}}}";
+
+    // Act
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+            .query(query)
+            .dataLoaderRegistry(new DataLoaderRegistry())
+            .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    // Assert
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beers"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
+    assertThat(beers.size(), is(5));
+    assertThat(beers.get(0)
+            .get("name"), is("Beer 1"));
+
+    List<Map<String, Object>> ingredients = ((List<Map<String, Object>>) beers.get(0)
+            .get("ingredients"));
+    assertThat(ingredients.size(), is(6));
+
+    assertThat(ingredients.stream()
+            .map(map -> map.get("name"))
+            .map(Objects::toString)
+            .collect(Collectors.toList()), equalTo(List.of("Water", "Hop", "Barley", "Yeast", "Orange", "Caramel")));
+
+    ingredients = ((List<Map<String, Object>>) beers.get(3)
+            .get("ingredients"));
+    assertThat(ingredients.size(), is(4));
+
+    assertThat(ingredients.stream()
+            .map(map -> map.get("name"))
+            .map(Objects::toString)
+            .collect(Collectors.toList()), equalTo(List.of("Water", "Hop", "Barley", "Yeast")));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeersWithDeepNesting_default() {
+    // Arrange
+    String query = "{beers{identifier name brewery{name beers{name ingredients{name}}}}}";
+
+    // Act
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+            .query(query)
+            .dataLoaderRegistry(new DataLoaderRegistry())
+            .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    // Assert
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beers"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
+    assertThat(beers.size(), is(5));
+    assertThat(beers.get(0).get("name"), is("Beer 1"));
+
+    Map<String, Object> brewery = ((Map<String, Object>) beers.get(0).get("brewery"));
+    assertThat(brewery.size(), is(2));
+    assertThat(brewery.get("name"), is("Brewery X"));
+
+    beers = ((List<Map<String, Object>>) brewery.get("beers"));
+    assertThat(beers.size(), is(3));
+    assertThat(beers.get(1).get("name"), is("Beer 2"));
+
+
+    List<Map<String, Object>> ingredients = ((List<Map<String, Object>>) beers.get(1)
+            .get("ingredients"));
+    assertThat(ingredients.size(), is(5));
+
+    assertThat(ingredients.stream()
+            .map(map -> map.get("name"))
+            .map(Objects::toString)
+            .collect(Collectors.toList()), equalTo(List.of("Water", "Hop", "Barley", "Yeast", "Orange")));
   }
 }

@@ -128,8 +128,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
         .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
-        .toFuture()
-        .orTimeout(2, TimeUnit.SECONDS));
+        .toFuture());
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {
