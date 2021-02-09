@@ -5,6 +5,8 @@ import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -199,6 +201,48 @@ class QueryBuilderTest {
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from dbeerpedia.ingredients as \"t1\" "
             + "join dbeerpedia.beers_ingredients as \"t2\" on \"t2\".\"ingredients_identifier\" "
             + "= \"t1\".\"identifier\" where beers_identifier = \"t3\".\"x3\" limit :2) as \"t4\" on true"));
+  }
+
+  @Test
+  void mapAssembler_returnsNull_missingKeyAlias() {
+    // Arrange
+    PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
+
+    DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
+    Map<String, Object> data = new HashMap<>();
+
+    // Act
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+
+    // Assert
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getMapAssembler(), notNullValue());
+    assertThat(queryHolder.getMapAssembler()
+        .apply(data), nullValue());
+  }
+
+  @Test
+  void mapAssembler_returnsMappedRow_default() {
+    // Arrange
+    PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
+
+    DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
+
+    // Act
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+
+    // Assert
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getMapAssembler(), notNullValue());
+
+    Map<String, Object> data = new HashMap<>();
+    data.put("x1", "AAA");
+    data.put("x2", "Beer 1");
+
+    Map<String, Object> result = queryHolder.getMapAssembler()
+        .apply(data);
+    assertThat(result.get("name"), is("Beer 1"));
+    assertThat(result.get("identifier"), is("AAA"));
   }
 
   private SelectedField mockSelectedField(String name) {
