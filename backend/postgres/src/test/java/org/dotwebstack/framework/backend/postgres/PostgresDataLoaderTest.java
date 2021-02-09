@@ -112,7 +112,7 @@ class PostgresDataLoaderTest {
 
     QueryHolder queryHolder = QueryHolder.builder()
         .query(query)
-        .rowAssembler(row -> row)
+        .mapAssembler(row -> row)
         .build();
 
     when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
@@ -162,7 +162,7 @@ class PostgresDataLoaderTest {
 
     QueryHolder queryHolder = QueryHolder.builder()
         .query(query)
-        .rowAssembler(row -> row)
+        .mapAssembler(row -> row)
         .build();
 
     when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
@@ -211,7 +211,7 @@ class PostgresDataLoaderTest {
 
     QueryHolder queryHolder = QueryHolder.builder()
         .query(query)
-        .rowAssembler(row -> row)
+        .mapAssembler(row -> row)
         .keyColumnNames(Map.of("identifier", "x1"))
         .build();
 

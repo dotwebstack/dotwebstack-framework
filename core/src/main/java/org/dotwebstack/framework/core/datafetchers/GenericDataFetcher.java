@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -127,7 +128,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
         .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
-        .toFuture());
+        .toFuture()
+        .orTimeout(2, TimeUnit.SECONDS));
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {

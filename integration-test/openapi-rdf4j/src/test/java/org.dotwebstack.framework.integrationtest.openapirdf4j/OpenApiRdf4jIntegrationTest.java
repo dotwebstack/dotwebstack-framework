@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.dotwebstack.framework.test.TestApplication;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.FluxExchangeResult;
@@ -311,23 +309,6 @@ class OpenApiRdf4jIntegrationTest {
 
     // Assert
     assertResult(result, "/results/brewery_filtered_by_subject.json");
-  }
-
-  @Test
-  void openApiRequest_throwsException_SortedOnListBeerSubjectDesc() throws IOException {
-    // Arrange & Act
-    String result = this.webClient.get()
-        .uri("/breweries?expand=beers")
-        .header("sort", "-beers.name")
-        .exchange()
-        .expectStatus()
-        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertThat(result, is(CoreMatchers.containsString("Internal server error")));
   }
 
   @Test

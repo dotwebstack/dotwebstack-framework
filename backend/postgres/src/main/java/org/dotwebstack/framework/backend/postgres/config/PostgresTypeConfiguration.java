@@ -58,14 +58,15 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-    return getQueryArgumentKeyConditions(environment).map(queryArgumentsKeyCondition -> ColumnKeyCondition.builder()
-        .valueMap(queryArgumentsKeyCondition.getFieldValues()
-            .entrySet()
-            .stream()
-            .map(e -> Map.entry(getFields().get(e.getKey())
-                .getColumn(), e.getValue()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-        .build())
+    return getQueryArgumentKeyConditions(environment, true)
+        .map(queryArgumentsKeyCondition -> ColumnKeyCondition.builder()
+            .valueMap(queryArgumentsKeyCondition.getFieldValues()
+                .entrySet()
+                .stream()
+                .map(e -> Map.entry(getFields().get(e.getKey())
+                    .getColumn(), e.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .build())
         .orElse(null);
   }
 

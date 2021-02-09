@@ -51,8 +51,6 @@ class QueryBuilderTest {
 
   private static final String FIELD_BREWERY = "brewery";
 
-  private static final String FIELD_INGREDIENTS = "ingredients";
-
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 

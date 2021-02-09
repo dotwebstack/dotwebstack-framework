@@ -39,7 +39,7 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
 
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-    return getQueryArgumentKeyConditions(environment).orElse(null);
+    return getQueryArgumentKeyConditions(environment, false).orElse(null);
   }
 
   @Override

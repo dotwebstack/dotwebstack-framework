@@ -59,7 +59,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(row -> queryHolder.getRowAssembler()
+        .map(row -> queryHolder.getMapAssembler()
             .apply(row));
   }
 
@@ -78,7 +78,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(row -> queryHolder.getRowAssembler()
+        .map(row -> queryHolder.getMapAssembler()
             .apply(row));
   }
 
@@ -93,7 +93,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .fetch()
         .all()
         .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
-            row -> queryHolder.getRowAssembler()
+            row -> queryHolder.getMapAssembler()
                 .apply(row));
   }
 

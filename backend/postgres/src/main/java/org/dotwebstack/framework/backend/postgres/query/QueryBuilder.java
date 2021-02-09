@@ -62,7 +62,7 @@ public class QueryBuilder {
   private QueryHolder build(Select<Record> query, UnaryOperator<Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
-        .rowAssembler(rowAssembler)
+        .mapAssembler(rowAssembler)
         .build();
   }
 
@@ -70,7 +70,7 @@ public class QueryBuilder {
       UnaryOperator<Map<String, Object>> rowAssembler) {
     return QueryHolder.builder()
         .query(query)
-        .rowAssembler(rowAssembler)
+        .mapAssembler(rowAssembler)
         .keyColumnNames(keyColumnNames)
         .build();
   }

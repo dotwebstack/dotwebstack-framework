@@ -12,7 +12,7 @@ public class QueryHolder {
 
   private final Query query;
 
-  private final UnaryOperator<Map<String, Object>> rowAssembler;
+  private final UnaryOperator<Map<String, Object>> mapAssembler;
 
   private final Map<String, String> keyColumnNames;
 }

@@ -1,3 +1,4 @@
+DROP SCHEMA IF EXISTS db CASCADE;
 CREATE SCHEMA db;
 
 CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
