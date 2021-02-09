@@ -56,7 +56,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring.boot.version>2.4.2</spring.boot.version>
     <rdf4j.version>3.5.1</rdf4j.version>
-    <graphql.java.version>16.1</graphql.java.version>
+    <graphql.java.version>16.2</graphql.java.version>
     <commons.jexl.version>3.1</commons.jexl.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.11</commons.lang3.version>

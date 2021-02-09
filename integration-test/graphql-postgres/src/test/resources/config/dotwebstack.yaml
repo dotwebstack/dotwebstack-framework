@@ -24,6 +24,8 @@ typeMapping:
         joinColumns:
           - name: visit_address
             referencedField: identifier
+      beers:
+        mappedBy: brewery
 
   Address:
     backend: postgres

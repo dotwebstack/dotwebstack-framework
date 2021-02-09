@@ -1,14 +1,19 @@
 package org.dotwebstack.framework.integrationtest.graphqlrdf4j;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.r2dbc.spi.ConnectionFactory;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,5 +158,53 @@ class GraphQlPostgresIntegrationTest {
         .get("name"), is("Brewery X"));
     assertThat(breweries.get(1)
         .get("status"), is("active"));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeerWithMappedBy_default() {
+    // Arrange
+    String query = "{breweries{name status beers{name}}}";
+    // Act
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("breweries"));
+
+    List<Map<String, Object>> breweries = ((List<Map<String, Object>>) data.get("breweries"));
+    assertThat(breweries.size(), is(3));
+    assertThat(breweries.get(0)
+        .get("name"), is("Brewery X"));
+    assertThat(breweries.get(1)
+        .get("status"), is("active"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) breweries.get(0)
+        .get("beers"));
+    assertThat(beers.size(), is(3));
+
+    assertThat(beers.stream()
+        .map(map -> map.get("name"))
+        .map(Objects::toString)
+        .collect(Collectors.toList()), equalTo(List.of("Beer 1", "Beer 2", "Beer 4")));
+
+    beers = ((List<Map<String, Object>>) breweries.get(1)
+        .get("beers"));
+    assertThat(beers.size(), is(2));
+
+    assertThat(beers.stream()
+        .map(map -> map.get("name"))
+        .map(Objects::toString)
+        .collect(Collectors.toList()), equalTo(List.of("Beer 3", "Beer 5")));
   }
 }

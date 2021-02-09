@@ -20,6 +20,7 @@ type Brewery {
   identifier: ID!
   name: String!
   status: String!
+  beers: [Beer]
 }
 
 type Address {
