@@ -111,23 +111,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   @Disabled
-  void openApiRequest_ReturnsBrewery_withSearchNameFromQueryParam() throws IOException {
-    // Arrange & Act
-    String result = webClient.get()
-        .uri("/breweries?searchName=Brouwerij")
-        .exchange()
-        .expectHeader()
-        .contentType("application/hal+json")
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    // Assert
-    assertResult(result, "/results/breweries_filter_searchName.json");
-  }
-
-  @Test
-  @Disabled
   void openApiRequest_ReturnsBrewery_withCaseInsensitiveSearchNameFromQueryParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()

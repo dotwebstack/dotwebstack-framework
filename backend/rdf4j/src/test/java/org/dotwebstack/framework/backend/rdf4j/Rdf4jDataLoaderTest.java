@@ -62,11 +62,6 @@ class Rdf4jDataLoaderTest {
     assertThrows(UnsupportedOperationException.class, () -> rdf4jDataLoader.batchLoadSingle(null, null));
   }
 
-  @Test
-  void batchLoadMany_ThrowsException_ForEveryCall() {
-    assertThrows(UnsupportedOperationException.class, () -> rdf4jDataLoader.batchLoadMany(null, null));
-  }
-
   private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
     @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {

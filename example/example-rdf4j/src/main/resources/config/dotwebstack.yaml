@@ -6,6 +6,9 @@ typeMapping:
       - field: identifier
     fields:
       brewery:
+        joinProperties:
+          - name: brewery
+            referencedField: identifier
 
   Brewery:
     backend: rdf4j

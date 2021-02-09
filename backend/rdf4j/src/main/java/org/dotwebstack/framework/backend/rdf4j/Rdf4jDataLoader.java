@@ -13,6 +13,7 @@ import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
+import org.dotwebstack.framework.core.datafetchers.KeyConditionGroupedFlux;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
@@ -67,10 +68,10 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Map<String, Object>> loadMany(KeyCondition keyConditions, LoadEnvironment environment) {
+  public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyConditions);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
 
@@ -82,7 +83,8 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
-    throw unsupportedOperationException("Not supported yet!");
+    return Flux.fromIterable(keyConditions)
+        .map(keyCondition -> new KeyConditionGroupedFlux(keyCondition, loadMany(keyCondition, environment)));
   }
 
   private TupleQueryResult executeQuery(String query) {
