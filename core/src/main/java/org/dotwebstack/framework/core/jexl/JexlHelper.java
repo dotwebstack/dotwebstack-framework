@@ -93,7 +93,7 @@ public class JexlHelper {
     } catch (Exception exception) {
       if (Objects.nonNull(fallbackString)) {
         try {
-          LOG.info("Executing fallback script following an error in the original script: " + exception.getMessage());
+          LOG.debug("Executing fallback script following an error in the original script: " + exception.getMessage());
           return evaluateScript(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
           LOG.warn("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
