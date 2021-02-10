@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,7 +15,6 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.jooq.DSLContext;
 import org.jooq.Param;
 import org.jooq.Query;
 import org.jooq.conf.ParamType;
@@ -26,7 +26,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 @Component
 public class PostgresDataLoader implements BackendDataLoader {
@@ -37,13 +36,13 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private final DatabaseClient databaseClient;
 
-  private final DSLContext dslContext;
+  private final QueryBuilder queryBuilder;
 
   public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
-      DSLContext dslContext) {
+      QueryBuilder queryBuilder) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.databaseClient = databaseClient;
-    this.dslContext = dslContext;
+    this.queryBuilder = queryBuilder;
   }
 
   @Override
@@ -55,34 +54,31 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(row -> queryHolder.getRowAssembler()
+        .map(row -> queryHolder.getMapAssembler()
             .apply(row));
   }
 
   @Override
-  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> filters,
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
-    return Flux.fromIterable(filters)
-        .flatMap(key -> loadSingle(key, environment).map(item -> Tuples.of(key, item)));
+    throw unsupportedOperationException("Batch load single is not supported!");
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(row -> queryHolder.getRowAssembler()
+        .map(row -> queryHolder.getMapAssembler()
             .apply(row));
   }
 
@@ -90,14 +86,14 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-    QueryBuilder queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext, environment);
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions);
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions, environment.getSelectionSet());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
         .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
-            row -> queryHolder.getRowAssembler()
+            row -> queryHolder.getMapAssembler()
                 .apply(row));
   }
 

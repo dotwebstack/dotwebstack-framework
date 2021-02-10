@@ -2,43 +2,10 @@ schema {
   query: Query
 }
 
-directive @key(
-  field: String
-) on ARGUMENT_DEFINITION
-
 type Query {
-  brewery(identifier: ID! @key): Brewery!
-  brewery_with_subject(subject: String! @key) : Brewery!
-
-  breweries(
-    name: String
-    url: String
-    foundedAfter: String @key(field: "founded")
-    foundedBefore: String @key(field: "founded")
-    withAddressSubject: String
-    sort: [SortField!] = [{ field: "name", order: ASC }],
-    beerCount: Int
-    withBeer: String
-  ): [Brewery!]!
-
-  breweriesWithInputObject(
-    input: QueryParameters
-  ) : [Brewery!]!
-
+  brewery(identifier: ID!) : Brewery!
+  breweries(name: String): [Brewery!]!
   beer(identifier: ID!): Beer!
-}
-
-input QueryParameters {
-  nestedInput: NestedInput
-}
-
-input NestedInput {
-  nestedNestedInput: NestedNestedInput
-  foundedAfter: String
-}
-
-input NestedNestedInput {
-  name: [String]
 }
 
 type Brewery {
@@ -48,12 +15,10 @@ type Brewery {
   number: Int
   localName: String
   founded: Date!
-  owners(sort: [SortField!] = [{order: ASC}]): [String!]
-  address(subject: String @filter): Address
+  owners: [String!]
+  address(subject: String): Address
   beerNames: [String!]
-  beers(brewery: [SortField!] = [{order: ASC}], ingredient: [String!] , supplement: [String!]): [Beer!]
-  beerCount: Int!
-  hasBeers: Boolean!
+  beers: [Beer!]
   url: String
 }
 
@@ -67,7 +32,7 @@ type Beer {
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
-  ingredients(sort: [SortField!] = [{field: "name", order: DESC}], ingredientName: [String!] ): [Ingredient!]
+  ingredients: [Ingredient!]
   supplements(supplementName: [String!]): [Supplement!]
 }
 

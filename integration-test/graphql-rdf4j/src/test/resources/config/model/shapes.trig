@@ -246,6 +246,7 @@
   beer_sh:Address a sh:NodeShape ;
     sh:name "Address" ;
     sh:class beer_def:Address ;
+    dws:inherits beer_sh:Identifiable ;
     sh:property
       beer_sh:Address_postalcode,
       beer_sh:Address_streetAddress

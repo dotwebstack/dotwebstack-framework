@@ -22,6 +22,7 @@ beer_brewery:123 a beer_def:Brewery ;
 .
 
 address_id:1 a beer_def:Address ;
+  beer_def:identifier "234" ;
   schema:addressLocality "Moordrecht" ;
   schema:latitude "51.98776545" ;
   schema:longitude "4.67090183" ;

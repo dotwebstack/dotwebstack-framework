@@ -11,6 +11,6 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 public class Rdf4jFieldConfiguration extends AbstractFieldConfiguration {
 
   @Valid
-  private List<JoinColumn> joinColumns;
+  private List<JoinProperty> joinProperties;
 
 }

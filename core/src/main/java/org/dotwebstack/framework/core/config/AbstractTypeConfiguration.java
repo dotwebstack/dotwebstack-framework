@@ -26,6 +26,8 @@ import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
 public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfiguration> implements TypeConfiguration<T> {
 
+  protected String name;
+
   @NotNull
   @Valid
   @Size(min = 1, max = 1)
@@ -53,13 +55,14 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
     throw unsupportedOperationException("Unable to create keyCondition for fieldName {}", fieldName);
   }
 
-  protected Optional<FieldKeyCondition> getQueryArgumentKeyConditions(DataFetchingEnvironment environment) {
+  protected Optional<FieldKeyCondition> getQueryArgumentKeyConditions(DataFetchingEnvironment environment,
+      boolean existingField) {
     Map<String, Object> entries = environment.getFieldDefinition()
         .getArguments()
         .stream()
+        .filter(argument -> !existingField || fields.containsKey(argument.getName()))
         .map(argument -> getQueryArgumentEntry(environment, argument))
         .filter(Objects::nonNull)
-        .map(entry -> entry)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (entries.size() > 0) {

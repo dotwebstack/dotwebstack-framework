@@ -34,7 +34,16 @@ public class DotWebStackConfiguration {
 
   @SuppressWarnings("unchecked")
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(GraphQLOutputType outputType) {
-    return Optional.ofNullable(typeMapping.get(TypeHelper.getTypeName(outputType)))
+    return getTypeConfiguration(TypeHelper.getTypeName(outputType));
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(String typeName) {
+    return Optional.ofNullable(typeMapping.get(typeName))
+        .map(type -> {
+          type.setName(typeName);
+          return type;
+        })
         .map(type -> (T) type)
         .orElseThrow(() -> illegalStateException(""));
   }

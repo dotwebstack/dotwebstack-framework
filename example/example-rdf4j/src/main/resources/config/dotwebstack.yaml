@@ -1,20 +1,28 @@
 typeMapping:
   Beer:
     backend: rdf4j
+    nodeShape: https://github.com/dotwebstack/beer/shapes#Beer
     keys:
       - field: identifier
     fields:
       brewery:
+        joinProperties:
+          - name: brewery
+            referencedField: identifier
 
   Brewery:
     backend: rdf4j
+    nodeShape: https://github.com/dotwebstack/beer/shapes#Brewery
     keys:
       - field: identifier
     fields:
       identifier:
+      beers:
+        mappedBy: brewery
 
   Address:
     backend: rdf4j
+    nodeShape: https://github.com/dotwebstack/beer/shapes#Address
     keys:
       - field: identifier
     fields:

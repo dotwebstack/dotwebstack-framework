@@ -2,24 +2,18 @@ schema {
   query: Query
 }
 
-directive @key(
-  field: String
-) on ARGUMENT_DEFINITION
-
 type Query {
   beers: [Beer!]!
-
-  beer(identifier: ID! @key): Beer!
-
+  beer(identifier: ID!): Beer!
   breweries: [Brewery!]!
-
-  brewery(identifier: ID! @key): Brewery!
+  brewery(identifier: ID!): Brewery!
 }
 
 type Brewery {
   identifier: ID!
   name: String!
   status: String!
+  beers: [Beer]
 }
 
 type Address {
@@ -33,4 +27,10 @@ type Beer {
   name: String!
   abv: String
   brewery: Brewery!
+  ingredients: [Ingredient!]!
+}
+
+type Ingredient {
+  identifier: ID!
+  name: String!
 }
