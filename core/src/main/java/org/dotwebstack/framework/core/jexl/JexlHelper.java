@@ -91,14 +91,15 @@ public class JexlHelper {
     try {
       return evaluateScript(scriptString, context, clazz);
     } catch (Exception exception) {
-      LOG.warn("Something went wrong while executing the original script: " + exception.getMessage());
       if (Objects.nonNull(fallbackString)) {
         try {
-          LOG.warn("Executing fallback script");
+          LOG.info("Executing fallback script following an error in the original script: " + exception.getMessage());
           return evaluateScript(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
           LOG.warn("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
         }
+      } else {
+        LOG.warn("Something went wrong while executing the script with no fallback: " + exception.getMessage());
       }
       return Optional.empty();
     }
