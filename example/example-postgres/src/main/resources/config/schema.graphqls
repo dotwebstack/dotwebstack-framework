@@ -16,6 +16,7 @@ type Brewery {
   beers: [Beer]
   postalAddress: Address
   visitAddress: Address
+  geometrie: Geometry
 }
 
 type Beer {
@@ -35,4 +36,19 @@ type Address {
 type Ingredient {
   identifier: ID!
   name: String!
+}
+
+type Geometry {
+  type: GeometryType!
+  asWKB: String!
+  asWKT: String!
+}
+
+enum GeometryType {
+  POINT
+  LINESTRING
+  POLYGON
+  MULTIPOINT
+  MULTILINESTRING
+  MULTIPOLYGON
 }
