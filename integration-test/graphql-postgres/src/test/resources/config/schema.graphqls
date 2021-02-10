@@ -2,15 +2,11 @@ schema {
   query: Query
 }
 
-directive @key(
-  field: String
-) on ARGUMENT_DEFINITION
-
 type Query {
   beers: [Beer!]!
-  beer(identifier: ID! @key): Beer!
+  beer(identifier: ID!): Beer!
   breweries: [Brewery!]!
-  brewery(identifier: ID! @key): Brewery!
+  brewery(identifier: ID!): Brewery!
 }
 
 type Brewery {
