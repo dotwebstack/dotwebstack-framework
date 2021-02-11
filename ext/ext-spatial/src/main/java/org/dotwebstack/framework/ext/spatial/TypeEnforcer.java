@@ -19,7 +19,8 @@ public class TypeEnforcer {
   private static final GeometryFactory geometryFactory = new GeometryFactory();
 
   // TODO Make dynamic for different CRSes
-  private static final GeometryPrecisionReducer precisionReducer = new GeometryPrecisionReducer(new PrecisionModel(1000));
+  private static final GeometryPrecisionReducer precisionReducer =
+      new GeometryPrecisionReducer(new PrecisionModel(1000));
 
   public Geometry enforce(GeometryType type, Geometry geometry) {
     GeometryPropertyType.GeometryType currentType = GeometryPropertyType.GeometryType.valueOf(geometry.getGeometryType()

@@ -41,6 +41,11 @@
       <groupId>org.jooq</groupId>
       <artifactId>jooq</artifactId>
     </dependency>
+    <dependency>
+      <groupId>net.postgis</groupId>
+      <artifactId>postgis-jdbc-jtsparser</artifactId>
+      <version>2.5.0</version>
+    </dependency>
   </dependencies>
 
 </project>

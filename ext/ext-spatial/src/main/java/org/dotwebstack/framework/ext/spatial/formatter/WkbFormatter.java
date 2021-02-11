@@ -2,16 +2,16 @@ package org.dotwebstack.framework.ext.spatial.formatter;
 
 import lombok.Builder;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.io.WKBWriter;
 
 @Builder
-public final class WKTFormatter implements GeometryFormatter<String> {
+public final class WkbFormatter implements GeometryFormatter<byte[]> {
 
   private final int dimensions;
 
   @Override
-  public String format(Geometry geometry) {
-    WKTWriter writer = new WKTWriter(dimensions);
+  public byte[] format(Geometry geometry) {
+    WKBWriter writer = new WKBWriter(dimensions);
     return writer.write(geometry);
   }
 }

@@ -68,6 +68,8 @@
     <json-path.version>2.5.0</json-path.version>
     <jooq.version>3.14.6</jooq.version>
     <testcontainers.version>1.15.1</testcontainers.version>
+    <r2dbc-postgres.version>0.8.6.RELEASE</r2dbc-postgres.version>
+    <spring-r2dbc.version>5.3.3</spring-r2dbc.version>
   </properties>
 
   <modules>
@@ -86,10 +88,12 @@
       <dependency>
         <groupId>io.r2dbc</groupId>
         <artifactId>r2dbc-postgresql</artifactId>
+        <version>${r2dbc-postgres.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-r2dbc</artifactId>
+        <version>${spring-r2dbc.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jooq</groupId>

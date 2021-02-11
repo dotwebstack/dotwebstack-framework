@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import graphql.language.ScalarTypeDefinition;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetcherFactories;
 import graphql.schema.DataFetchingEnvironment;
@@ -18,13 +18,14 @@ import java.util.function.BiFunction;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.dotwebstack.framework.ext.spatial.formatter.GeometryFormatter;
-import org.dotwebstack.framework.ext.spatial.formatter.WKBFormatter;
-import org.dotwebstack.framework.ext.spatial.formatter.WKTFormatter;
+import org.dotwebstack.framework.ext.spatial.formatter.WkbFormatter;
+import org.dotwebstack.framework.ext.spatial.formatter.WktFormatter;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.springframework.stereotype.Component;
 
+@Component
 public final class SpatialConfigurer implements GraphqlConfigurer {
 
   private final TypeEnforcer typeEnforcer;
@@ -35,34 +36,33 @@ public final class SpatialConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    registry.add(new ScalarTypeDefinition("Geometry"));
+    registry.add(new ObjectTypeDefinition("Geometry"));
   }
 
   @Override
   public void configureRuntimeWiring(RuntimeWiring.@NonNull Builder builder) {
-    builder.wiringFactory(
-        new WiringFactory() {
+    builder.wiringFactory(new WiringFactory() {
 
-          @Override
-          public boolean providesDataFetcher(FieldWiringEnvironment environment) {
-            return false;
-//            if (GraphQLTypeUtil.isList(environment.getFieldType())) {
-//              return true;
-//            }
-//
-//            GraphQLUnmodifiedType fieldType = GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-//
-//            return fieldType.getName().equals("Geometry");
-          }
+      @Override
+      public boolean providesDataFetcher(FieldWiringEnvironment environment) {
+         if (GraphQLTypeUtil.isList(environment.getFieldType())) {
+         return true;
+         }
 
-          @Override
-          public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
-            String fieldName = environment.getFieldDefinition().getName();
-            DataFetcher<?> defaultFetcher = new PropertyDataFetcher<>(fieldName);
+         GraphQLUnmodifiedType fieldType = GraphQLTypeUtil.unwrapAll(environment.getFieldType());
 
-            return DataFetcherFactories.wrapDataFetcher(defaultFetcher, geometryFetcher());
-          }
-        });
+         return fieldType.getName().equals("Geometry");
+      }
+
+      @Override
+      public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
+        String fieldName = environment.getFieldDefinition()
+            .getName();
+        DataFetcher<?> defaultFetcher = new PropertyDataFetcher<>(fieldName);
+
+        return DataFetcherFactories.wrapDataFetcher(defaultFetcher, geometryFetcher());
+      }
+    });
 
     builder.scalar(GraphQLScalarType.newScalar()
         .name("Geometry")
@@ -114,12 +114,12 @@ public final class SpatialConfigurer implements GraphqlConfigurer {
 
       switch (format) {
         case WKT:
-          formatter = WKTFormatter.builder()
+          formatter = WktFormatter.builder()
               .dimensions(dimensions)
               .build();
           break;
         case WKB:
-          formatter = WKBFormatter.builder()
+          formatter = WkbFormatter.builder()
               .dimensions(dimensions)
               .build();
           break;
