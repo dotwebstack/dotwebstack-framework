@@ -104,7 +104,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
-    Schema<?> propertySchema = getPropertySchema(graphQlField, fieldName);
+    Schema<?> propertySchema = getPropertySchema(graphQlField, fieldName, pathName);
 
     if (propertySchema != null && isTransient(propertySchema)) {
       return;
@@ -137,10 +137,15 @@ public class ExpandParamHandler extends DefaultParamHandler {
         .get(fieldName);
   }
 
-  private Schema<?> getPropertySchema(GraphQlField graphQlField, String fieldName) {
+  private Schema<?> getPropertySchema(GraphQlField graphQlField, String fieldName, String pathName) {
     Schema<?> schema = openApi.getComponents()
         .getSchemas()
         .get(graphQlField.getType());
+    if (schema == null) {
+      throw invalidOpenApiConfigurationException(
+          "No OAS schema found for GraphQlField '{}' with type '{}' in endpoint '{}'.", graphQlField.getName(),
+          graphQlField.getType(), pathName);
+    }
 
     return getPropertySchema(schema, fieldName);
   }
