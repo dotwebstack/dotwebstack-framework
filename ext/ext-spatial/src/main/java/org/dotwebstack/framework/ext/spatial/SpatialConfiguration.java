@@ -1,13 +1,9 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import java.util.List;
@@ -27,13 +23,12 @@ public class SpatialConfiguration {
           return false;
         }
 
-        List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT);
-
-        GraphQLUnmodifiedType fieldType = GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-
+        List<String> fieldNames = List.of(SpatialConstants.TYPE, SpatialConstants.AS_WKB, SpatialConstants.AS_WKT);
         return environment.getParentType()
             .getName()
-            .equals(GEOMETRY) && fieldNames.contains(fieldType.getName());
+            .equals(GEOMETRY)
+            && fieldNames.contains(environment.getFieldDefinition()
+                .getName());
       }
 
       @Override

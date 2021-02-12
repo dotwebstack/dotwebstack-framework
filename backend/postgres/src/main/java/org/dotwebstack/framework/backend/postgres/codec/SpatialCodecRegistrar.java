@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpatialCodecRegistrar implements CodecRegistrar {
 
-  private static final String ENUM_OID_STMT =
+  private static final String GEO_OID_STMT =
       "SELECT t.oid FROM pg_type t WHERE t.typname = 'geography' OR t.typname = 'geometry'";
 
   @Override
   public Publisher<Void> register(PostgresqlConnection connection, ByteBufAllocator allocator, CodecRegistry registry) {
-    return connection.createStatement(ENUM_OID_STMT)
+    return connection.createStatement(GEO_OID_STMT)
         .execute()
         .flatMap(result -> result.map((row, rowMetadata) -> row.get("oid", Integer.class)))
         .collect(Collectors.toSet())

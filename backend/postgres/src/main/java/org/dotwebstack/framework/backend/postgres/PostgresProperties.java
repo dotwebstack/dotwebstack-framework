@@ -17,5 +17,5 @@ public class PostgresProperties {
 
   private String username = "postgres";
 
-  private String password = "postgres";
+  private String password = "postgis";
 }

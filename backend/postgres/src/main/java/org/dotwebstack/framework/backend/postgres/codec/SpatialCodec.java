@@ -58,6 +58,6 @@ class SpatialCodec implements Codec<Geometry> {
 
   @Override
   public Class<?> type() {
-    return String.class;
+    return Geometry.class;
   }
 }
