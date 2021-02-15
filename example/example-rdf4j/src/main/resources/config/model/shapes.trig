@@ -8,6 +8,8 @@
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
+@prefix ogc: <http://www.opengis.net/ont/geosparql#> .
+
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Identifiable a sh:NodeShape ;
     sh:name "Identifiable" ;
@@ -38,8 +40,10 @@
     sh:property
       beer_sh:Brewery_postalAddress ,
       beer_sh:Brewery_visitAddress ,
-      beer_sh:Brewery_beers
+      beer_sh:Brewery_beers ,
+      beer_sh:Brewery_geometrie ;
   .
+
   beer_sh:Beer a sh:NodeShape ;
     sh:name "Beer";
     sh:class beer_def:Beer ;
@@ -70,7 +74,16 @@
      sh:name "beers" ;
      sh:path [ sh:inversePath beer_def:brewery ] ;
      sh:node beer_sh:Beer
-   .
+  .
+
+ beer_sh:Brewery_geometrie a sh:PropertyShape ;
+   sh:path ogc:asWKT ;
+   sh:name "geometrie" ;
+   sh:minCount 0 ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string
+ .
 
  beer_sh:Brewery_postalAddress a sh:PropertyShape ;
    sh:name "postalAddress" ;
@@ -85,6 +98,7 @@
    sh:maxCount 1 ;
    sh:node beer_sh:Address
  .
+
  beer_sh:Address a sh:NodeShape ;
    sh:name "Address" ;
    sh:class beer_def:Address ;
@@ -93,6 +107,7 @@
      beer_sh:Address_street ,
      beer_sh:Address_city
  .
+
   beer_sh:Address_street a sh:PropertyShape ;
     sh:name "street" ;
     sh:path schema:street ;
@@ -100,6 +115,7 @@
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
   .
+
   beer_sh:Address_city a sh:PropertyShape ;
     sh:name "city" ;
     sh:path schema:city ;

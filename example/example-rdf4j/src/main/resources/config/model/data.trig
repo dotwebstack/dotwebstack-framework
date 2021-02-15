@@ -5,6 +5,7 @@
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 @prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
+@prefix ogc: <http://www.opengis.net/ont/geosparql#> .
 
 {
   brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b a beer_def:Brewery ;
@@ -12,17 +13,20 @@
     schema:name "Brewery X" ;
     schema:postalAddress address_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f ;
     schema:visitAddress address_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f ;
+    ogc:asWKT "POINT(5.979274334569982 52.21715768613606)"^^ogc:wktLiteral ;
   .
 
   brewery_id:6e8f89da-9676-4cb9-801b-aeb6e2a59ac9 a beer_def:Brewery ;
     beer_def:identifier "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9" ;
     schema:name "Brewery Y" ;
     schema:postalAddress address_id:3fe6c706-54af-4420-89c4-926ff719236a ;
+    ogc:asWKT "POINT(5.979274334569982 52.21715768613606)"^^ogc:wktLiteral ;
   .
 
   brewery_id:28649f76-ddcf-417a-8c1d-8e5012c31959 a beer_def:Brewery ;
     beer_def:identifier "28649f76-ddcf-417a-8c1d-8e5012c31959" ;
     schema:name "Brewery Z" ;
+    ogc:asWKT "POINT(5.979274334569982 52.21715768613606)"^^ogc:wktLiteral ;
   .
 
   address_id:fcb73181-a1b0-4748-8ae0-b7b51dd6497f a beer_def:Address ;
