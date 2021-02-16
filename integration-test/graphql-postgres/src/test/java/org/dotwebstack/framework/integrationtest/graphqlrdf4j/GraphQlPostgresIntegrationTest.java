@@ -28,6 +28,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
@@ -42,7 +43,8 @@ class GraphQlPostgresIntegrationTest {
 
   private static class TestPostgreSqlContainer extends PostgreSQLContainer<TestPostgreSqlContainer> {
     public TestPostgreSqlContainer() {
-      super("postgres:11.10");
+      super(DockerImageName.parse("postgis/postgis:11-3.1")
+          .asCompatibleSubstituteFor("postgres"));
     }
   }
 
@@ -334,5 +336,31 @@ class GraphQlPostgresIntegrationTest {
         .map(map -> map.get("name"))
         .map(Objects::toString)
         .collect(Collectors.toList()), equalTo(List.of("Water", "Hop", "Barley", "Yeast", "Orange")));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithNestedGeometry_forIdentifier() {
+    // Arrange
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("geometry"));
+
+    Map<String, Object> geometry = (Map<String, Object>) brewery.get("geometry");
+    assertThat(geometry.size(), is(3));
+    assertThat(geometry.get("type"), is("POINT"));
+    assertThat(geometry.get("asWKT"), is("POINT (5.979274334569982 52.21715768613606)"));
+    assertThat(geometry.get("asWKB"), is("00000000014017eac6e4232933404a1bcbd2b403c4"));
   }
 }
