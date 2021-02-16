@@ -97,3 +97,14 @@ typeMapping:
       - field: identifier
 ```
 This association has two sides i.e. the owning side and the inverse side. In our example, the owning side is *Beer* so the join table is specified on the owning side by using the *joinTable* annotation in *Beer* class.
+
+
+## 1.3 Geometry and Geography 
+
+Geometry and Geography types are supported, please use Postgis plugin for this to work: `https://postgis.net`.
+
+For an example implementation see: `example/example-postgress`.
+
+
+
+
