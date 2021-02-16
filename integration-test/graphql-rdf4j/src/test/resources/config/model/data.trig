@@ -12,13 +12,15 @@
 @prefix test_id: <https://github.com/dotwebstack/beer/id/test/> .
 @prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
+@prefix ogc: <http://www.opengis.net/ont/geosparql#> .
 
 beer_brewery:123 a beer_def:Brewery ;
   beer_def:identifier "123" ;
   schema:name "Brouwerij 1923"^^xsd:string ;
   beer_def:number 1;
   schema:address address_id:1 ;
-  beer_def:founded "2018-05-30"^^xsd:date
+  beer_def:founded "2018-05-30"^^xsd:date ;
+  ogc:asWKT "POINT(5.979274334569982 52.21715768613606)"^^ogc:wktLiteral ;
 .
 
 address_id:1 a beer_def:Address ;

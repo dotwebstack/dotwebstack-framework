@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.B
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FIELD;
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_FOUNDED_FIELD;
+import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_GEOMETRY_FIELD;
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.integrationtest.graphqlrdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
@@ -89,6 +90,25 @@ public class GraphQlRdf4jIntegrationTest {
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_ADDRESS_FIELD,
                 ImmutableMap.of("postalCode", "2841 XB"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
+    // Arrange
+    String query = "{ brewery(identifier: \"123\") { identifier, name, geometrie { type, asWKT, asWKB }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertResultHasNoErrors(result);
+    Map<String, Object> data = result.getData();
+    assertThat(data,
+        hasEntry(BREWERY_FIELD,
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
+                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
+                ImmutableMap.of("type", "POINT", "asWKB", "00000000014017eac6e4232933404a1bcbd2b403c4", "asWKT",
+                    "POINT (5.979274334569982 52.21715768613606)"))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {

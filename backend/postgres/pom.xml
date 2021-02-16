@@ -21,6 +21,11 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>ext-spatial</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
       <artifactId>test</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

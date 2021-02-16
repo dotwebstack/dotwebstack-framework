@@ -20,6 +20,7 @@ type Brewery {
   beerNames: [String!]
   beers: [Beer!]
   url: String
+  geometrie: Geometry
 }
 
 type Address {

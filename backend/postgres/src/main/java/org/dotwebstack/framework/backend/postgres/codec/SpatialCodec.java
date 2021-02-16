@@ -7,6 +7,7 @@ import io.r2dbc.postgresql.message.Format;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.locationtech.jts.geom.Geometry;
 import org.postgis.jts.JtsBinaryParser;
 

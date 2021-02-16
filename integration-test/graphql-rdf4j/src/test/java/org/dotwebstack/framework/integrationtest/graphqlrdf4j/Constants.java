@@ -62,6 +62,8 @@ public final class Constants {
 
   static final String BREWERY_ADDRESS_FIELD = "address";
 
+  static final String BREWERY_GEOMETRY_FIELD = "geometrie";
+
   static final String INGREDIENTS_FIELD = "ingredients";
 
   static final String INGREDIENTS_NAME_FIELD = "name";
