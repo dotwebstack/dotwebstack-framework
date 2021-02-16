@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.parseGeometryOrNull;
+import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.addBinding;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -23,7 +23,6 @@ import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
@@ -189,18 +188,7 @@ public class QueryBuilder {
               if (propertyShape.getNode() == null || selectedFields.get(fieldName) == null) {
                 projectables.add(SparqlBuilder.var(alias));
 
-                // TODO this check seems fragile.. how to improve?
-                if (!"asWKT".equals(((PredicatePath) propertyShape.getPath()).getIri()
-                    .getLocalName())) {
-                  assembleFns.put(fieldName,
-                      bindingSet -> bindingSet.getValue(alias) != null ? bindingSet.getValue(alias)
-                          .stringValue() : null);
-                } else {
-
-                  assembleFns.put(fieldName,
-                      bindingSet -> bindingSet.getValue(alias) != null ? parseGeometryOrNull(bindingSet.getValue(alias)
-                          .stringValue()) : null);
-                }
+                addBinding(assembleFns, alias, propertyShape, fieldName);
 
                 return makeOptionalIfNeeded(propertyShape, current);
               } else {
