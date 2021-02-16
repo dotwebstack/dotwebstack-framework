@@ -70,6 +70,7 @@
     <testcontainers.version>1.15.1</testcontainers.version>
     <r2dbc-postgres.version>0.8.6.RELEASE</r2dbc-postgres.version>
     <spring-r2dbc.version>5.3.3</spring-r2dbc.version>
+    <postgis-jdbc-jtsparser.version>2.5.0</postgis-jdbc-jtsparser.version>
   </properties>
 
   <modules>

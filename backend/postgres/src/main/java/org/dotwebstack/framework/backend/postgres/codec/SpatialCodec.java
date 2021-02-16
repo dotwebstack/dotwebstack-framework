@@ -48,12 +48,12 @@ class SpatialCodec implements Codec<Geometry> {
 
   @Override
   public Parameter encode(Object o) {
-    throw new UnsupportedOperationException();
+    throw ExceptionHelper.unsupportedOperationException("unable to encode Geometry");
   }
 
   @Override
   public Parameter encodeNull() {
-    throw new UnsupportedOperationException();
+    throw ExceptionHelper.unsupportedOperationException("unable to encode Null");
   }
 
   @Override

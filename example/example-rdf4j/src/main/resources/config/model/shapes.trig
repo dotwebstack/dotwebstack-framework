@@ -82,7 +82,7 @@
    sh:minCount 0 ;
    sh:maxCount 1 ;
    sh:nodeKind sh:Literal ;
-   sh:datatype xsd:string
+   sh:datatype ogc:wktLiteral
  .
 
  beer_sh:Brewery_postalAddress a sh:PropertyShape ;

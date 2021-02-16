@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.codec;
 
-
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,7 +42,6 @@ class SpatialCodecTest {
   @Test
   void decode_returnsGeometry_forHexString() {
     // Arrange
-
     String hexString = "0101000000332923E4C6EA1740C403B4D2CB1B4A40";
     ByteBuf byteBuf = Unpooled.wrappedBuffer(hexString.getBytes());
 

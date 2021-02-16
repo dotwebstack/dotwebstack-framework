@@ -1,24 +1,24 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.getLocalName;
-import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.getPropertyPathLocalName;
+import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.addBinding;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.parseGeometryOrNull;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 
 class QueryUtilTest {
-
 
   @Test
   void parseGeometryOrNull_returnsNull_forNullValue() {
@@ -46,117 +46,51 @@ class QueryUtilTest {
   }
 
   @Test
-  void parseGeometryOrNull_returnsNull_forInCorrectInput() {
+  void parseGeometryOrNull_throwsException_forInCorrectInput() {
     // Arrange
     String testValue = "monkey";
 
-    // Act
-    Geometry parsedValue = parseGeometryOrNull(testValue);
-
-    // Assert
-    assertThat(parsedValue, is(nullValue()));
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class, () -> parseGeometryOrNull(testValue));
   }
 
   @Test
-  void getPropertyPathLocalName_returnsNull_forNullPropertyShape() {
+  void addBinding_addStringBinding_default() {
     // Arrange
-    PropertyShape testValue = null;
-
-    // Act
-    String localName = getPropertyPathLocalName(testValue);
-
-    // Assert
-    assertThat(localName, is(nullValue()));
-  }
-
-  @Test
-  void getPropertyPathLocalName_returnsNull_forNullPath() {
-    // Arrange
-    PropertyShape testValue = PropertyShape.builder()
-        .path(null)
+    IRI dataType = SimpleValueFactory.getInstance()
+        .createIRI("http://www.opengis.net/ont/geosparql#Literal");
+    PropertyShape propertyShape = PropertyShape.builder()
+        .datatype(dataType)
         .build();
+    Map<String, Function<BindingSet, Object>> assembleFns = new HashMap<>();
+    String fieldName = "banana";
+    String alias = "x1";
 
     // Act
-    String localName = getPropertyPathLocalName(testValue);
+    addBinding(assembleFns, alias, propertyShape, fieldName);
 
     // Assert
-    assertThat(localName, is(nullValue()));
+    assertThat(assembleFns.size(), is(1));
+    assertThat(assembleFns.get(fieldName), is(notNullValue()));
   }
 
   @Test
-  void getPropertyPathLocalName_returnsName_default() {
+  void addBinding_addGeoBinding_default() {
     // Arrange
-    String name = "monkey";
-    IRI iri = mock(IRI.class);
-    when(iri.getLocalName()).thenReturn(name);
-    PredicatePath path = PredicatePath.builder()
-        .iri(iri)
+    IRI dataType = SimpleValueFactory.getInstance()
+        .createIRI("http://www.opengis.net/ont/geosparql#wktLiteral");
+    PropertyShape propertyShape = PropertyShape.builder()
+        .datatype(dataType)
         .build();
-    PropertyShape testValue = PropertyShape.builder()
-        .path(path)
-        .build();
+    Map<String, Function<BindingSet, Object>> assembleFns = new HashMap<>();
+    String fieldName = "banana";
+    String alias = "x1";
 
     // Act
-    String localName = getPropertyPathLocalName(testValue);
+    addBinding(assembleFns, alias, propertyShape, fieldName);
 
     // Assert
-    assertThat(localName, is(notNullValue()));
-    assertThat(localName, is(name));
-  }
-
-  @Test
-  void getLocalName_returnsNull_forNullPath() {
-    // Arrange
-    BasePath testValue = null;
-
-    // Act
-    String localName = getLocalName(testValue);
-
-    // Assert
-    assertThat(localName, is(nullValue()));
-  }
-
-  @Test
-  void getLocalName_returnsNull_forUnknownPathType() {
-    // Arrange
-    BasePath testValue = mock(BasePath.class);
-
-    // Act
-    String localName = getLocalName(testValue);
-
-    // Assert
-    assertThat(localName, is(nullValue()));
-  }
-
-  @Test
-  void getLocalName_returnsNull_forNullIri() {
-    // Arrange
-    PredicatePath testValue = PredicatePath.builder()
-        .iri(null)
-        .build();
-
-    // Act
-    String localName = getLocalName(testValue);
-
-    // Assert
-    assertThat(localName, is(nullValue()));
-  }
-
-  @Test
-  void getLocalName_returnsName_default() {
-    // Arrange
-    String name = "monkey";
-    IRI iri = mock(IRI.class);
-    when(iri.getLocalName()).thenReturn(name);
-    PredicatePath testValue = PredicatePath.builder()
-        .iri(iri)
-        .build();
-
-    // Act
-    String localName = getLocalName(testValue);
-
-    // Assert
-    assertThat(localName, is(notNullValue()));
-    assertThat(localName, is(name));
+    assertThat(assembleFns.size(), is(1));
+    assertThat(assembleFns.get(fieldName), is(notNullValue()));
   }
 }
