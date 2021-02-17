@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.integrationtest.graphqlrdf4j;
+package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -74,13 +74,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeers_Default() {
-    // Arrange
     String query = "{beers{identifier name}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -96,13 +93,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeer_forIdentifier() {
-    // Arrange
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){name}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -116,13 +110,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithNestedObject_forIdentifier() {
-    // Arrange
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -140,13 +131,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweries_Default() {
-    // Arrange
     String query = "{breweries{name status}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -164,10 +152,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweriesrWithMappedBy_default() {
-    // Arrange
     String query = "{breweries{name status beers{name}}}";
 
-    // Act
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
@@ -175,7 +161,6 @@ class GraphQlPostgresIntegrationTest {
 
     ExecutionResult result = graphQL.execute(executionInput);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
 
@@ -212,10 +197,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweryWithMappedBy_forIdentifier() {
-    // Arrange
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
 
-    // Act
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
@@ -223,7 +206,6 @@ class GraphQlPostgresIntegrationTest {
 
     ExecutionResult result = graphQL.execute(executionInput);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
 
@@ -248,10 +230,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeersJoinTable_default() {
-    // Arrange
     String query = "{beers{name ingredients{name}}}";
 
-    // Act
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
@@ -259,7 +239,6 @@ class GraphQlPostgresIntegrationTest {
 
     ExecutionResult result = graphQL.execute(executionInput);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -293,10 +272,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeersWithDeepNesting_default() {
-    // Arrange
     String query = "{beers{identifier name brewery{name beers{name ingredients{name}}}}}";
 
-    // Act
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
@@ -304,7 +281,6 @@ class GraphQlPostgresIntegrationTest {
 
     ExecutionResult result = graphQL.execute(executionInput);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -327,7 +303,6 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.get(1)
         .get("name"), is("Beer 2"));
 
-
     List<Map<String, Object>> ingredients = ((List<Map<String, Object>>) beers.get(1)
         .get("ingredients"));
     assertThat(ingredients.size(), is(5));
@@ -340,13 +315,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithNestedGeometry_forIdentifier() {
-    // Arrange
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();

@@ -35,13 +35,10 @@ public class GraphQlRdf4jIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweries_Default() {
-    // Arrange
     String query = "{breweries{name}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -57,13 +54,10 @@ public class GraphQlRdf4jIntegrationTest {
 
   @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
-    // Arrange
     String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertResultHasNoErrors(result);
 
     Map<String, Object> data = result.getData();
@@ -76,13 +70,10 @@ public class GraphQlRdf4jIntegrationTest {
 
   @Test()
   void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() {
-    // Arrange
     String query = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     assertThat(data,
@@ -94,13 +85,10 @@ public class GraphQlRdf4jIntegrationTest {
 
   @Test
   void graphqlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
-    // Arrange
-    String query = "{ brewery(identifier: \"123\") { identifier, name, geometrie { type, asWKT, asWKB }}}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, geometry { type, asWKT, asWKB }}}";
 
-    // Act
     ExecutionResult result = graphQL.execute(query);
 
-    // Assert
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
     assertThat(data,

@@ -40,7 +40,6 @@ class SpatialDataFetcherTest {
 
   @BeforeEach
   void beforeAll() throws ParseException {
-
     spatialDataFetcher = new SpatialDataFetcher();
 
     WKTReader reader = new WKTReader();
@@ -49,36 +48,28 @@ class SpatialDataFetcherTest {
 
   @Test
   void get_returnsNull_sourceNull() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(null);
 
-    // Act
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
-    // Assert
     assertThat(value, is(nullValue()));
   }
 
   @Test
   void get_returnsNull_notGeometry() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(mock(SpatialConfigurer.class));
 
-    // Act & Assert
     assertThrows(IllegalArgumentException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
   }
 
   @Test
   void get_returnsValue_forType() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn(TYPE);
 
-    // Act
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
-    // Assert
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
@@ -87,15 +78,12 @@ class SpatialDataFetcherTest {
 
   @Test
   void get_returnsValue_forAsWkt() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn(AS_WKT);
 
-    // Act
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
-    // Assert
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
@@ -104,15 +92,12 @@ class SpatialDataFetcherTest {
 
   @Test
   void get_returnsValue_forAsWkb() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn(AS_WKB);
 
-    // Act
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
-    // Assert
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
@@ -121,12 +106,10 @@ class SpatialDataFetcherTest {
 
   @Test
   void get_throwsException_forUnknown() {
-    // Arrange
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn("monkey");
 
-    // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
   }
 }

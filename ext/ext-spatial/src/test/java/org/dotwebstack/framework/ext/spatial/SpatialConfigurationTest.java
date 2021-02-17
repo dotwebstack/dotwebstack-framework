@@ -36,103 +36,82 @@ class SpatialConfigurationTest {
 
   @BeforeEach
   void beforeAll() {
-
     wiringFactory = new SpatialConfiguration().wiringFactory();
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forType() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
     when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(TYPE));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.TRUE));
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forAsWkb() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
     when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_WKB));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.TRUE));
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forAsWkt() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
     when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_WKT));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.TRUE));
   }
 
   @Test
   void providesDataFetcher_returnsFalse_unknownFieldName() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
     when(environment.getFieldDefinition()).thenReturn(createFieldDefinition("monkey"));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.FALSE));
   }
 
   @Test
   void providesDataFetcher_returnsFalse_unknownParent() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition("monkey"));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.FALSE));
   }
 
   @Test
   void providesDataFetcher_returnsFalse_forList() {
-    // Arrange
     when(environment.getFieldType()).thenReturn(createOutputType(true));
 
-    // Act
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
-    // Assert
     assertThat(canProvideDataFetcher, is(notNullValue()));
     assertThat(canProvideDataFetcher, is(Boolean.FALSE));
   }
 
   @Test
   void getDataFetcher_returnsSpatialDataFetcher_always() {
-    // Act
     DataFetcher<?> dataFetcher = wiringFactory.getDataFetcher(null);
 
-    // Assert
     assertThat(dataFetcher, is(notNullValue()));
     assertThat(dataFetcher, instanceOf(SpatialDataFetcher.class));
   }

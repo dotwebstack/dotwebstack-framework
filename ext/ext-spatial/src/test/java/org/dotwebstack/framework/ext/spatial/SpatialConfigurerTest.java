@@ -41,13 +41,10 @@ class SpatialConfigurerTest {
 
   @Test
   void configureTypeDefinitionRegistry_addEnumDef_always() {
-    // Arrange
     List<String> enumValues = List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON);
 
-    // Act
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
-    // Assert
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY_TYPE);
     assertThat(optional, is(notNullValue()));
     assertThat(optional.get(), is(notNullValue()));
@@ -61,13 +58,10 @@ class SpatialConfigurerTest {
 
   @Test
   void configureTypeDefinitionRegistry_addGeometryDef_always() {
-    // Arrange
     List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT);
 
-    // Act
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
-    // Assert
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY);
     assertThat(optional, is(notNullValue()));
     assertThat(optional.get(), is(notNullValue()));

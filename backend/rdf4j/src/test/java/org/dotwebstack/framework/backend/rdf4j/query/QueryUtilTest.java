@@ -26,41 +26,32 @@ class QueryUtilTest {
 
   @Test
   void parseGeometryOrNull_returnsNull_forNullValue() {
-    // Arrange
     String testValue = null;
 
-    // Act
     Geometry parsedValue = parseGeometryOrNull(testValue);
 
-    // Assert
     assertThat(parsedValue, is(nullValue()));
   }
 
   @Test
   void parseGeometryOrNull_returnsGeometry_forCorrectInput() {
-    // Arrange
     String testValue = "LINESTRING (0 0, 0 10)";
 
-    // Act
     Geometry parsedValue = parseGeometryOrNull(testValue);
 
-    // Assert
     assertThat(parsedValue, is(notNullValue()));
     assertThat(parsedValue.toString(), is(testValue));
   }
 
   @Test
   void parseGeometryOrNull_throwsException_forInCorrectInput() {
-    // Arrange
     String testValue = "monkey";
 
-    // Act & Assert
     assertThrows(IllegalArgumentException.class, () -> parseGeometryOrNull(testValue));
   }
 
   @Test
   void addBinding_addStringBinding_default() {
-    // Arrange
     IRI dataType = SimpleValueFactory.getInstance()
         .createIRI("http://www.w3.org/ns/shacl#Literal");
     PropertyShape propertyShape = PropertyShape.builder()
@@ -77,10 +68,8 @@ class QueryUtilTest {
     when(bindingSet.getValue(alias)).thenReturn(value);
     when(value.stringValue()).thenReturn(data);
 
-    // Act
     addBinding(assembleFns, alias, propertyShape, fieldName);
 
-    // Assert
     assertThat(assembleFns.size(), is(1));
     assertThat(assembleFns.get(fieldName), is(notNullValue()));
     assertThat(assembleFns.get(fieldName)
@@ -90,7 +79,6 @@ class QueryUtilTest {
 
   @Test
   void addBinding_addGeoBinding_default() {
-    // Arrange
     IRI dataType = SimpleValueFactory.getInstance()
         .createIRI("http://www.opengis.net/ont/geosparql#wktLiteral");
     PropertyShape propertyShape = PropertyShape.builder()
@@ -107,10 +95,8 @@ class QueryUtilTest {
     when(bindingSet.getValue(alias)).thenReturn(value);
     when(value.stringValue()).thenReturn(data);
 
-    // Act
     addBinding(assembleFns, alias, propertyShape, fieldName);
 
-    // Assert
     assertThat(assembleFns.size(), is(1));
     assertThat(assembleFns.get(fieldName), is(notNullValue()));
     assertThat(assembleFns.get(fieldName)
