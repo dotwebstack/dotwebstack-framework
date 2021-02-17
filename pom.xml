@@ -67,13 +67,15 @@
     <problem.spring.webflux.version>0.26.2</problem.spring.webflux.version>
     <json-path.version>2.5.0</json-path.version>
     <jooq.version>3.14.6</jooq.version>
-    <testcontainers.version>1.15.1</testcontainers.version>
+    <testcontainers.version>1.15.2</testcontainers.version>
+    <postgis-jdbc.version>2.5.0</postgis-jdbc.version>
   </properties>
 
   <modules>
     <module>backend</module>
     <module>core</module>
     <module>example</module>
+    <module>ext</module>
     <module>templating</module>
     <module>service</module>
     <module>test</module>
@@ -166,6 +168,11 @@
         <groupId>org.testcontainers</groupId>
         <artifactId>postgresql</artifactId>
         <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.postgis</groupId>
+        <artifactId>postgis-jdbc-jtsparser</artifactId>
+        <version>${postgis-jdbc.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

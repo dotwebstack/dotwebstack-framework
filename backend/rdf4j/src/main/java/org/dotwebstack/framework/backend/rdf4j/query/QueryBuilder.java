@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.addBinding;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -186,8 +187,8 @@ public class QueryBuilder {
 
               if (propertyShape.getNode() == null || selectedFields.get(fieldName) == null) {
                 projectables.add(SparqlBuilder.var(alias));
-                assembleFns.put(fieldName, bindingSet -> bindingSet.getValue(alias) != null ? bindingSet.getValue(alias)
-                    .stringValue() : null);
+
+                addBinding(assembleFns, alias, propertyShape, fieldName);
 
                 return makeOptionalIfNeeded(propertyShape, current);
               } else {

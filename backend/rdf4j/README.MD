@@ -410,3 +410,20 @@ In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://ww
 properties of `Pet`. This means that besides the `fetchesBall` property (whether or not it likes to fetch a ball) an 
 instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
 relation with `Animal` also a name and an owner. 
+
+## 2.0 Geometry and Geography
+
+WKT literals are supported.
+
+Add `sh:datatype ogc:wktLiteral` to propertyShape in order for the conversion to take place. For an example implementation see: `example/example-rdf4j`.
+
+Example:
+```
+   beer_sh:Brewery_geometry a sh:PropertyShape ;
+     sh:path ogc:asWKT ;
+     sh:name "geometry" ;
+     sh:minCount 0 ;
+     sh:maxCount 1 ;
+     sh:nodeKind sh:Literal ;
+     sh:datatype ogc:wktLiteral
+```
