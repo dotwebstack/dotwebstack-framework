@@ -15,7 +15,7 @@ type Brewery {
   beers: [Beer]
   postalAddress: Address
   visitAddress: Address
-  geometrie: Geometry
+  geometry: Geometry
 }
 
 type Beer {

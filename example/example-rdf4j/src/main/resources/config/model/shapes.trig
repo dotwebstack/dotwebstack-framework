@@ -41,7 +41,7 @@
       beer_sh:Brewery_postalAddress ,
       beer_sh:Brewery_visitAddress ,
       beer_sh:Brewery_beers ,
-      beer_sh:Brewery_geometrie ;
+      beer_sh:Brewery_geometry ;
   .
 
   beer_sh:Beer a sh:NodeShape ;
@@ -76,9 +76,9 @@
      sh:node beer_sh:Beer
   .
 
- beer_sh:Brewery_geometrie a sh:PropertyShape ;
+ beer_sh:Brewery_geometry a sh:PropertyShape ;
    sh:path ogc:asWKT ;
-   sh:name "geometrie" ;
+   sh:name "geometry" ;
    sh:minCount 0 ;
    sh:maxCount 1 ;
    sh:nodeKind sh:Literal ;

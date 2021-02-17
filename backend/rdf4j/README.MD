@@ -419,9 +419,9 @@ Add `sh:datatype ogc:wktLiteral` to propertyShape in order for the conversion to
 
 Example:
 ```
-   beer_sh:Brewery_geometrie a sh:PropertyShape ;
+   beer_sh:Brewery_geometry a sh:PropertyShape ;
      sh:path ogc:asWKT ;
-     sh:name "geometrie" ;
+     sh:name "geometry" ;
      sh:minCount 0 ;
      sh:maxCount 1 ;
      sh:nodeKind sh:Literal ;

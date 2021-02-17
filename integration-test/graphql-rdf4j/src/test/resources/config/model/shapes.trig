@@ -51,7 +51,7 @@
       beer_sh:Brewery_hasBeers ,
       beer_sh:Brewery_beerNames ,
       beer_sh:Brewery_url ,
-      beer_sh:Brewery_geometrie ;
+      beer_sh:Brewery_geometry ;
     sh:or (
       [
         sh:name "ingredients" ;
@@ -66,9 +66,9 @@
     ) ;
   .
 
-   beer_sh:Brewery_geometrie a sh:PropertyShape ;
+   beer_sh:Brewery_geometry a sh:PropertyShape ;
      sh:path ogc:asWKT ;
-     sh:name "geometrie" ;
+     sh:name "geometry" ;
      sh:minCount 0 ;
      sh:maxCount 1 ;
      sh:nodeKind sh:Literal ;
