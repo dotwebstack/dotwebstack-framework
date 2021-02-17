@@ -101,10 +101,6 @@ This association has two sides i.e. the owning side and the inverse side. In our
 
 ## 1.3 Geometry and Geography 
 
-Geometry and Geography types are supported, please use Postgis plugin for this to work: `https://postgis.net`.
+Geometry and Geography types are supported, please use [PostGIS extension](https://postgis.net) for this to work.
 
-For an example implementation see: `example/example-postgress`.
-
-
-
-
+For an example implementation, see [example/example-postgres](example/example-postgres).
