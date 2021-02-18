@@ -12,8 +12,11 @@ import io.netty.buffer.Unpooled;
 import io.r2dbc.postgresql.message.Format;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.postgis.jts.JtsBinaryWriter;
 
 class SpatialCodecTest {
 
@@ -36,14 +39,27 @@ class SpatialCodecTest {
   }
 
   @Test
-  void decode_returnsGeometry_forHexString() {
-    String hexString = "0101000000332923E4C6EA1740C403B4D2CB1B4A40";
-    ByteBuf byteBuf = Unpooled.wrappedBuffer(hexString.getBytes());
+  void decode_returnsGeometry_forTextFormat() {
+    Point point = (new GeometryFactory()).createPoint(new Coordinate(5.97927433, 52.21715768));
+    String hex = new JtsBinaryWriter().writeHexed(point);
+    ByteBuf byteBuf = Unpooled.wrappedBuffer(hex.getBytes());
 
     Geometry decodedValue = codec.decode(byteBuf, id, Format.FORMAT_TEXT, Geometry.class);
 
     assertThat(decodedValue, is(notNullValue()));
-    assertThat(decodedValue.toString(), is(equalTo("POINT (5.979274334569982 52.21715768613606)")));
+    assertThat(decodedValue.toString(), is(equalTo("POINT (5.97927433 52.21715768)")));
+  }
+
+  @Test
+  void decode_returnsGeometry_forBinaryFormat() {
+    Point point = (new GeometryFactory()).createPoint(new Coordinate(5.97927433, 52.21715768));
+    byte[] bytes = new JtsBinaryWriter().writeBinary(point);
+    ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+
+    Geometry decodedValue = codec.decode(byteBuf, id, Format.FORMAT_BINARY, Geometry.class);
+
+    assertThat(decodedValue, is(notNullValue()));
+    assertThat(decodedValue.toString(), is(equalTo("POINT (5.97927433 52.21715768)")));
   }
 
   @Test

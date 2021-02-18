@@ -34,7 +34,14 @@ class SpatialCodec implements Codec<Geometry> {
       return null;
     }
 
-    return jtsBinaryParser.parse(byteBuf.toString(StandardCharsets.UTF_8));
+    if (format.equals(Format.FORMAT_TEXT)) {
+      return jtsBinaryParser.parse(byteBuf.toString(StandardCharsets.UTF_8));
+    }
+
+    byte[] bytes = new byte[byteBuf.readableBytes()];
+    byteBuf.readBytes(bytes);
+
+    return jtsBinaryParser.parse(bytes);
   }
 
   @Override
