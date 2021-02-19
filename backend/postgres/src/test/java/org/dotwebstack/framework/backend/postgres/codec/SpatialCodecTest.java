@@ -22,7 +22,9 @@ class SpatialCodecTest {
 
   private final int id = 17991;
 
-  private final SpatialCodec codec = new SpatialCodec(Set.of(id));
+  private final ByteBufGeometryParser geometryParser = new ByteBufGeometryParser();
+
+  private final SpatialCodec codec = new SpatialCodec(Set.of(id), geometryParser);
 
   @Test
   void canDecode_returnsTrue_forKnownGeoTypes() {
