@@ -22,7 +22,7 @@ class ByteBufGeometryParser extends JtsBinaryParser {
 
     @Override
     public int get(int i) {
-      return byteBuf.getByte(i) & 255;
+      return byteBuf.getByte(i) & 0xFF;
     }
   }
 }
