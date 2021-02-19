@@ -40,7 +40,8 @@ public class PostgresConfiguration {
         .host(postgresProperties.getHost())
         .port(postgresProperties.getPort())
         .username(postgresProperties.getUsername())
-        .password(postgresProperties.getPassword());
+        .password(postgresProperties.getPassword())
+        .forceBinary(true);
 
     codecRegistrars.forEach(configurationBuilder::codecRegistrar);
 

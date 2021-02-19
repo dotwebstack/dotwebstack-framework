@@ -1,3 +1,4 @@
+CREATE EXTENSION postgis;
 CREATE SCHEMA dbeerpedia;
 
 CREATE TABLE dbeerpedia.addresses (

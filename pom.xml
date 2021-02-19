@@ -321,8 +321,6 @@
           <version>0.8.5</version>
           <configuration>
             <excludes>
-              <!-- TODO: remove when test coverage is fixed -->
-              <exclude>org/dotwebstack/framework/backend/postgres/**/*</exclude>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
               <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>

@@ -9,18 +9,17 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.locationtech.jts.geom.Geometry;
-import org.postgis.jts.JtsBinaryParser;
 
 @Slf4j
 class SpatialCodec implements Codec<Geometry> {
 
   private final Set<Integer> dataTypes;
 
-  private final JtsBinaryParser jtsBinaryParser;
+  private final ByteBufGeometryParser geometryParser;
 
-  public SpatialCodec(Set<Integer> dataTypes) {
+  public SpatialCodec(Set<Integer> dataTypes, ByteBufGeometryParser geometryParser) {
     this.dataTypes = dataTypes;
-    this.jtsBinaryParser = new JtsBinaryParser();
+    this.geometryParser = geometryParser;
   }
 
   @Override
@@ -34,7 +33,12 @@ class SpatialCodec implements Codec<Geometry> {
       return null;
     }
 
-    return jtsBinaryParser.parse(byteBuf.toString(StandardCharsets.UTF_8));
+    if (format.equals(Format.FORMAT_TEXT)) {
+      String hex = byteBuf.toString(StandardCharsets.US_ASCII);
+      return geometryParser.parse(hex);
+    }
+
+    return geometryParser.parse(byteBuf);
   }
 
   @Override
