@@ -140,7 +140,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     String requestId = UUID.randomUUID()
         .toString();
     return Mono.fromCallable(() -> getResponse(request, requestId))
-        .publishOn(Schedulers.elastic());
+        .publishOn(Schedulers.boundedElastic());
   }
 
   public void validateSchema() {

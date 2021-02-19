@@ -13,7 +13,6 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import graphql.language.EnumTypeDefinition;
@@ -40,35 +39,35 @@ class SpatialConfigurerTest {
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addEnumDef_always() {
     List<String> enumValues = List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON);
 
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY_TYPE);
-    assertThat(optional, is(notNullValue()));
-    assertThat(optional.get(), is(notNullValue()));
+    assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(EnumTypeDefinition.class));
     EnumTypeDefinition enumTypeDefinition = (EnumTypeDefinition) optional.get();
-    for (EnumValueDefinition enumValue : enumTypeDefinition.getEnumValueDefinitions()) {
 
+    for (EnumValueDefinition enumValue : enumTypeDefinition.getEnumValueDefinitions()) {
       assertThat(enumValues.contains(enumValue.getName()), is(Boolean.TRUE));
     }
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addGeometryDef_always() {
     List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT);
 
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY);
-    assertThat(optional, is(notNullValue()));
-    assertThat(optional.get(), is(notNullValue()));
+    assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(ObjectTypeDefinition.class));
     ObjectTypeDefinition enumTypeDefinition = (ObjectTypeDefinition) optional.get();
-    for (FieldDefinition field : enumTypeDefinition.getFieldDefinitions()) {
 
+    for (FieldDefinition field : enumTypeDefinition.getFieldDefinitions()) {
       assertThat(fieldNames.contains(field.getName()), is(Boolean.TRUE));
     }
   }

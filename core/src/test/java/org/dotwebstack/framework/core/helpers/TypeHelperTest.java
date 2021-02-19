@@ -24,12 +24,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-
 @SuppressWarnings("rawtypes")
-public class TypeHelperTest {
+class TypeHelperTest {
 
   @Test
-  public void createNonNullType_returns_typeForScalar() {
+  void createNonNullType_returns_typeForScalar() {
     // Arrange / Act
     NonNullType type = TypeHelper.createNonNullType(Scalars.GraphQLString);
 
@@ -38,7 +37,7 @@ public class TypeHelperTest {
   }
 
   @Test
-  public void unwrapNonNullType_returnsExpectedType_forNonNullType() {
+  void unwrapNonNullType_returnsExpectedType_forNonNullType() {
     // Arrange / Act
     TypeName type = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
@@ -50,7 +49,7 @@ public class TypeHelperTest {
   }
 
   @Test
-  public void unwrapNonNullType_returnsExpectedType_forNullType() {
+  void unwrapNonNullType_returnsExpectedType_forNullType() {
     // Arrange / Act
     Type type = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
@@ -61,29 +60,28 @@ public class TypeHelperTest {
 
   @ParameterizedTest()
   @MethodSource("unwrapTypeArguments")
-  public void unwrapType_returnsExpectedType(Type expectedType, Type inputType) {
+  void unwrapType_returnsExpectedType(Type expectedType, Type inputType) {
     // Act / Assert
     assertEquals(expectedType, TypeHelper.unwrapType(inputType));
   }
 
   @ParameterizedTest()
   @MethodSource("getBaseTypeArguments")
-  public void getBaseType_returnsExpectedType(Type expectedType, Type inputType) {
+  void getBaseType_returnsExpectedType(Type expectedType, Type inputType) {
     // Act / Assert
     assertEquals(expectedType, TypeHelper.getBaseType(inputType));
   }
 
   @ParameterizedTest()
   @MethodSource("getTypeStringArguments")
-  public void getBaseType_returnsExpectedType(String expectedString, Type inputType) {
+  void getBaseType_returnsExpectedType(String expectedString, Type inputType) {
     // Act / Assert
     assertEquals(expectedString, TypeHelper.getTypeString(inputType));
   }
 
   @ParameterizedTest()
   @MethodSource("getTypeNameGraphQlTypeArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, GraphQLType inputType,
-      Class<Exception> clazz) {
+  void getTypeNameGraphQlType_returnsExpectedName(String expectedName, GraphQLType inputType, Class<Exception> clazz) {
     // Act / Assert
     if (Objects.nonNull(clazz)) {
       assertThrows(clazz, () -> TypeHelper.getTypeName(inputType));
@@ -94,7 +92,7 @@ public class TypeHelperTest {
 
   @ParameterizedTest()
   @MethodSource("getTypeNameArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(String expectedName, Type inputType, Class<Exception> clazz) {
+  void getTypeNameGraphQlType_returnsExpectedName(String expectedName, Type inputType, Class<Exception> clazz) {
     // Act / Assert
     if (Objects.nonNull(clazz)) {
       assertThrows(clazz, () -> TypeHelper.hasListType(inputType));
@@ -105,7 +103,7 @@ public class TypeHelperTest {
 
   @ParameterizedTest()
   @MethodSource("hasListTypeArguments")
-  public void getTypeNameGraphQlType_returnsExpectedName(boolean expected, Type inputType, Class<Exception> clazz) {
+  void getTypeNameGraphQlType_returnsExpectedName(boolean expected, Type inputType, Class<Exception> clazz) {
     // Act / Assert
     if (Objects.nonNull(clazz)) {
       assertThrows(clazz, () -> TypeHelper.hasListType(inputType));
@@ -115,7 +113,6 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> unwrapTypeArguments() {
-
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
     Type listType = ListType.newListType(intType)
@@ -133,7 +130,6 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> getBaseTypeArguments() {
-
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
     Type listType = ListType.newListType(intType)
@@ -167,7 +163,6 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> getTypeStringArguments() {
-
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
     Type listType = ListType.newListType(intType)
@@ -190,7 +185,6 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> getTypeNameArguments() {
-
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
     Type listType = ListType.newListType(intType)
@@ -217,12 +211,11 @@ public class TypeHelperTest {
   }
 
   private static Stream<Arguments> getTypeNameGraphQlTypeArguments() {
-
     GraphQLList list = GraphQLList.list(Scalars.GraphQLBoolean);
-    GraphQLNonNull nonNull = GraphQLNonNull.nonNull(Scalars.GraphQLBigDecimal);
+    GraphQLNonNull nonNull = GraphQLNonNull.nonNull(Scalars.GraphQLFloat);
 
     return Stream.of(Arguments.of(Scalars.GraphQLBoolean.getName(), list, null),
-        Arguments.of(Scalars.GraphQLBigDecimal.getName(), nonNull, null),
+        Arguments.of(Scalars.GraphQLFloat.getName(), nonNull, null),
         Arguments.of("GraphQLObjectType", GraphQLObjectType.newObject()
             .name("GraphQLObjectType")
             .build(), null),
