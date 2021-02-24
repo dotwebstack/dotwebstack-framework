@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
+import static org.dotwebstack.framework.ext.spatial.GeometryType.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
@@ -9,9 +10,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,14 +39,20 @@ class SpatialDataFetcherTest {
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
 
+  @Mock
+  private ExecutionStepInfo executionStepInfo;
+
   private Geometry geometry;
 
   @Mock
   private GraphQLFieldDefinition fieldDefinition;
 
+  @Mock
+  private TypeEnforcer typeEnforcer;
+
   @BeforeEach
   void beforeAll() throws ParseException {
-    spatialDataFetcher = new SpatialDataFetcher();
+    spatialDataFetcher = new SpatialDataFetcher(typeEnforcer);
 
     WKTReader reader = new WKTReader();
     geometry = reader.read(geometryString);
@@ -67,6 +79,8 @@ class SpatialDataFetcherTest {
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn(TYPE);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
 
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
@@ -77,10 +91,14 @@ class SpatialDataFetcherTest {
   }
 
   @Test
-  void get_returnsValue_forAsWkt() {
+  void get_callsTypeEnforcer_forDefault() {
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(executionStepInfo.getArgument("type")).thenReturn("POINT");
+    when(typeEnforcer.enforce(eq(POINT), any(Geometry.class))).thenReturn(geometry);
     when(fieldDefinition.getName()).thenReturn(AS_WKT);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
 
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
@@ -88,6 +106,24 @@ class SpatialDataFetcherTest {
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
     assertThat(stringValue, is(geometryString));
+    verify(typeEnforcer, times(1)).enforce(any(), any());
+  }
+
+  @Test
+  void get_returnsValue_forAsWkt() {
+    when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn(AS_WKT);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
+
+    Object value = spatialDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(value, is(notNullValue()));
+    assertThat(value, instanceOf(String.class));
+    String stringValue = (String) value;
+    assertThat(stringValue, is(geometryString));
+    verify(typeEnforcer, times(0)).enforce(any(), any());
   }
 
   @Test
@@ -95,6 +131,8 @@ class SpatialDataFetcherTest {
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn(AS_WKB);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
 
     Object value = spatialDataFetcher.get(dataFetchingEnvironment);
 
@@ -109,6 +147,8 @@ class SpatialDataFetcherTest {
     when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getName()).thenReturn("monkey");
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
 
     assertThrows(UnsupportedOperationException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
   }

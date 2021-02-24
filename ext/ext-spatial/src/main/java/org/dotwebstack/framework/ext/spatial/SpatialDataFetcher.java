@@ -16,6 +16,12 @@ import org.locationtech.jts.io.WKTWriter;
 
 public class SpatialDataFetcher implements DataFetcher<Object> {
 
+  private final TypeEnforcer typeEnforcer;
+
+  public SpatialDataFetcher(TypeEnforcer typeEnforcer) {
+    this.typeEnforcer = typeEnforcer;
+  }
+
   @Override
   public Object get(DataFetchingEnvironment dataFetchingEnvironment) {
 
@@ -30,6 +36,14 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
     Geometry geometry = dataFetchingEnvironment.getSource();
     String fieldName = dataFetchingEnvironment.getFieldDefinition()
         .getName();
+
+    String type = dataFetchingEnvironment.getExecutionStepInfo()
+        .getParent()
+        .getArgument("type");
+
+    if (type != null) {
+      geometry = typeEnforcer.enforce(GeometryType.valueOf(type), geometry);
+    }
 
     switch (fieldName) {
       case TYPE:

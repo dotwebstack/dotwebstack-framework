@@ -36,7 +36,7 @@ class SpatialConfigurationTest {
 
   @BeforeEach
   void beforeAll() {
-    wiringFactory = new SpatialConfiguration().wiringFactory();
+    wiringFactory = new SpatialConfiguration(new TypeEnforcer()).wiringFactory();
   }
 
   @Test

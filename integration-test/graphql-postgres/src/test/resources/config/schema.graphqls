@@ -14,7 +14,7 @@ type Brewery {
   name: String!
   status: String!
   beers: [Beer]
-  geometry: Geometry
+  geometry(type: GeometryType): Geometry
 }
 
 type Address {
