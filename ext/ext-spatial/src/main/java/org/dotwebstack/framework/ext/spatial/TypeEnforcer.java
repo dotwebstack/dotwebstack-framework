@@ -17,6 +17,9 @@ public class TypeEnforcer {
 
   private static final GeometryFactory geometryFactory = new GeometryFactory();
 
+  private static final GeometryPrecisionReducer precisionReducer =
+      new GeometryPrecisionReducer(new PrecisionModel(1000));
+
   public Geometry enforce(GeometryType type, Geometry geometry) {
     GeometryType currentType = GeometryType.valueOf(geometry.getGeometryType()
         .toUpperCase());
@@ -40,8 +43,7 @@ public class TypeEnforcer {
   }
 
   private Point enforcePoint(Geometry geometry) {
-    GeometryPrecisionReducer precisionReducer =
-        new GeometryPrecisionReducer(new PrecisionModel(geometry.getPrecisionModel()));
+
     return (Point) precisionReducer.reduce(geometry.getCentroid());
   }
 

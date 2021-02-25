@@ -24,7 +24,7 @@ class TypeEnforcerTest {
   private final String geometryLineString = "LINESTRING(14.593449442863683 49.77692837399132,18.218937724113683 "
       + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
 
-  private final String geometryPointString = "POINT (15.891968943257648 48.482691551103244)";
+  private final String geometryPointString = "POINT (15.892 48.483)";
 
   private final String geometryPolygonString = "POLYGON((14.769230692863683 48.7843473869024,17.032414286613683 "
       + "48.84945463293702,17.010441630363683 48.19457338438695,14.791203349113683 "
@@ -34,7 +34,7 @@ class TypeEnforcerTest {
       + "18.218937724113683 50.11627285262387, 17.977238505363683 49.34938190026593, "
       + "14.593449442863683 49.77692837399132))";
 
-  private final String geometryMultipointString = "MULTIPOINT ((15.891968943257648 48.482691551103244))";
+  private final String geometryMultipointString = "MULTIPOINT ((15.892 48.483))";
 
   private final String geometryMultipolygonString = "MULTIPOLYGON (((14.769230692863683 48.7843473869024, "
       + "17.032414286613683 48.84945463293702, 17.010441630363683 48.19457338438695, "
@@ -71,7 +71,7 @@ class TypeEnforcerTest {
   void enforce_returnsCorrectScale_forFloatPrecision() throws ParseException {
     String geometryString = "LINESTRING(14.593449442863683 49.77692837399132,18.218937724113683 "
         + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
-    String expectedResult = "POINT (16.5268937356404 49.75824965558819)";
+    String expectedResult = "POINT (16.527 49.758)";
 
     WKTReader reader = new WKTReader();
     Geometry value = reader.read(geometryString);
@@ -87,7 +87,7 @@ class TypeEnforcerTest {
         + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
     String expectedResult = "POINT (16.527 49.758)";
 
-    PrecisionModel precisionModel = new PrecisionModel(1000);
+    PrecisionModel precisionModel = new PrecisionModel(10000);
     GeometryFactory factory = new GeometryFactory(precisionModel);
     WKTReader reader = new WKTReader(factory);
     Geometry value = reader.read(geometryString);
