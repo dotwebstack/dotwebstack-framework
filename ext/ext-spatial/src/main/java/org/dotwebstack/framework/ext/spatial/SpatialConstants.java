@@ -8,6 +8,10 @@ public class SpatialConstants {
 
   static final String GEOMETRY_TYPE = "GeometryType";
 
+  // ArgumentNames
+
+  static final String ARGUMENT_TYPE = "type";
+
   // FieldNames
 
   static final String TYPE = "type";

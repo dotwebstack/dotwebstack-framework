@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -38,12 +39,11 @@ public class TypeEnforcer {
       case MULTIPOLYGON:
         return enforceMultiPolygon(geometry);
       default:
-        throw new IllegalArgumentException("Invalid type.");
+        throw ExceptionHelper.unsupportedOperationException("Enforcing to type '{}' is not supported!", type);
     }
   }
 
   private Point enforcePoint(Geometry geometry) {
-
     return (Point) precisionReducer.reduce(geometry.getCentroid());
   }
 
@@ -52,7 +52,9 @@ public class TypeEnforcer {
       return geometryFactory.createMultiPoint(new Point[] {(Point) geometry});
     }
 
-    throw new IllegalArgumentException("Cannot convert to MultiPoint.");
+    throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiPoint' not supported!",
+        geometry.getClass()
+            .getSimpleName());
   }
 
   private MultiLineString enforceMultiLineString(Geometry geometry) {
@@ -60,7 +62,9 @@ public class TypeEnforcer {
       return geometryFactory.createMultiLineString(new LineString[] {(LineString) geometry});
     }
 
-    throw new IllegalArgumentException("Cannot convert to MultiLineString.");
+    throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiLineString' not supported!",
+        geometry.getClass()
+            .getSimpleName());
   }
 
   private MultiPolygon enforceMultiPolygon(Geometry geometry) {
@@ -68,6 +72,8 @@ public class TypeEnforcer {
       return geometryFactory.createMultiPolygon(new Polygon[] {(Polygon) geometry});
     }
 
-    throw new IllegalArgumentException("Cannot convert to MultiPolygon.");
+    throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiPolygon' not supported!",
+        geometry.getClass()
+            .getSimpleName());
   }
 }

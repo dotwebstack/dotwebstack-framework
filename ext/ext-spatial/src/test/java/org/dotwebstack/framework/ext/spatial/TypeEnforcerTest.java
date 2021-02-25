@@ -137,29 +137,29 @@ class TypeEnforcerTest {
 
   @Test
   void enforce_throwsException_forUnsupportedConversionMultipoint() {
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOINT, line));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOINT, multiline));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOINT, multipolygon));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOINT, line));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOINT, multiline));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOINT, multipolygon));
   }
 
   @Test
   void enforce_throwsException_forUnsupportedConversionMultiline() {
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTILINESTRING, point));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTILINESTRING, polygon));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTILINESTRING, multipoint));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTILINESTRING, multipolygon));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTILINESTRING, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTILINESTRING, polygon));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTILINESTRING, multipoint));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTILINESTRING, multipolygon));
   }
 
   @Test
   void enforce_throwsException_forUnsupportedConversionMultipolygon() {
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, point));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, multiline));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, multipoint));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, multiline));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(MULTIPOLYGON, multipoint));
   }
 
   @Test
   void enforce_throwsException_forNull() {
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(LINESTRING, point));
-    assertThrows(IllegalArgumentException.class, () -> typeEnforcer.enforce(POLYGON, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(LINESTRING, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(POLYGON, point));
   }
 }
