@@ -46,3 +46,36 @@ type Brewery {
 ```
 
 Please check backend documentation for prerequisites and information about data storage.
+
+## 1.2 Query options
+
+### 1.2.1 GeometryType conversion
+
+It is possible to convert certain GeometryTypes. Add `( type : Geometry )` to Geometry in `schema.graphqls`.
+```
+type Brewery {
+  identifier: ID!
+  name: String!
+  geometry ( type : Geometry ): Geometry
+}
+```
+Query example:
+```
+{
+  breweries {
+    identifier
+    name
+    geometry(convert: MULTIPOINT){
+      type
+      asWKT
+    }
+  }
+}
+```
+Conversions that are possible:
+- Point -> MultiPoint
+- MultiPoint -> Point (centroid)
+- LineString -> MultiLineString, Point (centroid)
+- MultiLineString -> Point (centroid)
+- Polygon -> MultiPolygon, Point (centroid)
+- MultiPolygon -> Point (centroid)
