@@ -3,6 +3,7 @@ package org.dotwebstack.framework.ext.spatial;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
@@ -16,9 +17,14 @@ import org.locationtech.jts.io.WKTWriter;
 
 public class SpatialDataFetcher implements DataFetcher<Object> {
 
+  private final TypeEnforcer typeEnforcer;
+
+  public SpatialDataFetcher(TypeEnforcer typeEnforcer) {
+    this.typeEnforcer = typeEnforcer;
+  }
+
   @Override
   public Object get(DataFetchingEnvironment dataFetchingEnvironment) {
-
     if (Objects.isNull(dataFetchingEnvironment.getSource())) {
       return null;
     }
@@ -30,6 +36,14 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
     Geometry geometry = dataFetchingEnvironment.getSource();
     String fieldName = dataFetchingEnvironment.getFieldDefinition()
         .getName();
+
+    String type = dataFetchingEnvironment.getExecutionStepInfo()
+        .getParent()
+        .getArgument(ARGUMENT_TYPE);
+
+    if (type != null) {
+      geometry = typeEnforcer.enforce(GeometryType.valueOf(type), geometry);
+    }
 
     switch (fieldName) {
       case TYPE:

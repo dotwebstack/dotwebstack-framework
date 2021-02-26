@@ -13,6 +13,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpatialConfiguration {
 
+  private final TypeEnforcer typeEnforcer;
+
+  public SpatialConfiguration(TypeEnforcer typeEnforcer) {
+    this.typeEnforcer = typeEnforcer;
+  }
+
   @Bean
   public WiringFactory wiringFactory() {
     return new WiringFactory() {
@@ -33,7 +39,7 @@ public class SpatialConfiguration {
 
       @Override
       public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
-        return new SpatialDataFetcher();
+        return new SpatialDataFetcher(typeEnforcer);
       }
     };
   }

@@ -335,4 +335,28 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("asWKT"), is("POINT (5.979274334569982 52.21715768613606)"));
     assertThat(geometry.get("asWKB"), is("00000000014017eac6e4232933404a1bcbd2b403c4"));
   }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(type : MULTIPOINT){type asWKT asWKB}}}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("geometry"));
+
+    Map<String, Object> geometry = (Map<String, Object>) brewery.get("geometry");
+    assertThat(geometry.size(), is(3));
+    assertThat(geometry.get("type"), is("MULTIPOINT"));
+    assertThat(geometry.get("asWKT"), is("MULTIPOINT ((5.979274334569982 52.21715768613606))"));
+    assertThat(geometry.get("asWKB"), is("00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4"));
+  }
 }
