@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.aggregate;
 
-import graphql.language.FieldDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
-import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
@@ -22,15 +20,12 @@ import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
-import org.springframework.stereotype.Component;
 
-@Component
 public class AggregateConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     registry.add(createAggregateObjectDefinition());
-
   }
 
   private ObjectTypeDefinition createAggregateObjectDefinition() {
