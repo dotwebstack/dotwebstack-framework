@@ -170,6 +170,8 @@ public class QueryBuilder {
           .get(fieldName))
           .orElseThrow(() -> illegalStateException("Field '{}' is unknown.", fieldName));
 
+      // TODO aggregate query bouwen
+
       if (!fieldConfiguration.isScalar()) {
         joinTable(queryContext, selectedFields.get(fieldName), fieldConfiguration, fromTable, selectionSet)
             .ifPresent(joinTableWrapper -> {

@@ -25,6 +25,7 @@ type Beer {
   abv: Float!
   brewery: Brewery!
   ingredients: [Ingredient!]!
+  soldPerYear: Int!
 }
 
 type Address {
@@ -36,4 +37,5 @@ type Address {
 type Ingredient {
   identifier: ID!
   name: String!
+  weight: Float!
 }

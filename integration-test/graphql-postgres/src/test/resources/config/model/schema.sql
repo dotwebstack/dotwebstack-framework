@@ -23,12 +23,14 @@ CREATE TABLE db.beer (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
   abv NUMERIC(3,1) NOT NULL,
-  brewery character varying NOT NULL REFERENCES db.brewery (identifier)
+  brewery character varying NOT NULL REFERENCES db.brewery (identifier),
+  sold_per_year INT NOT NULL
 );
 
 CREATE TABLE db.ingredient (
   identifier character varying NOT NULL PRIMARY KEY,
-  name character varying NOT NULL
+  name character varying NOT NULL,
+  weight INT NOT NULL
 );
 
 CREATE TABLE db.beer_ingredient (

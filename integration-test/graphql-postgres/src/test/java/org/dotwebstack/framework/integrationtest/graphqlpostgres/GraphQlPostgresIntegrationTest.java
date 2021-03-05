@@ -359,4 +359,24 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("asWKT"), is("MULTIPOINT ((5.979274334569982 52.21715768613606))"));
     assertThat(geometry.get("asWKB"), is("00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4"));
   }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithAggregateType_forBeer() {
+
+    // join column
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+            + "{name beerAgg{ totalSum : intSum( field : soldPerYear ) } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
+
+    // join table
+  }
 }

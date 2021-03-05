@@ -31,30 +31,32 @@ CREATE TABLE dbeerpedia.beers (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
   abv NUMERIC(3,1) NOT NULL,
-  brewery character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier)
+  brewery character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
+  sold_per_year INT NOT NULL
 );
 
 CREATE INDEX brewery_idx ON dbeerpedia.beers (brewery);
 
-INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery) VALUES
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b'),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b'),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9'),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b'),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9');
+INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year) VALUES
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000);
 
 CREATE TABLE dbeerpedia.ingredients (
   identifier character varying NOT NULL PRIMARY KEY,
-  name character varying NOT NULL
+  name character varying NOT NULL,
+  weight INT NOT NULL
 );
 
-INSERT INTO dbeerpedia.ingredients(identifier, name) VALUES
-  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water'),
-  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop'),
-  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley'),
-  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast'),
-  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange'),
-  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel');
+INSERT INTO dbeerpedia.ingredients(identifier, name, weight) VALUES
+  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 1.1),
+  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop', 2.2),
+  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley', 3.3),
+  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 4.4),
+  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 5.5),
+  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', .6.6);
 
 CREATE TABLE dbeerpedia.beers_ingredients (
   beers_identifier character varying NOT NULL REFERENCES dbeerpedia.beers (identifier),
