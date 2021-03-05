@@ -362,21 +362,45 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forBeer() {
-
-    // join column
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name beerAgg{ totalSum : intSum( field : \"soldPerYear\" ) } } }";
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(3));
+    assertThat(beerAgg.get("totalSold"), is(1700000));
+    assertThat(beerAgg.get("averageSold"), is(566667));
+    assertThat(beerAgg.get("maxSold"), is(1000000));
   }
 
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+            + "{name ingredientAgg{ totalWeight : intSum( field : \"weight\" ) "
+            + "averageWeight : intAvg( field : \"weight\" ) maxWeight : intMax( field : \"weight\" ) } } }";
 
-    // join table
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(3));
+    assertThat(ingredientAgg.get("totalWeight"), is(23.1f));
+    assertThat(ingredientAgg.get("averageWeight"), is(3.85f));
+    assertThat(ingredientAgg.get("maxWeight"), is(6.6f));
   }
 }
