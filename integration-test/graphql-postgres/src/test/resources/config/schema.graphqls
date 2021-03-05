@@ -41,17 +41,3 @@ type Ingredient {
   name: String!
   weight: Float!
 }
-
-type Aggregate {
-  count(field: String!, distinct: Boolean = false): Int!
-
-  intSum(field: String!): Int
-  intMin(field: String!): Int
-  intMax(field: String!): Int
-  intAvg(field: String!): Int
-
-  floatSum(field: String!): Float
-  floatMin(field: String!): Float
-  floatMax(field: String!): Float
-  floatAvg(field: String!): Float
-}

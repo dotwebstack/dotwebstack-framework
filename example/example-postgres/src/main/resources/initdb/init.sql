@@ -56,7 +56,7 @@ INSERT INTO dbeerpedia.ingredients(identifier, name, weight) VALUES
   ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley', 3.3),
   ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 4.4),
   ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 5.5),
-  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', .6.6);
+  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', 6.6);
 
 CREATE TABLE dbeerpedia.beers_ingredients (
   beers_identifier character varying NOT NULL REFERENCES dbeerpedia.beers (identifier),

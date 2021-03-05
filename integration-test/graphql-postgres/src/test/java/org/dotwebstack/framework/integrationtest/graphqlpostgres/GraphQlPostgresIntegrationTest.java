@@ -365,12 +365,12 @@ class GraphQlPostgresIntegrationTest {
 
     // join column
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-            + "{name beerAgg{ totalSum : intSum( field : soldPerYear ) } } }";
+        + "{name beerAgg{ totalSum : intSum( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
-            .isEmpty());
+        .isEmpty());
     Map<String, Object> data = result.getData();
   }
 
