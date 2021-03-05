@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,7 +17,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +33,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Flux;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
@@ -89,6 +94,38 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.size(), is(5));
     assertThat(beers.get(0)
         .get("name"), is("Beer 1"));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsPublisher_forBeerSubscription() {
+    String query = "subscription {beersSubscription{identifier name}}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+
+    Object publisher = result.getData();
+
+    assertThat(publisher, Matchers.instanceOf(Publisher.class));
+
+    List<Object> data = Flux.from((Publisher<Object>) publisher)
+        .collectList()
+        .block();
+
+    assertThat(data, notNullValue());
+    assertThat(data.size(), is(5));
+    assertThat(data.get(0), instanceOf(ExecutionResult.class));
+
+    ExecutionResult first = (ExecutionResult) data.get(0);
+    Map<String, Object> firstData = first.getData();
+
+    assertThat(firstData.containsKey("beersSubscription"), equalTo(true));
+
+    Map<String, Object> beer = (Map<String, Object>) firstData.get("beersSubscription");
+
+    assertThat(beer.entrySet(), equalTo(Map.of("identifier", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1")
+        .entrySet()));
   }
 
   @Test
