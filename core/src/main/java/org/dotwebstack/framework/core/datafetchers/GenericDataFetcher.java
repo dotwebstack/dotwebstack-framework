@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static java.util.Optional.ofNullable;
 
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
-import graphql.language.OperationDefinition;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -139,14 +139,12 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {
-    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-
     return LoadEnvironment.builder()
         .queryName(environment.getFieldDefinition()
             .getName())
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectionSet(environment.getSelectionSet())
-        .subscription(OperationDefinition.Operation.SUBSCRIPTION.equals(environment.getOperationDefinition()
+        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition()
             .getOperation()))
         .build();
   }
