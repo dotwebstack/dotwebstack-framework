@@ -6,6 +6,7 @@ import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.extension.CodecRegistrar;
 import io.r2dbc.spi.ConnectionFactory;
 import java.util.Collection;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -42,6 +43,10 @@ public class PostgresConfiguration {
         .username(postgresProperties.getUsername())
         .password(postgresProperties.getPassword())
         .forceBinary(true);
+
+    if (StringUtils.isNotEmpty(postgresProperties.getDatabase())) {
+      configurationBuilder.database(postgresProperties.getDatabase());
+    }
 
     codecRegistrars.forEach(configurationBuilder::codecRegistrar);
 
