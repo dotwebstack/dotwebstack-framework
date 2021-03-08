@@ -43,7 +43,6 @@ typeMapping:
         mappedBy: brewery
       beerAgg:
         aggregationOf: beers
-        mappedBy: brewery
 
   Address:
     backend: postgres

@@ -29,6 +29,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   }
 
   public boolean isScalar() {
-    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null;
+    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
   }
 }

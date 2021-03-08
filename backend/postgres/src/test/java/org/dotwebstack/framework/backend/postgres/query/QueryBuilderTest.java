@@ -76,8 +76,11 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
+
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -96,8 +99,10 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -149,8 +154,10 @@ class QueryBuilderTest {
 
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -189,8 +196,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
 
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -211,8 +220,10 @@ class QueryBuilderTest {
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
     Map<String, Object> data = new HashMap<>();
 
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -228,8 +239,10 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
+    GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
+
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -265,6 +278,10 @@ class QueryBuilderTest {
     return mockDataFetchingFieldSelectionSet(Arrays.stream(selectedFields)
         .map(this::mockSelectedField)
         .collect(Collectors.toList()));
+  }
+
+  private GraphQLObjectType mockGraphQLObjectType(){
+    return mock(GraphQLObjectType.class);
   }
 
   private DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet(List<SelectedField> selectedFields) {

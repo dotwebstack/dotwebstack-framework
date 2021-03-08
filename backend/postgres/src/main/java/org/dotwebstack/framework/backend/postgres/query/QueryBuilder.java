@@ -5,7 +5,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.jooq.impl.DSL.trueCondition;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
@@ -76,19 +78,19 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, KeyCondition keyCondition,
-      DataFetchingFieldSelectionSet selectionSet) {
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
     return build(new QueryContext(), typeConfiguration, Optional.ofNullable(keyCondition)
         .map(List::of)
-        .orElse(List.of()), selectionSet);
+        .orElse(List.of()), selectionSet, graphQLObjectType);
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, Collection<KeyCondition> keyConditions,
-      DataFetchingFieldSelectionSet selectionSet) {
-    return build(new QueryContext(), typeConfiguration, keyConditions, selectionSet);
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
+    return build(new QueryContext(), typeConfiguration, keyConditions, selectionSet, graphQLObjectType);
   }
 
   public QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
-      Collection<KeyCondition> keyConditions, DataFetchingFieldSelectionSet selectionSet) {
+      Collection<KeyCondition> keyConditions, DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
     JoinTable joinTable = keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
         .map(ColumnKeyCondition::getJoinTable)
@@ -96,7 +98,7 @@ public class QueryBuilder {
         .findFirst()
         .orElse(null);
 
-    SelectWrapper selectWrapper = selectTable(queryContext, typeConfiguration, "", joinTable, selectionSet);
+    SelectWrapper selectWrapper = selectTable(queryContext, typeConfiguration, "", joinTable, selectionSet, graphQLObjectType);
 
 
     if (keyConditions.isEmpty()) {
@@ -151,7 +153,7 @@ public class QueryBuilder {
   }
 
   private SelectWrapper selectTable(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
-      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet) {
+      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
     Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
         .as(queryContext.newTableAlias());
 
@@ -166,14 +168,23 @@ public class QueryBuilder {
     AtomicReference<String> keyAlias = new AtomicReference<>();
 
     getFieldNames(typeConfiguration, selectedFields.values()).forEach(fieldName -> {
+      // if selected fiels has an aggregationOf, what should be the typeConfiguration?
+      // type configuration should be Beer but fieldName should be checked against Aggregate
+//      SelectedField selectedField = selectedFields.get(fieldName);
+//      GraphQLFieldDefinition parentFieldDefinition =
+//          graphQLObjectType.getFieldDefinition(selectedField.getParentField().getQualifiedName());
+//      GraphQLUnmodifiedType parentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
+//      String parentTypeName = parentType.getName();
+
       PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
           .get(fieldName))
           .orElseThrow(() -> illegalStateException("Field '{}' is unknown.", fieldName));
 
       // TODO aggregate query bouwen
+      // indien aggregationOf, bepaal fieldConfiguration of aggregationOf -> beerAgg -> beers
 
       if (!fieldConfiguration.isScalar()) {
-        joinTable(queryContext, selectedFields.get(fieldName), fieldConfiguration, fromTable, selectionSet)
+        joinTable(queryContext, selectedFields.get(fieldName), fieldConfiguration, fromTable, selectionSet, graphQLObjectType)
             .ifPresent(joinTableWrapper -> {
               selectColumns.add(DSL.field(joinTableWrapper.getTable()
                   .getName()
@@ -242,20 +253,32 @@ public class QueryBuilder {
 
   private Set<String> getFieldNames(PostgresTypeConfiguration typeConfiguration,
       Collection<SelectedField> selectedFields) {
-    return Stream.concat(typeConfiguration.getKeys()
+     Set<String> fieldNames = Stream.concat(typeConfiguration.getKeys()
         .stream()
         .map(KeyConfiguration::getField),
         selectedFields.stream()
             .map(SelectedField::getName))
         .collect(Collectors.toSet());
+     return fieldNames;
   }
 
+  private GraphQLUnmodifiedType getForeignType(SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration, GraphQLObjectType graphQLObjectType){
+    GraphQLOutputType foreignType;
+    if(fieldConfiguration.getAggregationOf() != null){
+      String aggregationOfField = fieldConfiguration.getAggregationOf();
+      foreignType = graphQLObjectType.getFieldDefinition(aggregationOfField).getType();
+    }else{
+      foreignType = selectedField.getFieldDefinition().getType();
+    }
+    return GraphQLTypeUtil.unwrapAll(foreignType);
+  }
 
   private Optional<TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
-      DataFetchingFieldSelectionSet selectionSet) {
-    GraphQLUnmodifiedType foreignType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
-        .getType());
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
+    GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration, graphQLObjectType);
+
+    // if foreignType is Aggregate bepaal foreignType obv aggregationOf relatie
 
     if (!(foreignType instanceof GraphQLObjectType)) {
       throw illegalStateException("Foreign output type is not an object type.");
@@ -270,7 +293,7 @@ public class QueryBuilder {
 
     SelectWrapper selectWrapper =
         selectTable(queryContext, (PostgresTypeConfiguration) typeConfiguration, selectedField.getFullyQualifiedName()
-            .concat("/"), null, selectionSet);
+            .concat("/"), null, selectionSet, graphQLObjectType);
 
     if (fieldConfiguration.getJoinColumns() != null) {
       Condition whereCondition = fieldConfiguration.getJoinColumns()

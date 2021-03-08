@@ -403,4 +403,29 @@ class GraphQlPostgresIntegrationTest {
     assertThat(ingredientAgg.get("averageWeight"), is(3.85f));
     assertThat(ingredientAgg.get("maxWeight"), is(6.6f));
   }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithAggregateTypeTotalSum_forBeer() {
+
+//         String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
+
+    // join column
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name beerAgg{ totalSum : intSum( field : \"soldPerYear\" ) } } }";
+
+    // single result
+    //    ExecutionResult result = graphQL.execute(query);
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+
+    Map<String, Object> data = result.getData();
+  }
 }

@@ -54,7 +54,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet());
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet(), environment.getObjectType());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -73,7 +73,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet());
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet(), environment.getObjectType());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -87,7 +87,7 @@ public class PostgresDataLoader implements BackendDataLoader {
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions, environment.getSelectionSet());
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions, environment.getSelectionSet(), environment.getObjectType());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
