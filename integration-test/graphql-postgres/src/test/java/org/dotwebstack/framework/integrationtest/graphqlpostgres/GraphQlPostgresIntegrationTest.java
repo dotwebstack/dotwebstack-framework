@@ -363,14 +363,25 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forBeer() {
 
+//     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
+
     // join column
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSum : intSum( field : \"soldPerYear\" ) } } }";
 
-    ExecutionResult result = graphQL.execute(query);
+    // single result
+    //    ExecutionResult result = graphQL.execute(query);
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
 
     assertTrue(result.getErrors()
         .isEmpty());
+
     Map<String, Object> data = result.getData();
   }
 

@@ -41,6 +41,9 @@ typeMapping:
             referencedField: identifier
       beers:
         mappedBy: brewery
+      beerAgg:
+        aggregationOf: beers
+        mappedBy: brewery
 
   Address:
     backend: postgres
