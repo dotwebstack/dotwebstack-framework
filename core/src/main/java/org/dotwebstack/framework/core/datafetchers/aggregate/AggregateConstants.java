@@ -10,7 +10,7 @@ public class AggregateConstants {
 
   // ArgumentNames
 
-  static final String FIELD_ARGUMENT = "field";
+  public static final String FIELD_ARGUMENT = "field";
 
   static final String DISTINCT_ARGUMENT = "distinct";
 

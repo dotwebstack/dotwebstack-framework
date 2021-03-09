@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.jooq.impl.DSL.trueCondition;
@@ -11,6 +12,8 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -168,17 +171,31 @@ public class QueryBuilder {
     AtomicReference<String> keyAlias = new AtomicReference<>();
 
     getFieldNames(typeConfiguration, selectedFields.values()).forEach(fieldName -> {
-      // if selected fiels has an aggregationOf, what should be the typeConfiguration?
+      // if selected field has an aggregationOf, what should be the typeConfiguration?
       // type configuration should be Beer but fieldName should be checked against Aggregate
-//      SelectedField selectedField = selectedFields.get(fieldName);
-//      GraphQLFieldDefinition parentFieldDefinition =
-//          graphQLObjectType.getFieldDefinition(selectedField.getParentField().getQualifiedName());
-//      GraphQLUnmodifiedType parentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
-//      String parentTypeName = parentType.getName();
 
-      PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
-          .get(fieldName))
-          .orElseThrow(() -> illegalStateException("Field '{}' is unknown.", fieldName));
+      //      GraphQLFieldDefinition parentFieldDefinition =
+      //          graphQLObjectType.getFieldDefinition(selectedField.getParentField().getQualifiedName());
+      //      GraphQLUnmodifiedType parentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
+      //      String parentTypeName = parentType.getName();
+
+      //      PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
+      //          .get(fieldName))
+      //          .orElseThrow(() -> illegalStateException("Field '{}' is unknown.", fieldName));
+
+      PostgresFieldConfiguration fieldConfiguration;
+      Optional<PostgresFieldConfiguration> optionalFieldConfiguration = Optional.ofNullable(typeConfiguration.getFields().get(fieldName));
+      if(optionalFieldConfiguration.isPresent()){
+        fieldConfiguration = optionalFieldConfiguration.get();
+      }else{
+        SelectedField selectedField = selectedFields.get(fieldName);
+        // check if it is an aggregate function
+        // if selectedfield.parent is type of Aggregate
+
+        // if true then create aggregate FieldConfiguration (beerAgg):
+        // the aggegratefieldconfiguration contains the column to aggregate
+        fieldConfiguration = createAggregateFieldConfiguration(selectedField);
+      }
 
       // TODO aggregate query bouwen
       // indien aggregationOf, bepaal fieldConfiguration of aggregationOf -> beerAgg -> beers
@@ -199,8 +216,18 @@ public class QueryBuilder {
       }
 
       String columnAlias = queryContext.newSelectAlias();
-      Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldConfiguration.getColumn()))
-          .as(columnAlias);
+
+      if(fieldConfiguration.isAggregate()) {
+        // TODO add distinct
+        Field<BigDecimal> column =
+            DSL.sum(DSL.field(DSL.name(fromTable.getName(), fieldConfiguration.getColumn()), Integer.class)).as(columnAlias);
+        selectColumns.add(column);
+        assembleFns.put(fieldName, row -> row.get(column.getName()));
+      }else {
+        Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldConfiguration.getColumn())).as(columnAlias);
+        selectColumns.add(column);
+        assembleFns.put(fieldName, row -> row.get(column.getName()));
+      }
 
       if (typeConfiguration.getKeys()
           .stream()
@@ -208,8 +235,6 @@ public class QueryBuilder {
         keyAlias.set(columnAlias);
       }
 
-      selectColumns.add(column);
-      assembleFns.put(fieldName, row -> row.get(column.getName()));
     });
 
     SelectJoinStep<Record> query = dslContext.select(selectColumns)
@@ -271,6 +296,12 @@ public class QueryBuilder {
       foreignType = selectedField.getFieldDefinition().getType();
     }
     return GraphQLTypeUtil.unwrapAll(foreignType);
+  }
+
+  private PostgresFieldConfiguration createAggregateFieldConfiguration(SelectedField selectedField) {
+    String column = selectedField.getArguments().get(FIELD_ARGUMENT).toString();
+    PostgresFieldConfiguration aggregateFieldConfig = new PostgresFieldConfiguration(column, true);
+    return aggregateFieldConfig;
   }
 
   private Optional<TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
