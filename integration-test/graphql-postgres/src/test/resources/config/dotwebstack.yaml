@@ -18,6 +18,8 @@ typeMapping:
           inverseJoinColumns:
             - name: ingredient_identifier
               referencedField: identifier
+      ingredientAgg:
+        aggregationOf: ingredients
 
   Ingredient:
     backend: postgres

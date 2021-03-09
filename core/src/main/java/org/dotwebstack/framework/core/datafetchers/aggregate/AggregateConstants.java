@@ -6,7 +6,7 @@ public class AggregateConstants {
 
   // ObjectTypes
 
-  static final String AGGREGATE_TYPE = "Aggregate";
+  public static final String AGGREGATE_TYPE = "Aggregate";
 
   // ArgumentNames
 

@@ -21,7 +21,7 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
   private String nodeShape;
 
   @Override
-  public void init(ObjectTypeDefinition objectTypeDefinition) {
+  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {

@@ -102,7 +102,8 @@ class QueryBuilderTest {
     GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
+    QueryHolder queryHolder =
+        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -157,7 +158,8 @@ class QueryBuilderTest {
     GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
+    QueryHolder queryHolder =
+        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -223,7 +225,8 @@ class QueryBuilderTest {
     GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
+    QueryHolder queryHolder =
+        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -242,7 +245,8 @@ class QueryBuilderTest {
     GraphQLObjectType graphQLObjectType = mockGraphQLObjectType();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
+    QueryHolder queryHolder =
+        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQLObjectType);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -280,7 +284,7 @@ class QueryBuilderTest {
         .collect(Collectors.toList()));
   }
 
-  private GraphQLObjectType mockGraphQLObjectType(){
+  private GraphQLObjectType mockGraphQLObjectType() {
     return mock(GraphQLObjectType.class);
   }
 
@@ -300,7 +304,7 @@ class QueryBuilderTest {
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
     typeConfiguration.setTable("dbeerpedia.ingredients");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Ingredient")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
@@ -318,7 +322,7 @@ class QueryBuilderTest {
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
     typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Brewery")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
@@ -345,7 +349,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)

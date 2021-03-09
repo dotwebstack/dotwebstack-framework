@@ -16,13 +16,12 @@ import static org.mockito.Mockito.when;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLObjectType;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import graphql.schema.GraphQLObjectType;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
@@ -217,8 +216,8 @@ class PostgresDataLoaderTest {
         .keyColumnNames(Map.of("identifier", "x1"))
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), anySet(), any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class)))
-        .thenReturn(queryHolder);
+    when(queryBuilder.build(any(PostgresTypeConfiguration.class), anySet(), any(DataFetchingFieldSelectionSet.class),
+        any(GraphQLObjectType.class))).thenReturn(queryHolder);
 
     LoadEnvironment loadEnvironment = mockLoadEnvironment();
 

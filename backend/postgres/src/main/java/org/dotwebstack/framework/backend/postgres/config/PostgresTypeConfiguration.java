@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
 import graphql.language.ObjectTypeDefinition;
@@ -13,6 +15,7 @@ import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -23,7 +26,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private String table;
 
   @Override
-  public void init(ObjectTypeDefinition objectTypeDefinition) {
+  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
@@ -33,6 +36,36 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
             String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
             fieldConfiguration.setColumn(columnName);
+          }
+        });
+
+    fields.values()
+        .stream()
+        .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
+        .forEach(fieldConfiguration -> {
+          PostgresFieldConfiguration ref = fields.get(fieldConfiguration.getAggregationOf());
+
+          if (ref.getMappedBy() != null) {
+            objectTypeDefinition.getFieldDefinitions()
+                .stream()
+                .filter(fieldDefinition -> fieldDefinition.getName()
+                    .equals(fieldConfiguration.getAggregationOf()))
+                .findFirst()
+                .ifPresent(fieldDefinition -> {
+                  String typeName = TypeHelper.getTypeName(fieldDefinition.getType());
+
+                  PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) typeMapping.get(typeName);
+
+                  PostgresFieldConfiguration fieldConfiguration1 = typeConfiguration.getFields()
+                      .get(ref.getMappedBy());
+
+                  fieldConfiguration.setJoinColumns(fieldConfiguration1.getJoinColumns());
+                });
+          }
+
+          if (ref.getJoinTable() != null) {
+            fieldConfiguration.setJoinColumns(ref.getJoinTable()
+                .getJoinColumns());
           }
         });
   }

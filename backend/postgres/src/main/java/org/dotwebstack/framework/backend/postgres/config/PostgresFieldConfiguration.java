@@ -22,7 +22,7 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private boolean isAggregate;
 
-  public PostgresFieldConfiguration(String column,boolean isAggregate){
+  public PostgresFieldConfiguration(String column, boolean isAggregate) {
     this.isAggregate = isAggregate;
     this.column = column;
   }

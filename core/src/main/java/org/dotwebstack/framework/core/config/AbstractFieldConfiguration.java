@@ -6,5 +6,6 @@ import lombok.Data;
 public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private String mappedBy;
+
   private String aggregationOf;
 }

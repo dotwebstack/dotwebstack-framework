@@ -161,7 +161,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setName("Beer");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
