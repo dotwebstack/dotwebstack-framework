@@ -31,7 +31,6 @@ import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.impl.IteratingTupleQueryResult;
@@ -46,9 +45,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class Rdf4jDataLoaderTest {
-
-  private static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
-
   @Mock
   private LocalRepositoryManager localRepositoryManager;
 

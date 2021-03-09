@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static java.util.Optional.ofNullable;
 
 import graphql.execution.DataFetcherResult;
@@ -20,6 +21,7 @@ import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 @Component
@@ -74,15 +76,21 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
-    if (!GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+    if (!loadEnvironment.isSubscription()
+        && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
 
-    return backendDataLoader.loadMany(keyCondition, loadEnvironment)
-        .map(data -> createDataFetcherResult(typeConfiguration, data))
-        .collectList()
+    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
+        .map(data -> createDataFetcherResult(typeConfiguration, data));
+
+    if (loadEnvironment.isSubscription()) {
+      return result;
+    }
+
+    return result.collectList()
         .toFuture();
   }
 
@@ -131,14 +139,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {
-    GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-
     return LoadEnvironment.builder()
         .queryName(environment.getFieldDefinition()
             .getName())
-        .objectType(objectType)
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectionSet(environment.getSelectionSet())
+        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition()
+            .getOperation()))
         .build();
   }
 
