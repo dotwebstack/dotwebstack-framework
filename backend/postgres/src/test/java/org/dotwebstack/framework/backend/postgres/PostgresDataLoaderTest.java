@@ -6,7 +6,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
+import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
@@ -116,8 +116,7 @@ class PostgresDataLoaderTest {
         .mapAssembler(row -> row)
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
-        any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class))).thenReturn(queryHolder);
+    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), any(GraphQLObjectType.class))).thenReturn(queryHolder);
 
     LoadEnvironment loadEnvironment = mockLoadEnvironment();
 
@@ -135,7 +134,7 @@ class PostgresDataLoaderTest {
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).one();
     verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
-        any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class));
+        any(DataFetchingFieldSelectionSet.class));
   }
 
   @Test
@@ -166,8 +165,7 @@ class PostgresDataLoaderTest {
         .mapAssembler(row -> row)
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
-        any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class))).thenReturn(queryHolder);
+    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), any(GraphQLObjectType.class))).thenReturn(queryHolder);
 
     LoadEnvironment loadEnvironment = mockLoadEnvironment();
 
@@ -185,8 +183,7 @@ class PostgresDataLoaderTest {
 
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).all();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(KeyCondition.class),
-        any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class));
+    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), any(GraphQLObjectType.class));
   }
 
   @Test
@@ -216,7 +213,7 @@ class PostgresDataLoaderTest {
         .keyColumnNames(Map.of("identifier", "x1"))
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), anySet(), any(DataFetchingFieldSelectionSet.class),
+    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class),
         any(GraphQLObjectType.class))).thenReturn(queryHolder);
 
     LoadEnvironment loadEnvironment = mockLoadEnvironment();
@@ -236,8 +233,7 @@ class PostgresDataLoaderTest {
 
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).all();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), anySet(),
-        any(DataFetchingFieldSelectionSet.class), any(GraphQLObjectType.class));
+    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), any(GraphQLObjectType.class));
   }
 
   @SuppressWarnings("unchecked")

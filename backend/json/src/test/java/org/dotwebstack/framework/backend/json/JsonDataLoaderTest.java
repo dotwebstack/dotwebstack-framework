@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLObjectType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -198,14 +197,9 @@ class JsonDataLoaderTest {
   }
 
   private LoadEnvironment createLoadEnvironment() {
-    GraphQLObjectType graphQlObjectType = GraphQLObjectType.newObject()
-        .name(NODE_BEER)
-        .build();
-
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
     return LoadEnvironment.builder()
-        .objectType(graphQlObjectType)
         .executionStepInfo(mock(ExecutionStepInfo.class))
         .queryName(BEERS_QUERY_NAME)
         .selectionSet(selectionSet)

@@ -1,5 +1,6 @@
 schema {
   query: Query
+  subscription: Subscription
 }
 
 type Query {
@@ -7,6 +8,10 @@ type Query {
   beer(identifier: ID!): Beer
   brewery(identifier: ID!): Brewery
   breweries: [Brewery!]!
+}
+
+type Subscription {
+  beersSubscription: Beer!
 }
 
 type Brewery {

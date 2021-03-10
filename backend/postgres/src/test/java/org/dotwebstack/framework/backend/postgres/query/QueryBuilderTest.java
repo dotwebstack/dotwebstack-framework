@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,7 +30,6 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.conf.ParamType;
@@ -76,11 +76,14 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
-
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of(keyCondition))
+        .page(pageWithDefaultSize())
+        .build();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -89,7 +92,7 @@ class QueryBuilderTest {
         .getSQL(ParamType.NAMED),
         equalTo("select x3, t3.* from (values (:1)) as \"t2\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" where identifier "
-            + "= \"t2\".\"x3\" limit :2) as \"t3\" on true"));
+            + "= \"t2\".\"x3\" limit :2 offset :3) as \"t3\" on true"));
   }
 
   @Test
@@ -99,18 +102,22 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
 
     // Act
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
-        equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" limit :1"));
+        equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" limit :1 "
+            + "offset :2"));
   }
 
   @Test
@@ -155,11 +162,14 @@ class QueryBuilderTest {
 
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
 
     // Act
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -169,7 +179,7 @@ class QueryBuilderTest {
         equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\", t3.* from db.beer as \"t1\" "
             + "left outer join lateral (select \"t2\".\"identifier\" as \"x3\", \"t2\".\"name\" as \"x4\" "
             + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) as \"t3\" "
-            + "on true limit :2"));
+            + "on true limit :2 offset :3"));
   }
 
   @Test
@@ -198,10 +208,14 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
 
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of(keyCondition))
+        .page(pageWithDefaultSize())
+        .build();
 
     // Act
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyCondition, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -211,7 +225,7 @@ class QueryBuilderTest {
         equalTo("select x3, t4.* from (values (:1)) as \"t3\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from dbeerpedia.ingredients as \"t1\" "
             + "join dbeerpedia.beers_ingredients as \"t2\" on \"t2\".\"ingredients_identifier\" "
-            + "= \"t1\".\"identifier\" where beers_identifier = \"t3\".\"x3\" limit :2) as \"t4\" on true"));
+            + "= \"t1\".\"identifier\" where beers_identifier = \"t3\".\"x3\" limit :2 offset :3) as \"t4\" on true"));
   }
 
   @Test
@@ -222,11 +236,13 @@ class QueryBuilderTest {
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
     Map<String, Object> data = new HashMap<>();
 
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .build();
 
     // Act
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());
@@ -242,11 +258,13 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
 
-    GraphQLObjectType graphQlObjectType = mockGraphQlObjectType();
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .build();
 
     // Act
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, (KeyCondition) null, selectionSet, graphQlObjectType);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     // Assert
     assertThat(queryHolder, notNullValue());

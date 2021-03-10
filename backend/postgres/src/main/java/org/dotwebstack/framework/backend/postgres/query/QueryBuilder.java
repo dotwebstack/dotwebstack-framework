@@ -35,14 +35,13 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Select;
+import org.jooq.SelectConnectByStep;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectJoinStep;
 import org.jooq.SelectOnConditionStep;
@@ -53,8 +52,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class QueryBuilder {
-
-  private static final int HARD_LIMIT = 10;
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
@@ -81,22 +78,10 @@ public class QueryBuilder {
         .build();
   }
 
-  public QueryHolder build(PostgresTypeConfiguration typeConfiguration, KeyCondition keyCondition,
-      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQlObjectType) {
-    return build(new QueryContext(), typeConfiguration, Optional.ofNullable(keyCondition)
-        .map(List::of)
-        .orElse(List.of()), selectionSet, graphQlObjectType);
-  }
-
-  public QueryHolder build(PostgresTypeConfiguration typeConfiguration, Collection<KeyCondition> keyConditions,
-      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQlObjectType) {
-    return build(new QueryContext(), typeConfiguration, keyConditions, selectionSet, graphQlObjectType);
-  }
-
-  public QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
-      Collection<KeyCondition> keyConditions, DataFetchingFieldSelectionSet selectionSet,
-      GraphQLObjectType graphQlObjectType) {
-    JoinTable joinTable = keyConditions.stream()
+  private QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
+      QueryParameters queryParameters) {
+    JoinTable joinTable = queryParameters.getKeyConditions()
+        .stream()
         .map(ColumnKeyCondition.class::cast)
         .map(ColumnKeyCondition::getJoinTable)
         .filter(Objects::nonNull)
@@ -104,20 +89,23 @@ public class QueryBuilder {
         .orElse(null);
 
     SelectWrapper selectWrapper =
-        selectTable(queryContext, typeConfiguration, "", joinTable, selectionSet, graphQlObjectType);
+        selectTable(queryContext, typeConfiguration, "", joinTable, queryParameters.getSelectionSet());
 
-    if (keyConditions.isEmpty()) {
-      return build(selectWrapper.getQuery()
-          .limit(HARD_LIMIT), selectWrapper.getRowAssembler());
+
+    if (queryParameters.getKeyConditions()
+        .isEmpty()) {
+      return build(limit(selectWrapper.getQuery(), queryParameters.getPage()), selectWrapper.getRowAssembler());
     }
 
-    RowN[] valuesTableRows = keyConditions.stream()
+    RowN[] valuesTableRows = queryParameters.getKeyConditions()
+        .stream()
         .map(ColumnKeyCondition.class::cast)
         .map(columnKeyCondition -> DSL.row(columnKeyCondition.getValueMap()
             .values()))
         .toArray(RowN[]::new);
 
-    Map<String, String> keyColumnNames = keyConditions.stream()
+    Map<String, String> keyColumnNames = queryParameters.getKeyConditions()
+        .stream()
         .findAny()
         .map(ColumnKeyCondition.class::cast)
         .orElseThrow()
@@ -136,9 +124,8 @@ public class QueryBuilder {
             .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
         .reduce(DSL.noCondition(), Condition::and);
 
-    Table<Record> lateralTable = DSL.lateral(selectWrapper.getQuery()
-        .where(joinCondition)
-        .limit(HARD_LIMIT))
+    Table<Record> lateralTable = DSL.lateral(limit(selectWrapper.getQuery()
+        .where(joinCondition), queryParameters.getPage()))
         .asTable(queryContext.newTableAlias());
 
     List<Field<Object>> selectedColumns = Stream.concat(keyColumnNames.values()
@@ -155,6 +142,18 @@ public class QueryBuilder {
         .on(trueCondition());
 
     return build(valuesQuery, keyColumnNames, selectWrapper.getRowAssembler());
+  }
+
+  public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters) {
+    return build(new QueryContext(), typeConfiguration, queryParameters);
+  }
+
+  private Select<Record> limit(SelectConnectByStep<Record> query, Page page) {
+    if (page != null) {
+      query.limit(page.getOffset(), page.getSize());
+    }
+
+    return query;
   }
 
   private SelectWrapper selectTable(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,

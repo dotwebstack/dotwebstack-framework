@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -10,6 +12,7 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
+import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -54,8 +57,12 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet(), environment.getObjectType());
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(environment.getSelectionSet())
+        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -74,8 +81,15 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder =
-        queryBuilder.build(typeConfiguration, keyCondition, environment.getSelectionSet(), environment.getObjectType());
+    QueryParameters.QueryParametersBuilder queryParametersBuilder = QueryParameters.builder()
+        .selectionSet(environment.getSelectionSet())
+        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of());
+
+    if (!environment.isSubscription()) {
+      queryParametersBuilder.page(pageWithDefaultSize());
+    }
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -89,8 +103,12 @@ public class PostgresDataLoader implements BackendDataLoader {
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, keyConditions, environment.getSelectionSet(),
-        environment.getObjectType());
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(environment.getSelectionSet())
+        .keyConditions(keyConditions)
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
