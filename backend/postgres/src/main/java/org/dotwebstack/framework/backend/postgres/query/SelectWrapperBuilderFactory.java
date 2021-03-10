@@ -21,7 +21,7 @@ public class SelectWrapperBuilderFactory {
       return new AggregateSelectWrapperBuilder(dslContext);
     }
 
-    return new DefaultSelectWrapperBuilder(dslContext, this, dotWebStackConfiguration);
+    return getSelectWrapperBuilder();
   }
 
   public SelectWrapperBuilder getSelectWrapperBuilder() {
