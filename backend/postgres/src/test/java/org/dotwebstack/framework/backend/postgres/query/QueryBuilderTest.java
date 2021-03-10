@@ -2,8 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
-import graphql.schema.GraphQLNamedType;
-import graphql.schema.GraphQLTypeReference;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;

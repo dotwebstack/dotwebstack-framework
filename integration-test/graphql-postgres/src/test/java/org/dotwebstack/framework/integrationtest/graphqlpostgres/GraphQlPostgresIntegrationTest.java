@@ -422,13 +422,13 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forSingleBeer() {
     String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
-            + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
-            + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
-            .isEmpty());
+        .isEmpty());
     Map<String, Object> data = result.getData();
     assertThat(data.size(), is(1));
     assertTrue(data.containsKey("brewery"));
@@ -444,13 +444,13 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forNoBeer() {
     String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
-            + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
-            + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
-            .isEmpty());
+        .isEmpty());
     Map<String, Object> data = result.getData();
     assertThat(data.size(), is(1));
     assertTrue(data.containsKey("brewery"));

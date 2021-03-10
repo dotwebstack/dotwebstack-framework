@@ -262,8 +262,10 @@ public class QueryBuilder {
 
     // TODO add distinct
     // TODO add all aggregate functions
-    Field<BigDecimal> column = DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class))
-        .as(columnAlias);
+
+    Field<BigDecimal> column =
+        DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class)), BigDecimal.ZERO)
+            .as(columnAlias);
 
     selectContext.addField(selectedField, column);
 
