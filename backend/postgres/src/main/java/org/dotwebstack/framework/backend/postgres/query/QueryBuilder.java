@@ -47,8 +47,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.tools.StringUtils;
 import org.springframework.stereotype.Component;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 @Component
 public class QueryBuilder {
@@ -175,21 +173,23 @@ public class QueryBuilder {
           .filter(AggregateHelper::isAggregate)
           .forEach(selectedField -> addAggregateField(typeConfiguration, selectContext, fromTable, selectedField));
     } else {
-      List<Tuple2<String, PostgresFieldConfiguration>> fieldTuples =
+      Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
           getFieldNames(typeConfiguration, selectedFields.values());
 
       // add nested objects
-      fieldTuples.stream()
-          .filter(tuple -> !tuple.getT2()
+      fieldNamesConfigurations.entrySet()
+          .stream()
+          .filter(entry -> !entry.getValue()
               .isScalar())
-          .forEach(tuple -> addJoinTable(selectionSet, selectContext, fromTable, selectedFields.get(tuple.getT1()),
-              tuple.getT2()));
+          .forEach(entry -> addJoinTable(selectionSet, selectContext, fromTable, selectedFields.get(entry.getKey()),
+              entry.getValue()));
 
       // add direct fields
-      fieldTuples.stream()
-          .filter(tuple -> tuple.getT2()
+      fieldNamesConfigurations.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue()
               .isScalar())
-          .forEach(tuple -> addField(selectContext, typeConfiguration, fromTable, tuple));
+          .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
     }
 
     SelectJoinStep<Record> query = dslContext.select(selectContext.getSelectColumns())
@@ -274,34 +274,34 @@ public class QueryBuilder {
   }
 
   private void addField(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      Table<Record> fromTable, Tuple2<String, PostgresFieldConfiguration> fieldTuple) {
+      Table<Record> fromTable, Map.Entry<String, PostgresFieldConfiguration> fieldNameConfiguration) {
     String columnAlias = selectContext.getQueryContext()
         .newSelectAlias();
 
-    Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldTuple.getT2()
+    Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldNameConfiguration.getValue()
         .getColumn()))
         .as(columnAlias);
 
-    selectContext.addField(fieldTuple.getT1(), column);
+    selectContext.addField(fieldNameConfiguration.getKey(), column);
 
     if (typeConfiguration.getKeys()
         .stream()
-        .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldTuple.getT1()))) {
+        .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldNameConfiguration.getKey()))) {
       selectContext.getCheckNullAlias()
           .set(columnAlias);
     }
   }
 
-  private List<Tuple2<String, PostgresFieldConfiguration>> getFieldNames(PostgresTypeConfiguration typeConfiguration,
+  private Map<String, PostgresFieldConfiguration> getFieldNames(PostgresTypeConfiguration typeConfiguration,
       Collection<SelectedField> selectedFields) {
+
     return Stream.concat(typeConfiguration.getKeys()
         .stream()
         .map(KeyConfiguration::getField),
         selectedFields.stream()
             .map(SelectedField::getName))
-        .map(fieldName -> Tuples.of(fieldName, typeConfiguration.getFields()
-            .get(fieldName)))
-        .collect(Collectors.toList());
+        .collect(Collectors.toMap(key -> key, key -> typeConfiguration.getFields()
+            .get(key), (a, b) -> a));
   }
 
   private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,
