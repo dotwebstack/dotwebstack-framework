@@ -13,7 +13,6 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 
 import graphql.schema.SelectedField;
 import java.math.BigDecimal;
-import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -64,10 +63,10 @@ public class AggregateFieldFactory {
       case FLOAT_AVG_FIELD:
         result = DSL.coalesce(DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO);
         break;
+      default:
+        throw new IllegalArgumentException(String.format("Aggregate function %s is not supported", aggregateFunction));
     }
 
-    return Optional.ofNullable(result)
-        .orElseThrow(() -> new IllegalArgumentException(
-            String.format("Aggregate function %s is not supported", aggregateFunction)));
+    return result;
   }
 }
