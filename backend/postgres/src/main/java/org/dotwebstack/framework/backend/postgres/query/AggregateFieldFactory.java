@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AggregateFieldFactory {
 
-  public static Field<?> create(SelectedField selectedField, String fromTable, String columnName) {
+  public Field<?> create(SelectedField selectedField, String fromTable, String columnName) {
     Field<?> result = null;
     String aggregateFunction = selectedField.getName();
 
