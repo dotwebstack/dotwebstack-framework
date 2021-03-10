@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -398,6 +399,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled
   void graphQlQuery_ReturnsBreweryWithAggregateType_forMultipleBeers() {
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
@@ -464,6 +466,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled
   void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : intSum( field : \"weight\" ) "

@@ -62,7 +62,7 @@ class QueryBuilderTest {
   void beforeAll() {
     DSLContext dslContext = createDslContext();
 
-    queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
+    queryBuilder = new QueryBuilder(new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration), dslContext);
   }
 
   @Test
