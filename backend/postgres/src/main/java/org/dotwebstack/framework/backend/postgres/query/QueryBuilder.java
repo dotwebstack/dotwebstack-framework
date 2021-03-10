@@ -82,20 +82,20 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, KeyCondition keyCondition,
-      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQlObjectType) {
     return build(new QueryContext(), typeConfiguration, Optional.ofNullable(keyCondition)
         .map(List::of)
-        .orElse(List.of()), selectionSet, graphQLObjectType);
+        .orElse(List.of()), selectionSet, graphQlObjectType);
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, Collection<KeyCondition> keyConditions,
-      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
-    return build(new QueryContext(), typeConfiguration, keyConditions, selectionSet, graphQLObjectType);
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQlObjectType) {
+    return build(new QueryContext(), typeConfiguration, keyConditions, selectionSet, graphQlObjectType);
   }
 
   public QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
       Collection<KeyCondition> keyConditions, DataFetchingFieldSelectionSet selectionSet,
-      GraphQLObjectType graphQLObjectType) {
+      GraphQLObjectType graphQlObjectType) {
     JoinTable joinTable = keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
         .map(ColumnKeyCondition::getJoinTable)
@@ -104,7 +104,7 @@ public class QueryBuilder {
         .orElse(null);
 
     SelectWrapper selectWrapper =
-        selectTable(queryContext, typeConfiguration, "", joinTable, selectionSet, graphQLObjectType);
+        selectTable(queryContext, typeConfiguration, "", joinTable, selectionSet, graphQlObjectType);
 
     if (keyConditions.isEmpty()) {
       return build(selectWrapper.getQuery()
@@ -159,7 +159,7 @@ public class QueryBuilder {
 
   private SelectWrapper selectTable(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
       String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet,
-      GraphQLObjectType graphQLObjectType) {
+      GraphQLObjectType graphQlObjectType) {
     Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
         .as(queryContext.newTableAlias());
 
@@ -174,18 +174,6 @@ public class QueryBuilder {
     AtomicReference<String> keyAlias = new AtomicReference<>();
 
     getFieldNames(typeConfiguration, selectedFields.values()).forEach(fieldName -> {
-      // if selected field has an aggregationOf, what should be the typeConfiguration?
-      // type configuration should be Beer but fieldName should be checked against Aggregate
-
-      // GraphQLFieldDefinition parentFieldDefinition =
-      // graphQLObjectType.getFieldDefinition(selectedField.getParentField().getQualifiedName());
-      // GraphQLUnmodifiedType parentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
-      // String parentTypeName = parentType.getName();
-
-      // PostgresFieldConfiguration fieldConfiguration = Optional.ofNullable(typeConfiguration.getFields()
-      // .get(fieldName))
-      // .orElseThrow(() -> illegalStateException("Field '{}' is unknown.", fieldName));
-
       PostgresFieldConfiguration fieldConfiguration;
       Optional<PostgresFieldConfiguration> optionalFieldConfiguration =
           Optional.ofNullable(typeConfiguration.getFields()
@@ -207,7 +195,7 @@ public class QueryBuilder {
 
       if (!fieldConfiguration.isScalar()) {
         joinTable(queryContext, selectedFields.get(fieldName), fieldConfiguration, fromTable, selectionSet,
-            graphQLObjectType).ifPresent(joinTableWrapper -> {
+            graphQlObjectType).ifPresent(joinTableWrapper -> {
               selectColumns.add(DSL.field(joinTableWrapper.getTable()
                   .getName()
                   .concat(".*")));
@@ -304,11 +292,11 @@ public class QueryBuilder {
   }
 
   private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,
-      PostgresFieldConfiguration fieldConfiguration, GraphQLObjectType graphQLObjectType) {
+      PostgresFieldConfiguration fieldConfiguration, GraphQLObjectType graphQlObjectType) {
     GraphQLOutputType foreignType;
     if (fieldConfiguration.getAggregationOf() != null) {
       String aggregationOfField = fieldConfiguration.getAggregationOf();
-      foreignType = graphQLObjectType.getFieldDefinition(aggregationOfField)
+      foreignType = graphQlObjectType.getFieldDefinition(aggregationOfField)
           .getType();
     } else {
       foreignType = selectedField.getFieldDefinition()
@@ -324,10 +312,22 @@ public class QueryBuilder {
     return new PostgresFieldConfiguration(column, true);
   }
 
+  private PostgresTypeConfiguration getPostgresTypeConfigurationForCondition(
+      PostgresFieldConfiguration postgresFieldConfiguration, GraphQLObjectType graphQlObjectType,
+      PostgresTypeConfiguration rightTypeConfiguration) {
+    if (!StringUtils.isEmpty(postgresFieldConfiguration.getAggregationOf())) {
+      String typeName = TypeHelper.getTypeName(graphQlObjectType);
+
+      return dotWebStackConfiguration.getTypeConfiguration(typeName);
+    }
+
+    return rightTypeConfiguration;
+  }
+
   private Optional<TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
-      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQLObjectType) {
-    GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration, graphQLObjectType);
+      DataFetchingFieldSelectionSet selectionSet, GraphQLObjectType graphQlObjectType) {
+    GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration, graphQlObjectType);
 
     // if foreignType is Aggregate bepaal foreignType obv aggregationOf relatie
 
@@ -346,19 +346,16 @@ public class QueryBuilder {
         selectedField.getFullyQualifiedName()
             .concat("/"),
         !StringUtils.isEmpty(fieldConfiguration.getAggregationOf()) ? fieldConfiguration.getJoinTable() : null,
-        selectionSet, graphQLObjectType);
+        selectionSet, graphQlObjectType);
 
-
-    final PostgresTypeConfiguration finalTypeConfiguration =
-        Objects.equals(fieldConfiguration.getAggregationOf(), "ingredients")
-            ? dotWebStackConfiguration.getTypeConfiguration("Beer")
-            : null;
+    final PostgresTypeConfiguration typeConfigurationForCondition = getPostgresTypeConfigurationForCondition(
+        fieldConfiguration, graphQlObjectType, (PostgresTypeConfiguration) typeConfiguration);
 
     if (fieldConfiguration.getJoinColumns() != null) {
       Condition whereCondition = fieldConfiguration.getJoinColumns()
           .stream()
           .map(joinColumn -> {
-            PostgresFieldConfiguration rightFieldConfiguration = finalTypeConfiguration.getFields()
+            PostgresFieldConfiguration rightFieldConfiguration = typeConfigurationForCondition.getFields()
                 .get(joinColumn.getReferencedField());
 
             Field<Object> leftColumn;

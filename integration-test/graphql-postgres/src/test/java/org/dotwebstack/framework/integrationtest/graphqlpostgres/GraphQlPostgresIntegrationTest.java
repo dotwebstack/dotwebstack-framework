@@ -385,8 +385,8 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
-            + "{name ingredientAgg{ totalWeight : intSum( field : \"weight\" ) "
-            + "averageWeight : intAvg( field : \"weight\" ) maxWeight : intMax( field : \"weight\" ) } } }";
+        + "{name ingredientAgg{ totalWeight : intSum( field : \"weight\" ) "
+        + "averageWeight : intAvg( field : \"weight\" ) maxWeight : intMax( field : \"weight\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -395,7 +395,7 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> data = result.getData();
     assertThat(data.size(), is(1));
     assertTrue(data.containsKey("beer"));
-    Map<String, Object> beer = ((Map<String, Object>) data.get("brewery"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
     assertTrue(beer.containsKey("ingredientAgg"));
     Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
     assertThat(ingredientAgg.size(), is(3));
@@ -407,14 +407,15 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateTypeTotalSum_forBeer() {
 
-//         String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
+    // String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status
+    // beers{name}}}";
 
     // join column
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSum : intSum( field : \"soldPerYear\" ) } } }";
 
     // single result
-    //    ExecutionResult result = graphQL.execute(query);
+    // ExecutionResult result = graphQL.execute(query);
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)

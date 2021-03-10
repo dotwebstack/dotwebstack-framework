@@ -64,6 +64,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           }
 
           if (ref.getJoinTable() != null) {
+            fieldConfiguration.setJoinTable(ref.getJoinTable());
             fieldConfiguration.setJoinColumns(ref.getJoinTable()
                 .getJoinColumns());
           }
