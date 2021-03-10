@@ -56,13 +56,17 @@ class QueryBuilderTest {
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 
+  @Mock
+  private AggregateFieldFactory aggregateFieldFactory;
+
   private QueryBuilder queryBuilder;
 
   @BeforeEach
   void beforeAll() {
     DSLContext dslContext = createDslContext();
 
-    queryBuilder = new QueryBuilder(new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration), dslContext);
+    queryBuilder = new QueryBuilder(
+        new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration, aggregateFieldFactory), dslContext);
   }
 
   @Test

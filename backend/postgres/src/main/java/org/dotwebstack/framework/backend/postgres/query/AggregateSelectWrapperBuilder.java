@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
-import java.math.BigDecimal;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -12,12 +11,14 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
-  public AggregateSelectWrapperBuilder(DSLContext dslContext) {
+  private final AggregateFieldFactory aggregateFieldFactory;
+
+  public AggregateSelectWrapperBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
     super(dslContext);
+    this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
   @Override
@@ -39,14 +40,10 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
         .get(aggregateFieldName)
         .getColumn();
 
-    // TODO add distinct
-    // TODO add all aggregate functions
+    Field<?> aggregateField = aggregateFieldFactory.create(selectedField, fromTable.getName(), columnName)
+        .as(columnAlias);
 
-    Field<BigDecimal> column =
-        DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class)), BigDecimal.ZERO)
-            .as(columnAlias);
-
-    selectContext.addField(selectedField, column);
+    selectContext.addField(selectedField, aggregateField);
 
     selectContext.getCheckNullAlias()
         .set(columnAlias);

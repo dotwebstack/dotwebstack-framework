@@ -16,9 +16,11 @@ public class SelectWrapperBuilderFactory {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
+  private final AggregateFieldFactory aggregateFieldFactory;
+
   public SelectWrapperBuilder getSelectWrapperBuilder(PostgresFieldConfiguration fieldConfiguration) {
     if (isAggregate(fieldConfiguration)) {
-      return new AggregateSelectWrapperBuilder(dslContext);
+      return new AggregateSelectWrapperBuilder(dslContext, aggregateFieldFactory);
     }
 
     return new DefaultSelectWrapperBuilder(dslContext, this, dotWebStackConfiguration);
