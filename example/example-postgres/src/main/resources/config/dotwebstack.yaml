@@ -19,7 +19,7 @@ typeMapping:
             - name: ingredients_identifier
               referencedField: identifier
       ingredientAgg:
-        aggregationOff: ingredients
+        aggregationOf: ingredients
 
   Ingredient:
     backend: postgres
@@ -44,7 +44,7 @@ typeMapping:
       beers:
         mappedBy: brewery
       beerAgg:
-        aggregationOff: beers
+        aggregationOf: beers
 
   Address:
     backend: postgres

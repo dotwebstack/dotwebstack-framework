@@ -17,6 +17,7 @@ type Brewery {
   postalAddress: Address
   visitAddress: Address
   geometry(type: GeometryType): Geometry
+  beerAgg: Aggregate!
 }
 
 type Beer {
@@ -26,6 +27,7 @@ type Beer {
   brewery: Brewery!
   ingredients: [Ingredient!]!
   soldPerYear: Int!
+  ingredientAgg: Aggregate!
 }
 
 type Address {
