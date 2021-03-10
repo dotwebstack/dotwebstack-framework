@@ -466,8 +466,8 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
-        + "{name ingredientAgg{ totalWeight : intSum( field : \"weight\" ) "
-        + "averageWeight : intAvg( field : \"weight\" ) maxWeight : intMax( field : \"weight\" )"
+        + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
+        + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
         + "countWeight : count( field : \"weight\", distinct : true )  } } }";
 
     ExecutionResult result = graphQL.execute(query);
@@ -481,9 +481,10 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(beer.containsKey("ingredientAgg"));
     Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
     assertThat(ingredientAgg.size(), is(4));
-    assertThat(ingredientAgg.get("totalWeight"), is(23.1f));
-    assertThat(ingredientAgg.get("averageWeight"), is(3.85f));
-    assertThat(ingredientAgg.get("maxWeight"), is(6.6f));
+    assertThat(ingredientAgg.get("totalWeight"), is(23.1));
+    assertThat(ingredientAgg.get("averageWeight"), is(3.85));
+    assertThat(ingredientAgg.get("maxWeight"), is(6.6));
     assertThat(ingredientAgg.get("countWeight"), is(6));
   }
+
 }

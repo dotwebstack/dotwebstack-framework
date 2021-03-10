@@ -11,7 +11,6 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -261,10 +259,8 @@ public class QueryBuilder {
         .get(aggregateFieldName)
         .getColumn();
 
-//    Field<BigDecimal> column =
-//        DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class)), BigDecimal.ZERO)
-//            .as(columnAlias);
-    Field<?> aggregateField = AggregateFieldFactory.create(selectedField, fromTable.getName(), columnName).as(columnAlias);
+    Field<?> aggregateField = AggregateFieldFactory.create(selectedField, fromTable.getName(), columnName)
+        .as(columnAlias);
 
     selectContext.addField(selectedField, aggregateField);
 

@@ -30,7 +30,7 @@ CREATE TABLE db.beer (
 CREATE TABLE db.ingredient (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
-  weight INT NOT NULL
+  weight NUMERIC(3,1) NOT NULL
 );
 
 CREATE TABLE db.beer_ingredient (
