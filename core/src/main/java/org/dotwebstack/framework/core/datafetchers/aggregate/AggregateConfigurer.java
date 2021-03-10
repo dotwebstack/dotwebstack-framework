@@ -37,7 +37,6 @@ public class AggregateConfigurer implements GraphqlConfigurer {
   private ObjectTypeDefinition createAggregateObjectDefinition() {
     TypeName intType = newTypeName(Scalars.GraphQLInt.getName()).build();
     TypeName floatType = newTypeName(Scalars.GraphQLFloat.getName()).build();
-
     return newObjectTypeDefinition().name(AGGREGATE_TYPE)
         .fieldDefinition(createAggregateCountField(intType))
         .fieldDefinition(createAggregateField(INT_SUM_FIELD, intType))

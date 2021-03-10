@@ -34,6 +34,7 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -259,12 +260,9 @@ public class QueryBuilder {
         .get(aggregateFieldName)
         .getColumn();
 
-    // TODO add distinct
-    // TODO add all aggregate functions
-    Field<BigDecimal> column = DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class))
-        .as(columnAlias);
+    Field<?> aggregateField = AggregateFieldFactory.create(selectedField, fromTable.getName(), columnName).as(columnAlias);
 
-    selectContext.addField(selectedField, column);
+    selectContext.addField(selectedField, aggregateField);
 
     selectContext.getCheckNullAlias()
         .set(columnAlias);
