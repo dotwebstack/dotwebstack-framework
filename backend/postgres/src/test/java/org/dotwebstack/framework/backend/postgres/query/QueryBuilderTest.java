@@ -176,10 +176,10 @@ class QueryBuilderTest {
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
-        equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\", t3.* from db.beer as \"t1\" "
-            + "left outer join lateral (select \"t2\".\"identifier\" as \"x3\", \"t2\".\"name\" as \"x4\" "
-            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) as \"t3\" "
-            + "on true limit :2 offset :3"));
+        equalTo("select t3.*, \"t1\".\"identifier\" as \"x3\", \"t1\".\"name\" as \"x4\" from db.beer as \"t1\" "
+            + "left outer join lateral (select \"t2\".\"identifier\" as \"x1\", \"t2\".\"name\" as \"x2\" "
+            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) "
+            + "as \"t3\" on true limit :2 offset :3"));
   }
 
   @Test
@@ -283,8 +283,6 @@ class QueryBuilderTest {
   private SelectedField mockSelectedField(String name) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
-    GraphQLObjectType type = mock(GraphQLObjectType.class);
-    when(selectedField.getObjectType()).thenReturn(type);
     return selectedField;
   }
 
@@ -295,8 +293,6 @@ class QueryBuilderTest {
         .thenReturn(fieldDefinition);
     lenient().when(selectedField.getFullyQualifiedName())
         .thenReturn(name);
-    GraphQLObjectType type = mock(GraphQLObjectType.class);
-    when(selectedField.getObjectType()).thenReturn(type);
     return selectedField;
   }
 
