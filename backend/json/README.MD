@@ -48,3 +48,8 @@ type Query {
 }
 ```
 Notice that the `queries`, in the `schema.graphqls`, should exactly match the amount, and the names of the properties defined in the `queryPaths` property of the `dotwebstack.yaml`.
+
+
+### 1.2 aggregationOf
+
+An `aggregationOf` field configuration is not supported
