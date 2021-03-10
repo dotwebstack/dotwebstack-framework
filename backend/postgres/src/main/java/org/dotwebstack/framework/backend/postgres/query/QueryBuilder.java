@@ -32,7 +32,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.AggregateFunction;
 import org.jooq.Condition;
@@ -88,8 +88,7 @@ public class QueryBuilder {
         .orElse(null);
 
     SelectWrapper selectWrapper =
-        selectTable(queryContext, typeConfiguration, "", joinTable, queryParameters.getSelectionSet());
-
+        selectTable(queryContext, typeConfiguration, "", joinTable, queryParameters.getSelectionSet(), false);
 
     if (queryParameters.getKeyConditions()
         .isEmpty()) {
@@ -155,18 +154,9 @@ public class QueryBuilder {
     return query;
   }
 
-  private boolean isAggregate(SelectedField selectedField) {
-    if (selectedField == null) {
-      return false;
-    }
-
-    GraphQLObjectType objectType = selectedField.getObjectType();
-
-    return AggregateConstants.AGGREGATE_TYPE.equals(TypeHelper.getTypeName(objectType));
-  }
-
   private SelectWrapper selectTable(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
-      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet) {
+      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet,
+      boolean aggregate) {
 
     SelectContext selectContext = new SelectContext(queryContext);
 
@@ -177,37 +167,31 @@ public class QueryBuilder {
         .stream()
         .collect(Collectors.toMap(SelectedField::getName, Function.identity()));
 
-    getFieldNames(typeConfiguration, selectedFields.values()).forEach(fieldName -> {
-      SelectedField selectedField = selectedFields.get(fieldName);
+    if (aggregate) {
+      // add aggregates
+      selectedFields.values()
+          .stream()
+          .filter(AggregateHelper::isAggregate)
+          .forEach(selectedField -> addAggregateField(typeConfiguration, selectContext, fromTable, selectedField));
+    } else {
+      Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
+          getFieldNames(typeConfiguration, selectedFields.values());
 
-      if (isAggregate(selectedField)) {
-        addAggregateField(typeConfiguration, selectContext, fromTable, selectedField);
-        return;
-      }
+      // add nested objects
+      fieldNamesConfigurations.entrySet()
+          .stream()
+          .filter(entry -> !entry.getValue()
+              .isScalar())
+          .forEach(entry -> addJoinTable(selectionSet, selectContext, fromTable, selectedFields.get(entry.getKey()),
+              entry.getValue()));
 
-      PostgresFieldConfiguration fieldConfiguration = typeConfiguration.getFields()
-          .get(fieldName);
-
-      if (!fieldConfiguration.isScalar()) {
-        joinTable(queryContext, selectedFields.get(fieldName), fieldConfiguration, fromTable, selectionSet)
-            .ifPresent(joinTableWrapper -> {
-              selectContext.getSelectColumns()
-                  .add(DSL.field(joinTableWrapper.getTable()
-                      .getName()
-                      .concat(".*")));
-
-              selectContext.getJoinTables()
-                  .add(joinTableWrapper.getTable());
-
-              selectContext.getAssembleFns()
-                  .put(fieldName, joinTableWrapper.getRowAssembler()::apply);
-            });
-
-        return;
-      }
-
-      addField(selectContext, typeConfiguration, fieldConfiguration, fieldName, fromTable);
-    });
+      // add direct fields
+      fieldNamesConfigurations.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue()
+              .isScalar())
+          .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
+    }
 
     SelectJoinStep<Record> query = dslContext.select(selectContext.getSelectColumns())
         .from(fromTable);
@@ -250,6 +234,23 @@ public class QueryBuilder {
         .build();
   }
 
+  private void addJoinTable(DataFetchingFieldSelectionSet selectionSet, SelectContext selectContext,
+      Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration) {
+    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectionSet)
+        .ifPresent(joinTableWrapper -> {
+          selectContext.getSelectColumns()
+              .add(DSL.field(joinTableWrapper.getTable()
+                  .getName()
+                  .concat(".*")));
+
+          selectContext.getJoinTables()
+              .add(joinTableWrapper.getTable());
+
+          selectContext.getAssembleFns()
+              .put(selectedField.getName(), joinTableWrapper.getRowAssembler()::apply);
+        });
+  }
+
   private void addAggregateField(PostgresTypeConfiguration typeConfiguration, SelectContext selectContext,
       Table<Record> fromTable, SelectedField selectedField) {
     String columnAlias = selectContext.getQueryContext()
@@ -260,6 +261,9 @@ public class QueryBuilder {
         .get(aggregateFieldName)
         .getColumn();
 
+//    Field<BigDecimal> column =
+//        DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable.getName(), columnName), Integer.class)), BigDecimal.ZERO)
+//            .as(columnAlias);
     Field<?> aggregateField = AggregateFieldFactory.create(selectedField, fromTable.getName(), columnName).as(columnAlias);
 
     selectContext.addField(selectedField, aggregateField);
@@ -269,45 +273,40 @@ public class QueryBuilder {
   }
 
   private void addField(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      PostgresFieldConfiguration fieldConfiguration, String fieldName, Table<Record> fromTable) {
+      Table<Record> fromTable, Map.Entry<String, PostgresFieldConfiguration> fieldNameConfiguration) {
     String columnAlias = selectContext.getQueryContext()
         .newSelectAlias();
 
-    Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldConfiguration.getColumn()))
+    Field<Object> column = DSL.field(DSL.name(fromTable.getName(), fieldNameConfiguration.getValue()
+        .getColumn()))
         .as(columnAlias);
 
-    selectContext.addField(fieldName, column);
+    selectContext.addField(fieldNameConfiguration.getKey(), column);
 
     if (typeConfiguration.getKeys()
         .stream()
-        .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldName))) {
+        .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldNameConfiguration.getKey()))) {
       selectContext.getCheckNullAlias()
           .set(columnAlias);
     }
   }
 
-  private Set<String> getFieldNames(PostgresTypeConfiguration typeConfiguration,
+  private Map<String, PostgresFieldConfiguration> getFieldNames(PostgresTypeConfiguration typeConfiguration,
       Collection<SelectedField> selectedFields) {
-
-    if (!selectedFields.isEmpty() && isAggregate(selectedFields.iterator()
-        .next())) {
-      return selectedFields.stream()
-          .map(SelectedField::getName)
-          .collect(Collectors.toSet());
-    }
 
     return Stream.concat(typeConfiguration.getKeys()
         .stream()
         .map(KeyConfiguration::getField),
         selectedFields.stream()
             .map(SelectedField::getName))
-        .collect(Collectors.toSet());
+        .collect(Collectors.toMap(key -> key, key -> typeConfiguration.getFields()
+            .get(key), (a, b) -> a));
   }
 
   private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration) {
     GraphQLOutputType foreignType;
-    if (fieldConfiguration.getAggregationOf() != null) {
+    if (!StringUtils.isEmpty(fieldConfiguration.getAggregationOf())) {
       String aggregationOfField = fieldConfiguration.getAggregationOf();
       foreignType = selectedField.getObjectType()
           .getFieldDefinition(aggregationOfField)
@@ -352,11 +351,12 @@ public class QueryBuilder {
       return Optional.empty();
     }
 
+    boolean aggregrateContainer = !StringUtils.isEmpty(fieldConfiguration.getAggregationOf());
+
     SelectWrapper selectWrapper = selectTable(queryContext, (PostgresTypeConfiguration) typeConfiguration,
         selectedField.getFullyQualifiedName()
             .concat("/"),
-        !StringUtils.isEmpty(fieldConfiguration.getAggregationOf()) ? fieldConfiguration.getJoinTable() : null,
-        selectionSet);
+        aggregrateContainer ? fieldConfiguration.getJoinTable() : null, selectionSet, aggregrateContainer);
 
     final PostgresTypeConfiguration typeConfigurationForCondition = getPostgresTypeConfigurationForCondition(
         fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
