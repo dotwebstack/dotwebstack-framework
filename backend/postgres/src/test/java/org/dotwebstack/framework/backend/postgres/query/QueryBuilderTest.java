@@ -310,10 +310,6 @@ class QueryBuilderTest {
     return selectionSet;
   }
 
-  private GraphQLObjectType mockGraphQlObjectType() {
-    return mock(GraphQLObjectType.class);
-  }
-
   private PostgresTypeConfiguration createIngredientTypeConfiguration() {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
     KeyConfiguration keyConfiguration = new KeyConfiguration();

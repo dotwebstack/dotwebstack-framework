@@ -400,8 +400,8 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forBeer() {
     String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name beerAgg{ totalSold : intSum( field : \"sold_per_year\" ) "
-        + "averageSold : intAvg( field : \"sold_per_year\" ) maxSold : intMax( field : \"sold_per_year\" ) } } }";
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 

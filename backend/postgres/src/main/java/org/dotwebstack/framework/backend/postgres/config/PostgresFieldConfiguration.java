@@ -20,21 +20,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  private boolean isAggregate;
-
-  public PostgresFieldConfiguration(String column, boolean isAggregate) {
-    this.isAggregate = isAggregate;
-    this.column = column;
-  }
-
-  public PostgresFieldConfiguration(List<JoinColumn> joinColumns) {
-    this.joinColumns = joinColumns;
-  }
-
-  public PostgresFieldConfiguration(JoinTable joinTable) {
-    this.joinTable = joinTable;
-  }
-
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
   }

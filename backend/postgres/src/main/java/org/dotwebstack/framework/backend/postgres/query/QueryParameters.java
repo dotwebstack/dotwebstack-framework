@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLObjectType;
 import java.util.Collection;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +12,6 @@ public class QueryParameters {
   private final Collection<KeyCondition> keyConditions;
 
   private final DataFetchingFieldSelectionSet selectionSet;
-
-  private final GraphQLObjectType graphQlObjectType;
 
   private final Page page;
 }
