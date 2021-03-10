@@ -35,6 +35,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -88,8 +89,8 @@ public class QueryBuilder {
         .findFirst()
         .orElse(null);
 
-    SelectWrapper selectWrapper =
-        selectTable(queryContext, typeConfiguration, "", joinTable, queryParameters.getSelectionSet());
+    SelectWrapper selectWrapper = selectTable(queryContext, typeConfiguration, "", joinTable,
+        queryParameters.getSelectionSet(), queryParameters.getGraphQlObjectType());
 
 
     if (queryParameters.getKeyConditions()

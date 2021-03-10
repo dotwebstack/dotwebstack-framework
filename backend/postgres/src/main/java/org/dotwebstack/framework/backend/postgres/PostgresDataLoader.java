@@ -60,6 +60,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     QueryParameters queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
+        .graphQlObjectType(environment.getExecutionStepInfo()
+            .getObjectType())
         .build();
 
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
@@ -83,7 +85,9 @@ public class PostgresDataLoader implements BackendDataLoader {
 
     QueryParameters.QueryParametersBuilder queryParametersBuilder = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
-        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of());
+        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
+        .graphQlObjectType(environment.getExecutionStepInfo()
+            .getObjectType());
 
     if (!environment.isSubscription()) {
       queryParametersBuilder.page(pageWithDefaultSize());
@@ -106,6 +110,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     QueryParameters queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyConditions)
+        .graphQlObjectType(environment.getExecutionStepInfo()
+            .getObjectType())
         .build();
 
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
