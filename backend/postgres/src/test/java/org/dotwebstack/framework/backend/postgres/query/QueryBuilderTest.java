@@ -2,6 +2,8 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import graphql.schema.GraphQLNamedType;
+import graphql.schema.GraphQLTypeReference;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -283,6 +285,8 @@ class QueryBuilderTest {
   private SelectedField mockSelectedField(String name) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
+    GraphQLObjectType type = mock(GraphQLObjectType.class);
+    when(selectedField.getObjectType()).thenReturn(type);
     return selectedField;
   }
 
@@ -293,6 +297,8 @@ class QueryBuilderTest {
         .thenReturn(fieldDefinition);
     lenient().when(selectedField.getFullyQualifiedName())
         .thenReturn(name);
+    GraphQLObjectType type = mock(GraphQLObjectType.class);
+    when(selectedField.getObjectType()).thenReturn(type);
     return selectedField;
   }
 
