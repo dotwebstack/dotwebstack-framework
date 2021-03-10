@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isAggregate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.jooq.impl.DSL.trueCondition;
@@ -8,6 +9,7 @@ import static org.jooq.impl.DSL.trueCondition;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
@@ -172,7 +174,7 @@ public class QueryBuilder {
       // add aggregates
       selectedFields.values()
           .stream()
-          .filter(AggregateHelper::isAggregate)
+          .filter(AggregateHelper::isAggregateField)
           .forEach(selectedField -> addAggregateField(typeConfiguration, selectContext, fromTable, selectedField));
     } else {
       List<Tuple2<String, PostgresFieldConfiguration>> fieldTuples =
@@ -320,15 +322,11 @@ public class QueryBuilder {
   }
 
   private PostgresTypeConfiguration getPostgresTypeConfigurationForCondition(
-      PostgresFieldConfiguration postgresFieldConfiguration, SelectedField selectedField,
+      PostgresFieldConfiguration fieldConfiguration, SelectedField selectedField,
       PostgresTypeConfiguration rightTypeConfiguration) {
-    if (!StringUtils.isEmpty(postgresFieldConfiguration.getAggregationOf())) {
-      GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(selectedField.getObjectType()
-          .getFieldDefinition(postgresFieldConfiguration.getAggregationOf())
-          .getType());
-      String typeName = TypeHelper.getTypeName(objectType);
-
-      return dotWebStackConfiguration.getTypeConfiguration(typeName);
+    if (!StringUtils.isEmpty(fieldConfiguration.getAggregationOf())) {
+      GraphQLType type = getForeignType(selectedField, fieldConfiguration);
+      return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(type));
     }
 
     return rightTypeConfiguration;
@@ -338,8 +336,6 @@ public class QueryBuilder {
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
       DataFetchingFieldSelectionSet selectionSet) {
     GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration);
-
-    // if foreignType is Aggregate bepaal foreignType obv aggregationOf relatie
 
     if (!(foreignType instanceof GraphQLObjectType)) {
       throw illegalStateException("Foreign output type is not an object type.");
@@ -352,12 +348,11 @@ public class QueryBuilder {
       return Optional.empty();
     }
 
-    boolean aggregrateContainer = !StringUtils.isEmpty(fieldConfiguration.getAggregationOf());
-
     SelectWrapper selectWrapper = selectTable(queryContext, (PostgresTypeConfiguration) typeConfiguration,
         selectedField.getFullyQualifiedName()
             .concat("/"),
-        aggregrateContainer ? fieldConfiguration.getJoinTable() : null, selectionSet, aggregrateContainer);
+        isAggregate(fieldConfiguration) ? fieldConfiguration.getJoinTable() : null, selectionSet,
+        isAggregate(fieldConfiguration));
 
     final PostgresTypeConfiguration typeConfigurationForCondition = getPostgresTypeConfigurationForCondition(
         fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
@@ -365,23 +360,8 @@ public class QueryBuilder {
     if (fieldConfiguration.getJoinColumns() != null) {
       Condition whereCondition = fieldConfiguration.getJoinColumns()
           .stream()
-          .map(joinColumn -> {
-            PostgresFieldConfiguration rightFieldConfiguration = typeConfigurationForCondition.getFields()
-                .get(joinColumn.getReferencedField());
-
-            Field<Object> leftColumn;
-            Field<Object> rightColumn;
-
-            if (fieldConfiguration.getAggregationOf() != null) {
-              leftColumn = DSL.field(DSL.name(joinColumn.getName()));
-              rightColumn = DSL.field(DSL.name(fromTable.getName(), rightFieldConfiguration.getColumn()));
-            } else {
-              leftColumn = DSL.field(DSL.name(fromTable.getName(), joinColumn.getName()));
-              rightColumn = DSL.field(DSL.name(rightFieldConfiguration.getColumn()));
-            }
-
-            return leftColumn.eq(rightColumn);
-          })
+          .map(joinColumn -> createJoinTableCondition(typeConfigurationForCondition, fieldConfiguration, fromTable,
+              joinColumn))
           .reduce(DSL.noCondition(), Condition::and);
 
       TableWrapper tableWrapper = TableWrapper.builder()
@@ -400,6 +380,26 @@ public class QueryBuilder {
     }
 
     throw unsupportedOperationException("Unsupported field configuration!");
+  }
+
+  private Condition createJoinTableCondition(PostgresTypeConfiguration typeConfigurationForCondition,
+      PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
+      org.dotwebstack.framework.backend.postgres.config.JoinColumn joinColumn) {
+    PostgresFieldConfiguration rightFieldConfiguration = typeConfigurationForCondition.getFields()
+        .get(joinColumn.getReferencedField());
+
+    Field<Object> leftColumn;
+    Field<Object> rightColumn;
+
+    if (isAggregate(fieldConfiguration)) {
+      leftColumn = DSL.field(DSL.name(joinColumn.getName()));
+      rightColumn = DSL.field(DSL.name(fromTable.getName(), rightFieldConfiguration.getColumn()));
+    } else {
+      leftColumn = DSL.field(DSL.name(fromTable.getName(), joinColumn.getName()));
+      rightColumn = DSL.field(DSL.name(rightFieldConfiguration.getColumn()));
+    }
+
+    return leftColumn.eq(rightColumn);
   }
 
   @Builder
