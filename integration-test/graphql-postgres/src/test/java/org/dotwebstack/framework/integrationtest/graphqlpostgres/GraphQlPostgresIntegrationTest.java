@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -459,10 +460,10 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(brewery.containsKey("beerAgg"));
     Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
     assertThat(beerAgg.size(), is(4));
-    assertThat(beerAgg.get("totalSold"), is(0));
+    assertThat(beerAgg.get("totalSold"), is(nullValue()));
     assertThat(beerAgg.get("totalCount"), is(0));
-    assertThat(beerAgg.get("averageSold"), is(0));
-    assertThat(beerAgg.get("maxSold"), is(0));
+    assertThat(beerAgg.get("averageSold"), is(nullValue()));
+    assertThat(beerAgg.get("maxSold"), is(nullValue()));
   }
 
   @Test

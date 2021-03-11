@@ -45,8 +45,6 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
 
     selectContext.addField(selectedField, aggregateField);
 
-    selectContext.getCheckNullAlias()
-        .set(columnAlias);
   }
 
 }

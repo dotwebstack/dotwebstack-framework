@@ -36,32 +36,32 @@ public class AggregateFieldFactory {
         }
         break;
       case INT_SUM_FIELD:
-        result = DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO)
+        result = DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
             .cast(Integer.class);
         break;
       case INT_MIN_FIELD:
-        result = DSL.coalesce(DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO)
+        result = DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
             .cast(Integer.class);
         break;
       case INT_MAX_FIELD:
-        result = DSL.coalesce(DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO)
+        result = DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
             .cast(Integer.class);
         break;
       case INT_AVG_FIELD:
-        result = DSL.coalesce(DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO)
+        result = DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
             .cast(Integer.class);
         break;
       case FLOAT_SUM_FIELD:
-        result = DSL.coalesce(DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO);
+        result = DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
         break;
       case FLOAT_MIN_FIELD:
-        result = DSL.coalesce(DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO);
+        result = DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
         break;
       case FLOAT_MAX_FIELD:
-        result = DSL.coalesce(DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO);
+        result = DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
         break;
       case FLOAT_AVG_FIELD:
-        result = DSL.coalesce(DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class)), BigDecimal.ZERO);
+        result = DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
         break;
       default:
         throw new IllegalArgumentException(String.format("Aggregate function %s is not supported", aggregateFunction));

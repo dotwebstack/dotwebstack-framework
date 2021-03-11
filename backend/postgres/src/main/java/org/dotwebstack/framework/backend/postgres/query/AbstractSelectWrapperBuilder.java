@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.jooq.Condition;
@@ -71,9 +72,12 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
     return QueryBuilder.SelectWrapper.builder()
         .query(query)
         .rowAssembler(row -> {
-          if (row.get(selectContext.getCheckNullAlias()
-              .get()) == null) {
-            return null;
+          if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
+              .get())) {
+            if (row.get(selectContext.getCheckNullAlias()
+                .get()) == null) {
+              return null;
+            }
           }
 
           return selectContext.getAssembleFns()
