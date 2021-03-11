@@ -1,21 +1,18 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import graphql.schema.SelectedField;
-import org.jooq.Field;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.schema.SelectedField;
+import java.math.BigDecimal;
+import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class AggregateFieldFactoryTest {
@@ -27,8 +24,9 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("intSum");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.sum(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
-        .cast(Integer.class);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.sum(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
+            .cast(Integer.class);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -37,8 +35,9 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("intMin");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.min(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
-        .cast(Integer.class);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.min(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
+            .cast(Integer.class);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -47,8 +46,9 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("intMax");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.max(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
-        .cast(Integer.class);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.max(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
+            .cast(Integer.class);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -57,8 +57,9 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("intAvg");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.avg(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
-        .cast(Integer.class);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.avg(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO)
+            .cast(Integer.class);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -67,7 +68,8 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("floatSum");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.sum(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.sum(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -76,7 +78,8 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("floatMin");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.min(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.min(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -85,7 +88,8 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("floatMax");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.max(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.max(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
@@ -94,20 +98,20 @@ class AggregateFieldFactoryTest {
     SelectedField mockedField = mockSelectedField("floatAvg");
     Field<?> actualAggregateField = aggregateFieldFactory.create(mockedField, "beers", "soldPerYear");
 
-    Field<?> expectedAggregateField = DSL.coalesce(DSL.avg(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
+    Field<?> expectedAggregateField =
+        DSL.coalesce(DSL.avg(DSL.field(DSL.name("beers", "soldPerYear"), BigDecimal.class)), BigDecimal.ZERO);
     assertThat(actualAggregateField, is(expectedAggregateField));
   }
 
   @Test
-  void create_throwsException_ForUnknownArgument(){
-    assertThrows(IllegalArgumentException.class,
-        () -> {
-          SelectedField unknownField = mockSelectedField("unknownField");
-          aggregateFieldFactory.create(unknownField, "beers", "soldPerYear");
-      });
+  void create_throwsException_ForUnknownArgument() {
+    assertThrows(IllegalArgumentException.class, () -> {
+      SelectedField unknownField = mockSelectedField("unknownField");
+      aggregateFieldFactory.create(unknownField, "beers", "soldPerYear");
+    });
   }
 
-  private SelectedField mockSelectedField(String fieldName){
+  private SelectedField mockSelectedField(String fieldName) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(fieldName);
     return selectedField;

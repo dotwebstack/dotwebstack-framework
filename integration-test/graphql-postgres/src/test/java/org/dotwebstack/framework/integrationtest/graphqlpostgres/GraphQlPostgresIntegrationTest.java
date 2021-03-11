@@ -492,14 +492,13 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forDuplicateAvg() {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
-            + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) "
-            + "avgB : floatAvg( field : \"weight\" ) "
-            + "avgC : floatAvg( field : \"weight\" )  } } }";
+        + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
+        + "avgC : floatAvg( field : \"weight\" )  } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
-            .isEmpty());
+        .isEmpty());
     Map<String, Object> data = result.getData();
     assertThat(data.size(), is(1));
     assertTrue(data.containsKey("beer"));

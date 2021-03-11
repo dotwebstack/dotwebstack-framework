@@ -6,6 +6,7 @@ import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
@@ -37,7 +38,8 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
 
     Map<String, SelectedField> selectedFields = selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
-        .collect(Collectors.toMap(SelectedField::getName, Function.identity()));
+        .collect(Collectors.toMap(field -> Optional.ofNullable(field.getAlias())
+            .orElse(field.getName()), Function.identity()));
 
     addFields(selectContext, typeConfiguration, fromTable, selectedFields, selectionSet);
 
