@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class AggregateFieldFactory {
 
   public Field<?> create(SelectedField selectedField, String fromTable, String columnName) {
-    Field<?> result = null;
+    Field<?> result;
     String aggregateFunction = selectedField.getName();
 
     // TODO enum for AggregateFunctions?

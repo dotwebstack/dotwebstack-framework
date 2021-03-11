@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -324,8 +325,10 @@ class QueryBuilderTest {
 
     typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .build());
 
@@ -342,8 +345,10 @@ class QueryBuilderTest {
 
     typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .build());
 
@@ -369,10 +374,13 @@ class QueryBuilderTest {
 
     typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_BREWERY)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .build());
 
