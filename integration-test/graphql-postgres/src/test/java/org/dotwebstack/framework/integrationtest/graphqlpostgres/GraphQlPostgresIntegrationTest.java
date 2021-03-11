@@ -445,6 +445,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_ReturnsBreweryWithAggregateType_forNoBeer() {
     String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "totalCount : count( field : \"soldPerYear\" distinct : false)"
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
@@ -457,8 +458,9 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
     assertTrue(brewery.containsKey("beerAgg"));
     Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
-    assertThat(beerAgg.size(), is(3));
+    assertThat(beerAgg.size(), is(4));
     assertThat(beerAgg.get("totalSold"), is(0));
+    assertThat(beerAgg.get("totalCount"), is(0));
     assertThat(beerAgg.get("averageSold"), is(0));
     assertThat(beerAgg.get("maxSold"), is(0));
   }
@@ -487,4 +489,26 @@ class GraphQlPostgresIntegrationTest {
     assertThat(ingredientAgg.get("countWeight"), is(6));
   }
 
+  @Test
+  void graphQlQuery_ReturnsBeerWithAggregateType_forDuplicateAvg() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+            + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) "
+            + "avgB : floatAvg( field : \"weight\" ) "
+            + "avgC : floatAvg( field : \"weight\" )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(3));
+    assertThat(ingredientAgg.get("avgA"), is(3.85));
+    assertThat(ingredientAgg.get("avgB"), is(3.85));
+    assertThat(ingredientAgg.get("avgC"), is(3.85));
+  }
 }
