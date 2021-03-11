@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.helpers;
 
+import graphql.Scalars;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
@@ -8,6 +9,7 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
+import java.util.List;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
@@ -100,5 +102,10 @@ public class TypeHelper {
         .build();
     return NonNullType.newNonNullType(optionalType)
         .build();
+  }
+
+  public static boolean isNumericType(@NonNull Type<?> type) {
+    List<String> numericType = List.of(Scalars.GraphQLFloat.getName(), Scalars.GraphQLInt.getName());
+    return numericType.contains(getTypeName(type));
   }
 }

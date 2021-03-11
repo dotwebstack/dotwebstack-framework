@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
 import java.util.Map;
+import java.util.Objects;
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.jooq.DSLContext;
@@ -36,9 +39,11 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
         .newSelectAlias();
     String aggregateFieldName = (String) selectedField.getArguments()
         .get(FIELD_ARGUMENT);
-    String columnName = typeConfiguration.getFields()
-        .get(aggregateFieldName)
-        .getColumn();
+    PostgresFieldConfiguration aggregateFieldConfiguration = typeConfiguration.getFields()
+        .get(aggregateFieldName);
+    String columnName = aggregateFieldConfiguration.getColumn();
+
+    validate(aggregateFieldConfiguration, selectedField, aggregateFieldName);
 
     Field<?> aggregateField = aggregateFieldFactory.create(selectedField, fromTable.getName(), columnName)
         .as(columnAlias);
@@ -47,4 +52,12 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
 
   }
 
+  private void validate(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
+      String aggregateFieldName) {
+
+    if (!Objects.equals(COUNT_FIELD, selectedField.getName()) && !aggregateFieldConfiguration.getIsNumeric()) {
+      throw new IllegalArgumentException(
+          String.format("Numeric aggregation for non-numeric field %s is not supported.", aggregateFieldName));
+    }
+  }
 }

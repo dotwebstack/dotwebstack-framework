@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
@@ -37,6 +38,10 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
             fieldConfiguration.setColumn(columnName);
           }
+
+          if (TypeHelper.isNumericType(fieldDefinition.getType())) {
+            fieldConfiguration.setIsNumeric(true);
+          }
         });
 
     fields.values()
@@ -61,12 +66,12 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
                   fieldConfiguration.setJoinColumns(fieldConfiguration1.getJoinColumns());
                 });
-          }
-
-          if (ref.getJoinTable() != null) {
+          } else if (ref.getJoinTable() != null) {
             fieldConfiguration.setJoinTable(ref.getJoinTable());
             fieldConfiguration.setJoinColumns(ref.getJoinTable()
                 .getJoinColumns());
+          } else {
+            throw invalidConfigurationException("Invalid aggregate field configuration.");
           }
         });
   }
