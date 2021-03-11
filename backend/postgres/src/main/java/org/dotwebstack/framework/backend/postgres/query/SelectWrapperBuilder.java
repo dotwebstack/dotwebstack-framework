@@ -5,6 +5,6 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 
 public interface SelectWrapperBuilder {
-  QueryBuilder.SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet);
+  SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration, String fieldPathPrefix,
+      JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet);
 }

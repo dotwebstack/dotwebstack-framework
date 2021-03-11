@@ -22,7 +22,6 @@ import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Select;
 import org.jooq.SelectConnectByStep;
-import org.jooq.SelectJoinStep;
 import org.jooq.SelectOnConditionStep;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -133,15 +132,6 @@ public class QueryBuilder {
     }
 
     return query;
-  }
-
-  @Builder
-  @Getter
-  static class SelectWrapper {
-
-    private final SelectJoinStep<Record> query;
-
-    private final UnaryOperator<Map<String, Object>> rowAssembler;
   }
 
   @Builder

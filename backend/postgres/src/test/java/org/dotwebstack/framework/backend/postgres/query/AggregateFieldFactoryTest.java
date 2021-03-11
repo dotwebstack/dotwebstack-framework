@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AggregateFieldFactoryTest {
 
-  private AggregateFieldFactory aggregateFieldFactory = new AggregateFieldFactory();
+  private final AggregateFieldFactory aggregateFieldFactory = new AggregateFieldFactory();
 
   @Test
   void create_returnsSumField_ForArgumentIntSum() {

@@ -31,7 +31,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
       Table<Record> fromTable, Map<String, SelectedField> selectedFields, DataFetchingFieldSelectionSet selectionSet);
 
   @Override
-  public QueryBuilder.SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
+  public SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
       String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet) {
     Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
         .as(selectContext.getQueryContext()
@@ -69,7 +69,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
           .on(trueCondition());
     }
 
-    return QueryBuilder.SelectWrapper.builder()
+    return SelectWrapper.builder()
         .query(query)
         .rowAssembler(row -> {
           if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()

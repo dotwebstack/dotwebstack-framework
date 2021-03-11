@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MAX_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.SelectedField;
 import java.math.BigDecimal;
@@ -21,10 +22,9 @@ import org.springframework.stereotype.Component;
 public class AggregateFieldFactory {
 
   public Field<?> create(SelectedField selectedField, String fromTable, String columnName) {
-    Field<?> result = null;
+    Field<?> result;
     String aggregateFunction = selectedField.getName();
 
-    // TODO enum for AggregateFunctions?
     switch (aggregateFunction) {
       case COUNT_FIELD:
         boolean distinct = (Boolean) selectedField.getArguments()
@@ -36,37 +36,41 @@ public class AggregateFieldFactory {
         }
         break;
       case INT_SUM_FIELD:
-        result = DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
+        result = DSL.sum(bigDecimalField(fromTable, columnName))
             .cast(Integer.class);
         break;
       case INT_MIN_FIELD:
-        result = DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
+        result = DSL.min(bigDecimalField(fromTable, columnName))
             .cast(Integer.class);
         break;
       case INT_MAX_FIELD:
-        result = DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
+        result = DSL.max(bigDecimalField(fromTable, columnName))
             .cast(Integer.class);
         break;
       case INT_AVG_FIELD:
-        result = DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class))
+        result = DSL.avg(bigDecimalField(fromTable, columnName))
             .cast(Integer.class);
         break;
       case FLOAT_SUM_FIELD:
-        result = DSL.sum(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
+        result = DSL.sum(bigDecimalField(fromTable, columnName));
         break;
       case FLOAT_MIN_FIELD:
-        result = DSL.min(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
+        result = DSL.min(bigDecimalField(fromTable, columnName));
         break;
       case FLOAT_MAX_FIELD:
-        result = DSL.max(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
+        result = DSL.max(bigDecimalField(fromTable, columnName));
         break;
       case FLOAT_AVG_FIELD:
-        result = DSL.avg(DSL.field(DSL.name(fromTable, columnName), BigDecimal.class));
+        result = DSL.avg(bigDecimalField(fromTable, columnName));
         break;
       default:
-        throw new IllegalArgumentException(String.format("Aggregate function %s is not supported", aggregateFunction));
+        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
     }
 
     return result;
+  }
+
+  private Field<BigDecimal> bigDecimalField(String fromTable, String columnName) {
+    return DSL.field(DSL.name(fromTable, columnName), BigDecimal.class);
   }
 }

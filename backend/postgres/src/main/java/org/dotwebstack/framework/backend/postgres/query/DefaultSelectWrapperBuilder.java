@@ -131,7 +131,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
     SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
-    QueryBuilder.SelectWrapper selectWrapper =
+    SelectWrapper selectWrapper =
         selectWrapperBuilder
             .build(new SelectContext(queryContext), (PostgresTypeConfiguration) typeConfiguration,
                 selectedField.getFullyQualifiedName()
