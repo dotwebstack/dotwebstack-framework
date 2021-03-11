@@ -62,8 +62,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
       LocalDataFetcherContext context = environment.getLocalContext();
-      // TODO arjenhup: hier wordt veld beers vertaal naar brewery
-      // igv beerAgg vertalen naar brewery via aggregationOf(beers)
       KeyCondition keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
 
       return dataLoader.load(keyCondition);
