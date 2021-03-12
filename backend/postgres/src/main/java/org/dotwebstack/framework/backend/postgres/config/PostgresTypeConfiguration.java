@@ -40,7 +40,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           }
 
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
-            fieldConfiguration.setIsNumeric(true);
+            fieldConfiguration.setNumeric(true);
           }
         });
 
@@ -61,10 +61,10 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
                   PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) typeMapping.get(typeName);
 
-                  PostgresFieldConfiguration fieldConfiguration1 = typeConfiguration.getFields()
+                  PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
                       .get(ref.getMappedBy());
 
-                  fieldConfiguration.setJoinColumns(fieldConfiguration1.getJoinColumns());
+                  fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
                 });
           } else if (ref.getJoinTable() != null) {
             fieldConfiguration.setJoinTable(ref.getJoinTable());

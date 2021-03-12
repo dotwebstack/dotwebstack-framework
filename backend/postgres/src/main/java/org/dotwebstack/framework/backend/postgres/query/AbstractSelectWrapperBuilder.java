@@ -23,7 +23,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
 
   private final DSLContext dslContext;
 
-  public AbstractSelectWrapperBuilder(DSLContext dslContext) {
+  protected AbstractSelectWrapperBuilder(DSLContext dslContext) {
     this.dslContext = dslContext;
   }
 
@@ -74,12 +74,12 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
         .query(query)
         .rowAssembler(row -> {
           if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
-              .get())) {
-            if (row.get(selectContext.getCheckNullAlias()
-                .get()) == null) {
-              return null;
-            }
+              .get()) && row.get(
+                  selectContext.getCheckNullAlias()
+                      .get()) == null) {
+            return null;
           }
+
 
           return selectContext.getAssembleFns()
               .entrySet()

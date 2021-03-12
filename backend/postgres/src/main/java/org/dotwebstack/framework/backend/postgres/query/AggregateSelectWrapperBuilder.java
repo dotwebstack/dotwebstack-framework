@@ -55,7 +55,7 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
   private void validate(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
       String aggregateFieldName) {
 
-    if (!Objects.equals(COUNT_FIELD, selectedField.getName()) && !aggregateFieldConfiguration.getIsNumeric()) {
+    if (!Objects.equals(COUNT_FIELD, selectedField.getName()) && !aggregateFieldConfiguration.isNumeric()) {
       throw new IllegalArgumentException(
           String.format("Numeric aggregation for non-numeric field %s is not supported.", aggregateFieldName));
     }

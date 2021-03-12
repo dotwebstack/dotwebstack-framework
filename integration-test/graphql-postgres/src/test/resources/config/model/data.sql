@@ -17,11 +17,11 @@ INSERT INTO db.beer(identifier, name, abv, brewery, sold_per_year) VALUES
   ('766883b5-3482-41cf-a66d-a81e79a4f666', 'Beer 6', 6.0, '28649f76-ddcf-417a-8c1d-8e5012c11666', 50000);
 
 INSERT INTO db.ingredient(identifier, name, weight) VALUES
-  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 1.1),
-  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop', 2.2),
-  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley', 3.3),
-  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 4.4),
-  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 5.5),
+  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 1.2),
+  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop', 1.2),
+  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley', 3.4),
+  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 4.8),
+  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 5.0),
   ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', 6.6);
 
 INSERT INTO db.beer_ingredient(beer_identifier, ingredient_identifier) VALUES
