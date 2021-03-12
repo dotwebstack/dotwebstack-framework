@@ -1,10 +1,14 @@
 package org.dotwebstack.framework.backend.json.config;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
+import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
@@ -24,6 +28,21 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   @Valid
   @NotBlank
   private String file;
+
+  @Override
+  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
+    fields.entrySet()
+        .stream()
+        .filter(entry -> Objects.nonNull(entry.getValue()))
+        .filter(entry -> isNotEmpty(entry.getValue()
+            .getAggregationOf()))
+        .findFirst()
+        .ifPresent(entry -> {
+          throw invalidConfigurationException(
+              "Usage of 'aggregationOf' by field '{}.{}' is not supported with an JSON backend",
+              objectTypeDefinition.getName(), entry.getKey());
+        });
+  }
 
   public String getJsonPathTemplate(String queryName) {
     if (queryPaths.containsKey(queryName)) {

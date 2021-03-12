@@ -127,6 +127,10 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 }
 ```
 
+### 1.2.1 aggregationOf
+
+An `aggregationOf` field configuration is not supported
+
 ## 1.3 Property paths
 
 [W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)

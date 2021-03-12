@@ -65,7 +65,7 @@ public class CoreConfiguration {
               .map(Optional::get)
               .forEach(typeDefinition -> configuration.getTypeMapping()
                   .get(typeDefinition.getName())
-                  .init((ObjectTypeDefinition) typeDefinition));
+                  .init(configuration.getTypeMapping(), (ObjectTypeDefinition) typeDefinition));
 
           return configuration;
         })

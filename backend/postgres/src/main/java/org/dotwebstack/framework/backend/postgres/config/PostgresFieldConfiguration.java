@@ -20,15 +20,9 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  public PostgresFieldConfiguration(List<JoinColumn> joinColumns) {
-    this.joinColumns = joinColumns;
-  }
-
-  public PostgresFieldConfiguration(JoinTable joinTable) {
-    this.joinTable = joinTable;
-  }
+  private boolean isNumeric = false;
 
   public boolean isScalar() {
-    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null;
+    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
   }
 }

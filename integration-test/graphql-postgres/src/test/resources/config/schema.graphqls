@@ -5,9 +5,9 @@ schema {
 
 type Query {
   beers: [Beer!]!
-  beer(identifier: ID!): Beer!
+  beer(identifier: ID!): Beer
+  brewery(identifier: ID!): Brewery
   breweries: [Brewery!]!
-  brewery(identifier: ID!): Brewery!
 }
 
 type Subscription {
@@ -19,24 +19,30 @@ type Brewery {
   name: String!
   status: String!
   beers: [Beer]
+  postalAddress: Address
+  visitAddress: Address
   geometry(type: GeometryType): Geometry
-}
-
-type Address {
-  identifier: String!
-  street: String!
-  city: String!
+  beerAgg: Aggregate!
 }
 
 type Beer {
   identifier: ID!
   name: String!
-  abv: String
+  abv: Float!
   brewery: Brewery!
   ingredients: [Ingredient!]!
+  soldPerYear: Int!
+  ingredientAgg: Aggregate!
+}
+
+type Address {
+  identifier: ID!
+  street: String!
+  city: String!
 }
 
 type Ingredient {
   identifier: ID!
   name: String!
+  weight: Float!
 }

@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +93,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(data.containsKey("beers"));
 
     List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
-    assertThat(beers.size(), is(5));
+    assertThat(beers.size(), is(6));
     assertThat(beers.get(0)
         .get("name"), is("Beer 1"));
   }
@@ -114,7 +116,7 @@ class GraphQlPostgresIntegrationTest {
         .block();
 
     assertThat(data, notNullValue());
-    assertThat(data.size(), is(5));
+    assertThat(data.size(), is(6));
     assertThat(data.get(0), instanceOf(ExecutionResult.class));
 
     ExecutionResult first = (ExecutionResult) data.get(0);
@@ -180,7 +182,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(data.containsKey("breweries"));
 
     List<Map<String, Object>> breweries = ((List<Map<String, Object>>) data.get("breweries"));
-    assertThat(breweries.size(), is(3));
+    assertThat(breweries.size(), is(4));
     assertThat(breweries.get(0)
         .get("name"), is("Brewery X"));
     assertThat(breweries.get(1)
@@ -207,7 +209,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(data.containsKey("breweries"));
 
     List<Map<String, Object>> breweries = ((List<Map<String, Object>>) data.get("breweries"));
-    assertThat(breweries.size(), is(3));
+    assertThat(breweries.size(), is(4));
     assertThat(breweries.get(0)
         .get("name"), is("Brewery X"));
     assertThat(breweries.get(1)
@@ -284,7 +286,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(data.containsKey("beers"));
 
     List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
-    assertThat(beers.size(), is(5));
+    assertThat(beers.size(), is(6));
     assertThat(beers.get(0)
         .get("name"), is("Beer 1"));
 
@@ -326,7 +328,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(data.containsKey("beers"));
 
     List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
-    assertThat(beers.size(), is(5));
+    assertThat(beers.size(), is(6));
     assertThat(beers.get(0)
         .get("name"), is("Beer 1"));
 
@@ -395,5 +397,143 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("type"), is("MULTIPOINT"));
     assertThat(geometry.get("asWKT"), is("MULTIPOINT ((5.979274334569982 52.21715768613606))"));
     assertThat(geometry.get("asWKB"), is("00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4"));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithAggregateType_forMultipleBeers() {
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(3));
+    assertThat(beerAgg.get("totalSold"), is(1700000));
+    assertThat(beerAgg.get("averageSold"), is(566667));
+    assertThat(beerAgg.get("maxSold"), is(1000000));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithAggregateType_forSingleBeer() {
+    String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(3));
+    assertThat(beerAgg.get("totalSold"), is(50000));
+    assertThat(beerAgg.get("averageSold"), is(50000));
+    assertThat(beerAgg.get("maxSold"), is(50000));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBreweryWithAggregateType_forNoBeer() {
+    String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
+        + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
+        + "totalCount : count( field : \"soldPerYear\" )"
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(4));
+    assertThat(beerAgg.get("totalSold"), is(nullValue()));
+    assertThat(beerAgg.get("totalCount"), is(0));
+    assertThat(beerAgg.get("averageSold"), is(nullValue()));
+    assertThat(beerAgg.get("maxSold"), is(nullValue()));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+        + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
+        + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
+        + "countWeight : count( field : \"weight\", distinct : false )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(4));
+    assertThat(ingredientAgg.get("totalWeight"), is(22.2));
+    assertThat(ingredientAgg.get("averageWeight"), is(3.7));
+    assertThat(ingredientAgg.get("maxWeight"), is(6.6));
+    assertThat(ingredientAgg.get("countWeight"), is(6));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBeerWithAggregateType_forDuplicateAvg() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+        + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
+        + "avgC : floatAvg( field : \"weight\" )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(3));
+    assertThat(ingredientAgg.get("avgA"), is(3.7));
+    assertThat(ingredientAgg.get("avgB"), is(3.7));
+    assertThat(ingredientAgg.get("avgC"), is(3.7));
+  }
+
+  @Test
+  @Disabled
+  void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+        + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
+        + "countWeightDef : count( field : \"weight\" ) "
+        + "countWeight : count( field : \"weight\", distinct : false )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(3));
+    assertThat(ingredientAgg.get("countWeightDis"), is(5));
+    assertThat(ingredientAgg.get("countWeightDef"), is(6));
+    assertThat(ingredientAgg.get("countWeight"), is(6));
   }
 }

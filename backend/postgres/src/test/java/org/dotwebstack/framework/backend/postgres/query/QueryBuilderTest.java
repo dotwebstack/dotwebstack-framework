@@ -2,7 +2,12 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MIN_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_AVG_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,6 +58,8 @@ class QueryBuilderTest {
 
   private static final String FIELD_BREWERY = "brewery";
 
+  private static final String FIELD_AGGREGATE = "aggregate";
+
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 
@@ -62,7 +69,8 @@ class QueryBuilderTest {
   void beforeAll() {
     DSLContext dslContext = createDslContext();
 
-    queryBuilder = new QueryBuilder(dotWebStackConfiguration, dslContext);
+    queryBuilder = new QueryBuilder(
+        new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration, new AggregateFieldFactory()), dslContext);
   }
 
   @Test
@@ -176,10 +184,10 @@ class QueryBuilderTest {
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
-        equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"name\" as \"x2\", t3.* from db.beer as \"t1\" "
-            + "left outer join lateral (select \"t2\".\"identifier\" as \"x3\", \"t2\".\"name\" as \"x4\" "
-            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) as \"t3\" "
-            + "on true limit :2 offset :3"));
+        equalTo("select t3.*, \"t1\".\"identifier\" as \"x3\", \"t1\".\"name\" as \"x4\" from db.beer as \"t1\" "
+            + "left outer join lateral (select \"t2\".\"identifier\" as \"x1\", \"t2\".\"name\" as \"x2\" "
+            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) "
+            + "as \"t3\" on true limit :2 offset :3"));
   }
 
   @Test
@@ -280,6 +288,77 @@ class QueryBuilderTest {
     assertThat(result.get("identifier"), is("AAA"));
   }
 
+  @Test
+  void build_returnsCorrectQuery_forAggregate() {
+    GraphQLObjectType aggregateType = GraphQLObjectType.newObject()
+        .name(AGGREGATE_TYPE)
+        .build();
+
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
+        GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_IDENTIFIER)
+            .type(Scalars.GraphQLString)
+            .build()),
+        mockSelectedField(FIELD_AGGREGATE, GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_AGGREGATE)
+            .type(aggregateType)
+            .build()));
+
+    when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
+
+    selectedFields = List.of(
+        mockSelectedAggregateField(INT_AVG_FIELD, "totalAvg", GraphQLFieldDefinition.newFieldDefinition()
+            .name(INT_AVG_FIELD)
+            .type(Scalars.GraphQLInt)
+            .build()),
+        mockSelectedAggregateField(FLOAT_MIN_FIELD, "minAmount", GraphQLFieldDefinition.newFieldDefinition()
+            .name(FLOAT_MIN_FIELD)
+            .type(Scalars.GraphQLFloat)
+            .build()));
+
+    when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+
+    PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
+
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getQuery(), notNullValue());
+    assertThat(queryHolder.getQuery()
+        .getSQL(ParamType.NAMED),
+        equalTo("select t3.*, \"t1\".\"identifier\" as \"x3\" from db.brewery as \"t1\" left outer join lateral "
+            + "(select min(\"t2\".\"sold_per_year\") as \"x1\", cast(avg(\"t2\".\"sold_per_year\") as int) as \"x2\" "
+            + "from db.beer as \"t2\" where \"ingredients_identifier\" = \"t1\".\"identifier\" limit :1) as \"t3\" "
+            + "on true limit :2 offset :3"));
+  }
+
+  private SelectedField mockSelectedAggregateField(String name, String alias, GraphQLFieldDefinition fieldDefinition) {
+    SelectedField selectedField = mock(SelectedField.class);
+    when(selectedField.getName()).thenReturn(name);
+    when(selectedField.getAlias()).thenReturn(alias);
+    Map<String, Object> arguments = Map.of(FIELD_ARGUMENT, "soldPerYear");
+    when(selectedField.getArguments()).thenReturn(arguments);
+    lenient().when(selectedField.getFieldDefinition())
+        .thenReturn(fieldDefinition);
+    lenient().when(selectedField.getFullyQualifiedName())
+        .thenReturn(name);
+    GraphQLObjectType type = GraphQLObjectType.newObject()
+        .name(AGGREGATE_TYPE)
+        .build();
+    when(selectedField.getObjectType()).thenReturn(type);
+    return selectedField;
+  }
+
   private SelectedField mockSelectedField(String name) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
@@ -293,6 +372,19 @@ class QueryBuilderTest {
         .thenReturn(fieldDefinition);
     lenient().when(selectedField.getFullyQualifiedName())
         .thenReturn(name);
+    GraphQLObjectType beerType = GraphQLObjectType.newObject()
+        .name("Beer")
+        .build();
+    GraphQLFieldDefinition field = GraphQLFieldDefinition.newFieldDefinition()
+        .name("Beer")
+        .type(beerType)
+        .build();
+
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
+    lenient().when(selectedField.getObjectType())
+        .thenReturn(objectType);
+    lenient().when(objectType.getFieldDefinition("beer"))
+        .thenReturn(field);
     return selectedField;
   }
 
@@ -318,10 +410,12 @@ class QueryBuilderTest {
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
     typeConfiguration.setTable("dbeerpedia.ingredients");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Ingredient")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .build());
 
@@ -330,16 +424,28 @@ class QueryBuilderTest {
 
   private PostgresTypeConfiguration createBreweryTypeConfiguration() {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
+
     KeyConfiguration keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField(FIELD_IDENTIFIER);
     typeConfiguration.setKeys(List.of(keyConfiguration));
-    typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
+    PostgresFieldConfiguration aggregateConfiguration = new PostgresFieldConfiguration();
+    aggregateConfiguration.setAggregationOf("beer");
+    aggregateConfiguration.setJoinColumns(List.of(new JoinColumn("ingredients_identifier", "identifier")));
+    PostgresFieldConfiguration beerConfiguration = new PostgresFieldConfiguration();
+    beerConfiguration.setMappedBy("Brewery");
+    typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), "beer",
+        beerConfiguration, FIELD_AGGREGATE, aggregateConfiguration)));
     typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Brewery")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(FIELD_AGGREGATE)
+            .type(newTypeName(AGGREGATE_TYPE).build())
             .build())
         .build());
 
@@ -363,12 +469,18 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_BREWERY)
+            .type(newTypeName("Brewery").build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name("soldPerYear")
+            .type(newTypeName(Scalars.GraphQLFloat.getName()).build())
             .build())
         .build());
 
