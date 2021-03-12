@@ -44,36 +44,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           }
         });
 
-    fields.values()
-        .stream()
-        .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
-        .forEach(fieldConfiguration -> {
-          PostgresFieldConfiguration ref = fields.get(fieldConfiguration.getAggregationOf());
-
-          if (ref.getMappedBy() != null) {
-            objectTypeDefinition.getFieldDefinitions()
-                .stream()
-                .filter(fieldDefinition -> fieldDefinition.getName()
-                    .equals(fieldConfiguration.getAggregationOf()))
-                .findFirst()
-                .ifPresent(fieldDefinition -> {
-                  String typeName = TypeHelper.getTypeName(fieldDefinition.getType());
-
-                  PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) typeMapping.get(typeName);
-
-                  PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
-                      .get(ref.getMappedBy());
-
-                  fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
-                });
-          } else if (ref.getJoinTable() != null) {
-            fieldConfiguration.setJoinTable(ref.getJoinTable());
-            fieldConfiguration.setJoinColumns(ref.getJoinTable()
-                .getJoinColumns());
-          } else {
-            throw invalidConfigurationException("Invalid aggregate field configuration.");
-          }
-        });
+    initAggregateTypes(typeMapping, objectTypeDefinition);
   }
 
   @Override
@@ -120,5 +91,40 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return ColumnKeyCondition.builder()
         .valueMap(columnValues)
         .build();
+  }
+
+  private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+      ObjectTypeDefinition objectTypeDefinition) {
+
+    fields.values()
+        .stream()
+        .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
+        .forEach(fieldConfiguration -> {
+          PostgresFieldConfiguration ref = fields.get(fieldConfiguration.getAggregationOf());
+
+          if (ref.getMappedBy() != null) {
+            objectTypeDefinition.getFieldDefinitions()
+                .stream()
+                .filter(fieldDefinition -> fieldDefinition.getName()
+                    .equals(fieldConfiguration.getAggregationOf()))
+                .findFirst()
+                .ifPresent(fieldDefinition -> {
+                  String typeName = TypeHelper.getTypeName(fieldDefinition.getType());
+
+                  PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) typeMapping.get(typeName);
+
+                  PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
+                      .get(ref.getMappedBy());
+
+                  fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
+                });
+          } else if (ref.getJoinTable() != null) {
+            fieldConfiguration.setJoinTable(ref.getJoinTable());
+            fieldConfiguration.setJoinColumns(ref.getJoinTable()
+                .getJoinColumns());
+          } else {
+            throw invalidConfigurationException("Invalid aggregate field configuration.");
+          }
+        });
   }
 }
