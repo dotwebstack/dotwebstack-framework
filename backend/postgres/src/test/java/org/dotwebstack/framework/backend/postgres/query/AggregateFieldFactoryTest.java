@@ -11,7 +11,6 @@ import graphql.schema.SelectedField;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
-
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -136,7 +135,7 @@ class AggregateFieldFactoryTest {
 
   private SelectedField mockCountField(String fieldName, Boolean isDistinct) {
     SelectedField countField = mockSelectedField(fieldName);
-    Map<String, Object> arguments = Collections.singletonMap(DISTINCT_ARGUMENT, isDistinct);//Map.of(DISTINCT_ARGUMENT, isDistinct);
+    Map<String, Object> arguments = Collections.singletonMap(DISTINCT_ARGUMENT, isDistinct);
     when(countField.getArguments()).thenReturn(arguments);
     return countField;
   }
