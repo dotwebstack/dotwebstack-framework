@@ -14,6 +14,8 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 
 import graphql.schema.SelectedField;
 import java.math.BigDecimal;
+import java.util.Optional;
+
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -27,12 +29,10 @@ public class AggregateFieldFactory {
 
     switch (aggregateFunction) {
       case COUNT_FIELD:
-        boolean distinct = (Boolean) selectedField.getArguments()
-            .get(DISTINCT_ARGUMENT);
-        if (distinct) {
-          result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
-        } else {
+        if (isCountDistinct(selectedField)) {
           result = DSL.countDistinct(DSL.field(DSL.name(fromTable, columnName)));
+        } else {
+          result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
         }
         break;
       case INT_SUM_FIELD:
@@ -68,6 +68,11 @@ public class AggregateFieldFactory {
     }
 
     return result;
+  }
+
+  private boolean isCountDistinct(SelectedField selectedField){
+    return Optional.ofNullable((Boolean)selectedField.getArguments()
+        .get(DISTINCT_ARGUMENT)).orElse(Boolean.FALSE);
   }
 
   private Field<BigDecimal> bigDecimalField(String fromTable, String columnName) {
