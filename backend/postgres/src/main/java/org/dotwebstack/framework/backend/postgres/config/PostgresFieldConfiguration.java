@@ -20,7 +20,7 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  private Boolean isNumeric = false;
+  private boolean isNumeric = false;
 
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;

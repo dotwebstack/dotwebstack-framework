@@ -8,6 +8,8 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 
 public class AggregateHelper {
 
+  private AggregateHelper() {}
+
   public static boolean isAggregateField(SelectedField selectedField) {
     if (selectedField == null) {
       return false;

@@ -122,7 +122,7 @@ simplified configuration example:
           inverseJoinColumns:
             - name: ingredients_identifier
               referencedField: identifier
-      ingredientAgregation:
+      ingredientAggregation:
         aggregationOf: ingredients
 ```
 
