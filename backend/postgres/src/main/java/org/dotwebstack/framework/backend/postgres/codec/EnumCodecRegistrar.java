@@ -19,7 +19,7 @@ public class EnumCodecRegistrar implements CodecRegistrar {
         .execute()
         .flatMap(result -> result.map((row, rowMetadata) -> row.get("oid", Integer.class)))
         .collect(Collectors.toSet())
-        .doOnNext(dataTypes -> registry.addLast(new EnumCodec(dataTypes)))
+        .doOnNext(dataTypes -> registry.addFirst(new EnumCodec(dataTypes)))
         .then();
   }
 }
