@@ -471,7 +471,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
         + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
-        + "countWeight : count( field : \"weight\", distinct : true )  } } }";
+        + "countWeight : count( field : \"weight\", distinct : false )  } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -484,8 +484,8 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(beer.containsKey("ingredientAgg"));
     Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
     assertThat(ingredientAgg.size(), is(4));
-    assertThat(ingredientAgg.get("totalWeight"), is(23.1));
-    assertThat(ingredientAgg.get("averageWeight"), is(3.85));
+    assertThat(ingredientAgg.get("totalWeight"), is(22.2));
+    assertThat(ingredientAgg.get("averageWeight"), is(3.7));
     assertThat(ingredientAgg.get("maxWeight"), is(6.6));
     assertThat(ingredientAgg.get("countWeight"), is(6));
   }
@@ -507,8 +507,31 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(beer.containsKey("ingredientAgg"));
     Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
     assertThat(ingredientAgg.size(), is(3));
-    assertThat(ingredientAgg.get("avgA"), is(3.85));
-    assertThat(ingredientAgg.get("avgB"), is(3.85));
-    assertThat(ingredientAgg.get("avgC"), is(3.85));
+    assertThat(ingredientAgg.get("avgA"), is(3.7));
+    assertThat(ingredientAgg.get("avgB"), is(3.7));
+    assertThat(ingredientAgg.get("avgC"), is(3.7));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+        + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
+        + "countWeightDef : count( field : \"weight\" ) "
+        + "countWeight : count( field : \"weight\", distinct : false )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(3));
+    assertThat(ingredientAgg.get("countWeightDis"), is(5));
+    assertThat(ingredientAgg.get("countWeightDef"), is(6));
+    assertThat(ingredientAgg.get("countWeight"), is(6));
   }
 }
