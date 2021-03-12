@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -514,7 +514,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Ignore
+  @Disabled
   void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
     String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
