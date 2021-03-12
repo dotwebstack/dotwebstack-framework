@@ -44,7 +44,7 @@ public class CoreConfiguration {
     return ResourceLoaderUtils.getResource(CONFIG_FILE)
         .map(resource -> {
           try {
-            return objectMapper.readValue(resource.getFile(), DotWebStackConfiguration.class);
+            return objectMapper.readValue(resource.getInputStream(), DotWebStackConfiguration.class);
           } catch (IOException e) {
             throw new InvalidConfigurationException("Error while reading config file.", e);
           }
