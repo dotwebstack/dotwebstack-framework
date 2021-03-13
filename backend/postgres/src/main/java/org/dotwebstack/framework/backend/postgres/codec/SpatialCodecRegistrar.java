@@ -24,7 +24,7 @@ public class SpatialCodecRegistrar implements CodecRegistrar {
         .execute()
         .flatMap(result -> result.map((row, rowMetadata) -> row.get("oid", Integer.class)))
         .collect(Collectors.toSet())
-        .doOnNext(dataTypes -> registry.addLast(new SpatialCodec(dataTypes, geometryParser)))
+        .doOnNext(dataTypes -> registry.addFirst(new SpatialCodec(dataTypes, geometryParser)))
         .then();
   }
 }
