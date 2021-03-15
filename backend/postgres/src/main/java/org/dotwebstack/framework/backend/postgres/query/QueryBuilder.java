@@ -98,7 +98,8 @@ public class QueryBuilder {
 
     Condition joinCondition = keyColumnNames.entrySet()
         .stream()
-        .map(entry -> DSL.field(entry.getKey())
+        .map(entry -> DSL.field(DSL.name(selectWrapper.getTable()
+            .getName(), entry.getKey()))
             .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
         .reduce(DSL.noCondition(), Condition::and);
 

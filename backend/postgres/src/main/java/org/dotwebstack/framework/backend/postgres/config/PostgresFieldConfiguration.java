@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,5 +25,9 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
+  }
+
+  public boolean isAggregate() {
+    return AggregateHelper.isAggregate(this);
   }
 }
