@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -26,6 +27,7 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -129,23 +131,22 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       return Optional.empty();
     }
 
-    SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
-
-    SelectWrapper selectWrapper =
-        selectWrapperBuilder
-            .build(new SelectContext(queryContext), (PostgresTypeConfiguration) typeConfiguration,
-                selectedField.getFullyQualifiedName()
-                    .concat("/"),
-                isAggregate(fieldConfiguration) ? fieldConfiguration.getJoinTable() : null, selectionSet);
-
-    final PostgresTypeConfiguration typeConfigurationForCondition = getPostgresTypeConfigurationForCondition(
-        fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
-
     if (fieldConfiguration.getJoinColumns() != null) {
+      SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
+
+      SelectWrapper selectWrapper =
+          selectWrapperBuilder.build(new SelectContext(queryContext), (PostgresTypeConfiguration) typeConfiguration,
+              selectedField.getFullyQualifiedName()
+                  .concat("/"),
+              isAggregate(fieldConfiguration) ? fieldConfiguration.getJoinTable() : null, selectionSet);
+
+      final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
+          fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
+
       Condition whereCondition = fieldConfiguration.getJoinColumns()
           .stream()
-          .map(joinColumn -> createJoinTableCondition(typeConfigurationForCondition, fieldConfiguration, fromTable,
-              joinColumn))
+          .map(joinColumn -> createJoinTableCondition(otherSideTypeConfiguration, fieldConfiguration, joinColumn,
+              fromTable, selectWrapper.getTable()))
           .reduce(DSL.noCondition(), Condition::and);
 
       QueryBuilder.TableWrapper tableWrapper = QueryBuilder.TableWrapper.builder()
@@ -166,24 +167,20 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     throw unsupportedOperationException("Unsupported field configuration!");
   }
 
-  private Condition createJoinTableCondition(PostgresTypeConfiguration typeConfigurationForCondition,
-      PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
-      org.dotwebstack.framework.backend.postgres.config.JoinColumn joinColumn) {
-    PostgresFieldConfiguration rightFieldConfiguration = typeConfigurationForCondition.getFields()
+
+  private Condition createJoinTableCondition(PostgresTypeConfiguration otherSideTypeConfiguration,
+      PostgresFieldConfiguration fieldConfiguration, JoinColumn joinColumn, Table<Record> leftTable,
+      Table<Record> rightTable) {
+    PostgresFieldConfiguration otherSideFieldConfiguration = otherSideTypeConfiguration.getFields()
         .get(joinColumn.getReferencedField());
 
-    Field<Object> leftColumn;
-    Field<Object> rightColumn;
+    Name leftColumn = DSL.name(leftTable.getName(),
+        fieldConfiguration.isAggregate() ? otherSideFieldConfiguration.getColumn() : joinColumn.getName());
+    Name rightColumn = DSL.name(rightTable.getName(),
+        fieldConfiguration.isAggregate() ? joinColumn.getName() : otherSideFieldConfiguration.getColumn());
 
-    if (isAggregate(fieldConfiguration)) {
-      leftColumn = DSL.field(DSL.name(joinColumn.getName()));
-      rightColumn = DSL.field(DSL.name(fromTable.getName(), rightFieldConfiguration.getColumn()));
-    } else {
-      leftColumn = DSL.field(DSL.name(fromTable.getName(), joinColumn.getName()));
-      rightColumn = DSL.field(DSL.name(rightFieldConfiguration.getColumn()));
-    }
-
-    return leftColumn.eq(rightColumn);
+    return DSL.field(leftColumn)
+        .eq(DSL.field(rightColumn));
   }
 
   private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,

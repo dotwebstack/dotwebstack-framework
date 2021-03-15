@@ -48,14 +48,16 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
     SelectJoinStep<Record> query = dslContext.select(selectContext.getSelectColumns())
         .from(fromTable);
 
+    Table<Record> parentTable = null;
     if (parentJoinTable != null) {
-      Table<Record> parentTable = DSL.table(parentJoinTable.getName())
+      parentTable = DSL.table(parentJoinTable.getName())
           .as(selectContext.getQueryContext()
               .newTableAlias());
 
+      Table<Record> finalParentTable = parentTable;
       Condition[] parentConditions = parentJoinTable.getInverseJoinColumns()
           .stream()
-          .map(inverseJoinColumn -> DSL.field(DSL.name(parentTable.getName(), inverseJoinColumn.getName()))
+          .map(inverseJoinColumn -> DSL.field(DSL.name(finalParentTable.getName(), inverseJoinColumn.getName()))
               .eq(DSL.field(DSL.name(fromTable.getName(), typeConfiguration.getFields()
                   .get(inverseJoinColumn.getReferencedField())
                   .getColumn()))))
@@ -72,6 +74,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
 
     return SelectWrapper.builder()
         .query(query)
+        .table((parentTable != null ? parentTable : fromTable))
         .rowAssembler(row -> {
           if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
               .get()) && row.get(

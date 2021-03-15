@@ -99,7 +99,7 @@ class QueryBuilderTest {
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
         equalTo("select x3, t3.* from (values (:1)) as \"t2\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
-            + "as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" where identifier "
+            + "as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" where \"t1\".\"identifier\" "
             + "= \"t2\".\"x3\" limit :2 offset :3) as \"t3\" on true"));
   }
 
@@ -186,7 +186,7 @@ class QueryBuilderTest {
         .getSQL(ParamType.NAMED),
         equalTo("select t3.*, \"t1\".\"identifier\" as \"x3\", \"t1\".\"name\" as \"x4\" from db.beer as \"t1\" "
             + "left outer join lateral (select \"t2\".\"identifier\" as \"x1\", \"t2\".\"name\" as \"x2\" "
-            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"identifier\" limit :1) "
+            + "from db.brewery as \"t2\" where \"t1\".\"brewery\" = \"t2\".\"identifier\" limit :1) "
             + "as \"t3\" on true limit :2 offset :3"));
   }
 
@@ -233,7 +233,8 @@ class QueryBuilderTest {
         equalTo("select x3, t4.* from (values (:1)) as \"t3\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from dbeerpedia.ingredients as \"t1\" "
             + "join dbeerpedia.beers_ingredients as \"t2\" on \"t2\".\"ingredients_identifier\" "
-            + "= \"t1\".\"identifier\" where beers_identifier = \"t3\".\"x3\" limit :2 offset :3) as \"t4\" on true"));
+            + "= \"t1\".\"identifier\" where \"t2\".\"beers_identifier\" = \"t3\".\"x3\" limit :2 offset :3) "
+            + "as \"t4\" on true"));
   }
 
   @Test
@@ -338,7 +339,7 @@ class QueryBuilderTest {
         .getSQL(ParamType.NAMED),
         equalTo("select t3.*, \"t1\".\"identifier\" as \"x3\" from db.brewery as \"t1\" left outer join lateral "
             + "(select min(\"t2\".\"sold_per_year\") as \"x1\", cast(avg(\"t2\".\"sold_per_year\") as int) as \"x2\" "
-            + "from db.beer as \"t2\" where \"ingredients_identifier\" = \"t1\".\"identifier\" limit :1) as \"t3\" "
+            + "from db.beer as \"t2\" where \"t1\".\"identifier\" = \"t2\".\"brewery\" limit :1) as \"t3\" "
             + "on true limit :2 offset :3"));
   }
 
@@ -428,9 +429,11 @@ class QueryBuilderTest {
     KeyConfiguration keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField(FIELD_IDENTIFIER);
     typeConfiguration.setKeys(List.of(keyConfiguration));
+
     PostgresFieldConfiguration aggregateConfiguration = new PostgresFieldConfiguration();
     aggregateConfiguration.setAggregationOf("beer");
-    aggregateConfiguration.setJoinColumns(List.of(new JoinColumn("ingredients_identifier", "identifier")));
+    aggregateConfiguration.setJoinColumns(List.of(new JoinColumn("brewery", "identifier")));
+
     PostgresFieldConfiguration beerConfiguration = new PostgresFieldConfiguration();
     beerConfiguration.setMappedBy("Brewery");
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), "beer",
