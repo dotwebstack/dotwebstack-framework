@@ -24,7 +24,8 @@ CREATE TABLE db.beer (
   name character varying NOT NULL,
   abv NUMERIC(3,1) NOT NULL,
   brewery character varying NOT NULL REFERENCES db.brewery (identifier),
-  sold_per_year INT NOT NULL
+  sold_per_year INT NOT NULL,
+  taste text[] NOT NULL
 );
 
 CREATE TABLE db.ingredient (

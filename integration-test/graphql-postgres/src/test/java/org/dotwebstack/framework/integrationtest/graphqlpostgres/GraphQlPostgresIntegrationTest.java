@@ -536,4 +536,43 @@ class GraphQlPostgresIntegrationTest {
     assertThat(ingredientAgg.get("countWeightDef"), is(6));
     assertThat(ingredientAgg.get("countWeight"), is(6));
   }
+  @Test
+  void graphQlQuery_ReturnsBeerWithStringJoinAggregateType_forString() {
+    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+            + "{name taste ingredientAgg{ names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beer"));
+    Map<String, Object> beer = ((Map<String, Object>) data.get("beer"));
+    assertTrue(beer.containsKey("ingredientAgg"));
+    Map<String, Object> ingredientAgg = ((Map<String, Object>) beer.get("ingredientAgg"));
+    assertThat(ingredientAgg.size(), is(1));
+    assertThat(ingredientAgg.get("names"), is("Water*Hop*Barley*Yeast*Orange*Caramel"));
+  }
+
+  @Test
+  void graphQlQuery_ReturnsBeerWithStringJoinAggregateType_forStringArray() {
+    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+            + "{name beerAgg{ tastes : stringJoin( field : \"taste\" ) "
+            + "tastesDis : stringJoin( field : \"taste\", distinct : true ) } } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+            .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(2));
+    assertThat(beerAgg.get("tastesDis"), is(1700000));
+    assertThat(beerAgg.get("tastes"), is(566667));
+  }
 }

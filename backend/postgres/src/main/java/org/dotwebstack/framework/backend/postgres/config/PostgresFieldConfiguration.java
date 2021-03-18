@@ -23,6 +23,10 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private boolean isNumeric = false;
 
+  private boolean isText = false;
+
+  private boolean isList = false;
+
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
   }

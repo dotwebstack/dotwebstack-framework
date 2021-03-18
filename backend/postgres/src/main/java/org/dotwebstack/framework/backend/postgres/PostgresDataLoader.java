@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
@@ -142,18 +144,25 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {
     String sql = query.getSQL(ParamType.NAMED);
-    Map<String, Param<?>> params = query.getParams();
-
+    List<Param<?>> params = getParams(query);
     LOG.debug("PostgreSQL query: {}", sql);
     LOG.debug("Binding variables: {}", params);
 
     DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
 
-    for (Map.Entry<String, Param<?>> param : params.entrySet()) {
-      executeSpec = executeSpec.bind(param.getKey(), Objects.requireNonNull(param.getValue()
+    for (int i = 0; i < params.size(); i++) {
+      executeSpec = executeSpec.bind(i, Objects.requireNonNull(params.get(i)
           .getValue()));
     }
 
     return executeSpec;
+  }
+
+  private List<Param<?>> getParams(Query query) {
+    return query.getParams()
+        .values()
+        .stream()
+        .filter(Predicate.not(Param::isInline))
+        .collect(Collectors.toList());
   }
 }

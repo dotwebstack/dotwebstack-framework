@@ -33,15 +33,20 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
   @Override
   public SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
       String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet) {
-    Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
-        .as(selectContext.getQueryContext()
-            .newTableAlias());
-
-
     Map<String, SelectedField> selectedFields = selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
         .collect(Collectors.toMap(field -> Optional.ofNullable(field.getAlias())
             .orElse(field.getName()), Function.identity()));
+    return build(selectContext, typeConfiguration, parentJoinTable, selectionSet, selectedFields);
+  }
+
+  @Override
+  public SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
+      JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet,
+      Map<String, SelectedField> selectedFields) {
+    Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
+        .as(selectContext.getQueryContext()
+            .newTableAlias());
 
     addFields(selectContext, typeConfiguration, fromTable, selectedFields, selectionSet);
 

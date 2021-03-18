@@ -16,6 +16,8 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MAX_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 
 import graphql.Scalars;
 import graphql.language.FieldDefinition;
@@ -39,6 +41,7 @@ public class AggregateConfigurer implements GraphqlConfigurer {
     TypeName floatType = newTypeName(Scalars.GraphQLFloat.getName()).build();
     return newObjectTypeDefinition().name(AGGREGATE_TYPE)
         .fieldDefinition(createAggregateCountField(intType))
+        .fieldDefinition(createAggregateStringJoinField())
         .fieldDefinition(createAggregateField(INT_SUM_FIELD, intType))
         .fieldDefinition(createAggregateField(INT_MIN_FIELD, intType))
         .fieldDefinition(createAggregateField(INT_MAX_FIELD, intType))
@@ -47,6 +50,22 @@ public class AggregateConfigurer implements GraphqlConfigurer {
         .fieldDefinition(createAggregateField(FLOAT_MIN_FIELD, floatType))
         .fieldDefinition(createAggregateField(FLOAT_MAX_FIELD, floatType))
         .fieldDefinition(createAggregateField(FLOAT_AVG_FIELD, floatType))
+        .build();
+  }
+
+  private FieldDefinition createAggregateStringJoinField() {
+    TypeName stringType = newTypeName(Scalars.GraphQLString.getName()).build();
+    return newFieldDefinition().name(STRING_JOIN_FIELD)
+        .type(stringType)
+        .inputValueDefinition(newInputValueDefinition().name(FIELD_ARGUMENT)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(SEPARATOR_ARGUMENT)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(DISTINCT_ARGUMENT)
+            .type(newTypeName(Scalars.GraphQLBoolean.getName()).build())
+            .build())
         .build();
   }
 

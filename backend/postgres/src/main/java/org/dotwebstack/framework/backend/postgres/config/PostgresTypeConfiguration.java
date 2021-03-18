@@ -42,6 +42,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
             fieldConfiguration.setNumeric(true);
           }
+          if (TypeHelper.hasListType(fieldDefinition.getType())) {
+            fieldConfiguration.setList(true);
+          }
         });
 
     initAggregateTypes(typeMapping, objectTypeDefinition);
