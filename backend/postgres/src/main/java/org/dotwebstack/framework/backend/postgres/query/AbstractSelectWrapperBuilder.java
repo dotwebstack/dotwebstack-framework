@@ -53,6 +53,13 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
     SelectJoinStep<Record> query = dslContext.select(selectContext.getSelectColumns())
         .from(fromTable);
 
+    for (CrossJoin crossJoin : selectContext.getCrossJoinTables()) {
+      // TODO: is String[] ok???
+      query.crossJoin(DSL.unnest(DSL.field(DSL.name(crossJoin.getFromTable()
+          .getName(), crossJoin.getColumnName()), String[].class))
+          .as(crossJoin.getAlias()));
+    }
+
     Table<Record> parentTable = null;
     if (parentJoinTable != null) {
       parentTable = DSL.table(parentJoinTable.getName())

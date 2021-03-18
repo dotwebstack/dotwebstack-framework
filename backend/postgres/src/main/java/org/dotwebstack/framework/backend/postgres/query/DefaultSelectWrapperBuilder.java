@@ -14,6 +14,7 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,9 +89,9 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
           otherAggregateFieldsByName);
     }
 
-    if(!assembleFnsList.isEmpty()){
+    if (!assembleFnsList.isEmpty()) {
       selectContext.getAssembleFns()
-              .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
+          .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
     }
   }
 
@@ -245,8 +246,12 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
             .orElse(field.getName()), Function.identity()));
   }
 
-  private UnaryOperator<Map<String, Object>> multiSelectRowAssembler(List<UnaryOperator<Map<String, Object>>> assembleFnsList){
-    // TODO
-    return assembleFnsList.get(0);
+  private UnaryOperator<Map<String, Object>> multiSelectRowAssembler(
+      List<UnaryOperator<Map<String, Object>>> assembleFnsList) {
+    // TODO naam ok?
+
+    return row -> assembleFnsList.stream()
+        .collect(HashMap::new, (acc, assembler) -> acc.putAll(assembler.apply(row)), HashMap::putAll);
   }
+
 }

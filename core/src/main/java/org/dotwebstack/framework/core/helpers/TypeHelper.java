@@ -108,4 +108,8 @@ public class TypeHelper {
     List<String> numericType = List.of(Scalars.GraphQLFloat.getName(), Scalars.GraphQLInt.getName());
     return numericType.contains(getTypeName(type));
   }
+
+  public static boolean isTextType(@NonNull Type<?> type) {
+    return getTypeName(type).equals(Scalars.GraphQLString.getName());
+  }
 }

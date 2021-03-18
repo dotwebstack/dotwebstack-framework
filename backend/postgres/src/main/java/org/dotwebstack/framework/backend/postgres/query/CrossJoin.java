@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.jooq.Record;
 import org.jooq.Table;
 
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CrossJoin {
   @NonNull
   private Table<Record> fromTable;
@@ -15,5 +15,6 @@ public class CrossJoin {
   @NonNull
   private String columnName;
 
+  @NonNull
   private String alias;
 }

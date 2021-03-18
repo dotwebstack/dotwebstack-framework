@@ -69,8 +69,10 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
-        .map(row -> queryHolder.getMapAssembler()
-            .apply(row));
+        .map(row -> {
+          return queryHolder.getMapAssembler()
+              .apply(row);
+        });
   }
 
   @Override
@@ -150,8 +152,8 @@ public class PostgresDataLoader implements BackendDataLoader {
 
     DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
 
-    for (int i = 0; i < params.size(); i++) {
-      executeSpec = executeSpec.bind(i, Objects.requireNonNull(params.get(i)
+    for (int index = 0; index < params.size(); index++) {
+      executeSpec = executeSpec.bind(index, Objects.requireNonNull(params.get(index)
           .getValue()));
     }
 
