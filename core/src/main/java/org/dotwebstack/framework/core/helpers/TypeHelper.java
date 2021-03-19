@@ -10,10 +10,6 @@ import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
 import java.util.List;
-import java.util.Optional;
-
-import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.SelectedField;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
