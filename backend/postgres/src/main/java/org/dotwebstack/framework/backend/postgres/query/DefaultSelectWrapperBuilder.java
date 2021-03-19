@@ -213,6 +213,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     if (isAggregate(fieldConfiguration)) {
       GraphQLType type = getForeignType(selectedField, fieldConfiguration);
       return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(type));
+    } else if (fieldConfiguration.getJoinTable() != null) {
+      return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(selectedField.getObjectType()));
     }
 
     return rightTypeConfiguration;
