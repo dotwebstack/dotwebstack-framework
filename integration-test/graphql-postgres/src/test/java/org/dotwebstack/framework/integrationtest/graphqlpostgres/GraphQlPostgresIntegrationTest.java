@@ -268,7 +268,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBeersJoinTable_default() {
+  void graphQlQuery_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{beers{name ingredients{name}}}";
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -307,6 +307,36 @@ class GraphQlPostgresIntegrationTest {
         .map(map -> map.get("name"))
         .map(Objects::toString)
         .collect(Collectors.toList()), equalTo(List.of("Water", "Hop", "Barley", "Yeast")));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeersWithIngredient_forQueryWithJoinTable() {
+    String query = "{beers{name ingredient{name}}}";
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("beers"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
+    assertThat(beers.size(), is(6));
+    assertThat(beers.get(0)
+        .get("name"), is("Beer 1"));
+
+    Map<String, Object> ingredient = ((Map<String, Object>) beers.get(0)
+        .get("ingredient"));
+    assertThat(ingredient.size(), is(1));
+
+    assertThat(ingredient.get("name"), equalTo("Water"));
   }
 
   @Test
