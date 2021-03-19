@@ -448,7 +448,8 @@ class GraphQlPostgresIntegrationTest {
     String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "totalCount : count( field : \"soldPerYear\" )"
-        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
+        + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) "
+        + "tastes: stringJoin( field: \"taste\" ) } } }";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -465,6 +466,7 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.get("totalCount"), is(0));
     assertThat(beerAgg.get("averageSold"), is(nullValue()));
     assertThat(beerAgg.get("maxSold"), is(nullValue()));
+    assertThat(beerAgg.get("tastes"), is(nullValue()));
   }
 
   @Test
