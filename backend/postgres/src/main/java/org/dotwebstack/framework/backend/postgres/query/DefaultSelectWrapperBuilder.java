@@ -251,10 +251,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
   private UnaryOperator<Map<String, Object>> multiSelectRowAssembler(
       List<UnaryOperator<Map<String, Object>>> assembleFnsList) {
-    // TODO naam ok?
 
     return row -> assembleFnsList.stream()
         .collect(HashMap::new, (acc, assembler) -> acc.putAll(assembler.apply(row)), HashMap::putAll);
   }
-
 }

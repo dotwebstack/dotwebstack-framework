@@ -45,12 +45,12 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
 
     String columnName = aggregateFieldConfiguration.getColumn();
 
+    validate(aggregateFieldConfiguration, selectedField, aggregateFieldName);
+
     if (Objects.equals(AggregateConstants.STRING_JOIN_FIELD, selectedField.getName())
         && aggregateFieldConfiguration.isList()) {
       selectContext.addCrossJoin(new CrossJoin(fromTable, columnName, columnAlias));
     }
-
-    validate(aggregateFieldConfiguration, selectedField, aggregateFieldName);
 
     selectContext.addField(selectedField,
         aggregateFieldFactory

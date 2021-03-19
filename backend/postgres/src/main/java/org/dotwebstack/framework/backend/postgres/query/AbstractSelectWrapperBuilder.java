@@ -54,7 +54,6 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
         .from(fromTable);
 
     for (CrossJoin crossJoin : selectContext.getCrossJoinTables()) {
-      // TODO: is String[] ok???
       query.crossJoin(DSL.unnest(DSL.field(DSL.name(crossJoin.getFromTable()
           .getName(), crossJoin.getColumnName()), String[].class))
           .as(crossJoin.getAlias()));
