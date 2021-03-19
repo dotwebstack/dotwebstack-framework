@@ -73,9 +73,6 @@ public class EnumArrayCodec implements Codec<String[]> {
       return (String[]) Array.newInstance(String.class, 0);
     }
 
-    byte[] bytes = new byte[buffer.capacity()];
-    buffer.getBytes(0, bytes);
-
     if (returnType != Object.class) {
       requireArrayDimension(returnType, dimensions, "Dimensions mismatch: %s expected, but %s returned from DB");
     }

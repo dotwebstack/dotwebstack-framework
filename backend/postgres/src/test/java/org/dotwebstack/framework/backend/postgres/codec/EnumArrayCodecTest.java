@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.r2dbc.postgresql.message.Format;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -31,17 +32,32 @@ class EnumArrayCodecTest {
 
   @Test
   void decode_ReturnsStringArray_ForEnumArrayObject() {
-    String enumArrayValue = "test";
+    String[] enumArrayValues = new String[] {"foo", "bar"};
 
     String[] decodedValue =
-        codec.decode(createEnumArrayBuffer(enumArrayValue), 1234, Format.FORMAT_BINARY, String[].class);
+        codec.decode(createEnumArrayBuffer(enumArrayValues), 1234, Format.FORMAT_BINARY, String[].class);
 
-    assertThat(decodedValue, is(equalTo(new String[] {enumArrayValue})));
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
   }
 
   @Test
   void decode_throwsException_ForNull() {
     assertThrows(IllegalArgumentException.class, () -> codec.decode(null, 1234, Format.FORMAT_BINARY, String[].class));
+  }
+
+  @Test
+  void decode_throwsException_ForFormatText() {
+    String[] enumArrayValues = new String[] {"test"};
+
+    assertThrows(UnsupportedOperationException.class,
+        () -> codec.decode(createEnumArrayBuffer(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class));
+  }
+
+  @Test
+  void decode_returnsEmptyStringArray_ForNotReadableBuffer() {
+    String[] decodesValues = codec.decode(Unpooled.buffer(), 1234, Format.FORMAT_BINARY, String[].class);
+
+    assertThat(decodesValues, equalTo(new String[] {}));
   }
 
   @Test
@@ -79,11 +95,19 @@ class EnumArrayCodecTest {
     assertThat(type, is(String[].class));
   }
 
-  private ByteBuf createEnumArrayBuffer(String value) {
+  private ByteBuf createEnumArrayBuffer(String... values) {
     ByteBuf byteBuf = Unpooled.buffer();
-    byteBuf.writeBytes(new byte[] {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -56, 42, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0});
-    byteBuf.writeByte(value.length());
-    byteBuf.writeBytes(value.getBytes(StandardCharsets.UTF_8));
+
+    byteBuf.writeBytes(new byte[] {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -9, -60, 0, 0, 0});
+    byteBuf.writeByte(values.length);
+    byteBuf.writeBytes(new byte[] {0, 0, 0, 1});
+
+    List.of(values)
+        .forEach(value -> {
+          byteBuf.writeBytes(new byte[] {0, 0, 0});
+          byteBuf.writeByte(value.length());
+          byteBuf.writeBytes(value.getBytes(StandardCharsets.UTF_8));
+        });
     return byteBuf;
   }
 }
