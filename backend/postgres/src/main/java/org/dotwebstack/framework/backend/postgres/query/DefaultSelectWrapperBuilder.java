@@ -80,10 +80,13 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
     Map<String, SelectedField> selectedStringJoinFieldsByName =
         getSelectedAggregateFieldsByName(selectedField, selectionSet, true);
+
     selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectionSet,
         selectContext, fromTable, selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
+
     Map<String, SelectedField> otherAggregateFieldsByName =
         getSelectedAggregateFieldsByName(selectedField, selectionSet, false);
+
     if (!otherAggregateFieldsByName.isEmpty()) {
       processJoinTable(assembleFnsList, selectionSet, selectContext, fromTable, selectedField, fieldConfiguration,
           otherAggregateFieldsByName);

@@ -26,19 +26,6 @@ import org.springframework.stereotype.Component;
 public class AggregateFieldFactory {
   private static final String DEFAULT_SEPARATOR = ",";
 
-  public Field<?> createGroupConcat(SelectedField selectedField, String alias) {
-    Field<?> result;
-    String separator = getSeparator(selectedField);
-    if (isDistinct(selectedField)) {
-      result = DSL.groupConcatDistinct(DSL.field(DSL.name(alias)))
-          .separator(separator);
-    } else {
-      result = DSL.groupConcat(DSL.field(DSL.name(alias)))
-          .separator(separator);
-    }
-    return result;
-  }
-
   public Field<?> create(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
       String fromTable, String columnName, String columnAlias) {
     Field<?> result;
@@ -98,6 +85,19 @@ public class AggregateFieldFactory {
         throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
     }
 
+    return result;
+  }
+
+  private Field<?> createGroupConcat(SelectedField selectedField, String alias) {
+    Field<?> result;
+    String separator = getSeparator(selectedField);
+    if (isDistinct(selectedField)) {
+      result = DSL.groupConcatDistinct(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    } else {
+      result = DSL.groupConcat(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    }
     return result;
   }
 

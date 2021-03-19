@@ -63,6 +63,33 @@ class AggregateFieldFactoryTest {
   }
 
   @Test
+  void create_returnsGroupConcatFieldOnColumnAlias_ForArgumentStringJoinOnListTypeField() {
+    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.FALSE, "|");
+    when(postgresFieldConfiguration.isList()).thenReturn(Boolean.TRUE);
+
+    Field<?> actualAggregateField =
+        aggregateFieldFactory.create(postgresFieldConfiguration, mockedField, "beers", "taste", "x1");
+
+    Field<?> expectedAggregateField = DSL.groupConcat(DSL.field(DSL.name("x1")))
+        .separator("|");
+    assertThat(actualAggregateField, is(expectedAggregateField));
+  }
+
+  @Test
+  void create_returnsGroupConcatFieldOnColumnAlias_ForArgumentStringJoinWithDistinctTrueOnListTypeField() {
+    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.TRUE, "|");
+    when(postgresFieldConfiguration.isList()).thenReturn(Boolean.TRUE);
+
+    Field<?> actualAggregateField =
+        aggregateFieldFactory.create(postgresFieldConfiguration, mockedField, "beers", "taste", "x1");
+
+    Field<?> expectedAggregateField = DSL.groupConcatDistinct(DSL.field(DSL.name("x1")))
+        .separator("|");
+    assertThat(actualAggregateField, is(expectedAggregateField));
+  }
+
+
+  @Test
   void create_returnsCountDistintField_ForArgumentCountWithDistintIsTrue() {
     SelectedField mockedField = mockCountField("count", Boolean.TRUE);
     Field<?> actualAggregateField =
