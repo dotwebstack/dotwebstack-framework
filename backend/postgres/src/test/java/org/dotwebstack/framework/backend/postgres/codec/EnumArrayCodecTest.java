@@ -49,8 +49,10 @@ class EnumArrayCodecTest {
   void decode_throwsException_ForFormatText() {
     String[] enumArrayValues = new String[] {"test"};
 
+    ByteBuf byteBuf = createEnumArrayBuffer(enumArrayValues);
+
     assertThrows(UnsupportedOperationException.class,
-        () -> codec.decode(createEnumArrayBuffer(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class));
+        () -> codec.decode(byteBuf, 1234, Format.FORMAT_TEXT, String[].class));
   }
 
   @Test
