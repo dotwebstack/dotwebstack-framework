@@ -30,8 +30,11 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class AggregateSelectWrapperBuilderTest {
 
   private static final String FIELD_IDENTIFIER = "identifier";
@@ -43,7 +46,6 @@ class AggregateSelectWrapperBuilderTest {
   private static final String FIELD_BREWERY = "brewery";
 
   private AggregateSelectWrapperBuilder aggregateSelectWrapperBuilder;
-
 
   @Mock
   private DSLContext dslContext;
@@ -106,7 +108,6 @@ class AggregateSelectWrapperBuilderTest {
       String fieldArgument) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
-    when(selectedField.getAlias()).thenReturn(alias);
     Map<String, Object> arguments = Map.of(FIELD_ARGUMENT, fieldArgument);
     when(selectedField.getArguments()).thenReturn(arguments);
     lenient().when(selectedField.getFieldDefinition())

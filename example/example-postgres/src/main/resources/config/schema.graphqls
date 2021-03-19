@@ -28,6 +28,7 @@ type Beer {
   ingredients: [Ingredient!]!
   soldPerYear: Int!
   ingredientAgg: Aggregate!
+  taste : [String]!
 }
 
 type Address {
