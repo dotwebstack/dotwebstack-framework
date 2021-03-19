@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.jooq.impl.DSL.trueCondition;
 
-import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,31 +27,29 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
   }
 
   public abstract void addFields(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      Table<Record> fromTable, Map<String, SelectedField> selectedFields, DataFetchingFieldSelectionSet selectionSet);
+      Table<Record> fromTable, Map<String, SelectedField> selectedFields);
 
   @Override
   public SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      String fieldPathPrefix, JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet) {
-    Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
-        .as(selectContext.getQueryContext()
-            .newTableAlias());
+      String fieldPathPrefix, JoinTable parentJoinTable) {
 
-    Map<String, SelectedField> selectedFields = selectionSet.getFields(fieldPathPrefix.concat("*.*"))
+    Map<String, SelectedField> selectedFields = selectContext.getQueryContext()
+        .getSelectionSet()
+        .getFields(fieldPathPrefix.concat("*.*"))
         .stream()
         .collect(Collectors.toMap(field -> Optional.ofNullable(field.getAlias())
             .orElse(field.getName()), Function.identity()));
-    return build(selectContext, typeConfiguration, parentJoinTable, selectionSet, selectedFields);
+    return build(selectContext, typeConfiguration, parentJoinTable, selectedFields);
   }
 
   @Override
   public SelectWrapper build(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      JoinTable parentJoinTable, DataFetchingFieldSelectionSet selectionSet,
-      Map<String, SelectedField> selectedFields) {
+      JoinTable parentJoinTable, Map<String, SelectedField> selectedFields) {
     Table<Record> fromTable = DSL.table(typeConfiguration.getTable())
         .as(selectContext.getQueryContext()
             .newTableAlias());
 
-    addFields(selectContext, typeConfiguration, fromTable, selectedFields, selectionSet);
+    addFields(selectContext, typeConfiguration, fromTable, selectedFields);
 
     SelectJoinStep<Record> query = dslContext.select(selectContext.getSelectColumns())
         .from(fromTable);

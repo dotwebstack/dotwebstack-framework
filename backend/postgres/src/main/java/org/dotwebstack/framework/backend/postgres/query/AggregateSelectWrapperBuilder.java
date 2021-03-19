@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.NUMERIC_FUNCTIONS;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 
-import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.SelectedField;
 import java.util.Map;
 import java.util.Objects;
@@ -26,8 +25,9 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
+  @Override
   public void addFields(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      Table<Record> fromTable, Map<String, SelectedField> selectedFields, DataFetchingFieldSelectionSet selectionSet) {
+      Table<Record> fromTable, Map<String, SelectedField> selectedFields) {
     selectedFields.values()
         .stream()
         .filter(AggregateHelper::isAggregateField)

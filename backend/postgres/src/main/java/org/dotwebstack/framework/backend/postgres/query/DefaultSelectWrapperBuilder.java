@@ -56,7 +56,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
   @Override
   public void addFields(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      Table<Record> fromTable, Map<String, SelectedField> selectedFields, DataFetchingFieldSelectionSet selectionSet) {
+      Table<Record> fromTable, Map<String, SelectedField> selectedFields) {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
@@ -65,8 +65,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .stream()
         .filter(entry -> !entry.getValue()
             .isScalar())
-        .forEach(entry -> addJoinTable(selectionSet, selectContext, fromTable, selectedFields.get(entry.getKey()),
-            entry.getValue()));
+        .forEach(entry -> addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue()));
 
     // add direct fields
     fieldNamesConfigurations.entrySet()
@@ -76,21 +75,23 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
   }
 
-  private void addJoinTable(DataFetchingFieldSelectionSet selectionSet, SelectContext selectContext,
-      Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration) {
+  private void addJoinTable(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
+      PostgresFieldConfiguration fieldConfiguration) {
     List<UnaryOperator<Map<String, Object>>> assembleFnsList = new ArrayList<>();
 
     Map<String, SelectedField> selectedStringJoinFieldsByName =
-        getSelectedAggregateFieldsByName(selectedField, selectionSet, true);
+        getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
+            .getSelectionSet(), true);
 
-    selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectionSet,
-        selectContext, fromTable, selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
+    selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectContext, fromTable,
+        selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
 
     Map<String, SelectedField> otherAggregateFieldsByName =
-        getSelectedAggregateFieldsByName(selectedField, selectionSet, false);
+        getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
+            .getSelectionSet(), false);
 
     if (!otherAggregateFieldsByName.isEmpty()) {
-      processJoinTable(assembleFnsList, selectionSet, selectContext, fromTable, selectedField, fieldConfiguration,
+      processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration,
           otherAggregateFieldsByName);
     }
 
@@ -100,12 +101,11 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     }
   }
 
-  private void processJoinTable(List<UnaryOperator<Map<String, Object>>> assembleFnsList,
-      DataFetchingFieldSelectionSet selectionSet, SelectContext selectContext, Table<Record> fromTable,
-      SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
+  private void processJoinTable(List<UnaryOperator<Map<String, Object>>> assembleFnsList, SelectContext selectContext,
+      Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
       Map<String, SelectedField> selectedFields) {
-    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectionSet,
-        selectedFields).ifPresent(joinTableWrapper -> {
+    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectedFields)
+        .ifPresent(joinTableWrapper -> {
           selectContext.getSelectColumns()
               .add(DSL.field(joinTableWrapper.getTable()
                   .getName()
@@ -151,7 +151,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
   private Optional<QueryBuilder.TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
-      DataFetchingFieldSelectionSet selectionSet, Map<String, SelectedField> selectedFields) {
+      Map<String, SelectedField> selectedFields) {
 
     // Never construct joins for nested lists
     if (isList(unwrapNonNull(selectedField.getFieldDefinition()
@@ -175,13 +175,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     if (fieldConfiguration.getJoinColumns() != null || fieldConfiguration.getJoinTable() != null) {
       SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
-      SelectWrapper selectWrapper =
-          selectWrapperBuilder.build(new SelectContext(queryContext), (PostgresTypeConfiguration) typeConfiguration,
-              isAggregate(fieldConfiguration) ? fieldConfiguration.getJoinTable() : null, selectionSet, selectedFields);
       SelectWrapper selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext),
-          (PostgresTypeConfiguration) typeConfiguration, selectedField.getFullyQualifiedName()
-              .concat("/"),
-          fieldConfiguration.getJoinTable(), selectionSet);
+          (PostgresTypeConfiguration) typeConfiguration, fieldConfiguration.getJoinTable(), selectedFields);
 
       final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
           fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);

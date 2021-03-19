@@ -13,7 +13,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
-import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
@@ -63,14 +62,13 @@ class AggregateSelectWrapperBuilderTest {
     SelectContext selectContext = new SelectContext(mock(QueryContext.class));
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
     Map<String, SelectedField> selectedFields = Map.of("",
-        mockSelectedAggregateField(INT_AVG_FIELD, "totalAvg", GraphQLFieldDefinition.newFieldDefinition()
+        mockSelectedAggregateField(INT_AVG_FIELD, GraphQLFieldDefinition.newFieldDefinition()
             .name(INT_AVG_FIELD)
             .type(Scalars.GraphQLInt)
             .build(), FIELD_NAME));
-    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
-    assertThrows(IllegalArgumentException.class, () -> aggregateSelectWrapperBuilder.addFields(selectContext,
-        typeConfiguration, createTable(), selectedFields, selectionSet));
+    assertThrows(IllegalArgumentException.class,
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
   }
 
   @Test
@@ -78,14 +76,13 @@ class AggregateSelectWrapperBuilderTest {
     SelectContext selectContext = new SelectContext(mock(QueryContext.class));
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
     Map<String, SelectedField> selectedFields = Map.of("",
-        mockSelectedAggregateField(STRING_JOIN_FIELD, "totalMin", GraphQLFieldDefinition.newFieldDefinition()
+        mockSelectedAggregateField(STRING_JOIN_FIELD, GraphQLFieldDefinition.newFieldDefinition()
             .name(STRING_JOIN_FIELD)
             .type(Scalars.GraphQLInt)
             .build(), FIELD_SOLD));
-    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
-    assertThrows(IllegalArgumentException.class, () -> aggregateSelectWrapperBuilder.addFields(selectContext,
-        typeConfiguration, createTable(), selectedFields, selectionSet));
+    assertThrows(IllegalArgumentException.class,
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
   }
 
   @Test
@@ -93,18 +90,17 @@ class AggregateSelectWrapperBuilderTest {
     SelectContext selectContext = new SelectContext(mock(QueryContext.class));
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
     Map<String, SelectedField> selectedFields = Map.of("",
-        mockSelectedAggregateField("monkey", "totalAvg", GraphQLFieldDefinition.newFieldDefinition()
+        mockSelectedAggregateField("monkey", GraphQLFieldDefinition.newFieldDefinition()
             .name("monkey")
             .type(Scalars.GraphQLInt)
             .build(), FIELD_NAME));
-    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
-    assertThrows(IllegalArgumentException.class, () -> aggregateSelectWrapperBuilder.addFields(selectContext,
-        typeConfiguration, createTable(), selectedFields, selectionSet));
+    assertThrows(IllegalArgumentException.class,
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
   }
 
 
-  private SelectedField mockSelectedAggregateField(String name, String alias, GraphQLFieldDefinition fieldDefinition,
+  private SelectedField mockSelectedAggregateField(String name, GraphQLFieldDefinition fieldDefinition,
       String fieldArgument) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
