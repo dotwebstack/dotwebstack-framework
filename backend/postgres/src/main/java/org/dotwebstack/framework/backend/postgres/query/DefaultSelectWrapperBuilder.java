@@ -9,7 +9,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
@@ -240,10 +239,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
   private PostgresTypeConfiguration getPostgresTypeConfigurationForCondition(
       PostgresFieldConfiguration fieldConfiguration, SelectedField selectedField,
       PostgresTypeConfiguration rightTypeConfiguration) {
-    if (isAggregate(fieldConfiguration)) {
-      GraphQLType type = getForeignType(selectedField, fieldConfiguration);
-      return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(type));
-    } else if (fieldConfiguration.getJoinTable() != null) {
+    if (isAggregate(fieldConfiguration) || fieldConfiguration.getJoinTable() != null) {
       return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(selectedField.getObjectType()));
     }
 

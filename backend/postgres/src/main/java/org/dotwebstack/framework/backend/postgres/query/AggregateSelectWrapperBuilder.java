@@ -72,10 +72,7 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
 
     switch (selectedField.getName()) {
       case STRING_JOIN_FIELD:
-        if (!aggregateFieldConfiguration.isText()) {
-          throw new IllegalArgumentException(
-              String.format("String aggregation for non-text field %s is not supported.", aggregateFieldName));
-        }
+        validateStringJoinField(aggregateFieldConfiguration, aggregateFieldName);
         break;
       case COUNT_FIELD:
         // no additional validation needed
@@ -83,6 +80,14 @@ public class AggregateSelectWrapperBuilder extends AbstractSelectWrapperBuilder 
       default:
         throw new IllegalArgumentException(
             String.format("Unsupported aggregation function: %s.", selectedField.getName()));
+    }
+  }
+
+  private void validateStringJoinField(PostgresFieldConfiguration aggregateFieldConfiguration,
+      String aggregateFieldName) {
+    if (!aggregateFieldConfiguration.isText()) {
+      throw new IllegalArgumentException(
+          String.format("String aggregation for non-text field %s is not supported.", aggregateFieldName));
     }
   }
 }

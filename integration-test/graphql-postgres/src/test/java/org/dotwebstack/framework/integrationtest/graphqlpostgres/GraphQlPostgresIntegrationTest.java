@@ -81,7 +81,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeers_Default() {
-    String query = "{beers{identifier name}}";
+    String query = "{beers{identifier_beer name}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -100,7 +100,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsPublisher_forBeerSubscription() {
-    String query = "subscription {beersSubscription{identifier name}}";
+    String query = "subscription {beersSubscription{identifier_beer name}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -126,13 +126,14 @@ class GraphQlPostgresIntegrationTest {
 
     Map<String, Object> beer = (Map<String, Object>) firstData.get("beersSubscription");
 
-    assertThat(beer.entrySet(), equalTo(Map.of("identifier", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1")
-        .entrySet()));
+    assertThat(beer.entrySet(),
+        equalTo(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1")
+            .entrySet()));
   }
 
   @Test
   void graphQlQuery_ReturnsBeer_forIdentifier() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){name}}";
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){name}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -149,7 +150,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithNestedObject_forIdentifier() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -236,7 +237,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweryWithMappedBy_forIdentifier() {
-    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
@@ -341,7 +342,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeersWithDeepNesting_default() {
-    String query = "{beers{identifier name brewery{name beers{name ingredients{name}}}}}";
+    String query = "{beers{identifier_beer name brewery{name beers{name ingredients{name}}}}}";
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
@@ -384,7 +385,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithNestedGeometry_forIdentifier() {
-    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
+    String query =
+        "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -407,7 +409,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
-    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(type : MULTIPOINT){type asWKT asWKB}}}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -431,7 +433,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forMultipleBeers() {
-    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
@@ -453,7 +455,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forSingleBeer() {
-    String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
+    String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
@@ -475,7 +477,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweryWithAggregateType_forNoBeer() {
-    String query = "{brewery (identifier : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
+    String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "totalCount : count( field : \"soldPerYear\" )"
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) "
@@ -501,7 +503,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forIngredients() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
         + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
@@ -525,7 +527,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forDuplicateAvg() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
         + "avgC : floatAvg( field : \"weight\" )  } } }";
 
@@ -548,7 +550,7 @@ class GraphQlPostgresIntegrationTest {
   @Test
   @Disabled
   void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
         + "countWeightDef : count( field : \"weight\" ) "
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
@@ -571,7 +573,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithStringJoinAggregateType_forString() {
-    String query = "{beer(identifier : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name taste ingredientAgg{ totalCount : count( field : \"weight\" )"
         + "names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
 
@@ -592,7 +594,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithStringJoinAggregateType_forStringArray() {
-    String query = "{brewery (identifier : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true ) } } }";
 

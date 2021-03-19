@@ -3,30 +3,30 @@ typeMapping:
     table: db.beer
     backend: postgres
     keys:
-      - field: identifier
+      - field: identifier_beer
     fields:
       brewery:
         joinColumns:
           - name: brewery
-            referencedField: identifier
+            referencedField: identifier_brewery
       ingredients:
         joinTable:
           name: db.beer_ingredient
           joinColumns:
             - name: beer_identifier
-              referencedField: identifier
+              referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_identifier
-              referencedField: identifier
+              referencedField: identifier_ingredient
       ingredient:
         joinTable:
           name: db.beer_ingredient
           joinColumns:
             - name: beer_identifier
-              referencedField: identifier
+              referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_identifier
-              referencedField: identifier
+              referencedField: identifier_ingredient
       ingredientAgg:
         aggregationOf: ingredients
 
@@ -34,22 +34,22 @@ typeMapping:
     backend: postgres
     table: db.ingredient
     keys:
-      - field: identifier
+      - field: identifier_ingredient
 
   Brewery:
     backend: postgres
     table: db.brewery
     keys:
-      - field: identifier
+      - field: identifier_brewery
     fields:
       postalAddress:
         joinColumns:
           - name: postal_address
-            referencedField: identifier
+            referencedField: identifier_address
       visitAddress:
         joinColumns:
           - name: visit_address
-            referencedField: identifier
+            referencedField: identifier_address
       beers:
         mappedBy: brewery
       beerAgg:
@@ -59,7 +59,7 @@ typeMapping:
     backend: postgres
     table: db.address
     keys:
-      - field: identifier
+      - field: identifier_address
     fields:
       street:
       city:

@@ -482,6 +482,8 @@ class QueryBuilderTest {
         .thenReturn(objectType);
     lenient().when(objectType.getFieldDefinition("beer"))
         .thenReturn(field);
+    lenient().when(objectType.getName())
+        .thenReturn("Beer");
     return selectedField;
   }
 

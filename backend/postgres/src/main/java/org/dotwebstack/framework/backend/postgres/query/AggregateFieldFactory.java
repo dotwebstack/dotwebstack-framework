@@ -40,18 +40,7 @@ public class AggregateFieldFactory {
         }
         break;
       case STRING_JOIN_FIELD:
-        if (aggregateFieldConfiguration.isList()) {
-          result = createGroupConcat(selectedField, columnAlias);
-        } else {
-          String separator = getSeparator(selectedField);
-          if (isDistinct(selectedField)) {
-            result = DSL.groupConcatDistinct(DSL.field(DSL.name(fromTable, columnName)))
-                .separator(separator);
-          } else {
-            result = DSL.groupConcat(DSL.field(DSL.name(fromTable, columnName)))
-                .separator(separator);
-          }
-        }
+        result = createStringJoin(aggregateFieldConfiguration, selectedField, fromTable, columnName, columnAlias);
         break;
       case INT_SUM_FIELD:
         result = DSL.sum(bigDecimalField(fromTable, columnName))
@@ -99,6 +88,22 @@ public class AggregateFieldFactory {
           .separator(separator);
     }
     return result;
+  }
+
+  private Field<?> createStringJoin(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
+      String fromTable, String columnName, String columnAlias) {
+    if (aggregateFieldConfiguration.isList()) {
+      return createGroupConcat(selectedField, columnAlias);
+    } else {
+      String separator = getSeparator(selectedField);
+      if (isDistinct(selectedField)) {
+        return DSL.groupConcatDistinct(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      } else {
+        return DSL.groupConcat(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      }
+    }
   }
 
   private boolean isDistinct(SelectedField selectedField) {
