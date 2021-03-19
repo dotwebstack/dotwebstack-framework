@@ -20,12 +20,6 @@ import lombok.NonNull;
 public class TypeHelper {
   private TypeHelper() {}
 
-  public Optional<Boolean> test(SelectedField selectedField){
-    if (GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
-        .getType()))) {
-      return Optional.empty();
-    }
-  }
   public static boolean hasListType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
       return hasListType(((NonNullType) type).getType());
