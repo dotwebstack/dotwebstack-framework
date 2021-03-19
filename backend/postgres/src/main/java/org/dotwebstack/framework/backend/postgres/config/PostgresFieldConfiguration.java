@@ -34,4 +34,16 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
   }
+
+  public List<JoinColumn> findJoinColumns() {
+    if (joinColumns != null) {
+      return joinColumns;
+    }
+
+    if (joinTable != null) {
+      return joinTable.getJoinColumns();
+    }
+
+    return List.of();
+  }
 }

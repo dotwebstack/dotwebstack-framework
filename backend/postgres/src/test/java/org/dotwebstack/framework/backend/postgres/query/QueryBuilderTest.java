@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Arrays;
@@ -58,6 +59,8 @@ class QueryBuilderTest {
   private static final String FIELD_NAME = "name";
 
   private static final String FIELD_BREWERY = "brewery";
+
+  private static final String FIELD_INGREDIENTS = "ingredients";
 
   private static final String FIELD_AGGREGATE = "aggregate";
 
@@ -236,6 +239,41 @@ class QueryBuilderTest {
             + "join dbeerpedia.beers_ingredients as \"t2\" on \"t2\".\"ingredients_identifier\" "
             + "= \"t1\".\"identifier\" where \"t2\".\"beers_identifier\" = \"t3\".\"x3\" limit :2 offset :3) "
             + "as \"t4\" on true"));
+  }
+
+  @Test
+  void build_returnsQueryWithoutJoin_forNestedList() {
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
+        GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_IDENTIFIER)
+            .type(Scalars.GraphQLString)
+            .build()),
+        mockSelectedField(FIELD_INGREDIENTS, GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_INGREDIENTS)
+            .type(GraphQLList.list(GraphQLObjectType.newObject()
+                .name("ingredient")
+                .build()))
+            .build()));
+
+    when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
+
+    PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
+
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getQuery(), notNullValue());
+    assertThat(queryHolder.getQuery()
+        .getSQL(ParamType.NAMED),
+        equalTo("select \"t1\".\"identifier\" as \"x1\" from db.beer as \"t1\" limit :1 offset :2"));
   }
 
   @Test
@@ -525,8 +563,14 @@ class QueryBuilderTest {
     joinColumn.setReferencedField(FIELD_IDENTIFIER);
     breweryFieldConfiguration.setJoinColumns(List.of(joinColumn));
 
-    typeConfiguration.setFields(new HashMap<>(
-        Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), FIELD_BREWERY, breweryFieldConfiguration)));
+    PostgresFieldConfiguration ingredientsFieldConfiguration = new PostgresFieldConfiguration();
+    JoinTable joinTable = new JoinTable();
+    joinTable.setName("beer_ingredients");
+
+    ingredientsFieldConfiguration.setJoinTable(joinTable);
+
+    typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), FIELD_BREWERY,
+        breweryFieldConfiguration, FIELD_INGREDIENTS, ingredientsFieldConfiguration)));
 
     typeConfiguration.setTable("db.beer");
 
@@ -542,6 +586,9 @@ class QueryBuilderTest {
             .build())
         .fieldDefinition(newFieldDefinition().name("soldPerYear")
             .type(newTypeName(Scalars.GraphQLFloat.getName()).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(FIELD_INGREDIENTS)
+            .type(newTypeName("Ingredient").build())
             .build())
         .build());
 

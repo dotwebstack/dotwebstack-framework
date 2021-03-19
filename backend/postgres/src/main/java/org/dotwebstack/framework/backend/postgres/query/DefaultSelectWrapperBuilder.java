@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static graphql.schema.GraphQLTypeUtil.isList;
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isAggregate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -150,6 +152,13 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
   private Optional<QueryBuilder.TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
       DataFetchingFieldSelectionSet selectionSet, Map<String, SelectedField> selectedFields) {
+
+    // Never construct joins for nested lists
+    if (isList(unwrapNonNull(selectedField.getFieldDefinition()
+        .getType()))) {
+      return Optional.empty();
+    }
+
     GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration);
 
     if (!(foreignType instanceof GraphQLObjectType)) {
@@ -163,17 +172,21 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       return Optional.empty();
     }
 
-    if (fieldConfiguration.getJoinColumns() != null) {
+    if (fieldConfiguration.getJoinColumns() != null || fieldConfiguration.getJoinTable() != null) {
       SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
       SelectWrapper selectWrapper =
           selectWrapperBuilder.build(new SelectContext(queryContext), (PostgresTypeConfiguration) typeConfiguration,
               isAggregate(fieldConfiguration) ? fieldConfiguration.getJoinTable() : null, selectionSet, selectedFields);
+      SelectWrapper selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext),
+          (PostgresTypeConfiguration) typeConfiguration, selectedField.getFullyQualifiedName()
+              .concat("/"),
+          fieldConfiguration.getJoinTable(), selectionSet);
 
       final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
           fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
 
-      Condition whereCondition = fieldConfiguration.getJoinColumns()
+      Condition whereCondition = fieldConfiguration.findJoinColumns()
           .stream()
           .map(joinColumn -> createJoinTableCondition(otherSideTypeConfiguration, fieldConfiguration, joinColumn,
               fromTable, selectWrapper.getTable()))
@@ -190,7 +203,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       return Optional.of(tableWrapper);
     }
 
-    if (fieldConfiguration.getJoinTable() != null || fieldConfiguration.getMappedBy() != null) {
+    if (fieldConfiguration.getMappedBy() != null) {
       return Optional.empty();
     }
 
@@ -204,10 +217,12 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     PostgresFieldConfiguration otherSideFieldConfiguration = otherSideTypeConfiguration.getFields()
         .get(joinColumn.getReferencedField());
 
-    Name leftColumn = DSL.name(leftTable.getName(),
-        fieldConfiguration.isAggregate() ? otherSideFieldConfiguration.getColumn() : joinColumn.getName());
-    Name rightColumn = DSL.name(rightTable.getName(),
-        fieldConfiguration.isAggregate() ? joinColumn.getName() : otherSideFieldConfiguration.getColumn());
+    boolean invert = fieldConfiguration.isAggregate() || fieldConfiguration.getJoinTable() != null;
+
+    Name leftColumn =
+        DSL.name(leftTable.getName(), invert ? otherSideFieldConfiguration.getColumn() : joinColumn.getName());
+    Name rightColumn =
+        DSL.name(rightTable.getName(), invert ? joinColumn.getName() : otherSideFieldConfiguration.getColumn());
 
     return DSL.field(leftColumn)
         .eq(DSL.field(rightColumn));
@@ -233,6 +248,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     if (isAggregate(fieldConfiguration)) {
       GraphQLType type = getForeignType(selectedField, fieldConfiguration);
       return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(type));
+    } else if (fieldConfiguration.getJoinTable() != null) {
+      return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(selectedField.getObjectType()));
     }
 
     return rightTypeConfiguration;

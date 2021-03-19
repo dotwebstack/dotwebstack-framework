@@ -18,6 +18,15 @@ typeMapping:
           inverseJoinColumns:
             - name: ingredient_identifier
               referencedField: identifier
+      ingredient:
+        joinTable:
+          name: db.beer_ingredient
+          joinColumns:
+            - name: beer_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredient_identifier
+              referencedField: identifier
       ingredientAgg:
         aggregationOf: ingredients
 
