@@ -24,7 +24,7 @@ Aggregation is a predefined GraphQL Object type see your corresponding backend r
 ```
   type Aggregate {
     count(field: String!, distinct: Boolean = false): Int!
-    stringJoin( field : String!, distinct : Boolean = false ): Int!
+    stringJoin( field : String!, distinct : Boolean = false ): String!
 
     intSum(field: String!): Int
     intMin(field: String!): Int

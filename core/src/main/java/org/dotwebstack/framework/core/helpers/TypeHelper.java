@@ -10,12 +10,22 @@ import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
 import java.util.List;
+import java.util.Optional;
+
+import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.SelectedField;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
 public class TypeHelper {
   private TypeHelper() {}
 
+  public Optional<Boolean> test(SelectedField selectedField){
+    if (GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getFieldDefinition()
+        .getType()))) {
+      return Optional.empty();
+    }
+  }
   public static boolean hasListType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
       return hasListType(((NonNullType) type).getType());
