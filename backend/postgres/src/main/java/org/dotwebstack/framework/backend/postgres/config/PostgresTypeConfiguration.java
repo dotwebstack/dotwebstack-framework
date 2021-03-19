@@ -120,8 +120,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
                 });
           } else if (ref.getJoinTable() != null) {
             fieldConfiguration.setJoinTable(ref.getJoinTable());
-            fieldConfiguration.setJoinColumns(ref.getJoinTable()
-                .getJoinColumns());
           } else {
             throw invalidConfigurationException("Invalid aggregate field configuration.");
           }

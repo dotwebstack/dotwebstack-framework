@@ -37,7 +37,6 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
         .as(selectContext.getQueryContext()
             .newTableAlias());
 
-
     Map<String, SelectedField> selectedFields = selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
         .collect(Collectors.toMap(field -> Optional.ofNullable(field.getAlias())

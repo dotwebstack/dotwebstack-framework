@@ -31,6 +31,7 @@ type Beer {
   abv: Float!
   brewery: Brewery!
   ingredients: [Ingredient!]!
+  ingredient: Ingredient
   soldPerYear: Int!
   ingredientAgg: Aggregate!
 }
