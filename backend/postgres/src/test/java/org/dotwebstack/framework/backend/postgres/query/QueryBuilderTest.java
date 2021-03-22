@@ -529,16 +529,16 @@ class QueryBuilderTest {
     typeConfiguration.setKeys(List.of(keyConfiguration));
 
     PostgresFieldConfiguration aggregateConfiguration = new PostgresFieldConfiguration();
-    aggregateConfiguration.setAggregationOf("beer");
-    aggregateConfiguration.setJoinColumns(List.of(new JoinColumn("brewery", "identifier")));
+    aggregateConfiguration.setAggregationOf("Beer");
+    aggregateConfiguration.setMappedBy("brewery");
 
     PostgresFieldConfiguration beerConfiguration = new PostgresFieldConfiguration();
-    beerConfiguration.setMappedBy("Brewery");
+    beerConfiguration.setMappedBy("brewery");
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), "beer",
         beerConfiguration, FIELD_AGGREGATE, aggregateConfiguration)));
     typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Brewery")
+    typeConfiguration.init(Map.of("Beer", createBeerTypeConfiguration()), newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())

@@ -8,6 +8,8 @@ import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 
 public class MemStatementListHelper {
 
+  private MemStatementListHelper() {}
+
   public static List<MemStatement> listOf(@NonNull MemStatementList memStatementList) {
     List<MemStatement> result = new ArrayList<>();
 

@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class SchemaResolver {
 
+  private SchemaResolver() {}
+
   public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, @NonNull Schema<?> schema) {
     return resolveSchema(openApi, schema, schema.get$ref());
   }

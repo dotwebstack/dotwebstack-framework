@@ -45,6 +45,6 @@ public class DotWebStackConfiguration {
           return type;
         })
         .map(type -> (T) type)
-        .orElseThrow(() -> illegalStateException(""));
+        .orElseThrow(() -> illegalStateException("Unknown type configuration: {}", typeName));
   }
 }

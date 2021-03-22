@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
@@ -158,13 +157,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       return Optional.empty();
     }
 
-    GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration);
-
-    if (!(foreignType instanceof GraphQLObjectType)) {
-      throw illegalStateException("Foreign output type is not an object type.");
-    }
-
-    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(foreignType.getName());
+    String foreignTypeName = getForeignTypeName(selectedField, fieldConfiguration);
+    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(foreignTypeName);
 
     // Non-Postgres backends can never be eager loaded
     if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
@@ -222,18 +216,18 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .eq(DSL.field(rightColumn));
   }
 
-  private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,
-      PostgresFieldConfiguration fieldConfiguration) {
-    GraphQLOutputType foreignType;
+  private String getForeignTypeName(SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration) {
     if (isAggregate(fieldConfiguration)) {
-      foreignType = selectedField.getObjectType()
-          .getFieldDefinition(fieldConfiguration.getAggregationOf())
-          .getType();
-    } else {
-      foreignType = selectedField.getFieldDefinition()
-          .getType();
+      return fieldConfiguration.getAggregationOf();
     }
-    return GraphQLTypeUtil.unwrapAll(foreignType);
+
+    GraphQLUnmodifiedType foreignType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+        .getType());
+
+    if (!(foreignType instanceof GraphQLObjectType)) {
+      throw illegalStateException("Foreign output type is not an object type.");
+    }
+    return foreignType.getName();
   }
 
   private PostgresTypeConfiguration getPostgresTypeConfigurationForCondition(

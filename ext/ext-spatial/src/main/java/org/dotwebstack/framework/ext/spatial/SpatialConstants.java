@@ -2,6 +2,8 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
+  private SpatialConstants() {}
+
   // ObjectTypes
 
   static final String GEOMETRY = "Geometry";

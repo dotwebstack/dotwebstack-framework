@@ -185,8 +185,5 @@ public class CoreConfigurer implements GraphqlConfigurer {
     builder.scalar(CoreScalars.OBJECT)
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME);
-
-    // autoRegisteredSchemaDirectiveWirings.forEach(wiring ->
-    // builder.directive(wiring.getDirectiveName(), wiring));
   }
 }
