@@ -8,8 +8,13 @@ import io.netty.buffer.ByteBuf;
 import io.r2dbc.postgresql.client.Parameter;
 import io.r2dbc.postgresql.codec.Codec;
 import io.r2dbc.postgresql.message.Format;
+import io.r2dbc.postgresql.util.Assert;
 import io.r2dbc.postgresql.util.ByteBufUtils;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public class EnumArrayCodec implements Codec<String[]> {
@@ -39,7 +44,7 @@ public class EnumArrayCodec implements Codec<String[]> {
     if (FORMAT_BINARY == format) {
       return decodeBinary(buffer, type);
     } else {
-      throw new UnsupportedOperationException("Text format not supported!");
+      return decodeText(buffer, type);
     }
   }
 
@@ -108,5 +113,163 @@ public class EnumArrayCodec implements Codec<String[]> {
         readArrayAsBinary(buffer, (Object[]) array[i], dims, thisDimension + 1);
       }
     }
+  }
+
+  private Class<?> createArrayType(int dims) {
+    int[] size = new int[dims];
+    Arrays.fill(size, 1);
+    return Array.newInstance(String.class, size)
+        .getClass();
+  }
+
+  private static int getDimensions(List<?> list) {
+    int dims = 1;
+
+    Object inner = list.get(0);
+
+    while (inner instanceof List) {
+      inner = ((List<?>) inner).get(0);
+      dims++;
+    }
+
+    return dims;
+  }
+
+  private static String[] toArray(List<?> list, Class<?> returnType) {
+    List<String> result = new ArrayList<>(list.size());
+
+    for (Object e : list) {
+      Object o = (e instanceof List ? toArray((List<?>) e, returnType.getComponentType()) : e);
+      result.add(o.toString());
+    }
+
+    return result.toArray((String[]) Array.newInstance(returnType, list.size()));
+  }
+
+  private List<Object> buildArrayList(ByteBuf buf) {
+    List<Object> arrayList = new ArrayList<>();
+
+    char delim = ','; // todo parametrize
+
+    StringBuilder buffer = null;
+    boolean insideString = false;
+    boolean wasInsideString = false; // needed for checking if NULL
+    // value occurred
+    List<List<Object>> dims = new ArrayList<>(); // array dimension arrays
+    List<Object> curArray = arrayList; // currently processed array
+
+    CharSequence chars = buf.readCharSequence(buf.readableBytes(), StandardCharsets.UTF_8);
+
+    // Starting with 8.0 non-standard (beginning index
+    // isn't 1) bounds the dimensions are returned in the
+    // data formatted like so "[0:3]={0,1,2,3,4}".
+    // Older versions simply do not return the bounds.
+    //
+    // Right now we ignore these bounds, but we could
+    // consider allowing these index values to be used
+    // even though the JDBC spec says 1 is the first
+    // index. I'm not sure what a client would like
+    // to see, so we just retain the old behavior.
+    int startOffset = 0;
+
+    {
+      if (chars.charAt(0) == '[') {
+        while (chars.charAt(startOffset) != '=') {
+          startOffset++;
+        }
+        startOffset++; // skip =
+      }
+    }
+
+    char currentChar;
+
+    for (int i = startOffset; i < chars.length(); i++) {
+      currentChar = chars.charAt(i);
+      // escape character that we need to skip
+      if (currentChar == '\\') {
+        i++;
+        currentChar = chars.charAt(i);
+      } else if (!insideString && currentChar == '{') {
+        // subarray start
+        if (dims.isEmpty()) {
+          dims.add(arrayList);
+        } else {
+          List<Object> a = new ArrayList<>();
+          List<Object> p = dims.get(dims.size() - 1);
+          p.add(a);
+          dims.add(a);
+        }
+        curArray = dims.get(dims.size() - 1);
+
+        for (int t = i + 1; t < chars.length(); t++) {
+          if (!Character.isWhitespace(chars.charAt(t)) && chars.charAt(t) != '{') {
+            break;
+          }
+        }
+
+        buffer = new StringBuilder();
+        continue;
+      } else if (currentChar == '"') {
+        // quoted element
+        insideString = !insideString;
+        wasInsideString = true;
+        continue;
+      } else if (!insideString && Character.isWhitespace(currentChar)) {
+        // white space
+        continue;
+      } else if ((!insideString && (currentChar == delim || currentChar == '}')) || i == chars.length() - 1) {
+        // array end or element end
+        // when character that is a part of array element
+        if (currentChar != '"' && currentChar != '}' && currentChar != delim && buffer != null) {
+          buffer.append(currentChar);
+        }
+
+        String b = buffer == null ? null : buffer.toString();
+
+        // add element to current array
+        if (b != null && (!b.isEmpty() || wasInsideString)) {
+          curArray.add(!wasInsideString && b.equals("NULL") ? null : b);
+        }
+
+        wasInsideString = false;
+        buffer = new StringBuilder();
+
+        // when end of an array
+        if (currentChar == '}') {
+          dims.remove(dims.size() - 1);
+
+          // when multi-dimension
+          if (!dims.isEmpty()) {
+            curArray = dims.get(dims.size() - 1);
+          }
+
+          buffer = null;
+        }
+
+        continue;
+      }
+
+      if (buffer != null) {
+        buffer.append(currentChar);
+      }
+    }
+
+    return arrayList;
+  }
+
+  private String[] decodeText(ByteBuf buffer, Class<?> returnType) {
+    List<?> elements = buildArrayList(buffer);
+
+    if (elements.isEmpty()) {
+      return (String[]) Array.newInstance(String.class, 0);
+    }
+
+    int dimensions = getDimensions(elements);
+
+    if (returnType != Object.class) {
+      Assert.requireArrayDimension(returnType, dimensions, "Dimensions mismatch: %s expected, but %s returned from DB");
+    }
+
+    return toArray(elements, createArrayType(dimensions).getComponentType());
   }
 }
