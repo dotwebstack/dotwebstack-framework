@@ -155,8 +155,7 @@ public class EnumArrayCodec implements Codec<String[]> {
     return result.toArray((String[]) Array.newInstance(returnType, list.size()));
   }
 
-  @SuppressWarnings("squid:S03776")
-  private List<Object> buildArrayList(ByteBuf buf) {
+  private List<Object> buildArrayList(ByteBuf buf) { // NOSONAR
     List<Object> arrayList = new ArrayList<>();
 
     StringBuilder buffer = null;
