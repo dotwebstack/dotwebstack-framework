@@ -71,6 +71,15 @@ class EnumArrayCodecTest {
   }
 
   @Test
+  void decode_ReturnsStringArray_ForTextEnumEmptyArray() {
+    String[] enumArrayValues = new String[] {};
+
+    String[] decodedValue = codec.decode(createTextBuffer(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class);
+
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
+  }
+
+  @Test
   void decode_throwsException_ForNull() {
     assertThrows(IllegalArgumentException.class, () -> codec.decode(null, 1234, Format.FORMAT_BINARY, String[].class));
   }

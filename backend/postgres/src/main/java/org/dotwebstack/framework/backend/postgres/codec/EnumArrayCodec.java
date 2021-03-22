@@ -17,9 +17,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * EnumArray R2DBC codec to represent an enum array as string array.
+ *
+ * <p>
+ * this implementation is based on {@link io.r2dbc.postgresql.codec.AbstractArrayCodec}
+ * </p>
+ */
 public class EnumArrayCodec implements Codec<String[]> {
 
   private final Set<Integer> dataTypes;
+
+  public static final char ARRAY_DELIM = ',';
 
   public EnumArrayCodec(Set<Integer> dataTypes) {
     this.dataTypes = dataTypes;
@@ -146,10 +155,9 @@ public class EnumArrayCodec implements Codec<String[]> {
     return result.toArray((String[]) Array.newInstance(returnType, list.size()));
   }
 
+  @SuppressWarnings("squid:S03776")
   private List<Object> buildArrayList(ByteBuf buf) {
     List<Object> arrayList = new ArrayList<>();
-
-    char delim = ','; // todo parametrize
 
     StringBuilder buffer = null;
     boolean insideString = false;
@@ -172,32 +180,25 @@ public class EnumArrayCodec implements Codec<String[]> {
     // to see, so we just retain the old behavior.
     int startOffset = 0;
 
-    {
-      if (chars.charAt(0) == '[') {
-        while (chars.charAt(startOffset) != '=') {
-          startOffset++;
-        }
-        startOffset++; // skip =
+    if (chars.charAt(0) == '[') {
+      while (chars.charAt(startOffset) != '=') {
+        startOffset++;
       }
+      startOffset++; // skip =
     }
 
     char currentChar;
 
     for (int i = startOffset; i < chars.length(); i++) {
       currentChar = chars.charAt(i);
+      boolean appendChar = true;
       // escape character that we need to skip
       if (currentChar == '\\') {
-        i++;
-        currentChar = chars.charAt(i);
+        appendChar = false;
       } else if (!insideString && currentChar == '{') {
         // subarray start
         if (dims.isEmpty()) {
           dims.add(arrayList);
-        } else {
-          List<Object> a = new ArrayList<>();
-          List<Object> p = dims.get(dims.size() - 1);
-          p.add(a);
-          dims.add(a);
         }
         curArray = dims.get(dims.size() - 1);
 
@@ -208,19 +209,19 @@ public class EnumArrayCodec implements Codec<String[]> {
         }
 
         buffer = new StringBuilder();
-        continue;
+        appendChar = false;
       } else if (currentChar == '"') {
         // quoted element
         insideString = !insideString;
         wasInsideString = true;
-        continue;
+        appendChar = false;
       } else if (!insideString && Character.isWhitespace(currentChar)) {
         // white space
-        continue;
-      } else if ((!insideString && (currentChar == delim || currentChar == '}')) || i == chars.length() - 1) {
+        appendChar = false;
+      } else if ((!insideString && (currentChar == ARRAY_DELIM || currentChar == '}')) || i == chars.length() - 1) {
         // array end or element end
         // when character that is a part of array element
-        if (currentChar != '"' && currentChar != '}' && currentChar != delim && buffer != null) {
+        if (currentChar != '"' && currentChar != '}' && currentChar != ARRAY_DELIM && buffer != null) {
           buffer.append(currentChar);
         }
 
@@ -246,10 +247,10 @@ public class EnumArrayCodec implements Codec<String[]> {
           buffer = null;
         }
 
-        continue;
+        appendChar = false;
       }
 
-      if (buffer != null) {
+      if (buffer != null && appendChar) {
         buffer.append(currentChar);
       }
     }
@@ -266,7 +267,7 @@ public class EnumArrayCodec implements Codec<String[]> {
 
     int dimensions = getDimensions(elements);
 
-    if (returnType != Object.class) {
+    if (returnType != String.class) {
       Assert.requireArrayDimension(returnType, dimensions, "Dimensions mismatch: %s expected, but %s returned from DB");
     }
 
