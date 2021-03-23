@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class AggregateFieldFactory {
   private static final String DEFAULT_SEPARATOR = ",";
 
-  public Field<?> create(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
+  public Field<?> create(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField, // NOSONAR
       String fromTable, String columnName, String columnAlias) {
     Field<?> result;
     String aggregateFunction = selectedField.getName();
