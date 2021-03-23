@@ -11,6 +11,7 @@ import io.r2dbc.postgresql.message.Format;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 class EnumArrayCodecTest {
@@ -31,11 +32,49 @@ class EnumArrayCodecTest {
   }
 
   @Test
-  void decode_ReturnsStringArray_ForEnumArrayObject() {
+  void decode_ReturnsStringArray_ForBinaryEnumArrayObject() {
     String[] enumArrayValues = new String[] {"foo", "bar"};
 
     String[] decodedValue =
-        codec.decode(createEnumArrayBuffer(enumArrayValues), 1234, Format.FORMAT_BINARY, String[].class);
+        codec.decode(createBinaryBuffer(enumArrayValues), 1234, Format.FORMAT_BINARY, String[].class);
+
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
+  }
+
+  @Test
+  void decode_ReturnsStringArray_ForTextEnumArrayObject() {
+    String[] enumArrayValues = new String[] {"foo", "bar"};
+
+    String[] decodedValue = codec.decode(createTextBuffer(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class);
+
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
+  }
+
+  @Test
+  void decode_ReturnsStringArray_ForTextEnumArrayWithBoundsObject() {
+    String[] enumArrayValues = new String[] {"foo", "bar"};
+
+    String[] decodedValue =
+        codec.decode(createTextBufferWithBounds(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class);
+
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
+  }
+
+  @Test
+  void decode_ReturnsStringArray_ForTextEnumQuotedArrayWithObject() {
+    String[] enumArrayValues = new String[] {"foo", "bar"};
+
+    String[] decodedValue =
+        codec.decode(createTextBufferWithBounds("foo", "\"bar\""), 1234, Format.FORMAT_TEXT, String[].class);
+
+    assertThat(decodedValue, is(equalTo(enumArrayValues)));
+  }
+
+  @Test
+  void decode_ReturnsStringArray_ForTextEnumEmptyArray() {
+    String[] enumArrayValues = new String[] {};
+
+    String[] decodedValue = codec.decode(createTextBuffer(enumArrayValues), 1234, Format.FORMAT_TEXT, String[].class);
 
     assertThat(decodedValue, is(equalTo(enumArrayValues)));
   }
@@ -43,16 +82,6 @@ class EnumArrayCodecTest {
   @Test
   void decode_throwsException_ForNull() {
     assertThrows(IllegalArgumentException.class, () -> codec.decode(null, 1234, Format.FORMAT_BINARY, String[].class));
-  }
-
-  @Test
-  void decode_throwsException_ForFormatText() {
-    String[] enumArrayValues = new String[] {"test"};
-
-    ByteBuf byteBuf = createEnumArrayBuffer(enumArrayValues);
-
-    assertThrows(UnsupportedOperationException.class,
-        () -> codec.decode(byteBuf, 1234, Format.FORMAT_TEXT, String[].class));
   }
 
   @Test
@@ -97,19 +126,51 @@ class EnumArrayCodecTest {
     assertThat(type, is(String[].class));
   }
 
-  private ByteBuf createEnumArrayBuffer(String... values) {
-    ByteBuf byteBuf = Unpooled.buffer();
+  private ByteBuf createBinaryBuffer(String... values) {
+    ByteBuf buffer = Unpooled.buffer();
 
-    byteBuf.writeBytes(new byte[] {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -9, -60, 0, 0, 0});
-    byteBuf.writeByte(values.length);
-    byteBuf.writeBytes(new byte[] {0, 0, 0, 1});
+    buffer.writeBytes(new byte[] {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -9, -60, 0, 0, 0});
+    buffer.writeByte(values.length);
+    buffer.writeBytes(new byte[] {0, 0, 0, 1});
 
     List.of(values)
         .forEach(value -> {
-          byteBuf.writeBytes(new byte[] {0, 0, 0});
-          byteBuf.writeByte(value.length());
-          byteBuf.writeBytes(value.getBytes(StandardCharsets.UTF_8));
+          buffer.writeBytes(new byte[] {0, 0, 0});
+          buffer.writeByte(value.length());
+          buffer.writeBytes(value.getBytes(StandardCharsets.UTF_8));
         });
-    return byteBuf;
+    return buffer;
+  }
+
+  private ByteBuf createTextBufferWithBounds(String... values) {
+    ByteBuf buffer = Unpooled.buffer();
+
+    buffer.writeBytes(String.format("[%d:%d]=", 0, values.length)
+        .getBytes(StandardCharsets.UTF_8));
+
+    return createTextBuffer(buffer, values);
+  }
+
+  private ByteBuf createTextBuffer(String... values) {
+    return createTextBuffer(Unpooled.buffer(), values);
+  }
+
+  private ByteBuf createTextBuffer(ByteBuf buffer, String... values) {
+    AtomicBoolean first = new AtomicBoolean(true);
+
+    buffer.writeBytes("{".getBytes(StandardCharsets.UTF_8));
+
+    List.of(values)
+        .forEach(value -> {
+          if (!first.getAndSet(false)) {
+            buffer.writeBytes(",".getBytes(StandardCharsets.UTF_8));
+          }
+          buffer.writeBytes(value.getBytes(StandardCharsets.UTF_8));
+
+        });
+
+    buffer.writeBytes("}".getBytes(StandardCharsets.UTF_8));
+
+    return buffer;
   }
 }
