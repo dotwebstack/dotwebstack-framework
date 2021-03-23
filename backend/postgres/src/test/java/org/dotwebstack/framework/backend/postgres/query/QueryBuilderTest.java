@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MIN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_AVG_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -351,11 +352,11 @@ class QueryBuilderTest {
         mockSelectedAggregateField(INT_AVG_FIELD, "totalAvg", GraphQLFieldDefinition.newFieldDefinition()
             .name(INT_AVG_FIELD)
             .type(Scalars.GraphQLInt)
-            .build()),
+            .build(), "soldPerYear"),
         mockSelectedAggregateField(FLOAT_MIN_FIELD, "minAmount", GraphQLFieldDefinition.newFieldDefinition()
             .name(FLOAT_MIN_FIELD)
             .type(Scalars.GraphQLFloat)
-            .build()));
+            .build(), "soldPerYear"));
 
     when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
 
@@ -381,11 +382,68 @@ class QueryBuilderTest {
             + "on true limit :2 offset :3"));
   }
 
-  private SelectedField mockSelectedAggregateField(String name, String alias, GraphQLFieldDefinition fieldDefinition) {
+  @Test
+  void build_returnsCorrectQuery_forAggregateStringJoin() {
+    GraphQLObjectType aggregateType = GraphQLObjectType.newObject()
+        .name(AGGREGATE_TYPE)
+        .build();
+
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
+        GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_IDENTIFIER)
+            .type(Scalars.GraphQLString)
+            .build()),
+        mockSelectedField(FIELD_AGGREGATE, GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_AGGREGATE)
+            .type(aggregateType)
+            .build()));
+
+    when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
+
+    selectedFields = List.of(
+        mockSelectedAggregateField(INT_AVG_FIELD, "totalAvg", GraphQLFieldDefinition.newFieldDefinition()
+            .name(INT_AVG_FIELD)
+            .type(Scalars.GraphQLInt)
+            .build(), "soldPerYear"),
+        mockSelectedAggregateField(STRING_JOIN_FIELD, "stringJoin", GraphQLFieldDefinition.newFieldDefinition()
+            .name(STRING_JOIN_FIELD)
+            .type(Scalars.GraphQLFloat)
+            .build(), "name"));
+
+    when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+
+    PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
+
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getQuery(), notNullValue());
+    assertThat(queryHolder.getQuery()
+        .getSQL(ParamType.NAMED),
+        equalTo("select t3.*, t5.*, \"t1\".\"identifier\" as \"x3\" from db.brewery as \"t1\" "
+            + "left outer join lateral (select string_agg(cast(\"t2\".\"name\" as varchar), ',') "
+            + "as \"x1\" from db.beer as \"t2\" where \"t1\".\"identifier\" = \"t2\".\"brewery\" limit :1) "
+            + "as \"t3\" on true left outer join lateral (select cast(avg(\"t4\".\"sold_per_year\") as int) as \"x2\" "
+            + "from db.beer as \"t4\" where \"t1\".\"identifier\" = \"t4\".\"brewery\" limit :2) as \"t5\" on "
+            + "true limit :3 offset :4"));
+  }
+
+  private SelectedField mockSelectedAggregateField(String name, String alias, GraphQLFieldDefinition fieldDefinition,
+      String fieldArgument) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
     when(selectedField.getAlias()).thenReturn(alias);
-    Map<String, Object> arguments = Map.of(FIELD_ARGUMENT, "soldPerYear");
+    Map<String, Object> arguments = Map.of(FIELD_ARGUMENT, fieldArgument);
     when(selectedField.getArguments()).thenReturn(arguments);
     lenient().when(selectedField.getFieldDefinition())
         .thenReturn(fieldDefinition);
@@ -424,6 +482,8 @@ class QueryBuilderTest {
         .thenReturn(objectType);
     lenient().when(objectType.getFieldDefinition("beer"))
         .thenReturn(field);
+    lenient().when(objectType.getName())
+        .thenReturn("Beer");
     return selectedField;
   }
 
@@ -469,16 +529,16 @@ class QueryBuilderTest {
     typeConfiguration.setKeys(List.of(keyConfiguration));
 
     PostgresFieldConfiguration aggregateConfiguration = new PostgresFieldConfiguration();
-    aggregateConfiguration.setAggregationOf("beer");
-    aggregateConfiguration.setJoinColumns(List.of(new JoinColumn("brewery", "identifier")));
+    aggregateConfiguration.setAggregationOf("Beer");
+    aggregateConfiguration.setMappedBy("brewery");
 
     PostgresFieldConfiguration beerConfiguration = new PostgresFieldConfiguration();
-    beerConfiguration.setMappedBy("Brewery");
+    beerConfiguration.setMappedBy("brewery");
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), "beer",
         beerConfiguration, FIELD_AGGREGATE, aggregateConfiguration)));
     typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Brewery")
+    typeConfiguration.init(Map.of("Beer", createBeerTypeConfiguration()), newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())

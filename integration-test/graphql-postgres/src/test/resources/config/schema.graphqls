@@ -5,8 +5,8 @@ schema {
 
 type Query {
   beers: [Beer!]!
-  beer(identifier: ID!): Beer
-  brewery(identifier: ID!): Brewery
+  beer(identifier_beer: ID!): Beer
+  brewery(identifier_brewery: ID!): Brewery
   breweries: [Brewery!]!
 }
 
@@ -15,7 +15,7 @@ type Subscription {
 }
 
 type Brewery {
-  identifier: ID!
+  identifier_brewery: ID!
   name: String!
   status: String!
   beers: [Beer]
@@ -26,7 +26,7 @@ type Brewery {
 }
 
 type Beer {
-  identifier: ID!
+  identifier_beer: ID!
   name: String!
   abv: Float!
   brewery: Brewery!
@@ -34,16 +34,25 @@ type Beer {
   ingredient: Ingredient
   soldPerYear: Int!
   ingredientAgg: Aggregate!
+  taste : [String]!
 }
 
 type Address {
-  identifier: ID!
+  identifier_address: ID!
   street: String!
   city: String!
 }
 
 type Ingredient {
-  identifier: ID!
+  identifier_ingredient: ID!
   name: String!
   weight: Float!
+}
+
+enum Taste{
+  MEATY
+  FRUITY
+  SMOKY
+  SPICY
+  WATERY
 }

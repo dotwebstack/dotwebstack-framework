@@ -10,29 +10,37 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MAX_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.SelectedField;
 import java.math.BigDecimal;
 import java.util.Optional;
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AggregateFieldFactory {
+  private static final String DEFAULT_SEPARATOR = ",";
 
-  public Field<?> create(SelectedField selectedField, String fromTable, String columnName) {
+  public Field<?> create(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField, // NOSONAR
+      String fromTable, String columnName, String columnAlias) {
     Field<?> result;
     String aggregateFunction = selectedField.getName();
 
     switch (aggregateFunction) {
       case COUNT_FIELD:
-        if (isCountDistinct(selectedField)) {
+        if (isDistinct(selectedField)) {
           result = DSL.countDistinct(DSL.field(DSL.name(fromTable, columnName)));
         } else {
           result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
         }
+        break;
+      case STRING_JOIN_FIELD:
+        result = createStringJoin(aggregateFieldConfiguration, selectedField, fromTable, columnName, columnAlias);
         break;
       case INT_SUM_FIELD:
         result = DSL.sum(bigDecimalField(fromTable, columnName))
@@ -69,10 +77,45 @@ public class AggregateFieldFactory {
     return result;
   }
 
-  private boolean isCountDistinct(SelectedField selectedField) {
+  private Field<?> createGroupConcat(SelectedField selectedField, String alias) {
+    Field<?> result;
+    String separator = getSeparator(selectedField);
+    if (isDistinct(selectedField)) {
+      result = DSL.groupConcatDistinct(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    } else {
+      result = DSL.groupConcat(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    }
+    return result;
+  }
+
+  private Field<?> createStringJoin(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
+      String fromTable, String columnName, String columnAlias) {
+    if (aggregateFieldConfiguration.isList()) {
+      return createGroupConcat(selectedField, columnAlias);
+    } else {
+      String separator = getSeparator(selectedField);
+      if (isDistinct(selectedField)) {
+        return DSL.groupConcatDistinct(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      } else {
+        return DSL.groupConcat(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      }
+    }
+  }
+
+  private boolean isDistinct(SelectedField selectedField) {
     return Optional.ofNullable((Boolean) selectedField.getArguments()
         .get(DISTINCT_ARGUMENT))
         .orElse(Boolean.FALSE);
+  }
+
+  private String getSeparator(SelectedField selectedField) {
+    return Optional.ofNullable((String) selectedField.getArguments()
+        .get(SEPARATOR_ARGUMENT))
+        .orElse(DEFAULT_SEPARATOR);
   }
 
   private Field<BigDecimal> bigDecimalField(String fromTable, String columnName) {

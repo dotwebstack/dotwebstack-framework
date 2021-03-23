@@ -42,9 +42,15 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
             fieldConfiguration.setNumeric(true);
           }
+          if (TypeHelper.hasListType(fieldDefinition.getType())) {
+            fieldConfiguration.setList(true);
+          }
+          if (TypeHelper.isTextType(fieldDefinition.getType())) {
+            fieldConfiguration.setText(true);
+          }
         });
 
-    initAggregateTypes(typeMapping, objectTypeDefinition);
+    initAggregateTypes(typeMapping);
   }
 
   @Override
@@ -93,34 +99,22 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .build();
   }
 
-  private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> typeMapping,
-      ObjectTypeDefinition objectTypeDefinition) {
+  private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> typeMapping) {
 
     fields.values()
         .stream()
         .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
         .forEach(fieldConfiguration -> {
-          PostgresFieldConfiguration ref = fields.get(fieldConfiguration.getAggregationOf());
 
-          if (ref.getMappedBy() != null) {
-            objectTypeDefinition.getFieldDefinitions()
-                .stream()
-                .filter(fieldDefinition -> fieldDefinition.getName()
-                    .equals(fieldConfiguration.getAggregationOf()))
-                .findFirst()
-                .ifPresent(fieldDefinition -> {
-                  String typeName = TypeHelper.getTypeName(fieldDefinition.getType());
+          if (fieldConfiguration.getMappedBy() != null) {
 
-                  PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) typeMapping.get(typeName);
+            PostgresTypeConfiguration typeConfiguration =
+                (PostgresTypeConfiguration) typeMapping.get(fieldConfiguration.getAggregationOf());
+            PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
+                .get(fieldConfiguration.getMappedBy());
 
-                  PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
-                      .get(ref.getMappedBy());
-
-                  fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
-                });
-          } else if (ref.getJoinTable() != null) {
-            fieldConfiguration.setJoinTable(ref.getJoinTable());
-          } else {
+            fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
+          } else if (fieldConfiguration.getJoinTable() == null) {
             throw invalidConfigurationException("Invalid aggregate field configuration.");
           }
         });

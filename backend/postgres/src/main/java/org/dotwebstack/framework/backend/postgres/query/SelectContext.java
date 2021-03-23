@@ -23,6 +23,8 @@ public class SelectContext {
 
   private List<Table<Record>> joinTables = new ArrayList<>();
 
+  private List<CrossJoin> crossJoinTables = new ArrayList<>();
+
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
   private AtomicReference<String> checkNullAlias = new AtomicReference<>();
@@ -38,5 +40,9 @@ public class SelectContext {
   public void addField(String fieldName, Field<?> field) {
     getSelectColumns().add(field);
     getAssembleFns().put(fieldName, row -> row.get(field.getName()));
+  }
+
+  public void addCrossJoin(CrossJoin crossjoin) {
+    crossJoinTables.add(crossjoin);
   }
 }

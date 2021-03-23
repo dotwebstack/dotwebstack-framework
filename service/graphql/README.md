@@ -19,9 +19,12 @@ For information about Geometry type see [ext-spatial readme](ext/ext-spatial/REA
 
 Aggregation is a predefined GraphQL Object type see your corresponding backend readme about configuration details.
 
+`stringJoin` can be used for data-types: `text`, `varchar`, `varchar[]` and `text[]`.
+
 ```
   type Aggregate {
     count(field: String!, distinct: Boolean = false): Int!
+    stringJoin( field : String!, distinct : Boolean = false ): String!
 
     intSum(field: String!): Int
     intMin(field: String!): Int

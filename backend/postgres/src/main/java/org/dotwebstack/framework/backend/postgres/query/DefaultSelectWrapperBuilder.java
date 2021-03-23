@@ -8,15 +8,19 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
@@ -25,6 +29,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -49,7 +54,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
   @Override
   public void addFields(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
-      Table<Record> fromTable, Map<String, SelectedField> selectedFields, DataFetchingFieldSelectionSet selectionSet) {
+      Table<Record> fromTable, Map<String, SelectedField> selectedFields) {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
@@ -58,8 +63,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .stream()
         .filter(entry -> !entry.getValue()
             .isScalar())
-        .forEach(entry -> addJoinTable(selectionSet, selectContext, fromTable, selectedFields.get(entry.getKey()),
-            entry.getValue()));
+        .forEach(entry -> addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue()));
 
     // add direct fields
     fieldNamesConfigurations.entrySet()
@@ -69,9 +73,36 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
   }
 
-  private void addJoinTable(DataFetchingFieldSelectionSet selectionSet, SelectContext selectContext,
-      Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration) {
-    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectionSet)
+  private void addJoinTable(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
+      PostgresFieldConfiguration fieldConfiguration) {
+    List<UnaryOperator<Map<String, Object>>> assembleFnsList = new ArrayList<>();
+
+    Map<String, SelectedField> selectedStringJoinFieldsByName =
+        getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
+            .getSelectionSet(), true);
+
+    selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectContext, fromTable,
+        selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
+
+    Map<String, SelectedField> otherAggregateFieldsByName =
+        getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
+            .getSelectionSet(), false);
+
+    if (!otherAggregateFieldsByName.isEmpty()) {
+      processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration,
+          otherAggregateFieldsByName);
+    }
+
+    if (!assembleFnsList.isEmpty()) {
+      selectContext.getAssembleFns()
+          .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
+    }
+  }
+
+  private void processJoinTable(List<UnaryOperator<Map<String, Object>>> assembleFnsList, SelectContext selectContext,
+      Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
+      Map<String, SelectedField> selectedFields) {
+    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectedFields)
         .ifPresent(joinTableWrapper -> {
           selectContext.getSelectColumns()
               .add(DSL.field(joinTableWrapper.getTable()
@@ -81,8 +112,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
           selectContext.getJoinTables()
               .add(joinTableWrapper.getTable());
 
-          selectContext.getAssembleFns()
-              .put(selectedField.getName(), joinTableWrapper.getRowAssembler()::apply);
+          assembleFnsList.add(joinTableWrapper.getRowAssembler());
         });
   }
 
@@ -119,7 +149,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
   private Optional<QueryBuilder.TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
-      DataFetchingFieldSelectionSet selectionSet) {
+      Map<String, SelectedField> selectedFields) {
 
     // Never construct joins for nested lists
     if (isList(unwrapNonNull(selectedField.getFieldDefinition()
@@ -127,13 +157,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       return Optional.empty();
     }
 
-    GraphQLUnmodifiedType foreignType = getForeignType(selectedField, fieldConfiguration);
-
-    if (!(foreignType instanceof GraphQLObjectType)) {
-      throw illegalStateException("Foreign output type is not an object type.");
-    }
-
-    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(foreignType.getName());
+    String foreignTypeName = getForeignTypeName(selectedField, fieldConfiguration);
+    TypeConfiguration<?> typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(foreignTypeName);
 
     // Non-Postgres backends can never be eager loaded
     if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
@@ -144,9 +169,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
       SelectWrapper selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext),
-          (PostgresTypeConfiguration) typeConfiguration, selectedField.getFullyQualifiedName()
-              .concat("/"),
-          fieldConfiguration.getJoinTable(), selectionSet);
+          (PostgresTypeConfiguration) typeConfiguration, fieldConfiguration.getJoinTable(), selectedFields);
 
       final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
           fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
@@ -193,30 +216,45 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .eq(DSL.field(rightColumn));
   }
 
-  private GraphQLUnmodifiedType getForeignType(SelectedField selectedField,
-      PostgresFieldConfiguration fieldConfiguration) {
-    GraphQLOutputType foreignType;
+  private String getForeignTypeName(SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration) {
     if (isAggregate(fieldConfiguration)) {
-      foreignType = selectedField.getObjectType()
-          .getFieldDefinition(fieldConfiguration.getAggregationOf())
-          .getType();
-    } else {
-      foreignType = selectedField.getFieldDefinition()
-          .getType();
+      return fieldConfiguration.getAggregationOf();
     }
-    return GraphQLTypeUtil.unwrapAll(foreignType);
+
+    GraphQLUnmodifiedType foreignType = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+        .getType());
+
+    if (!(foreignType instanceof GraphQLObjectType)) {
+      throw illegalStateException("Foreign output type is not an object type.");
+    }
+    return foreignType.getName();
   }
 
   private PostgresTypeConfiguration getPostgresTypeConfigurationForCondition(
       PostgresFieldConfiguration fieldConfiguration, SelectedField selectedField,
       PostgresTypeConfiguration rightTypeConfiguration) {
-    if (isAggregate(fieldConfiguration)) {
-      GraphQLType type = getForeignType(selectedField, fieldConfiguration);
-      return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(type));
-    } else if (fieldConfiguration.getJoinTable() != null) {
+    if (isAggregate(fieldConfiguration) || fieldConfiguration.getJoinTable() != null) {
       return dotWebStackConfiguration.getTypeConfiguration(TypeHelper.getTypeName(selectedField.getObjectType()));
     }
 
     return rightTypeConfiguration;
+  }
+
+  private Map<String, SelectedField> getSelectedAggregateFieldsByName(SelectedField selectedField,
+      DataFetchingFieldSelectionSet selectionSet, boolean stringJoin) {
+    String fieldPathPrefix = selectedField.getFullyQualifiedName()
+        .concat("/");
+    return selectionSet.getFields(fieldPathPrefix.concat("*.*"))
+        .stream()
+        .filter(field -> AggregateConstants.STRING_JOIN_FIELD.equals(field.getName()) == stringJoin)
+        .collect(Collectors.toMap(field -> Optional.ofNullable(field.getAlias())
+            .orElse(field.getName()), Function.identity()));
+  }
+
+  private UnaryOperator<Map<String, Object>> multiSelectRowAssembler(
+      List<UnaryOperator<Map<String, Object>>> assembleFnsList) {
+
+    return row -> assembleFnsList.stream()
+        .collect(HashMap::new, (acc, assembler) -> acc.putAll(assembler.apply(row)), HashMap::putAll);
   }
 }

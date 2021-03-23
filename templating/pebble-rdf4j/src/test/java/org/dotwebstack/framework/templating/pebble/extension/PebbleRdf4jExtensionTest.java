@@ -7,8 +7,11 @@ import com.mitchellbosecke.pebble.extension.Filter;
 import java.util.Map;
 import org.dotwebstack.framework.templating.pebble.filter.JsonLdFilter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class PebbleRdf4jExtensionTest {
 
   private PebbleRdf4jExtension pebbleRdf4jExtension;

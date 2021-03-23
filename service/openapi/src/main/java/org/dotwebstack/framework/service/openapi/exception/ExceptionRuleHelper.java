@@ -14,6 +14,9 @@ import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.mapping.MappingException;
 
 public class ExceptionRuleHelper {
+
+  private ExceptionRuleHelper() {}
+
   public static final List<ExceptionRule> MAPPING = List.of(ExceptionRule.builder()
       .exception(NotAcceptableException.class)
       .responseStatus(NOT_ACCEPTABLE)

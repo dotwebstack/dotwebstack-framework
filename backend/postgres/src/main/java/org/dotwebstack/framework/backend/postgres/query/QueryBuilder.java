@@ -67,8 +67,8 @@ public class QueryBuilder {
 
     SelectWrapperBuilder selectWrapperBuilder = selectWrapperBuilderFactory.getSelectWrapperBuilder();
 
-    SelectWrapper selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext), typeConfiguration, "",
-        joinTable, queryParameters.getSelectionSet());
+    SelectWrapper selectWrapper =
+        selectWrapperBuilder.build(new SelectContext(queryContext), typeConfiguration, "", joinTable);
 
     if (queryParameters.getKeyConditions()
         .isEmpty()) {
@@ -124,7 +124,7 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters) {
-    return build(new QueryContext(), typeConfiguration, queryParameters);
+    return build(new QueryContext(queryParameters.getSelectionSet()), typeConfiguration, queryParameters);
   }
 
   private Select<Record> limit(SelectConnectByStep<Record> query, Page page) {

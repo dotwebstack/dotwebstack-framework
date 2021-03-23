@@ -100,7 +100,8 @@ This association has two sides i.e. the owning side and the inverse side. In our
 
 ### 1.2.4 aggregationOf
 
-An `aggregationOf` field configuration can be used to aggregate a field in a many-to-many or one-to-many relation as defined by `mappedBy` or `joinTable` field configuration.
+An `aggregationOf` field configuration can be used to aggregate a type with a many-to-many or one-to-many relation.
+The `mappedBy` or `joinTable` configuration needs to be included.
 
 simplified configuration example:
 ```yaml
@@ -109,7 +110,8 @@ simplified configuration example:
       beers:
         mappedBy: brewery
       beerAggregation:
-        aggregationOf: beers
+        aggregationOf: Beer
+        mappedBy: brewery
 
   Beer:
     fields:
@@ -123,7 +125,15 @@ simplified configuration example:
             - name: ingredients_identifier
               referencedField: identifier
       ingredientAggregation:
-        aggregationOf: ingredients
+        aggregationOf: Ingredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
 ```
 
 ## 1.3 Geometry and Geography 
