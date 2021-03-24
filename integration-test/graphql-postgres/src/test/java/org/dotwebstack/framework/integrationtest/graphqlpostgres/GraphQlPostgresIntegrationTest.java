@@ -612,4 +612,33 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.get("tastes"), is("fruity,meaty,smoky,watery"));
     assertThat(beerAgg.get("totalCount"), is(3));
   }
+
+  @Test
+  void graphQlQuery_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
+        + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
+        + "tastes : stringJoin( field : \"taste\", distinct : true )} " + "name postalAddress { street city } "
+        + " visitAddress {street city} } }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("postalAddress"));
+    Map<String, Object> postalAddress = ((Map<String, Object>) brewery.get("postalAddress"));
+    assertThat(postalAddress.get("street"), is("5th Avenue"));
+    assertThat(postalAddress.get("city"), is("New York"));
+    assertTrue(brewery.containsKey("visitAddress"));
+    assertThat(brewery.get("visitAddress"), nullValue());
+    assertTrue(brewery.containsKey("beerAgg"));
+    Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
+    assertThat(beerAgg.size(), is(2));
+    assertThat(beerAgg.get("tastes"), is("meaty,smoky,spicy"));
+    assertThat(beerAgg.get("totalCount"), is(2));
+
+  }
 }
