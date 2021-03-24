@@ -84,18 +84,20 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectContext, fromTable,
         selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
 
-    Map<String, SelectedField> otherAggregateFieldsByName =
+    Map<String, SelectedField> otherFieldsByName =
         getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
             .getSelectionSet(), false);
 
-    if (!otherAggregateFieldsByName.isEmpty()) {
-      processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration,
-          otherAggregateFieldsByName);
+    if (!otherFieldsByName.isEmpty()) {
+      processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration, otherFieldsByName);
     }
 
-    if (!assembleFnsList.isEmpty()) {
+    if (isAggregate(fieldConfiguration) && !assembleFnsList.isEmpty()) {
       selectContext.getAssembleFns()
           .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
+    } else if (assembleFnsList.size() == 1) {
+      selectContext.getAssembleFns()
+          .put(selectedField.getName(), assembleFnsList.get(0)::apply);
     }
   }
 
