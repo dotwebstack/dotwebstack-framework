@@ -92,14 +92,12 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration, otherFieldsByName);
     }
 
-    if (isAggregate(fieldConfiguration)) {
-      if (!assembleFnsList.isEmpty()) {
-        selectContext.getAssembleFns()
-            .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
-      }
-    } else {
-      assembleFnsList.forEach(function -> selectContext.getAssembleFns()
-          .put(selectedField.getName(), function::apply));
+    if (isAggregate(fieldConfiguration) && !assembleFnsList.isEmpty()) {
+      selectContext.getAssembleFns()
+          .put(selectedField.getName(), multiSelectRowAssembler(assembleFnsList)::apply);
+    } else if (assembleFnsList.size() == 1) {
+      selectContext.getAssembleFns()
+          .put(selectedField.getName(), assembleFnsList.get(0)::apply);
     }
   }
 
