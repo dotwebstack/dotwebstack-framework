@@ -47,6 +47,7 @@ typeMapping:
   Brewery:
     backend: postgres
     table: db.brewery
+    uriTemplate: "http://registrations.org/brewery/${identifier_brewery}"
     keys:
       - field: identifier_brewery
     fields:
@@ -67,6 +68,7 @@ typeMapping:
   Address:
     backend: postgres
     table: db.address
+    uriTemplate: "http://registrations.org/address/${identifier_address}"
     keys:
       - field: identifier_address
     fields:

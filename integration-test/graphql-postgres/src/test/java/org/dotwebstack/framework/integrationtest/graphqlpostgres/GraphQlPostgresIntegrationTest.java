@@ -641,4 +641,20 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.get("totalCount"), is(2));
 
   }
+
+  @Test
+  void graphQlQuery_returnsUriIdentifier_forBreweryWithUriTemplate() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
+        + "{ _id name  " + " postalAddress { _id street city } "
+        + " visitAddress {_id street city} "
+        + " beerAgg { totalCount : count( field : \"soldPerYear\" ) "
+        + "tastes : stringJoin( field : \"taste\", distinct : true ) } "
+        + " beers {name} }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+  }
 }

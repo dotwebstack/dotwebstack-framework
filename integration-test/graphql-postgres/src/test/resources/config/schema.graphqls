@@ -16,6 +16,7 @@ type Subscription {
 
 type Brewery {
   identifier_brewery: ID!
+  _id: String!
   name: String!
   status: String!
   beers: [Beer]
@@ -39,6 +40,7 @@ type Beer {
 
 type Address {
   identifier_address: ID!
+  _id: String!
   street: String!
   city: String!
 }

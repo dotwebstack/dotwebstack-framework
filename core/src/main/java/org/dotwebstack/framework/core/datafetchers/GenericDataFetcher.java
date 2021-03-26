@@ -1,22 +1,17 @@
 package org.dotwebstack.framework.core.datafetchers;
 
-import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
-import static java.util.Optional.ofNullable;
-
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLObjectType;
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -24,9 +19,17 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-@Component
-@Slf4j
-public final class GenericDataFetcher implements DataFetcher<Object> {
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
+import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI_FIELD;
+
+@Component @Slf4j public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
@@ -44,8 +47,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
     if (source != null) {
-      String fieldName = executionStepInfo.getFieldDefinition()
-          .getName();
+      String fieldName = executionStepInfo.getFieldDefinition().getName();
 
       // Check if data is already present (eager-loaded)
       if (source.containsKey(fieldName)) {
@@ -54,8 +56,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       // Create separate dataloader for every unique path, since evert path can have different arguments
       // or selection
-      String dataLoaderKey = String.join("/", executionStepInfo.getPath()
-          .getKeysOnly());
+      String dataLoaderKey = String.join("/", executionStepInfo.getPath().getKeysOnly());
 
       // Retrieve dataloader instance for key, or create new instance when it does not exist yet
       DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
@@ -76,9 +77,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
-    if (!loadEnvironment.isSubscription()
-        && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+    if (!loadEnvironment.isSubscription() && !GraphQLTypeUtil.isList(
+        GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
+          .map(data -> addRdfUriForTypes(data, typeConfiguration, environment.getSelectionSet()))
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
@@ -90,35 +92,76 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       return result;
     }
 
-    return result.collectList()
-        .toFuture();
+    return result.collectList().toFuture();
   }
 
-  private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration, Object data) {
+  private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration,
+      Object data) {
     return DataFetcherResult.newResult()
         .data(data)
-        .localContext(LocalDataFetcherContext.builder()
-            .keyConditionFn(typeConfiguration::getKeyCondition)
-            .build())
+        .localContext(LocalDataFetcherContext.builder().keyConditionFn(typeConfiguration::getKeyCondition).build())
         .build();
+  }
+
+  private Map<String, Object> addRdfUriForTypes(Map<String, Object> data,
+      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
+    final Map<String, Object> result = new HashMap();
+
+    // first add the rdf uri of the root entry _id
+    addRdfUri(data, typeConfiguration);
+
+    data.entrySet().stream().forEach(entry -> {
+      Optional<TypeConfiguration<?>> optionalCurrentTypeConfiguration = getTypeConfiguration(entry.getKey(), selectionSet);
+      if (optionalCurrentTypeConfiguration.isPresent() && entry.getValue() != null) {
+        // TODO: howto fix the casting to a map
+        result.put(entry.getKey(),
+            addRdfUri((Map<String, Object>) entry.getValue(), optionalCurrentTypeConfiguration.get()));
+      } else {
+        result.put(entry.getKey(), entry.getValue());
+      }
+    });
+    return result;
+  }
+
+  // TODO check DefaultSelectWrapperBuilder UnaryOperator (MultiSelectRowAssembler)
+  private Map<String, Object> addRdfUri(Map<String, Object> data, TypeConfiguration<?> currentTypeConfiguration) {
+    String uriTemplate = currentTypeConfiguration.getUriTemplate();
+    if (!StringUtils.isBlank(uriTemplate)) {
+      StringSubstitutor substitutor = new StringSubstitutor(data);
+      String rdfUri = substitutor.replace(uriTemplate);
+      // TODO: constante maken voor _id, maar waar past dat het beste
+      data.put(RDF_URI_FIELD, rdfUri);
+    }
+    return data;
+  }
+
+  // TODO: check TypeCOnfiguration vs AbstractTypeConfiguration
+  private Optional<TypeConfiguration<?>> getTypeConfiguration(String fieldName,
+      DataFetchingFieldSelectionSet selectionSet) {
+    if(selectionSet.contains(fieldName)) {
+      GraphQLOutputType qlOutputType = selectionSet.getFields(fieldName).get(0).getFieldDefinition().getType();
+
+      Optional<TypeConfiguration<?>> optionalTypeConfiguration = getTypeConfiguration(qlOutputType);
+
+      return optionalTypeConfiguration;
+    }
+    return Optional.empty();
   }
 
   private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
     GraphQLType nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(nullableType);
 
-    if (!(rawType instanceof GraphQLObjectType)) {
-      throw new IllegalArgumentException("Output is not an object type.");
-    }
+//    if (!(rawType instanceof GraphQLObjectType)) {
+//      throw new IllegalArgumentException("Output is not an object type.");
+//    }
 
-    return ofNullable(dotWebStackConfiguration.getTypeMapping()
-        .get(rawType.getName()));
+    return ofNullable(dotWebStackConfiguration.getTypeMapping().get(rawType.getName()));
   }
 
   private DataLoader<KeyCondition, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
-    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
-        .getUnwrappedNonNullType();
+    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo().getUnwrappedNonNullType();
 
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
@@ -140,18 +183,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {
     return LoadEnvironment.builder()
-        .queryName(environment.getFieldDefinition()
-            .getName())
+        .queryName(environment.getFieldDefinition().getName())
         .executionStepInfo(environment.getExecutionStepInfo())
-        .selectionSet(environment.getSelectionSet())
-        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition()
-            .getOperation()))
+        .selectionSet(new SelectionSetWrapper(environment.getSelectionSet()))
+        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition().getOperation()))
         .build();
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
-    return backendDataLoaders.stream()
-        .filter(loader -> loader.supports(typeConfiguration))
-        .findFirst();
+    return backendDataLoaders.stream().filter(loader -> loader.supports(typeConfiguration)).findFirst();
   }
 }
