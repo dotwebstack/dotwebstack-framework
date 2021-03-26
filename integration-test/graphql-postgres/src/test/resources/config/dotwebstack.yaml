@@ -2,6 +2,7 @@ typeMapping:
   Beer:
     table: db.beer
     backend: postgres
+    uriTemplate: "http://registrations.org/beer/${identifier_beer}"
     keys:
       - field: identifier_beer
     fields:
@@ -41,13 +42,13 @@ typeMapping:
   Ingredient:
     backend: postgres
     table: db.ingredient
+    uriTemplate: "http://registrations.org/ingredient/${identifier_ingredient}"
     keys:
       - field: identifier_ingredient
 
   Brewery:
     backend: postgres
     table: db.brewery
-    uriTemplate: "http://registrations.org/brewery/${identifier_brewery}"
     keys:
       - field: identifier_brewery
     fields:

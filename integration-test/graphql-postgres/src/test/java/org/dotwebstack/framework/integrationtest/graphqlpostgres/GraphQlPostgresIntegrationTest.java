@@ -6,12 +6,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import graphql.ErrorType;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
 import io.r2dbc.spi.ConnectionFactory;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -643,18 +647,39 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsUriIdentifier_forBreweryWithUriTemplate() {
-    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
-        + "{ _id name  " + " postalAddress { _id street city } "
-        + " visitAddress {_id street city} "
+  void graphQlQuery_returnsUriIdentifiersForNestedObjects_forNestObjectsWithUriTemplate() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")" + "{ name  "
+        + " postalAddress { _id street city } " + " visitAddress {_id street city} "
         + " beerAgg { totalCount : count( field : \"soldPerYear\" ) "
-        + "tastes : stringJoin( field : \"taste\", distinct : true ) } "
-        + " beers {name} }}";
+        + "tastes : stringJoin( field : \"taste\", distinct : true ) } " + " beers { name ingredients {_id name}} }}";
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
 
-    ExecutionResult result = graphQL.execute(query);
+    ExecutionResult result = graphQL.execute(executionInput);
+    // ExecutionResult result = graphQL.execute(query);
 
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
+    // TODO: assertions
   }
+
+  @Test
+  void graphQlQuery_hasNonNullValueError_forBreweryWithoutUriTemplate() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")" + "{ name _id} }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertFalse(result.getErrors()
+        .isEmpty());
+    List<GraphQLError> errors = result.getErrors();
+    assertTrue(errors.get(0)
+        .getErrorType() == ErrorType.NullValueInNonNullableField);
+    assertTrue(errors.get(0)
+        .getPath()
+        .containsAll(Arrays.asList("brewery", "_id")));
+  }
+
 }

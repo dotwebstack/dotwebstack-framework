@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
+import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI_FIELD;
+
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
@@ -9,6 +13,11 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -19,17 +28,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
-import static java.util.Optional.ofNullable;
-import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI_FIELD;
-
-@Component @Slf4j public final class GenericDataFetcher implements DataFetcher<Object> {
+@Component
+@Slf4j
+public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
@@ -47,7 +48,8 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
     TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
     if (source != null) {
-      String fieldName = executionStepInfo.getFieldDefinition().getName();
+      String fieldName = executionStepInfo.getFieldDefinition()
+          .getName();
 
       // Check if data is already present (eager-loaded)
       if (source.containsKey(fieldName)) {
@@ -56,7 +58,8 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
 
       // Create separate dataloader for every unique path, since evert path can have different arguments
       // or selection
-      String dataLoaderKey = String.join("/", executionStepInfo.getPath().getKeysOnly());
+      String dataLoaderKey = String.join("/", executionStepInfo.getPath()
+          .getKeysOnly());
 
       // Retrieve dataloader instance for key, or create new instance when it does not exist yet
       DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
@@ -77,10 +80,10 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
     // => get key from field argument
-    if (!loadEnvironment.isSubscription() && !GraphQLTypeUtil.isList(
-        GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+    if (!loadEnvironment.isSubscription()
+        && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
-          .map(data -> addRdfUriForTypes(data, typeConfiguration, environment.getSelectionSet()))
+          .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
@@ -92,59 +95,87 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
       return result;
     }
 
-    return result.collectList().toFuture();
+    return result.collectList()
+        .toFuture();
   }
 
-  private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration,
-      Object data) {
+  private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration, Object data) {
     return DataFetcherResult.newResult()
         .data(data)
-        .localContext(LocalDataFetcherContext.builder().keyConditionFn(typeConfiguration::getKeyCondition).build())
+        .localContext(LocalDataFetcherContext.builder()
+            .keyConditionFn(typeConfiguration::getKeyCondition)
+            .build())
         .build();
   }
 
-  private Map<String, Object> addRdfUriForTypes(Map<String, Object> data,
+  private Map<String, Object> addRdfUriForObjectTypes(Map<String, Object> data, TypeConfiguration<?> typeConfiguration,
+      DataFetchingFieldSelectionSet selectionSet) {
+    return addRdfUriForObjectTypes(data, "", typeConfiguration, selectionSet);
+  }
+
+  private Map<String, Object> addRdfUriForObjectTypes(Map<String, Object> data, String fieldPathPrefix,
       TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
-    final Map<String, Object> result = new HashMap();
+    final Map<String, Object> result = new HashMap<>();
+    if (selectionSet.contains(fieldPathPrefix + RDF_URI_FIELD)) {
+      addRdfUri(data, typeConfiguration);
+    }
 
-    // first add the rdf uri of the root entry _id
-    addRdfUri(data, typeConfiguration);
+    data.entrySet()
+        .stream()
+        .forEach(entry -> {
+          String fieldName = entry.getKey();
+          Optional<TypeConfiguration<?>> optionalCurrentTypeConfiguration =
+              getTypeConfiguration(fieldName, selectionSet);
+          if (optionalCurrentTypeConfiguration.isPresent() && entry.getValue() != null) {
+            // this is an objecttype, so the data is stored in a Map<String, Object>
+            Map<String, Object> objectTypeData = convertObjectTypeDataToMap(entry.getValue());
+            final String prefix = fieldPathPrefix.concat(fieldName + "/");
+            result.put(entry.getKey(),
+                addRdfUriForObjectTypes(objectTypeData, prefix, optionalCurrentTypeConfiguration.get(), selectionSet));
+          } else {
+            result.put(fieldName, entry.getValue());
+          }
+        });
 
-    data.entrySet().stream().forEach(entry -> {
-      Optional<TypeConfiguration<?>> optionalCurrentTypeConfiguration = getTypeConfiguration(entry.getKey(), selectionSet);
-      if (optionalCurrentTypeConfiguration.isPresent() && entry.getValue() != null) {
-        // TODO: howto fix the casting to a map
-        result.put(entry.getKey(),
-            addRdfUri((Map<String, Object>) entry.getValue(), optionalCurrentTypeConfiguration.get()));
-      } else {
-        result.put(entry.getKey(), entry.getValue());
-      }
-    });
     return result;
   }
 
-  // TODO check DefaultSelectWrapperBuilder UnaryOperator (MultiSelectRowAssembler)
   private Map<String, Object> addRdfUri(Map<String, Object> data, TypeConfiguration<?> currentTypeConfiguration) {
     String uriTemplate = currentTypeConfiguration.getUriTemplate();
     if (!StringUtils.isBlank(uriTemplate)) {
       StringSubstitutor substitutor = new StringSubstitutor(data);
       String rdfUri = substitutor.replace(uriTemplate);
-      // TODO: constante maken voor _id, maar waar past dat het beste
       data.put(RDF_URI_FIELD, rdfUri);
     }
+
     return data;
   }
 
-  // TODO: check TypeCOnfiguration vs AbstractTypeConfiguration
+  /**
+   * Converts the data of an ObjectType to a Map.
+   *
+   * @param data the data to be casted
+   * @return the data as a map
+   */
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> convertObjectTypeDataToMap(Object data) {
+    if (Map.class.isAssignableFrom(data.getClass())) {
+      return (Map<String, Object>) data;
+    }
+    throw new IllegalArgumentException("Object cannot be converted to a map");
+  }
+
   private Optional<TypeConfiguration<?>> getTypeConfiguration(String fieldName,
       DataFetchingFieldSelectionSet selectionSet) {
-    if(selectionSet.contains(fieldName)) {
-      GraphQLOutputType qlOutputType = selectionSet.getFields(fieldName).get(0).getFieldDefinition().getType();
-
+    if (selectionSet.contains(fieldName)) {
+      GraphQLOutputType qlOutputType = selectionSet.getFields(fieldName)
+          .get(0)
+          .getFieldDefinition()
+          .getType();
       Optional<TypeConfiguration<?>> optionalTypeConfiguration = getTypeConfiguration(qlOutputType);
-
       return optionalTypeConfiguration;
     }
+
     return Optional.empty();
   }
 
@@ -152,16 +183,14 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
     GraphQLType nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(nullableType);
 
-//    if (!(rawType instanceof GraphQLObjectType)) {
-//      throw new IllegalArgumentException("Output is not an object type.");
-//    }
-
-    return ofNullable(dotWebStackConfiguration.getTypeMapping().get(rawType.getName()));
+    return ofNullable(dotWebStackConfiguration.getTypeMapping()
+        .get(rawType.getName()));
   }
 
   private DataLoader<KeyCondition, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
-    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo().getUnwrappedNonNullType();
+    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
+        .getUnwrappedNonNullType();
 
     BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
@@ -169,7 +198,9 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
-          .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
+          .flatMap(group -> group
+              .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
+              .map(data -> createDataFetcherResult(typeConfiguration, data))
               .collectList()
               .map(list -> Map.entry(group.key(), list)))
           .collectMap(Map.Entry::getKey, Map.Entry::getValue)
@@ -177,20 +208,28 @@ import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI
     }
 
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
-        .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
+        .collectMap(Tuple2::getT1, tuple -> {
+          Map<String, Object> dataWithRdfUris =
+              addRdfUriForObjectTypes(tuple.getT2(), typeConfiguration, environment.getSelectionSet());
+          return createDataFetcherResult(typeConfiguration, dataWithRdfUris);
+        })
         .toFuture());
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {
     return LoadEnvironment.builder()
-        .queryName(environment.getFieldDefinition().getName())
+        .queryName(environment.getFieldDefinition()
+            .getName())
         .executionStepInfo(environment.getExecutionStepInfo())
         .selectionSet(new SelectionSetWrapper(environment.getSelectionSet()))
-        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition().getOperation()))
+        .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition()
+            .getOperation()))
         .build();
   }
 
   private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
-    return backendDataLoaders.stream().filter(loader -> loader.supports(typeConfiguration)).findFirst();
+    return backendDataLoaders.stream()
+        .filter(loader -> loader.supports(typeConfiguration))
+        .findFirst();
   }
 }

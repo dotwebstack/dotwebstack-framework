@@ -28,6 +28,7 @@ type Brewery {
 
 type Beer {
   identifier_beer: ID!
+  _id: String!
   name: String!
   abv: Float!
   brewery: Brewery!
@@ -47,6 +48,7 @@ type Address {
 
 type Ingredient {
   identifier_ingredient: ID!
+  _id: String!
   name: String!
   weight: Float!
 }
