@@ -4,5 +4,4 @@ public class FieldConstants {
   private FieldConstants() {}
 
   public static final String RDF_URI_FIELD = "_id";
-
 }

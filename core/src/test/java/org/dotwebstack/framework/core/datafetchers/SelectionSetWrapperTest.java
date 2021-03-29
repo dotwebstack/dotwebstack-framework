@@ -47,7 +47,6 @@ class SelectionSetWrapperTest {
     return fields.stream()
         .anyMatch(field -> field.getName()
             .equals(name));
-
   }
 
   private DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet(List<String> selectedFieldNames) {

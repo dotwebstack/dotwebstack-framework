@@ -645,7 +645,6 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.size(), is(2));
     assertThat(beerAgg.get("tastes"), is("meaty,smoky,spicy"));
     assertThat(beerAgg.get("totalCount"), is(2));
-
   }
 
   @Test
@@ -674,7 +673,6 @@ class GraphQlPostgresIntegrationTest {
     assertPostalAddressHasRdfUri(brewery);
 
     assertBeersHaveRdfUri((List<Map<String, Object>>) brewery.get("beers"));
-
   }
 
   @Test
