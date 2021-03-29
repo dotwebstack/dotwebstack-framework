@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import graphql.ErrorType;
@@ -685,8 +686,8 @@ class GraphQlPostgresIntegrationTest {
     assertFalse(result.getErrors()
         .isEmpty());
     List<GraphQLError> errors = result.getErrors();
-    assertTrue(errors.get(0)
-        .getErrorType() == ErrorType.NullValueInNonNullableField);
+    assertSame(errors.get(0)
+        .getErrorType(), ErrorType.NullValueInNonNullableField);
     assertTrue(errors.get(0)
         .getPath()
         .containsAll(Arrays.asList("brewery", "_id")));

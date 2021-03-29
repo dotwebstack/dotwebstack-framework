@@ -24,9 +24,9 @@ public class SelectionSetWrapper implements DataFetchingFieldSelectionSet {
         .collect(Collectors.toList());
   }
 
-  private abstract class ExcludedSelectionSetMethods {
+  private interface ExcludedSelectionSetMethods {
 
-    public abstract List<SelectedField> getFields(String fieldGlobPattern, String... fieldGlobPatterns);
+    List<SelectedField> getFields(String fieldGlobPattern, String... fieldGlobPatterns);
 
   }
 }

@@ -172,8 +172,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .get(0)
           .getFieldDefinition()
           .getType();
-      Optional<TypeConfiguration<?>> optionalTypeConfiguration = getTypeConfiguration(qlOutputType);
-      return optionalTypeConfiguration;
+
+      return getTypeConfiguration(qlOutputType);
     }
 
     return Optional.empty();
