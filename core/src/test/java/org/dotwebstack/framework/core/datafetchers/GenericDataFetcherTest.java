@@ -1,22 +1,28 @@
 package org.dotwebstack.framework.core.datafetchers;
 
+import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.OperationDefinition.Operation.QUERY;
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static graphql.language.OperationDefinition.newOperationDefinition;
+import static graphql.language.TypeName.newTypeName;
 import static graphql.schema.DataFetchingEnvironmentImpl.newDataFetchingEnvironment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import graphql.Scalars;
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.ResultPath;
+import graphql.language.FieldDefinition;
 import graphql.language.OperationDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -24,6 +30,10 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.SelectedField;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -169,6 +179,38 @@ class GenericDataFetcherTest {
     assertThat(future, instanceOf(Future.class));
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  void get_returnsResultWithRdfUri_forLoadSingleQueryOperation() throws Exception {
+    Map<String, Object> data = new HashMap<>() {
+      {
+        put("identifier", "id-1");
+      }
+    };
+    when(typeConfiguration.getUriTemplate()).thenReturn("http://registrations.org/brewery/${identifier}");
+    when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.just(data));
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+
+    GraphQLOutputType outputType = createBreweryType();
+
+    DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet =
+        mockDataFetchingFieldSelectionSet(Arrays.asList("_id"));
+    DataFetchingEnvironment dataFetchingEnvironment =
+        createDataFetchingEnvironment(outputType, QUERY, null, mockDataFetchingFieldSelectionSet);
+
+    Object future = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(future, instanceOf(Future.class));
+
+    DataFetcherResult<Map<String, Object>> result = (DataFetcherResult<Map<String, Object>>) ((Future<?>) future).get();
+
+    assertThat(result, notNullValue());
+    Map<String, Object> resultData = result.getData();
+    assertTrue(resultData.containsKey("_id"));
+
+    verify(backendDataLoader).loadSingle(isNull(), any(LoadEnvironment.class));
+  }
+
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
       OperationDefinition.Operation operation) {
     return createDataFetchingEnvironment(outputType, operation, null);
@@ -176,10 +218,16 @@ class GenericDataFetcherTest {
 
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
       OperationDefinition.Operation operation, Object source) {
+    return createDataFetchingEnvironment(outputType, operation, source, mock(DataFetchingFieldSelectionSet.class));
+  }
+
+  private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
+      OperationDefinition.Operation operation, Object source,
+      DataFetchingFieldSelectionSet dataFetchingFieldSelectionSet) {
     return newDataFetchingEnvironment().executionStepInfo(executionStepInfo)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .fieldType(outputType)
-        .selectionSet(mock(DataFetchingFieldSelectionSet.class))
+        .selectionSet(dataFetchingFieldSelectionSet)
         .fieldDefinition(graphQlFieldDefinitionMock)
         .operationDefinition(newOperationDefinition().operation(operation)
             .build())
@@ -188,6 +236,34 @@ class GenericDataFetcherTest {
             .keyConditionFn((s, stringObjectMap) -> mock(KeyCondition.class))
             .build())
         .build();
+  }
+
+  private DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet(List<String> rdfUriFieldNames) {
+    DataFetchingFieldSelectionSet mockedDataFetchingFieldSelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    List<SelectedField> selectedFields = new ArrayList<>();
+    rdfUriFieldNames.forEach(fieldName -> {
+      SelectedField selectedField = mockRdfuriSelectedField();
+      selectedFields.add(selectedField);
+      when(mockedDataFetchingFieldSelectionSet.contains(fieldName)).thenReturn(true);
+    });
+    when(mockedDataFetchingFieldSelectionSet.getFields(anyString())).thenReturn(selectedFields);
+
+    return mockedDataFetchingFieldSelectionSet;
+  }
+
+  private SelectedField mockRdfuriSelectedField() {
+    SelectedField selectedField = mock(SelectedField.class);
+    FieldDefinition def = newFieldDefinition().name("_id")
+        .type(newTypeName(Scalars.GraphQLString.getName()).build())
+        .build();
+
+    GraphQLFieldDefinition qlDef = GraphQLFieldDefinition.newFieldDefinition()
+        .name("_id")
+        .definition(def)
+        .type(Scalars.GraphQLString)
+        .build();
+    when(selectedField.getFieldDefinition()).thenReturn(qlDef);
+    return selectedField;
   }
 
   private GraphQLOutputType createBreweryType() {

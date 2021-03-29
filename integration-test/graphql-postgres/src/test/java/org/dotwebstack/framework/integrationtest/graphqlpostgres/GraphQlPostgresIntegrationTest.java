@@ -686,8 +686,8 @@ class GraphQlPostgresIntegrationTest {
     assertFalse(result.getErrors()
         .isEmpty());
     List<GraphQLError> errors = result.getErrors();
-    assertSame(errors.get(0)
-        .getErrorType(), ErrorType.NullValueInNonNullableField);
+    assertSame(ErrorType.NullValueInNonNullableField, errors.get(0)
+        .getErrorType());
     assertTrue(errors.get(0)
         .getPath()
         .containsAll(Arrays.asList("brewery", "_id")));
