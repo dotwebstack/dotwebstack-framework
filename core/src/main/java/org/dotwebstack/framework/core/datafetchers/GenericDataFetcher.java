@@ -89,6 +89,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     Flux<DataFetcherResult<Object>> result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
+        .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
         .map(data -> createDataFetcherResult(typeConfiguration, data));
 
     if (loadEnvironment.isSubscription()) {
@@ -157,7 +158,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
    * @param data the data to be casted
    * @return the data as a map
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings(value = "unchecked")
   private Map<String, Object> convertObjectTypeDataToMap(Object data) {
     if (Map.class.isAssignableFrom(data.getClass())) {
       return (Map<String, Object>) data;
