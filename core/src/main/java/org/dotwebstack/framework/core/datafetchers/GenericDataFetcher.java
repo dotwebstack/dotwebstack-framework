@@ -2,25 +2,20 @@ package org.dotwebstack.framework.core.datafetchers;
 
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static java.util.Optional.ofNullable;
-import static org.dotwebstack.framework.core.datafetchers.FieldConstants.RDF_URI_FIELD;
 
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -36,10 +31,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final Collection<BackendDataLoader> backendDataLoaders;
 
+  private final RdfUriAccumulator rdfUriAccumulator;
+
   public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration,
-      Collection<BackendDataLoader> backendDataLoaders) {
+      Collection<BackendDataLoader> backendDataLoaders, RdfUriAccumulator rdfUriAccumulator) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoaders = backendDataLoaders;
+    this.rdfUriAccumulator = rdfUriAccumulator;
   }
 
   public Object get(DataFetchingEnvironment environment) {
@@ -83,13 +81,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (!loadEnvironment.isSubscription()
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
       return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
-          .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
+          .map(data -> rdfUriAccumulator.accumulate(data, typeConfiguration, environment.getSelectionSet()))
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
 
     Flux<DataFetcherResult<Object>> result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
-        .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
+        .map(data -> rdfUriAccumulator.accumulate(data, typeConfiguration, environment.getSelectionSet()))
         .map(data -> createDataFetcherResult(typeConfiguration, data));
 
     if (loadEnvironment.isSubscription()) {
@@ -107,77 +105,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
             .keyConditionFn(typeConfiguration::getKeyCondition)
             .build())
         .build();
-  }
-
-  private Map<String, Object> addRdfUriForObjectTypes(Map<String, Object> data, TypeConfiguration<?> typeConfiguration,
-      DataFetchingFieldSelectionSet selectionSet) {
-    return addRdfUriForObjectTypes(data, "", typeConfiguration, selectionSet);
-  }
-
-  private Map<String, Object> addRdfUriForObjectTypes(Map<String, Object> data, String fieldPathPrefix,
-      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
-    final Map<String, Object> result = new HashMap<>();
-    if (selectionSet.contains(fieldPathPrefix + RDF_URI_FIELD)) {
-      addRdfUri(data, typeConfiguration);
-    }
-
-    data.entrySet()
-        .stream()
-        .forEach(entry -> {
-          String fieldName = entry.getKey();
-          Optional<TypeConfiguration<?>> optionalCurrentTypeConfiguration =
-              getTypeConfiguration(fieldName, selectionSet);
-          if (optionalCurrentTypeConfiguration.isPresent() && entry.getValue() != null) {
-            // this is an objecttype, so the data is stored in a Map<String, Object>
-            Map<String, Object> objectTypeData = convertObjectTypeDataToMap(entry.getValue());
-            final String prefix = fieldPathPrefix.concat(fieldName + "/");
-            result.put(entry.getKey(),
-                addRdfUriForObjectTypes(objectTypeData, prefix, optionalCurrentTypeConfiguration.get(), selectionSet));
-          } else {
-            result.put(fieldName, entry.getValue());
-          }
-        });
-
-    return result;
-  }
-
-  private Map<String, Object> addRdfUri(Map<String, Object> data, TypeConfiguration<?> currentTypeConfiguration) {
-    String uriTemplate = currentTypeConfiguration.getUriTemplate();
-    if (!StringUtils.isBlank(uriTemplate)) {
-      StringSubstitutor substitutor = new StringSubstitutor(data);
-      String rdfUri = substitutor.replace(uriTemplate);
-      data.put(RDF_URI_FIELD, rdfUri);
-    }
-
-    return data;
-  }
-
-  /**
-   * Converts the data of an ObjectType to a Map.
-   *
-   * @param data the data to be casted
-   * @return the data as a map
-   */
-  @SuppressWarnings(value = "unchecked")
-  private Map<String, Object> convertObjectTypeDataToMap(Object data) {
-    if (Map.class.isAssignableFrom(data.getClass())) {
-      return (Map<String, Object>) data;
-    }
-    throw new IllegalArgumentException("Object cannot be converted to a map");
-  }
-
-  private Optional<TypeConfiguration<?>> getTypeConfiguration(String fieldName,
-      DataFetchingFieldSelectionSet selectionSet) {
-    if (selectionSet.contains(fieldName)) {
-      GraphQLOutputType qlOutputType = selectionSet.getFields(fieldName)
-          .get(0)
-          .getFieldDefinition()
-          .getType();
-
-      return getTypeConfiguration(qlOutputType);
-    }
-
-    return Optional.empty();
   }
 
   private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
@@ -200,7 +127,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
           .flatMap(group -> group
-              .map(data -> addRdfUriForObjectTypes(data, typeConfiguration, environment.getSelectionSet()))
+              .map(data -> rdfUriAccumulator.accumulate(data, typeConfiguration, environment.getSelectionSet()))
               .map(data -> createDataFetcherResult(typeConfiguration, data))
               .collectList()
               .map(list -> Map.entry(group.key(), list)))
@@ -211,7 +138,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
         .collectMap(Tuple2::getT1, tuple -> {
           Map<String, Object> dataWithRdfUris =
-              addRdfUriForObjectTypes(tuple.getT2(), typeConfiguration, environment.getSelectionSet());
+              rdfUriAccumulator.accumulate(tuple.getT2(), typeConfiguration, environment.getSelectionSet());
           return createDataFetcherResult(typeConfiguration, dataWithRdfUris);
         })
         .toFuture());

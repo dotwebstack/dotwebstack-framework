@@ -30,8 +30,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.SelectedField;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,18 +49,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class GenericDataFetcherTest {
 
   @Mock
   private GraphQLFieldDefinition graphQlFieldDefinitionMock;
 
   @Mock
-  private AbstractTypeConfiguration<?> typeConfiguration;
+  private AbstractTypeConfiguration<?> breweryTypeConfiguration;
+
+  @Mock
+  private AbstractTypeConfiguration<?> addressTypeConfiguration;
 
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
@@ -75,10 +81,13 @@ class GenericDataFetcherTest {
 
   @BeforeEach
   void doBeforeEach() {
-    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Brewery", typeConfiguration));
+    when(dotWebStackConfiguration.getTypeMapping())
+        .thenReturn(Map.of("Brewery", breweryTypeConfiguration, "Address", addressTypeConfiguration));
+
     when(graphQlFieldDefinitionMock.getName()).thenReturn("brewery");
 
-    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader));
+    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader),
+        new RdfUriAccumulator(dotWebStackConfiguration));
   }
 
   @Test
@@ -87,7 +96,7 @@ class GenericDataFetcherTest {
     Map<String, Object> data = Map.of("identifier", "id-1");
 
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.just(data));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
 
     GraphQLOutputType outputType = createBreweryType();
 
@@ -114,7 +123,7 @@ class GenericDataFetcherTest {
     GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
     DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.fromIterable(data));
 
     Object future = genericDataFetcher.get(dataFetchingEnvironment);
@@ -136,7 +145,7 @@ class GenericDataFetcherTest {
     GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
     DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.empty());
 
     Object result = genericDataFetcher.get(dataFetchingEnvironment);
@@ -169,7 +178,7 @@ class GenericDataFetcherTest {
   void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation() {
     GraphQLOutputType outputType = createBreweryType();
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
@@ -184,36 +193,19 @@ class GenericDataFetcherTest {
   @Test
   @SuppressWarnings("unchecked")
   void get_returnsResultWithRdfUri_forLoadSingleQueryOperation() throws Exception {
-    Map<String, Object> dataAddress = new HashMap<>() {
-      {
-        put("identifier_address", "1");
-        put("city", "New York");
-      }
-    };
-
-    Map<String, Object> dataBrewery = new HashMap<>() {
-      {
-        put("identifier", "id-1");
-        put("address", dataAddress);
-      }
-    };
-    AbstractTypeConfiguration<?> breweryTypeConfiguration = mock(AbstractTypeConfiguration.class);
-    AbstractTypeConfiguration<?> addressTypeConfiguration = mock(AbstractTypeConfiguration.class);
-
-    when(dotWebStackConfiguration.getTypeMapping())
-        .thenReturn(Map.of("Brewery", breweryTypeConfiguration, "Address", addressTypeConfiguration));
+    Map<String, Object> dataAddress = createDataMap("identifier_address", "1", "city", "New York");
+    Map<String, Object> dataBrewery = createDataMap("identifier", "id-1", "address", dataAddress);
 
     when(breweryTypeConfiguration.getUriTemplate()).thenReturn("http://registrations.org/brewery/${identifier}");
     when(addressTypeConfiguration.getUriTemplate())
         .thenReturn("http://registrations.org/address/${identifier_address}");
+
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.just(dataBrewery));
     when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
     GraphQLOutputType outputType = createBreweryType();
 
-    DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet =
-        mockDataFetchingFieldSelectionSet(Arrays.asList("identifier", "_id"));
     DataFetchingEnvironment dataFetchingEnvironment =
-        createDataFetchingEnvironment(outputType, QUERY, null, mockDataFetchingFieldSelectionSet);
+        createDataFetchingEnvironment(outputType, QUERY, null, mockDataFetchingFieldSelectionSet(true));
 
     Object future = genericDataFetcher.get(dataFetchingEnvironment);
 
@@ -223,9 +215,48 @@ class GenericDataFetcherTest {
 
     assertThat(result, notNullValue());
     Map<String, Object> resultData = result.getData();
-    assertTrue(resultData.containsKey("_id"));
+    assertBreweryHasRdfUri(resultData);
     assertAddressHasRdfUri(resultData);
+
     verify(backendDataLoader).loadSingle(isNull(), any(LoadEnvironment.class));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void get_returnsResultWithRdfUri_ForLoadManyQueryOperation() throws Exception {
+    List<Map<String, Object>> data = List.of(createDataMap("identifier", "id-1"), createDataMap("identifier", "id-2"));
+
+    GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
+
+    when(breweryTypeConfiguration.getUriTemplate()).thenReturn("http://registrations.org/brewery/${identifier}");
+
+    DataFetchingEnvironment dataFetchingEnvironment =
+        createDataFetchingEnvironment(outputType, QUERY, null, mockDataFetchingFieldSelectionSet(false));
+    when(backendDataLoader.supports(breweryTypeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.fromIterable(data));
+
+    Object future = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(future, instanceOf(Future.class));
+
+    List<DataFetcherResult<Map<String, Object>>> result =
+        (List<DataFetcherResult<Map<String, Object>>>) ((Future<?>) future).get();
+
+    result.stream()
+        .map(DataFetcherResult::getData)
+        .forEach(resultData -> {
+          assertBreweryHasRdfUri(resultData);
+        });
+
+    verify(backendDataLoader).loadMany(isNull(), any(LoadEnvironment.class));
+  }
+
+  @SuppressWarnings(value = "unchecked")
+  private void assertBreweryHasRdfUri(Map<String, Object> data) {
+    String uriTemplate = "http://registrations.org/brewery/${identifier}";
+    StringSubstitutor uriSubst = new StringSubstitutor(data);
+    assertTrue(data.containsKey("_id"));
+    assertThat(data.get("_id"), is(uriSubst.replace(uriTemplate)));
   }
 
   @SuppressWarnings(value = "unchecked")
@@ -266,39 +297,45 @@ class GenericDataFetcherTest {
         .build();
   }
 
-  private DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet(List<String> fieldNames) {
+  private DataFetchingFieldSelectionSet mockDataFetchingFieldSelectionSet(boolean includeAddress) {
     DataFetchingFieldSelectionSet mockedDataFetchingFieldSelectionSet = mock(DataFetchingFieldSelectionSet.class);
-    List<SelectedField> selectedFields = new ArrayList<>();
-    fieldNames.forEach(fieldName -> {
-      SelectedField mockSelectedField = mockRdfuriSelectedField(fieldName);
-      selectedFields.add(mockSelectedField);
-      when(mockedDataFetchingFieldSelectionSet.contains(fieldName)).thenReturn(true);
-      when(mockedDataFetchingFieldSelectionSet.getFields(fieldName))
-          .thenReturn(Collections.singletonList(mockSelectedField));
 
-    });
-    SelectedField mockAddressSelectedField = mockAddressSelectedField(mockedDataFetchingFieldSelectionSet);
-    selectedFields.add(mockAddressSelectedField);
+    mockBrewerySelectedField(mockedDataFetchingFieldSelectionSet);
+    if (includeAddress) {
+      mockAddressSelectedField(mockedDataFetchingFieldSelectionSet);
+    }
 
     return mockedDataFetchingFieldSelectionSet;
   }
 
-  private SelectedField mockRdfuriSelectedField(String fieldName) {
+  private SelectedField mockScalarSelectedField(String fieldName, GraphQLScalarType type) {
     SelectedField selectedField = mock(SelectedField.class);
     FieldDefinition def = newFieldDefinition().name(fieldName)
-        .type(newTypeName(Scalars.GraphQLString.getName()).build())
+        .type(newTypeName(type.getName()).build())
         .build();
 
     GraphQLFieldDefinition qlDef = GraphQLFieldDefinition.newFieldDefinition()
         .name(fieldName)
         .definition(def)
-        .type(Scalars.GraphQLString)
+        .type(type)
         .build();
     when(selectedField.getFieldDefinition()).thenReturn(qlDef);
     return selectedField;
   }
 
-  private SelectedField mockAddressSelectedField(DataFetchingFieldSelectionSet mockedDataFetchingFieldSelectionSet) {
+  private void mockBrewerySelectedField(DataFetchingFieldSelectionSet mockedDataFetchingFieldSelectionSet) {
+    List<String> breweryFields = Arrays.asList("identifier", "_id");
+    breweryFields.forEach(fieldName -> {
+      SelectedField mockSelectedField = mockScalarSelectedField(fieldName, Scalars.GraphQLString);
+
+      when(mockedDataFetchingFieldSelectionSet.contains(fieldName)).thenReturn(true);
+      when(mockedDataFetchingFieldSelectionSet.getFields(fieldName))
+          .thenReturn(Collections.singletonList(mockSelectedField));
+
+    });
+  }
+
+  private void mockAddressSelectedField(DataFetchingFieldSelectionSet mockedDataFetchingFieldSelectionSet) {
     SelectedField mockAddressSelectedField = mock(SelectedField.class);
     SelectedField mockCitySelectedField = mock(SelectedField.class);
 
@@ -329,13 +366,15 @@ class GenericDataFetcherTest {
     when(mockedDataFetchingFieldSelectionSet.contains("address")).thenReturn(true);
     when(mockedDataFetchingFieldSelectionSet.contains("address/_id")).thenReturn(true);
     when(mockedDataFetchingFieldSelectionSet.contains("city")).thenReturn(true);
+
     when(mockedDataFetchingFieldSelectionSet.getFields("address"))
         .thenReturn(Collections.singletonList(mockAddressSelectedField));
     when(mockedDataFetchingFieldSelectionSet.getFields("city"))
         .thenReturn(Collections.singletonList(mockCitySelectedField));
+
     when(mockCitySelectedField.getFieldDefinition()).thenReturn(qlDefCity);
     when(mockAddressSelectedField.getFieldDefinition()).thenReturn(qlDefAddress);
-    return mockAddressSelectedField;
+
   }
 
   private GraphQLOutputType createBreweryType() {
@@ -343,4 +382,25 @@ class GenericDataFetcherTest {
         .name("Brewery")
         .build();
   }
+
+  private Map<String, Object> createDataMap(String key, Object value) {
+    Map<String, Object> dataMap = new HashMap<>() {
+      {
+        put(key, value);
+      }
+    };
+    return dataMap;
+  }
+
+  private Map<String, Object> createDataMap(String key1, Object value1, String key2, Object value2) {
+    Map<String, Object> dataMap = new HashMap<>() {
+      {
+        put(key1, value1);
+        put(key2, value2);
+      }
+    };
+    return dataMap;
+  }
+
+
 }
