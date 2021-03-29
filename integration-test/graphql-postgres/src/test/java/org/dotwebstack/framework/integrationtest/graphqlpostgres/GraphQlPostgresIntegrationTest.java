@@ -6,16 +6,22 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import graphql.ErrorType;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
 import io.r2dbc.spi.ConnectionFactory;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.text.StringSubstitutor;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
@@ -639,6 +645,75 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.size(), is(2));
     assertThat(beerAgg.get("tastes"), is("meaty,smoky,spicy"));
     assertThat(beerAgg.get("totalCount"), is(2));
+  }
 
+  @Test
+  void graphQlQuery_returnsRdfUrisForBeersAndIngredients_forNestObjectsWithUriTemplate() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")" + "{ name  "
+        + " postalAddress { identifier_address _id street city } " + " visitAddress {_id street city} "
+        + " beerAgg { totalCount : count( field : \"soldPerYear\" ) "
+        + "tastes : stringJoin( field : \"taste\", distinct : true ) } "
+        + " beers { identifier_beer _id name ingredients { identifier_ingredient _id name}} }}";
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertFalse(brewery.containsKey("_id"));
+    assertTrue(brewery.containsKey("visitAddress"));
+    assertThat(brewery.get("visitAddress"), nullValue());
+
+    assertPostalAddressHasRdfUri(brewery);
+
+    assertBeersHaveRdfUri((List<Map<String, Object>>) brewery.get("beers"));
+  }
+
+  @Test
+  void graphQlQuery_hasNonNullValueError_forBreweryWithoutUriTemplate() {
+    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")" + "{ name _id} }";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertFalse(result.getErrors()
+        .isEmpty());
+    List<GraphQLError> errors = result.getErrors();
+    assertSame(ErrorType.NullValueInNonNullableField, errors.get(0)
+        .getErrorType());
+    assertTrue(errors.get(0)
+        .getPath()
+        .containsAll(Arrays.asList("brewery", "_id")));
+  }
+
+  private void assertBeersHaveRdfUri(List<Map<String, Object>> beers) {
+    String beerUriTemplate = "http://registrations.org/beer/${identifier_beer}";
+    String ingredientUriTemplate = "http://registrations.org/ingredient/${identifier_ingredient}";
+
+    beers.forEach(beerData -> {
+      StringSubstitutor beerUriSubst = new StringSubstitutor(beerData);
+      assertTrue(beerData.containsKey("_id"));
+      assertThat(beerData.get("_id"), is(beerUriSubst.replace(beerUriTemplate)));
+      List<Map<String, Object>> ingredients = (List<Map<String, Object>>) beerData.get("ingredients");
+      ingredients.forEach(ingredientData -> {
+        StringSubstitutor ingredientUriSubst = new StringSubstitutor(ingredientData);
+        assertTrue(ingredientData.containsKey("_id"));
+        assertThat(ingredientData.get("_id"), is(ingredientUriSubst.replace(ingredientUriTemplate)));
+      });
+    });
+  }
+
+  private void assertPostalAddressHasRdfUri(Map<String, Object> data) {
+    String uriTemplate = "http://registrations.org/address/${identifier_address}";
+    assertTrue(data.containsKey("postalAddress"));
+    Map<String, Object> entityData = ((Map<String, Object>) data.get("postalAddress"));
+    StringSubstitutor uriSubst = new StringSubstitutor(entityData);
+    assertTrue(entityData.containsKey("_id"));
+    assertThat(entityData.get("_id"), is(uriSubst.replace(uriTemplate)));
   }
 }

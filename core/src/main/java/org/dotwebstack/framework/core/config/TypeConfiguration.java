@@ -20,4 +20,6 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
   KeyCondition getKeyCondition(String fieldName, Map<String, Object> source);
 
   KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source);
+
+  String getUriTemplate();
 }

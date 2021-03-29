@@ -37,6 +37,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   @Valid
   protected Map<String, T> fields = new HashMap<>();
 
+  protected String uriTemplate;
+
   public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {}
 
   public KeyCondition getKeyCondition(String fieldName) {
