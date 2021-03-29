@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.text.StringSubstitutor;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
@@ -647,23 +648,32 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsUriIdentifiersForNestedObjects_forNestObjectsWithUriTemplate() {
+  void graphQlQuery_returnsRdfUrisForBeersAndIngredients_forNestObjectsWithUriTemplate() {
     String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")" + "{ name  "
-        + " postalAddress { _id street city } " + " visitAddress {_id street city} "
+        + " postalAddress { identifier_address _id street city } " + " visitAddress {_id street city} "
         + " beerAgg { totalCount : count( field : \"soldPerYear\" ) "
-        + "tastes : stringJoin( field : \"taste\", distinct : true ) } " + " beers { name ingredients {_id name}} }}";
+        + "tastes : stringJoin( field : \"taste\", distinct : true ) } "
+        + " beers { identifier_beer _id name ingredients { identifier_ingredient _id name}} }}";
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
     ExecutionResult result = graphQL.execute(executionInput);
-    // ExecutionResult result = graphQL.execute(query);
-
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
-    // TODO: assertions
+
+    assertTrue(data.containsKey("brewery"));
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertFalse(brewery.containsKey("_id"));
+    assertTrue(brewery.containsKey("visitAddress"));
+    assertThat(brewery.get("visitAddress"), nullValue());
+
+    assertPostalAddressHasRdfUri(brewery);
+
+    assertBeersHaveRdfUri((List<Map<String, Object>>) brewery.get("beers"));
+
   }
 
   @Test
@@ -682,4 +692,29 @@ class GraphQlPostgresIntegrationTest {
         .containsAll(Arrays.asList("brewery", "_id")));
   }
 
+  private void assertBeersHaveRdfUri(List<Map<String, Object>> beers) {
+    String beerUriTemplate = "http://registrations.org/beer/${identifier_beer}";
+    String ingredientUriTemplate = "http://registrations.org/ingredient/${identifier_ingredient}";
+
+    beers.forEach(beerData -> {
+      StringSubstitutor beerUriSubst = new StringSubstitutor(beerData);
+      assertTrue(beerData.containsKey("_id"));
+      assertThat(beerData.get("_id"), is(beerUriSubst.replace(beerUriTemplate)));
+      List<Map<String, Object>> ingredients = (List<Map<String, Object>>) beerData.get("ingredients");
+      ingredients.forEach(ingredientData -> {
+        StringSubstitutor ingredientUriSubst = new StringSubstitutor(ingredientData);
+        assertTrue(ingredientData.containsKey("_id"));
+        assertThat(ingredientData.get("_id"), is(ingredientUriSubst.replace(ingredientUriTemplate)));
+      });
+    });
+  }
+
+  private void assertPostalAddressHasRdfUri(Map<String, Object> data) {
+    String uriTemplate = "http://registrations.org/address/${identifier_address}";
+    assertTrue(data.containsKey("postalAddress"));
+    Map<String, Object> entityData = ((Map<String, Object>) data.get("postalAddress"));
+    StringSubstitutor uriSubst = new StringSubstitutor(entityData);
+    assertTrue(entityData.containsKey("_id"));
+    assertThat(entityData.get("_id"), is(uriSubst.replace(uriTemplate)));
+  }
 }
