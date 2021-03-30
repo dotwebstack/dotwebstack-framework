@@ -16,7 +16,6 @@ type Subscription {
 
 type Brewery {
   identifier_brewery: ID!
-  _id: String!
   name: String!
   status: String!
   beers: [Beer]
@@ -28,7 +27,6 @@ type Brewery {
 
 type Beer {
   identifier_beer: ID!
-  _id: String!
   name: String!
   abv: Float!
   brewery: Brewery!
@@ -41,14 +39,12 @@ type Beer {
 
 type Address {
   identifier_address: ID!
-  _id: String!
   street: String!
   city: String!
 }
 
 type Ingredient {
   identifier_ingredient: ID!
-  _id: String!
   name: String!
   weight: Float!
 }
