@@ -155,28 +155,30 @@ public class NodeShapeFactory {
     return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
         .stream()
         .map(or -> unwrapOrStatements(shapeModel, or).stream()
-            .peek(resource ->
-            /*
-             * All the individual childs under an sh:or statement are enriched with the shared values on the
-             * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
-             * to the model for later reuse.
-             */
-            shapeModel.filter(identifier, null, null)
-                .stream()
-                .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
-                .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
-                .forEach(statement -> {
-                  if (resource instanceof MemResource && statement.getObject() instanceof MemResource) {
-                    MemStatement memStatement = new MemStatement((MemResource) resource,
-                        (MemIRI) statement.getPredicate(), (MemResource) statement.getObject(), null, 0);
-                    ((MemBNode) resource).getSubjectStatementList()
-                        .add(memStatement);
-                    shapeModel.add(memStatement);
-                  } else {
-                    throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
-                        statement);
-                  }
-                }))
+            .map(resource -> {
+              /*
+               * All the individual childs under an sh:or statement are enriched with the shared values on the
+               * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
+               * to the model for later reuse.
+               */
+              shapeModel.filter(identifier, null, null)
+                  .stream()
+                  .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
+                  .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
+                  .forEach(statement -> {
+                    if (resource instanceof MemResource && statement.getObject() instanceof MemResource) {
+                      MemStatement memStatement = new MemStatement((MemResource) resource,
+                          (MemIRI) statement.getPredicate(), (MemResource) statement.getObject(), null, 0);
+                      ((MemBNode) resource).getSubjectStatementList()
+                          .add(memStatement);
+                      shapeModel.add(memStatement);
+                    } else {
+                      throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
+                          statement);
+                    }
+                  });
+              return resource;
+            })
             .collect(Collectors.toList()))
         .flatMap(List::stream)
         .collect(Collectors.toList());
@@ -255,7 +257,7 @@ public class NodeShapeFactory {
          * the sequence is reached. It is removed so that the optional will not be present and the process
          * stops
          */
-        .filter(resource -> (resource instanceof MemBNode))
+        .filter(MemBNode.class::isInstance)
         .map(resource -> resource.getSubjectStatementList()
             .get(0))
         .findFirst()

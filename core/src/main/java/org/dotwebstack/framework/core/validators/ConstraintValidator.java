@@ -157,7 +157,7 @@ public class ConstraintValidator implements QueryValidator {
 
     jexlHelper.evaluateExpression(constraint, jexlContext, Boolean.class)
         .ifPresent(result -> {
-          if (!result) {
+          if (Boolean.FALSE.equals(result)) {
             throw new DirectiveValidationException("Constraint 'expr' [{}] violated on '{}' with value '{}'",
                 constraint, name, value);
           }
