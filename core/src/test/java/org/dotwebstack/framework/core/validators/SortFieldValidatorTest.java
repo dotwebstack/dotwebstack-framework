@@ -58,16 +58,16 @@ class SortFieldValidatorTest {
   @Mock
   private FieldDefinition fieldDefinition2;
 
-  private TypeName type1 = new TypeName(TYPE_DEF_2);
+  private final TypeName type1 = new TypeName(TYPE_DEF_2);
 
-  private TypeName type2 = new TypeName("somevalue");
+  private final TypeName type2 = new TypeName("somevalue");
 
-  private ListType listType = new ListType(type1);
+  private final ListType listType = new ListType(type1);
 
   private SortFieldValidator sortFieldValidator;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     when(fieldDefinition1.getName()).thenReturn(FIELD_NAME_1);
     when(fieldDefinition1.getType()).thenReturn(type1);
     when(typeDefinition1.getFieldDefinitions()).thenReturn(Arrays.asList(fieldDefinition1));
@@ -85,57 +85,46 @@ class SortFieldValidatorTest {
   }
 
   @Test
-  public void validate_success_withOneField() {
-    // Act / assert
+  void validate_success_withOneField() {
     sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1);
   }
 
   @Test
-  public void validate_success_withMultipleFields() {
-    // Arrange
+  void validate_success_withMultipleFields() {
     when(fieldDefinition2.getName()).thenReturn(FIELD_NAME_2);
     when(fieldDefinition2.getType()).thenReturn(type2);
     when(typeDefinition2.getFieldDefinitions()).thenReturn(ImmutableList.of(fieldDefinition2));
 
-    // Act / Assert
     sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1 + "." + FIELD_NAME_2);
   }
 
   @Test
-  public void validate_error_withUnknownField() {
-    // Act
-
+  void validate_error_withUnknownField() {
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1 + ".UNKNOWN"));
 
-    // Assert
     assertTrue(thrown.getMessage()
         .contains("has no Field"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_error_withUnknownType() {
-    // Act
+  void validate_error_withUnknownType() {
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue("UNKNOWN", null, null, FIELD_NAME_1));
 
-    // Assert
     assertTrue(thrown.getMessage()
         .contains("not found"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_error_withFieldListType() {
-    // Arrange
+  void validate_error_withFieldListType() {
     when(fieldDefinition1.getType()).thenReturn(listType);
 
-    // Act
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1));
 
-    // Assert
     assertTrue(thrown.getMessage()
         .contains("is a List"));
   }
@@ -143,83 +132,67 @@ class SortFieldValidatorTest {
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_validateSortField_withInvalidValue() {
-    // Arrange
+  void validate_validateSortField_withInvalidValue() {
     Map<String, String> sortArgument = Map.of("order", "ASC");
     when(fieldDefinition1.getType()).thenReturn(listType);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortField(stringFieldDefinition, sortArgument, "fallback"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_validateSortField_withIllegalValue() {
-    // Arrange
+  void validate_validateSortField_withIllegalValue() {
     List<String> sortArgument = List.of("order", "ASC", "field", "field1");
     when(fieldDefinition1.getType()).thenReturn(listType);
 
-    // Act & Assert
     assertThrows(IllegalArgumentException.class,
         () -> sortFieldValidator.validateSortField(stringFieldDefinition, sortArgument, "fallback"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_validateSortFieldList_withInvalidValue() {
-    // Arrange
+  void validate_validateSortFieldList_withInvalidValue() {
     List<Map<String, String>> sortArgument = List.of(Map.of("order", "ASC"), Map.of("order", "ASC"));
     when(fieldDefinition1.getType()).thenReturn(listType);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> sortFieldValidator
         .validateSortFieldList(stringFieldDefinition, sortArgument, "fallback", Scalars.GraphQLString));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_getSortFieldValue_withMap() {
-    // Arrange
+  void validate_getSortFieldValue_withMap() {
     Map<String, String> sortArgument = Map.of("order", "ASC", "field", "name");
 
-    // Act
     Optional<String> optional = sortFieldValidator.getSortFieldValue(sortArgument, "fallback");
 
-    // Assert
     assertEquals(optional, (Optional.of("name")));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_getSortFieldValue_withNullMap() {
-    // Act
+  void validate_getSortFieldValue_withNullMap() {
     Optional<String> optional = sortFieldValidator.getSortFieldValue(null, "fallback");
 
-    // Assert
     assertEquals(optional, (Optional.empty()));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_getSortFieldValue_withInvalidType() {
-    // Arrange
+  void validate_getSortFieldValue_withInvalidType() {
     List<String> sortArgument = List.of("field");
 
-    // Act & Assert
     assertThrows(IllegalArgumentException.class, () -> sortFieldValidator.getSortFieldValue(sortArgument, "fallback"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
-  public void validate_getSortFieldValue_withFallback() {
-    // Arrange
+  void validate_getSortFieldValue_withFallback() {
     Map<String, String> sortArgument = Map.of("order", "ASC");
 
-    // Act
     Optional<String> optional = sortFieldValidator.getSortFieldValue(sortArgument, "fallback");
 
-    // Assert
     assertEquals(optional, (Optional.of("fallback")));
   }
 }

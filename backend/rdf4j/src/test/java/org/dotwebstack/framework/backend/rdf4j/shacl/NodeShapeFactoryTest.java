@@ -79,7 +79,6 @@ class NodeShapeFactoryTest {
 
   @Test
   void get_returnShOrShape_ForGivenModel() {
-    // Arrange
     NodeShapeRegistry registry = new NodeShapeRegistry("https://github.com/dotwebstack/beer/shapes#");
 
     Map<Resource, NodeShape> nodeShapeMap = new HashMap<>();
@@ -91,11 +90,9 @@ class NodeShapeFactoryTest {
           registry.register(shape.getIdentifier(), shape);
         });
 
-    // Act
     NodeShape breweryShape = registry.get("Brewery");
     NodeShape beerShape = registry.get("Beer");
 
-    // Assert
     assertShOr(beerShape);
     assertShOr(breweryShape);
   }
@@ -144,32 +141,27 @@ class NodeShapeFactoryTest {
   }
 
   @Test
-  public void validatePropertyShapes_doesNotThrowError_forValidPropertyShapes() {
-    // Arrange
+  void validatePropertyShapes_doesNotThrowError_forValidPropertyShapes() {
     Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
         .identifier(() -> "beer_sh:Beer")
         .constraints(Map.of(ConstraintType.MINCOUNT, VF.createLiteral(1)))
         .build());
 
-    // Act & Assert
     assertDoesNotThrow(() -> NodeShapeFactory.validatePropertyShapes(propertyShapes));
   }
 
   @Test
-  public void validatePropertyShapes_throwsError_forPropertyShapeWithMinCount5() {
-    // Arrange
+  void validatePropertyShapes_throwsError_forPropertyShapeWithMinCount5() {
     Map<String, PropertyShape> propertyShapes = Map.of("beer_sh:Beer", PropertyShape.builder()
         .identifier(() -> "beer_sh:Beer")
         .constraints(Map.of(ConstraintType.MINCOUNT, VF.createLiteral(5)))
         .build());
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> NodeShapeFactory.validatePropertyShapes(propertyShapes));
   }
 
   @Test
-  public void getClassIri_returnsClassIri_forClassStatement() {
-    // Arrange
+  void getClassIri_returnsClassIri_forClassStatement() {
     when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
     when(mockMemStatements.size()).thenReturn(1);
     when(mockMemStatements.get(0)).thenReturn(mockMemStatement);
@@ -178,38 +170,33 @@ class NodeShapeFactoryTest {
     when(mockMemStatement.getObject()).thenReturn(mockMemStatementObject);
     when(mockMemStatementObject.toString()).thenReturn("http://www.example.com#Beer");
 
-    // Act & Assert
     assertThat(NodeShapeFactory.getClassIri(mockMemBNode)
         .toString(), is(equalTo("http://www.example.com#Beer")));
   }
 
   @Test
-  public void getClassIri_returnsNull_forNonClassIri() {
-    // Arrange
+  void getClassIri_returnsNull_forNonClassIri() {
     when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
     when(mockMemStatements.size()).thenReturn(1);
     when(mockMemStatements.get(0)).thenReturn(mockMemStatement);
     when(mockMemStatement.getPredicate()).thenReturn(mockMemStatementPredicate);
     when(mockMemStatementPredicate.toString()).thenReturn("http://www.w3.org/ns/rdf#type");
 
-    // Act & Assert
     assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
   }
 
   @Test
-  public void getClassIri_returnsNull_forEmptyList() {
+  void getClassIri_returnsNull_forEmptyList() {
     when(mockMemBNode.getSubjectStatementList()).thenReturn(EMPTY_LIST);
 
-    // Act & Assert
     assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
   }
 
   @Test
-  public void getClassIri_returnsNull_forListWithMoreThenOneStatement() {
+  void getClassIri_returnsNull_forListWithMoreThenOneStatement() {
     when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
     when(mockMemStatements.size()).thenReturn(2);
 
-    // Act & Assert
     assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
   }
 }
