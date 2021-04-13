@@ -30,47 +30,36 @@ public class OpenApiPropertiesTest {
   }
 
   @Test
-  public void defaultApiDocPublicationPath_isValid() {
-    // Act
+  void defaultApiDocPublicationPath_isValid() {
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, empty());
   }
 
   @Test
-  public void setApiDocPublicationPath_withValidValue_isValid() {
-    // Arrange
+  void setApiDocPublicationPath_withValidValue_isValid() {
     properties.setApiDocPublicationPath("/openapi.yaml");
 
-    // Act
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, empty());
   }
 
   @Test
-  public void setApiDocPublicationPath_withComplexValidValue_isValid() {
-    // Arrange
+  void setApiDocPublicationPath_withComplexValidValue_isValid() {
     properties.setApiDocPublicationPath("/some/path/open%20api%2F~$@_adsfa30=-+");
 
-    // Act
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, empty());
   }
 
   @Test
-  public void setApiDocPublicationPath_withInvalidValue_isInvalid() {
-    // Arrange
+  void setApiDocPublicationPath_withInvalidValue_isInvalid() {
     properties.setApiDocPublicationPath("openapi.yaml");
 
-    // Act
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)
@@ -78,14 +67,11 @@ public class OpenApiPropertiesTest {
   }
 
   @Test
-  public void setApiDocPublicationPath_withWrongPercentEncoding_isInvalid() {
-    // Arrange
+  void setApiDocPublicationPath_withWrongPercentEncoding_isInvalid() {
     properties.setApiDocPublicationPath("/open%2Gapi");
 
-    // Act
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)
@@ -93,14 +79,11 @@ public class OpenApiPropertiesTest {
   }
 
   @Test
-  public void setApiDocPublicationPath_withIllegalCharacter_isInvalid() {
-    // Arrange
+  void setApiDocPublicationPath_withIllegalCharacter_isInvalid() {
     properties.setApiDocPublicationPath("/open^api");
 
-    // Act
     Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
 
-    // Assert
     assertThat(validationResult, hasSize(1));
 
     assertThat(Iterables.getOnlyElement(validationResult)

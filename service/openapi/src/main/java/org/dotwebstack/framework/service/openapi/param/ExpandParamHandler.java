@@ -125,7 +125,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
       ComposedSchema composedSchema = (ComposedSchema) schema;
 
       return getComposedChilds(composedSchema).stream()
-          .filter(subSchema -> subSchema instanceof ObjectSchema)
+          .filter(ObjectSchema.class::isInstance)
           .filter(DwsExtensionHelper::isTransient)
           .map(subSchema -> getPropertySchema(subSchema, fieldName))
           .filter(Objects::nonNull)
@@ -133,7 +133,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
           .orElse(null);
     }
 
-    return (Schema<?>) schema.getProperties()
+    return schema.getProperties()
         .get(fieldName);
   }
 
