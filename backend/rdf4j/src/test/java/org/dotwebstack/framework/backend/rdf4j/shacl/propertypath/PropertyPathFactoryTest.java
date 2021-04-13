@@ -38,10 +38,8 @@ public class PropertyPathFactoryTest {
 
   @Test
   void createPropertyPath_ReturnsSequencePath() {
-    // Act
     final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_POSTAL_CODE_SHAPE);
 
-    // Assert
     assertTrue(propertyPath instanceof SequencePath);
     assertThat(resolveIris(propertyPath),
         equalTo(Arrays.asList(Constants.SCHEMA_ADDRESS, Constants.SCHEMA_POSTAL_CODE, RDF.NIL)));
@@ -49,25 +47,20 @@ public class PropertyPathFactoryTest {
 
   @Test
   void createPropertyPath_ReturnsPredicatePath() {
-    // Act
     final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_FOUNDED_SHAPE);
 
-    // Assert
     assertTrue(propertyPath instanceof PredicatePath);
     assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(Constants.BREWERY_FOUNDED_PATH)));
   }
 
   @Test
   void createPropertyPath_ReturnsInversePathInsideSequencePath() {
-    // Act
     final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_BEERNAMES_SHAPE);
 
-    // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
     assertThat(resolveIris(propertyPath),
         equalTo(Arrays.asList(Constants.BREWERY_BEERS_PATH, Constants.SCHEMA_NAME, RDF.NIL)));
 
-    // Assert inverse path
     final PropertyPath first = ((SequencePath) propertyPath).getFirst();
     assertTrue(first instanceof InversePath);
     final PropertyPath object = ((InversePath) first).getObject();

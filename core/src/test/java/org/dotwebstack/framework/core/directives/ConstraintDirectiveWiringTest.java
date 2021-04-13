@@ -39,7 +39,6 @@ class ConstraintDirectiveWiringTest {
 
   @Test
   void onArgument_returnsNull_forGivenArgument() {
-    // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
         .type(new GraphQLNonNull(Scalars.GraphQLInt))
@@ -48,10 +47,8 @@ class ConstraintDirectiveWiringTest {
 
     when(argumentEnvironment.getElement()).thenReturn(argument);
 
-    // Act
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    // Assert
     verify(constraintValidator).validateSchema(DirectiveContainerObject.builder()
         .container(argument)
         .value(argument.getDefaultValue())
@@ -60,17 +57,14 @@ class ConstraintDirectiveWiringTest {
 
   @Test
   void onArgument_throwsException_forGivenArgument() {
-    // Act
     when(argumentEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
-    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onArgument(argumentEnvironment));
   }
 
   @Test
   void onInputObjectField_returnsNull_forGivenArgument() {
-    // Arrange
     GraphQLInputObjectField field = GraphQLInputObjectField.newInputObjectField()
         .name("input")
         .type(Scalars.GraphQLInt)
@@ -78,10 +72,8 @@ class ConstraintDirectiveWiringTest {
 
     when(inputObjectFieldEnvironment.getElement()).thenReturn(field);
 
-    // Act
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    // Assert
     verify(constraintValidator).validateSchema(DirectiveContainerObject.builder()
         .container(field)
         .value(field.getDefaultValue())
@@ -91,10 +83,8 @@ class ConstraintDirectiveWiringTest {
 
   @Test
   void onInputObjectField_throwsException_forGivenArgument() {
-    // Act
     when(inputObjectFieldEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
-    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
   }

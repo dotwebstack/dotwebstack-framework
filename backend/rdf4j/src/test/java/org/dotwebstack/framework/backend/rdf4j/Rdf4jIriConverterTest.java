@@ -14,22 +14,17 @@ class Rdf4jIriConverterTest {
 
   @Test
   void convert_ConvertsToIri_ForValidString() {
-    // Arrange
     String input = Constants.BREWERY_CLASS.stringValue();
 
-    // Act
     IRI result = rdf4jIriConverter.convert(input);
 
-    // Assert
     assertThat(result, is(equalTo(Constants.BREWERY_CLASS)));
   }
 
   @Test
   void convert_ThrowsException_ForInvalidString() {
-    // Arrange
     String input = "foo";
 
-    // Act / Assert
     assertThrows(IllegalArgumentException.class, () -> rdf4jIriConverter.convert(input));
   }
 

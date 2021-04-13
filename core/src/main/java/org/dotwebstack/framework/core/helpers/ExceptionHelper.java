@@ -7,7 +7,7 @@ import org.dotwebstack.framework.core.NotImplementedException;
 
 public class ExceptionHelper {
 
-  public static String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '{}'";
+  public static final String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '{}'";
 
   protected ExceptionHelper() {}
 

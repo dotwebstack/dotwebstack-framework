@@ -60,7 +60,6 @@ class QueryBuilderTest {
 
   @Test
   void buildwithKeyCondition() {
-    // Arrange
     Rdf4jTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     when(nodeShapeRegistry.get("Beer")).thenReturn(NodeShape.builder()
@@ -94,10 +93,8 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(selectedFields);
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, selectionSet, keyCondition);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), equalTo("SELECT ?x2 ?x4\n"
         + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .\n"
@@ -108,7 +105,6 @@ class QueryBuilderTest {
 
   @Test
   void buildwithoutKeyCondition() {
-    // Arrange
     Rdf4jTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     when(nodeShapeRegistry.get("Beer")).thenReturn(NodeShape.builder()
@@ -138,10 +134,8 @@ class QueryBuilderTest {
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(selectedFields);
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, selectionSet, (KeyCondition) null);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), equalTo("SELECT ?x2 ?x3\n"
         + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .\n"

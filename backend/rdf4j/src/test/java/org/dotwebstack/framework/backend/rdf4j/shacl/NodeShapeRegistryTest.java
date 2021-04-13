@@ -30,35 +30,28 @@ class NodeShapeRegistryTest {
 
   @Test
   void register_addsNodeShapeToRegistry() {
-    // Act
     nodeShapeRegistry.register(Constants.BREWERY_SHAPE, nodeShape);
 
-    // Assert
     MatcherAssert.assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(equalTo(nodeShape)));
   }
 
   @Test
   void get_returnsNull_ForAbsentNodeShape() {
-    // Act
     NodeShape nodeShape = nodeShapeRegistry.get(RDF.NIL);
 
-    // Assert
     assertThat(nodeShape, is(nullValue()));
   }
 
   @Test
   void get_returnsNodeShape_ForGivenObjectType() {
-    // Arrange
     nodeShapeRegistry.register(Constants.BREWERY_SHAPE, nodeShape);
 
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
         .name(Constants.BREWERY_TYPE)
         .build();
 
-    // Act
     NodeShape nodeShape = nodeShapeRegistry.get(objectType);
 
-    // Assert
     assertThat(nodeShape, is(equalTo(nodeShape)));
   }
 

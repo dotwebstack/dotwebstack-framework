@@ -29,73 +29,59 @@ class JsonQueryResultTest {
 
   @Test
   void getBeersReturnsArrayListTest() throws Exception {
-    // Arrange
     setup("$.beers", getSingleBreweryAsJson());
 
-    // Act
     List<Map<String, Object>> result = jsonQueryResult.getResults(null);
 
-    // Assert
     assertThat(result.size(), equalTo(2));
   }
 
   @Test
   void getBeersFromBreweryWithoutBeersShouldReturnEmptyListTest() throws Exception {
-    // Arrange
     setup("$.beers", getSingleBreweryWithoutBeersAsJson());
 
-    // Act
     List<Map<String, Object>> result = jsonQueryResult.getResults(null);
 
-    // Assert
     assertThat(result.size(), equalTo(0));
   }
 
 
   @Test
   void getBeerByIdShouldReturnOneBeerTest() throws Exception {
-    // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
 
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "1"))
         .build();
 
-    // Act
     Optional<Map<String, Object>> result = jsonQueryResult.getResult(fieldKeyCondition);
 
-    // Assert
     assertThat((int) result.stream()
         .count(), equalTo(1));
   }
 
   @Test
   void getBeerByNotExistingIdShouldReturnEmptyListTest() throws Exception {
-    // Arrange
     setup("$.beers[?]", getSingleBreweryAsJson());
 
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "3"))
         .build();
 
-    // Act
     Optional<Map<String, Object>> result = jsonQueryResult.getResult(fieldKeyCondition);
 
-    // Assert
     assertThat((int) result.stream()
         .count(), equalTo(0));
   }
 
   @Test
   void getBeerByIdShouldThrowExceptionIfSizeIsGreaterThanOneTest() throws Exception {
-    // Arrange
     setup("$.beers[?]", getBreweryWithBeersAsJson());
 
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "1"))
         .build();
 
-    // Act & Assert
     assertThrows(IllegalStateException.class, () -> jsonQueryResult.getResult(fieldKeyCondition));
   }
 
