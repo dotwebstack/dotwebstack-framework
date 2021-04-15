@@ -46,4 +46,12 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
     return List.of();
   }
+
+  public List<JoinColumn> findInverseJoinColumns() {
+    if (joinTable != null) {
+      return joinTable.getInverseJoinColumns();
+    }
+
+    return List.of();
+  }
 }

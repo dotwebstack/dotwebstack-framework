@@ -5,15 +5,22 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
+import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -31,8 +38,11 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
+
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
+
+          validateFieldColumnConfiguration(typeMapping, fieldConfiguration, fieldDefinition);
 
           if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
             String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
@@ -51,6 +61,43 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
 
     initAggregateTypes(typeMapping);
+  }
+
+  private void validateFieldColumnConfiguration(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+      PostgresFieldConfiguration fieldConfiguration, FieldDefinition fieldDefinition) {
+    List<JoinColumn> joinColumns = new ArrayList<>();
+    Optional.ofNullable(fieldConfiguration.findInverseJoinColumns())
+        .ifPresent(joinColumns::addAll);
+    Optional.ofNullable(fieldConfiguration.findJoinColumns())
+        .ifPresent(joinColumns::addAll);
+
+    if (joinColumns.size() != 0) {
+      joinColumns.forEach(joinColumn -> {
+
+        if (Objects.isNull(joinColumn.getReferencedField()) && Objects.isNull(joinColumn.getReferencedColumn())) {
+          throw invalidConfigurationException(
+              "One of 'referencedField' or 'referencedColumn' must have a valid value in field {}", fieldConfiguration);
+        }
+
+        if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
+          throw invalidConfigurationException(
+              "Only one of 'referencedField' or 'referencedColumn' can have a valid value in field {}",
+              fieldConfiguration);
+        }
+
+        if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn())) {
+          String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
+          TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
+
+          if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
+            throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
+                typeConfiguration.getClass());
+          }
+
+        }
+
+      });
+    }
   }
 
   @Override
