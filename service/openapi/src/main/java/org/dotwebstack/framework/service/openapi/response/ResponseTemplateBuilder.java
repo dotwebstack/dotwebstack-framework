@@ -43,6 +43,8 @@ public class ResponseTemplateBuilder {
 
   private static final String TEMPLATE_NAME_VENDOR_EXTENSION = "x-dws-template";
 
+  private static final String OBJECT_TYPE = "object";
+
   private final OpenAPI openApi;
 
   private final List<String> xdwsStringTypes;
@@ -211,7 +213,7 @@ public class ResponseTemplateBuilder {
             schema = resolveSchema(openApi, schema);
           }
 
-          if (!"object".equals(schema.getType())) {
+          if (!OBJECT_TYPE.equals(schema.getType())) {
             throw invalidConfigurationException("Field '{}' for response code '{}' is configured incorrectly,"
                 + " allOf schema's only support object schema's", responseObject.getIdentifier(), responseCode);
           }
@@ -342,7 +344,7 @@ public class ResponseTemplateBuilder {
   private SchemaSummary createSchemaSummary(Schema<?> schema, String ref, boolean isRequired, boolean isNillable) {
     return SchemaSummary.builder()
         .isTransient(isTransient(schema))
-        .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
+        .type(Objects.nonNull(schema.getType()) ? schema.getType() : OBJECT_TYPE)
         .dwsType(getDwsType(schema))
         .nillable(isNillable)
         .dwsExpr(getDwsExpression(schema))
@@ -356,7 +358,7 @@ public class ResponseTemplateBuilder {
       boolean isTransient) {
     return SchemaSummary.builder()
         .isTransient(isTransient)
-        .type(Objects.nonNull(schema.getType()) ? schema.getType() : "object")
+        .type(Objects.nonNull(schema.getType()) ? schema.getType() : OBJECT_TYPE)
         .dwsType(getDwsType(schema))
         .nillable(isNillable)
         .dwsExpr(getDwsExpression(schema))

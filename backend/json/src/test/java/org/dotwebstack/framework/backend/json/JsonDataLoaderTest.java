@@ -65,26 +65,20 @@ class JsonDataLoaderTest {
 
   @Test
   void supports_True_ForJsonTypeConfiguration() {
-    // Arrange
     JsonTypeConfiguration jsonTypeConfiguration = new JsonTypeConfiguration();
 
-    // Act / Assert
     assertThat(jsonDataLoader.supports(jsonTypeConfiguration), is(true));
   }
 
   @Test
   void supports_False_ForUnsupportedConfiguration() {
-    // Arrange
     UnsupportedTypeConfiguration unsupportedTypeConfiguration = new UnsupportedTypeConfiguration();
 
-    // Act / Assert
     assertThat(jsonDataLoader.supports(unsupportedTypeConfiguration), is(false));
   }
 
   @Test
   void loadSingle_Beer1_ForKey() throws JsonProcessingException {
-    // Arrange
-
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "1"))
         .build();
@@ -99,10 +93,8 @@ class JsonDataLoaderTest {
 
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
-    // Act
     Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldKeyCondition, loadEnvironment);
 
-    // Assert
     assertThat(result.hasElement()
         .block(), is(true));
     Map<String, Object> data = result.block();
@@ -114,8 +106,6 @@ class JsonDataLoaderTest {
 
   @Test
   void loadSingle_Empty_ForNonExistingKey() throws JsonProcessingException {
-    // Arrange
-
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "not-existing-identifier"))
         .build();
@@ -129,17 +119,14 @@ class JsonDataLoaderTest {
 
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
-    // Act
     Mono<Map<String, Object>> result = jsonDataLoader.loadSingle(fieldKeyCondition, loadEnvironment);
 
-    // Assert
     assertThat(result.hasElement()
         .block(), is(false));
   }
 
   @Test
   void loadMany_Beers_WhenNoKeyProvided() throws Exception {
-    // Arrange
     JsonNode jsonNode = getDataAsJsonNode();
     JsonTypeConfiguration jsonTypeConfiguration = createJsonTypeConfiguration("beers", "$.beers");
 
@@ -149,10 +136,8 @@ class JsonDataLoaderTest {
 
     when(jsonDataService.getJsonSourceData(jsonTypeConfiguration.getDataSourceFile())).thenReturn(jsonNode);
 
-    // Act
     Flux<Map<String, Object>> result = jsonDataLoader.loadMany(null, loadEnvironment);
 
-    // Assert
     List<Map<String, Object>> resultList = new ArrayList<>(result.collectList()
         .toFuture()
         .get());
@@ -166,19 +151,15 @@ class JsonDataLoaderTest {
 
   @Test
   void batchLoadSingle_ThrowsException() {
-    // Arrange
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
-    // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadSingle(null, loadEnvironment));
   }
 
   @Test
   void batchLoadMany_ThrowsException() {
-    // Arrange
     LoadEnvironment loadEnvironment = createLoadEnvironment();
 
-    // Act & Assert
     assertThrows(UnsupportedOperationException.class, () -> jsonDataLoader.batchLoadMany(null, loadEnvironment));
   }
 

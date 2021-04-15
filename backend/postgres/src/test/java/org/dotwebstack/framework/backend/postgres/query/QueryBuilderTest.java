@@ -79,7 +79,6 @@ class QueryBuilderTest {
 
   @Test
   void buildwithKeyCondition() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
@@ -94,10 +93,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -109,7 +106,6 @@ class QueryBuilderTest {
 
   @Test
   void buildWithoutKeyCondition() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -120,10 +116,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -134,7 +128,6 @@ class QueryBuilderTest {
 
   @Test
   void buildWithJoinColumn() {
-    // Arrange
     GraphQLObjectType breweryType = GraphQLObjectType.newObject()
         .name("Brewery")
         .build();
@@ -168,7 +161,6 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("brewery/*.*")).thenReturn(selectedFields);
 
-
     when(dotWebStackConfiguration.getTypeConfiguration(breweryType.getName()))
         .thenReturn(createBreweryTypeConfiguration());
 
@@ -180,10 +172,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -196,7 +186,6 @@ class QueryBuilderTest {
 
   @Test
   void buildWithJoinTable() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createIngredientTypeConfiguration();
 
     ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
@@ -226,10 +215,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -278,7 +265,6 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsNull_missingKeyAlias() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -289,10 +275,8 @@ class QueryBuilderTest {
         .keyConditions(List.of())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getMapAssembler(), notNullValue());
     assertThat(queryHolder.getMapAssembler()
@@ -301,7 +285,6 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsMappedRow_default() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -311,10 +294,8 @@ class QueryBuilderTest {
         .keyConditions(List.of())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getMapAssembler(), notNullValue());
 

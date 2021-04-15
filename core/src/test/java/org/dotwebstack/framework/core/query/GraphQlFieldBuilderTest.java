@@ -14,7 +14,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class GraphQlFieldBuilderTest {
+class GraphQlFieldBuilderTest {
 
   private TypeDefinitionRegistry registry;
 
@@ -24,12 +24,10 @@ public class GraphQlFieldBuilderTest {
   }
 
   @Test
-  public void toGraphQlField_throwsException_MissingType() {
-    // Arrange
+  void toGraphQlField_throwsException_MissingType() {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, new HashMap<>()));
   }
 

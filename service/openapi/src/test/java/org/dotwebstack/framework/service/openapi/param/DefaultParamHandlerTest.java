@@ -38,7 +38,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class DefaultParamHandlerTest {
+class DefaultParamHandlerTest {
 
   private static final String TYPE_ARRAY = "array";
 
@@ -74,360 +74,277 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
-  public void getValue_returnsValue_fromPathParam() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromPathParam() throws ParameterValidationException {
     mockParameterPath("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("v1", result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParam() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParam() throws ParameterValidationException {
     mockParameterQuery("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("v1", result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryHeader() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryHeader() throws ParameterValidationException {
     mockParameterHeader("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("v1", result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromPathParamArraySimple() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromPathParamArraySimple() throws ParameterValidationException {
     mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromPathParamArrayForm() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromPathParamArrayForm() throws ParameterValidationException {
     mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromPathParamArraySpaceDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromPathParamArraySpaceDelim() throws ParameterValidationException {
     mockParameterPath("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromPathParamArrayPipeDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromPathParamArrayPipeDelim() throws ParameterValidationException {
     mockParameterPath("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryhParamArraySimple() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryhParamArraySimple() throws ParameterValidationException {
     mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamArrayForm() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParamArrayForm() throws ParameterValidationException {
     mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamArraySpaceDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParamArraySpaceDelim() throws ParameterValidationException {
     mockParameterQuery("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamArrayPipeDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParamArrayPipeDelim() throws ParameterValidationException {
     mockParameterQuery("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromHeaderParamArraySimple() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromHeaderParamArraySimple() throws ParameterValidationException {
     mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromHeaderParamArrayForm() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromHeaderParamArrayForm() throws ParameterValidationException {
     mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromHeaderParamArraySpaceDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromHeaderParamArraySpaceDelim() throws ParameterValidationException {
     mockParameterHeader("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromHeaderParamArrayPipeDelim() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromHeaderParamArrayPipeDelim() throws ParameterValidationException {
     mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_forArrayEnumCheck() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_forArrayEnumCheck() throws ParameterValidationException {
     mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
     mockArrayEnum(asList("v1", "v2", "v3", "v4"));
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
   }
 
   @Test
-  public void getValue_throwsException_forArrayEnumCheck() {
-    // Arrange
+  void getValue_throwsException_forArrayEnumCheck() {
     mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
     mockArrayEnum(asList("v1", "v2"));
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsException_forTypeValidationDateCheck() {
-    // Arrange
+  void getValue_throwsException_forTypeValidationDateCheck() {
     mockParameterHeader("test_date", "2019-03-99", TYPE_STRING, FORMAT_DATE, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsException_forTypeValidationDateTimeCheck() {
-    // Arrange
+  void getValue_throwsException_forTypeValidationDateTimeCheck() {
     mockParameterHeader("test_date-time", "2016-03-99T00:00:00+01:00", TYPE_STRING, FORMAT_DATETIME, false,
         Parameter.StyleEnum.SIMPLE);
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_returnsValue_forTypeInteger() {
-    // Arrange
+  void getValue_returnsValue_forTypeInteger() {
     mockParameterHeader("test_integer", "42", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("42", result.get());
   }
 
   @Test
-  public void getValue_throwsException_forTypeValidationInteger_double() {
-    // Arrange
+  void getValue_throwsException_forTypeValidationInteger_double() {
     mockParameterHeader("test_integer", "4.2", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsException_forTypeValidationInteger_string() {
-    // Arrange
+  void getValue_throwsException_forTypeValidationInteger_string() {
     mockParameterQuery("test_integer", "string", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_returnsValue_forTypeNumber_long() {
-    // Arrange
+  void getValue_returnsValue_forTypeNumber_long() {
     mockParameterHeader("test_number", "2147483648", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("2147483648", result.get());
   }
 
   @Test
-  public void getValue_returnsValue_forTypeNumber_double() {
-    // Arrange
+  void getValue_returnsValue_forTypeNumber_double() {
     mockParameterHeader("test_number", "4.2", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("4.2", result.get());
   }
 
   @Test
-  public void getValue_throwsException_forTypeValidationNumber_string() {
-    // Arrange
+  void getValue_throwsException_forTypeValidationNumber_string() {
     mockParameterPath("test_number", "string", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsException_withArraytUnsupportedStyle() {
-    // Arrange
+  void getValue_throwsException_withArraytUnsupportedStyle() {
     mockParameterQuery("test", "v1,v2", TYPE_ARRAY, true, Parameter.StyleEnum.LABEL);
 
-    // Act / Assert
     assertThrows(UnsupportedOperationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamObjectSimple() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParamObjectSimple() throws ParameterValidationException {
     mockParameterPath("test", "k1,v1,k2,v2", TYPE_OBJECT, false, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableMap.of("k1", "v1", "k2", "v2"), result.get());
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamObjectSimpleExplode() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsValue_fromQueryParamObjectSimpleExplode() throws ParameterValidationException {
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.SIMPLE);
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals(ImmutableMap.of("k1", "v1", "k2", "v2"), result.get());
   }
 
   @Test
-  public void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException {
-    // Arrange
+  void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException {
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getSchema()
         .getDefault()).thenReturn("default1");
 
-    // Act
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    // Assert
     assertEquals("default1", result.get());
   }
 
   @Test
-  public void getValue_throwsError_whenDefaultValueIsNotSet() {
-    // Arrange
+  void getValue_throwsError_whenDefaultValueIsNotSet() {
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getRequired()).thenReturn(true);
 
-    // Act & Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsError_whenDefaultDoesNotMatchEnum() {
-    // Arrange
+  void getValue_throwsError_whenDefaultDoesNotMatchEnum() {
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getSchema()).thenReturn(schema);
@@ -435,119 +352,98 @@ public class DefaultParamHandlerTest {
     when(schema.getType()).thenReturn(TYPE_STRING);
     when(schema.getEnum()).thenReturn(ImmutableList.of("default2"));
 
-    // Act & Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsException_withObjectUnsupportedStyle() {
-    // Arrange
+  void getValue_throwsException_withObjectUnsupportedStyle() {
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.FORM);
 
-    // Act / Assert
     assertThrows(UnsupportedOperationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_throwsError_withNonMatchingPattern() {
-    // Arrange
+  void getValue_throwsError_withNonMatchingPattern() {
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn("[A-Z]+");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_returns_withMatchingPattern() {
-    // Arrange
+  void getValue_returns_withMatchingPattern() {
     mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn("[A-Z]+");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getValue_returns_withNullPattern() {
-    // Arrange
+  void getValue_returns_withNullPattern() {
     mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn(null);
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
-  public void getDefault_returnsListForArrayType() {
-    // Arrange
+  void getDefault_returnsListForArrayType() {
     PathItem query3 = TestResources.openApi()
         .getPaths()
         .get("/query3/{query3_param1}");
 
-    // Act
     Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
         .getParameters()
         .get(0));
 
-    // Assert
     assertEquals(asList("default1", "default2"), defaultValue.orElseGet(() -> new NullPointerException("")));
   }
 
   @Test
-  public void getDefault_returnsStringForStringType() {
-    // Arrange
+  void getDefault_returnsStringForStringType() {
     PathItem query3 = TestResources.openApi()
         .getPaths()
         .get("/query3/{query3_param1}");
 
-    // Act
     Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
         .getParameters()
         .get(1));
 
-    // Assert
     assertEquals("query3_param2_default", defaultValue.orElseGet(() -> new NullPointerException("")));
   }
 
   @Test
-  public void getDefault_returnsMapForInlineObjectType() {
-    // Arrange
+  void getDefault_returnsMapForInlineObjectType() {
     PathItem query3 = TestResources.openApi()
         .getPaths()
         .get("/query3/{query3_param1}");
 
-    // Act
     Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
         .getParameters()
         .get(2));
 
-    // Assert
     assertEquals(ImmutableMap.of("p1", "v1", "p2", "v2"), defaultValue.orElseGet(() -> new NullPointerException("")));
   }
 
   @Test
-  public void getDefault_returnsMapForRefObjectType() {
-    // Arrange
+  void getDefault_returnsMapForRefObjectType() {
     PathItem query3 = TestResources.openApi()
         .getPaths()
         .get("/query3/{query3_param1}");
 
-    // Act
     Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
         .getParameters()
         .get(3));
 
-    // Assert
     assertEquals(ImmutableMap.of("o2_prop1", "v1"), defaultValue.orElseGet(() -> new NullPointerException("")));
   }
 

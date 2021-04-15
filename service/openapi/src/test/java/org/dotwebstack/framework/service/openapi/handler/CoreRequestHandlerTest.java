@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -156,11 +155,9 @@ class CoreRequestHandlerTest {
 
   @Test
   void handle_ReturnsHeaders() throws URISyntaxException {
-    // Act
     coreRequestHandler.handle(getServerRequest())
         .doOnSuccess(response -> {
 
-          // Assert
           assertNotNull(response.headers());
           assertEquals(ImmutableList.of("value"), response.headers()
               .get("X-Response-Header"));
@@ -170,19 +167,16 @@ class CoreRequestHandlerTest {
   @ParameterizedTest
   @CsvSource({"application/xml, application/xml", "application/json, application/json"})
   void getResponseTemplateTest(String acceptHeader, String expected) throws URISyntaxException {
-    // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf(acceptHeader));
     ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
-    // Assert
     assertThat(responseTemplate.getMediaType(), is(MediaType.valueOf(expected)));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"application/xml;q=0.4,application/json", "application/*"})
   void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) throws URISyntaxException {
-    // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Arrays.stream(acceptHeader.split(","))
         .map(MediaType::valueOf)
@@ -190,56 +184,46 @@ class CoreRequestHandlerTest {
 
     ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
-    // Assert
     assertThat(responseTemplate.getMediaType(), is(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() throws URISyntaxException {
-    // Act
     getServerRequest();
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf("*/*"));
     ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
-    // Assert
     assertThat(responseTemplate.getMediaType(), is(MediaType.APPLICATION_JSON));
   }
 
   @Test
   void getOkResponseTest() throws Exception {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
     ServerRequest request = arrangeResponseTest(data, getResponseTemplates());
 
-    // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
 
-    // Assert
     assertTrue(serverResponse.statusCode()
         .is2xxSuccessful());
   }
 
   @Test
   void getRedirectResponseTest() throws Exception {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
 
-    // Act
     ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
 
-    // Assert
     assertTrue(serverResponse.statusCode()
         .is3xxRedirection());
   }
 
   @Test
   void getParameterValidationExceptionTest() throws URISyntaxException {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
@@ -251,31 +235,27 @@ class CoreRequestHandlerTest {
         .build());
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
 
-    // Act / Assert
     assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
   @Test
   void shouldThrowNotFoundExceptionTest() throws URISyntaxException {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", null);
 
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
 
-    // Act/Assert
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
   @Test
   void shouldThrowNoContentExceptionTest() throws URISyntaxException {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "data");
 
     MediaType mediaType = MediaType.valueOf("application/sparql-results+json");
     when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
-    when(responseMapper.supportsOutputMimeType(eq(mediaType))).thenReturn(true);
+    when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
     when(responseMapper.toResponse(any())).thenReturn(null);
 
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
@@ -287,7 +267,6 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
 
-    // Act/Assert
     assertThrows(NoContentException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
@@ -320,32 +299,26 @@ class CoreRequestHandlerTest {
 
   @Test
   void shouldThrowNotAcceptedExceptionTest() throws URISyntaxException {
-    // Act
     getServerRequest();
     List<MediaType> acceptHeader = Collections.singletonList(MediaType.valueOf("application/not_supported"));
 
-    // Assert
     assertThrows(NotAcceptableException.class, () -> coreRequestHandler.getResponseTemplate(acceptHeader));
   }
 
   @Test
   void createResponseHeaders_returnsValue_forStaticJexlValue() {
-    // Arrange
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
 
-    // Act
     Map<String, String> responseHeaders = coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>());
 
-    // Assert
     assertEquals("value", responseHeaders.get("X-Response-Header"));
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_returnsValue_forJexlWithArgument() {
-    // Arrange
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
 
     this.openApi.getPaths()
@@ -364,10 +337,8 @@ class CoreRequestHandlerTest {
             .get(0);
     Map<String, Object> inputParams = ImmutableMap.of("argument1", "argument1Value");
 
-    // Act
     Map<String, String> responseHeaders = coreRequestHandler.createResponseHeaders(responseTemplate, inputParams);
 
-    // Assert
     assertEquals("argument1Value", responseHeaders.get("X-Response-Header"));
 
   }
@@ -375,7 +346,6 @@ class CoreRequestHandlerTest {
   @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_returnsValue_forJexlWithEnv() {
-    // Arrange
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
 
     this.openApi.getPaths()
@@ -393,34 +363,28 @@ class CoreRequestHandlerTest {
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
 
-    // Act
     Map<String, String> responseHeaders = coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>());
 
-    // Assert
     assertEquals("value1", responseHeaders.get("X-Response-Header"));
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_returnsValue_forDefault() {
-    // Arrange
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
 
-    // Act
     Map<String, String> responseHeaders = coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>());
 
-    // Assert
     assertEquals("defaultValue", responseHeaders.get("X-Response-Default"));
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_throwsException_whenNoValueFound() {
-    // Arrange
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
 
     this.openApi.getPaths()
@@ -437,27 +401,22 @@ class CoreRequestHandlerTest {
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class,
         () -> coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>()));
   }
 
   @Test
   void resolveUrlAndHeaderParameters_returnsValue() throws URISyntaxException {
-    // Arrange
     ServerRequest request = getServerRequest();
 
-    // Act
     Map<String, Object> params = this.coreRequestHandler.resolveUrlAndHeaderParameters(request);
 
-    // Assert
     assertEquals(2, params.size());
   }
 
   @SuppressWarnings("rawtypes")
   @Test
   void getRequestBodyProperties_returnsEmptyProperties_forRequestBody() {
-    // Arrange
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query1")
         .getPost()
@@ -466,7 +425,6 @@ class CoreRequestHandlerTest {
     ResponseSchemaContext responseSchemaContext = mock(ResponseSchemaContext.class);
     when(responseSchemaContext.getRequestBodyContext()).thenReturn(requestBodyContext);
 
-    // Act / Assert
     Map<String, Schema> requestBodyProperties =
         this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext());
     assertFalse(requestBodyProperties.isEmpty());
@@ -475,7 +433,6 @@ class CoreRequestHandlerTest {
 
   @Test
   void getRequestBodyProperties_returnsEmptyProperties_forNullRequestBody() {
-    // Act / Assert
     assertEquals(Collections.emptyMap(),
         this.coreRequestHandler.getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()));
   }
@@ -483,7 +440,6 @@ class CoreRequestHandlerTest {
   @SuppressWarnings("unchecked")
   @Test
   void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException, URISyntaxException {
-    // Arrange
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query1")
         .getPost()
@@ -495,19 +451,16 @@ class CoreRequestHandlerTest {
     when(this.defaultRequestBodyHandler.getValues(any(ServerRequest.class), any(RequestBodyContext.class),
         any(RequestBody.class), any(Map.class))).thenReturn(Map.of("key", "value"));
 
-    // Act / Assert
     assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1", "key", "value"),
         this.coreRequestHandler.resolveParameters(getServerRequest()));
   }
 
   @Test
   void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException, URISyntaxException {
-    // Arrange
     ServerRequest request = getServerRequest();
     when(request.bodyToMono(String.class)).thenReturn(Mono.empty());
     when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
 
-    // Act / Assert
     assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1"),
         this.coreRequestHandler.resolveParameters(request));
   }

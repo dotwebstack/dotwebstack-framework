@@ -28,9 +28,8 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
   public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
-        .forEach(fieldDefinition -> {
-          fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new Rdf4jFieldConfiguration());
-        });
+        .forEach(fieldDefinition -> fields.computeIfAbsent(fieldDefinition.getName(),
+            fieldName -> new Rdf4jFieldConfiguration()));
 
     fields.entrySet()
         .stream()

@@ -19,7 +19,7 @@ public class EnvironmentProperties {
   public EnvironmentProperties(@NonNull Environment environment) {
     MutablePropertySources propertySources = ((AbstractEnvironment) environment).getPropertySources();
     this.envProperties = StreamSupport.stream(propertySources.spliterator(), false)
-        .filter(ps -> ps instanceof EnumerablePropertySource)
+        .filter(EnumerablePropertySource.class::isInstance)
         .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
         .flatMap(Arrays::stream)
         .filter(propertyName -> {

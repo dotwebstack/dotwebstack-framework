@@ -548,7 +548,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("see story DHUB-288")
   void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
