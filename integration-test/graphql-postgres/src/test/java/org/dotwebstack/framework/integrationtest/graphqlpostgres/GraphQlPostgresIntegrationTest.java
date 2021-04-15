@@ -548,6 +548,18 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  public void graphQlQuery_ReturnsTheIngredientAndTheBeersItIsPartOf() {
+    String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+    ExecutionResult result = graphQL.execute(executionInput);
+    assertTrue(result.getErrors()
+        .isEmpty());
+  }
+
+  @Test
   @Disabled
   void graphQlQuery_ReturnsBeerWithAggregateType_forCountDistinct() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"

@@ -1,18 +1,32 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
 import javax.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+// @AllArgsConstructor
 public class JoinColumn {
 
   @NotBlank
   private String name;
 
-  @NotBlank
+  // TODO: wat gaan we hiermee doen?
+  // @NotBlank
+  @Setter
   private String referencedField;
+
+  @Setter
+  private String referencedColumn;
+
+  public JoinColumn(String name, String referencedField) {
+    this.name = name;
+    this.referencedField = referencedField;
+  }
+
+  public String getField() {
+    return referencedField != null ? referencedField : referencedColumn;
+  }
 }

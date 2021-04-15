@@ -33,11 +33,12 @@ CREATE TABLE db.beer (
 CREATE TABLE db.ingredient (
   identifier_ingredient character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
+  code character varying(4) NOT NULL UNIQUE,
   weight NUMERIC(3,1) NOT NULL
 );
 
 CREATE TABLE db.beer_ingredient (
   beer_identifier character varying NOT NULL REFERENCES db.beer (identifier_beer),
-  ingredient_identifier character varying NOT NULL REFERENCES db.ingredient (identifier_ingredient),
-  PRIMARY KEY (beer_identifier,ingredient_identifier)
+  ingredient_code character varying(4) NOT NULL REFERENCES db.ingredient (code),
+  PRIMARY KEY (beer_identifier,ingredient_code)
 );

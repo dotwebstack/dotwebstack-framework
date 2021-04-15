@@ -61,7 +61,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
       Map<String, Object> columnValues = fieldConfiguration.getJoinTable()
           .getJoinColumns()
           .stream()
-          .collect(Collectors.toMap(JoinColumn::getName, joinColumn -> source.get(joinColumn.getReferencedField())));
+          .collect(Collectors.toMap(JoinColumn::getName, joinColumn -> source.get(joinColumn.getField())));
 
       return ColumnKeyCondition.builder()
           .valueMap(columnValues)
@@ -72,6 +72,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return super.getKeyCondition(fieldName);
   }
 
+  // TODO arjenhup: check of hier iets gedaan moet worden met referencedColumn
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
     return getQueryArgumentKeyConditions(environment, true)
@@ -92,7 +93,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
     Map<String, Object> columnValues = fieldConfiguration.getJoinColumns()
         .stream()
-        .collect(Collectors.toMap(JoinColumn::getName, joinColumn -> source.get(joinColumn.getReferencedField())));
+        .collect(Collectors.toMap(JoinColumn::getName, joinColumn -> source.get(joinColumn.getField())));
 
     return ColumnKeyCondition.builder()
         .valueMap(columnValues)

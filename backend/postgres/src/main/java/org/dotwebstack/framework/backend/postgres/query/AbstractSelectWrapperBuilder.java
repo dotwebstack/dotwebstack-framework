@@ -71,7 +71,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
           .stream()
           .map(inverseJoinColumn -> DSL.field(DSL.name(finalParentTable.getName(), inverseJoinColumn.getName()))
               .eq(DSL.field(DSL.name(fromTable.getName(), typeConfiguration.getFields()
-                  .get(inverseJoinColumn.getReferencedField())
+                  .get(inverseJoinColumn.getField())
                   .getColumn()))))
           .toArray(Condition[]::new);
 

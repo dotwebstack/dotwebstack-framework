@@ -17,43 +17,43 @@ INSERT INTO db.beer(identifier_beer, name, abv, brewery, sold_per_year, taste) V
 ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['meaty', 'spicy']::db.taste[]),
 ('766883b5-3482-41cf-a66d-a81e79a4f666', 'Beer 6', 6.0, '28649f76-ddcf-417a-8c1d-8e5012c11666', 50000, array['meaty', 'watery']::db.taste[]);
 
-INSERT INTO db.ingredient(identifier_ingredient, name, weight) VALUES
-  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 1.2),
-  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop', 1.2),
-  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley', 3.4),
-  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 4.8),
-  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 5.0),
-  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', 6.6);
+INSERT INTO db.ingredient(identifier_ingredient, name, code, weight) VALUES
+  ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 'WTR',1.2),
+  ('cd794c14-5fbb-11eb-ae93-0242ac130002', 'Hop', 'HOP',1.2),
+  ('cd795196-5fbb-11eb-ae93-0242ac130002', 'Barley','BRL', 3.4),
+  ('cd795191-5fbb-11eb-ae93-0242ac130002', 'Yeast', 'YST', 4.8),
+  ('cd79538a-5fbb-11eb-ae93-0242ac130002', 'Orange', 'RNG', 5.0),
+  ('cd79545c-5fbb-11eb-ae93-0242ac130002', 'Caramel', 'CRM', 6.6);
 
-INSERT INTO db.beer_ingredient(beer_identifier, ingredient_identifier) VALUES
+INSERT INTO db.beer_ingredient(beer_identifier, ingredient_code) VALUES
   -- beer1
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd795192-5fbb-11eb-ae93-0242ac130002'),
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd795191-5fbb-11eb-ae93-0242ac130002'),
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd79538a-5fbb-11eb-ae93-0242ac130002'),
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'cd79545c-5fbb-11eb-ae93-0242ac130002'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'WTR'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'HOP'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'BRL'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'YST'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'RNG'),
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'CRM'),
   -- beer2
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'cd795192-5fbb-11eb-ae93-0242ac130002'),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'cd795191-5fbb-11eb-ae93-0242ac130002'),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'cd79538a-5fbb-11eb-ae93-0242ac130002'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'WTR'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'HOP'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'BRL'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'YST'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'RNG'),
   -- beer3
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'cd795192-5fbb-11eb-ae93-0242ac130002'),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'cd795191-5fbb-11eb-ae93-0242ac130002'),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'cd79545c-5fbb-11eb-ae93-0242ac130002'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'WTR'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'HOP'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'BRL'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'YST'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'CRM'),
   -- beer4
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'cd795192-5fbb-11eb-ae93-0242ac130002'),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'cd795191-5fbb-11eb-ae93-0242ac130002'),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'WTR'),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'HOP'),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'BRL'),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'YST'),
   -- beer5
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795192-5fbb-11eb-ae93-0242ac130002'),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795191-5fbb-11eb-ae93-0242ac130002'),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'WTR'),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'HOP'),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'BRL'),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'YST'),
   -- beer6
-  ('766883b5-3482-41cf-a66d-a81e79a4f666', 'cd795192-5fbb-11eb-ae93-0242ac130002');
+  ('766883b5-3482-41cf-a66d-a81e79a4f666', 'WTR');
