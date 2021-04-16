@@ -16,8 +16,8 @@ typeMapping:
             - name: beer_identifier
               referencedField: identifier_beer
           inverseJoinColumns:
-            - name: ingredient_identifier
-              referencedField: identifier_ingredient
+            - name: ingredient_code
+              referencedColumn: code
       ingredient:
         joinTable:
           name: db.beer_ingredient
@@ -26,7 +26,7 @@ typeMapping:
               referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_code
-              referencedField: code
+              referencedColumn: code
       ingredientAgg:
         aggregationOf: Ingredient
         joinTable:
@@ -36,7 +36,7 @@ typeMapping:
               referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_code
-              referencedField: code
+              referencedColumn: code
 
   Ingredient:
     backend: postgres

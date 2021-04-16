@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -58,12 +59,17 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
+    AtomicBoolean isJoindAdded = new AtomicBoolean();
+
     // add nested objects
     fieldNamesConfigurations.entrySet()
         .stream()
         .filter(entry -> !entry.getValue()
             .isScalar())
-        .forEach(entry -> addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue()));
+        .forEach(entry -> {
+          isJoindAdded.set(true);
+          addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue());
+        });
 
     // add direct fields
     fieldNamesConfigurations.entrySet()
@@ -71,6 +77,14 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .filter(entry -> entry.getValue()
             .isScalar())
         .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
+
+    if (isJoindAdded.get()) {
+      typeConfiguration.getReferencedColumns()
+          .keySet()
+          .forEach(column -> addField(selectContext, typeConfiguration, fromTable,
+              Map.entry(column, typeConfiguration.getFields()
+                  .get(column))));
+    }
   }
 
   private void addJoinTable(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
@@ -106,7 +120,6 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       Map<String, SelectedField> selectedFields) {
     joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectedFields)
         .ifPresent(joinTableWrapper -> {
-          // TODO: arjenhup: add referencedColumns?
           selectContext.getSelectColumns()
               .add(DSL.field(joinTableWrapper.getTable()
                   .getName()
@@ -139,27 +152,19 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
   }
 
 
-  // TODO code refactoring, merge streams
   private Map<String, PostgresFieldConfiguration> getFieldNames(PostgresTypeConfiguration typeConfiguration,
       Collection<SelectedField> selectedFields) {
 
-    Map<String, PostgresFieldConfiguration> result = Stream.concat(typeConfiguration.getKeys()
+    return Stream.concat(typeConfiguration.getKeys()
         .stream()
         .map(KeyConfiguration::getField),
         selectedFields.stream()
             .map(SelectedField::getName))
         .collect(Collectors.toMap(key -> key, key -> typeConfiguration.getFields()
             .get(key), (a, b) -> a));
-    Map<String, PostgresFieldConfiguration> referencedColumnsByName = getReferencedColumns(typeConfiguration);
-    // TODO: fixme
-    referencedColumnsByName.values()
-        .forEach(fieldConfig -> typeConfiguration.getFields()
-            .put(fieldConfig.getColumn(), fieldConfig));
-    result.putAll(referencedColumnsByName);
-    return result;
   }
 
-  // TODO code refactoring
+  // TODO arjenhup:: remove
   private Map<String, PostgresFieldConfiguration> getReferencedColumns(PostgresTypeConfiguration typeConfiguration) {
     return typeConfiguration.getFields()
         .values()

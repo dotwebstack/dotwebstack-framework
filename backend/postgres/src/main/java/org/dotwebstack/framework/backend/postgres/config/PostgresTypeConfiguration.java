@@ -9,14 +9,17 @@ import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotBlank;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
@@ -32,6 +35,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
   @NotBlank
   private String table;
+
+  @Setter(AccessLevel.NONE)
+  private Map<String, PostgresFieldConfiguration> referencedColumns = new HashMap<>();
 
   @Override
   public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
@@ -58,8 +64,8 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
           validateJoinColumnConfiguration(typeMapping, fieldConfiguration, fieldDefinition);
         });
-
     initAggregateTypes(typeMapping);
+    initReferencedColumns();
   }
 
   private void validateJoinColumnConfiguration(Map<String, AbstractTypeConfiguration<?>> typeMapping,
@@ -87,10 +93,13 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn())) {
           String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
           TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
+          // TODO: arjenhup fix this
+          if (typeConfiguration != null) {
+            if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
 
-          if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-            throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
-                typeConfiguration.getClass());
+              throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
+                  typeConfiguration.getClass());
+            }
           }
 
         }
@@ -146,7 +155,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> typeMapping) {
-
     fields.values()
         .stream()
         .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
@@ -165,4 +173,24 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           }
         });
   }
+
+  private void initReferencedColumns() {
+    referencedColumns = fields.values()
+        .stream()
+        .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
+        .flatMap(config -> config.getJoinTable()
+            .getJoinColumns()
+            .stream())
+        .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
+        .map(joinColumn -> createPostgresFieldConfiguration(joinColumn.getReferencedColumn()))
+        .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a, b) -> a));
+    fields.putAll(referencedColumns);
+  }
+
+  private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
+    PostgresFieldConfiguration postgresFieldConfiguration = new PostgresFieldConfiguration();
+    postgresFieldConfiguration.setColumn(column);
+    return postgresFieldConfiguration;
+  }
+
 }
