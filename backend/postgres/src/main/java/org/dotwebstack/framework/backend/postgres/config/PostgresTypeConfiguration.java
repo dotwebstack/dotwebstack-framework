@@ -38,11 +38,8 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
-
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
-
-          validateFieldColumnConfiguration(typeMapping, fieldConfiguration, fieldDefinition);
 
           if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
             String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
@@ -58,12 +55,14 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isTextType(fieldDefinition.getType())) {
             fieldConfiguration.setText(true);
           }
+
+          validateJoinColumnConfiguration(typeMapping, fieldConfiguration, fieldDefinition);
         });
 
     initAggregateTypes(typeMapping);
   }
 
-  private void validateFieldColumnConfiguration(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+  private void validateJoinColumnConfiguration(Map<String, AbstractTypeConfiguration<?>> typeMapping,
       PostgresFieldConfiguration fieldConfiguration, FieldDefinition fieldDefinition) {
     List<JoinColumn> joinColumns = new ArrayList<>();
     Optional.ofNullable(fieldConfiguration.findInverseJoinColumns())
@@ -119,7 +118,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return super.getKeyCondition(fieldName);
   }
 
-  // TODO arjenhup: check of hier iets gedaan moet worden met referencedColumn
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
     return getQueryArgumentKeyConditions(environment, true)

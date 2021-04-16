@@ -106,6 +106,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       Map<String, SelectedField> selectedFields) {
     joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectedFields)
         .ifPresent(joinTableWrapper -> {
+          // TODO: arjenhup: add referencedColumns?
           selectContext.getSelectColumns()
               .add(DSL.field(joinTableWrapper.getTable()
                   .getName()
