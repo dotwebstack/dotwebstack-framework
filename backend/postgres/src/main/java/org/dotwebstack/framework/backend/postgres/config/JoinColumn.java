@@ -8,6 +8,7 @@ import lombok.Setter;
 @Data
 @NoArgsConstructor
 // @AllArgsConstructor
+// TODO: check setters and getters
 public class JoinColumn {
 
   @NotBlank
