@@ -62,6 +62,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isTextType(fieldDefinition.getType())) {
             fieldConfiguration.setText(true);
           }
+
         });
     initAggregateTypes(typeMapping);
     initReferencedColumns(typeMapping, objectTypeDefinition.getFieldDefinitions());
@@ -79,25 +80,26 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
       if (Objects.isNull(joinColumn.getReferencedField()) && Objects.isNull(joinColumn.getReferencedColumn())) {
         throw invalidConfigurationException(
-            "One of 'referencedField' or 'referencedColumn' must have a valid value in field {}", fieldConfiguration);
+            "One of 'referencedField' or 'referencedColumn' must have a valid value in field '{}'.",
+            fieldDefinition.getName());
       }
 
       if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
         throw invalidConfigurationException(
-            "Only one of 'referencedField' or 'referencedColumn' can have a valid value in field {}",
-            fieldConfiguration);
+            "Only one of 'referencedField' or 'referencedColumn' can have a value in field '{}'.",
+            fieldDefinition.getName());
       }
 
       if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
         String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
         TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
-
         if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-          throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
-              typeConfiguration.getClass());
-        }
 
+          throw invalidConfigurationException(
+              "Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.", typeConfiguration.getClass());
+        }
       }
+
     });
   }
 
@@ -166,23 +168,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           }
         });
   }
-
-  // private void initReferencedColumns2(Map<String, AbstractTypeConfiguration<?>> typeMapping,
-  // List<FieldDefinition> fieldDefinitions) {
-  // referencedColumns = fields.values()
-  // .stream()
-  // .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
-  // .flatMap(fieldConfig -> {
-  // validateJoinTableConfig(fieldConfig, typeMapping, fieldDefinitions);
-  // return fieldConfig.getJoinTable()
-  // .getJoinColumns()
-  // .stream();})
-  // .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
-  // .map(joinColumn -> createPostgresFieldConfiguration(joinColumn.getReferencedColumn()))
-  // .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a,
-  // b) -> a));
-  // fields.putAll(referencedColumns);
-  // }
 
   private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> typeMapping,
       List<FieldDefinition> fieldDefinitions) {

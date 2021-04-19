@@ -35,6 +35,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.jooq.DSLContext;
@@ -67,6 +68,9 @@ class QueryBuilderTest {
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 
+  @Mock
+  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+
   private QueryBuilder queryBuilder;
 
   @BeforeEach
@@ -79,7 +83,7 @@ class QueryBuilderTest {
 
   @Test
   void buildwithKeyCondition() {
-    // Arrange
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
@@ -94,10 +98,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -109,7 +111,7 @@ class QueryBuilderTest {
 
   @Test
   void buildWithoutKeyCondition() {
-    // Arrange
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -120,10 +122,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -134,7 +134,7 @@ class QueryBuilderTest {
 
   @Test
   void buildWithJoinColumn() {
-    // Arrange
+    postgresTypeConfigurationMock();
     GraphQLObjectType breweryType = GraphQLObjectType.newObject()
         .name("Brewery")
         .build();
@@ -168,9 +168,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("brewery/*.*")).thenReturn(selectedFields);
 
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration breweryTypeConfiguration = createBreweryTypeConfiguration();
 
-    when(dotWebStackConfiguration.getTypeConfiguration(breweryType.getName()))
-        .thenReturn(createBreweryTypeConfiguration());
+    when(dotWebStackConfiguration.getTypeConfiguration(breweryType.getName())).thenReturn(breweryTypeConfiguration);
 
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
@@ -180,10 +181,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -196,7 +195,6 @@ class QueryBuilderTest {
 
   @Test
   void buildWithJoinTable() {
-    // Arrange
     PostgresTypeConfiguration typeConfiguration = createIngredientTypeConfiguration();
 
     ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
@@ -226,10 +224,8 @@ class QueryBuilderTest {
         .page(pageWithDefaultSize())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
@@ -243,6 +239,7 @@ class QueryBuilderTest {
 
   @Test
   void build_returnsQueryWithoutJoin_forNestedList() {
+    postgresTypeConfigurationMock();
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
     List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
@@ -278,7 +275,7 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsNull_missingKeyAlias() {
-    // Arrange
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -289,10 +286,8 @@ class QueryBuilderTest {
         .keyConditions(List.of())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getMapAssembler(), notNullValue());
     assertThat(queryHolder.getMapAssembler()
@@ -301,7 +296,8 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsMappedRow_default() {
-    // Arrange
+    postgresTypeConfigurationMock();
+
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -311,10 +307,8 @@ class QueryBuilderTest {
         .keyConditions(List.of())
         .build();
 
-    // Act
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
-    // Assert
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getMapAssembler(), notNullValue());
 
@@ -327,6 +321,8 @@ class QueryBuilderTest {
     assertThat(result.get("name"), is("Beer 1"));
     assertThat(result.get("identifier"), is("AAA"));
   }
+
+
 
   @Test
   void build_returnsCorrectQuery_forAggregate() {
@@ -360,7 +356,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
 
-    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration beerType = createBeerTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(beerType);
 
     PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
 
@@ -414,7 +413,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
 
-    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration beerType = createBeerTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(beerType);
 
     PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
 
@@ -582,7 +584,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -617,4 +619,9 @@ class QueryBuilderTest {
     }
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void postgresTypeConfigurationMock() {
+    AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
+    when(typeMappingMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
+  }
 }
