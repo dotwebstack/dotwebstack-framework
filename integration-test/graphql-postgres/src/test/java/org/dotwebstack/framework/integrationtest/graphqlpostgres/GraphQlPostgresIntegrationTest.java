@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsIn;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
@@ -330,14 +331,23 @@ class GraphQlPostgresIntegrationTest {
 
     List<Map<String, Object>> beers = ((List<Map<String, Object>>) data.get("beers"));
     assertThat(beers.size(), is(6));
-    assertThat(beers.get(0)
-        .get("name"), is("Beer 1"));
 
-    Map<String, Object> ingredient = ((Map<String, Object>) beers.get(0)
+    // assertion beer 4
+    assertThat(beers.get(3)
+        .get("name"), is("Beer 4"));
+    Map<String, Object> ingredientBeer4 = ((Map<String, Object>) beers.get(3)
         .get("ingredient"));
-    assertThat(ingredient.size(), is(1));
+    assertThat(ingredientBeer4.size(), is(1));
+    assertThat(ingredientBeer4.get("name"), is(IsIn.oneOf("Water", "Hop", "Barley", "Yeast")));
 
-    assertThat(ingredient.get("name"), equalTo("Water"));
+    // assertions beer 6
+    assertThat(beers.get(5)
+        .get("name"), is("Beer 6"));
+
+    Map<String, Object> ingredientBeer5 = ((Map<String, Object>) beers.get(5)
+        .get("ingredient"));
+    assertThat(ingredientBeer5.size(), is(1));
+    assertThat(ingredientBeer5.get("name"), equalTo("Water"));
   }
 
   @Test

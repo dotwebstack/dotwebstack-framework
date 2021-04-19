@@ -59,7 +59,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
-    AtomicBoolean isJoindAdded = new AtomicBoolean();
+    AtomicBoolean hasJoinCondition = new AtomicBoolean();
 
     // add nested objects
     fieldNamesConfigurations.entrySet()
@@ -67,7 +67,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .filter(entry -> !entry.getValue()
             .isScalar())
         .forEach(entry -> {
-          isJoindAdded.set(true);
+          hasJoinCondition.set(true);
           addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue());
         });
 
@@ -78,7 +78,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
             .isScalar())
         .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
 
-    if (isJoindAdded.get()) {
+    if (hasJoinCondition.get()) {
       typeConfiguration.getReferencedColumns()
           .keySet()
           .forEach(column -> addField(selectContext, typeConfiguration, fromTable,
@@ -162,24 +162,6 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
             .map(SelectedField::getName))
         .collect(Collectors.toMap(key -> key, key -> typeConfiguration.getFields()
             .get(key), (a, b) -> a));
-  }
-
-  // TODO arjenhup:: remove
-  private Map<String, PostgresFieldConfiguration> getReferencedColumns(PostgresTypeConfiguration typeConfiguration) {
-    return typeConfiguration.getFields()
-        .values()
-        .stream()
-        .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
-        .flatMap(config -> config.getJoinTable()
-            .getJoinColumns()
-            .stream())
-        .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
-        .map(joinColumn -> {
-          PostgresFieldConfiguration postgresFieldConfiguration = new PostgresFieldConfiguration();
-          postgresFieldConfiguration.setColumn(joinColumn.getReferencedColumn());
-          return postgresFieldConfiguration;
-        })
-        .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a, b) -> a));
   }
 
   private Optional<QueryBuilder.TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,

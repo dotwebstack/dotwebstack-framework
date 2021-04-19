@@ -565,10 +565,16 @@ class QueryBuilderTest {
     joinColumn.setReferencedField(FIELD_IDENTIFIER);
     breweryFieldConfiguration.setJoinColumns(List.of(joinColumn));
 
-    PostgresFieldConfiguration ingredientsFieldConfiguration = new PostgresFieldConfiguration();
+
     JoinTable joinTable = new JoinTable();
     joinTable.setName("beer_ingredients");
+    joinTable.setJoinColumns(List.of(new JoinColumn("beer_identifier", "identifier_beer")));
+    JoinColumn inverseJoinColumn = new JoinColumn();
+    inverseJoinColumn.setName("ingredient_code");
+    inverseJoinColumn.setReferencedColumn("code");
+    joinTable.setInverseJoinColumns(List.of(inverseJoinColumn));
 
+    PostgresFieldConfiguration ingredientsFieldConfiguration = new PostgresFieldConfiguration();
     ingredientsFieldConfiguration.setJoinTable(joinTable);
 
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), FIELD_BREWERY,

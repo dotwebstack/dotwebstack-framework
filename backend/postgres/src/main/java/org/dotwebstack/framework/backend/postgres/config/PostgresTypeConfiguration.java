@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -61,51 +62,43 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isTextType(fieldDefinition.getType())) {
             fieldConfiguration.setText(true);
           }
-
-          validateJoinColumnConfiguration(typeMapping, fieldConfiguration, fieldDefinition);
         });
     initAggregateTypes(typeMapping);
-    initReferencedColumns();
+    initReferencedColumns(typeMapping, objectTypeDefinition.getFieldDefinitions());
   }
 
-  private void validateJoinColumnConfiguration(Map<String, AbstractTypeConfiguration<?>> typeMapping,
-      PostgresFieldConfiguration fieldConfiguration, FieldDefinition fieldDefinition) {
+  private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
+      Map<String, AbstractTypeConfiguration<?>> typeMapping, FieldDefinition fieldDefinition) {
     List<JoinColumn> joinColumns = new ArrayList<>();
     Optional.ofNullable(fieldConfiguration.findInverseJoinColumns())
         .ifPresent(joinColumns::addAll);
     Optional.ofNullable(fieldConfiguration.findJoinColumns())
         .ifPresent(joinColumns::addAll);
 
-    if (joinColumns.size() != 0) {
-      joinColumns.forEach(joinColumn -> {
+    joinColumns.forEach(joinColumn -> {
 
-        if (Objects.isNull(joinColumn.getReferencedField()) && Objects.isNull(joinColumn.getReferencedColumn())) {
-          throw invalidConfigurationException(
-              "One of 'referencedField' or 'referencedColumn' must have a valid value in field {}", fieldConfiguration);
+      if (Objects.isNull(joinColumn.getReferencedField()) && Objects.isNull(joinColumn.getReferencedColumn())) {
+        throw invalidConfigurationException(
+            "One of 'referencedField' or 'referencedColumn' must have a valid value in field {}", fieldConfiguration);
+      }
+
+      if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
+        throw invalidConfigurationException(
+            "Only one of 'referencedField' or 'referencedColumn' can have a valid value in field {}",
+            fieldConfiguration);
+      }
+
+      if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
+        String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
+        TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
+
+        if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
+          throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
+              typeConfiguration.getClass());
         }
 
-        if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
-          throw invalidConfigurationException(
-              "Only one of 'referencedField' or 'referencedColumn' can have a valid value in field {}",
-              fieldConfiguration);
-        }
-
-        if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn())) {
-          String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
-          TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
-          // TODO: arjenhup fix this
-          if (typeConfiguration != null) {
-            if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-
-              throw invalidConfigurationException("Target objectType must be 'postgres' but is {} ",
-                  typeConfiguration.getClass());
-            }
-          }
-
-        }
-
-      });
-    }
+      }
+    });
   }
 
   @Override
@@ -174,17 +167,49 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private void initReferencedColumns() {
-    referencedColumns = fields.values()
+  // private void initReferencedColumns2(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+  // List<FieldDefinition> fieldDefinitions) {
+  // referencedColumns = fields.values()
+  // .stream()
+  // .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
+  // .flatMap(fieldConfig -> {
+  // validateJoinTableConfig(fieldConfig, typeMapping, fieldDefinitions);
+  // return fieldConfig.getJoinTable()
+  // .getJoinColumns()
+  // .stream();})
+  // .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
+  // .map(joinColumn -> createPostgresFieldConfiguration(joinColumn.getReferencedColumn()))
+  // .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a,
+  // b) -> a));
+  // fields.putAll(referencedColumns);
+  // }
+
+  private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+      List<FieldDefinition> fieldDefinitions) {
+    referencedColumns = fields.entrySet()
         .stream()
-        .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
-        .flatMap(config -> config.getJoinTable()
-            .getJoinColumns()
-            .stream())
+        .filter(entry -> entry.getValue()
+            .getJoinTable() != null)
+        .flatMap(entry -> {
+          validateJoinTableConfig(entry.getValue(), typeMapping, getFieldDefinition(entry.getKey(), fieldDefinitions));
+          return entry.getValue()
+              .getJoinTable()
+              .getJoinColumns()
+              .stream();
+        })
         .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
         .map(joinColumn -> createPostgresFieldConfiguration(joinColumn.getReferencedColumn()))
         .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a, b) -> a));
+
     fields.putAll(referencedColumns);
+  }
+
+  private FieldDefinition getFieldDefinition(String fieldName, List<FieldDefinition> fieldDefinitions) {
+    return fieldDefinitions.stream()
+        .filter(fieldDefinition -> fieldDefinition.getName()
+            .equals(fieldName))
+        .findFirst()
+        .orElseThrow(() -> illegalStateException("TODO arjenhup"));
   }
 
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
