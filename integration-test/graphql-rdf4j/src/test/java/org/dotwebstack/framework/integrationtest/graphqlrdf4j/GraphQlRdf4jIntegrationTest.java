@@ -28,7 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SuppressWarnings("unchecked")
 @SpringBootTest(classes = TestApplication.class)
-public class GraphQlRdf4jIntegrationTest {
+class GraphQlRdf4jIntegrationTest {
 
   @Autowired
   private GraphQL graphQL;

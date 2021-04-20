@@ -25,7 +25,7 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.junit.jupiter.api.Test;
 
 
-public class JexlHelperTest {
+class JexlHelperTest {
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
@@ -34,152 +34,124 @@ public class JexlHelperTest {
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
 
   @Test
-  public void evaluateDirective_returns_value() {
-    // Arrange
+  void evaluateDirective_returns_value() {
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
-    // Act
     final Optional<String> evaluated =
         this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, String.class);
 
-    // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
     assertThat(expectedValue, is(equalTo(evaluated.get())));
   }
 
 
   @Test
-  public void evaluateDirective_returns_empty() {
-    // Arrange
+  void evaluateDirective_returns_empty() {
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
-    // Act
     final Optional<String> evaluated =
         this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg2", context, String.class);
 
-    // Assert
     assertThat("expected empty optional", !evaluated.isPresent());
   }
 
   @Test
-  public void evaluateDirective_throwsException_forTypeMismatch() {
-    // Arrange
+  void evaluateDirective_throwsException_forTypeMismatch() {
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
-    // Act / Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, Integer.class));
   }
 
   @Test
-  public void evaluateExpression_returns_value() {
-    // Arrange
+  void evaluateExpression_returns_value() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
-    // Act
     final Optional<String> evaluated = this.jexlHelper.evaluateExpression("directiveValue1", context, String.class);
 
-    // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
     assertThat(expectedValue, is(equalTo(evaluated.get())));
   }
 
   @Test
-  public void evaluateScript_returns_value() {
-    // Arrange
+  void evaluateScript_returns_value() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act
     final Optional<String> evaluated =
         this.jexlHelper.evaluateScript("var result = `${key1}`; return result;", context, String.class);
 
-    // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
     assertThat(expectedValue, is(equalTo(evaluated.get())));
   }
 
   @Test
-  public void evaluateScript_returns_null() {
-    // Arrange
+  void evaluateScript_returns_null() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act
     final Optional<String> evaluated =
         this.jexlHelper.evaluateScript("var result = `${key1}`; return null;", context, String.class);
 
-    // Assert
     assertThat("expected empty optional", !evaluated.isPresent());
   }
 
   @Test
-  public void evaluateExpression_throwsException_forTypeMismatch() {
-    // Arrange
+  void evaluateExpression_throwsException_forTypeMismatch() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
-    // Act / Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateExpression("directiveValue1", context, Integer.class));
   }
 
   @Test
-  public void evaluateScript_throwsException_forTypeMismatch() {
-    // Arrange
+  void evaluateScript_throwsException_forTypeMismatch() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act/ Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
   }
 
   @Test
-  public void evaluateScriptWithFallback_fallsBack_forExceptionInScript() {
-    // Arrange
+  void evaluateScriptWithFallback_fallsBack_forExceptionInScript() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act/ Assert
     Optional<String> optional =
         this.jexlHelper.evaluateScriptWithFallback("return 12;", "`${key1}`", context, String.class);
     assertEquals(expectedValue, optional.get());
   }
 
   @Test
-  public void evaluateScriptWithoutFallback_returnsNull_forExceptionInScript() {
-    // Arrange
+  void evaluateScriptWithoutFallback_returnsNull_forExceptionInScript() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act/ Assert
     Optional<String> optional = this.jexlHelper.evaluateScriptWithFallback("return 12;", null, context, String.class);
     assertEquals(Optional.empty(), optional);
   }
 
   @Test
-  public void evaluateScriptWithFallback_returnsNull_forExceptionInScriptAndFallback() {
-    // Arrange
+  void evaluateScriptWithFallback_returnsNull_forExceptionInScriptAndFallback() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    // Act/ Assert
     Optional<String> optional =
         this.jexlHelper.evaluateScriptWithFallback("return 12;", "return 12;", context, String.class);
     assertEquals(Optional.empty(), optional);
   }
 
   @Test
-  public void createJexlContext_createsContext_forEnvAndArgParams() {
-    // Arrange
+  void createJexlContext_createsContext_forEnvAndArgParams() {
     Map<String, String> envParams = Map.of("key", "value");
     Map<String, Object> argParams = Map.of("name", "test");
 
@@ -190,8 +162,7 @@ public class JexlHelperTest {
   }
 
   @Test
-  public void createJexlContent_createsContext_forFieldDefinition() {
-    // Arrange
+  void createJexlContent_createsContext_forFieldDefinition() {
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name("beers")
         .type(Scalars.GraphQLString)
@@ -213,18 +184,15 @@ public class JexlHelperTest {
             .build())
         .build();
 
-    // Act
     JexlContext context = JexlHelper.getJexlContext(fieldDefinition);
 
-    // Assert
     assertEquals("1", context.get("args.defaultValue"));
     assertEquals("12", context.get("args.value"));
     assertEquals("12", context.get("args.both"));
   }
 
   @Test
-  public void createJexlContext_createsContext_forGraphQlArgument() {
-    // Arrange
+  void createJexlContext_createsContext_forGraphQlArgument() {
     GraphQlField graphQlField = GraphQlField.builder()
         .arguments(List.of(GraphQlArgument.builder()
             .name("value")

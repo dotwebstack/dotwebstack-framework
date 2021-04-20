@@ -52,29 +52,24 @@ class LimitDirectiveWiringTest {
   }
 
   @Test
-  public void onArgument_throwsError_withScalarField() {
-    // Arrange
+  void onArgument_throwsError_withScalarField() {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getType()).thenReturn(GraphQLString);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> limitDirectiveWiring.onArgument(environment));
   }
 
   @Test
-  public void onArgument_doesNotThrowError_withListField() {
-    // Arrange
+  void onArgument_doesNotThrowError_withListField() {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getType()).thenReturn(GraphQLList.list(GraphQLString));
     when(environment.getElement()).thenReturn(argument);
 
-    // Act
     assertDoesNotThrow(() -> limitDirectiveWiring.onArgument(environment));
   }
 
   @Test
-  public void onArgument_throwsError_withMultipleLimitArgumentFields() {
-    // Arrange
+  void onArgument_throwsError_withMultipleLimitArgumentFields() {
     when(environment.getElementParentTree()).thenReturn(parentTree);
     when(parentTree.getParentInfo()).thenReturn(Optional.empty());
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -84,7 +79,6 @@ class LimitDirectiveWiringTest {
     when(offsetArgument1.getDirective("limit")).thenReturn(mockDirective);
     when(offsetArgument2.getDirective("limit")).thenReturn(mockDirective);
 
-    // Act
     assertThrows(InvalidConfigurationException.class, () -> limitDirectiveWiring.onArgument(environment));
   }
 

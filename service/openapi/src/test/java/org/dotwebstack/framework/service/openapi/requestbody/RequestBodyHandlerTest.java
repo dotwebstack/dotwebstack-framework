@@ -40,7 +40,7 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class RequestBodyHandlerTest {
+class RequestBodyHandlerTest {
 
   private OpenAPI openApi;
 
@@ -55,7 +55,7 @@ public class RequestBodyHandlerTest {
   private RequestBodyContext requestBodyContext;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     this.openApi = TestResources.openApi();
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry();
     this.requestBodyHandler =
@@ -69,15 +69,13 @@ public class RequestBodyHandlerTest {
   }
 
   @Test
-  public void validate_succeeds_forValidSchema() {
-    // Act / Assert
+  void validate_succeeds_forValidSchema() {
     this.requestBodyHandler.validate(graphQlField, requestBody, "/query4");
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Test
-  public void validate_throwsException_forPropertyNotFoundInGraphQlQuery() {
-    // Arrange
+  void validate_throwsException_forPropertyNotFoundInGraphQlQuery() {
     Map<String, Schema> properties = this.openApi.getPaths()
         .get("/query4")
         .getGet()
@@ -94,14 +92,12 @@ public class RequestBodyHandlerTest {
         .getGet()
         .getRequestBody();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
   }
 
   @Test
-  public void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
-    // Arrange
+  void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3: String");
     this.requestBodyHandler =
         new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
@@ -111,14 +107,12 @@ public class RequestBodyHandlerTest {
         .getGet()
         .getRequestBody();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
   }
 
   @Test
-  public void validate_throwsException_forGraphQlTypeMismatch() {
-    // Arrange
+  void validate_throwsException_forGraphQlTypeMismatch() {
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1: Boolean");
     this.requestBodyHandler =
         new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
@@ -128,15 +122,12 @@ public class RequestBodyHandlerTest {
         .getGet()
         .getRequestBody();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
   }
 
   @Test
-  public void getValue_returns_Map_forValidJson() throws BadRequestException {
-
-    // Arrange
+  void getValue_returns_Map_forValidJson() throws BadRequestException {
     Map<String, Object> expected = new HashMap<>();
     ArrayList<String> expectedList = new ArrayList<>();
     expectedList.add("value1");
@@ -146,67 +137,56 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
-    // Act / Assert
     assertEquals(expected,
         this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
-  public void getValue_throwsException_forInvalidJson() {
-    // Arrange
+  void getValue_throwsException_forInvalidJson() {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_JSON);
 
-    // Act / Assert
     assertThrows(BadRequestException.class,
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
-  public void getValue_throwsException_unsupportedMediaType() {
-    // Arrange
+  void getValue_throwsException_unsupportedMediaType() {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_PDF);
 
-    // Act / Assert
     assertThrows(UnsupportedMediaTypeException.class,
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
-  public void getValue_throwsNoException_forSupportedMediaTypeWithSuffix() {
-    // Arrange
+  void getValue_throwsNoException_forSupportedMediaTypeWithSuffix() {
     ServerRequest serverRequest =
         mockServerRequest("{ \"foo\" : \"bar\"}", MediaType.parseMediaType("application/json;charset=utf-8"));
 
-    // Act / Assert
     assertDoesNotThrow(
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
-  public void getValue_throwsException_emptyRequestBodyRequired() {
-    // Arrange
+  void getValue_throwsException_emptyRequestBodyRequired() {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
-    // Act / Assert
     assertThrows(BadRequestException.class,
         () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
   }
 
   @Test
-  public void getValue_returnsEmpty_emptyRequestBodyNotRequired() throws BadRequestException {
-    // Arrange
+  void getValue_returnsEmpty_emptyRequestBodyNotRequired() throws BadRequestException {
     this.requestBodyContext.getRequestBodySchema()
         .setRequired(Boolean.FALSE);
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
-    // Act
     assertTrue(this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>())
         .isEmpty());
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void validateRequestBody_throwsException_forExtensionsInSchema() {
+  void validateRequestBody_throwsException_forExtensionsInSchema() {
     this.requestBody.getContent()
         .get(MediaType.APPLICATION_JSON.toString())
         .getSchema()
@@ -216,38 +196,35 @@ public class RequestBodyHandlerTest {
   }
 
   @Test
-  public void supports_returnsTrue_forJson() {
-    // Act / Assert
+  void supports_returnsTrue_forJson() {
     assertTrue(this.requestBodyHandler.supports(this.requestBody));
   }
 
   @Test
-  public void supports_returnsFalse_forNonJson() {
-    // Arrange
+  void supports_returnsFalse_forNonJson() {
     this.requestBody.getContent()
         .remove(MediaType.APPLICATION_JSON.toString());
-    // Act / Assert
     assertFalse(this.requestBodyHandler.supports(this.requestBody));
   }
 
   @Test
-  public void validatePropertyType_succeeds_forOasObject() {
+  void validatePropertyType_succeeds_forOasObject() {
     this.requestBodyHandler.validatePropertyType("p", OasConstants.OBJECT_TYPE, new TypeName("test"));
   }
 
   @Test
-  public void validatePropertyType_throwsException_forOasObject() {
+  void validatePropertyType_throwsException_forOasObject() {
     assertThrows(InvalidConfigurationException.class, () -> this.requestBodyHandler.validatePropertyType("p",
         OasConstants.OBJECT_TYPE, new ListType(new TypeName("test"))));
   }
 
   @Test
-  public void validatePropertyType_succeeds_forOasArray() {
+  void validatePropertyType_succeeds_forOasArray() {
     this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new ListType(new TypeName("test")));
   }
 
   @Test
-  public void validatePropertyType_throwsException_forOasArray() {
+  void validatePropertyType_throwsException_forOasArray() {
     assertThrows(InvalidConfigurationException.class,
         () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new TypeName("test")));
   }

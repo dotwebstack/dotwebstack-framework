@@ -63,19 +63,15 @@ class Rdf4jDataLoaderTest {
 
   @Test
   void supports_True_ForRdf4jTypeConfiguration() {
-    // Arrange
     Rdf4jTypeConfiguration rdf4jTypeConfiguration = new Rdf4jTypeConfiguration();
 
-    // Act / Assert
     assertThat(rdf4jDataLoader.supports(rdf4jTypeConfiguration), is(true));
   }
 
   @Test
   void supports_False_ForUnsupportedConfiguration() {
-    // Arrange
     UnsupportedTypeConfiguration unsupportedTypeConfiguration = new UnsupportedTypeConfiguration();
 
-    // Act / Assert
     assertThat(rdf4jDataLoader.supports(unsupportedTypeConfiguration), is(false));
   }
 
@@ -86,7 +82,6 @@ class Rdf4jDataLoaderTest {
 
   @Test
   void loadSingle_returnsData_forExistingEntity() {
-    // Arrange
     mockQueryContext(mock(BindingSet.class));
 
     Map<String, Object> data = Map.of("x1", "id-1", "x2", "Brewery 1");
@@ -105,11 +100,9 @@ class Rdf4jDataLoaderTest {
 
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(mock(Rdf4jTypeConfiguration.class));
 
-    // Act
     Map<String, Object> result = rdf4jDataLoader.loadSingle(keyCondition, loadEnvironment)
         .block(Duration.ofSeconds(5));
 
-    // Assert
     assertThat(result, notNullValue());
     assertThat(data.entrySet(), equalTo(result.entrySet()));
 
@@ -120,7 +113,6 @@ class Rdf4jDataLoaderTest {
 
   @Test
   void loadMany_returnsData_forExistingEntity() {
-    // Arrange
     mockQueryContext(mock(BindingSet.class), mock(BindingSet.class));
 
     List<Map<String, Object>> data =
@@ -149,12 +141,10 @@ class Rdf4jDataLoaderTest {
 
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment)).thenReturn(mock(Rdf4jTypeConfiguration.class));
 
-    // Act
     List<Map<String, Object>> result = rdf4jDataLoader.loadMany(keyCondition, loadEnvironment)
         .toStream()
         .collect(Collectors.toList());
 
-    // Assert
     assertThat(result, notNullValue());
     assertThat(result.size(), equalTo(2));
 

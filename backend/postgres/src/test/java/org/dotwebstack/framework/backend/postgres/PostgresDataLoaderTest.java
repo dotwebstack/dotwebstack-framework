@@ -64,16 +64,13 @@ class PostgresDataLoaderTest {
 
   @Test
   void supports_returnsTrue_withPostgresTypeConfiguration() {
-    // Arrange & Act
     boolean supported = postgresDataLoader.supports(new PostgresTypeConfiguration());
 
-    // Assert
     assertThat(supported, is(Boolean.TRUE));
   }
 
   @Test
   void supports_returnsFalse_withNonPostgresTypeConfiguration() {
-    // Arrange & Act
     boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {
       @Override
       public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
@@ -91,13 +88,11 @@ class PostgresDataLoaderTest {
       }
     });
 
-    // Assert
     assertThat(supported, is(Boolean.FALSE));
   }
 
   @Test
   void loadSingle() {
-    // Arrange
     mockQueryContext();
 
     Map<String, Object> data = Map.of("x1", "id-1", "x2", "Brewery 1");
@@ -122,11 +117,9 @@ class PostgresDataLoaderTest {
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
         .thenReturn(mock(PostgresTypeConfiguration.class));
 
-    // Act
     Map<String, Object> result = postgresDataLoader.loadSingle(keyCondition, loadEnvironment)
         .block(Duration.ofSeconds(5));
 
-    // Assert
     assertThat(result, notNullValue());
     assertThat(data.entrySet(), equalTo(result.entrySet()));
 
@@ -137,14 +130,12 @@ class PostgresDataLoaderTest {
 
   @Test
   void batchLoadSingle() {
-    // Act & Assert
     assertThrows(UnsupportedOperationException.class,
         () -> postgresDataLoader.batchLoadSingle(Set.of(), mockLoadEnvironment()));
   }
 
   @Test
   void loadMany() {
-    // Arrange
     mockQueryContext();
 
     List<Map<String, Object>> data =
@@ -170,12 +161,10 @@ class PostgresDataLoaderTest {
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
         .thenReturn(mock(PostgresTypeConfiguration.class));
 
-    // Act
     List<Map<String, Object>> result = postgresDataLoader.loadMany(keyCondition, loadEnvironment)
         .toStream()
         .collect(Collectors.toList());
 
-    // Assert
     assertThat(result, notNullValue());
     assertThat(data, equalTo(result));
 
@@ -186,7 +175,6 @@ class PostgresDataLoaderTest {
 
   @Test
   void batchLoadMany() {
-    // Arrange
     mockQueryContext();
 
     List<Map<String, Object>> data =
@@ -218,13 +206,11 @@ class PostgresDataLoaderTest {
     when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
         .thenReturn(mock(PostgresTypeConfiguration.class));
 
-    // Act
     List<Map<String, Object>> result = postgresDataLoader.batchLoadMany(keyConditions, loadEnvironment)
         .flatMap(group -> group.map(d -> d))
         .toStream()
         .collect(Collectors.toList());
 
-    // Assert
     assertThat(result, notNullValue());
     assertThat(data, equalTo(result));
 

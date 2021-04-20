@@ -43,7 +43,7 @@ public class GraphQlFieldBuilder {
         .build();
 
     if (registry.getType(TypeHelper.getBaseType(fieldDefinition.getType()))
-        .filter(t -> t instanceof ObjectTypeDefinition)
+        .filter(ObjectTypeDefinition.class::isInstance)
         .isPresent() && !typeNameFieldMap.containsKey(typeName)) {
       typeNameFieldMap.put(typeName, result);
     }

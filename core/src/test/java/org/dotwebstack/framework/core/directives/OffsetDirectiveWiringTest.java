@@ -52,29 +52,24 @@ class OffsetDirectiveWiringTest {
   }
 
   @Test
-  public void onArgument_throwsError_withScalarField() {
-    // Arrange
+  void onArgument_throwsError_withScalarField() {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getType()).thenReturn(GraphQLString);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class, () -> offsetDirectiveWiring.onArgument(environment));
   }
 
   @Test
-  public void onArgument_doesNotThrowError_withListField() {
-    // Arrange
+  void onArgument_doesNotThrowError_withListField() {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(fieldDefinition.getType()).thenReturn(GraphQLList.list(GraphQLString));
     when(environment.getElement()).thenReturn(argument);
 
-    // Act
     assertDoesNotThrow(() -> offsetDirectiveWiring.onArgument(environment));
   }
 
   @Test
-  public void onArgument_throwsError_withMultipleOffsetArgumentFields() {
-    // Arrange
+  void onArgument_throwsError_withMultipleOffsetArgumentFields() {
     when(environment.getElementParentTree()).thenReturn(parentTree);
     when(parentTree.getParentInfo()).thenReturn(Optional.empty());
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -84,7 +79,6 @@ class OffsetDirectiveWiringTest {
     when(offsetArgument1.getDirective("offset")).thenReturn(mockDirective);
     when(offsetArgument2.getDirective("offset")).thenReturn(mockDirective);
 
-    // Act
     assertThrows(InvalidConfigurationException.class, () -> offsetDirectiveWiring.onArgument(environment));
   }
 

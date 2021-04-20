@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 
 @ExtendWith(MockitoExtension.class)
-public class ExpandParamHandlerTest {
+class ExpandParamHandlerTest {
 
   private static final String TYPE_STRING = "string";
 
@@ -40,8 +40,7 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_doesNotThrowError_withValidExpand() throws ParameterValidationException {
-    // Arrange
+  void validate_doesNotThrowError_withValidExpand() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .build()));
@@ -53,13 +52,11 @@ public class ExpandParamHandlerTest {
     when(schema.getDefault()).thenReturn("beers");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }
 
   @Test
-  public void validate_doesNotThrowError_withValidExpand_DefaultValue() throws ParameterValidationException {
-    // Arrange
+  void validate_doesNotThrowError_withValidExpand_DefaultValue() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .build()));
@@ -71,13 +68,11 @@ public class ExpandParamHandlerTest {
     when(schema.getDefault()).thenReturn("beers");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }
 
   @Test
-  public void validate_doesNotThrowError_withDefaultComposedSchemaAllOf() throws ParameterValidationException {
-    // Arrange
+  void validate_doesNotThrowError_withDefaultComposedSchemaAllOf() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .type("Object4")
@@ -91,13 +86,11 @@ public class ExpandParamHandlerTest {
     when(schema.getDefault()).thenReturn("beers.ingredients");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }
 
   @Test
-  public void validate_doesNotThrowError_withDefaultComposedSchemaOneOf() throws ParameterValidationException {
-    // Arrange
+  void validate_doesNotThrowError_withDefaultComposedSchemaOneOf() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .type("Object5")
@@ -111,13 +104,11 @@ public class ExpandParamHandlerTest {
     when(schema.getDefault()).thenReturn("beers.ingredients");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertDoesNotThrow(() -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }
 
   @Test
-  public void validate_throwError_withInvalidExpandParam() throws ParameterValidationException {
-    // Arrange
+  void validate_throwError_withInvalidExpandParam() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
         .build()));
@@ -129,14 +120,12 @@ public class ExpandParamHandlerTest {
     when(schema.getType()).thenReturn(TYPE_STRING);
     when(schema.getEnum()).thenReturn(ImmutableList.of("address"));
 
-    // Act & Assert
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }
 
   @Test
-  public void validate_doesNotThrowError_withInValidNestedExpandParameter() throws ParameterValidationException {
-    // Arrange
+  void validate_doesNotThrowError_withInValidNestedExpandParameter() throws ParameterValidationException {
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("address")
         .fields(ImmutableList.of(GraphQlField.builder()
@@ -150,7 +139,6 @@ public class ExpandParamHandlerTest {
     when(schema.getDefault()).thenReturn("beers.ingredients");
     when(schema.getType()).thenReturn(TYPE_STRING);
 
-    // Act & Assert
     assertThrows(InvalidConfigurationException.class,
         () -> paramHandler.validate(graphQlField, parameter, "/breweries"));
   }

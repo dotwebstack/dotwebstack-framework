@@ -122,7 +122,7 @@ public class QueryBuilder {
 
   private List<Expression<?>> createFilterPatterns(Collection<KeyCondition> keyConditions,
       Map<String, String> keyFieldNames) {
-    if (keyConditions != null && keyConditions.size() > 0) {
+    if (keyConditions != null && !keyConditions.isEmpty()) {
       return keyConditions.stream()
           .map(FieldKeyCondition.class::cast)
           .map(FieldKeyCondition::getFieldValues)
