@@ -1,35 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import graphql.Scalars;
-import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.SelectedField;
-import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
-import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
-import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
-import org.jooq.impl.DSL;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
@@ -39,6 +9,35 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import graphql.Scalars;
+import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.SelectedField;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
+import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.SelectFieldOrAsterisk;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultSelectWrapperBuilderTest {
@@ -60,12 +59,13 @@ class DefaultSelectWrapperBuilderTest {
 
 
   @BeforeEach
+  @SuppressWarnings("unchecked")
   public void setup() {
     when(typeMappingMock.get("Beer")).thenReturn((AbstractTypeConfiguration) new PostgresTypeConfiguration());
 
     PostgresTypeConfiguration beerTypeConfiguration = createBeerTypeConfiguration();
 
-    when(typeMappingMock.get("Beer")).thenReturn((AbstractTypeConfiguration)beerTypeConfiguration);
+    when(typeMappingMock.get("Beer")).thenReturn((AbstractTypeConfiguration) beerTypeConfiguration);
   }
 
   @Test
@@ -74,8 +74,8 @@ class DefaultSelectWrapperBuilderTest {
     SelectContext selectContext = new SelectContext(mockQueryContext);
 
     PostgresTypeConfiguration ingredientTypeConfiguration = createIngredientTypeConfiguration();
-    Map<String, SelectedField> selectedFields = Map.of("identifier_ingredient", mockSelectedField("identifier_ingredient",
-        GraphQLFieldDefinition.newFieldDefinition()
+    Map<String, SelectedField> selectedFields = Map.of("identifier_ingredient",
+        mockSelectedField("identifier_ingredient", GraphQLFieldDefinition.newFieldDefinition()
             .name("identifier_ingredient")
             .type(Scalars.GraphQLString)
             .build()),
@@ -92,7 +92,7 @@ class DefaultSelectWrapperBuilderTest {
 
     defaultSelectWrapperBuilder.addFields(selectContext, ingredientTypeConfiguration, createTable(), selectedFields);
 
-    List<Field> selectColumns =  (List<Field>)(List<?>)  selectContext.getSelectColumns();
+    List<SelectFieldOrAsterisk> selectColumns = selectContext.getSelectColumns();
     assertThat(selectColumns, notNullValue());
     assertThat(selectColumns.size(), is(2));
   }
@@ -106,8 +106,8 @@ class DefaultSelectWrapperBuilderTest {
     keyConfiguration.setField("identifier_ingredient");
     ingredientTypeConfiguration.setKeys(List.of(keyConfiguration));
 
-    Map<String, PostgresFieldConfiguration> fieldsMap =
-        new HashMap<>(Map.of("identifier_ingredient", new PostgresFieldConfiguration(), "partOf", createIngredientPartofField()));
+    Map<String, PostgresFieldConfiguration> fieldsMap = new HashMap<>(
+        Map.of("identifier_ingredient", new PostgresFieldConfiguration(), "partOf", createIngredientPartofField()));
 
     ingredientTypeConfiguration.setFields(fieldsMap);
 
@@ -150,27 +150,25 @@ class DefaultSelectWrapperBuilderTest {
     return ingredientTypeConfiguration;
   }
 
-  private PostgresFieldConfiguration createIngredientPartofField(){
-    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
+  private PostgresFieldConfiguration createIngredientPartofField() {
     JoinTable joinTable = new JoinTable();
     joinTable.setName("db.beer_ingredient");
-
     joinTable.setJoinColumns(List.of(createPartOfJoinColumn()));
     joinTable.setInverseJoinColumns(List.of(createPartOfInverseJoinColumn()));
 
+    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
     fieldConfiguration.setJoinTable(joinTable);
-
     return fieldConfiguration;
   }
 
-  private JoinColumn createPartOfInverseJoinColumn(){
+  private JoinColumn createPartOfInverseJoinColumn() {
     return new JoinColumn("beer_identifier", "identifier_beer");
   }
 
   private JoinColumn createPartOfJoinColumn() {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName("ingredient_code");
-    joinColumn.setReferencedColumn( "code");
+    joinColumn.setReferencedColumn("code");
     return joinColumn;
   }
 
