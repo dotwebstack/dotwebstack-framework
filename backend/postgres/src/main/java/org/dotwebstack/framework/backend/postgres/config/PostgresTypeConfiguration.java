@@ -184,7 +184,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         })
         .filter(joinColumn -> joinColumn.getReferencedColumn() != null)
         .map(joinColumn -> createPostgresFieldConfiguration(joinColumn.getReferencedColumn()))
-        .collect(Collectors.toMap(fieldConfig -> fieldConfig.getColumn(), fieldConfig -> fieldConfig, (a, b) -> a));
+        .collect(Collectors.toMap(PostgresFieldConfiguration::getColumn, fieldConfig -> fieldConfig, (a, b) -> a));
 
     fields.putAll(referencedColumns);
   }
@@ -194,7 +194,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .filter(fieldDefinition -> fieldDefinition.getName()
             .equals(fieldName))
         .findFirst()
-        .orElseThrow(() -> illegalStateException("TODO arjenhup"));
+        .orElseThrow(() -> illegalStateException("No fielddefinition available for field {}", fieldName));
   }
 
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
