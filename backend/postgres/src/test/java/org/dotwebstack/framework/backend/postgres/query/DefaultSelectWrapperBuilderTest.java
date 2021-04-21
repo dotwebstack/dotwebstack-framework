@@ -69,7 +69,7 @@ class DefaultSelectWrapperBuilderTest {
   }
 
   @Test
-  public void addFields_addSelectedJoinColumnForReferenceJoinColumn() {
+  public void addFields_addSelectedJoinColumnToSelectContext_forReferenceJoinColumn() {
     QueryContext mockQueryContext = mock(QueryContext.class);
     SelectContext selectContext = new SelectContext(mockQueryContext);
 
