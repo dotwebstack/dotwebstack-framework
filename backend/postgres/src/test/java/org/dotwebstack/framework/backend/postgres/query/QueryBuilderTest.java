@@ -35,6 +35,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.jooq.DSLContext;
@@ -67,6 +68,9 @@ class QueryBuilderTest {
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 
+  @Mock
+  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+
   private QueryBuilder queryBuilder;
 
   @BeforeEach
@@ -79,6 +83,7 @@ class QueryBuilderTest {
 
   @Test
   void buildwithKeyCondition() {
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     ColumnKeyCondition keyCondition = ColumnKeyCondition.builder()
@@ -106,6 +111,7 @@ class QueryBuilderTest {
 
   @Test
   void buildWithoutKeyCondition() {
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -128,6 +134,7 @@ class QueryBuilderTest {
 
   @Test
   void buildWithJoinColumn() {
+    postgresTypeConfigurationMock();
     GraphQLObjectType breweryType = GraphQLObjectType.newObject()
         .name("Brewery")
         .build();
@@ -161,8 +168,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("brewery/*.*")).thenReturn(selectedFields);
 
-    when(dotWebStackConfiguration.getTypeConfiguration(breweryType.getName()))
-        .thenReturn(createBreweryTypeConfiguration());
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration breweryTypeConfiguration = createBreweryTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration(breweryType.getName())).thenReturn(breweryTypeConfiguration);
 
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
@@ -230,6 +239,7 @@ class QueryBuilderTest {
 
   @Test
   void build_returnsQueryWithoutJoin_forNestedList() {
+    postgresTypeConfigurationMock();
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
 
     List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
@@ -265,6 +275,7 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsNull_missingKeyAlias() {
+    postgresTypeConfigurationMock();
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -285,6 +296,8 @@ class QueryBuilderTest {
 
   @Test
   void mapAssembler_returnsMappedRow_default() {
+    postgresTypeConfigurationMock();
+
     PostgresTypeConfiguration typeConfiguration = createBeerTypeConfiguration();
 
     DataFetchingFieldSelectionSet selectionSet = mockDataFetchingFieldSelectionSet(FIELD_IDENTIFIER, FIELD_NAME);
@@ -308,6 +321,8 @@ class QueryBuilderTest {
     assertThat(result.get("name"), is("Beer 1"));
     assertThat(result.get("identifier"), is("AAA"));
   }
+
+
 
   @Test
   void build_returnsCorrectQuery_forAggregate() {
@@ -341,7 +356,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
 
-    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration beerType = createBeerTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(beerType);
 
     PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
 
@@ -395,7 +413,10 @@ class QueryBuilderTest {
 
     when(selectionSet.getFields("aggregate/*.*")).thenReturn(selectedFields);
 
-    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(createBeerTypeConfiguration());
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration beerType = createBeerTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration("Beer")).thenReturn(beerType);
 
     PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
 
@@ -546,10 +567,16 @@ class QueryBuilderTest {
     joinColumn.setReferencedField(FIELD_IDENTIFIER);
     breweryFieldConfiguration.setJoinColumns(List.of(joinColumn));
 
-    PostgresFieldConfiguration ingredientsFieldConfiguration = new PostgresFieldConfiguration();
+
     JoinTable joinTable = new JoinTable();
     joinTable.setName("beer_ingredients");
+    joinTable.setJoinColumns(List.of(new JoinColumn("beer_identifier", "identifier_beer")));
+    JoinColumn inverseJoinColumn = new JoinColumn();
+    inverseJoinColumn.setName("ingredient_code");
+    inverseJoinColumn.setReferencedColumn("code");
+    joinTable.setInverseJoinColumns(List.of(inverseJoinColumn));
 
+    PostgresFieldConfiguration ingredientsFieldConfiguration = new PostgresFieldConfiguration();
     ingredientsFieldConfiguration.setJoinTable(joinTable);
 
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), FIELD_BREWERY,
@@ -557,7 +584,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -592,4 +619,9 @@ class QueryBuilderTest {
     }
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void postgresTypeConfigurationMock() {
+    AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
+    when(typeMappingMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
+  }
 }

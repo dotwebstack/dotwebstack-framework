@@ -8,6 +8,7 @@ type Query {
   beer(identifier_beer: ID!): Beer
   brewery(identifier_brewery: ID!): Brewery
   breweries: [Brewery!]!
+  ingredient(identifier_ingredient: ID!): Ingredient
 }
 
 type Subscription {
@@ -47,6 +48,7 @@ type Ingredient {
   identifier_ingredient: ID!
   name: String!
   weight: Float!
+  partOf: [Beer!]
 }
 
 enum Taste{

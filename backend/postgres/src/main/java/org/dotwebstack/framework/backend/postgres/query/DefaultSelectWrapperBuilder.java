@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -58,12 +59,17 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
+    AtomicBoolean hasJoinCondition = new AtomicBoolean();
+
     // add nested objects
     fieldNamesConfigurations.entrySet()
         .stream()
         .filter(entry -> !entry.getValue()
             .isScalar())
-        .forEach(entry -> addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue()));
+        .forEach(entry -> {
+          hasJoinCondition.set(true);
+          addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue());
+        });
 
     // add direct fields
     fieldNamesConfigurations.entrySet()
@@ -71,6 +77,14 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .filter(entry -> entry.getValue()
             .isScalar())
         .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
+
+    if (hasJoinCondition.get()) {
+      typeConfiguration.getReferencedColumns()
+          .keySet()
+          .forEach(column -> addField(selectContext, typeConfiguration, fromTable,
+              Map.entry(column, typeConfiguration.getFields()
+                  .get(column))));
+    }
   }
 
   private void addJoinTable(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
@@ -136,6 +150,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
           .set(columnAlias);
     }
   }
+
 
   private Map<String, PostgresFieldConfiguration> getFieldNames(PostgresTypeConfiguration typeConfiguration,
       Collection<SelectedField> selectedFields) {
@@ -205,7 +220,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       PostgresFieldConfiguration fieldConfiguration, JoinColumn joinColumn, Table<Record> leftTable,
       Table<Record> rightTable) {
     PostgresFieldConfiguration otherSideFieldConfiguration = otherSideTypeConfiguration.getFields()
-        .get(joinColumn.getReferencedField());
+        .get(joinColumn.getField());
 
     boolean invert = fieldConfiguration.isAggregate() || fieldConfiguration.getJoinTable() != null;
 
