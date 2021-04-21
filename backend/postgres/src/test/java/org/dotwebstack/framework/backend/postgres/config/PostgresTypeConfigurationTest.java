@@ -82,7 +82,7 @@ class PostgresTypeConfigurationTest {
         () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
-        is("One of 'referencedField' or 'referencedColumn' must have a valid value in field 'partOf'."));
+        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
   }
 
   @Test
@@ -98,7 +98,7 @@ class PostgresTypeConfigurationTest {
         () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
-        is("Only one of 'referencedField' or 'referencedColumn' can have a value in field 'partOf'."));
+        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
   }
 
   @Test

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotBlank;
@@ -77,30 +76,63 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .ifPresent(joinColumns::addAll);
 
     joinColumns.forEach(joinColumn -> {
-
-      if (Objects.isNull(joinColumn.getReferencedField()) && Objects.isNull(joinColumn.getReferencedColumn())) {
+      if (!validateReferencedFieldRequiredWithoutReferencedColumn(joinColumn, fieldDefinition)
+          && !validateReferencedColumnRequiredWithoutReferencedField(joinColumn, fieldDefinition)) {
         throw invalidConfigurationException(
-            "One of 'referencedField' or 'referencedColumn' must have a valid value in field '{}'.",
+            "The field 'referencedField' or 'referencedColumn' must have a value in field '{}'.",
             fieldDefinition.getName());
       }
-
-      if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
-        throw invalidConfigurationException(
-            "Only one of 'referencedField' or 'referencedColumn' can have a value in field '{}'.",
-            fieldDefinition.getName());
-      }
-
-      if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
-        String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
-        TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
-        if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-
-          throw invalidConfigurationException(
-              "Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.", typeConfiguration.getClass());
-        }
-      }
-
+      validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, typeMapping, fieldDefinition);
     });
+  }
+
+  private boolean validateReferencedFieldRequiredWithoutReferencedColumn(JoinColumn joinColumn,
+      FieldDefinition fieldDefinition) {
+    boolean result = false;
+    if (StringUtils.isBlank(joinColumn.getReferencedColumn())
+        && !StringUtils.isBlank(joinColumn.getReferencedField())) {
+      result = true;
+    }
+    return result;
+  }
+
+  private boolean validateReferencedColumnRequiredWithoutReferencedField(JoinColumn joinColumn,
+      FieldDefinition fieldDefinition) {
+    boolean result = false;
+    if (StringUtils.isBlank(joinColumn.getReferencedField())
+        && !StringUtils.isBlank(joinColumn.getReferencedColumn())) {
+      result = true;
+    }
+    return result;
+  }
+  //
+  // private void validateJoinColumnIsValid(JoinColumn joinColumn, FieldDefinition fieldDefinition) {
+  // if (Objects.isNull(joinColumn.getReferencedField()) &&
+  // Objects.isNull(joinColumn.getReferencedColumn())) {
+  // throw invalidConfigurationException(
+  // "One of 'referencedField' or 'referencedColumn' must have a valid value in field '{}'.",
+  // fieldDefinition.getName());
+  // }
+  //
+  // if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
+  // throw invalidConfigurationException(
+  // "Only one of 'referencedField' or 'referencedColumn' can have a value in field '{}'.",
+  // fieldDefinition.getName());
+  // }
+  // }
+
+  private void validateTargetObjectTypeHasPostgresBackend(JoinColumn joinColumn,
+      PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> typeMapping,
+      FieldDefinition fieldDefinition) {
+    if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
+      String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
+      TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
+      if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
+
+        throw invalidConfigurationException("Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.",
+            typeConfiguration.getClass());
+      }
+    }
   }
 
   @Override
