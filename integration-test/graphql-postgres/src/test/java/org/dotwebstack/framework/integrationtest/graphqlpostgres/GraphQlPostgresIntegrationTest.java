@@ -564,7 +564,9 @@ class GraphQlPostgresIntegrationTest {
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
+
     ExecutionResult result = graphQL.execute(executionInput);
+
     assertTrue(result.getErrors()
         .isEmpty());
     Map<String, Object> data = result.getData();
@@ -574,13 +576,10 @@ class GraphQlPostgresIntegrationTest {
     assertThat(ingredient.get("name"), is("Caramel"));
     List<Map<String, Object>> beers = (List<Map<String, Object>>) ingredient.get("partOf");
     assertThat(beers.size(), is(2));
-    Map<String, Object> beer1 = (Map<String, Object>) beers.get(0);
+    Map<String, Object> beer1 = beers.get(0);
     assertThat(beer1.get("name"), is("Beer 1"));
-    Map<String, Object> beer3 = (Map<String, Object>) beers.get(1);
+    Map<String, Object> beer3 = beers.get(1);
     assertThat(beer3.get("name"), is("Beer 3"));
-
-
-
   }
 
   @Test
