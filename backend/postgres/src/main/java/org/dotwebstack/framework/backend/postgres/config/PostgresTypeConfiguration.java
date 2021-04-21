@@ -76,14 +76,18 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .ifPresent(joinColumns::addAll);
 
     joinColumns.forEach(joinColumn -> {
-      if (!validateReferencedFieldRequiredWithoutReferencedColumn(joinColumn)
-          && !validateReferencedColumnRequiredWithoutReferencedField(joinColumn)) {
+      if (isNotValidJoinColumn(joinColumn)) {
         throw invalidConfigurationException(
             "The field 'referencedField' or 'referencedColumn' must have a value in field '{}'.",
             fieldDefinition.getName());
       }
       validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, typeMapping, fieldDefinition);
     });
+  }
+
+  private boolean isNotValidJoinColumn(JoinColumn joinColumn) {
+    return !validateReferencedFieldRequiredWithoutReferencedColumn(joinColumn)
+        && !validateReferencedColumnRequiredWithoutReferencedField(joinColumn);
   }
 
   private boolean validateReferencedFieldRequiredWithoutReferencedColumn(JoinColumn joinColumn) {
