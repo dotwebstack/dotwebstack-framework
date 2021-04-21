@@ -35,7 +35,6 @@ class GraphqlController {
         .map(ExecutionResult::toSpecification);
   }
 
-  @CrossOrigin
   @PostMapping(path = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<Map<String, Object>> handlePost(@RequestBody String query) {
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
