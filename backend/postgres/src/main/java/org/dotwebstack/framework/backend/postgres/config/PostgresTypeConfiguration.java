@@ -76,8 +76,8 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .ifPresent(joinColumns::addAll);
 
     joinColumns.forEach(joinColumn -> {
-      if (!validateReferencedFieldRequiredWithoutReferencedColumn(joinColumn, fieldDefinition)
-          && !validateReferencedColumnRequiredWithoutReferencedField(joinColumn, fieldDefinition)) {
+      if (!validateReferencedFieldRequiredWithoutReferencedColumn(joinColumn)
+          && !validateReferencedColumnRequiredWithoutReferencedField(joinColumn)) {
         throw invalidConfigurationException(
             "The field 'referencedField' or 'referencedColumn' must have a value in field '{}'.",
             fieldDefinition.getName());
@@ -86,26 +86,16 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     });
   }
 
-  private boolean validateReferencedFieldRequiredWithoutReferencedColumn(JoinColumn joinColumn,
-      FieldDefinition fieldDefinition) {
-    boolean result = false;
-    if (StringUtils.isBlank(joinColumn.getReferencedColumn())
-        && !StringUtils.isBlank(joinColumn.getReferencedField())) {
-      result = true;
-    }
-    return result;
+  private boolean validateReferencedFieldRequiredWithoutReferencedColumn(JoinColumn joinColumn) {
+    return StringUtils.isBlank(joinColumn.getReferencedColumn())
+        && !StringUtils.isBlank(joinColumn.getReferencedField());
   }
 
-  private boolean validateReferencedColumnRequiredWithoutReferencedField(JoinColumn joinColumn,
-      FieldDefinition fieldDefinition) {
-    boolean result = false;
-    if (StringUtils.isBlank(joinColumn.getReferencedField())
-        && !StringUtils.isBlank(joinColumn.getReferencedColumn())) {
-      result = true;
-    }
-    return result;
+  private boolean validateReferencedColumnRequiredWithoutReferencedField(JoinColumn joinColumn) {
+    return StringUtils.isBlank(joinColumn.getReferencedField())
+        && !StringUtils.isBlank(joinColumn.getReferencedColumn());
   }
-  
+
   private void validateTargetObjectTypeHasPostgresBackend(JoinColumn joinColumn,
       PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> typeMapping,
       FieldDefinition fieldDefinition) {
