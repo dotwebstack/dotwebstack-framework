@@ -105,22 +105,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     }
     return result;
   }
-  //
-  // private void validateJoinColumnIsValid(JoinColumn joinColumn, FieldDefinition fieldDefinition) {
-  // if (Objects.isNull(joinColumn.getReferencedField()) &&
-  // Objects.isNull(joinColumn.getReferencedColumn())) {
-  // throw invalidConfigurationException(
-  // "One of 'referencedField' or 'referencedColumn' must have a valid value in field '{}'.",
-  // fieldDefinition.getName());
-  // }
-  //
-  // if (StringUtils.isNoneBlank(joinColumn.getReferencedField(), joinColumn.getReferencedColumn())) {
-  // throw invalidConfigurationException(
-  // "Only one of 'referencedField' or 'referencedColumn' can have a value in field '{}'.",
-  // fieldDefinition.getName());
-  // }
-  // }
-
+  
   private void validateTargetObjectTypeHasPostgresBackend(JoinColumn joinColumn,
       PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> typeMapping,
       FieldDefinition fieldDefinition) {
