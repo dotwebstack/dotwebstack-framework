@@ -270,6 +270,35 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_returnsBreweryWithNoBeers_forIdentifier() {
+    String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\"){name status beers{name}}}";
+
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertThat(brewery.size(), is(3));
+    assertThat(brewery.get("name"), is("Brewery Z"));
+    assertThat(brewery.get("status"), is("inactive"));
+
+    List<Map<String, Object>> beers = ((List<Map<String, Object>>) brewery.get("beers"));
+    assertThat(beers, is(notNullValue()));
+    assertThat(beers.size(), is(0));
+  }
+
+  @Test
   void graphQlQuery_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{beers{name ingredients{name}}}";
 

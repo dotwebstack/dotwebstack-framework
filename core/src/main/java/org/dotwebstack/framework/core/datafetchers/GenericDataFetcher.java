@@ -129,6 +129,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
               .collectList()
               .map(list -> Map.entry(group.key(), list)))
+          .mergeWith(Flux.fromStream(keys.stream()
+              .map(key -> Map.entry(key, List.of()))))
+          .distinct()
           .collectMap(Map.Entry::getKey, Map.Entry::getValue)
           .toFuture());
     }
