@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.GenericDataFetcher;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -92,6 +93,10 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
               .get()) && row.get(
                   selectContext.getCheckNullAlias()
                       .get()) == null) {
+            if (selectContext.getQueryContext()
+                .isUseNullMapWhenNotFound()) {
+              return GenericDataFetcher.NULL_MAP;
+            }
             return null;
           }
 

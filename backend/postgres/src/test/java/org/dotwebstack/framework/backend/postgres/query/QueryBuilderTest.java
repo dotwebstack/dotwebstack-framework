@@ -104,7 +104,8 @@ class QueryBuilderTest {
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
-        equalTo("select x3, t3.* from (values (:1)) as \"t2\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
+        equalTo("select x3, t3.* from (values (:1)) as \"t2\" (\"x3\") "
+            + "left outer join lateral (select \"t1\".\"identifier\" "
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from db.beer as \"t1\" where \"t1\".\"identifier\" "
             + "= \"t2\".\"x3\" limit :2 offset :3) as \"t3\" on true"));
   }
@@ -230,7 +231,8 @@ class QueryBuilderTest {
     assertThat(queryHolder.getQuery(), notNullValue());
     assertThat(queryHolder.getQuery()
         .getSQL(ParamType.NAMED),
-        equalTo("select x3, t4.* from (values (:1)) as \"t3\" (\"x3\") join lateral (select \"t1\".\"identifier\" "
+        equalTo("select x3, t4.* from (values (:1)) as \"t3\" (\"x3\") "
+            + "left outer join lateral (select \"t1\".\"identifier\" "
             + "as \"x1\", \"t1\".\"name\" as \"x2\" from dbeerpedia.ingredients as \"t1\" "
             + "join dbeerpedia.beers_ingredients as \"t2\" on \"t2\".\"ingredients_identifier\" "
             + "= \"t1\".\"identifier\" where \"t2\".\"beers_identifier\" = \"t3\".\"x3\" limit :2 offset :3) "

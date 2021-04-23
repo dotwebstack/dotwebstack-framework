@@ -117,7 +117,7 @@ public class QueryBuilder {
 
     SelectOnConditionStep<Record> valuesQuery = dslContext.select(selectedColumns)
         .from(valuesTable)
-        .join(lateralTable)
+        .leftJoin(lateralTable)
         .on(trueCondition());
 
     return build(valuesQuery, keyColumnNames, selectWrapper.getRowAssembler());
@@ -125,6 +125,12 @@ public class QueryBuilder {
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters) {
     return build(new QueryContext(queryParameters.getSelectionSet()), typeConfiguration, queryParameters);
+  }
+
+  public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters,
+      boolean useNullMapWhenNotFound) {
+    return build(new QueryContext(queryParameters.getSelectionSet(), useNullMapWhenNotFound), typeConfiguration,
+        queryParameters);
   }
 
   private Select<Record> limit(SelectConnectByStep<Record> query, Page page) {

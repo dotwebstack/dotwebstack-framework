@@ -110,7 +110,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .keyConditions(keyConditions)
         .build();
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters, true);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
