@@ -16,11 +16,6 @@ public class QueryContext {
 
   private final AtomicInteger selectCounter = new AtomicInteger();
 
-  public QueryContext(DataFetchingFieldSelectionSet selectionSet) {
-    this.selectionSet = selectionSet;
-    this.useNullMapWhenNotFound = false;
-  }
-
   public QueryContext(DataFetchingFieldSelectionSet selectionSet, boolean useNullMapWhenNotFound) {
     this.selectionSet = selectionSet;
     this.useNullMapWhenNotFound = useNullMapWhenNotFound;

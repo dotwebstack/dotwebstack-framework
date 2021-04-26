@@ -124,7 +124,7 @@ public class QueryBuilder {
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters) {
-    return build(new QueryContext(queryParameters.getSelectionSet()), typeConfiguration, queryParameters);
+    return build(typeConfiguration, queryParameters, false);
   }
 
   public QueryHolder build(PostgresTypeConfiguration typeConfiguration, QueryParameters queryParameters,
