@@ -111,20 +111,20 @@ it will result in the following response:
 }
 ```
 
-### 1.1.1 Repository configuration
+### Repository configuration
 
 We currently only supports the local in-memory RDF4J repository which can be loaded by placing a trig file within the model directory.
 
-## 1.2 Field selections
+## Field selections
 
 The RDF4J backend supports GraphQL field selections on any level within a graph. 
 
 ```graphql
 {
   breweries { 
-    name, 
+    name
     address { 
-      postalCode, 
+      postalCode
       streetAddress 
     }
   }
@@ -141,7 +141,8 @@ While it's possible to query object fields directly, SHACL property paths allows
 For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibilities 
 in the following paragraphs. 
 
-### 1.3.1 Predicate paths
+### Predicate paths
+
 The *predicate path* is the simplest of the paths. These are the building blocks for each property path. It describes one predicate 
 to retrieve and object from the current subject. 
  
@@ -171,7 +172,8 @@ beer:shapes {
 }
 ``` 
 
-### 1.3.2 Alternative paths
+### Alternative paths
+
 The *alternative path* describes the option get either the object from this predicate `OR` the object from that predicate.
 You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions. 
    
@@ -200,7 +202,8 @@ beer:shapes {
 ``` 
 
    
-### 1.3.3 Sequence paths
+### Sequence paths
+
 The *sequence path* describes the possibility to chain multiple predicates. You can use this to access the properties of 
 underlying objects. For example when you are not interested in the parent per se, but more in his or her name you can use:
 
@@ -238,7 +241,8 @@ Again, this is the simple example. You can also use any of the other property pa
 ([sh:alternativePath (ex:father ex:mother)] ex:firstname)
 ```
 
-### 1.3.4 Inverse paths
+### Inverse paths
+
 The *inverse path* traverses the predicate in the opposite direction. This can be useful when you only have an explicit relation
 in one direction, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
  but not from a parent to a child. In that case you can use the following inverse path to obtain the name of the child:
@@ -271,7 +275,8 @@ beer:shapes {
 In the previous example a couple of constructions are used. Again it is possible to use the other paths within an inverse path
 as well.  
 
-### 1.3.5 OneOrMore path
+### OneOrMore path
+
 The *one or more* path finds a connection between subjects and objects using the predicate, and matching the pattern one or more times.
 For example, finding the names of all people a person knows either directly, or through another person using the `ex:knows` predicate:
 
@@ -300,7 +305,8 @@ beer:shapes {
 }
 ```
 
-### 1.3.6 ZeroOrMore path
+### ZeroOrMore path
+
 The *zero or more* path works in the same way as the 'one or more' path and allows paths of
 length 0.
 
@@ -329,7 +335,8 @@ beer:shapes {
 }
 ```
 
-### 1.3.7 ZeroOrOne path
+### ZeroOrOne path
+
 The *zero or one* path works in the same way as the 'zero or more' path, but allows paths of
 length 0 or 1.
 
@@ -357,7 +364,9 @@ beer:shapes {
  .
 }
 ```
-## 1.8 Constraints
+
+## Constraint
+
 Constraints can be added to the shapes file to further restrict data from fitting as property or node shape constructs. 
 Without these constraints it is only possible to restrict the model by the given paths, sometimes this is not enough.
 Think about objects that have to be of a certain class to fit a nodeshape, or objects that need to have at least one 
@@ -365,51 +374,55 @@ predicate of a certain type, sometimes even with a certain value. In Dotwebstack
 returned for a certain query, so that it applies to the rules specified in the shapes file. In the following paragraphs 
 the constraints supported in Dotwebstack are discussed. 
 
-### 1.8.1 minCount
+### minCount
+
 It is possible to add `sh:minCount` to a property shape, to add constraints to your query regarding required properties.
 When adding minCount of 0 or omitting minCount altogether, the property is optional. When adding a minCount of
 1, the property is required. Currently, minCount > 1 is not supported.
 
-### 1.8.2 hasValue
+### hasValue
+
 By adding `sh:hasValue` to a property shape, at least on of the triples in the data needs to have given predicate in 
 combination with the given value in order to meet this requirement. 
 
-### 1.8.3 Class
+### Class
+
 By adding an `sh:class` to a node shape, you can bind your node shape to a class. This means that a constraint is added to the 
 query that will constrain the returned object to have an `rdf:type` relation with the given class. Multiple classes will
 result in multiple constraints and thus objects will have to have `rdf:type` relations with all given classes. By defining
 an `sh:or` around multiple `sh:class` constraints, it is possible to state that only one of the constraints has to be met
 in order for an object to fit the shape. 
 
-## 1.9 NodeShape Inheritance
+## NodeShape inheritance
+
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
 
 ```trig
- ex:Pet a sh:NodeShape ;
-    sh:class owl:Thing ;
-    sh:name "Animal" ;
-    sh:property
-      ex:name,
-      ex:owner
-  .
+ex:Pet a sh:NodeShape ;
+  sh:class owl:Thing ;
+  sh:name "Animal" ;
+  sh:property
+    ex:name,
+    ex:owner
+.
 
-  ex:Dog a sh:NodeShape ;
-    sh:name "Dog";
-    sh:class ex_def:Dog ;
-    dws:inherits ex:Pet ;
-    sh:property
-      ex:fetchesBall ,
-      ...
-  .
-  
-  ex:Cat a sh:NodeShape ;
-    sh:name "Cat";
-    sh:class ex_def:Cat ;
-    dws:inherits ex:Pet ;
-    sh:property
-      ex:breed ,
-      ...
-    .
+ex:Dog a sh:NodeShape ;
+  sh:name "Dog";
+  sh:class ex_def:Dog ;
+  dws:inherits ex:Pet ;
+  sh:property
+    ex:fetchesBall ,
+    ...
+.
+
+ex:Cat a sh:NodeShape ;
+  sh:name "Cat";
+  sh:class ex_def:Cat ;
+  dws:inherits ex:Pet ;
+  sh:property
+    ex:breed ,
+    ...
+.
 ```
 
 In the example the NodeShape `Dog` uses the `dws:inherits` (dws from \<http://www.dotwebstack.org/\>) to inherit the 
@@ -417,7 +430,7 @@ properties of `Pet`. This means that besides the `fetchesBall` property (whether
 instance of `Dog` also has a name and an owner. The NodeShape `cat` has a breed and because of the same inheritance 
 relation with `Animal` also a name and an owner. 
 
-## 2.0 Geometry and Geography
+## Geometry and Geography
 
 WKT literals are supported.
 
@@ -426,11 +439,11 @@ Add `sh:datatype ogc:wktLiteral` to propertyShape in order for the conversion to
 Example:
 
 ```trig
-   beer_sh:Brewery_geometry a sh:PropertyShape ;
-     sh:path ogc:asWKT ;
-     sh:name "geometry" ;
-     sh:minCount 0 ;
-     sh:maxCount 1 ;
-     sh:nodeKind sh:Literal ;
-     sh:datatype ogc:wktLiteral
+beer_sh:Brewery_geometry a sh:PropertyShape ;
+  sh:path ogc:asWKT ;
+  sh:name "geometry" ;
+  sh:minCount 0 ;
+  sh:maxCount 1 ;
+  sh:nodeKind sh:Literal ;
+  sh:datatype ogc:wktLiteral
 ```

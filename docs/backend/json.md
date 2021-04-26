@@ -39,15 +39,11 @@ The following example shows the GraphQL description for several queries to retri
 
 ```graphql
 type Query {
-    beers: [Beer!]!
-
-    breweries: [Brewery!]!
-
-    brewery(identifier: String! @key(field: "identifier")): Brewery
-
-    beer(identifier: String! @key(field: "identifier")): Beer
-
-    beers_by_country_and_name(country: String! @key,name: String! @key): [Beer!]!
+  beers: [Beer!]!
+  breweries: [Brewery!]!
+  brewery(identifier: String! @key(field: "identifier")): Brewery
+  beer(identifier: String! @key(field: "identifier")): Beer
+  beers_by_country_and_name(country: String! @key,name: String! @key): [Beer!]!
 }
 ```
 

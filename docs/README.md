@@ -21,4 +21,4 @@ Curious how it works? [Get started](./overview/getting_started.md) now!
 
 ## License
 
-The DotWebStack Framework is published under the [MIT License](LICENSE.md).
+The DotWebStack Framework is published under the [MIT License](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.3/LICENSE.md).

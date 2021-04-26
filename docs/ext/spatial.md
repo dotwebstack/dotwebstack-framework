@@ -60,7 +60,7 @@ It is possible to convert certain GeometryTypes. Add `( type : Geometry )` to Ge
 type Brewery {
   identifier: ID!
   name: String!
-  geometry ( type : Geometry ): Geometry
+  geometry(type: Geometry): Geometry
 }
 ```
 
@@ -71,7 +71,7 @@ Query example:
   breweries {
     identifier
     name
-    geometry(convert: MULTIPOINT){
+    geometry(type: MULTIPOINT) {
       type
       asWKT
     }
