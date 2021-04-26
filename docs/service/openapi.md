@@ -1,4 +1,5 @@
-# 1 openapi
+# Service module: `service-openapi`
+
 This service can be used to expose the internal GraphQL service as an [OpenAPI](https://github.com/OAI/OpenAPI-Specification) service.
 The service can be configured by providing an `openapi.yaml` specification in the resource path.
 
@@ -11,11 +12,12 @@ The OpenAPI service can be included in a Spring Boot project with the following 
 </dependency>
 ```
 
-# 1.1 Specification file
+## Specification file
+
 The OpenAPI service looks for the OpenAPI specification in the classpath resource `config/openapi.yaml`.
 Path operations and types used in the specification should map to the GraphQL service.
 
-# 1.1.1 Operation mapping
+## Operation mapping
 Operations in the OpenAPI specification are mapped to GraphQL queries using the value of the `x-dws-query` specification extension. For example, the following `get` operation in the `/breweries` path:
 
 ```yaml
@@ -51,13 +53,13 @@ A `Redirect` operation response (3xx) does not have a content but must have a `L
 
 ```yaml
 responses:
-    303:
-      description: REDIRECT
-      headers:
-        Location:
-          schema:
-            type: string
-            x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
+  303:
+    description: REDIRECT
+    headers:
+      Location:
+        schema:
+          type: string
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${args.identifier}`'
 ```
 
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
@@ -71,7 +73,8 @@ paths:
       x-dws-operation: false
 ```
 
-# 1.1.2 Operation parameters
+## Operation parameters
+
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
 
 ```yaml
@@ -95,27 +98,29 @@ breweries(name: String): [Brewery!]!
 All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for a given request,
 the application will return a `400` response with and a message stating which of the given parameters are not allowed.  
 
-# 1.1.3 Sort parameter
+## Sort parameter
+
 The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with this extension should have an array type schema where the array contains the fields on which to sort.
 **Ordering:** A field preceded by `-` is mapped to DESC order and a field without a prefix to ASC order.
 **Default:** A default value may be specified which will be used if there is no input from the request.
 The following parameter will sort on ascending name and descending description and specifies the default value `['name']`:
 
 ```yaml
-     parameters:
-        - name: sort
-          in: header
-          x-dws-type: sort
-          schema:
-            type: array
-            default: ['name']
-            items:
-              type: string
-              enum: ['name', '-description']
+parameters:
+  - name: sort
+    in: header
+    x-dws-type: sort
+    schema:
+      type: array
+      default: ['name']
+      items:
+        type: string
+        enum: ['name', '-description']
 ```
 
-# 1.1.4 Expand parameter
-By default only GraphQL fields with the `ID` type and the fields that are marked as `required` in the OpenApi response 
+## Expand parameter
+
+By default, only GraphQL fields with the `ID` type and the fields that are marked as `required` in the OpenApi response 
 are returned. If a required field in OpenApi is of type `object` in GraphQL, only the child fields of this type with the `ID` 
 type are returned by default. 
 
@@ -123,15 +128,15 @@ It is possible to expand a query with fields that are not returned by default by
 `x-dws-type: expand`. This parameter can be of type `string` or `array` and the values should refer to a field in GraphQL: 
 
 ```yaml
+x-dws-type: expand
 name: expand  
-  x-dws-type: expand
-  in: query
-  schema:
-    type: array
-    default: ['beers']
-    items:
-      type: string
-      enum: ['beers', 'beers.ingredients', 'beers.supplements']
+in: query
+schema:
+  type: array
+  default: ['beers']
+  items:
+    type: string
+    enum: ['beers', 'beers.ingredients', 'beers.supplements']
 ```
 
 In the example the expand parameter is used to include `beers` in the response by default. Since `beers` refers to an 
@@ -145,7 +150,8 @@ with `beers.ingredients` it is not necessary to provide a separate expand value 
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  
 
-# 1.1.5 Required fields
+## Required fields
+
 In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension 
 can be used to list fields that are not part of the response data but are required to evaluate the expression:
 
@@ -156,24 +162,26 @@ x-dws-query:
     - postalCode
 ```
 
-# 1.1.6 Request body
+## Request body
+
 In addition to request parameters, it is possible to use the HTTP request body to provide input with the `requestBody` element of an operation:
 ```yaml
-    get:
-      x-dws-query: query4
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                object3:
-                  $ref: '#/components/schemas/Object3'
+get:
+  x-dws-query: query4
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            object3:
+              $ref: '#/components/schemas/Object3'
 ```
 The `requestBody` only supports the `application/json` MediaType as content and should have a schema of type `object` with exactly 1 property. The name of the property is used to map the request body to the GraphQL argument of the corresponding query.
 
-# 1.1.7 Type mapping
+## Type mapping
+
 Type definitions in the schema are mapped to GraphQL types based on their name. For example, the following OpenAPI type 
 
 ```yaml
@@ -188,7 +196,8 @@ will be mapped to the `Beer` type defined in `schema.graphqls`:
 Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fields based on their name.
 When defining an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
-# 1.1.8 Envelope type
+## Envelope type
+
 It is also possible to add fields to an OpenApi response that are not in the GraphQL response. This is useful if you want 
 to enrich your response, for example in case of a `hal+json` response. The `_links` or `_embedded` objects you create are
 not part of the GraphQL response, but you want them to be part of the rest response. An example can be seen in
@@ -231,8 +240,10 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
-# 1.1.9 Response properties expression
+## Response properties expression
+
 By using a response property expression, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. An expression can be assigned to a property by adding the extension field `x-dws-expr` to a property of type `string`:
+
 ```yaml
 properties:
   identifier:
@@ -241,6 +252,7 @@ properties:
     type: string
     x-dws-expr: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
 ```
+
 The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. The expression is evaluated while translating the GraphQL response to the REST response and supports the following variables:
 * `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to the `application.yml`.
 * `fields.<property>`: A scalar field of the object containing the `x-dws-expr` property.
@@ -261,45 +273,51 @@ x-dws-expr:
 when both the expression defined in the `value` and the `fallback` field result in an error or null, dotwebstack falls back to the
 default value defined in the parent schema. If no default is defined, `null` is the default.   
 
-# 1.1.10 AllOf
+## AllOf
+
 It is possible to define an `allOf` property, the resulting property is the combined result of all underlying schema's:
 
 ```yaml
 brewery:
-    type: object
-    allOf: 
-      - $ref: '#/composed/schema/beer'
-      - type: object
-        required:
-          - identifier
-        properties:
-          identifier:
-            type: string
+  type: object
+  allOf: 
+    - $ref: '#/composed/schema/beer'
+    - type: object
+      required:
+        - identifier
+      properties:
+        identifier:
+          type: string
 ```  
 
 The response of brewery contains the combined set of required properties of both schema's defined under the `allOf` property. 
 Currently `anyOf` and `oneOf` are not supported.  
 
-# 1.1.11 Response headers
+## Response headers
+
 It is possible to return response headers in a DotWebStack response. Their configuration is similar to response properties: 
-```graphql
-  /breweries:
-    get:
-      x-dws-query: breweries
-      responses:
-        200:
-          ...
-          headers:
-            X-Pagination-Page:
-              schema:
-                type: string
-                x-dws-expr: '`args.pageSize`'
+
+```yaml
+/breweries:
+  get:
+    x-dws-query: breweries
+    responses:
+      200:
+        ...
+        headers:
+          X-Pagination-Page:
+            schema:
+              type: string
+              x-dws-expr: '`args.pageSize`'
 ```
+
 This configuration adds the `X-Pagination-Page` header to the response. Its value is set using an `x-dws-expr`, similar to response properties.
 
-# 1.1.12 Content negotiation
+## Content negotiation
+
 It is possible to configure (multiple) contents to allow different response types:
-```graphql
+
+```yaml
   /breweries:
     get:
       responses:
@@ -314,10 +332,11 @@ It is possible to configure (multiple) contents to allow different response type
               schema:
                 ...
 ```
+
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is provided, the default will be used.
 The default is set by using `x-dws-default: true` on a content configuration. 
 
-# 1.1.13 Default values
+## Default values
 
 It's possible to define default (static) values for OAS properties as shown below.
 
@@ -341,7 +360,8 @@ Brewery:
       x-dws-default: 'Brewery'
 ```
 
-# 1.1.14 Conditional include response objects
+## Conditional include response objects
+
 By using the `x-dws-include` extension, it is possible to decide with a condition whether the object needs to be included in the response. This is useful in the case when you are constructing an object with jexl evaluated properties. A condition can be assigned to a response object by adding the extension field `x-dws-include` to an object:
 ```yaml
 Brewery:
@@ -359,7 +379,8 @@ The content of `x-dws-include` should be a valid [JEXL](http://commons.apache.or
 * `<property>`: A scalar field of the object containing the `x-dws-include` property.
 * `<nestedobject>.<property>`: Same as above, but using the property of an nested object.
 
-# 1.1.15 Problem+json
+## Problem+json
+
 By using `application/problem+json` is it possible to return any error as `application/problem+json` content-type. The following properties can be used:
 
 - type
@@ -392,7 +413,8 @@ Example:
                     x-dws-expr: "`foo`"
 ```
 
-# 1.2 Templating
+## Templating
+
 In order to use templating, include the pebble templating module or create your own. For configuring a template for a response,
 configure a response like the following:
 ```graphql
@@ -412,9 +434,10 @@ configure a response like the following:
 ```
 The template file you are referring to, should be configured in ```config/templates/```. For more information on how to use pebble, see https://pebbletemplates.io.
 
-# 2 Application properties
+## Application properties
 
-# 2.1 OpenApi document publication
+### OpenApi document publication
+
 By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions. This way, anyone with access to your API can look up the OpenApi document that describes the API.
 
 It is also possible to configure a specific path to expose the OpenApi document on using the `apiDocPublicationPath` under the `openapi` section in the `application.yml` configuration file. The value of this property must be a string starting with a `/` followed by a valid path segment according to [RFC-3986](https://tools.ietf.org/html/rfc3986).
@@ -427,8 +450,8 @@ dotwebstack:
     apiDocPublicationPath: /openapi.yaml
 ```
 
+### Date formats
 
-# 2.2 Dateformats
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify
 the format and timezone in which dates and datetimes are shown in your response: 
 
@@ -440,9 +463,12 @@ dotwebstack:
       datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
       timezone: Europe/Amsterdam
 ```
-# 2.3 Serialization of null fields
+
+### Serialization of null fields
+
 `dotwebstack.openapi.serializeNull` is an optional property that can be set to true/false to include/exclude null fields in the openAPI response. By default, i.e. if this property is not set, null fields will be serialized.   
 
-# 2.4 Static Resources
+### Static Resources
+
 To use static resources, create a folder ```assets``` in the ```config``` dir. Place the desired assets in the ```assets``` folder, ex: ```config/assets/your-image.jpg```.
 The resource will become available on ```http://{your-dws-service}/assets/your-image.jpg```

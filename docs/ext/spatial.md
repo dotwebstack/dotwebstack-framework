@@ -1,22 +1,23 @@
-# 1 Ext-Spatial
-This extension can be used to include spatial functionality into a backend.
+# Extension module: `ext-spatial`
+
+This extension can be used to include geospatial functionality into a backend.
 
 The spatial extension can be included in a Spring Boot project with the following dependency:
+
 ```xml
-    <dependency>
-        <groupId>org.dotwebstack.framework</groupId>
-        <artifactId>ext-spatial</artifactId>
-        <version>${project.version}</version>
-    </dependency>
+<dependency>
+  <groupId>org.dotwebstack.framework</groupId>
+  <artifactId>ext-spatial</artifactId>
+</dependency>
 ```
 
-## 1.1 Schema type definitions
+## Schema type definitions
 
-### 1.1.1 Geometry & GeometryType
+### Geometry & GeometryType
 
-Geometry is a predefined GraphQl Object Type and GeometryType an Enum type.
+Geometry is a predefined GraphQL Object Type and GeometryType an Enum type.
 
-```
+```graphql
 type Geometry{
   type: GeometryType!
   asWKB: String!
@@ -32,8 +33,10 @@ enum GeometryType{
   MULTIPOLYGON
 }
 ```
+
 Do NOT include these in your `schema.graphqls` configuration, you can refer to them as shown in the next example.
-```
+
+```graphql
 type Brewery {
   identifier: ID!
   name: String!
@@ -47,20 +50,23 @@ type Brewery {
 
 Please check backend documentation for prerequisites and information about data storage.
 
-## 1.2 Query options
+## Query options
 
-### 1.2.1 GeometryType conversion
+### GeometryType conversion
 
 It is possible to convert certain GeometryTypes. Add `( type : Geometry )` to Geometry in `schema.graphqls`.
-```
+
+```graphql
 type Brewery {
   identifier: ID!
   name: String!
   geometry ( type : Geometry ): Geometry
 }
 ```
+
 Query example:
-```
+
+```graphql
 {
   breweries {
     identifier
@@ -72,6 +78,7 @@ Query example:
   }
 }
 ```
+
 Conversions that are possible:
 - Point -> MultiPoint
 - MultiPoint -> Point (centroid)

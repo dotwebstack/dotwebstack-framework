@@ -1,10 +1,10 @@
-# 1. Backend-Rdf4j
+# Backend module: `backend-rdf4j`
 
-## 1.1 Setup
+## Setup
 
-The following snippet from an `dotwebstack.yaml` file shows the configuration properties for an Rdf4j backend:
+The following snippet from an `dotwebstack.yaml` file shows the configuration properties for an RDF4J backend:
 
-```yml
+```yaml
 shape:
   graph: https://github.com/dotwebstack/beer/shapes
   prefix: https://github.com/dotwebstack/beer/shapes#
@@ -38,11 +38,11 @@ type Brewery {
 }
 ```
 
-Now you need to write a configuration to translate your GraphQL types to an Rdf4j (`sparql`) query. The Rdf4j backend
-uses a `shapes` file to define the mapping between the core GraphQL and the Rdf4j compatible backend. An example of 
+Now you need to write a configuration to translate your GraphQL types to an RDF4J (`sparql`) query. The RDF4J backend
+uses a `shapes` file to define the mapping between the core GraphQL and the RDF4J compatible backend. An example of 
 this mapping can be seen in the following `shapes` file, that contains a subset of brewery example:
 
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
@@ -74,7 +74,7 @@ of the node shape. This means that the `Brewery` from the `schema.graphqls` file
 node shape. Fields from `schema.graphqls` file are mapped on property shapes from the 'shapes' file based on the 
 'sh:name' property.
 
-With these configuration files DotWebStack is now able to generate the Rdf4j query to retrieve the identifier from the
+With these configuration files DotWebStack is now able to generate the RDF4J query to retrieve the identifier from the
 Brewery from the data. In case of this example an in memory database is used that is created with the following data:
 
 ```trig
@@ -90,7 +90,11 @@ Brewery from the data. In case of this example an in memory database is used tha
 When the following query is executed:
 
 ```graphql
-  breweries{identifier}
+{
+  breweries {
+    identifier
+  }
+}
 ```
 
 it will result in the following response:
@@ -113,7 +117,7 @@ We currently only supports the local in-memory RDF4J repository which can be loa
 
 ## 1.2 Field selections
 
-The Rdf4j backend supports GraphQL field selections on any level within a graph. 
+The RDF4J backend supports GraphQL field selections on any level within a graph. 
 
 ```graphql
 {
@@ -127,11 +131,9 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 }
 ```
 
-### 1.2.1 aggregationOf
-
 An `aggregationOf` field configuration is not supported
 
-## 1.3 Property paths
+## Property paths
 
 [W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)
 
@@ -143,7 +145,7 @@ in the following paragraphs.
 The *predicate path* is the simplest of the paths. These are the building blocks for each property path. It describes one predicate 
 to retrieve and object from the current subject. 
  
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
@@ -173,7 +175,7 @@ beer:shapes {
 The *alternative path* describes the option get either the object from this predicate `OR` the object from that predicate.
 You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions. 
    
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix schema: <http://schema.org/> .
 @prefix beer: <https://github.com/dotwebstack/beer/> .
@@ -202,7 +204,7 @@ beer:shapes {
 The *sequence path* describes the possibility to chain multiple predicates. You can use this to access the properties of 
 underlying objects. For example when you are not interested in the parent per se, but more in his or her name you can use:
 
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
@@ -241,7 +243,7 @@ The *inverse path* traverses the predicate in the opposite direction. This can b
 in one direction, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
  but not from a parent to a child. In that case you can use the following inverse path to obtain the name of the child:
  
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
@@ -273,7 +275,7 @@ as well.
 The *one or more* path finds a connection between subjects and objects using the predicate, and matching the pattern one or more times.
 For example, finding the names of all people a person knows either directly, or through another person using the `ex:knows` predicate:
 
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
@@ -302,7 +304,7 @@ beer:shapes {
 The *zero or more* path works in the same way as the 'one or more' path and allows paths of
 length 0.
 
-```shacl
+```trig
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
@@ -382,7 +384,7 @@ in order for an object to fit the shape.
 ## 1.9 NodeShape Inheritance
 It is possible to let one or more `sub` NodeShapes inherit PropertyShapes of a `super` NodeShape:
 
-```shacl
+```trig
  ex:Pet a sh:NodeShape ;
     sh:class owl:Thing ;
     sh:name "Animal" ;
@@ -422,7 +424,8 @@ WKT literals are supported.
 Add `sh:datatype ogc:wktLiteral` to propertyShape in order for the conversion to take place. For an example implementation see: `example/example-rdf4j`.
 
 Example:
-```
+
+```trig
    beer_sh:Brewery_geometry a sh:PropertyShape ;
      sh:path ogc:asWKT ;
      sh:name "geometry" ;

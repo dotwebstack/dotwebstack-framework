@@ -9,7 +9,7 @@ Framework for publishing rich data services.
 
 ## Documentation
 
-Documentation website: https://dotwebstack.github.io/dotwebstack-framework
+Documentation website: https://dotwebstack.github.io/dotwebstack-framework/
 
 ## Links
 
