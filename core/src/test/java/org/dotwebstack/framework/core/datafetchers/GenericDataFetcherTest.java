@@ -64,7 +64,6 @@ class GenericDataFetcherTest {
   @BeforeEach
   void doBeforeEach() {
     when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Brewery", typeConfiguration));
-    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Beers", typeConfiguration));
 
     when(graphQlFieldDefinitionMock.getName()).thenReturn("brewery");
 
@@ -161,6 +160,7 @@ class GenericDataFetcherTest {
         .name("Beers")
         .build());
 
+    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Beers", typeConfiguration));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
