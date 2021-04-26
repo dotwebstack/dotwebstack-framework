@@ -64,6 +64,8 @@ class GenericDataFetcherTest {
   @BeforeEach
   void doBeforeEach() {
     when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Brewery", typeConfiguration));
+    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Beers", typeConfiguration));
+
     when(graphQlFieldDefinitionMock.getName()).thenReturn("brewery");
 
     genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader));
@@ -151,6 +153,24 @@ class GenericDataFetcherTest {
     assertThat(result, notNullValue());
     assertThat(result.getData()
         .entrySet(), equalTo(data.entrySet()));
+  }
+
+  @Test
+  void get_returnsDatafetcherResult_ForBatchLoadManyQueryOperation() {
+    GraphQLOutputType outputType = GraphQLList.list(GraphQLObjectType.newObject()
+        .name("Beers")
+        .build());
+
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
+    when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
+    when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
+
+    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of());
+
+    Future<?> future = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(future, instanceOf(Future.class));
   }
 
   @Test
