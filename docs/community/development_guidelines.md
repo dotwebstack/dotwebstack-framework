@@ -1,4 +1,5 @@
-# General
+# Development guidelines 
+
 This page describes the development guidelines that should be followed when contributing to the project.
 
 # Code style
