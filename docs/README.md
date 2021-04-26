@@ -11,7 +11,7 @@ DotWebStack provides a lot of advantages compared to other solutions:
 
 ## Features
 
-- Backend-agnostic. Official implementations available: [JSON](./backend/json.md), [PostgreSQL](./backend/postgres.md) and [RDF4J](./backend/rdf4j.md))
+- Backend-agnostic. Official implementations available: [JSON](./backend/json.md), [PostgreSQL](./backend/postgres.md) and [RDF4J](./backend/rdf4j.md)
 - Different service types, such as [REST](./service/openapi.md) and [GraphQL](./service/graphql.md)
 - Smart backend fetching-algorithm for optimal performance
 - Hypermedia controls (configuration-based)
