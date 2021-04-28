@@ -28,6 +28,8 @@ import reactor.util.function.Tuple2;
 @Slf4j
 public final class GenericDataFetcher implements DataFetcher<Object> {
 
+  public static final Map<String, Object> NULL_MAP = Map.of("id", "null");
+
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final Collection<BackendDataLoader> backendDataLoaders;
@@ -128,7 +130,8 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
           .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
               .collectList()
-              .map(list -> Map.entry(group.key(), list)))
+              .map(list -> Map.entry(group.key(), list.stream()
+                  .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
           .collectMap(Map.Entry::getKey, Map.Entry::getValue)
           .toFuture());
     }

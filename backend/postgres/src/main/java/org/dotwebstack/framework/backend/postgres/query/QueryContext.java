@@ -9,12 +9,16 @@ public class QueryContext {
   @Getter
   private final DataFetchingFieldSelectionSet selectionSet;
 
+  @Getter
+  private final boolean useNullMapWhenNotFound;
+
   private final AtomicInteger tableCounter = new AtomicInteger();
 
   private final AtomicInteger selectCounter = new AtomicInteger();
 
-  public QueryContext(DataFetchingFieldSelectionSet selectionSet) {
+  public QueryContext(DataFetchingFieldSelectionSet selectionSet, boolean useNullMapWhenNotFound) {
     this.selectionSet = selectionSet;
+    this.useNullMapWhenNotFound = useNullMapWhenNotFound;
   }
 
   public String newTableAlias() {

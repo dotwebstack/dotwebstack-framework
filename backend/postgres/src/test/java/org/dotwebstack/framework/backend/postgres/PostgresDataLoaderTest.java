@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -199,7 +200,8 @@ class PostgresDataLoaderTest {
         .keyColumnNames(Map.of("identifier", "x1"))
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class))).thenReturn(queryHolder);
+    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), eq(true)))
+        .thenReturn(queryHolder);
 
     LoadEnvironment loadEnvironment = mockLoadEnvironment();
 
@@ -216,7 +218,7 @@ class PostgresDataLoaderTest {
 
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).all();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class));
+    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), eq(true));
   }
 
   @SuppressWarnings("unchecked")
