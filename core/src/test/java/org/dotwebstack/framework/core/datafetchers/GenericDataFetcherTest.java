@@ -45,6 +45,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -213,19 +215,48 @@ class GenericDataFetcherTest {
   }
 
   @Test
-  void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation() {
+  @SuppressWarnings("unchecked")
+  void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation() throws Exception {
     GraphQLOutputType outputType = createBreweryType();
 
+    KeyCondition breweryOneKey = TestKeyCondition.builder()
+        .valueMap(Map.of("id", "id-1"))
+        .build();
+    Map<String, Object> breweryOneData = Map.of("id", "id-1");
+
+    KeyCondition breweryTwoKey = TestKeyCondition.builder()
+        .valueMap(Map.of("id", "id-2"))
+        .build();
+    Map<String, Object> breweryTwoData = Map.of("id", "id-2");
+
+    List<Tuple2<KeyCondition, Map<String, Object>>> breweries =
+        List.of(Tuples.of(breweryOneKey, breweryOneData), Tuples.of(breweryTwoKey, breweryTwoData));
+
+    when(backendDataLoader.batchLoadSingle(any(), any())).thenReturn(Flux.fromIterable(breweries));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
 
-    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of());
+    DataFetchingEnvironment dataFetchingEnvironment =
+        createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
+    Future<?> breweryOneFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
-    Future<?> future = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+    dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryTwoKey);
+    Future<?> breweryTwoFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
-    assertThat(future, instanceOf(Future.class));
+    DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/brewery");
+
+    dataLoader.dispatch();
+
+    DataFetcherResult<Map<String, Object>> futureResult =
+        (DataFetcherResult<Map<String, Object>>) breweryOneFuture.get();
+    assertThat(futureResult.getData()
+        .get("id"), is("id-1"));
+
+    futureResult = (DataFetcherResult<Map<String, Object>>) breweryTwoFuture.get();
+    assertThat(futureResult.getData()
+        .get("id"), is("id-2"));
   }
 
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
