@@ -193,10 +193,10 @@ class GenericDataFetcherTest {
 
     DataFetchingEnvironment dataFetchingEnvironment =
         createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithBeer);
-    Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+    final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithoutBeer);
-    Future<?> futureWithoutBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+    final Future<?> futureWithoutBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/beers");
 
@@ -240,10 +240,10 @@ class GenericDataFetcherTest {
 
     DataFetchingEnvironment dataFetchingEnvironment =
         createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
-    Future<?> breweryOneFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+    final Future<?> breweryOneFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryTwoKey);
-    Future<?> breweryTwoFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+    final Future<?> breweryTwoFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/brewery");
 
