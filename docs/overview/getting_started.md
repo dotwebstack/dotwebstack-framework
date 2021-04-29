@@ -1,11 +1,10 @@
 # Getting started
 
-To get started with DotWebStack Framework, create a new Spring project and add dependencies to one or more of
-the service modules, one or more of the backend modules and spring-boot-starter-webflux. In maven
+To get started with DotWebStack Framework, create a new Spring Boot project and add dependencies to one or more of
+the service modules, one or more of the backend modules and `spring-boot-starter-webflux`. In Maven,
 this would look something like this:
 
 ```xml
-
 <dependencies>
   <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -26,7 +25,6 @@ You then need to add a Spring application with a component scan on the `org.dotw
 package:
 
 ```java
-
 @SpringBootApplication
 @ComponentScan("org.dotwebstack.framework")
 public class ExampleApplication {

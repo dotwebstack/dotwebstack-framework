@@ -1,8 +1,8 @@
 # Service module: `service-graphql`
 
-This service can be used to expose the internal GraphQL service as a web service.
+This service can be used to expose the internal GraphQL service as a GraphQL HTTP service.
 
-The graphql service can be included in a Spring Boot project with the following dependency:
+The GraphQL service module can be included in a Spring Boot project with the following dependency:
 
 ```xml
 <dependency>
@@ -26,7 +26,7 @@ Aggregate is a predefined GraphQL Object type see your corresponding backend rea
 ```graphql
 type Aggregate {
   count(field: String!, distinct: Boolean = false): Int!
-  stringJoin( field : String!, distinct : Boolean = false ): String!
+  stringJoin(field: String!, distinct: Boolean = false): String!
 
   intSum(field: String!): Int
   intMin(field: String!): Int

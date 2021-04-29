@@ -54,13 +54,13 @@ Please check backend documentation for prerequisites and information about data 
 
 ### GeometryType conversion
 
-It is possible to convert certain GeometryTypes. Add `( type : Geometry )` to Geometry in `schema.graphqls`.
+It is possible to convert certain GeometryTypes. Add `(type: GeometryType)` to Geometry in `schema.graphqls`.
 
 ```graphql
 type Brewery {
   identifier: ID!
   name: String!
-  geometry(type: Geometry): Geometry
+  geometry(type: GeometryType): Geometry
 }
 ```
 
@@ -80,9 +80,9 @@ Query example:
 ```
 
 Conversions that are possible:
-- Point -> MultiPoint
-- MultiPoint -> Point (centroid)
-- LineString -> MultiLineString, Point (centroid)
-- MultiLineString -> Point (centroid)
-- Polygon -> MultiPolygon, Point (centroid)
-- MultiPolygon -> Point (centroid)
+- `Point` => `MultiPoint`
+- `MultiPoint` => `Point` (centroid)
+- `LineString` => `MultiLineString`, `Point` (centroid)
+- `MultiLineString` => `Point` (centroid)
+- `Polygon` => `MultiPolygon`, `Point` (centroid)
+- `MultiPolygon` => `Point` (centroid)
