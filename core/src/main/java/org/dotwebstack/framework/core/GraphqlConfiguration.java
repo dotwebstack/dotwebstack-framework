@@ -4,6 +4,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
+import graphql.language.FieldDefinition;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectTypeExtensionDefinition;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
@@ -65,8 +68,15 @@ public class GraphqlConfiguration {
 
     ObjectTypesConfiguration objectTypesConfiguration = objectMapper.readValue(resource.get().getInputStream(), ObjectTypesConfiguration.class);
 
-    objectTypesConfiguration.getObjectTypes();
-
+    TypeDefinitionRegistry typeDefinitionRegistry = new TypeDefinitionRegistry();
+    ObjectTypeDefinition objectTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+            .fieldDefinition(FieldDefinition.newFieldDefinition()
+                    .name()
+                    .type()
+                    .build())
+            .fieldDefinitions()
+            .build();
+    typeDefinitionRegistry.add(objectTypeDefinition);
     return null;
   }
 

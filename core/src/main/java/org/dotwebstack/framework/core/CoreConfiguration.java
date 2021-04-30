@@ -29,7 +29,7 @@ public class CoreConfiguration {
   private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
-  public DotWebStackConfiguration dotWebStackConfiguration(TypeDefinitionRegistry typeDefinitionRegistry) {
+  public DotWebStackConfiguration dotWebStackConfiguration() {
     // TODO: refactor matching? Annotation-based?
     ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
@@ -58,14 +58,14 @@ public class CoreConfiguration {
             throw invalidConfigurationException("Config file contains validation errors: {}", violations);
           }
 
-          configuration.getObjectTypes()
-              .keySet()
-              .stream()
-              .map(typeDefinitionRegistry::getType)
-              .map(Optional::get)
-              .forEach(typeDefinition -> configuration.getObjectTypes()
-                  .get(typeDefinition.getName())
-                  .init(configuration.getObjectTypes(), (ObjectTypeDefinition) typeDefinition));
+//          configuration.getObjectTypes()
+//              .keySet()
+//              .stream()
+//              .map(typeDefinitionRegistry::getType)
+//              .map(Optional::get)
+//              .forEach(typeDefinition -> configuration.getObjectTypes()
+//                  .get(typeDefinition.getName())
+//                  .init(configuration.getObjectTypes(), (ObjectTypeDefinition) typeDefinition));
 
           return configuration;
         })
