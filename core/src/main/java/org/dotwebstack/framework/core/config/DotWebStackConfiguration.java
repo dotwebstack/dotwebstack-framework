@@ -18,7 +18,7 @@ public class DotWebStackConfiguration {
 
   @NotNull
   @Valid
-  private Map<String, AbstractTypeConfiguration<?>> typeMapping;
+  private Map<String, AbstractTypeConfiguration<?>> objectTypes;
 
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(LoadEnvironment loadEnvironment) {
     return getTypeConfiguration(loadEnvironment.getExecutionStepInfo());
@@ -39,7 +39,7 @@ public class DotWebStackConfiguration {
 
   @SuppressWarnings("unchecked")
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(String typeName) {
-    return Optional.ofNullable(typeMapping.get(typeName))
+    return Optional.ofNullable(objectTypes.get(typeName))
         .map(type -> {
           type.setName(typeName);
           return type;

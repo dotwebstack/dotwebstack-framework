@@ -58,14 +58,14 @@ public class CoreConfiguration {
             throw invalidConfigurationException("Config file contains validation errors: {}", violations);
           }
 
-          configuration.getTypeMapping()
+          configuration.getObjectTypes()
               .keySet()
               .stream()
               .map(typeDefinitionRegistry::getType)
               .map(Optional::get)
-              .forEach(typeDefinition -> configuration.getTypeMapping()
+              .forEach(typeDefinition -> configuration.getObjectTypes()
                   .get(typeDefinition.getName())
-                  .init(configuration.getTypeMapping(), (ObjectTypeDefinition) typeDefinition));
+                  .init(configuration.getObjectTypes(), (ObjectTypeDefinition) typeDefinition));
 
           return configuration;
         })

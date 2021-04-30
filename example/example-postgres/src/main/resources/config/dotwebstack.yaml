@@ -1,62 +1,66 @@
-typeMapping:
+objectTypes:
   Beer:
     backend: postgres
     table: dbeerpedia.beers
     keys:
       - field: identifier
     fields:
-      brewery:
-        joinColumns:
-          - name: brewery
-            referencedField: identifier
-      ingredients:
-        joinTable:
-          name: dbeerpedia.beers_ingredients
-          joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: identifier
-      ingredientAgg:
-        aggregationOf: Ingredient
-        joinTable:
-          name: db.beer_ingredient
-          joinColumns:
-            - name: beer_identifier
-              referencedField: identifier_beer
-          inverseJoinColumns:
-            - name: ingredient_identifier
-              referencedField: identifier_ingredient
+      identifier:
+        type: String
+      name:
+        type: String
+#      brewery:
+#        joinColumns:
+#          - name: brewery
+#            referencedField: identifier
+#      ingredients:
+#        joinTable:
+#          name: dbeerpedia.beers_ingredients
+#          joinColumns:
+#            - name: beers_identifier
+#              referencedField: identifier
+#          inverseJoinColumns:
+#            - name: ingredients_identifier
+#              referencedField: identifier
+#      ingredientAgg:
+#        aggregationOf: Ingredient
+#        joinTable:
+#          name: db.beer_ingredient
+#          joinColumns:
+#            - name: beer_identifier
+#              referencedField: identifier_beer
+#          inverseJoinColumns:
+#            - name: ingredient_identifier
+#              referencedField: identifier_ingredient
 
-  Ingredient:
-    backend: postgres
-    table: dbeerpedia.ingredients
-    keys:
-      - field: identifier
+#  Ingredient:
+#    backend: postgres
+#    table: dbeerpedia.ingredients
+#    keys:
+#      - field: identifier
 
-  Brewery:
-    backend: postgres
-    table: dbeerpedia.breweries
-    keys:
-      - field: identifier
-    fields:
-      postalAddress:
-        joinColumns:
-          - name: postal_address
-            referencedField: identifier
-      visitAddress:
-        joinColumns:
-          - name: visit_address
-            referencedField: identifier
-      beers:
-        mappedBy: brewery
-      beerAgg:
-        aggregationOf: Beer
-        mappedBy: brewery
+#  Brewery:
+#    backend: postgres
+#    table: dbeerpedia.breweries
+#    keys:
+#      - field: identifier
+#    fields:
+#      postalAddress:
+#        joinColumns:
+#          - name: postal_address
+#            referencedField: identifier
+#      visitAddress:
+#        joinColumns:
+#          - name: visit_address
+#            referencedField: identifier
+#      beers:
+#        mappedBy: brewery
+#      beerAgg:
+#        aggregationOf: Beer
+#        mappedBy: brewery
 
-  Address:
-    backend: postgres
-    table: dbeerpedia.addresses
-    keys:
-      - field: identifier
+#  Address:
+#    backend: postgres
+#    table: dbeerpedia.addresses
+#    keys:
+#      - field: identifier

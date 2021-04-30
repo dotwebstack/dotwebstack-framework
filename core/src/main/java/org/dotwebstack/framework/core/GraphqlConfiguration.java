@@ -2,17 +2,15 @@ package org.dotwebstack.framework.core;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.WiringFactory;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +20,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.config.ObjectTypesConfiguration;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
@@ -33,7 +32,10 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class GraphqlConfiguration {
 
-  private static final String SCHEMA_FILE = "schema.graphqls";
+   private static final String SCHEMA_FILE = "schema.graphqls";
+//  private static final String SCHEMA_FILE = "dotwebstack.yaml";
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
@@ -55,15 +57,17 @@ public class GraphqlConfiguration {
   @Profile("!test")
   @Bean
   public TypeDefinitionRegistry typeDefinitionRegistry() throws IOException {
-    Optional<Resource> schemaLocationResource = ResourceLoaderUtils.getResource(SCHEMA_FILE);
-    if (schemaLocationResource.isEmpty() || !schemaLocationResource.get()
+    Optional<Resource> resource = ResourceLoaderUtils.getResource(SCHEMA_FILE);
+    if (resource.isEmpty() || !resource.get()
         .exists()) {
       throw invalidConfigurationException("Graphql schema not found on location: {}", SCHEMA_FILE);
     }
-    Reader reader = new InputStreamReader(schemaLocationResource.get()
-        .getInputStream());
 
-    return new SchemaParser().parse(reader);
+    ObjectTypesConfiguration objectTypesConfiguration = objectMapper.readValue(resource.get().getInputStream(), ObjectTypesConfiguration.class);
+
+    objectTypesConfiguration.getObjectTypes();
+
+    return null;
   }
 
   @Bean
