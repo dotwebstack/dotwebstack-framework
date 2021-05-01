@@ -48,7 +48,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-
 @ExtendWith(MockitoExtension.class)
 class GenericDataFetcherTest {
 

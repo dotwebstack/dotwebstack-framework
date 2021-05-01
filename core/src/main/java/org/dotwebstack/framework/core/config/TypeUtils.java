@@ -15,7 +15,7 @@ public final class TypeUtils {
   }
 
   public static Type<ListType> newListType(String name) {
-    return ListType.newListType(newType(name))
+    return ListType.newListType(newNonNullableType(name))
         .build();
   }
 
