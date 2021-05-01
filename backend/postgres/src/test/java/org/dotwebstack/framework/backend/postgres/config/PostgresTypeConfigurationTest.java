@@ -39,7 +39,7 @@ class PostgresTypeConfigurationTest {
   private static final String BEER_TYPE_NAME = "Beer";
 
   @Mock
-  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+  Map<String, AbstractTypeConfiguration<?>> objectTypesMock;
 
   @Test
   @SuppressWarnings({"rawtypes", "unchecked"})
@@ -52,9 +52,9 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
     AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
 
-    when(typeMappingMock.get(BEER_TYPE_NAME)).thenReturn(postgresTypeConfiguration);
+    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(postgresTypeConfiguration);
 
-    assertDoesNotThrow(() -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(objectTypesMock, objectTypeDefinition));
   }
 
   @Test
@@ -66,7 +66,7 @@ class PostgresTypeConfigurationTest {
 
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
-    assertDoesNotThrow(() -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(objectTypesMock, objectTypeDefinition));
   }
 
   @Test
@@ -79,7 +79,7 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(objectTypesMock, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
@@ -95,7 +95,7 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(objectTypesMock, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
@@ -113,10 +113,10 @@ class PostgresTypeConfigurationTest {
 
     AbstractTypeConfiguration testTypeConfiguration = new TestTypeConfiguration();
 
-    when(typeMappingMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
+    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(objectTypesMock, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is(String.format("Target objectType must be an 'PostgresTypeConfiguration' but is an '%s'.",

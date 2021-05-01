@@ -69,7 +69,7 @@ class QueryBuilderTest {
   private DotWebStackConfiguration dotWebStackConfiguration;
 
   @Mock
-  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+  Map<String, AbstractTypeConfiguration<?>> objectTypesMock;
 
   private QueryBuilder queryBuilder;
 
@@ -323,7 +323,6 @@ class QueryBuilderTest {
     assertThat(result.get("name"), is("Beer 1"));
     assertThat(result.get("identifier"), is("AAA"));
   }
-
 
 
   @Test
@@ -586,7 +585,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(objectTypesMock, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -624,6 +623,6 @@ class QueryBuilderTest {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void postgresTypeConfigurationMock() {
     AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
-    when(typeMappingMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
+    when(objectTypesMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
   }
 }

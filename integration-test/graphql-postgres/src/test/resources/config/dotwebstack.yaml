@@ -1,4 +1,4 @@
-typeMapping:
+objectTypes:
   Beer:
     table: db.beer
     backend: postgres

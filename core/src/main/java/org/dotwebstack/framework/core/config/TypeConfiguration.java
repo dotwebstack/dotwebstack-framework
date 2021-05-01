@@ -13,7 +13,7 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   Map<String, T> getFields();
 
-  void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition);
+  void init(Map<String, AbstractTypeConfiguration<?>> objectTypes, ObjectTypeDefinition objectTypeDefinition);
 
   KeyCondition getKeyCondition(DataFetchingEnvironment environment);
 

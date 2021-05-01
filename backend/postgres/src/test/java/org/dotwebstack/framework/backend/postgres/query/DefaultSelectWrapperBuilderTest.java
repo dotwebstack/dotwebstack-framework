@@ -43,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DefaultSelectWrapperBuilderTest {
 
   @Mock
-  private Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+  private Map<String, AbstractTypeConfiguration<?>> objectTypesMock;
 
   @Mock
   private DSLContext dslContext;
@@ -61,11 +61,11 @@ class DefaultSelectWrapperBuilderTest {
   @BeforeEach
   @SuppressWarnings("unchecked")
   public void setup() {
-    when(typeMappingMock.get("Beer")).thenReturn((AbstractTypeConfiguration) new PostgresTypeConfiguration());
+    when(objectTypesMock.get("Beer")).thenReturn((AbstractTypeConfiguration) new PostgresTypeConfiguration());
 
     PostgresTypeConfiguration beerTypeConfiguration = createBeerTypeConfiguration();
 
-    when(typeMappingMock.get("Beer")).thenReturn((AbstractTypeConfiguration) beerTypeConfiguration);
+    when(objectTypesMock.get("Beer")).thenReturn((AbstractTypeConfiguration) beerTypeConfiguration);
   }
 
   @Test
@@ -111,7 +111,7 @@ class DefaultSelectWrapperBuilderTest {
 
     ingredientTypeConfiguration.setFields(fieldsMap);
 
-    ingredientTypeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Ingredient")
+    ingredientTypeConfiguration.init(objectTypesMock, newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name("identifier_ingredient")
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -139,7 +139,7 @@ class DefaultSelectWrapperBuilderTest {
 
     ingredientTypeConfiguration.setFields(fieldsMap);
 
-    ingredientTypeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Beer")
+    ingredientTypeConfiguration.init(objectTypesMock, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name("identifier_beer")
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())

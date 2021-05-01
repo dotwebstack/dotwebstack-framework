@@ -4,11 +4,8 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -31,9 +28,9 @@ public class CoreConfiguration {
   @Bean
   public DotWebStackConfiguration dotWebStackConfiguration() {
     // TODO: refactor matching? Annotation-based?
-    ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+    var scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
-    ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    var objectMapper = new ObjectMapper(new YAMLFactory());
 
     scanner.findCandidateComponents("org.dotwebstack.framework.backend")
         .stream()
@@ -57,15 +54,6 @@ public class CoreConfiguration {
           if (!violations.isEmpty()) {
             throw invalidConfigurationException("Config file contains validation errors: {}", violations);
           }
-
-//          configuration.getObjectTypes()
-//              .keySet()
-//              .stream()
-//              .map(typeDefinitionRegistry::getType)
-//              .map(Optional::get)
-//              .forEach(typeDefinition -> configuration.getObjectTypes()
-//                  .get(typeDefinition.getName())
-//                  .init(configuration.getObjectTypes(), (ObjectTypeDefinition) typeDefinition));
 
           return configuration;
         })

@@ -21,7 +21,6 @@ import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 
-
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
 public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfiguration> implements TypeConfiguration<T> {
@@ -37,7 +36,7 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   @Valid
   protected Map<String, T> fields = new HashMap<>();
 
-  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {}
+  public void init(Map<String, AbstractTypeConfiguration<?>> objectTypes, ObjectTypeDefinition objectTypeDefinition) {}
 
   public KeyCondition getKeyCondition(String fieldName) {
     if (!fields.containsKey(fieldName)) {

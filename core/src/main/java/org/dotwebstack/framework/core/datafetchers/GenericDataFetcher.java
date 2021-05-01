@@ -113,7 +113,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       throw new IllegalArgumentException("Output is not an object type.");
     }
 
-    return ofNullable(dotWebStackConfiguration.getTypeMapping()
+    return ofNullable(dotWebStackConfiguration.getObjectTypes()
         .get(rawType.getName()));
   }
 

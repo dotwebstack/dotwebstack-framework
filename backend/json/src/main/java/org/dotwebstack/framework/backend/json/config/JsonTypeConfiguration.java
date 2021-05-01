@@ -30,7 +30,7 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   private String file;
 
   @Override
-  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
+  public void init(Map<String, AbstractTypeConfiguration<?>> objectTypes, ObjectTypeDefinition objectTypeDefinition) {
     fields.entrySet()
         .stream()
         .filter(entry -> Objects.nonNull(entry.getValue()))
