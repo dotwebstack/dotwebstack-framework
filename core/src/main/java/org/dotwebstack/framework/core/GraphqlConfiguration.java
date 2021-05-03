@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core;
 
 import graphql.GraphQL;
 import graphql.language.FieldDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.Type;
 import graphql.schema.GraphQLSchema;
@@ -18,8 +19,12 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +34,9 @@ import org.springframework.context.annotation.Profile;
 @Slf4j
 @Configuration
 public class GraphqlConfiguration {
+  private static final String QUERY_TYPE_NAME = "Query";
+
+  private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
@@ -52,14 +60,14 @@ public class GraphqlConfiguration {
   public TypeDefinitionRegistry typeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration) {
     var typeDefinitionRegistry = new TypeDefinitionRegistry();
 
-    typeDefinitionRegistry.add(ObjectTypeDefinition.newObjectTypeDefinition()
-        .name("Query")
-        .fieldDefinition(FieldDefinition.newFieldDefinition()
-            .name("ping")
-            .type(TypeUtils.newNonNullableListType("Beer"))
-            .build())
-        .build());
+    addQueryTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+    addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
 
+    return typeDefinitionRegistry;
+  }
+
+  private void addObjectTypesToTypeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .forEach((name, objectType) -> {
           var objectTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
@@ -77,18 +85,82 @@ public class GraphqlConfiguration {
           objectType.init(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
         });
+  }
 
-    return typeDefinitionRegistry;
+  private void addQueryTypesToDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+
+    var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
+        .entrySet()
+        .stream()
+        .map(entry -> createFieldDefinition(entry.getKey(), entry.getValue(), dotWebStackConfiguration.getObjectTypes()
+            .get(entry.getValue()
+                .getType())))
+        .collect(Collectors.toList());
+
+    var queryTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+        .name(QUERY_TYPE_NAME)
+        .fieldDefinitions(
+            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
+        .build();
+
+    typeDefinitionRegistry.add(queryTypeDefinition);
+  }
+
+
+  private FieldDefinition createFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return FieldDefinition.newFieldDefinition()
+        .name(queryName)
+        .type(createType(queryConfiguration))
+        .inputValueDefinitions(queryConfiguration.getKeys()
+            .stream()
+            .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+            .collect(Collectors.toList()))
+        .build();
+  }
+
+  private FieldDefinition createDummyQueryFieldDefinition() {
+    return FieldDefinition.newFieldDefinition()
+        .name("dummy")
+        .type(TypeUtils.newType("String"))
+        .build();
+  }
+
+  private InputValueDefinition createInputValueDefinition(KeyConfiguration keyConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return InputValueDefinition.newInputValueDefinition()
+        .name(keyConfiguration.getField())
+        .type(createType(keyConfiguration.getField(), objectTypeConfiguration))
+        .build();
+  }
+
+  private static Type<?> createType(String key,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> typeConfiguration) {
+    AbstractFieldConfiguration fieldConfig = typeConfiguration.getFields()
+        .get(key);
+    return TypeUtils.newNonNullableType(fieldConfig.getType());
+  }
+
+  // TODO naamgeving: queryType vs QueryFieldConfiguration etc
+  private static Type<?> createType(QueryConfiguration queryConfiguration) {
+    var type = queryConfiguration.getType();
+
+    if (queryConfiguration.isList()) {
+      return queryConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
+    }
+
+    return queryConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
   private static Type<?> createType(FieldConfiguration fieldConfiguration) {
-    var name = fieldConfiguration.getType();
+    var type = fieldConfiguration.getType();
 
     if (fieldConfiguration.isList()) {
-      return fieldConfiguration.isNullable() ? TypeUtils.newListType(name) : TypeUtils.newNonNullableListType(name);
+      return fieldConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
     }
 
-    return fieldConfiguration.isNullable() ? TypeUtils.newType(name) : TypeUtils.newNonNullableType(name);
+    return fieldConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
   @Bean

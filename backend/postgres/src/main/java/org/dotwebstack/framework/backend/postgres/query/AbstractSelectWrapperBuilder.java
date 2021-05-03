@@ -70,10 +70,12 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
       Table<Record> finalParentTable = parentTable;
       Condition[] parentConditions = parentJoinTable.getInverseJoinColumns()
           .stream()
-          .map(inverseJoinColumn -> DSL.field(DSL.name(finalParentTable.getName(), inverseJoinColumn.getName()))
-              .eq(DSL.field(DSL.name(fromTable.getName(), typeConfiguration.getFields()
-                  .get(inverseJoinColumn.getField())
-                  .getColumn()))))
+          .map(inverseJoinColumn -> {
+            return DSL.field(DSL.name(finalParentTable.getName(), inverseJoinColumn.getName()))
+                .eq(DSL.field(DSL.name(fromTable.getName(), typeConfiguration.getFields()
+                    .get(inverseJoinColumn.getField())
+                    .getColumn())));
+          })
           .toArray(Condition[]::new);
 
       query.innerJoin(parentTable)

@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -19,6 +20,10 @@ public class DotWebStackConfiguration {
   @NotNull
   @Valid
   private Map<String, AbstractTypeConfiguration<?>> objectTypes;
+
+  // @NotNull
+  @Valid
+  private Map<String, QueryConfiguration> queries = new HashMap<>();
 
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(LoadEnvironment loadEnvironment) {
     return getTypeConfiguration(loadEnvironment.getExecutionStepInfo());

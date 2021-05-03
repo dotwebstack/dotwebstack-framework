@@ -1,3 +1,13 @@
+#queries:
+#  beer:
+#    type: Beer
+#    keys:
+#      - field: identifier
+#
+#  beerCollection:
+#    type: Beer
+#    list: true
+
 objectTypes:
   Beer:
     backend: postgres
@@ -27,16 +37,16 @@ objectTypes:
           inverseJoinColumns:
             - name: ingredients_identifier
               referencedField: identifier
-  #      ingredientAgg:
-  #        aggregationOf: Ingredient
-  #        joinTable:
-  #          name: db.beer_ingredient
-  #          joinColumns:
-  #            - name: beer_identifier
-  #              referencedField: identifier_beer
-  #          inverseJoinColumns:
-  #            - name: ingredient_identifier
-  #              referencedField: identifier_ingredient
+      ingredientAgg:
+        aggregationOf: Ingredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
 
   Ingredient:
     backend: postgres
@@ -78,9 +88,9 @@ objectTypes:
       beers:
         type: Beer
         mappedBy: brewery
-  #      beerAgg:
-  #        aggregationOf: Beer
-  #        mappedBy: brewery
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
 
   Address:
     backend: postgres
