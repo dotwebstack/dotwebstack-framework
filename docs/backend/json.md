@@ -2,8 +2,7 @@
 
 ## Setup
 
-The following snippet from a `dotwebstack.yaml` file shows the configuration properties for a JSON
-backend:
+The following snippet from a `dotwebstack.yaml` file shows the configuration properties for a JSON backend:
 
 ```yaml
 objectTypes:
@@ -36,20 +35,19 @@ You can provide a variety of JSONPath expressions to your needs in the queryPath
 
 You need to add a `schema.graphqls` file that defines the GraphQL schema.
 
-The following example shows the GraphQL description for several queries to retrieve data from a JSON
-file:
+The following example shows the GraphQL description for several queries to retrieve data from a JSON file:
 
 ```graphql
 type Query {
-    beers: [Beer!]!
-    breweries: [Brewery!]!
-    brewery(identifier: String! @key(field: "identifier")): Brewery
-    beer(identifier: String! @key(field: "identifier")): Beer
-    beers_by_country_and_name(country: String! @key,name: String! @key): [Beer!]!
+  beers: [Beer!]!
+  breweries: [Brewery!]!
+  brewery(identifier: String! @key(field: "identifier")): Brewery
+  beer(identifier: String! @key(field: "identifier")): Beer
+  beers_by_country_and_name(country: String! @key,name: String! @key): [Beer!]!
 }
 ```
 
-Notice that the `queries`, in the `schema.graphqls`, should exactly match the amount, and the names
-of the properties defined in the `queryPaths` property of the `dotwebstack.yaml`.
+Notice that the `queries`, in the `schema.graphqls`, should exactly match the amount, and the names of the properties
+defined in the `queryPaths` property of the `dotwebstack.yaml`.
 
 An `aggregationOf` field configuration is not supported.

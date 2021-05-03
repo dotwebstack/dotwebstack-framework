@@ -9,9 +9,10 @@ See https://pebbletemplates.io for documentation on Pebble templating syntax.
 Import the following dependency:
 
 ```xml
+
 <dependency>
-  <groupId>org.dotwebstack.framework</groupId>
-  <artifactId>templating-pebble</artifactId>
+    <groupId>org.dotwebstack.framework</groupId>
+    <artifactId>templating-pebble</artifactId>
 </dependency>
 ```
 
@@ -22,12 +23,14 @@ In order to create your own template files, create these in `config/templates/`.
 ## Template file variable references
 
 For this implementation, we have prefixed different values regarding the source of the values.
+
 - Values that are part of the result fields of the GraphQL query, are prefixed with: `fields.`
-- Values that are part of the input arguments of the GraphQL query, are prefixed with: `args.` (by default, the request URI is available as `args.request_uri`)
+- Values that are part of the input arguments of the GraphQL query, are prefixed with: `args.` (by default, the request
+  URI is available as `args.request_uri`)
 - Values that are part of the environment variables, are prefixed with: `env.`
 
-For example, in the example project we are referring to breweries. The name of the brewery is part of the result fields, as key `name`.
-In order to use this in the pebble template, we need to use `{{ fields.name }}`.
+For example, in the example project we are referring to breweries. The name of the brewery is part of the result fields,
+as key `name`. In order to use this in the pebble template, we need to use `{{ fields.name }}`.
 
 ## Custom filter
 
@@ -38,9 +41,10 @@ In order to create a custom Pebble filter, refer to: https://pebbletemplates.io/
 For integration of RDF4J with Pebble templating, an additional module is provided:
 
 ```xml
+
 <dependency>
-  <groupId>org.dotwebstack.framework</groupId>
-  <artifactId>templating-pebble-rdf4j</artifactId>
+    <groupId>org.dotwebstack.framework</groupId>
+    <artifactId>templating-pebble-rdf4j</artifactId>
 </dependency>
 ```
 
