@@ -96,8 +96,11 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(row -> queryHolder.getMapAssembler()
-            .apply(row));
+        .map(row -> {
+          System.out.println();
+          return queryHolder.getMapAssembler()
+              .apply(row);
+        });
   }
 
   @Override

@@ -1,3 +1,9 @@
+subscriptions:
+  beerSubscription:
+    type: Beer
+  brewerySubscription:
+    type: Brewery
+
 queries:
   beer:
     type: Beer

@@ -25,6 +25,7 @@ import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
+import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
@@ -62,7 +63,7 @@ public class GraphqlConfiguration {
 
     addQueryTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
-
+    addSubscriptionTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     return typeDefinitionRegistry;
   }
 
@@ -108,6 +109,41 @@ public class GraphqlConfiguration {
     typeDefinitionRegistry.add(queryTypeDefinition);
   }
 
+  private void addSubscriptionTypesToDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+
+    var subscriptionFieldDefinitions = dotWebStackConfiguration.getSubscriptions()
+        .entrySet()
+        .stream()
+        .map(entry -> createSubscriptionFieldDefinition(entry.getKey(), entry.getValue(),
+            dotWebStackConfiguration.getObjectTypes()
+                .get(entry.getValue()
+                    .getType())))
+        .collect(Collectors.toList());
+
+    if (!subscriptionFieldDefinitions.isEmpty()) {
+      var subscriptionTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+          .name(SUBSCRIPTION_TYPE_NAME)
+          .fieldDefinitions(subscriptionFieldDefinitions)
+          .build();
+
+      typeDefinitionRegistry.add(subscriptionTypeDefinition);
+    }
+  }
+
+  private FieldDefinition createSubscriptionFieldDefinition(String queryName,
+      SubscriptionConfiguration subscriptionConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return FieldDefinition.newFieldDefinition()
+        .name(queryName)
+        .type(createType(subscriptionConfiguration))
+        .inputValueDefinitions(subscriptionConfiguration.getKeys()
+            .stream()
+            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+            .collect(Collectors.toList()))
+        .build();
+  }
+
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return FieldDefinition.newFieldDefinition()
@@ -140,6 +176,10 @@ public class GraphqlConfiguration {
     AbstractFieldConfiguration fieldConfig = typeConfiguration.getFields()
         .get(key);
     return TypeUtils.newNonNullableType(fieldConfig.getType());
+  }
+
+  private static Type<?> createType(SubscriptionConfiguration subscriptionConfiguration) {
+    return TypeUtils.newNonNullableType(subscriptionConfiguration.getType());
   }
 
   // TODO naamgeving: queryType vs QueryFieldConfiguration etc

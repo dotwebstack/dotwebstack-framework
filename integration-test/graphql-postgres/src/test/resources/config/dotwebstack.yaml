@@ -1,3 +1,7 @@
+subscriptions:
+  beersSubscription:
+    type: Beer
+
 objectTypes:
   Beer:
     table: db.beer
@@ -5,11 +9,18 @@ objectTypes:
     keys:
       - field: identifier_beer
     fields:
+      identifier_beer:
+        type: ID
+      name:
+        type: String
       brewery:
+        type: Brewery
         joinColumns:
           - name: brewery
             referencedField: identifier_brewery
       ingredients:
+        type: Ingredient
+        list: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -19,6 +30,8 @@ objectTypes:
             - name: ingredient_code
               referencedColumn: code
       ingredient:
+        type: Ingredient
+        nullable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -44,7 +57,14 @@ objectTypes:
     keys:
       - field: identifier_ingredient
     fields:
+      identifier_ingredient:
+        type: ID
+      name:
+        type: String
       partOf:
+        type: Beer
+        list: true
+        nullable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -60,15 +80,28 @@ objectTypes:
     keys:
       - field: identifier_brewery
     fields:
+      identifier_brewery:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
       postalAddress:
+        type: Address
+        nullable: true
         joinColumns:
           - name: postal_address
             referencedField: identifier_address
       visitAddress:
+        type: Address
+        nullable: true
         joinColumns:
           - name: visit_address
             referencedField: identifier_address
       beers:
+        type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
       beerAgg:
         aggregationOf: Beer
@@ -80,5 +113,9 @@ objectTypes:
     keys:
       - field: identifier_address
     fields:
+      identifier_address:
+        type: ID
       street:
+        type: String
       city:
+        type: String
