@@ -1,12 +1,12 @@
-#queries:
-#  beer:
-#    type: Beer
-#    keys:
-#      - field: identifier
-#
-#  beerCollection:
-#    type: Beer
-#    list: true
+queries:
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+
+  beerCollection:
+    type: Beer
+    list: true
 
 objectTypes:
   Beer:

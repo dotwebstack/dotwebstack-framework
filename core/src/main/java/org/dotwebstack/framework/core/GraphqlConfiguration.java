@@ -93,9 +93,10 @@ public class GraphqlConfiguration {
     var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
         .entrySet()
         .stream()
-        .map(entry -> createFieldDefinition(entry.getKey(), entry.getValue(), dotWebStackConfiguration.getObjectTypes()
-            .get(entry.getValue()
-                .getType())))
+        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(),
+            dotWebStackConfiguration.getObjectTypes()
+                .get(entry.getValue()
+                    .getType())))
         .collect(Collectors.toList());
 
     var queryTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
@@ -107,15 +108,14 @@ public class GraphqlConfiguration {
     typeDefinitionRegistry.add(queryTypeDefinition);
   }
 
-
-  private FieldDefinition createFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
+  private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return FieldDefinition.newFieldDefinition()
         .name(queryName)
         .type(createType(queryConfiguration))
         .inputValueDefinitions(queryConfiguration.getKeys()
             .stream()
-            .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
             .collect(Collectors.toList()))
         .build();
   }
@@ -127,7 +127,7 @@ public class GraphqlConfiguration {
         .build();
   }
 
-  private InputValueDefinition createInputValueDefinition(KeyConfiguration keyConfiguration,
+  private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return InputValueDefinition.newInputValueDefinition()
         .name(keyConfiguration.getField())
