@@ -131,59 +131,59 @@ paths:
             items:
               type: string
               enum: ['address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class']
-        - name: name
-          in: query
-          explode: false
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-        - name: foundedAfter
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: foundedBefore
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: sort
-          in: header
-          x-dws-type: sort
-          required: true
-          schema:
-            type: array
-            default: ['name']
-            items:
-              type: string
-              enum: ['-address.subject', '-beers.name', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: pageSize
-          in: query
-          schema:
-            type: string
-        - name: withAddressSubject
-          in: query
-          schema:
-            type: string
-        - name: searchName
-          in: query
-          explode: false
-          required: false
-          schema:
-            type: array
-            items:
-              type: string
-        - name: searchPostalCode
-          in: query
-          schema:
-            type: string
+#        - name: name
+#          in: query
+#          explode: false
+#          required: false
+#          schema:
+#            type: array
+#            items:
+#              type: string
+#        - name: foundedAfter
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#        - name: foundedBefore
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#        - name: sort
+#          in: header
+#          x-dws-type: sort
+#          required: true
+#          schema:
+#            type: array
+#            default: ['name']
+#            items:
+#              type: string
+#              enum: ['-address.subject', '-beers.name', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
+#        - name: page
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+#        - name: pageSize
+#          in: query
+#          schema:
+#            type: string
+#        - name: withAddressSubject
+#          in: query
+#          schema:
+#            type: string
+#        - name: searchName
+#          in: query
+#          explode: false
+#          required: false
+#          schema:
+#            type: array
+#            items:
+#              type: string
+#        - name: searchPostalCode
+#          in: query
+#          schema:
+#            type: string
       responses:
         200:
           description: OK
@@ -194,15 +194,15 @@ paths:
             application/stream+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
-          headers:
-            X-Pagination-Limit:
-              schema:
-                type: integer
-                x-dws-expr: args.pageSize
-            X-Pagination-Page:
-              schema:
-                type: integer
-                x-dws-expr: args.page
+#          headers:
+#            X-Pagination-Limit:
+#              schema:
+#                type: integer
+#                x-dws-expr: args.pageSize
+#            X-Pagination-Page:
+#              schema:
+#                type: integer
+#                x-dws-expr: args.page
   /brewery/{identifier}:
     get:
       x-dws-query: brewery
