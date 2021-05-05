@@ -242,7 +242,8 @@ public class GraphqlConfiguration {
     var type = fieldArgumentConfiguration.getType();
 
     if (fieldArgumentConfiguration.isList()) {
-      return fieldArgumentConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
+      return fieldArgumentConfiguration.isNullable() ? TypeUtils.newListType(type)
+          : TypeUtils.newNonNullableListType(type);
     }
 
     return fieldArgumentConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
