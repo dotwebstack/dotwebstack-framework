@@ -2,10 +2,12 @@ package org.dotwebstack.framework.backend.json.config;
 
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import graphql.language.ObjectTypeDefinition;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.junit.jupiter.api.Test;
 
 class JsonTypeConfigurationTest {
@@ -22,6 +24,7 @@ class JsonTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = newObjectTypeDefinition().name("MyObject")
         .build();
 
-    assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(Map.of(), objectTypeDefinition));
+    assertThrows(InvalidConfigurationException.class,
+        () -> typeConfiguration.init(mock(DotWebStackConfiguration.class), objectTypeDefinition));
   }
 }

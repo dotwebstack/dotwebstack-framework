@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core;
 
 import graphql.GraphQL;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -22,6 +24,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
@@ -61,9 +64,10 @@ public class GraphqlConfiguration {
   public TypeDefinitionRegistry typeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration) {
     var typeDefinitionRegistry = new TypeDefinitionRegistry();
 
+    addEnumerationsToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     addQueryTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
-    addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+    addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     return typeDefinitionRegistry;
   }
 
@@ -79,11 +83,17 @@ public class GraphqlConfiguration {
                   .map(entry -> FieldDefinition.newFieldDefinition()
                       .name(entry.getKey())
                       .type(createType(entry.getValue()))
+                      .inputValueDefinitions(entry.getValue()
+                          .getArguments()
+                          .stream()
+                          .map(
+                              fieldArgumentConfiguration -> createFieldInputValueDefinition(fieldArgumentConfiguration))
+                          .collect(Collectors.toList()))
                       .build())
                   .collect(Collectors.toList()))
               .build();
 
-          objectType.init(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition);
+          objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
         });
   }
@@ -131,6 +141,24 @@ public class GraphqlConfiguration {
     }
   }
 
+  private void addEnumerationsToTypeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getEnumerations()
+        .forEach((name, enumeration) -> {
+          var enumerationTypeDefinition = EnumTypeDefinition.newEnumTypeDefinition()
+              .name(name)
+              .enumValueDefinitions(enumeration.getValues()
+                  .stream()
+                  .map(value -> EnumValueDefinition.newEnumValueDefinition()
+                      .name(value)
+                      .build())
+                  .collect(Collectors.toList()))
+              .build();
+
+          typeDefinitionRegistry.add(enumerationTypeDefinition);
+        });
+  }
+
   private FieldDefinition createSubscriptionFieldDefinition(String queryName,
       SubscriptionConfiguration subscriptionConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
@@ -171,6 +199,13 @@ public class GraphqlConfiguration {
         .build();
   }
 
+  private InputValueDefinition createFieldInputValueDefinition(FieldArgumentConfiguration fieldArgumentConfiguration) {
+    return InputValueDefinition.newInputValueDefinition()
+        .name(fieldArgumentConfiguration.getName())
+        .type(createType(fieldArgumentConfiguration))
+        .build();
+  }
+
   private static Type<?> createType(String key,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> typeConfiguration) {
     AbstractFieldConfiguration fieldConfig = typeConfiguration.getFields()
@@ -201,6 +236,11 @@ public class GraphqlConfiguration {
     }
 
     return fieldConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
+  }
+
+  private static Type<?> createType(FieldArgumentConfiguration fieldArgumentConfiguration) {
+    var type = fieldArgumentConfiguration.getType();
+    return fieldArgumentConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
   @Bean

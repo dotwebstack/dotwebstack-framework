@@ -1,3 +1,21 @@
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+    nullable: true
+
 objectTypes:
   Beer:
     backend: rdf4j
@@ -5,14 +23,62 @@ objectTypes:
       - field: identifier
     fields:
       brewery:
+        identifier:
+          type: ID
+        name:
+          type: String
+          nullable: true
+        brewery:
+          type: Brewery
+        beerTypes:
+          type: String
+          list: true
+        beerTypesRaw:
+          type: BeerType
+          list: true
+          nullable: true
+        ingredients:
+          type: Ingredient
+          nullable: true
+        supplements:
+          type: Supplement
+          list: true
+          nullable: true
+          arguments:
+            - name: supplementName
+              type: String
+              list: true
+              nullable: true
 
   Brewery:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      subject:
+        type: String
+      number:
+        type: Int
+        nullable: true
+      localName:
+        type: String
+        nullable: true
+      founded:
+        type: Date
+      owners:
+        type: String
+        list: true
+        nullable: true
+        
+
       postalAddress:
+        type: Address
       visitAddress:
+        type: Address
       beers:
         mappedBy: brewery
 

@@ -61,6 +61,8 @@ class DefaultSelectWrapperBuilderTest {
   @BeforeEach
   @SuppressWarnings("unchecked")
   public void setup() {
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
+
     when(objectTypesMock.get("Beer")).thenReturn((AbstractTypeConfiguration) new PostgresTypeConfiguration());
 
     PostgresTypeConfiguration beerTypeConfiguration = createBeerTypeConfiguration();
@@ -111,7 +113,7 @@ class DefaultSelectWrapperBuilderTest {
 
     ingredientTypeConfiguration.setFields(fieldsMap);
 
-    ingredientTypeConfiguration.init(objectTypesMock, newObjectTypeDefinition().name("Ingredient")
+    ingredientTypeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name("identifier_ingredient")
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -139,7 +141,7 @@ class DefaultSelectWrapperBuilderTest {
 
     ingredientTypeConfiguration.setFields(fieldsMap);
 
-    ingredientTypeConfiguration.init(objectTypesMock, newObjectTypeDefinition().name("Beer")
+    ingredientTypeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name("identifier_beer")
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())

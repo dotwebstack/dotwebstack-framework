@@ -9,9 +9,15 @@ queries:
     type: Beer
     keys:
       - field: identifier
-
   beerCollection:
     type: Beer
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+  breweryCollection:
+    type: Brewery
     list: true
 
 objectTypes:
@@ -26,6 +32,8 @@ objectTypes:
       name:
         type: String
       abv:
+        type: Float
+      soldPerYear:
         type: Float
       brewery:
         type: Brewery
@@ -53,6 +61,9 @@ objectTypes:
           inverseJoinColumns:
             - name: ingredients_identifier
               referencedField: identifier
+      taste:
+        type: Taste
+        list: true
 
   Ingredient:
     backend: postgres
@@ -79,6 +90,12 @@ objectTypes:
         type: String
       status:
         type: String
+      geometry:
+        type: Geometry
+        arguments:
+          - name: type
+            type: GeometryType
+            nullable: true
       postalAddress:
         type: Address
         nullable: true
@@ -110,3 +127,8 @@ objectTypes:
         type: String
       city:
         type: String
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
+

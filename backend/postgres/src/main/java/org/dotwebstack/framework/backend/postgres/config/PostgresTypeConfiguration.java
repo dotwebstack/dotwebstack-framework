@@ -23,6 +23,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -40,7 +41,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private Map<String, PostgresFieldConfiguration> referencedColumns = new HashMap<>();
 
   @Override
-  public void init(Map<String, AbstractTypeConfiguration<?>> objectTypes, ObjectTypeDefinition objectTypeDefinition) {
+  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
@@ -60,13 +61,16 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             fieldConfiguration.setList(true);
           }
 
-          if (TypeHelper.isTextType(fieldDefinition.getType())) {
+          // TODO: leesbaar maken
+          var type = TypeHelper.getTypeName(fieldDefinition.getType());
+          if (TypeHelper.isTextType(fieldDefinition.getType()) || dotWebStackConfiguration.getEnumerations()
+              .containsKey(type)) {
             fieldConfiguration.setText(true);
           }
         });
 
-    initAggregateTypes(objectTypes);
-    initReferencedColumns(objectTypes, objectTypeDefinition.getFieldDefinitions());
+    initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
+    initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,

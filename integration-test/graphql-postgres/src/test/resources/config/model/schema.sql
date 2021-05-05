@@ -4,7 +4,7 @@ CREATE SCHEMA db;
 
 CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
 
-CREATE TYPE db.taste AS ENUM ('meaty', 'smoky', 'watery', 'fruity', 'spicy');
+CREATE TYPE db.taste AS ENUM ('MEATY', 'SMOKY', 'WATERY', 'FRUITY', 'SPICY');
 
 CREATE TABLE db.address (
   identifier_address character varying NOT NULL PRIMARY KEY,

@@ -1,3 +1,26 @@
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier_beer
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier_brewery
+    nullable: true
+  ingredient:
+    type: Ingredient
+    keys:
+      - field: identifier_ingredient
+    nullable: true
+
 subscriptions:
   beersSubscription:
     type: Beer
@@ -13,6 +36,10 @@ objectTypes:
         type: ID
       name:
         type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
       brewery:
         type: Brewery
         joinColumns:
@@ -50,6 +77,9 @@ objectTypes:
           inverseJoinColumns:
             - name: ingredient_code
               referencedColumn: code
+      taste:
+        type: Taste
+        list: true
 
   Ingredient:
     backend: postgres
@@ -61,6 +91,8 @@ objectTypes:
         type: ID
       name:
         type: String
+      weight:
+        type: Float
       partOf:
         type: Beer
         list: true
@@ -86,6 +118,12 @@ objectTypes:
         type: String
       status:
         type: String
+      geometry:
+        type: Geometry
+        arguments:
+          - name: type
+            type: GeometryType
+            nullable: true
       postalAddress:
         type: Address
         nullable: true
@@ -119,3 +157,7 @@ objectTypes:
         type: String
       city:
         type: String
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

@@ -27,6 +27,9 @@ public class DotWebStackConfiguration {
   @Valid
   private Map<String, SubscriptionConfiguration> subscriptions = new HashMap<>();
 
+  @Valid
+  private Map<String, EnumerationConfiguration> enumerations = new HashMap<>();
+
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(LoadEnvironment loadEnvironment) {
     return getTypeConfiguration(loadEnvironment.getExecutionStepInfo());
   }
