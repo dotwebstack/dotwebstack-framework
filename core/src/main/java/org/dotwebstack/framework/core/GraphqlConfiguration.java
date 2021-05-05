@@ -68,6 +68,7 @@ public class GraphqlConfiguration {
     addQueryTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
     addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+
     return typeDefinitionRegistry;
   }
 
