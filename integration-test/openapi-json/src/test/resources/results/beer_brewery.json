@@ -6,11 +6,6 @@
     "beerCount": 3,
     "founded": "2014-05-03",
     "name": "De Brouwerij",
-    "sponsorship": {
-      "identifier": "3",
-      "numbers": [],
-      "name": "De Brouwerij"
-    },
     "link": "https://github.com/dotwebstack/api/v1/brewery/3",
     "owners": [
       "J.v.Hees",

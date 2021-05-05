@@ -10,7 +10,6 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
 import java.util.Objects;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
@@ -27,7 +26,6 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   private Map<String, String> queryPaths;
 
   @Valid
-  @NotBlank
   private String file;
 
   @Override
