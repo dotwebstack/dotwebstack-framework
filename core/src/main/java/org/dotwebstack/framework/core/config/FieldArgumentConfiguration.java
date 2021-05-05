@@ -14,4 +14,6 @@ public class FieldArgumentConfiguration {
 
   private boolean nullable = false;
 
+  private boolean list = false;
+
 }

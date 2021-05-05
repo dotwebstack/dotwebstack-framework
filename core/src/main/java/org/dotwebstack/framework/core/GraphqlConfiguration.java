@@ -240,6 +240,11 @@ public class GraphqlConfiguration {
 
   private static Type<?> createType(FieldArgumentConfiguration fieldArgumentConfiguration) {
     var type = fieldArgumentConfiguration.getType();
+
+    if (fieldArgumentConfiguration.isList()) {
+      return fieldArgumentConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
+    }
+
     return fieldArgumentConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
