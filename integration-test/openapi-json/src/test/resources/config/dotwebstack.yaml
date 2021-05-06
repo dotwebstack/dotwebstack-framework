@@ -1,4 +1,29 @@
-typeMapping:
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+    nullable: true
+  beers_by_country_and_name:
+    type: Beer
+    list: true
+    keys:
+      - field: country
+      - field: name
+    nullable: true
+
+objectTypes:
   Beer:
     backend: json
     file: beers.json
@@ -10,6 +35,30 @@ typeMapping:
       - field: identifier
     fields:
       identifier:
+        type: ID
+      name:
+        type: String
+      country:
+        type: String
+      created:
+        type: String
+        nullable: true
+      brewery:
+        type: Brewery
+        nullable: true
+      ingredients:
+        type: Ingredient
+        list: true
+        arguments:
+          - name: name
+            type: String
+            nullable: true
+            list: true
+      supplements:
+        type: Supplement
+        list: true
+        nullable: true
+
   Brewery:
     backend: json
     file: breweries.json
@@ -20,3 +69,68 @@ typeMapping:
       - field: identifier
     fields:
       identifier:
+        type: ID
+      name:
+        type: String
+      localName:
+        type: String
+        nullable: true
+      founded:
+        type: String
+        nullable: true
+      openinghours:
+        type: String
+        nullable: true
+      owners:
+        type: String
+        nullable: true
+        list: true
+      url:
+        type: String
+      address:
+        type: Address
+        nullable: true
+      postalCode:
+        type: String
+        nullable: true
+      lemonBeers:
+        type: Beer
+        nullable: true
+        list: true
+      beerCount:
+        type: Int
+      beers:
+        type: Beer
+        nullable: true
+        list: true
+
+  Address:
+    backend: json
+    keys:
+      - field: postalCode
+    fields:
+      postalCode:
+        type: String
+        nullable: true
+      streetAddress:
+        type: String
+
+  Ingredient:
+    backend: json
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+        nullable: true
+
+  Supplement:
+    backend: json
+    keys:
+      - field: name
+    fields:
+      name:
+        type: String
+        nullable: true

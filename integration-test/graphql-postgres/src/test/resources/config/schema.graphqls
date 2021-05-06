@@ -51,7 +51,7 @@ type Ingredient {
   partOf: [Beer!]
 }
 
-enum Taste{
+enum Taste {
   MEATY
   FRUITY
   SMOKY

@@ -1,15 +1,53 @@
-typeMapping:
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier_beer
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier_brewery
+    nullable: true
+  ingredient:
+    type: Ingredient
+    keys:
+      - field: identifier_ingredient
+    nullable: true
+
+subscriptions:
+  beersSubscription:
+    type: Beer
+
+objectTypes:
   Beer:
     table: db.beer
     backend: postgres
     keys:
       - field: identifier_beer
     fields:
+      identifier_beer:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
       brewery:
+        type: Brewery
         joinColumns:
           - name: brewery
             referencedField: identifier_brewery
       ingredients:
+        type: Ingredient
+        list: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -19,6 +57,8 @@ typeMapping:
             - name: ingredient_code
               referencedColumn: code
       ingredient:
+        type: Ingredient
+        nullable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -37,6 +77,9 @@ typeMapping:
           inverseJoinColumns:
             - name: ingredient_code
               referencedColumn: code
+      taste:
+        type: Taste
+        list: true
 
   Ingredient:
     backend: postgres
@@ -44,7 +87,16 @@ typeMapping:
     keys:
       - field: identifier_ingredient
     fields:
+      identifier_ingredient:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float
       partOf:
+        type: Beer
+        list: true
+        nullable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -60,15 +112,34 @@ typeMapping:
     keys:
       - field: identifier_brewery
     fields:
+      identifier_brewery:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+        arguments:
+          - name: type
+            type: GeometryType
+            nullable: true
       postalAddress:
+        type: Address
+        nullable: true
         joinColumns:
           - name: postal_address
             referencedField: identifier_address
       visitAddress:
+        type: Address
+        nullable: true
         joinColumns:
           - name: visit_address
             referencedField: identifier_address
       beers:
+        type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
       beerAgg:
         aggregationOf: Beer
@@ -80,8 +151,12 @@ typeMapping:
     keys:
       - field: identifier_address
     fields:
+      identifier_address:
+        type: ID
       street:
+        type: String
       city:
+        type: String
 
   History:
     backend: postgres
@@ -93,3 +168,6 @@ typeMapping:
         column: his_age
       history:
         column: his_history
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

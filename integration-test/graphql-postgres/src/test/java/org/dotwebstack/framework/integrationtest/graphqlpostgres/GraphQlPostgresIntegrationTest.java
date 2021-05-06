@@ -692,7 +692,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(brewery.containsKey("beerAgg"));
     Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
     assertThat(beerAgg.size(), is(2));
-    assertThat(beerAgg.get("tastes"), is("fruity,meaty,smoky,watery"));
+    assertThat(beerAgg.get("tastes"), is("FRUITY,MEATY,SMOKY,WATERY"));
     assertThat(beerAgg.get("totalCount"), is(3));
   }
 
@@ -720,7 +720,7 @@ class GraphQlPostgresIntegrationTest {
     assertTrue(brewery.containsKey("beerAgg"));
     Map<String, Object> beerAgg = ((Map<String, Object>) brewery.get("beerAgg"));
     assertThat(beerAgg.size(), is(2));
-    assertThat(beerAgg.get("tastes"), is("meaty,smoky,spicy"));
+    assertThat(beerAgg.get("tastes"), is("MEATY,SMOKY,SPICY"));
     assertThat(beerAgg.get("totalCount"), is(2));
 
   }

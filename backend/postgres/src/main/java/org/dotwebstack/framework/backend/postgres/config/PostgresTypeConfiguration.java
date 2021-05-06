@@ -23,6 +23,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -40,7 +41,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private Map<String, PostgresFieldConfiguration> referencedColumns = new HashMap<>();
 
   @Override
-  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
+  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     // Calculate the column names once on init
     objectTypeDefinition.getFieldDefinitions()
         .forEach(fieldDefinition -> {
@@ -55,20 +56,25 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
             fieldConfiguration.setNumeric(true);
           }
+
           if (TypeHelper.hasListType(fieldDefinition.getType())) {
             fieldConfiguration.setList(true);
           }
-          if (TypeHelper.isTextType(fieldDefinition.getType())) {
+
+          // TODO: leesbaar maken
+          var type = TypeHelper.getTypeName(fieldDefinition.getType());
+          if (TypeHelper.isTextType(fieldDefinition.getType()) || dotWebStackConfiguration.getEnumerations()
+              .containsKey(type)) {
             fieldConfiguration.setText(true);
           }
-
         });
-    initAggregateTypes(typeMapping);
-    initReferencedColumns(typeMapping, objectTypeDefinition.getFieldDefinitions());
+
+    initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
+    initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
-      Map<String, AbstractTypeConfiguration<?>> typeMapping, FieldDefinition fieldDefinition) {
+      Map<String, AbstractTypeConfiguration<?>> objectTypes, FieldDefinition fieldDefinition) {
     List<JoinColumn> joinColumns = new ArrayList<>();
     Optional.ofNullable(fieldConfiguration.findInverseJoinColumns())
         .ifPresent(joinColumns::addAll);
@@ -81,7 +87,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             "The field 'referencedField' or 'referencedColumn' must have a value in field '{}'.",
             fieldDefinition.getName());
       }
-      validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, typeMapping, fieldDefinition);
+      validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, objectTypes, fieldDefinition);
     });
   }
 
@@ -101,11 +107,11 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   private void validateTargetObjectTypeHasPostgresBackend(JoinColumn joinColumn,
-      PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> typeMapping,
+      PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> objectTypes,
       FieldDefinition fieldDefinition) {
     if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
       String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
-      TypeConfiguration<?> typeConfiguration = typeMapping.get(targetType);
+      TypeConfiguration<?> typeConfiguration = objectTypes.get(targetType);
       if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
 
         throw invalidConfigurationException("Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.",
@@ -160,7 +166,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .build();
   }
 
-  private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> typeMapping) {
+  private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     fields.values()
         .stream()
         .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
@@ -169,7 +175,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           if (fieldConfiguration.getMappedBy() != null) {
 
             PostgresTypeConfiguration typeConfiguration =
-                (PostgresTypeConfiguration) typeMapping.get(fieldConfiguration.getAggregationOf());
+                (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getAggregationOf());
             PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
                 .get(fieldConfiguration.getMappedBy());
 
@@ -180,14 +186,14 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> typeMapping,
+  private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> objectTypes,
       List<FieldDefinition> fieldDefinitions) {
     referencedColumns = fields.entrySet()
         .stream()
         .filter(entry -> entry.getValue()
             .getJoinTable() != null)
         .flatMap(entry -> {
-          validateJoinTableConfig(entry.getValue(), typeMapping, getFieldDefinition(entry.getKey(), fieldDefinitions));
+          validateJoinTableConfig(entry.getValue(), objectTypes, getFieldDefinition(entry.getKey(), fieldDefinitions));
           return entry.getValue()
               .getJoinTable()
               .getJoinColumns()

@@ -1,4 +1,4 @@
-typeMapping:
+objectTypes:
   Beer:
     backend: rdf4j
     nodeShape: https://github.com/dotwebstack/beer/shapes#Beer

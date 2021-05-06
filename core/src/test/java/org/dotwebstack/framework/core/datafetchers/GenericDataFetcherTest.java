@@ -48,7 +48,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-
 @ExtendWith(MockitoExtension.class)
 class GenericDataFetcherTest {
 
@@ -73,7 +72,7 @@ class GenericDataFetcherTest {
 
   @BeforeEach
   void doBeforeEach() {
-    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Brewery", typeConfiguration));
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Brewery", typeConfiguration));
 
     when(graphQlFieldDefinitionMock.getName()).thenReturn("brewery");
 
@@ -184,7 +183,7 @@ class GenericDataFetcherTest {
         .name("Beers")
         .build());
 
-    when(dotWebStackConfiguration.getTypeMapping()).thenReturn(Map.of("Beers", typeConfiguration));
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
     when(backendDataLoader.batchLoadMany(any(), any())).thenReturn(batchLoadManyResult);
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);

@@ -28,7 +28,6 @@ type Brewery {
   url: String!
   address: Address
   postalCode: String
-  sponsorship: Sponsorship
   lemonBeers: [Beer]
   beerCount: Int!
   beers: [Beer!]
@@ -60,10 +59,4 @@ type Supplement {
 input PageQueryInput {
   page: Int = 1
   pageSize: Int = 10
-}
-
-type Sponsorship {
-  identifier: ID!
-  name: String!
-  numbers: [Int]
 }

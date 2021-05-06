@@ -22,6 +22,7 @@ import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -134,7 +135,7 @@ class AggregateSelectWrapperBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(mock(DotWebStackConfiguration.class), newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())

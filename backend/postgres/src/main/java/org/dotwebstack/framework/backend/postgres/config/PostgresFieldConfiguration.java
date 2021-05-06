@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 
 @Data
@@ -40,6 +41,14 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
+  }
+
+  @Override
+  public String getType() {
+    if (isAggregate()) {
+      return AggregateConstants.AGGREGATE_TYPE;
+    }
+    return super.getType();
   }
 
   public List<JoinColumn> findJoinColumns() {

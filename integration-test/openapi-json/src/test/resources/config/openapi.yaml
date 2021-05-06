@@ -81,18 +81,6 @@ components:
             type: string
         beerCount:
           type: integer
-        sponsorship:
-          x-dws-envelope: true
-          type: object
-          nullable: true
-          allOf:
-            - $ref: '#/components/schemas/SponsorshipId'
-            - type: object
-              required:
-                - name
-              properties:
-                name:
-                  type: string
         link:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
@@ -139,18 +127,6 @@ components:
         name:
           type: string
           nullable: true
-    SponsorshipId:
-      type: object
-      required:
-        - identifier
-        - numbers
-      properties:
-        identifier:
-          type: string
-        numbers:
-          type: array
-          items:
-            type: number
     SortField:
       type: array
       items:
