@@ -51,10 +51,6 @@ objectTypes:
       geometry:
         type: Geometry
         nullable: true
-        arguments:
-          - name: type
-            type: GeometryType
-            nullable: true
       postalAddress:
         type: Address
         nullable: true
