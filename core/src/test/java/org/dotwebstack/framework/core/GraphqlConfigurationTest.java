@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-public class GraphqlConfigurationTest {
+class GraphqlConfigurationTest {
 
   private final GraphqlConfiguration graphqlConfiguration = new GraphqlConfiguration();
 

@@ -6,7 +6,6 @@ import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
-import graphql.language.Type;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
@@ -99,7 +98,7 @@ public class GraphqlConfiguration {
         .stream()
         .map(entry -> FieldDefinition.newFieldDefinition()
             .name(entry.getKey())
-            .type(createType(entry.getValue()))
+            .type(TypeUtils.createType(entry.getValue()))
             .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
             .build())
         .collect(Collectors.toList());
@@ -183,7 +182,7 @@ public class GraphqlConfiguration {
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return FieldDefinition.newFieldDefinition()
         .name(queryName)
-        .type(createType(subscriptionConfiguration))
+        .type(TypeUtils.createType(subscriptionConfiguration))
         .inputValueDefinitions(subscriptionConfiguration.getKeys()
             .stream()
             .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
@@ -195,7 +194,7 @@ public class GraphqlConfiguration {
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return FieldDefinition.newFieldDefinition()
         .name(queryName)
-        .type(createType(queryConfiguration))
+        .type(TypeUtils.createType(queryConfiguration))
         .inputValueDefinitions(queryConfiguration.getKeys()
             .stream()
             .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
@@ -214,14 +213,14 @@ public class GraphqlConfiguration {
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return InputValueDefinition.newInputValueDefinition()
         .name(keyConfiguration.getField())
-        .type(createType(keyConfiguration.getField(), objectTypeConfiguration))
+        .type(TypeUtils.createType(keyConfiguration.getField(), objectTypeConfiguration))
         .build();
   }
 
   private InputValueDefinition createFieldInputValueDefinition(FieldArgumentConfiguration fieldArgumentConfiguration) {
     return InputValueDefinition.newInputValueDefinition()
         .name(fieldArgumentConfiguration.getName())
-        .type(createType(fieldArgumentConfiguration))
+        .type(TypeUtils.createType(fieldArgumentConfiguration))
         .build();
   }
 
@@ -230,49 +229,6 @@ public class GraphqlConfiguration {
         .name(GEOMETRY_ARGUMENT_NAME)
         .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
-  }
-
-  private static Type<?> createType(String key,
-      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> typeConfiguration) {
-    AbstractFieldConfiguration fieldConfig = typeConfiguration.getFields()
-        .get(key);
-    return TypeUtils.newNonNullableType(fieldConfig.getType());
-  }
-
-  private static Type<?> createType(SubscriptionConfiguration subscriptionConfiguration) {
-    return TypeUtils.newNonNullableType(subscriptionConfiguration.getType());
-  }
-
-  // TODO naamgeving: queryType vs QueryFieldConfiguration etc
-  private static Type<?> createType(QueryConfiguration queryConfiguration) {
-    var type = queryConfiguration.getType();
-
-    if (queryConfiguration.isList()) {
-      return queryConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
-    }
-
-    return queryConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
-  }
-
-  private static Type<?> createType(FieldConfiguration fieldConfiguration) {
-    var type = fieldConfiguration.getType();
-
-    if (fieldConfiguration.isList()) {
-      return fieldConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
-    }
-
-    return fieldConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
-  }
-
-  private static Type<?> createType(FieldArgumentConfiguration fieldArgumentConfiguration) {
-    var type = fieldArgumentConfiguration.getType();
-
-    if (fieldArgumentConfiguration.isList()) {
-      return fieldArgumentConfiguration.isNullable() ? TypeUtils.newListType(type)
-          : TypeUtils.newNonNullableListType(type);
-    }
-
-    return fieldArgumentConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
   @Bean
