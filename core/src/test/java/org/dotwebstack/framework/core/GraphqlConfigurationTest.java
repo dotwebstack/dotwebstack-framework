@@ -48,7 +48,7 @@ public class GraphqlConfigurationTest {
   private final GraphqlConfiguration graphqlConfiguration = new GraphqlConfiguration();
 
   @Test
-  public void typeDefinitionRegistry_registerQueries_whenConfigured() {
+  void typeDefinitionRegistry_registerQueries_whenConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
@@ -81,7 +81,7 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
+  void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
@@ -103,7 +103,7 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
+  void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
@@ -125,7 +125,7 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
+  void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
@@ -136,7 +136,7 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
+  void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
@@ -156,14 +156,14 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
+  void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
     assertThrows(InvalidConfigurationException.class, () -> {
       readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
     });
   }
 
   @Test
-  public void typeDefinitionRegistry_registerObjectTypes_whenConfigured() {
+  void typeDefinitionRegistry_registerObjectTypes_whenConfigured() {
     var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);

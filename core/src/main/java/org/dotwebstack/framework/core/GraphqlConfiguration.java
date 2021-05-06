@@ -44,6 +44,10 @@ public class GraphqlConfiguration {
 
   private static final String GEOMETRY_TYPE = "Geometry";
 
+  private static final String GEOMETRY_ARGUMENT_NAME = "type";
+
+  private static final String GEOMETRY_ARGUMENT_TYPE = "GeometryType";
+
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators,
@@ -109,7 +113,7 @@ public class GraphqlConfiguration {
 
     return fieldConfiguration.getArguments()
         .stream()
-        .map(fieldArgumentConfiguration -> createFieldInputValueDefinition(fieldArgumentConfiguration))
+        .map(this::createFieldInputValueDefinition)
         .collect(Collectors.toList());
   }
 
@@ -223,8 +227,8 @@ public class GraphqlConfiguration {
 
   private InputValueDefinition createGeometryInputValueDefinition() {
     return InputValueDefinition.newInputValueDefinition()
-        .name("type")
-        .type(TypeUtils.newType("GeometryType"))
+        .name(GEOMETRY_ARGUMENT_NAME)
+        .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
   }
 
