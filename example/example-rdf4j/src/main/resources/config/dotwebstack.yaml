@@ -1,3 +1,19 @@
+queries:
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+  beerCollection:
+    type: Beer
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+  breweryCollection:
+    type: Brewery
+    list: true
+
 objectTypes:
   Beer:
     backend: rdf4j
@@ -5,7 +21,14 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
       brewery:
+        type: Brewery
         joinProperties:
           - name: brewery
             referencedField: identifier
@@ -17,8 +40,33 @@ objectTypes:
       - field: identifier
     fields:
       identifier:
+        type: ID
+      name:
+        type: String
       beers:
+        type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
+      geometry:
+        type: Geometry
+        nullable: true
+        arguments:
+          - name: type
+            type: GeometryType
+            nullable: true
+      postalAddress:
+        type: Address
+        nullable: true
+        joinProperties:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        type: Address
+        nullable: true
+        joinProperties:
+          - name: visit_address
+            referencedField: identifier
 
   Address:
     backend: rdf4j
@@ -26,5 +74,10 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
+        nullable: true
       street:
+        type: String
       city:
+        type: String
