@@ -29,7 +29,6 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
@@ -89,7 +88,8 @@ public class GraphqlConfiguration {
         });
   }
 
-  private List<FieldDefinition> createFieldDefinitions(AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+  private List<FieldDefinition> createFieldDefinitions(
+      AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
     return typeConfiguration.getFields()
         .entrySet()
         .stream()
@@ -102,11 +102,13 @@ public class GraphqlConfiguration {
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
-    if(fieldConfiguration.getType().equals(GEOMETRY_TYPE)){
+    if (fieldConfiguration.getType()
+        .equals(GEOMETRY_TYPE)) {
       return List.of(createGeometryInputValueDefinition());
     }
 
-    return fieldConfiguration.getArguments().stream()
+    return fieldConfiguration.getArguments()
+        .stream()
         .map(fieldArgumentConfiguration -> createFieldInputValueDefinition(fieldArgumentConfiguration))
         .collect(Collectors.toList());
   }
