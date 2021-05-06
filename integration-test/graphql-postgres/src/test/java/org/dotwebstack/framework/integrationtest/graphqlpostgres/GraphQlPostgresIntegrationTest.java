@@ -566,7 +566,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBeerWithAggregateType_forDuplicateAvg() {
-    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\", abvHigherThen : 0.2)"
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
         + "avgC : floatAvg( field : \"weight\" )  } } }";
 

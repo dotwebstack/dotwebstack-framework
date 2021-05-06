@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core;
 
+import static org.dotwebstack.framework.core.config.ValueUtils.newValue;
+
 import graphql.GraphQL;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValueDefinition;
@@ -17,12 +19,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.ContextArgumentConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
@@ -119,10 +123,7 @@ public class GraphqlConfiguration {
     var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
         .entrySet()
         .stream()
-        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(),
-            dotWebStackConfiguration.getObjectTypes()
-                .get(entry.getValue()
-                    .getType())))
+        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(), dotWebStackConfiguration))
         .collect(Collectors.toList());
 
     var queryTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
@@ -188,14 +189,30 @@ public class GraphqlConfiguration {
   }
 
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
-      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+      DotWebStackConfiguration dotWebStackConfiguration) {
+    AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration =
+        dotWebStackConfiguration.getObjectTypes()
+            .get(queryConfiguration.getType());
+
+    List<InputValueDefinition> keyInputValueDefinitions = queryConfiguration.getKeys()
+        .stream()
+        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+        .collect(Collectors.toList());
+
+    List<InputValueDefinition> contextArgumentInputValueDefinitions = queryConfiguration.getContextArguments()
+        .stream()
+        .map(contextArgument -> createQueryInputValueDefinition(contextArgument, dotWebStackConfiguration))
+        .collect(Collectors.toList());
+
+    List<InputValueDefinition> inputValueDefinitions =
+        Stream.of(keyInputValueDefinitions, contextArgumentInputValueDefinitions)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
     return FieldDefinition.newFieldDefinition()
         .name(queryName)
         .type(createType(queryConfiguration))
-        .inputValueDefinitions(queryConfiguration.getKeys()
-            .stream()
-            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
-            .collect(Collectors.toList()))
+        .inputValueDefinitions(inputValueDefinitions)
         .build();
   }
 
@@ -203,6 +220,18 @@ public class GraphqlConfiguration {
     return FieldDefinition.newFieldDefinition()
         .name("dummy")
         .type(TypeUtils.newType("String"))
+        .build();
+  }
+
+  private InputValueDefinition createQueryInputValueDefinition(String contextArgument,
+      DotWebStackConfiguration dotWebStackConfiguration) {
+    ContextArgumentConfiguration contextArgumentConfiguration = dotWebStackConfiguration.getContextArguments()
+        .get(contextArgument);
+
+    return InputValueDefinition.newInputValueDefinition()
+        .name(contextArgument)
+        .type(createType(contextArgumentConfiguration))
+        .defaultValue(newValue(contextArgumentConfiguration.getType(), contextArgumentConfiguration.getDefaultValue()))
         .build();
   }
 
@@ -226,6 +255,15 @@ public class GraphqlConfiguration {
         .name("type")
         .type(TypeUtils.newType("GeometryType"))
         .build();
+  }
+
+  private static Type<?> createType(ContextArgumentConfiguration contextArgumentConfiguration) {
+    if (contextArgumentConfiguration.isRequired()) {
+      return TypeUtils.newNonNullableType(contextArgumentConfiguration.getType()
+          .value());
+    }
+    return TypeUtils.newType(contextArgumentConfiguration.getType()
+        .value());
   }
 
   private static Type<?> createType(String key,

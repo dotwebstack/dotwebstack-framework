@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +14,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
+import org.dotwebstack.framework.core.config.ContextArgumentConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -62,6 +62,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     QueryParameters queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
+        .filters(getFilters(environment))
         .build();
 
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
@@ -85,7 +86,8 @@ public class PostgresDataLoader implements BackendDataLoader {
 
     QueryParameters.QueryParametersBuilder queryParametersBuilder = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
-        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of());
+        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
+        .filters(getFilters(environment));
 
     if (!environment.isSubscription()) {
       queryParametersBuilder.page(pageWithDefaultSize());
@@ -96,11 +98,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(row -> {
-          System.out.println();
-          return queryHolder.getMapAssembler()
-              .apply(row);
-        });
+        .map(row -> queryHolder.getMapAssembler().apply(row));
   }
 
   @Override
@@ -111,6 +109,7 @@ public class PostgresDataLoader implements BackendDataLoader {
     QueryParameters queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyConditions)
+        .filters(getFilters(environment))
         .build();
 
     QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters, true);
@@ -167,5 +166,42 @@ public class PostgresDataLoader implements BackendDataLoader {
         .stream()
         .filter(Predicate.not(Param::isInline))
         .collect(Collectors.toList());
+  }
+
+  private List<String> getFilters(LoadEnvironment environment) {
+    Map<String, ContextArgumentConfiguration> contextArguments = dotWebStackConfiguration.getContextArguments();
+    return environment.getExecutionStepInfo().getFieldDefinition().getArguments()
+        .stream()
+        .filter(argument -> contextArguments.containsKey(argument.getName()))
+        .map(argument -> getFilter(environment, contextArguments.get(argument.getName()), argument))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+  }
+
+  private String getFilter(LoadEnvironment environment, ContextArgumentConfiguration contextArgumentConfiguration, graphql.schema.GraphQLArgument argument) {
+    Object value = environment.getExecutionStepInfo().getArguments().get(argument.getName());
+    String filterExpr = contextArgumentConfiguration.getFilterExpr();
+
+    switch (contextArgumentConfiguration.getType()) {
+      case DATE:
+        // TODO filter.replace $var to_date(value, 'MM/DD/YYYY')
+        throw new UnsupportedOperationException("Date not implemented yet!");
+      case DATETIME:
+        // TODO filter.replace $var to_timestamp(value, 'MM/DD/YYYY HH24:MI:SS')
+        throw new UnsupportedOperationException("DateTime not implemented yet!");
+      case STRING:
+        return filterExpr.replace("$val", "'".concat((String)value).concat("'"));
+      case BOOLEAN:
+        boolean useFilter = (boolean)value;
+        if (useFilter) {
+          return filterExpr;
+        }
+        break;
+      case INT:
+      case FLOAT:
+        return filterExpr.replace("$val", value.toString());
+    }
+
+    return null;
   }
 }

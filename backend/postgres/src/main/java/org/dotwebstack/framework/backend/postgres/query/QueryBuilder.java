@@ -103,6 +103,10 @@ public class QueryBuilder {
             .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
         .reduce(DSL.noCondition(), Condition::and);
 
+    for (String filter : queryParameters.getFilters()) {
+      joinCondition = joinCondition.and(filter);
+    }
+
     Table<Record> lateralTable = DSL.lateral(limit(selectWrapper.getQuery()
         .where(joinCondition), queryParameters.getPage()))
         .asTable(queryContext.newTableAlias());

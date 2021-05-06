@@ -22,6 +22,9 @@ public class DotWebStackConfiguration {
   private Map<String, AbstractTypeConfiguration<?>> objectTypes;
 
   @Valid
+  private Map<String, ContextArgumentConfiguration> contextArguments = new HashMap<>();
+
+  @Valid
   private Map<String, QueryConfiguration> queries = new HashMap<>();
 
   @Valid

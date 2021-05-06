@@ -1,3 +1,10 @@
+contextArguments:
+  abvHigherThen:
+    type: Float
+    required: false
+    default: 0.0
+    filterExpr: "abv > $val"
+
 queries:
   beers:
     type: Beer
@@ -6,6 +13,8 @@ queries:
     type: Beer
     keys:
       - field: identifier_beer
+    contextArguments:
+      - abvHigherThen
     nullable: true
   breweries:
     type: Brewery
