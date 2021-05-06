@@ -29,6 +29,7 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,8 @@ public class GraphqlConfiguration {
   private static final String QUERY_TYPE_NAME = "Query";
 
   private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
+
+  private static final String GEOMETRY_TYPE = "Geometry";
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
@@ -78,25 +81,34 @@ public class GraphqlConfiguration {
         .forEach((name, objectType) -> {
           var objectTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
               .name(name)
-              .fieldDefinitions(objectType.getFields()
-                  .entrySet()
-                  .stream()
-                  .map(entry -> FieldDefinition.newFieldDefinition()
-                      .name(entry.getKey())
-                      .type(createType(entry.getValue()))
-                      .inputValueDefinitions(entry.getValue()
-                          .getArguments()
-                          .stream()
-                          .map(
-                              fieldArgumentConfiguration -> createFieldInputValueDefinition(fieldArgumentConfiguration))
-                          .collect(Collectors.toList()))
-                      .build())
-                  .collect(Collectors.toList()))
+              .fieldDefinitions(createFieldDefinitions(objectType))
               .build();
 
           objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
         });
+  }
+
+  private List<FieldDefinition> createFieldDefinitions(AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+    return typeConfiguration.getFields()
+        .entrySet()
+        .stream()
+        .map(entry -> FieldDefinition.newFieldDefinition()
+            .name(entry.getKey())
+            .type(createType(entry.getValue()))
+            .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
+    if(fieldConfiguration.getType().equals(GEOMETRY_TYPE)){
+      return List.of(createGeometryInputValueDefinition());
+    }
+
+    return fieldConfiguration.getArguments().stream()
+        .map(fieldArgumentConfiguration -> createFieldInputValueDefinition(fieldArgumentConfiguration))
+        .collect(Collectors.toList());
   }
 
   private void addQueryTypesToDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
@@ -204,6 +216,13 @@ public class GraphqlConfiguration {
     return InputValueDefinition.newInputValueDefinition()
         .name(fieldArgumentConfiguration.getName())
         .type(createType(fieldArgumentConfiguration))
+        .build();
+  }
+
+  private InputValueDefinition createGeometryInputValueDefinition() {
+    return InputValueDefinition.newInputValueDefinition()
+        .name("type")
+        .type(TypeUtils.newType("GeometryType"))
         .build();
   }
 
