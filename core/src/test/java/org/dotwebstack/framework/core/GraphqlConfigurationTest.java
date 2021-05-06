@@ -176,7 +176,7 @@ class GraphqlConfigurationTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(10));
+    assertThat(fieldDefinitions.size(), is(11));
 
     var identifierFieldDefinition = fieldDefinitions.get(0);
     assertFieldDefinition(identifierFieldDefinition, "identifier", "ID");
@@ -204,17 +204,29 @@ class GraphqlConfigurationTest {
     assertThat(geometryInputValueDefinition.getName(), is("type"));
     assertType(geometryInputValueDefinition.getType(), "GeometryType");
 
-    var addressFieldDefinition = fieldDefinitions.get(7);
-    assertThat(addressFieldDefinition.getName(), is("address"));
-    assertType(addressFieldDefinition.getType(), "Address");
-    assertThat(addressFieldDefinition.getInputValueDefinitions(), empty());
+    var addressesFieldDefinition = fieldDefinitions.get(7);
+    assertThat(addressesFieldDefinition.getName(), is("addresses"));
+    assertListType(addressesFieldDefinition.getType(), "Address");
+    assertThat(addressesFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
 
-    var beersFieldDefinition = fieldDefinitions.get(8);
+    var addressTypeInputValueDefinition = addressesFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(addressTypeInputValueDefinition.getName(), is("addressType"));
+    assertListType(addressTypeInputValueDefinition.getType(), "String");
+
+    var visitAddressFieldDefinition = fieldDefinitions.get(8);
+    assertThat(visitAddressFieldDefinition.getName(), is("visitAddress"));
+    assertType(visitAddressFieldDefinition.getType(), "Address");
+    assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
+
+    // visit adres
+    var beersFieldDefinition = fieldDefinitions.get(9);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(9);
+    var beerAggFieldDefinition = fieldDefinitions.get(10);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
 
   }

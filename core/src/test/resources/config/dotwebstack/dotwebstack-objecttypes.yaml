@@ -18,7 +18,16 @@ objectTypes:
         type: Date
       geometry:
         type: Geometry
-      address:
+      addresses:
+        type: Address
+        list: true
+        nullable: true
+        arguments:
+          - name: addressType
+            type: String
+            nullable: true
+            list: true
+      visitAddress:
         type: Address
         nullable: true
       beers:
