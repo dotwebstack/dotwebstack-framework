@@ -59,7 +59,11 @@ class QueryBuilderTest {
 
   private static final String FIELD_NAME = "name";
 
+  private static final String FIELD_AGE = "age";
+
   private static final String FIELD_BREWERY = "brewery";
+
+  private static final String FIELD_HISTORY = "history";
 
   private static final String FIELD_INGREDIENTS = "ingredients";
 
@@ -324,8 +328,6 @@ class QueryBuilderTest {
     assertThat(result.get("identifier"), is("AAA"));
   }
 
-
-
   @Test
   void build_returnsCorrectQuery_forAggregate() {
     GraphQLObjectType aggregateType = GraphQLObjectType.newObject()
@@ -442,6 +444,65 @@ class QueryBuilderTest {
             + "true limit :3 offset :4"));
   }
 
+  @Test
+  void build_returnsCorrectQuery_forNestedObject() {
+    postgresTypeConfigurationMock();
+    GraphQLObjectType historyType = GraphQLObjectType.newObject()
+        .name("History")
+        .build();
+
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    List<SelectedField> selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER,
+        GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_IDENTIFIER)
+            .type(Scalars.GraphQLString)
+            .build()),
+        mockSelectedField(FIELD_NAME, GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_NAME)
+            .type(Scalars.GraphQLString)
+            .build()),
+        mockSelectedField(FIELD_HISTORY, GraphQLFieldDefinition.newFieldDefinition()
+            .name(FIELD_HISTORY)
+            .type(historyType)
+            .build()));
+
+    when(selectionSet.getFields("*.*")).thenReturn(selectedFields);
+
+    selectedFields = List.of(mockSelectedField(FIELD_IDENTIFIER, GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_IDENTIFIER)
+        .type(Scalars.GraphQLString)
+        .build()), mockSelectedField(FIELD_AGE,
+            GraphQLFieldDefinition.newFieldDefinition()
+                .name(FIELD_AGE)
+                .type(Scalars.GraphQLString)
+                .build()));
+
+    when(selectionSet.getFields("history/*.*")).thenReturn(selectedFields);
+
+    postgresTypeConfigurationMock();
+    PostgresTypeConfiguration historyTypeConfiguration = createHistoryTypeConfiguration();
+
+    when(dotWebStackConfiguration.getTypeConfiguration(historyType.getName())).thenReturn(historyTypeConfiguration);
+
+    PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
+
+    QueryParameters queryParameters = QueryParameters.builder()
+        .selectionSet(selectionSet)
+        .keyConditions(List.of())
+        .page(pageWithDefaultSize())
+        .build();
+
+    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+
+    assertThat(queryHolder, notNullValue());
+    assertThat(queryHolder.getQuery(), notNullValue());
+    assertThat(queryHolder.getQuery()
+        .getSQL(ParamType.NAMED),
+        equalTo("select \"t1\".\"identifier\" as \"x1\", \"t1\".\"age\" as \"x2\", \"t1\".\"identifier\" as \"x3\", "
+            + "\"t1\".\"name\" as \"x4\" from db.brewery as \"t1\" limit :1 offset :2"));
+  }
+
   private SelectedField mockSelectedAggregateField(String name, String alias, GraphQLFieldDefinition fieldDefinition,
       String fieldArgument) {
     SelectedField selectedField = mock(SelectedField.class);
@@ -525,6 +586,26 @@ class QueryBuilderTest {
     return typeConfiguration;
   }
 
+  private PostgresTypeConfiguration createHistoryTypeConfiguration() {
+    PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
+    KeyConfiguration keyConfiguration = new KeyConfiguration();
+    keyConfiguration.setField(FIELD_IDENTIFIER);
+    typeConfiguration.setKeys(List.of(keyConfiguration));
+    typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
+    typeConfiguration.setTable("db.brewery");
+
+    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("History")
+        .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
+            .type(newTypeName(Scalars.GraphQLString.getName()).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(FIELD_AGE)
+            .type(newTypeName(Scalars.GraphQLInt.getName()).build())
+            .build())
+        .build());
+
+    return typeConfiguration;
+  }
+
   private PostgresTypeConfiguration createBreweryTypeConfiguration() {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
 
@@ -551,6 +632,9 @@ class QueryBuilderTest {
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_AGGREGATE)
             .type(newTypeName(AGGREGATE_TYPE).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(FIELD_HISTORY)
+            .type(newTypeName("History").build())
             .build())
         .build());
 
