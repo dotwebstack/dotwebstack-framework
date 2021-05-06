@@ -1,0 +1,62 @@
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: Status
+      numberOfEmpoyees:
+        type: Int
+      revenue:
+        type: Float
+      registrationDate:
+        type: Date
+      geometry:
+        type: Geometry
+        arguments:
+          - name: type
+            type: GeometryType
+            nullable: true
+      address:
+        type: Address
+        nullable: true
+      beers:
+        type: Beer
+        mappedBy: brewery
+        list: true
+        nullable: true
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+
+  Beer:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+
+  Address:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
+enumerations:
+  STATUS:
+    values: [ACTIVE, INACTIVE]
+
