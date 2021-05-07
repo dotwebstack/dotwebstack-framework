@@ -127,7 +127,6 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
   }
 
   private void addNestedObject(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField) {
-
     String typeName = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
         .getType())
         .getName();

@@ -11,7 +11,6 @@ public class QueryUtil {
   private QueryUtil() {}
 
   public static UnaryOperator<Map<String, Object>> createMapAssembler(SelectContext selectContext) {
-
     return row -> {
       if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
           .get()) && row.get(
