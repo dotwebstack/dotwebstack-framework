@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.ListType;
@@ -22,34 +19,30 @@ import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.idl.TypeUtil;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
 
 class GraphqlConfigurationTest {
 
+  private final DotWebStackConfigurationReader dwsReader =
+      new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
+
   private final GraphqlConfiguration graphqlConfiguration = new GraphqlConfiguration();
+
 
   @Test
   void typeDefinitionRegistry_registerQueries_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-queries.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -82,7 +75,7 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-queries.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -104,7 +97,7 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-subscriptions.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -126,7 +119,7 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-subscriptions.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -137,7 +130,7 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-enumerations.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -158,14 +151,13 @@ class GraphqlConfigurationTest {
   @Test
   void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
     assertThrows(InvalidConfigurationException.class, () -> {
-      readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
+      dwsReader.read("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
     });
   }
 
   @Test
   void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
-    var dotWebStackConfiguration =
-        readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -200,8 +192,7 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
-    var dotWebStackConfiguration =
-        readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -278,35 +269,6 @@ class GraphqlConfigurationTest {
   private static void assertNonNullListType(Type<?> type, String typeName) {
     assertThat(type, instanceOf(NonNullType.class));
     assertListType(TypeUtil.unwrapOne(type), typeName);
-  }
-
-  private DotWebStackConfiguration readDotWebStackConfiguration(String filename) {
-    var scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
-    var objectMapper = new ObjectMapper(new YAMLFactory());
-
-    objectMapper.registerSubtypes(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
-
-    return ResourceLoaderUtils.getResource(filename)
-        .map(resource -> {
-          try {
-            return objectMapper.readValue(resource.getInputStream(), DotWebStackConfiguration.class);
-          } catch (IOException e) {
-            throw new InvalidConfigurationException("Error while reading config file.", e);
-          }
-        })
-        .map(configuration -> {
-          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
-              .getValidator()
-              .validate(configuration);
-
-          if (!violations.isEmpty()) {
-            throw invalidConfigurationException("Config file contains validation errors: {}", violations);
-          }
-
-          return configuration;
-        })
-        .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", filename));
   }
 
   @Data

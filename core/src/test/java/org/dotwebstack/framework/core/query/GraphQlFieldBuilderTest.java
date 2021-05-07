@@ -6,16 +6,11 @@ import static org.mockito.Mockito.mock;
 
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashMap;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.TypeUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 class GraphQlFieldBuilderTest {
 
