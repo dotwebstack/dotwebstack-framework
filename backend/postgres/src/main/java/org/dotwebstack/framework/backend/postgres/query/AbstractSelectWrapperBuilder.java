@@ -1,17 +1,15 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 import static org.jooq.impl.DSL.trueCondition;
 
 import graphql.schema.SelectedField;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.GenericDataFetcher;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -88,25 +86,7 @@ public abstract class AbstractSelectWrapperBuilder implements SelectWrapperBuild
     return SelectWrapper.builder()
         .query(query)
         .table((parentTable != null ? parentTable : fromTable))
-        .rowAssembler(row -> {
-          if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
-              .get()) && row.get(
-                  selectContext.getCheckNullAlias()
-                      .get()) == null) {
-            if (selectContext.getQueryContext()
-                .isUseNullMapWhenNotFound()) {
-              return GenericDataFetcher.NULL_MAP;
-            }
-            return null;
-          }
-
-
-          return selectContext.getAssembleFns()
-              .entrySet()
-              .stream()
-              .collect(HashMap::new, (acc, entry) -> acc.put(entry.getKey(), entry.getValue()
-                  .apply(row)), HashMap::putAll);
-        })
+        .rowAssembler(createMapAssembler(selectContext))
         .build();
   }
 }

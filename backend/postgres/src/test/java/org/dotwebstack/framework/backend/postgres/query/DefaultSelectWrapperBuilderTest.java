@@ -63,11 +63,11 @@ class DefaultSelectWrapperBuilderTest {
   public void setup() {
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
 
-    when(objectTypesMock.get("Beer")).thenReturn((AbstractTypeConfiguration) new PostgresTypeConfiguration());
-
     PostgresTypeConfiguration beerTypeConfiguration = createBeerTypeConfiguration();
 
     when(objectTypesMock.get("Beer")).thenReturn((AbstractTypeConfiguration) beerTypeConfiguration);
+
+    when(objectTypesMock.get(null)).thenReturn(null);
   }
 
   @Test

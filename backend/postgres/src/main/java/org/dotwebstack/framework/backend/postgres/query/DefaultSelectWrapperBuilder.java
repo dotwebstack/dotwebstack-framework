@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static graphql.schema.GraphQLTypeUtil.isList;
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
+import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isAggregate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -11,6 +12,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,49 +63,58 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
     AtomicBoolean hasJoinCondition = new AtomicBoolean();
 
-    // add nested objects
+    // nested object using same table
     fieldNamesConfigurations.entrySet()
         .stream()
-        .filter(entry -> !entry.getValue()
-            .isScalar())
+        .filter(entry -> entry.getValue()
+            .isNested())
+        .forEach(entry -> addNestedObject(selectContext, fromTable, selectedFields.get(entry.getKey())));
+
+    // aggregate/nested object using join table/column
+    fieldNamesConfigurations.entrySet()
+        .stream()
+        .filter(entry -> entry.getValue()
+            .isSubselect())
         .forEach(entry -> {
           hasJoinCondition.set(true);
-          addJoinTable(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue());
+          addObjectField(selectContext, fromTable, selectedFields.get(entry.getKey()), entry.getValue());
         });
 
-    // add direct fields
+    // add scalar fields
     fieldNamesConfigurations.entrySet()
         .stream()
         .filter(entry -> entry.getValue()
             .isScalar())
-        .forEach(entry -> addField(selectContext, typeConfiguration, fromTable, entry));
+        .forEach(entry -> addScalarField(selectContext, typeConfiguration, fromTable, entry));
 
     if (hasJoinCondition.get()) {
       typeConfiguration.getReferencedColumns()
           .keySet()
-          .forEach(column -> addField(selectContext, typeConfiguration, fromTable,
+          .forEach(column -> addScalarField(selectContext, typeConfiguration, fromTable,
               Map.entry(column, typeConfiguration.getFields()
                   .get(column))));
     }
   }
 
-  private void addJoinTable(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
+  private void addObjectField(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration) {
     List<UnaryOperator<Map<String, Object>>> assembleFnsList = new ArrayList<>();
 
+    // Aggregate stringjoin
     Map<String, SelectedField> selectedStringJoinFieldsByName =
         getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
             .getSelectionSet(), true);
 
-    selectedStringJoinFieldsByName.forEach((name, field) -> processJoinTable(assembleFnsList, selectContext, fromTable,
+    selectedStringJoinFieldsByName.forEach((name, field) -> processSubSelect(assembleFnsList, selectContext, fromTable,
         selectedField, fieldConfiguration, Collections.singletonMap(name, field)));
 
+    // Aggregate field or object with joincolumn/jointable
     Map<String, SelectedField> otherFieldsByName =
         getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
             .getSelectionSet(), false);
 
     if (!otherFieldsByName.isEmpty()) {
-      processJoinTable(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration, otherFieldsByName);
+      processSubSelect(assembleFnsList, selectContext, fromTable, selectedField, fieldConfiguration, otherFieldsByName);
     }
 
     if (isAggregate(fieldConfiguration) && !assembleFnsList.isEmpty()) {
@@ -115,10 +126,37 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     }
   }
 
-  private void processJoinTable(List<UnaryOperator<Map<String, Object>>> assembleFnsList, SelectContext selectContext,
+  private void addNestedObject(SelectContext selectContext, Table<Record> fromTable, SelectedField selectedField) {
+    String typeName = GraphQLTypeUtil.unwrapAll(selectedField.getFieldDefinition()
+        .getType())
+        .getName();
+    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(typeName);
+    var context = new SelectContext(selectContext.getQueryContext());
+
+    Map<String, SelectedField> selectedFields =
+        getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
+            .getSelectionSet(), false);
+
+    selectedFields.keySet()
+        .stream()
+        .map(key -> new AbstractMap.SimpleEntry<>(key, typeConfiguration.getFields()
+            .get(key)))
+        .forEach(entry -> addScalarField(context, typeConfiguration, fromTable, entry));
+
+    selectContext.getSelectColumns()
+        .addAll(context.getSelectColumns());
+
+    selectContext.getAssembleFns()
+        .put(selectedField.getName(), createMapAssembler(context)::apply);
+  }
+
+  private void processSubSelect(List<UnaryOperator<Map<String, Object>>> assembleFnsList, SelectContext selectContext,
       Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
       Map<String, SelectedField> selectedFields) {
-    joinTable(selectContext.getQueryContext(), selectedField, fieldConfiguration, fromTable, selectedFields)
+
+    var subSelectContext = new SelectContext(selectContext.getQueryContext());
+
+    executeSubSelect(subSelectContext, selectedField, fieldConfiguration, fromTable, selectedFields)
         .ifPresent(joinTableWrapper -> {
           selectContext.getSelectColumns()
               .add(DSL.field(joinTableWrapper.getTable()
@@ -132,7 +170,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         });
   }
 
-  private void addField(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
+  private void addScalarField(SelectContext selectContext, PostgresTypeConfiguration typeConfiguration,
       Table<Record> fromTable, Map.Entry<String, PostgresFieldConfiguration> fieldNameConfiguration) {
     String columnAlias = selectContext.getQueryContext()
         .newSelectAlias();
@@ -164,7 +202,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
             .get(key), (a, b) -> a));
   }
 
-  private Optional<QueryBuilder.TableWrapper> joinTable(QueryContext queryContext, SelectedField selectedField,
+  private Optional<QueryBuilder.TableWrapper> executeSubSelect(SelectContext selectContext, SelectedField selectedField,
       PostgresFieldConfiguration fieldConfiguration, Table<Record> fromTable,
       Map<String, SelectedField> selectedFields) {
 
@@ -185,8 +223,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     if (fieldConfiguration.getJoinColumns() != null || fieldConfiguration.getJoinTable() != null) {
       SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
-      SelectWrapper selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext),
-          (PostgresTypeConfiguration) typeConfiguration, fieldConfiguration.getJoinTable(), selectedFields);
+      var selectWrapper = selectWrapperBuilder.build(selectContext, (PostgresTypeConfiguration) typeConfiguration,
+          fieldConfiguration.getJoinTable(), selectedFields);
 
       final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
           fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
@@ -201,7 +239,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
           .table(DSL.lateral(selectWrapper.getQuery()
               .where(whereCondition)
               .limit(1))
-              .asTable(queryContext.newTableAlias()))
+              .asTable(selectContext.getQueryContext()
+                  .newTableAlias()))
           .rowAssembler(selectWrapper.getRowAssembler())
           .build();
 
