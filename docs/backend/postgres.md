@@ -189,8 +189,7 @@ Simplified configuration example:
 
 ### Nested objects using parent table
 
-It is possible to store two objects with a 1:1 relation in the same table.
-The is possible by omitting the `table` property of the nested object.
+It is possible to store two objects with a 1:1 relation in the same table by omitting the `table` property of the nested object.
 
 Note that it is possible to define one nested object and reuse it in multiple type definitions. 
 The correct parent table will be used in every instance assuming each parent table contains the columns needed for the nested object. 
@@ -221,7 +220,7 @@ Simplified configuration example
     fields:
       age:
         type: Int
-      hitory:
+      history:
         type: String
         
   Beer:
