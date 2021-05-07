@@ -131,7 +131,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
         .getType())
         .getName();
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(typeName);
-    SelectContext context = new SelectContext(selectContext.getQueryContext());
+    var context = new SelectContext(selectContext.getQueryContext());
 
     Map<String, SelectedField> selectedFields =
         getSelectedAggregateFieldsByName(selectedField, selectContext.getQueryContext()
@@ -154,7 +154,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
       Table<Record> fromTable, SelectedField selectedField, PostgresFieldConfiguration fieldConfiguration,
       Map<String, SelectedField> selectedFields) {
 
-    SelectContext subSelectContext = new SelectContext(selectContext.getQueryContext());
+    var subSelectContext = new SelectContext(selectContext.getQueryContext());
 
     executeSubSelect(subSelectContext, selectedField, fieldConfiguration, fromTable, selectedFields)
         .ifPresent(joinTableWrapper -> {
@@ -223,8 +223,8 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     if (fieldConfiguration.getJoinColumns() != null || fieldConfiguration.getJoinTable() != null) {
       SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
-      SelectWrapper selectWrapper = selectWrapperBuilder.build(selectContext,
-          (PostgresTypeConfiguration) typeConfiguration, fieldConfiguration.getJoinTable(), selectedFields);
+      var selectWrapper = selectWrapperBuilder.build(selectContext, (PostgresTypeConfiguration) typeConfiguration,
+          fieldConfiguration.getJoinTable(), selectedFields);
 
       final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
           fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
