@@ -58,10 +58,7 @@ public class GraphQlFieldBuilder {
     Type type = fieldDefinition.getType();
     Type baseType = TypeHelper.getBaseType(type);
     TypeDefinition typeDefinition = this.registry.getType(baseType)
-        .orElseThrow(() -> {
-          System.out.println();
-          return invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType);
-        });
+        .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
     if (typeDefinition instanceof ScalarTypeDefinition) {
       return Collections.emptyList();
     }
