@@ -65,19 +65,6 @@ objectTypes:
         type: Taste
         list: true
 
-  Ingredient:
-    backend: postgres
-    table: dbeerpedia.ingredients
-    keys:
-      - field: identifier
-    fields:
-      identifier:
-        type: ID
-      name:
-        type: String
-      weight:
-        type: Float
-
   Brewery:
     backend: postgres
     table: dbeerpedia.breweries
@@ -92,10 +79,7 @@ objectTypes:
         type: String
       geometry:
         type: Geometry
-        arguments:
-          - name: type
-            type: GeometryType
-            nullable: true
+        nullable: true
       postalAddress:
         type: Address
         nullable: true
@@ -110,10 +94,27 @@ objectTypes:
             referencedField: identifier
       beers:
         type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
+        list: true
+        nullable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
+
+  Ingredient:
+    backend: postgres
+    table: dbeerpedia.ingredients
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float
 
   Address:
     backend: postgres

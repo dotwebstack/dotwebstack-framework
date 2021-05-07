@@ -61,10 +61,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             fieldConfiguration.setList(true);
           }
 
-          // TODO: leesbaar maken
-          var type = TypeHelper.getTypeName(fieldDefinition.getType());
-          if (TypeHelper.isTextType(fieldDefinition.getType()) || dotWebStackConfiguration.getEnumerations()
-              .containsKey(type)) {
+          if (TypeHelper.isTextType(fieldDefinition.getType()) || isEnum(fieldDefinition, dotWebStackConfiguration)) {
             fieldConfiguration.setText(true);
           }
         });
@@ -220,4 +217,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return postgresFieldConfiguration;
   }
 
+  private boolean isEnum(FieldDefinition fieldDefinition, DotWebStackConfiguration dotWebStackConfiguration) {
+    var type = TypeHelper.getTypeName(fieldDefinition.getType());
+    return dotWebStackConfiguration.getEnumerations()
+        .containsKey(type);
+  }
 }

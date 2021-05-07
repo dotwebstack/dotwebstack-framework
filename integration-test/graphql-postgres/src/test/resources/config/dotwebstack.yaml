@@ -120,10 +120,6 @@ objectTypes:
         type: String
       geometry:
         type: Geometry
-        arguments:
-          - name: type
-            type: GeometryType
-            nullable: true
       postalAddress:
         type: Address
         nullable: true

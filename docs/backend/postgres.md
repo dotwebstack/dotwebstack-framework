@@ -8,6 +8,24 @@
     table: dbeerpedia.beers
     keys:
       - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+        nullable: true
+      beers:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: brewery
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
 ```
 
 ### joinColumns
@@ -23,7 +41,10 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
       brewery:
+        type: Brewery
         joinColumns:
           - name: brewery
             referencedField: identifier
@@ -34,7 +55,8 @@ objectTypes:
     keys:
       - field: identifier
     fields:
-      identifier:    
+      identifier:
+        type: ID
 ```
 
 The above configuration example will use a foreign key linking the *Beer* entity with the primary key from the *Brewery*
@@ -56,7 +78,10 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
       brewery:
+        type: Brewery
         joinColumns:
           - name: brewery
             referencedField: identifier
@@ -67,7 +92,12 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
       beers:
+        type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
 ```
 
@@ -86,7 +116,11 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
       ingredients:
+        type: Ingredient
+        list: true
         joinTable:
           name: dbeerpedia.beers_ingredients
           joinColumns:
@@ -101,6 +135,9 @@ objectTypes:
     table: dbeerpedia.ingredients
     keys:
       - field: identifier
+    fields:
+      identifier:
+        type: ID
 ```
 
 This association has two sides i.e. the owning side and the inverse side. In our example, the owning side is *Beer* so
@@ -117,6 +154,9 @@ Simplified configuration example:
   Brewery:
     fields:
       beers:
+        type: Beer
+        list: true
+        nullable: true
         mappedBy: brewery
       beerAggregation:
         aggregationOf: Beer
@@ -125,6 +165,8 @@ Simplified configuration example:
   Beer:
     fields:
       ingredients:
+        type: Ingredient
+        list: true
         joinTable:
           name: dbeerpedia.beers_ingredients
           joinColumns:
