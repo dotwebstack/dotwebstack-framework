@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -18,7 +19,16 @@ public class DotWebStackConfiguration {
 
   @NotNull
   @Valid
-  private Map<String, AbstractTypeConfiguration<?>> typeMapping;
+  private Map<String, AbstractTypeConfiguration<?>> objectTypes;
+
+  @Valid
+  private Map<String, QueryConfiguration> queries = new HashMap<>();
+
+  @Valid
+  private Map<String, SubscriptionConfiguration> subscriptions = new HashMap<>();
+
+  @Valid
+  private Map<String, EnumerationConfiguration> enumerations = new HashMap<>();
 
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(LoadEnvironment loadEnvironment) {
     return getTypeConfiguration(loadEnvironment.getExecutionStepInfo());
@@ -39,7 +49,7 @@ public class DotWebStackConfiguration {
 
   @SuppressWarnings("unchecked")
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(String typeName) {
-    return Optional.ofNullable(typeMapping.get(typeName))
+    return Optional.ofNullable(objectTypes.get(typeName))
         .map(type -> {
           type.setName(typeName);
           return type;

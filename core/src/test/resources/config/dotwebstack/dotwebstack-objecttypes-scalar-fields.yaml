@@ -1,0 +1,23 @@
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: Status
+      numberOfEmpoyees:
+        type: Int
+      revenue:
+        type: Float
+      registrationDate:
+        type: Date
+
+enumerations:
+  STATUS:
+    values: [ACTIVE, INACTIVE]
+

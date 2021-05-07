@@ -94,6 +94,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withNameFromQueryParam() throws IOException {
     // Arrange & Act
     String result = webClient.get()
@@ -144,6 +145,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withNameFromQueryParamAndAcceptHeaderXml() {
     // Arrange & Act
     webClient.get()
@@ -229,6 +231,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_returnsError_forSortQueryWithNonExistentSortingValue() {
     // Arrange & Act
     String result = webClient.get()
@@ -357,6 +360,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_200_forProvidedHeaderParameter() {
     // Arrange & Act & Assert
     this.webClient.get()
@@ -430,6 +434,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when paging is implemented")
   void openApiRequest_returnsDefaultXPaginationResponseHeader_whenNoParamsAreProvided() {
     // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
@@ -466,6 +471,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when paging is implemented")
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
     // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()

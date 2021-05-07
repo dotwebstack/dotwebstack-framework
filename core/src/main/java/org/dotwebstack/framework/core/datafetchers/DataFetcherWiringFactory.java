@@ -26,7 +26,7 @@ public final class DataFetcherWiringFactory implements WiringFactory {
 
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
-    return getObjectType(environment.getFieldType()).map(objectType -> dotWebStackConfiguration.getTypeMapping()
+    return getObjectType(environment.getFieldType()).map(objectType -> dotWebStackConfiguration.getObjectTypes()
         .containsKey(objectType.getName()))
         .orElse(false);
   }

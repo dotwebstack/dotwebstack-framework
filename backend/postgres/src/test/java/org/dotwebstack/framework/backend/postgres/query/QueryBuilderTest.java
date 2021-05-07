@@ -69,13 +69,15 @@ class QueryBuilderTest {
   private DotWebStackConfiguration dotWebStackConfiguration;
 
   @Mock
-  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+  Map<String, AbstractTypeConfiguration<?>> objectTypesMock;
 
   private QueryBuilder queryBuilder;
 
   @BeforeEach
   void beforeAll() {
     DSLContext dslContext = createDslContext();
+
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
 
     queryBuilder = new QueryBuilder(
         new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration, new AggregateFieldFactory()), dslContext);
@@ -325,7 +327,6 @@ class QueryBuilderTest {
   }
 
 
-
   @Test
   void build_returnsCorrectQuery_forAggregate() {
     GraphQLObjectType aggregateType = GraphQLObjectType.newObject()
@@ -513,7 +514,7 @@ class QueryBuilderTest {
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
     typeConfiguration.setTable("dbeerpedia.ingredients");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Ingredient")
+    typeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("Ingredient")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -525,6 +526,7 @@ class QueryBuilderTest {
     return typeConfiguration;
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private PostgresTypeConfiguration createBreweryTypeConfiguration() {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
 
@@ -542,7 +544,10 @@ class QueryBuilderTest {
         beerConfiguration, FIELD_AGGREGATE, aggregateConfiguration)));
     typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(Map.of("Beer", createBeerTypeConfiguration()), newObjectTypeDefinition().name("Brewery")
+    AbstractTypeConfiguration beerTypeConfiguration = createBeerTypeConfiguration();
+    when(objectTypesMock.get("Beer")).thenReturn(beerTypeConfiguration);
+
+    typeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("Brewery")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -586,7 +591,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setTable("db.beer");
 
-    typeConfiguration.init(typeMappingMock, newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -624,6 +629,6 @@ class QueryBuilderTest {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void postgresTypeConfigurationMock() {
     AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
-    when(typeMappingMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
+    when(objectTypesMock.get("Ingredient")).thenReturn(postgresTypeConfiguration);
   }
 }

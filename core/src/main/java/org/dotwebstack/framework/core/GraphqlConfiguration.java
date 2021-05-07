@@ -1,45 +1,57 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
 import graphql.GraphQL;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValueDefinition;
+import graphql.language.FieldDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.WiringFactory;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.KeyConfiguration;
+import org.dotwebstack.framework.core.config.QueryConfiguration;
+import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
+import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.Resource;
 
 @Slf4j
 @Configuration
 public class GraphqlConfiguration {
+  private static final String QUERY_TYPE_NAME = "Query";
 
-  private static final String SCHEMA_FILE = "schema.graphqls";
+  private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
+
+  private static final String GEOMETRY_TYPE = "Geometry";
+
+  private static final String GEOMETRY_ARGUMENT_NAME = "type";
+
+  private static final String GEOMETRY_ARGUMENT_TYPE = "GeometryType";
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators,
       @NonNull List<WiringFactory> wiringFactories) {
-    RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
+    var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
@@ -54,16 +66,169 @@ public class GraphqlConfiguration {
 
   @Profile("!test")
   @Bean
-  public TypeDefinitionRegistry typeDefinitionRegistry() throws IOException {
-    Optional<Resource> schemaLocationResource = ResourceLoaderUtils.getResource(SCHEMA_FILE);
-    if (schemaLocationResource.isEmpty() || !schemaLocationResource.get()
-        .exists()) {
-      throw invalidConfigurationException("Graphql schema not found on location: {}", SCHEMA_FILE);
-    }
-    Reader reader = new InputStreamReader(schemaLocationResource.get()
-        .getInputStream());
+  public TypeDefinitionRegistry typeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration) {
+    var typeDefinitionRegistry = new TypeDefinitionRegistry();
 
-    return new SchemaParser().parse(reader);
+    addEnumerationsToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+    addQueryTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+    addSubscriptionTypesToDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+    addObjectTypesToTypeDefinitionRegistry(dotWebStackConfiguration, typeDefinitionRegistry);
+
+    return typeDefinitionRegistry;
+  }
+
+  private void addObjectTypesToTypeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .forEach((name, objectType) -> {
+          var objectTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+              .name(name)
+              .fieldDefinitions(createFieldDefinitions(objectType))
+              .build();
+
+          objectType.init(dotWebStackConfiguration, objectTypeDefinition);
+          typeDefinitionRegistry.add(objectTypeDefinition);
+        });
+  }
+
+  private List<FieldDefinition> createFieldDefinitions(
+      AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
+    return typeConfiguration.getFields()
+        .entrySet()
+        .stream()
+        .map(entry -> FieldDefinition.newFieldDefinition()
+            .name(entry.getKey())
+            .type(TypeUtils.createType(entry.getValue()))
+            .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
+    if (fieldConfiguration.getType()
+        .equals(GEOMETRY_TYPE)) {
+      return List.of(createGeometryInputValueDefinition());
+    }
+
+    return fieldConfiguration.getArguments()
+        .stream()
+        .map(this::createFieldInputValueDefinition)
+        .collect(Collectors.toList());
+  }
+
+  private void addQueryTypesToDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+
+    var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
+        .entrySet()
+        .stream()
+        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(),
+            dotWebStackConfiguration.getObjectTypes()
+                .get(entry.getValue()
+                    .getType())))
+        .collect(Collectors.toList());
+
+    var queryTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+        .name(QUERY_TYPE_NAME)
+        .fieldDefinitions(
+            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
+        .build();
+
+    typeDefinitionRegistry.add(queryTypeDefinition);
+  }
+
+  private void addSubscriptionTypesToDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+
+    var subscriptionFieldDefinitions = dotWebStackConfiguration.getSubscriptions()
+        .entrySet()
+        .stream()
+        .map(entry -> createSubscriptionFieldDefinition(entry.getKey(), entry.getValue(),
+            dotWebStackConfiguration.getObjectTypes()
+                .get(entry.getValue()
+                    .getType())))
+        .collect(Collectors.toList());
+
+    if (!subscriptionFieldDefinitions.isEmpty()) {
+      var subscriptionTypeDefinition = ObjectTypeDefinition.newObjectTypeDefinition()
+          .name(SUBSCRIPTION_TYPE_NAME)
+          .fieldDefinitions(subscriptionFieldDefinitions)
+          .build();
+
+      typeDefinitionRegistry.add(subscriptionTypeDefinition);
+    }
+  }
+
+  private void addEnumerationsToTypeDefinitionRegistry(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getEnumerations()
+        .forEach((name, enumeration) -> {
+          var enumerationTypeDefinition = EnumTypeDefinition.newEnumTypeDefinition()
+              .name(name)
+              .enumValueDefinitions(enumeration.getValues()
+                  .stream()
+                  .map(value -> EnumValueDefinition.newEnumValueDefinition()
+                      .name(value)
+                      .build())
+                  .collect(Collectors.toList()))
+              .build();
+
+          typeDefinitionRegistry.add(enumerationTypeDefinition);
+        });
+  }
+
+  private FieldDefinition createSubscriptionFieldDefinition(String queryName,
+      SubscriptionConfiguration subscriptionConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return FieldDefinition.newFieldDefinition()
+        .name(queryName)
+        .type(TypeUtils.createType(subscriptionConfiguration))
+        .inputValueDefinitions(subscriptionConfiguration.getKeys()
+            .stream()
+            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+            .collect(Collectors.toList()))
+        .build();
+  }
+
+  private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return FieldDefinition.newFieldDefinition()
+        .name(queryName)
+        .type(TypeUtils.createType(queryConfiguration))
+        .inputValueDefinitions(queryConfiguration.getKeys()
+            .stream()
+            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+            .collect(Collectors.toList()))
+        .build();
+  }
+
+  private FieldDefinition createDummyQueryFieldDefinition() {
+    return FieldDefinition.newFieldDefinition()
+        .name("dummy")
+        .type(TypeUtils.newType("String"))
+        .build();
+  }
+
+  private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return InputValueDefinition.newInputValueDefinition()
+        .name(keyConfiguration.getField())
+        .type(TypeUtils.createType(keyConfiguration.getField(), objectTypeConfiguration))
+        .build();
+  }
+
+  private InputValueDefinition createFieldInputValueDefinition(FieldArgumentConfiguration fieldArgumentConfiguration) {
+    return InputValueDefinition.newInputValueDefinition()
+        .name(fieldArgumentConfiguration.getName())
+        .type(TypeUtils.createType(fieldArgumentConfiguration))
+        .build();
+  }
+
+  private InputValueDefinition createGeometryInputValueDefinition() {
+    return InputValueDefinition.newInputValueDefinition()
+        .name(GEOMETRY_ARGUMENT_NAME)
+        .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
+        .build();
   }
 
   @Bean

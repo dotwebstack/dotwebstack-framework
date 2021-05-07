@@ -1,26 +1,10 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.TypeDefinitionRegistry;
-import java.io.IOException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
+import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.util.ClassUtils;
 
 @Slf4j
 @Configuration
@@ -29,46 +13,9 @@ public class CoreConfiguration {
   private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
-  public DotWebStackConfiguration dotWebStackConfiguration(TypeDefinitionRegistry typeDefinitionRegistry) {
+  public DotWebStackConfiguration dotWebStackConfiguration() {
     // TODO: refactor matching? Annotation-based?
-    ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
-    ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-
-    scanner.findCandidateComponents("org.dotwebstack.framework.backend")
-        .stream()
-        .map(beanDefinition -> ClassUtils.resolveClassName(Objects.requireNonNull(beanDefinition.getBeanClassName()),
-            getClass().getClassLoader()))
-        .forEach(objectMapper::registerSubtypes);
-
-    return ResourceLoaderUtils.getResource(CONFIG_FILE)
-        .map(resource -> {
-          try {
-            return objectMapper.readValue(resource.getInputStream(), DotWebStackConfiguration.class);
-          } catch (IOException e) {
-            throw new InvalidConfigurationException("Error while reading config file.", e);
-          }
-        })
-        .map(configuration -> {
-          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
-              .getValidator()
-              .validate(configuration);
-
-          if (!violations.isEmpty()) {
-            throw invalidConfigurationException("Config file contains validation errors: {}", violations);
-          }
-
-          configuration.getTypeMapping()
-              .keySet()
-              .stream()
-              .map(typeDefinitionRegistry::getType)
-              .map(Optional::get)
-              .forEach(typeDefinition -> configuration.getTypeMapping()
-                  .get(typeDefinition.getName())
-                  .init(configuration.getTypeMapping(), (ObjectTypeDefinition) typeDefinition));
-
-          return configuration;
-        })
-        .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", CONFIG_FILE));
+    DotWebStackConfigurationReader dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
+    return dotWebStackConfigurationReader.read(CONFIG_FILE);
   }
 }

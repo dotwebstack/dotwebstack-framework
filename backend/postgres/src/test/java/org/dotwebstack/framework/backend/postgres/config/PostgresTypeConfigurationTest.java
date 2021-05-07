@@ -19,9 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,7 +41,15 @@ class PostgresTypeConfigurationTest {
   private static final String BEER_TYPE_NAME = "Beer";
 
   @Mock
-  Map<String, AbstractTypeConfiguration<?>> typeMappingMock;
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
+  @Mock
+  Map<String, AbstractTypeConfiguration<?>> objectTypesMock;
+
+  @BeforeEach
+  public void beforeEach() {
+    dotWebStackConfigurationMock();
+  }
 
   @Test
   @SuppressWarnings({"rawtypes", "unchecked"})
@@ -52,9 +62,9 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
     AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
 
-    when(typeMappingMock.get(BEER_TYPE_NAME)).thenReturn(postgresTypeConfiguration);
+    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(postgresTypeConfiguration);
 
-    assertDoesNotThrow(() -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
   }
 
   @Test
@@ -66,7 +76,7 @@ class PostgresTypeConfigurationTest {
 
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
-    assertDoesNotThrow(() -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
   }
 
   @Test
@@ -79,7 +89,7 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
@@ -95,7 +105,7 @@ class PostgresTypeConfigurationTest {
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
@@ -113,10 +123,10 @@ class PostgresTypeConfigurationTest {
 
     AbstractTypeConfiguration testTypeConfiguration = new TestTypeConfiguration();
 
-    when(typeMappingMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
+    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(typeMappingMock, objectTypeDefinition));
+        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
 
     assertThat(thrown.getMessage(),
         is(String.format("Target objectType must be an 'PostgresTypeConfiguration' but is an '%s'.",
@@ -231,5 +241,10 @@ class PostgresTypeConfigurationTest {
     public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
       return null;
     }
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void dotWebStackConfigurationMock() {
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
   }
 }

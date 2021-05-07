@@ -5,9 +5,10 @@ This extension can be used to include geospatial functionality into a backend.
 The spatial extension can be included in a Spring Boot project with the following dependency:
 
 ```xml
+
 <dependency>
-  <groupId>org.dotwebstack.framework</groupId>
-  <artifactId>ext-spatial</artifactId>
+    <groupId>org.dotwebstack.framework</groupId>
+    <artifactId>ext-spatial</artifactId>
 </dependency>
 ```
 
@@ -80,6 +81,7 @@ Query example:
 ```
 
 Conversions that are possible:
+
 - `Point` => `MultiPoint`
 - `MultiPoint` => `Point` (centroid)
 - `LineString` => `MultiLineString`, `Point` (centroid)

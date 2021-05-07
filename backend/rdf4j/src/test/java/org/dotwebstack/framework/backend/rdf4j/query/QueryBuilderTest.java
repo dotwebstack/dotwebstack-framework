@@ -27,6 +27,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
@@ -45,6 +46,9 @@ class QueryBuilderTest {
   private static final String FIELD_NAME = "name";
 
   private static final String FIELD_BREWERY = "brewery";
+
+  @Mock
+  private DotWebStackConfiguration dotWebStackConfigurationMock;
 
   @Mock
   private NodeShapeRegistry nodeShapeRegistry;
@@ -155,7 +159,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setName("Beer");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("Beer")
+    typeConfiguration.init(dotWebStackConfigurationMock, newObjectTypeDefinition().name("Beer")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .build())
         .fieldDefinition(newFieldDefinition().name(FIELD_NAME)

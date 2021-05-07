@@ -1,23 +1,73 @@
-typeMapping:
+queries:
+  breweries:
+    type: Brewery
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+    nullable: true
+
+objectTypes:
   Beer:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      ingredients:
+        type: Ingredient
+        list: true
+        nullable: true
       brewery:
+        type: Brewery
 
   Brewery:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
-      postalAddress:
-      visitAddress:
+      identifier:
+        type: ID
+      name:
+        type: String
+      founded:
+        type: String
+      address:
+        type: Address
+        nullable: true
+      postalCode:
+        type: String
       beers:
+        type: Beer
         mappedBy: brewery
+      hasBeers:
+        type: Boolean
+
   Address:
     backend: rdf4j
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
+      subject:
+        type: String
       postalCode:
+        type: String
+        nullable: true
+      streetAddress:
+        type: String
+
+  Ingredient:
+    backend: rdf4j
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String

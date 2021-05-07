@@ -1,19 +1,64 @@
-typeMapping:
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+    nullable: true
+#  breweries:
+#    type: Brewery
+#    list: true
+
+objectTypes:
   Beer:
     backend: json
-    path: "$..beer"
+    file: data.json
+    queryPaths:
+      beer: $.beers[*].beer[?]
+      beers: $.beers[*].beer
     keys:
       - field: identifier
     fields:
+      identifier:
+        type: ID
       name:
+        type: String
       abv:
+        type: Float
       brewery:
-#  Brewery:
-#    backend: json
-#    path: "$..brewery"
-#    keys:
-#      - field: identifier
-#    fields:
-#      name:
-#      visistAddress:
-#      postalAddress:
+        type: Brewery
+
+  Brewery:
+    backend: json
+#    queryPaths:
+#      brewery: $..breweries[?]
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      beers:
+        type: Beer
+        list: true
+      visistAddress:
+        type: Address
+        nullable: true
+      postalAddress:
+        type: Address
+        nullable: true
+
+  Address:
+    backend: json
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String

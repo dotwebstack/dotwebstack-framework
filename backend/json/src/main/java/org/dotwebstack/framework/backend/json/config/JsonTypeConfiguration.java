@@ -10,10 +10,10 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
 import java.util.Objects;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 
@@ -26,11 +26,10 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   private Map<String, String> queryPaths;
 
   @Valid
-  @NotBlank
   private String file;
 
   @Override
-  public void init(Map<String, AbstractTypeConfiguration<?>> typeMapping, ObjectTypeDefinition objectTypeDefinition) {
+  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     fields.entrySet()
         .stream()
         .filter(entry -> Objects.nonNull(entry.getValue()))
