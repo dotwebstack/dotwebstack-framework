@@ -164,7 +164,8 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
+    var dotWebStackConfiguration =
+        readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -199,7 +200,8 @@ class GraphqlConfigurationTest {
 
   @Test
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
+    var dotWebStackConfiguration =
+        readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
