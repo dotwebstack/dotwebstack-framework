@@ -140,6 +140,8 @@ objectTypes:
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
+      history:
+        type: History
 
   Address:
     backend: postgres
@@ -156,14 +158,16 @@ objectTypes:
 
   History:
     backend: postgres
-    table: db.address
     keys:
       - field: identifier_brewery
     fields:
       age:
+        type: Int
         column: his_age
       history:
+        type: String
         column: his_history
+
 enumerations:
   Taste:
     values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

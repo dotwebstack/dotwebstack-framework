@@ -187,6 +187,52 @@ Simplified configuration example:
               referencedField: identifier
 ```
 
+### Nested objects using parent table
+
+It is possible to store two objects with a 1:1 relation in the same table.
+The is possible by omitting the `table` property of the nested object.
+
+Note that it is possible to define one nested object and reuse it in multiple type definitions. 
+The correct parent table will be used in every instance assuming each parent table contains the columns needed for the nested object. 
+
+data example:
+```json
+{
+  "brewery": {
+    "name": "Alfa",
+    "history":{
+      "age": 1900,
+      "history": "A long and glorious fairytale"
+    }
+  }
+}
+```
+Simplified configuration example
+```yaml
+  Brewery:
+    table: db.brewery
+    fields:
+      name:
+        type: String
+      history:
+        type: History
+
+  History:
+    fields:
+      age:
+        type: Int
+      hitory:
+        type: String
+        
+  Beer:
+    table: db.beer
+    fields:
+      name:
+        type: String
+      history:
+        type: History
+```
+
 ## PostGIS
 
 Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are supported.

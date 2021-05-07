@@ -82,6 +82,7 @@ class QueryBuilderTest {
     DSLContext dslContext = createDslContext();
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
+    when(objectTypesMock.get(null)).thenReturn(null);
 
     queryBuilder = new QueryBuilder(
         new SelectWrapperBuilderFactory(dslContext, dotWebStackConfiguration, new AggregateFieldFactory()), dslContext);
@@ -487,6 +488,8 @@ class QueryBuilderTest {
     PostgresTypeConfiguration historyTypeConfiguration = createHistoryTypeConfiguration();
 
     when(dotWebStackConfiguration.getTypeConfiguration(historyType.getName())).thenReturn(historyTypeConfiguration);
+    when(objectTypesMock.get("Aggregate")).thenReturn(null);
+    when(objectTypesMock.get(null)).thenReturn(null);
 
     PostgresTypeConfiguration typeConfiguration = createBreweryTypeConfiguration();
 
@@ -595,9 +598,8 @@ class QueryBuilderTest {
     keyConfiguration.setField(FIELD_IDENTIFIER);
     typeConfiguration.setKeys(List.of(keyConfiguration));
     typeConfiguration.setFields(new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration())));
-    typeConfiguration.setTable("db.brewery");
 
-    typeConfiguration.init(Map.of(), newObjectTypeDefinition().name("History")
+    typeConfiguration.init(dotWebStackConfiguration, newObjectTypeDefinition().name("History")
         .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
             .type(newTypeName(Scalars.GraphQLString.getName()).build())
             .build())
@@ -644,6 +646,10 @@ class QueryBuilderTest {
             .type(newTypeName("History").build())
             .build())
         .build());
+
+    typeConfiguration.getFields()
+        .get("history")
+        .setNested(true);
 
     return typeConfiguration;
   }

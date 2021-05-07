@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 @JsonTypeName("postgres")
 public class PostgresTypeConfiguration extends AbstractTypeConfiguration<PostgresFieldConfiguration> {
 
-  @NotBlank
   private String table;
 
   @Setter(AccessLevel.NONE)
@@ -67,6 +66,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
+    initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
   }
 
@@ -179,6 +179,19 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
           } else if (fieldConfiguration.getJoinTable() == null) {
             throw invalidConfigurationException("Invalid aggregate field configuration.");
+          }
+        });
+  }
+
+  private void initNestedFieldTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    fields.values()
+        .forEach(fieldConfiguration -> {
+
+          PostgresTypeConfiguration typeConfiguration =
+              (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
+
+          if (Objects.nonNull(typeConfiguration) && Objects.isNull(typeConfiguration.getTable())) {
+            fieldConfiguration.setNested(true);
           }
         });
   }

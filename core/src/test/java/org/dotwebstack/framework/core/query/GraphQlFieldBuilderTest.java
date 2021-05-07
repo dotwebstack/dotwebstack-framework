@@ -8,9 +8,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.HashMap;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.TypeUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 class GraphQlFieldBuilderTest {
 
