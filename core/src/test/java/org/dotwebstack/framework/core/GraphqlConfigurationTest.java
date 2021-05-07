@@ -163,8 +163,8 @@ class GraphqlConfigurationTest {
   }
 
   @Test
-  void typeDefinitionRegistry_registerObjectTypes_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes.yaml");
+  void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
+    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -176,7 +176,7 @@ class GraphqlConfigurationTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(11));
+    assertThat(fieldDefinitions.size(), is(6));
 
     var identifierFieldDefinition = fieldDefinitions.get(0);
     assertFieldDefinition(identifierFieldDefinition, "identifier", "ID");
@@ -195,8 +195,25 @@ class GraphqlConfigurationTest {
 
     var regDateFieldDefinition = fieldDefinitions.get(5);
     assertFieldDefinition(regDateFieldDefinition, "registrationDate", "Date");
+  }
 
-    var geometryFieldDefinition = fieldDefinitions.get(6);
+  @Test
+  void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
+    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
+
+    var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Brewery")
+        .isPresent(), is(true));
+    var breweryTypeDefinition = registry.getType("Brewery")
+        .orElseThrow();
+    assertThat(breweryTypeDefinition.getName(), is("Brewery"));
+    assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(6));
+
+    var geometryFieldDefinition = fieldDefinitions.get(1);
     assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
 
     var geometryInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
@@ -204,7 +221,7 @@ class GraphqlConfigurationTest {
     assertThat(geometryInputValueDefinition.getName(), is("type"));
     assertType(geometryInputValueDefinition.getType(), "GeometryType");
 
-    var addressesFieldDefinition = fieldDefinitions.get(7);
+    var addressesFieldDefinition = fieldDefinitions.get(2);
     assertThat(addressesFieldDefinition.getName(), is("addresses"));
     assertListType(addressesFieldDefinition.getType(), "Address");
     assertThat(addressesFieldDefinition.getInputValueDefinitions()
@@ -215,20 +232,18 @@ class GraphqlConfigurationTest {
     assertThat(addressTypeInputValueDefinition.getName(), is("addressType"));
     assertListType(addressTypeInputValueDefinition.getType(), "String");
 
-    var visitAddressFieldDefinition = fieldDefinitions.get(8);
+    var visitAddressFieldDefinition = fieldDefinitions.get(3);
     assertThat(visitAddressFieldDefinition.getName(), is("visitAddress"));
     assertType(visitAddressFieldDefinition.getType(), "Address");
     assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
 
-    // visit adres
-    var beersFieldDefinition = fieldDefinitions.get(9);
+    var beersFieldDefinition = fieldDefinitions.get(4);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(10);
+    var beerAggFieldDefinition = fieldDefinitions.get(5);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
-
   }
 
   private static void assertFieldDefinition(FieldDefinition fieldDefinition, String name, String type,
