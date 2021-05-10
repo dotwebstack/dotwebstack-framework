@@ -5,19 +5,19 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
+class DateTimeCoercing implements Coercing<OffsetDateTime, OffsetDateTime> {
 
   @Override
-  public ZonedDateTime serialize(@NonNull Object value) {
-    if (value instanceof ZonedDateTime) {
-      return (ZonedDateTime) value;
+  public OffsetDateTime serialize(@NonNull Object value) {
+    if (value instanceof OffsetDateTime) {
+      return (OffsetDateTime) value;
     }
 
     if (!(value instanceof String)) {
@@ -27,26 +27,26 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
     }
 
     try {
-      return ZonedDateTime.parse((String) value);
+      return OffsetDateTime.parse((String) value);
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date-time string failed.", e);
     }
   }
 
   @Override
-  public ZonedDateTime parseValue(@NonNull Object value) {
+  public OffsetDateTime parseValue(@NonNull Object value) {
     return serialize(value);
   }
 
   @Override
-  public ZonedDateTime parseLiteral(@NonNull Object value) {
+  public OffsetDateTime parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
       StringValue stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return ZonedDateTime.now();
+        return OffsetDateTime.now();
       }
 
-      return ZonedDateTime.parse(stringValue.getValue());
+      return OffsetDateTime.parse(stringValue.getValue());
     }
 
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
