@@ -35,8 +35,12 @@ class DateTimeCoercingTest {
 
   @Test
   void serialize_ThrowsException_ForInvalidDateTimeString() {
-
     assertThrows(CoercingSerializeException.class, () -> coercing.serialize("foo"));
+  }
+
+  @Test
+  void serialize_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.serialize(null));
   }
 
   @Test
@@ -50,8 +54,18 @@ class DateTimeCoercingTest {
   }
 
   @Test
+  void parseValue_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.parseValue(null));
+  }
+
+  @Test
   void parseLiteral_ThrowsException() {
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
+  }
+
+  @Test
+  void parseLiteral_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.parseLiteral(null));
   }
 
   @Test
