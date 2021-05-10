@@ -185,6 +185,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder.scalar(CoreScalars.OBJECT)
         .scalar(CoreScalars.DATE)
-        .scalar(CoreScalars.DATETIME);
+        .scalar(CoreScalars.DATETIME)
+        .scalar(CoreScalars.OFFSETDATETIME);
   }
 }
