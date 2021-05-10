@@ -102,7 +102,7 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     // Assert
-    assertTrue(response.equals("{\"prop1\":\"prop1value\"}"));
+    assertEquals(response, "{\"prop1\":\"prop1value\"}");
   }
 
   @Test

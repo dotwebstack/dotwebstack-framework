@@ -41,7 +41,7 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
   @Override
   public ZonedDateTime parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
-      StringValue stringValue = (StringValue) value;
+      var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
         return ZonedDateTime.now();
       }

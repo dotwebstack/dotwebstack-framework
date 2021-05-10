@@ -61,7 +61,7 @@ public class TypeHelper {
   }
 
   public static String getTypeString(@NonNull Type<?> type) {
-    StringBuilder builder = new StringBuilder();
+    var builder = new StringBuilder();
     if (type instanceof ListType) {
       builder.append("[");
       builder.append(getTypeString(unwrapType(type)));

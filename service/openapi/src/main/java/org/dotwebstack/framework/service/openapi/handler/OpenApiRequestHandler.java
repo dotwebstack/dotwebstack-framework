@@ -21,7 +21,7 @@ public class OpenApiRequestHandler implements HandlerFunction<ServerResponse> {
 
   public OpenApiRequestHandler(InputStream openApiStream) {
     try {
-      YAMLMapper mapper = new YAMLMapper();
+      var mapper = new YAMLMapper();
       ObjectNode specNode = VendorExtensionHelper.removeVendorExtensions(openApiStream, mapper);
       openApiSpec = mapper.writer()
           .writeValueAsString(specNode);

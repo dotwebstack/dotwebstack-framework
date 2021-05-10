@@ -24,7 +24,7 @@ public class RequestBodyResolver {
         throw ExceptionHelper.invalidConfigurationException(
             format("$ref [%s] for requestBody should start with [%s]", ref, REQUEST_BODIES_PATH));
       }
-      String requestBodyName = ref.substring(REQUEST_BODIES_PATH.length());
+      var requestBodyName = ref.substring(REQUEST_BODIES_PATH.length());
       Map<String, RequestBody> requestBodies = openApi.getComponents()
           .getRequestBodies();
       if (Objects.isNull(requestBodies) || Objects.isNull(requestBodies.get(requestBodyName))) {

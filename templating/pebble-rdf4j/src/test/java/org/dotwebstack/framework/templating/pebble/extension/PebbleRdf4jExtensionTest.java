@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class PebbleRdf4jExtensionTest {
+class PebbleRdf4jExtensionTest {
 
   private PebbleRdf4jExtension pebbleRdf4jExtension;
 
@@ -20,7 +20,7 @@ public class PebbleRdf4jExtensionTest {
   private JsonLdFilter jsonLdFilterMock;
 
   @Test
-  public void pebbleExtensionShouldHaveOneFilter() {
+  void pebbleExtensionShouldHaveOneFilter() {
     // Arrange
     pebbleRdf4jExtension = new PebbleRdf4jExtension(jsonLdFilterMock);
 

@@ -49,10 +49,10 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   private LocalDate getLocalDateFromDateTimeString(@NonNull String value) {
     try {
-      ZonedDateTime zonedDateTime = ZonedDateTime.parse(value);
+      var zonedDateTime = ZonedDateTime.parse(value);
       return zonedDateTime.toLocalDate();
     } catch (DateTimeParseException e) {
-      LocalDateTime localDateTime = LocalDateTime.parse(value);
+      var localDateTime = LocalDateTime.parse(value);
       return localDateTime.toLocalDate();
     }
   }
@@ -65,7 +65,7 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
   @Override
   public LocalDate parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
-      StringValue stringValue = (StringValue) value;
+      var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
         return LocalDate.now();
       }

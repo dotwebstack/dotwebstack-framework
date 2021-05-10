@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 
-public class SchemaSummaryContextValidatorTest {
+class SchemaSummaryContextValidatorTest {
 
   private OpenAPI openApi;
 
@@ -35,7 +35,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_succeeds_query1Get() {
+  void validate_succeeds_query1Get() {
     // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
@@ -46,7 +46,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_succeeds_query1Post() {
+  void validate_succeeds_query1Post() {
     // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.POST);
 
@@ -57,7 +57,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_succeeds_query2Get() {
+  void validate_succeeds_query2Get() {
     // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query2", HttpMethod.GET);
 
@@ -68,7 +68,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_graphQlFieldNotFound() throws IOException {
+  void validate_throwsException_graphQlFieldNotFound() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
@@ -81,7 +81,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_typeMismatch() throws IOException {
+  void validate_throwsException_typeMismatch() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
@@ -94,7 +94,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_dataTypeMismatchToNumber() {
+  void validate_throwsException_dataTypeMismatchToNumber() {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("number", "String", ""));
@@ -107,7 +107,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_dataTypeMismatchToInteger() {
+  void validate_throwsException_dataTypeMismatchToInteger() {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("integer", "Long", ""));
@@ -126,7 +126,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_dataTypeMismatchToBoolean() {
+  void validate_throwsException_dataTypeMismatchToBoolean() {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("boolean", "Long", ""));
@@ -144,7 +144,7 @@ public class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  public void validate_throwsException_dataTypeMismatchStringToInteger() throws IOException {
+  void validate_throwsException_dataTypeMismatchStringToInteger() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o1_prop2: Float!", "o1_prop2: Boolean!");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);

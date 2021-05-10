@@ -17,11 +17,11 @@ public class ResourceLoaderUtils {
 
   @SneakyThrows
   public static Optional<Resource> getResource(@NonNull String resourceLocation) {
-    URI uri = resolve(ResourceProperties.getFileConfigPath(), resourceLocation);
+    var uri = resolve(ResourceProperties.getFileConfigPath(), resourceLocation);
     if (uriExists(uri)) {
       return Optional.of(new UrlResource(uri));
     } else {
-      ClassPathResource resource = new ClassPathResource(ResourceProperties.getConfigPath() + resourceLocation);
+      var resource = new ClassPathResource(ResourceProperties.getConfigPath() + resourceLocation);
       if (resource.exists()) {
         return Optional.of(resource);
       }

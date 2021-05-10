@@ -88,7 +88,7 @@ public class CoreRequestHelper {
 
   public static Map<String, Object> addEvaluatedDwsParameters(Map<String, Object> inputParams,
       Map<String, String> dwsParameters, ServerRequest request, JexlHelper jexlHelper) {
-    JexlContext jexlContext = buildJexlContext(request, inputParams);
+    var jexlContext = buildJexlContext(request, inputParams);
     Map<String, Object> allParams = new HashMap<>(inputParams);
     dwsParameters.forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
         .ifPresent(value -> allParams.put(name, value)));
@@ -96,7 +96,7 @@ public class CoreRequestHelper {
   }
 
   private static JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
-    MapContext mapContext = new MapContext();
+    var mapContext = new MapContext();
     mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
     mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
     return mapContext;

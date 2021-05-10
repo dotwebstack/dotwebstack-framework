@@ -10,12 +10,10 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
-import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -69,11 +67,11 @@ public class ResponseTemplateBuilder {
       String queryName) {
 
     Map<String, Header> headers = apiResponse.getHeaders();
-    Content content = apiResponse.getContent();
+    var content = apiResponse.getContent();
 
     Map<String, ResponseHeader> responseHeaders = createResponseHeaders(headers, queryName);
 
-    ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplate.builder()
+    var responseTemplateBuilder = ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
         .responseHeaders(responseHeaders)
         .isDefault(true);
@@ -91,7 +89,7 @@ public class ResponseTemplateBuilder {
   private Function<Map.Entry<String, MediaType>, ResponseTemplate> mapToResponseTemplate(OpenAPI openApi,
       String responseCode, String queryName, ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder) {
     return entry -> {
-      MediaType mediaType = entry.getValue();
+      var mediaType = entry.getValue();
 
       return responseTemplateBuilder.mediaType(org.springframework.http.MediaType.valueOf(entry.getKey()))
           .responseObject(getResponseObject(openApi, responseCode, mediaType, queryName))
@@ -223,7 +221,7 @@ public class ResponseTemplateBuilder {
                 responseObject);
           }
 
-          ResponseObject composedSchema =
+          var composedSchema =
               createResponseObject(responseObject.getIdentifier(), schema, ref, responseObject, true, false);
 
           if (Objects.nonNull(schema.get$ref())) {
@@ -260,7 +258,7 @@ public class ResponseTemplateBuilder {
     }
 
     responseObject.getSummary()
-        .setItems(ImmutableList.of(item));
+        .setItems(List.of(item));
   }
 
   @SuppressWarnings("rawtypes")
@@ -290,8 +288,7 @@ public class ResponseTemplateBuilder {
             return createResponseObject(propId, referenceMap.get(ref), responseObject);
           }
 
-          ResponseObject child =
-              createResponseObject(propId, propSchema, ref, responseObject, childRequired, childNillable);
+          var child = createResponseObject(propId, propSchema, ref, responseObject, childRequired, childNillable);
 
           if (Objects.nonNull(ref)) {
             referenceMap.put(ref, child.getSummary());
@@ -385,7 +382,7 @@ public class ResponseTemplateBuilder {
     }
 
     if (result instanceof String) {
-      return Map.of(X_DWS_EXPR_VALUE, (String) result);
+      return Map.of(X_DWS_EXPR_VALUE, result.toString());
     }
 
     if (!(result instanceof Map) || !((Map) result).containsKey(X_DWS_EXPR_VALUE)) {

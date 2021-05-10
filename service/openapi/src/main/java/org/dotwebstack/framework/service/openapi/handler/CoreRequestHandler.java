@@ -30,13 +30,11 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
-import graphql.GraphQLError;
 import graphql.execution.InputMapDefinesTooManyFieldsException;
 import graphql.execution.NonNullableValueCoercedAsNullException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -63,7 +61,6 @@ import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
-import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
@@ -72,7 +69,6 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContextValidat
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
-import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -137,14 +133,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    String requestId = UUID.randomUUID()
+    var requestId = UUID.randomUUID()
         .toString();
     return Mono.fromCallable(() -> getResponse(request, requestId))
         .publishOn(Schedulers.boundedElastic());
   }
 
   public void validateSchema() {
-    GraphQlField field = responseSchemaContext.getGraphQlField();
+    var field = responseSchemaContext.getGraphQlField();
     if (responseSchemaContext.getResponses()
         .stream()
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
@@ -155,9 +151,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(requiredPath -> validateRequiredField(field, requiredPath, field.getName()));
     validateParameters(field, responseSchemaContext.getParameters(),
         getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()), pathName);
-    RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
+    var requestBodyContext = responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
-      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      var requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .validate(field, requestBody, pathName);
     }
@@ -171,7 +167,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("rawtypes")
   Map<String, Schema> getRequestBodyProperties(RequestBodyContext requestBodyContext) {
     if (Objects.nonNull(requestBodyContext) && Objects.nonNull(requestBodyContext.getRequestBodySchema())) {
-      io.swagger.v3.oas.models.media.MediaType mediaType = requestBodyContext.getRequestBodySchema()
+      var mediaType = requestBodyContext.getRequestBodySchema()
           .getContent()
           .get(MediaType.APPLICATION_JSON.toString());
       Schema<?> schema = SchemaResolver.resolveSchema(openApi, mediaType.getSchema(), mediaType.getSchema()
@@ -183,7 +179,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    JexlContext jexlContext =
+    var jexlContext =
         getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField(), null);
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
@@ -243,7 +239,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
       }
 
-      ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+      var executionInput = ExecutionInput.newExecutionInput()
           .query(query)
           .variables(inputParams)
           .build();
@@ -260,9 +256,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         throw notFoundException("Did not find data for your response.");
       }
 
-      HttpStatus httpStatus = getHttpStatus();
+      var httpStatus = getHttpStatus();
       if (httpStatus.is3xxRedirection()) {
-        URI location = getLocationHeaderUri(inputParams, result.getData());
+        var location = getLocationHeaderUri(inputParams, result.getData());
 
         return ServerResponse.status(httpStatus)
             .location(location)
@@ -276,7 +272,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       List<MediaType> acceptHeaders = request.headers()
           .accept();
-      ResponseTemplate template = getResponseTemplate(acceptHeaders);
+      var template = getResponseTemplate(acceptHeaders);
 
       String body;
 
@@ -293,7 +289,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
 
-      ServerResponse.BodyBuilder bodyBuilder = ServerResponse.ok()
+      var bodyBuilder = ServerResponse.ok()
           .contentType(template.getMediaType());
       responseHeaders.forEach(bodyBuilder::header);
 
@@ -309,15 +305,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws GraphQlErrorException {
-    GraphQLError graphQlError = result.getErrors()
+    var graphQlError = result.getErrors()
         .get(0);
 
     Optional<ThrowableProblem> throwableProblem = Optional.of(graphQlError)
-        .filter(error -> error instanceof ExceptionWhileDataFetching)
+        .filter(ExceptionWhileDataFetching.class::isInstance)
         .map(ExceptionWhileDataFetching.class::cast)
         .map(ExceptionWhileDataFetching::getException)
-        .filter(throwable -> throwable instanceof ThrowableProblem)
-        .map(throwable -> (ThrowableProblem) throwable);
+        .filter(ThrowableProblem.class::isInstance)
+        .map(ThrowableProblem.class::cast);
 
     if (throwableProblem.isPresent()) {
       throw throwableProblem.get();
@@ -343,10 +339,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private String getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data,
       ResponseTemplate template) {
-    URI uri = request.uri();
+    var uri = request.uri();
 
     if (Objects.nonNull(template.getResponseObject())) {
-      ResponseWriteContext responseWriteContext =
+      var responseWriteContext =
           createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
               inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
@@ -377,7 +373,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private URI getLocationHeaderUri(Map<String, Object> inputParams, Map<String, Object> resultData) {
-    JexlContext jexlContext = getJexlContext(properties.getAllProperties(), inputParams, null, resultData);
+    var jexlContext = getJexlContext(properties.getAllProperties(), inputParams, null, resultData);
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
         .map(ResponseTemplate::getResponseHeaders)
@@ -439,7 +435,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
               .keySet());
 
       for (Parameter parameter : this.responseSchemaContext.getParameters()) {
-        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
+        var handler = paramHandlerRouter.getParamHandler(parameter);
         handler.getValue(request, parameter, responseSchemaContext)
             .ifPresent(value -> result.put(handler.getParameterName(parameter), value));
       }
@@ -470,10 +466,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = resolveUrlAndHeaderParameters(request);
-    RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
+    var requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
 
     if (Objects.nonNull(requestBodyContext)) {
-      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      var requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
 
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValues(request, requestBodyContext, requestBody, result)

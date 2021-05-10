@@ -28,7 +28,7 @@ public class ResponseContextHelper {
         .findFirst();
 
     if (successResponse.isPresent()) {
-      ResponseTemplate responseTemplate = successResponse.get();
+      var responseTemplate = successResponse.get();
       Set<String> requiredFields =
           getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
       requiredFields.addAll(responseSchemaContext.getRequiredFields());
@@ -40,7 +40,7 @@ public class ResponseContextHelper {
 
   private static Set<String> getResponseObject(GraphQlField graphQlField, Map<String, Object> inputParams,
       ResponseTemplate responseTemplate) {
-    ResponseObject responseObject = responseTemplate.getResponseObject();
+    var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
       return Collections.emptySet();
@@ -52,7 +52,7 @@ public class ResponseContextHelper {
   static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
       GraphQlField graphQlField, Map<String, Object> inputParams) {
     Map<String, SchemaSummary> responseObjects = new HashMap<>();
-    StringJoiner joiner = getStringJoiner(prefix);
+    var joiner = getStringJoiner(prefix);
     SchemaSummary summary = responseObject.getSummary();
     boolean isExpanded = isExpanded(inputParams, getPathString(prefix, responseObject));
     addPrefixToPath(summary, responseObject, joiner, responseObjects, isExpanded);
@@ -97,7 +97,7 @@ public class ResponseContextHelper {
   }
 
   private static boolean isHiddenRoot(ResponseObject responseObject) {
-    ResponseObject parent = responseObject.getParent();
+    var parent = responseObject.getParent();
     while (parent != null) {
       if (!parent.getSummary()
           .isTransient()
@@ -124,7 +124,7 @@ public class ResponseContextHelper {
       Map<String, SchemaSummary> responseObjects, StringJoiner joiner, ResponseObject responseObject) {
 
     GraphQlField subGraphQlField;
-    String prefix = joiner.toString();
+    var prefix = joiner.toString();
     List<ResponseObject> subSchemas;
 
     SchemaSummary summary = responseObject.getSummary();
@@ -156,7 +156,7 @@ public class ResponseContextHelper {
   }
 
   public static String getPathString(String prefix, ResponseObject responseObject) {
-    StringJoiner expandJoiner = new StringJoiner(".");
+    var expandJoiner = new StringJoiner(".");
     if (!prefix.isBlank()) {
       expandJoiner.add(prefix);
     }
@@ -165,7 +165,7 @@ public class ResponseContextHelper {
   }
 
   private static StringJoiner getStringJoiner(String prefix) {
-    StringJoiner joiner = new StringJoiner(".");
+    var joiner = new StringJoiner(".");
     if (!prefix.isEmpty()) {
       joiner.add(prefix);
     }

@@ -28,9 +28,9 @@ public class GraphQlQueryBuilder {
 
     Set<String> requiredPaths = getPathsForSuccessResponse(responseSchemaContext, inputParams);
 
-    StringBuilder builder = new StringBuilder();
-    StringJoiner joiner = new StringJoiner(",", "{", "}");
-    StringJoiner argumentJoiner = new StringJoiner(",");
+    var builder = new StringBuilder();
+    var joiner = new StringJoiner(",", "{", "}");
+    var argumentJoiner = new StringJoiner(",");
 
     Set<String> queriedPaths = new HashSet<>();
     addToQuery(responseSchemaContext.getGraphQlField(), requiredPaths, queriedPaths, joiner, argumentJoiner,
@@ -68,7 +68,7 @@ public class GraphQlQueryBuilder {
   protected void addToQuery(GraphQlField field, Set<String> requiredPaths, Set<String> queriedPaths,
       StringJoiner joiner, StringJoiner headerArgumentJoiner, Map<String, Object> inputParams, boolean isTopLevel,
       String path) {
-    StringJoiner argumentJoiner = new StringJoiner(",", "(", ")");
+    var argumentJoiner = new StringJoiner(",", "(", ")");
     argumentJoiner.setEmptyValue("");
     if (!field.getArguments()
         .isEmpty() && isTopLevel) {
@@ -85,7 +85,7 @@ public class GraphQlQueryBuilder {
         || isExpanded(inputParams, path))) {
       if (!field.getFields()
           .isEmpty()) {
-        StringJoiner childJoiner = new StringJoiner(",", "{", "}");
+        var childJoiner = new StringJoiner(",", "{", "}");
         field.getFields()
             .forEach(childField -> {
               String childPath = (path.isEmpty() ? "" : path + ".") + childField.getName();

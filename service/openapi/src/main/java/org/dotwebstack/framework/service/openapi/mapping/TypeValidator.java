@@ -10,7 +10,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTE
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.NUMBER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
@@ -33,13 +33,13 @@ public class TypeValidator {
         }
         break;
       case NUMBER_TYPE:
-        if (!ImmutableList.of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLString.getName())
+        if (!List.of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
-        if (!ImmutableList.of(GraphQLInt.getName(), GraphQLString.getName())
+        if (!List.of(GraphQLInt.getName(), GraphQLString.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_TO, oasType, identifier, graphQlType);
         }
@@ -61,13 +61,13 @@ public class TypeValidator {
       case STRING_TYPE:
         break;
       case NUMBER_TYPE:
-        if (!ImmutableList.of(GraphQLFloat.getName(), GraphQLInt.getName())
+        if (!List.of(GraphQLFloat.getName(), GraphQLInt.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;
       case INTEGER_TYPE:
-        if (!ImmutableList.of(GraphQLInt.getName())
+        if (!List.of(GraphQLInt.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }

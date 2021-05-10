@@ -33,7 +33,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 class CoreRequestHelperTest {
 
   @Test
-  public void parameterValidation_throwsError_withNonexistentParam() {
+  void parameterValidation_throwsError_withNonexistentParam() {
     // arrange
     Set<String> schemaParams = Set.of("extends");
     Set<String> givenParams = new LinkedHashSet<>();
@@ -48,7 +48,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void parameterValidation_throwsError_withPartialNonexistentParams() {
+  void parameterValidation_throwsError_withPartialNonexistentParams() {
     // arrange
     Set<String> schemaParams = Set.of("cat");
     Set<String> givenParams = Set.of("cat", "dog");
@@ -60,7 +60,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void parameterValidation_doesNotThrowError_withOnlyExistingParam() {
+  void parameterValidation_doesNotThrowError_withOnlyExistingParam() {
     // arrange
     Set<String> schemaParams = Set.of("cat", "dog");
     Set<String> givenParams = Set.of("cat");
@@ -70,7 +70,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void parameterValidation_ThrowsError_withNonexistentRequestBody() {
+  void parameterValidation_ThrowsError_withNonexistentRequestBody() {
     // arrange
     MockServerWebExchange mockServerWebExchange = MockServerWebExchange.from(MockServerHttpRequest.post("/")
         .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +83,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void addEvaluatedDwsParameters_addsEvaluatedJexlParams() {
+  void addEvaluatedDwsParameters_addsEvaluatedJexlParams() {
     // arrange
     Map<String, Object> inputParams = Collections.singletonMap("someParam", "someValue");
     Map<String, String> dwsParameters = Collections.singletonMap("dwsParam", "request.path()");
@@ -103,7 +103,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void validateRequiredPath_DoesNotThrowError_withValidInput() {
+  void validateRequiredPath_DoesNotThrowError_withValidInput() {
     // Arrange
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()
@@ -116,7 +116,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void validateRequiredPath_DoesNotThrowError_withValidNestedInput() {
+  void validateRequiredPath_DoesNotThrowError_withValidNestedInput() {
     // Arrange
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()
@@ -132,7 +132,7 @@ class CoreRequestHelperTest {
   }
 
   @Test
-  public void validateRequiredPath_ThrowsErrorWithInvalidInput() {
+  void validateRequiredPath_ThrowsErrorWithInvalidInput() {
     // Arrange
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()

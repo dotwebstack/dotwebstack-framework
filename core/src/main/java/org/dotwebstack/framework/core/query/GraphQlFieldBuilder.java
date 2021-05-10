@@ -9,7 +9,6 @@ import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.Type;
-import graphql.language.TypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,9 +54,9 @@ public class GraphQlFieldBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private List<GraphQlField> getGraphQlFields(FieldDefinition fieldDefinition,
       Map<String, GraphQlField> typeNameFieldMap) {
-    Type type = fieldDefinition.getType();
-    Type baseType = TypeHelper.getBaseType(type);
-    TypeDefinition typeDefinition = this.registry.getType(baseType)
+    var type = fieldDefinition.getType();
+    var baseType = TypeHelper.getBaseType(type);
+    var typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
     if (typeDefinition instanceof ScalarTypeDefinition) {
       return Collections.emptyList();
@@ -96,13 +95,13 @@ public class GraphQlFieldBuilder {
   private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
     GraphQlArgument.GraphQlArgumentBuilder builder = GraphQlArgument.builder();
 
-    Type inputValueDefinitionType = inputValueDefinition.getType();
+    var inputValueDefinitionType = inputValueDefinition.getType();
     builder.required(inputValueDefinitionType instanceof NonNullType);
     builder.defaultValue(inputValueDefinition.getDefaultValue());
 
     Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
     String baseTypeName = TypeHelper.getTypeName(baseType);
-    TypeDefinition typeDefinition = this.registry.getType(baseType)
+    var typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
 
     builder.name(inputValueDefinition.getName())

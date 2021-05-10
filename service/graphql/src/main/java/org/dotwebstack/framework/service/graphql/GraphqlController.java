@@ -24,7 +24,7 @@ class GraphqlController {
   @CrossOrigin
   @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<Map<String, Object>> handleGet(@RequestParam("query") String query) {
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+    var executionInput = ExecutionInput.newExecutionInput()
         .query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();

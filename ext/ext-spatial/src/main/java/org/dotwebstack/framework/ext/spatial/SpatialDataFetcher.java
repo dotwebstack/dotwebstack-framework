@@ -59,12 +59,12 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkt(Geometry geometry) {
-    WKTWriter wktWriter = new WKTWriter();
+    var wktWriter = new WKTWriter();
     return wktWriter.write(geometry);
   }
 
   private String createWkb(Geometry geometry) {
-    WKBWriter wkbWriter = new WKBWriter();
+    var wkbWriter = new WKBWriter();
     return encodeHexString(wkbWriter.write(geometry));
   }
 }

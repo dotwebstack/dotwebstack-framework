@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class GraphQlFormatHelperTest {
 
   @Test
-  public void formatQuery_returnsFormattedQuery_forGraphQlQuery() {
+  void formatQuery_returnsFormattedQuery_forGraphQlQuery() {
     // Arrange
     String unformatted = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
     String expected = " {\n" + "\t brewery(identifier: \"123\")  {\n" + "\t\t identifier,\n" + "\t\t name,\n"
@@ -21,7 +21,7 @@ class GraphQlFormatHelperTest {
   }
 
   @Test
-  public void formatQuery_returnsFormattedQuery_forMultiLayeredGraphQlQuery() {
+  void formatQuery_returnsFormattedQuery_forMultiLayeredGraphQlQuery() {
     // Arrange
     String unformatted = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";
     String expected = " {\n" + "\t brewery(identifier: \"123\")  {\n" + "\t\t identifier,\n" + "\t\t name,\n"
@@ -34,7 +34,7 @@ class GraphQlFormatHelperTest {
   }
 
   @Test
-  public void formatQuery_returnsFormattedQuery_forMultiArgumentGraphQlQuery() {
+  void formatQuery_returnsFormattedQuery_forMultiArgumentGraphQlQuery() {
     // Arrange
     String unformatted = "{ breweriesWithInputObject(input: {nestedInput: {nestedNestedInput: {"
         + "name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"]},"

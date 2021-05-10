@@ -51,10 +51,10 @@ public class PebbleTemplatingConfiguration {
   }
 
   private Loader<?> getTemplateLoader() {
-    ClasspathLoader classpathLoader = new ClasspathLoader();
+    var classpathLoader = new ClasspathLoader();
     classpathLoader.setPrefix(CLASSPATH_TEMPLATES_LOCATION);
 
-    FileLoader fileLoader = new FileLoader();
+    var fileLoader = new FileLoader();
     fileLoader.setPrefix(EXTERNAL_TEMPLATES_LOCATION);
 
     return new DelegatingLoader(List.of(classpathLoader, fileLoader));

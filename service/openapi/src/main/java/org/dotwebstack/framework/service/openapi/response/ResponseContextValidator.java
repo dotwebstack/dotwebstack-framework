@@ -117,14 +117,14 @@ public class ResponseContextValidator {
   }
 
   private String getPath(List<ResponseObject> parents, String identifier) {
-    StringJoiner joiner = new StringJoiner(".");
-    int arrayCount = 0;
+    var joiner = new StringJoiner(".");
+    var arrayCount = 0;
     for (ResponseObject parent : parents) {
       if (ARRAY_TYPE.equals(parent.getSummary()
           .getType())) {
         arrayCount++;
       } else {
-        StringBuilder builder = new StringBuilder(parent.getIdentifier());
+        var builder = new StringBuilder(parent.getIdentifier());
         if (parent.getSummary()
             .isTransient()) {
           builder.insert(0, "<")

@@ -134,7 +134,7 @@ public class JexlHelper {
 
   public <T> Optional<T> evaluateDirectiveArgument(GraphQLDirective directive, String argumentName, JexlContext context,
       Class<T> clazz) {
-    String expressionString = DirectiveUtils.getArgument(directive, argumentName, String.class);
+    var expressionString = DirectiveUtils.getArgument(directive, argumentName, String.class);
     if (expressionString == null) {
       return Optional.empty();
     } else {

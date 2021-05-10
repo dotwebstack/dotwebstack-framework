@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class QueryBuilderTest {
+class QueryBuilderTest {
 
   private TypeDefinitionRegistry registry;
 
@@ -38,7 +39,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void toQuery_returns_validQuery() {
+  void toQuery_returns_validQuery() {
     // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
@@ -58,7 +59,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
+  void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
@@ -66,7 +67,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredPathsAreQueried() {
+  void validateRequiredPathsQueried_doesNotReturnError_whenRequiredPathsAreQueried() {
     Set<String> requiredPaths = Set.of("beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
@@ -74,7 +75,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void validateRequiredPathsQueried_returnsError_whenRequiredPathsAreNotQueried() {
+  void validateRequiredPathsQueried_returnsError_whenRequiredPathsAreNotQueried() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
@@ -83,7 +84,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void toQuery_returns_validQueryWithArguments() {
+  void toQuery_returns_validQueryWithArguments() {
     // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
@@ -106,7 +107,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
+  void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
     // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
@@ -142,9 +143,9 @@ public class QueryBuilderTest {
   }
 
   private TypeDefinitionRegistry loadTypeDefinitionRegistry() {
-    Reader reader = new InputStreamReader(this.getClass()
+    Reader reader = new InputStreamReader(Objects.requireNonNull(this.getClass()
         .getClassLoader()
-        .getResourceAsStream("config/brewery.graphqls"));
+        .getResourceAsStream("config/brewery.graphqls")));
     return new SchemaParser().parse(reader);
   }
 }
