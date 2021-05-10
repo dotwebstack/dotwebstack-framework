@@ -22,6 +22,12 @@ public final class CoreScalars {
       .coercing(new DateTimeCoercing())
       .build();
 
+  public static final GraphQLScalarType OFFSETDATETIME = GraphQLScalarType.newScalar()
+      .name("OffsetDateTime")
+      .description("OffsetDateTime type")
+      .coercing(new OffsetDateTimeCoercing())
+      .build();
+
   private CoreScalars() {}
 
 }

@@ -57,6 +57,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.OBJECT.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.OFFSETDATETIME.getName()));
     typeDefinitionRegistry.add(createSortEnumDefinition());
     typeDefinitionRegistry.add(createSortInputObjectDefinition());
     typeDefinitionRegistry.add(createTransformDefinition());
