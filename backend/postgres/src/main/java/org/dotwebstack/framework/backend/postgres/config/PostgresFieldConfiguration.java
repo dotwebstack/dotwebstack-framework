@@ -28,8 +28,15 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private boolean isList = false;
 
+  private boolean isNested = false;
+
   public boolean isScalar() {
-    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null;
+    return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null
+        && !isNested;
+  }
+
+  public boolean isSubselect() {
+    return !isScalar() && !isNested;
   }
 
   public boolean isAggregate() {

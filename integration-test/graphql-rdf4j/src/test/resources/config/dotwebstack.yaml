@@ -94,10 +94,6 @@ objectTypes:
         nullable: true
       geometry:
         type: Geometry
-        arguments:
-          - name: type
-            type: GeometryType
-            nullable: true
 
   Address:
     backend: rdf4j

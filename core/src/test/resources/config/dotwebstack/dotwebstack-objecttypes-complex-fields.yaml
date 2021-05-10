@@ -6,21 +6,8 @@ objectTypes:
     fields:
       identifier:
         type: ID
-      name:
-        type: String
-      status:
-        type: Status
-      numberOfEmpoyees:
-        type: Int
-      revenue:
-        type: Float
-      registrationDate:
-        type: Date
       geometry:
         type: Geometry
-<<<<<<< HEAD
-      address:
-=======
       addresses:
         type: Address
         list: true
@@ -31,7 +18,6 @@ objectTypes:
             nullable: true
             list: true
       visitAddress:
->>>>>>> v0.3
         type: Address
         nullable: true
       beers:
@@ -64,8 +50,4 @@ objectTypes:
         type: String
       city:
         type: String
-
-enumerations:
-  STATUS:
-    values: [ACTIVE, INACTIVE]
 

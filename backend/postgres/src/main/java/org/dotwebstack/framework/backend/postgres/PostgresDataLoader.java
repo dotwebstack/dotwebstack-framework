@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -98,7 +99,8 @@ public class PostgresDataLoader implements BackendDataLoader {
     return this.execute(queryHolder.getQuery())
         .fetch()
         .all()
-        .map(row -> queryHolder.getMapAssembler().apply(row));
+        .map(row -> queryHolder.getMapAssembler()
+            .apply(row));
   }
 
   @Override
@@ -170,7 +172,9 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private List<String> getFilters(LoadEnvironment environment) {
     Map<String, ContextArgumentConfiguration> contextArguments = dotWebStackConfiguration.getContextArguments();
-    return environment.getExecutionStepInfo().getFieldDefinition().getArguments()
+    return environment.getExecutionStepInfo()
+        .getFieldDefinition()
+        .getArguments()
         .stream()
         .filter(argument -> contextArguments.containsKey(argument.getName()))
         .map(argument -> getFilter(environment, contextArguments.get(argument.getName()), argument))
@@ -178,8 +182,11 @@ public class PostgresDataLoader implements BackendDataLoader {
         .collect(Collectors.toList());
   }
 
-  private String getFilter(LoadEnvironment environment, ContextArgumentConfiguration contextArgumentConfiguration, graphql.schema.GraphQLArgument argument) {
-    Object value = environment.getExecutionStepInfo().getArguments().get(argument.getName());
+  private String getFilter(LoadEnvironment environment, ContextArgumentConfiguration contextArgumentConfiguration,
+      graphql.schema.GraphQLArgument argument) {
+    Object value = environment.getExecutionStepInfo()
+        .getArguments()
+        .get(argument.getName());
     String filterExpr = contextArgumentConfiguration.getFilterExpr();
 
     switch (contextArgumentConfiguration.getType()) {
@@ -190,9 +197,10 @@ public class PostgresDataLoader implements BackendDataLoader {
         // TODO filter.replace $var to_timestamp(value, 'MM/DD/YYYY HH24:MI:SS')
         throw new UnsupportedOperationException("DateTime not implemented yet!");
       case STRING:
-        return filterExpr.replace("$val", "'".concat((String)value).concat("'"));
+        return filterExpr.replace("$val", "'".concat((String) value)
+            .concat("'"));
       case BOOLEAN:
-        boolean useFilter = (boolean)value;
+        boolean useFilter = (boolean) value;
         if (useFilter) {
           return filterExpr;
         }
@@ -200,6 +208,8 @@ public class PostgresDataLoader implements BackendDataLoader {
       case INT:
       case FLOAT:
         return filterExpr.replace("$val", value.toString());
+      default:
+        throw new IllegalStateException(String.format("Unknown type %s.", contextArgumentConfiguration.getType()));
     }
 
     return null;

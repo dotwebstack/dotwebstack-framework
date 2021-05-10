@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.ListType;
@@ -22,34 +19,30 @@ import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.idl.TypeUtil;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
 
-public class GraphqlConfigurationTest {
+class GraphqlConfigurationTest {
+
+  private final DotWebStackConfigurationReader dwsReader =
+      new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
 
   private final GraphqlConfiguration graphqlConfiguration = new GraphqlConfiguration();
 
+
   @Test
-  public void typeDefinitionRegistry_registerQueries_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-queries.yaml");
+  void typeDefinitionRegistry_registerQueries_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -81,8 +74,8 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-queries.yaml");
+  void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-queries.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -103,8 +96,8 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-subscriptions.yaml");
+  void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -125,8 +118,8 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-no-subscriptions.yaml");
+  void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-subscriptions.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -136,8 +129,8 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations.yaml");
+  void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-enumerations.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -156,15 +149,15 @@ public class GraphqlConfigurationTest {
   }
 
   @Test
-  public void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
+  void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
     assertThrows(InvalidConfigurationException.class, () -> {
-      readDotWebStackConfiguration("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
+      dwsReader.read("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
     });
   }
 
   @Test
-  public void typeDefinitionRegistry_registerObjectTypes_whenConfigured() {
-    var dotWebStackConfiguration = readDotWebStackConfiguration("dotwebstack/dotwebstack-objecttypes.yaml");
+  void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
     var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
 
@@ -176,7 +169,7 @@ public class GraphqlConfigurationTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(10));
+    assertThat(fieldDefinitions.size(), is(6));
 
     var identifierFieldDefinition = fieldDefinitions.get(0);
     assertFieldDefinition(identifierFieldDefinition, "identifier", "ID");
@@ -195,8 +188,25 @@ public class GraphqlConfigurationTest {
 
     var regDateFieldDefinition = fieldDefinitions.get(5);
     assertFieldDefinition(regDateFieldDefinition, "registrationDate", "Date");
+  }
 
-    var geometryFieldDefinition = fieldDefinitions.get(6);
+  @Test
+  void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
+
+    var registry = graphqlConfiguration.typeDefinitionRegistry(dotWebStackConfiguration);
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Brewery")
+        .isPresent(), is(true));
+    var breweryTypeDefinition = registry.getType("Brewery")
+        .orElseThrow();
+    assertThat(breweryTypeDefinition.getName(), is("Brewery"));
+    assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(6));
+
+    var geometryFieldDefinition = fieldDefinitions.get(1);
     assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
 
     var geometryInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
@@ -204,19 +214,29 @@ public class GraphqlConfigurationTest {
     assertThat(geometryInputValueDefinition.getName(), is("type"));
     assertType(geometryInputValueDefinition.getType(), "GeometryType");
 
-    var addressFieldDefinition = fieldDefinitions.get(7);
-    assertThat(addressFieldDefinition.getName(), is("address"));
-    assertType(addressFieldDefinition.getType(), "Address");
-    assertThat(addressFieldDefinition.getInputValueDefinitions(), empty());
+    var addressesFieldDefinition = fieldDefinitions.get(2);
+    assertThat(addressesFieldDefinition.getName(), is("addresses"));
+    assertListType(addressesFieldDefinition.getType(), "Address");
+    assertThat(addressesFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
 
-    var beersFieldDefinition = fieldDefinitions.get(8);
+    var addressTypeInputValueDefinition = addressesFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(addressTypeInputValueDefinition.getName(), is("addressType"));
+    assertListType(addressTypeInputValueDefinition.getType(), "String");
+
+    var visitAddressFieldDefinition = fieldDefinitions.get(3);
+    assertThat(visitAddressFieldDefinition.getName(), is("visitAddress"));
+    assertType(visitAddressFieldDefinition.getType(), "Address");
+    assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
+
+    var beersFieldDefinition = fieldDefinitions.get(4);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(9);
+    var beerAggFieldDefinition = fieldDefinitions.get(5);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
-
   }
 
   private static void assertFieldDefinition(FieldDefinition fieldDefinition, String name, String type,
@@ -249,35 +269,6 @@ public class GraphqlConfigurationTest {
   private static void assertNonNullListType(Type<?> type, String typeName) {
     assertThat(type, instanceOf(NonNullType.class));
     assertListType(TypeUtil.unwrapOne(type), typeName);
-  }
-
-  private DotWebStackConfiguration readDotWebStackConfiguration(String filename) {
-    var scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
-    var objectMapper = new ObjectMapper(new YAMLFactory());
-
-    objectMapper.registerSubtypes(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
-
-    return ResourceLoaderUtils.getResource(filename)
-        .map(resource -> {
-          try {
-            return objectMapper.readValue(resource.getInputStream(), DotWebStackConfiguration.class);
-          } catch (IOException e) {
-            throw new InvalidConfigurationException("Error while reading config file.", e);
-          }
-        })
-        .map(configuration -> {
-          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
-              .getValidator()
-              .validate(configuration);
-
-          if (!violations.isEmpty()) {
-            throw invalidConfigurationException("Config file contains validation errors: {}", violations);
-          }
-
-          return configuration;
-        })
-        .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", filename));
   }
 
   @Data

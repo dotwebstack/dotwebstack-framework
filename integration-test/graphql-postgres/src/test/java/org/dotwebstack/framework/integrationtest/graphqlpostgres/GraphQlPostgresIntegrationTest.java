@@ -192,6 +192,28 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_ReturnsBrewery_withNestedObject() {
+    String query =
+        "{brewery(identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status history{age history}}}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertTrue(result.getErrors()
+        .isEmpty());
+    Map<String, Object> data = result.getData();
+
+    assertThat(data.size(), is(1));
+    assertTrue(data.containsKey("brewery"));
+
+    Map<String, Object> brewery = ((Map<String, Object>) data.get("brewery"));
+    assertTrue(brewery.containsKey("history"));
+    Map<String, Object> history = ((Map<String, Object>) brewery.get("history"));
+    assertThat(history.size(), is(2));
+    assertThat(history.get("age"), is(1988));
+    assertThat(history.get("history"), is("hip and new"));
+  }
+
+  @Test
   void graphQlQuery_returnsBreweriesrWithMappedBy_default() {
     String query = "{breweries{name status beers{name}}}";
 

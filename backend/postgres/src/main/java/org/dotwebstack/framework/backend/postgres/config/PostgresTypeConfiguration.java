@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 @JsonTypeName("postgres")
 public class PostgresTypeConfiguration extends AbstractTypeConfiguration<PostgresFieldConfiguration> {
 
-  @NotBlank
   private String table;
 
   @Setter(AccessLevel.NONE)
@@ -61,15 +60,13 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             fieldConfiguration.setList(true);
           }
 
-          // TODO: leesbaar maken
-          var type = TypeHelper.getTypeName(fieldDefinition.getType());
-          if (TypeHelper.isTextType(fieldDefinition.getType()) || dotWebStackConfiguration.getEnumerations()
-              .containsKey(type)) {
+          if (TypeHelper.isTextType(fieldDefinition.getType()) || isEnum(fieldDefinition, dotWebStackConfiguration)) {
             fieldConfiguration.setText(true);
           }
         });
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
+    initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
   }
 
@@ -186,6 +183,19 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
+  private void initNestedFieldTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    fields.values()
+        .forEach(fieldConfiguration -> {
+
+          PostgresTypeConfiguration typeConfiguration =
+              (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
+
+          if (Objects.nonNull(typeConfiguration) && Objects.isNull(typeConfiguration.getTable())) {
+            fieldConfiguration.setNested(true);
+          }
+        });
+  }
+
   private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> objectTypes,
       List<FieldDefinition> fieldDefinitions) {
     referencedColumns = fields.entrySet()
@@ -220,4 +230,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return postgresFieldConfiguration;
   }
 
+  private boolean isEnum(FieldDefinition fieldDefinition, DotWebStackConfiguration dotWebStackConfiguration) {
+    var type = TypeHelper.getTypeName(fieldDefinition.getType());
+    return dotWebStackConfiguration.getEnumerations()
+        .containsKey(type);
+  }
 }

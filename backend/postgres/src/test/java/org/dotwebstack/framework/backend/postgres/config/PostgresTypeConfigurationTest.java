@@ -246,5 +246,6 @@ class PostgresTypeConfigurationTest {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void dotWebStackConfigurationMock() {
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
+    when(objectTypesMock.get(null)).thenReturn(null);
   }
 }

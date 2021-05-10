@@ -5,8 +5,6 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
-// TODO: wordt gebruikt voor queries en subscriptions, andere naam die dekkend is voor subscriptions
-// en queries?
 @Data
 public class SubscriptionConfiguration {
 

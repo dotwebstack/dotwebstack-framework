@@ -360,7 +360,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_200_forProvidedHeaderParameter() {
     // Arrange & Act & Assert
     this.webClient.get()
@@ -471,7 +471,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when paging is implemented")
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
     // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
