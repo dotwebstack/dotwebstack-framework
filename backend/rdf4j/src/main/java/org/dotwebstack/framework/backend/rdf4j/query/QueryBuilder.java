@@ -33,7 +33,6 @@ import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
-import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
@@ -68,10 +67,10 @@ public class QueryBuilder {
       DataFetchingFieldSelectionSet selectionSet, Collection<KeyCondition> keyConditions) {
     RdfSubject subject = SparqlBuilder.var(queryContext.newAlias());
 
-    NodeShape nodeShape = nodeShapeRegistry.get(typeConfiguration.getName());
+    var nodeShape = nodeShapeRegistry.get(typeConfiguration.getName());
 
     if (keyConditions.isEmpty()) {
-      GraphWrapper graphWrapper =
+      var graphWrapper =
           createGraphWrapper(queryContext, typeConfiguration, nodeShape, selectionSet, "", subject, Map.of());
 
       String query = Queries.SELECT(graphWrapper.getProjectables()
@@ -97,7 +96,7 @@ public class QueryBuilder {
         .stream()
         .collect(Collectors.toMap(Function.identity(), keyColumnName -> queryContext.newAlias()));
 
-    GraphWrapper graphWrapper =
+    var graphWrapper =
         createGraphWrapper(queryContext, typeConfiguration, nodeShape, selectionSet, "", subject, keyFieldNames);
 
     Projectable[] projectables = graphWrapper.getProjectables()
@@ -108,7 +107,7 @@ public class QueryBuilder {
 
     createFilterPatterns(keyConditions, keyFieldNames).forEach(graphPatternNotTriples::filter);
 
-    String query = Queries.SELECT(projectables)
+    var query = Queries.SELECT(projectables)
         .where(graphPatternNotTriples)
         .limit(HARD_LIMIT)
         .getQueryString();
@@ -129,7 +128,7 @@ public class QueryBuilder {
           .flatMap(map -> map.entrySet()
               .stream())
           .map(valueEntry -> {
-            Variable variable = SparqlBuilder.var(keyFieldNames.get(valueEntry.getKey()));
+            var variable = SparqlBuilder.var(keyFieldNames.get(valueEntry.getKey()));
             Operand value;
             if (valueEntry.getValue() instanceof List) {
               value = Rdf.literalOf(((List<?>) valueEntry.getValue()).get(0)
@@ -180,7 +179,7 @@ public class QueryBuilder {
         getFieldNames(typeConfiguration, selectedFields.values(), keyFieldNames).stream()
             .map(fieldName -> {
               String alias = keyFieldNames.getOrDefault(fieldName, queryContext.newAlias());
-              PropertyShape propertyShape = nodeShape.getPropertyShape(fieldName);
+              var propertyShape = nodeShape.getPropertyShape(fieldName);
 
               GraphPattern current = GraphPatterns.tp(subject, propertyShape.getPath()
                   .toPredicate(), SparqlBuilder.var(alias));
@@ -194,9 +193,9 @@ public class QueryBuilder {
               } else {
                 RdfSubject rdfSubject = SparqlBuilder.var(alias);
 
-                SelectedField selectedField = selectedFields.get(fieldName);
+                var selectedField = selectedFields.get(fieldName);
 
-                GraphWrapper graphWrapper = createGraphWrapper(queryContext, typeConfiguration, propertyShape.getNode(),
+                var graphWrapper = createGraphWrapper(queryContext, typeConfiguration, propertyShape.getNode(),
                     selectionSet, selectedField.getFullyQualifiedName()
                         .concat("/"),
                     rdfSubject, Map.of());
@@ -229,7 +228,7 @@ public class QueryBuilder {
       throw illegalArgumentException("Graph pattern array size must be at least 1.");
     }
 
-    GraphPattern graphPattern = graphPatterns[0];
+    var graphPattern = graphPatterns[0];
     if (graphPatterns.length > 1) {
       graphPattern = GraphPatterns.and(graphPatterns);
     }

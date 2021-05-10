@@ -17,7 +17,7 @@ public class SequencePath extends BasePath {
   @Override
   public RdfPredicate toPredicate() {
     return () -> {
-      StringBuilder sb = new StringBuilder();
+      var sb = new StringBuilder();
       sb.append(first.toPredicate()
           .getQueryString());
 

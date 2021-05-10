@@ -59,7 +59,7 @@ class DefaultSelectWrapperBuilderTest {
 
 
   @BeforeEach
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void setup() {
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
 
@@ -71,7 +71,7 @@ class DefaultSelectWrapperBuilderTest {
   }
 
   @Test
-  public void addFields_addSelectedJoinColumnToSelectContext_forReferenceJoinColumn() {
+  void addFields_addSelectedJoinColumnToSelectContext_forReferenceJoinColumn() {
     QueryContext mockQueryContext = mock(QueryContext.class);
     SelectContext selectContext = new SelectContext(mockQueryContext);
 

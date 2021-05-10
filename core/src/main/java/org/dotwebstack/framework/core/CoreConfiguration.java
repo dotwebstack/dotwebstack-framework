@@ -15,7 +15,7 @@ public class CoreConfiguration {
   @Bean
   public DotWebStackConfiguration dotWebStackConfiguration() {
     // TODO: refactor matching? Annotation-based?
-    DotWebStackConfigurationReader dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
+    var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
     return dotWebStackConfigurationReader.read(CONFIG_FILE);
   }
 }
