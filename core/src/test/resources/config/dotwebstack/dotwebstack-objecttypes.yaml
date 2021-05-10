@@ -18,9 +18,6 @@ objectTypes:
         type: Date
       geometry:
         type: Geometry
-<<<<<<< HEAD
-      address:
-=======
       addresses:
         type: Address
         list: true
@@ -31,7 +28,6 @@ objectTypes:
             nullable: true
             list: true
       visitAddress:
->>>>>>> v0.3
         type: Address
         nullable: true
       beers:
