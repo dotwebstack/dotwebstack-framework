@@ -18,24 +18,29 @@ class DateTimeCoercingTest {
 
   @Test
   void serialize_ReturnsDateTime_ForDateTime() {
-    ZonedDateTime input = ZonedDateTime.now();
+    OffsetDateTime input = OffsetDateTime.now();
 
-    ZonedDateTime dateTime = coercing.serialize(input);
+    OffsetDateTime dateTime = coercing.serialize(input);
 
     assertThat(dateTime, is(sameInstance(input)));
   }
 
   @Test
   void serialize_ReturnsDateTime_ForValidDateTimeString() {
-    ZonedDateTime dateTime = coercing.serialize("2018-05-30T09:30:10+02:00");
+    OffsetDateTime dateTime = coercing.serialize("2018-05-30T09:30:10+02:00");
 
-    ZonedDateTime expected = ZonedDateTime.of(2018, 5, 30, 9, 30, 10, 0, ZoneId.of("GMT+2"));
+    OffsetDateTime expected = OffsetDateTime.of(2018, 5, 30, 7, 30, 10, 0, ZoneOffset.UTC);
     assertThat(dateTime.isEqual(expected), is(equalTo(true)));
   }
 
   @Test
   void serialize_ThrowsException_ForInvalidDateTimeString() {
     assertThrows(CoercingSerializeException.class, () -> coercing.serialize("foo"));
+  }
+
+  @Test
+  void serialize_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.serialize(null));
   }
 
   @Test
@@ -50,34 +55,43 @@ class DateTimeCoercingTest {
   }
 
   @Test
+  void parseValue_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.parseValue(null));
+  }
+
+  @Test
   void parseLiteral_ThrowsException() {
     var value = new Object();
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
   }
 
   @Test
-  void parseLiteral_ReturnsDateTime_ForNowLiteral() {
-    ZonedDateTime dateTime = coercing.parseLiteral(new StringValue("NOW"));
+  void parseLiteral_ThrowsException_ForNull() {
+    assertThrows(NullPointerException.class, () -> coercing.parseLiteral(null));
+  }
 
-    assertThat(dateTime.getYear(), equalTo(ZonedDateTime.now()
+  @Test
+  void parseLiteral_ReturnsDateTime_ForNowLiteral() {
+    OffsetDateTime dateTime = coercing.parseLiteral(new StringValue("NOW"));
+
+    assertThat(dateTime.getYear(), equalTo(OffsetDateTime.now()
         .getYear()));
-    assertThat(dateTime.getMonth(), equalTo(ZonedDateTime.now()
+    assertThat(dateTime.getMonth(), equalTo(OffsetDateTime.now()
         .getMonth()));
-    assertThat(dateTime.getDayOfMonth(), equalTo(ZonedDateTime.now()
+    assertThat(dateTime.getDayOfMonth(), equalTo(OffsetDateTime.now()
         .getDayOfMonth()));
   }
 
   @Test
-  void parseLiteral_ReturnsDateTime_ForZonedDateTime() {
-    ZonedDateTime dateTime = coercing.parseLiteral(new StringValue(ZonedDateTime.now()
+  void parseLiteral_ReturnsDateTime_ForOffsetDateTime() {
+    OffsetDateTime dateTime = coercing.parseLiteral(new StringValue(OffsetDateTime.now()
         .toString()));
 
-    assertThat(dateTime.getYear(), equalTo(ZonedDateTime.now()
+    assertThat(dateTime.getYear(), equalTo(OffsetDateTime.now()
         .getYear()));
-    assertThat(dateTime.getMonth(), equalTo(ZonedDateTime.now()
+    assertThat(dateTime.getMonth(), equalTo(OffsetDateTime.now()
         .getMonth()));
-    assertThat(dateTime.getDayOfMonth(), equalTo(ZonedDateTime.now()
+    assertThat(dateTime.getDayOfMonth(), equalTo(OffsetDateTime.now()
         .getDayOfMonth()));
   }
-
 }
