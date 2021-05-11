@@ -104,9 +104,9 @@ public class GraphQlQueryBuilder {
   }
 
   private boolean isGraphQlIdentifier(String type) {
-    return type.replaceAll("!", "")
-        .replaceAll("\\[", "")
-        .replaceAll("]", "")
+    return type.replace("!", "")
+        .replace("\\[", "")
+        .replace("]", "")
         .matches("^ID$");
   }
 }

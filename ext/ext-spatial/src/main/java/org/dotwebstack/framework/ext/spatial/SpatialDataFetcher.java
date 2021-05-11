@@ -33,7 +33,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
       throw illegalArgumentException("Source is not an instance of Geometry");
     }
 
-    Geometry geometry = dataFetchingEnvironment.getSource();
+    var geometry = (Geometry) dataFetchingEnvironment.getSource();
     String fieldName = dataFetchingEnvironment.getFieldDefinition()
         .getName();
 

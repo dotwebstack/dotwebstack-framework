@@ -40,7 +40,6 @@ class QueryBuilderTest {
 
   @Test
   void toQuery_returns_validQuery() {
-    // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
@@ -50,11 +49,9 @@ class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
         new HashMap<>(), true, "");
 
-    // Assert
     assertEquals("{brewery{identifier}}", bodyJoiner.toString());
   }
 
@@ -79,13 +76,13 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
+    var graphQlQueryBuilder = new GraphQlQueryBuilder();
     assertThrows(InvalidConfigurationException.class,
-        () -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+        () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
   void toQuery_returns_validQueryWithArguments() {
-    // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
@@ -97,18 +94,15 @@ class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
         arguments, true, "");
 
-    // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
     assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
   }
 
   @Test
   void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
-    // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
 
@@ -121,11 +115,9 @@ class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, new HashSet<>(), bodyJoiner, argumentJoiner,
         arguments, true, "");
 
-    // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
     assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
         + "supplements{identifier,name}}}}", bodyJoiner.toString());

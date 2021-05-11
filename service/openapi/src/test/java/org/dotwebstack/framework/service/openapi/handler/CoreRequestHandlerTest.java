@@ -368,7 +368,6 @@ class CoreRequestHandlerTest {
     assertEquals("value1", responseHeaders.get("X-Response-Header"));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_returnsValue_forDefault() {
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
@@ -382,7 +381,6 @@ class CoreRequestHandlerTest {
     assertEquals("defaultValue", responseHeaders.get("X-Response-Default"));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void createResponseHeaders_throwsException_whenNoValueFound() {
     when(this.environmentProperties.getAllProperties()).thenReturn(ImmutableMap.of("property1", "value1"));
@@ -401,8 +399,10 @@ class CoreRequestHandlerTest {
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
             .get(0);
 
+    Map<String, Object> inputParams = new HashMap<>();
+
     assertThrows(InvalidConfigurationException.class,
-        () -> coreRequestHandler.createResponseHeaders(responseTemplate, new HashMap<>()));
+        () -> coreRequestHandler.createResponseHeaders(responseTemplate, inputParams));
   }
 
   @Test

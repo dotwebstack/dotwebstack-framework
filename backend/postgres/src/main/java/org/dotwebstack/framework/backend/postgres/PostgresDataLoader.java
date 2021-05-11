@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -91,7 +90,7 @@ public class PostgresDataLoader implements BackendDataLoader {
       queryParametersBuilder.page(pageWithDefaultSize());
     }
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
+    var queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
 
     return this.execute(queryHolder.getQuery())
         .fetch()

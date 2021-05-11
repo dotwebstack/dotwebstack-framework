@@ -205,10 +205,9 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_throwsException_ForUnknownArgument() {
-    assertThrows(IllegalArgumentException.class, () -> {
-      SelectedField unknownField = mockSelectedField("unknownField");
-      aggregateFieldFactory.create(postgresFieldConfiguration, unknownField, "beers", "soldPerYear", "");
-    });
+    SelectedField unknownField = mockSelectedField("unknownField");
+    assertThrows(IllegalArgumentException.class,
+        () -> aggregateFieldFactory.create(postgresFieldConfiguration, unknownField, "beers", "soldPerYear", ""));
   }
 
   private SelectedField mockStringJoinField(Boolean isDistinct, String separator) {

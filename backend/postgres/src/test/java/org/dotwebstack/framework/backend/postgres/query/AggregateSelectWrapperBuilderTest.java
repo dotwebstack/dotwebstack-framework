@@ -68,8 +68,9 @@ class AggregateSelectWrapperBuilderTest {
             .type(Scalars.GraphQLInt)
             .build(), FIELD_NAME));
 
+    Table<Record> table = createTable();
     assertThrows(IllegalArgumentException.class,
-        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, table, selectedFields));
   }
 
   @Test
@@ -82,8 +83,9 @@ class AggregateSelectWrapperBuilderTest {
             .type(Scalars.GraphQLInt)
             .build(), FIELD_SOLD));
 
+    Table<Record> table = createTable();
     assertThrows(IllegalArgumentException.class,
-        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, table, selectedFields));
   }
 
   @Test
@@ -96,8 +98,9 @@ class AggregateSelectWrapperBuilderTest {
             .type(Scalars.GraphQLInt)
             .build(), FIELD_NAME));
 
+    Table<Record> table = createTable();
     assertThrows(IllegalArgumentException.class,
-        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, createTable(), selectedFields));
+        () -> aggregateSelectWrapperBuilder.addFields(selectContext, typeConfiguration, table, selectedFields));
   }
 
 

@@ -9,9 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.dotwebstack.framework.test.TestApplication;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -38,7 +35,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_ReturnsBreweries_withDefaultResponse() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
         .exchange()
@@ -46,14 +42,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBreweries_withStaticFields() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?expand=countries&expand=class&expand=beers.class")
         .exchange()
@@ -61,13 +55,11 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_withStaticFields.json");
   }
 
   @Test
   void openApiRequest_ReturnsBrewery_withIdentifierFromPathParam() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/brewery/123")
         .exchange()
@@ -75,13 +67,11 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/brewery_identifier.json");
   }
 
   @Test
   void openApiRequest_ReturnsBrewery_withExpandedPostalCode() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/brewery/123?expand=postalCode")
         .exchange()
@@ -89,14 +79,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/brewery_postalCode.json");
   }
 
   @Test
   @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withNameFromQueryParam() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?name=Brouwerij 1923")
         .exchange()
@@ -106,14 +94,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_filter_name.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withCaseInsensitiveSearchNameFromQueryParam() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?searchName=BROUWERIJ")
         .exchange()
@@ -123,14 +109,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_filter_searchName.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withSearchPostalCodeFromQueryParam() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?searchPostalCode=2841&expand=postalCode")
         .exchange()
@@ -140,14 +124,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_filter_searchPostCode.json");
   }
 
   @Test
   @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withNameFromQueryParamAndAcceptHeaderXml() {
-    // Arrange & Act
     webClient.get()
         .uri("/breweries?name=Brouwerij 1923")
         .header("Accept", "application/xml;q=0.5,application/*+json")
@@ -160,7 +142,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiReques_ReturnsNotAcceptedTest() {
-    // Arrange & Act
     webClient.get()
         .uri("/breweries")
         .header("Accept", "application/unsupported")
@@ -170,9 +151,8 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_ReturnsBrewery_withNestedExpandedField() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?name=Alfa Brouwerij&expand=beers.ingredients")
         .exchange()
@@ -180,14 +160,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_filter_name_expand_ingredients.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_returnsBreweries_forQueryWithFilterOnDateTimeField() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?foundedAfter=1970-05-29&expand=founded")
         .exchange()
@@ -195,14 +173,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_foundedAfter.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_returnsBreweries_forQueryWithMultipleQueryParamFilters() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?foundedAfter=1990-01-01&foundedBefore=2011-01-01&expand=founded")
         .exchange()
@@ -210,14 +186,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_foundedAfter_and_foundedBefore.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_returnsBreweries_forSortQueryWithIdentifierAscSorting() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
         .header("sort", "identifier")
@@ -226,14 +200,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_sorted_on_identifier_asc.json");
   }
 
   @Test
   @Disabled("enable when sorting is implemented")
   void openApiRequest_returnsError_forSortQueryWithNonExistentSortingValue() {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries")
         .header("sort", "nonexistent")
@@ -242,14 +214,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertThat(result.contains("Parameter 'sort' has (an) invalid value(s)"), is(true));
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_returnsBreweries_forSortQueryWithMultipleSorting() throws IOException {
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?expand=postalCode")
         .header("sort", "-postalCode", "name")
@@ -258,14 +228,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_sorted_on_postalCode_desc_and_name_asc.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_ReturnsBreweries_WithTransformedAggregate() throws IOException {
-    // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?expand=hasBeers")
         .header("sort", "name")
@@ -276,14 +244,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_with_transformaggregate.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_returnsBrewery_forFilteredOnSubjectIriFromQueryParam() throws IOException {
-    // Arrange & Act
     String result = this.webClient.get()
         .uri("/brewery_with_subject?subject=https://github.com/dotwebstack/beer/id/brewery/123&expand=subject")
         .exchange()
@@ -293,14 +259,12 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/brewery_filtered_by_subject.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_returnsBreweries_forFilterOnAddressSubjectNested() throws IOException {
-    // Arrange & Act
     String result = this.webClient.get()
         .uri("/breweries?expand=address&withAddressSubject=https://github.com/dotwebstack/beer/id/address/1")
         .exchange()
@@ -310,12 +274,11 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/breweries_filter_on_addressSubjectNested.json");
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when paginating is implemented")
   void openApiRequest_400_ForInvalidPageSize() {
     this.webClient.get()
         .uri("/breweries?pageSize=3")
@@ -327,7 +290,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when paginating is implemented")
   void openApiRequest_400_ForInvalidPage() {
     this.webClient.get()
         .uri("/breweries?page=0")
@@ -340,7 +303,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_200_forProvidedPathParameter() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries")
         .exchange()
@@ -349,9 +311,8 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("enable when filtering is implemented")
   void openApiRequest_200_forProvidedRequiredParameter() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries?expand=beers")
         .exchange()
@@ -362,7 +323,6 @@ class OpenApiRdf4jIntegrationTest {
   @Test
   @Disabled("enable when sorting is implemented")
   void openApiRequest_200_forProvidedHeaderParameter() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries")
         .header("sort", "name")
@@ -373,7 +333,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_404_forUnknownUri() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/unknown")
         .exchange()
@@ -383,7 +342,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_404_forUnknownUriWithParameter() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/unknown?nonexistent=nonexistent")
         .exchange()
@@ -393,7 +351,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnsBadRequest_forNonexistentParam() {
-    // Arrange & Act & Assert
     this.webClient.get()
         .uri("/breweries?nonexistent=nonexistent")
         .exchange()
@@ -403,7 +360,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_404_forUnknownOperation() {
-    // Arrange & Act & Assert
     this.webClient.post()
         .uri("/breweries")
         .exchange()
@@ -413,7 +369,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnsOpenApiSpec_forApi() {
-    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/")
         .exchange()
@@ -427,7 +382,6 @@ class OpenApiRdf4jIntegrationTest {
         .forEach(builder::append);
     String openApiSpec = builder.toString();
 
-    // Assert
     assertThat(openApiSpec.contains("/breweries:"), is(true));
     assertThat(openApiSpec.contains("x-dws-expr"), is(false));
     assertThat(openApiSpec.contains("x-dws-envelope: true"), is(false));
@@ -436,7 +390,6 @@ class OpenApiRdf4jIntegrationTest {
   @Test
   @Disabled("enable when paging is implemented")
   void openApiRequest_returnsDefaultXPaginationResponseHeader_whenNoParamsAreProvided() {
-    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/breweries")
         .exchange()
@@ -444,7 +397,6 @@ class OpenApiRdf4jIntegrationTest {
         .isOk()
         .returnResult(String.class);
 
-    // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
     assertEquals("1", responseHeaders.get("X-Pagination-Page")
         .get(0));
@@ -454,7 +406,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnTestAsset() {
-    // Arrange & Act
     String result = this.webClient.get()
         .uri("/assets/test.html")
         .exchange()
@@ -466,14 +417,12 @@ class OpenApiRdf4jIntegrationTest {
 
     String expectedResult = "<html>\n" + "<body>Hello World!</body>\n" + "</html>";
 
-    // Assert
     assertEquals(expectedResult, result);
   }
 
   @Test
   @Disabled("enable when paging is implemented")
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
-    // Arrange & Act
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/breweries?page=2&pageSize=2")
         .exchange()
@@ -481,7 +430,6 @@ class OpenApiRdf4jIntegrationTest {
         .isOk()
         .returnResult(String.class);
 
-    // Assert
     HttpHeaders responseHeaders = result.getResponseHeaders();
     assertEquals("2", responseHeaders.get("X-Pagination-Page")
         .get(0));
@@ -491,7 +439,6 @@ class OpenApiRdf4jIntegrationTest {
 
   @Test
   void openApiRequest_returnsBrewery_forRequestWithBodyParams() throws IOException {
-    // Arrange & Act
     String result = this.webClient.post()
         .uri("/brewery_post?expand=postalCode")
         .body(Mono.just("{\"identifier\": \"123\"}"), String.class)
@@ -503,7 +450,6 @@ class OpenApiRdf4jIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "/results/brewery_postalCode.json");
   }
 
@@ -511,13 +457,6 @@ class OpenApiRdf4jIntegrationTest {
     JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream(jsonResultPath));
     JsonNode actualObj = mapper.readTree(result);
 
-    // Assert
     assertEquals(expectedObj, actualObj);
-  }
-
-  private InputStream getFileInputStream(String filename) throws IOException {
-    return Files.newInputStream(Paths.get("src", "test", "resources")
-        .resolve("results")
-        .resolve(filename));
   }
 }

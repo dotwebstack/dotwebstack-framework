@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -36,10 +35,8 @@ class SchemaSummaryContextValidatorTest {
 
   @Test
   void validate_succeeds_query1Get() {
-    // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
-    // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
         .getResponseObject(), getResponseSchemaContext.getGraphQlField());
@@ -47,10 +44,8 @@ class SchemaSummaryContextValidatorTest {
 
   @Test
   void validate_succeeds_query1Post() {
-    // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.POST);
 
-    // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
         .getResponseObject(), getResponseSchemaContext.getGraphQlField());
@@ -58,44 +53,43 @@ class SchemaSummaryContextValidatorTest {
 
   @Test
   void validate_succeeds_query2Get() {
-    // Arrange
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query2", HttpMethod.GET);
 
-    // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
         .getResponseObject(), getResponseSchemaContext.getGraphQlField());
   }
 
   @Test
-  void validate_throwsException_graphQlFieldNotFound() throws IOException {
-    // Arrange
+  void validate_throwsException_graphQlFieldNotFound() {
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.validator.validate(getResponseSchemaContext.getResponses()
-            .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+    var responseObject = getResponseSchemaContext.getResponses()
+        .get(0)
+        .getResponseObject();
+
+    var graphQlField = getResponseSchemaContext.getGraphQlField();
+
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(responseObject, graphQlField));
   }
 
   @Test
-  void validate_throwsException_typeMismatch() throws IOException {
-    // Arrange
+  void validate_throwsException_typeMismatch() {
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.validator.validate(getResponseSchemaContext.getResponses()
-            .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+    var responseObject = getResponseSchemaContext.getResponses()
+        .get(0)
+        .getResponseObject();
+
+    var graphQlField = getResponseSchemaContext.getGraphQlField();
+
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(responseObject, graphQlField));
   }
 
   @Test
   void validate_throwsException_dataTypeMismatchToNumber() {
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("number", "String", ""));
     assertThrows(InvalidConfigurationException.class,
@@ -108,7 +102,6 @@ class SchemaSummaryContextValidatorTest {
 
   @Test
   void validate_throwsException_dataTypeMismatchToInteger() {
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("integer", "Long", ""));
     assertThrows(InvalidConfigurationException.class,
@@ -127,7 +120,6 @@ class SchemaSummaryContextValidatorTest {
 
   @Test
   void validate_throwsException_dataTypeMismatchToBoolean() {
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> this.typeValidator.validateTypesGraphQlToOpenApi("boolean", "Long", ""));
     assertThrows(InvalidConfigurationException.class,
@@ -144,20 +136,20 @@ class SchemaSummaryContextValidatorTest {
   }
 
   @Test
-  void validate_throwsException_dataTypeMismatchStringToInteger() throws IOException {
-    // Arrange
+  void validate_throwsException_dataTypeMismatchStringToInteger() {
     this.registry = TestResources.typeDefinitionRegistry("o1_prop2: Float!", "o1_prop2: Boolean!");
     ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.validator.validate(getResponseSchemaContext.getResponses()
-            .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+    var responseObject = getResponseSchemaContext.getResponses()
+        .get(0)
+        .getResponseObject();
+
+    var graphQlField = getResponseSchemaContext.getGraphQlField();
+
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(responseObject, graphQlField));
   }
 
   private ResponseSchemaContext getResponseContext(String path, HttpMethod httpMethod) {
-
     PathItem pathItem = this.openApi.getPaths()
         .get(path);
     List<ResponseTemplate> responses = ResponseTemplateBuilderTest.getResponseTemplates(this.openApi, path, httpMethod);

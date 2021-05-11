@@ -131,8 +131,10 @@ class PostgresDataLoaderTest {
 
   @Test
   void batchLoadSingle() {
+    Set<KeyCondition> keyConditions = Set.of();
+    var loadEnvironment = mockLoadEnvironment();
     assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(Set.of(), mockLoadEnvironment()));
+        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
   }
 
   @Test

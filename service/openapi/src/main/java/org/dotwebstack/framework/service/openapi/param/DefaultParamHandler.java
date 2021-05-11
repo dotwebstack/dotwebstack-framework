@@ -85,7 +85,7 @@ public class DefaultParamHandler implements ParamHandler {
       if (defaultValue.isPresent()) {
         validateValues(defaultValue.get(), parameter);
       } else {
-        if (parameter.getRequired()) {
+        if (Boolean.TRUE.equals(parameter.getRequired())) {
           if (Objects.nonNull(parameter.getExtensions()) && parameter.getExtensions()
               .containsKey(X_DWS_VALIDATE)) {
             return Optional.empty();
@@ -276,7 +276,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Object deserializeArray(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
@@ -359,7 +359,7 @@ public class DefaultParamHandler implements ParamHandler {
         .get(parameter.getName());
 
     if (ARRAY_TYPE.equals(parameter.getSchema()
-        .getType()) && parameter.getExplode()) {
+        .getType()) && Boolean.TRUE.equals(parameter.getExplode())) {
       return result;
     }
     return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
@@ -374,7 +374,6 @@ public class DefaultParamHandler implements ParamHandler {
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
   Optional<Object> getDefault(Parameter parameter) {
     var schema = resolveSchema(openApi, parameter.getSchema());
     if (schema != null && schema.getDefault() != null) {

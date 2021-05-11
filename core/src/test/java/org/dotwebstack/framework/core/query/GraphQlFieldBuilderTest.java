@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import graphql.language.FieldDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.HashMap;
+import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,8 @@ class GraphQlFieldBuilderTest {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     FieldDefinition fieldDefinition = createFieldDefinition();
 
-    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, new HashMap<>()));
+    Map<String, GraphQlField> typeNameFieldMap = new HashMap<>();
+    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, typeNameFieldMap));
   }
 
   private FieldDefinition createFieldDefinition() {

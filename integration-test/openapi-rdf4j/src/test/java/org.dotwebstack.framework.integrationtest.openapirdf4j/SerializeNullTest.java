@@ -27,10 +27,8 @@ class SerializeNullTest {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
-  @Disabled
+  @Disabled("enable when sorting is implemented")
   void openApiRequest_returnsBreweriesWithoutNullValues_whenSerializeNullIsFalse() throws IOException {
-
-    // Arrange & Act
     String result = webClient.get()
         .uri("/breweries?expand=postalCode")
         .header("sort", "-postalCode", "name")
@@ -43,7 +41,6 @@ class SerializeNullTest {
         getClass().getResourceAsStream("/results/breweries_sorted_on_postalCode_desc_and_name_asc_without_null.json"));
     JsonNode actualObj = mapper.readTree(result);
 
-    // Assert
     assertEquals(expectedObj, actualObj);
   }
 }

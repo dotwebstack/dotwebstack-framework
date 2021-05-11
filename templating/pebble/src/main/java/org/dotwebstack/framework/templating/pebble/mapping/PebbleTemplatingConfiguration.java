@@ -70,9 +70,11 @@ public class PebbleTemplatingConfiguration {
 
       htmlTemplates = Stream.of(resourceList)
           .filter(Resource::exists)
-          .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
-          .map(Resource::getFilename)
-          .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
+          .map(resource -> {
+            LOG.debug("Looking for HTML templates in {}", resource);
+            return resource.getFilename();
+          })
+          .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name)) // NOSONAR
           .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
     }
     return htmlTemplates;

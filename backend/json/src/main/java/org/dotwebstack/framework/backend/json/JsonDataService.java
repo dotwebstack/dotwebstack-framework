@@ -58,10 +58,10 @@ public class JsonDataService {
   }
 
   private JsonNode readJsonDataFile(String fileName) {
-    Optional<Resource> data = loadJsonResource(fileName);
+    var data = loadJsonResource(fileName).orElseThrow();
 
-    try (var jsonDataInputStream = data.isPresent() ? data.get()
-        .getInputStream() : null) {
+    try (var jsonDataInputStream = data.getInputStream()) {
+
       JsonNode jsonDataAsNode = jsonMapper.readTree(jsonDataInputStream);
       jsonSourceCache.put(fileName, jsonDataAsNode);
 
