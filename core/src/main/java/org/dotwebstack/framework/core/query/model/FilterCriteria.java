@@ -1,4 +1,4 @@
 package org.dotwebstack.framework.core.query.model;
 
-public class FilterCriteria {
+public interface FilterCriteria {
 }

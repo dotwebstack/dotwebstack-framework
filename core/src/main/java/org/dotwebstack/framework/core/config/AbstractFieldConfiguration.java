@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public abstract class AbstractFieldConfiguration implements FieldConfiguration {
+  private String name;
 
   private String type;
 
