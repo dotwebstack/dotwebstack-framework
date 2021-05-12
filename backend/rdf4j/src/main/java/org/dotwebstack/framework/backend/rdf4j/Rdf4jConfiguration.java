@@ -3,9 +3,9 @@ package org.dotwebstack.framework.backend.rdf4j;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,8 +56,7 @@ class Rdf4jConfiguration {
       @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
 
-    var baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
-        .toFile();
+    var baseDir = new File(BASE_DIR_PREFIX);
     var repositoryManager = new LocalRepositoryManager(baseDir);
     repositoryManager.init();
 
