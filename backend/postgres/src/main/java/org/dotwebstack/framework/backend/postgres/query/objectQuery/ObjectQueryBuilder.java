@@ -44,33 +44,48 @@ public class ObjectQueryBuilder {
   public QueryHolder build(ObjectQuery objectQuery) {
 
     ObjectQueryContext objectQueryContext = new ObjectQueryContext();
-    Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
-    SelectJoinStep<Record> query = buildQuery(assembleFns, objectQueryContext, objectQuery);
+    SelectJoinStep<Record> query = buildQuery(objectQueryContext, objectQuery);
 
     return QueryHolder.builder()
             .query(query)
-            .mapAssembler(createMapAssembler(assembleFns, objectQueryContext.getCheckNullAlias(), true) )
+            .mapAssembler(createMapAssembler(objectQueryContext.getAssembleFns(), objectQueryContext.getCheckNullAlias(), true) )
             .build();
   }
 
-  public SelectJoinStep<Record> buildQuery(Map<String, Function<Map<String, Object>, Object>> assembleFns, ObjectQueryContext objectQueryContext, ObjectQuery objectQuery){
+  public SelectJoinStep<Record> buildQuery(ObjectQueryContext objectQueryContext, ObjectQuery objectQuery){
 
     Table<Record> fromTable = DSL.table(((PostgresTypeConfiguration)objectQuery.getTypeConfiguration()).getTable());
 
-    List<SelectFieldOrAsterisk> selectColumns = addScalarFields(assembleFns, objectQueryContext, fromTable, objectQuery.getScalarFields());
+    List<SelectFieldOrAsterisk> selectColumns = addScalarFields(objectQuery.getScalarFields(), fromTable, objectQueryContext);
+
+    // add nested objects using same table
+    objectQuery.getObjectFields().stream()
+        .filter(objectFieldConfig -> ((PostgresFieldConfiguration)objectFieldConfig.getField()).isNested())
+        .forEach(nestedObject -> {
+           var nestedSelectedColumns = addNestedObjectFields(nestedObject, fromTable, objectQueryContext);
+           selectColumns.addAll(nestedSelectedColumns);
+        });
+
+
+    // add filter criteria
+
     SelectJoinStep<Record> query = dslContext.select(selectColumns)
             .from(fromTable);
 
     return query;
   }
 
-  private List<SelectFieldOrAsterisk> addScalarFields(Map<String, Function<Map<String, Object>, Object>> assembleFns, ObjectQueryContext objectQueryContext, Table<Record> fromTable, List<FieldConfiguration> scalarFields){
+  private List<SelectFieldOrAsterisk> addNestedObjectFields(ObjectFieldConfiguration nestedObject, Table<Record> fromTable, ObjectQueryContext objectQueryContext) {
+    return List.of();
+  }
+
+  private List<SelectFieldOrAsterisk> addScalarFields(List<FieldConfiguration> scalarFields, Table<Record> fromTable, ObjectQueryContext objectQueryContext){
     return scalarFields.stream().map( scalarField -> {
       String columnAlias = objectQueryContext.newSelectAlias();
       Field<Object> column = DSL.field(DSL.name(fromTable.getName(), ((PostgresFieldConfiguration)scalarField)
               .getColumn()))
               .as(columnAlias);
-      assembleFns.put(scalarField.getName(), row -> row.get(column.getName()));
+      objectQueryContext.getAssembleFns().put(scalarField.getName(), row -> row.get(column.getName()));
 
       // TODO why set checkNullAlias
 
