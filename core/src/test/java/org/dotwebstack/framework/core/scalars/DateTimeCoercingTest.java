@@ -50,7 +50,8 @@ class DateTimeCoercingTest {
 
   @Test
   void parseValue_ThrowsException() {
-    assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(new Object()));
+    var value = new Object();
+    assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(value));
   }
 
   @Test
@@ -60,7 +61,8 @@ class DateTimeCoercingTest {
 
   @Test
   void parseLiteral_ThrowsException() {
-    assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
+    var value = new Object();
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
   }
 
   @Test

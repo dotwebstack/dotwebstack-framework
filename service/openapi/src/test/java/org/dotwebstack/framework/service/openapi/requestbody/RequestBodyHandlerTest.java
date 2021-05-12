@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import graphql.language.ListType;
+import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -153,8 +153,10 @@ class RequestBodyHandlerTest {
   void getValue_throwsException_unsupportedMediaType() {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_PDF);
 
+    Map<String, Object> parameterMap = new HashMap<>();
+
     assertThrows(UnsupportedMediaTypeException.class,
-        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, parameterMap));
   }
 
   @Test
@@ -214,8 +216,9 @@ class RequestBodyHandlerTest {
 
   @Test
   void validatePropertyType_throwsException_forOasObject() {
-    assertThrows(InvalidConfigurationException.class, () -> this.requestBodyHandler.validatePropertyType("p",
-        OasConstants.OBJECT_TYPE, new ListType(new TypeName("test"))));
+    Type<?> graphQlType = new ListType(new TypeName("test"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.OBJECT_TYPE, graphQlType));
   }
 
   @Test
@@ -225,14 +228,15 @@ class RequestBodyHandlerTest {
 
   @Test
   void validatePropertyType_throwsException_forOasArray() {
+    Type<?> graphQlType = new TypeName("test");
     assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new TypeName("test")));
+        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, graphQlType));
   }
 
   private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {
     ServerRequest serverRequest = Mockito.mock(ServerRequest.class);
     ServerRequest.Headers headers = Mockito.mock(ServerRequest.Headers.class);
-    when(headers.header(eq("Content-Type"))).thenReturn(Collections.singletonList(contentType.toString()));
+    when(headers.header("Content-Type")).thenReturn(Collections.singletonList(contentType.toString()));
     when(serverRequest.headers()).thenReturn(headers);
 
     Mono<String> mono;

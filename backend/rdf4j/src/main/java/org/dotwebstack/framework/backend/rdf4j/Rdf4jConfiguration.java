@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.pro
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -58,9 +56,8 @@ class Rdf4jConfiguration {
       @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
 
-    File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
-        .toFile();
-    LocalRepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
+    var baseDir = new File(BASE_DIR_PREFIX);
+    var repositoryManager = new LocalRepositoryManager(baseDir);
     repositoryManager.init();
 
     // Add & populate local repository
@@ -74,12 +71,12 @@ class Rdf4jConfiguration {
   @Bean
   NodeShapeRegistry nodeShapeRegistry(@NonNull LocalRepositoryManager localRepositoryManager,
       @NonNull Rdf4jProperties rdf4jProperties) {
-    Repository repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
+    var repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
 
-    Model shapeModel = QueryResults.asModel(repository.getConnection()
+    var shapeModel = QueryResults.asModel(repository.getConnection()
         .getStatements(null, null, null, rdf4jProperties.getShape()
             .getGraph()));
-    NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
+    var registry = new NodeShapeRegistry(rdf4jProperties.getShape()
         .getPrefix());
 
     Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap = new HashMap<>();
@@ -96,7 +93,7 @@ class Rdf4jConfiguration {
   }
 
   private static RepositoryConfig createLocalRepositoryConfig() {
-    SailRepositoryConfig repositoryConfig = new SailRepositoryConfig(new MemoryStoreConfig());
+    var repositoryConfig = new SailRepositoryConfig(new MemoryStoreConfig());
     return new RepositoryConfig(LOCAL_REPOSITORY_ID, repositoryConfig);
   }
 

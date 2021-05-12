@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_SORT_TYPE;
 
-import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.ArrayList;
@@ -69,13 +68,13 @@ public class SortParamHandler extends DefaultParamHandler {
   }
 
   private Map<String, String> parseSortParam(String sortString) {
-    String order = "ASC";
-    String field = sortString.replace("\"", "");
+    var order = "ASC";
+    var field = sortString.replace("\"", "");
     if (field.startsWith("-")) {
       order = "DESC";
       field = field.substring(1);
     }
 
-    return ImmutableMap.of("field", field, "order", order);
+    return Map.of("field", field, "order", order);
   }
 }

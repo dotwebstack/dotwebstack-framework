@@ -8,7 +8,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryBuilder;
-import org.dotwebstack.framework.backend.rdf4j.query.QueryHolder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -49,7 +48,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
+    var queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
 
     try (TupleQueryResult queryResult = executeQuery(queryHolder.getQuery())) {
       if (queryResult.hasNext()) {
@@ -71,7 +70,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
+    var queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
 

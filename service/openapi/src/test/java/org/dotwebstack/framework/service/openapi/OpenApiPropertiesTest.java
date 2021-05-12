@@ -13,7 +13,7 @@ import javax.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class OpenApiPropertiesTest {
+class OpenApiPropertiesTest {
 
   private static final String PATH_VALIDATION_MSG =
       "\"^(?:(\\/(?:(?:(?:[A-Za-z0-9-._~])|(?:%(?:[0-9ABCDEF]){2})|(?:[!$&'()*+,;=])|[:@])*))*)$\"";

@@ -609,7 +609,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  public void graphQlQuery_ReturnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
+  void graphQlQuery_ReturnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
     String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)

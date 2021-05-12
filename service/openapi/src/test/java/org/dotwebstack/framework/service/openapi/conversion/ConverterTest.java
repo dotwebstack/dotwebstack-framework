@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ConverterTest {
+class ConverterTest {
 
   @Mock
   private OpenApiProperties openApiProperties;

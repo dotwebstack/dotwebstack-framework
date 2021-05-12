@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Objects;
 import org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver;
@@ -19,7 +18,7 @@ public class RequestBodyContextBuilder {
 
   public RequestBodyContext buildRequestBodyContext(RequestBody requestBody) {
     if (requestBody != null) {
-      RequestBody resolvedRequestBody = RequestBodyResolver.resolveRequestBody(openApi, requestBody);
+      var resolvedRequestBody = RequestBodyResolver.resolveRequestBody(openApi, requestBody);
       validate(resolvedRequestBody);
       return new RequestBodyContext(resolvedRequestBody);
     } else {
@@ -32,7 +31,7 @@ public class RequestBodyContextBuilder {
       throw illegalArgumentException("RequestBody without content!");
     }
 
-    MediaType mediaType = requestBody.getContent()
+    var mediaType = requestBody.getContent()
         .get(org.springframework.http.MediaType.APPLICATION_JSON.toString());
 
     if (Objects.isNull(mediaType)) {

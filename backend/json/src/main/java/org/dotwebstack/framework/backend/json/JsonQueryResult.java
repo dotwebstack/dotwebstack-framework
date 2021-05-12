@@ -72,7 +72,7 @@ public final class JsonQueryResult {
           }
           return Stream.of(subject);
         })
-        .map(obj -> (Map<String, Object>) obj)
+        .map(obj -> (Map<String, Object>) obj) // NOSONAR
         .collect(Collectors.toList());
   }
 

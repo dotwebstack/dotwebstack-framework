@@ -43,14 +43,14 @@ public class NodeShapeRegistry {
   }
 
   public NodeShape get(GraphQLObjectType objectType) {
-    IRI iri = VF.createIRI(shapePrefix, objectType.getName());
+    var iri = VF.createIRI(shapePrefix, objectType.getName());
     return Optional.ofNullable(iri)
         .map(this::get)
         .orElseThrow(() -> invalidConfigurationException("No nodeshape found for {}", iri));
   }
 
   public boolean contains(GraphQLObjectType objectType) {
-    IRI iri = VF.createIRI(shapePrefix, objectType.getName());
+    var iri = VF.createIRI(shapePrefix, objectType.getName());
     return Optional.ofNullable(iri)
         .map(this::get)
         .isPresent();

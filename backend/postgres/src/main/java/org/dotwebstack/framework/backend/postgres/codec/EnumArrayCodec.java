@@ -82,7 +82,7 @@ public class EnumArrayCodec implements Codec<String[]> {
       return new String[0];
     }
 
-    int dimensions = buffer.readInt();
+    var dimensions = buffer.readInt();
     if (dimensions == 0) {
       return (String[]) Array.newInstance(String.class, 0);
     }
@@ -94,8 +94,8 @@ public class EnumArrayCodec implements Codec<String[]> {
     buffer.skipBytes(4); // flags: 0=no-nulls, 1=has-nulls
     buffer.skipBytes(4); // element oid
 
-    int[] dims = new int[dimensions];
-    for (int d = 0; d < dimensions; ++d) {
+    var dims = new int[dimensions];
+    for (var d = 0; d < dimensions; ++d) {
       dims[d] = buffer.readInt(); // dimension size
       buffer.skipBytes(4); // lower bound ignored
     }
@@ -109,8 +109,8 @@ public class EnumArrayCodec implements Codec<String[]> {
 
   private void readArrayAsBinary(ByteBuf buffer, Object[] array, int[] dims, int thisDimension) {
     if (thisDimension == dims.length - 1) {
-      for (int i = 0; i < dims[thisDimension]; ++i) {
-        int len = buffer.readInt();
+      for (var i = 0; i < dims[thisDimension]; ++i) {
+        var len = buffer.readInt();
         if (len == -1) {
           continue;
 
@@ -118,21 +118,21 @@ public class EnumArrayCodec implements Codec<String[]> {
         array[i] = ByteBufUtils.decode(buffer.readSlice(len));
       }
     } else {
-      for (int i = 0; i < dims[thisDimension]; ++i) {
+      for (var i = 0; i < dims[thisDimension]; ++i) {
         readArrayAsBinary(buffer, (Object[]) array[i], dims, thisDimension + 1);
       }
     }
   }
 
   private Class<?> createArrayType(int dims) {
-    int[] size = new int[dims];
+    var size = new int[dims];
     Arrays.fill(size, 1);
     return Array.newInstance(String.class, size)
         .getClass();
   }
 
   private static int getDimensions(List<?> list) {
-    int dims = 1;
+    var dims = 1;
 
     Object inner = list.get(0);
 
@@ -159,13 +159,13 @@ public class EnumArrayCodec implements Codec<String[]> {
     List<Object> arrayList = new ArrayList<>();
 
     StringBuilder buffer = null;
-    boolean insideString = false;
-    boolean wasInsideString = false; // needed for checking if NULL
+    var insideString = false;
+    var wasInsideString = false; // needed for checking if NULL
     // value occurred
     List<List<Object>> dims = new ArrayList<>(); // array dimension arrays
     List<Object> curArray = arrayList; // currently processed array
 
-    CharSequence chars = buf.readCharSequence(buf.readableBytes(), StandardCharsets.UTF_8);
+    var chars = buf.readCharSequence(buf.readableBytes(), StandardCharsets.UTF_8);
 
     // Starting with 8.0 non-standard (beginning index
     // isn't 1) bounds the dimensions are returned in the
@@ -177,7 +177,7 @@ public class EnumArrayCodec implements Codec<String[]> {
     // even though the JDBC spec says 1 is the first
     // index. I'm not sure what a client would like
     // to see, so we just retain the old behavior.
-    int startOffset = 0;
+    var startOffset = 0;
 
     if (chars.charAt(0) == '[') {
       while (chars.charAt(startOffset) != '=') {
@@ -190,7 +190,7 @@ public class EnumArrayCodec implements Codec<String[]> {
 
     for (int i = startOffset; i < chars.length(); i++) {
       currentChar = chars.charAt(i);
-      boolean appendChar = true;
+      var appendChar = true;
       // escape character that we need to skip
       if (currentChar == '\\') {
         appendChar = false;

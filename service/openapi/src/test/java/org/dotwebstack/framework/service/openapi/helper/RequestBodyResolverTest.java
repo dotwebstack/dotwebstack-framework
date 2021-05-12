@@ -17,12 +17,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class RequestBodyResolverTest {
+class RequestBodyResolverTest {
   @Mock
   private OpenAPI openApi;
 
   @Test
-  public void resolveRequestBody_throwsException_withWrongRefPath() {
+  void resolveRequestBody_throwsException_withWrongRefPath() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     when(requestBody.get$ref()).thenReturn("wrongPath");
@@ -33,7 +33,7 @@ public class RequestBodyResolverTest {
   }
 
   @Test
-  public void resolveRequestBody_throwsException_withNoRequestBodies() {
+  void resolveRequestBody_throwsException_withNoRequestBodies() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     when(requestBody.get$ref()).thenReturn(REQUEST_BODIES_PATH + "UnknownRequestBody");
@@ -45,7 +45,7 @@ public class RequestBodyResolverTest {
   }
 
   @Test
-  public void resolveRequestBody_throwsException_withWrongPath() {
+  void resolveRequestBody_throwsException_withWrongPath() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     when(requestBody.get$ref()).thenReturn(REQUEST_BODIES_PATH + "/Wrong");
@@ -61,7 +61,7 @@ public class RequestBodyResolverTest {
   }
 
   @Test
-  public void resolveRequestBody_resolves_withCorrectPath() {
+  void resolveRequestBody_resolves_withCorrectPath() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     when(requestBody.get$ref()).thenReturn(REQUEST_BODIES_PATH + "MyRequestBody");

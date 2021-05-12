@@ -41,7 +41,7 @@ class DateTimeCoercing implements Coercing<OffsetDateTime, OffsetDateTime> {
   @Override
   public OffsetDateTime parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
-      StringValue stringValue = (StringValue) value;
+      var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
         return OffsetDateTime.now();
       }

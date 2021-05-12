@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,7 @@ public class OpenApiSchemaConfiguration {
   public InputStream openApiStream() throws FileNotFoundException {
     URI location = ResourceProperties.getFileConfigPath()
         .resolve(SPEC_FILENAME);
-    Path path = Paths.get(location);
+    var path = Paths.get(location);
     if (Files.exists(path)) {
       return new FileInputStream(path.toFile());
     }

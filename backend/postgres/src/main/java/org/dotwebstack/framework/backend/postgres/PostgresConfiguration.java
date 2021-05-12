@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration.Builder;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.extension.CodecRegistrar;
 import io.r2dbc.spi.ConnectionFactory;
@@ -37,7 +36,7 @@ public class PostgresConfiguration {
 
   @Bean
   public ConnectionFactory connectionFactory() {
-    Builder configurationBuilder = PostgresqlConnectionConfiguration.builder()
+    var configurationBuilder = PostgresqlConnectionConfiguration.builder()
         .host(postgresProperties.getHost())
         .port(postgresProperties.getPort())
         .username(postgresProperties.getUsername())

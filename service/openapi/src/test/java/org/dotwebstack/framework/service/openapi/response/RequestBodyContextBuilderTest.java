@@ -13,10 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 
 @ExtendWith(MockitoExtension.class)
-public class RequestBodyContextBuilderTest {
+class RequestBodyContextBuilderTest {
 
   @Test
-  public void validate_succeeds_forApplicationJsonMediaType() {
+  void validate_succeeds_forApplicationJsonMediaType() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     Content content = mock(Content.class);
@@ -29,7 +29,7 @@ public class RequestBodyContextBuilderTest {
   }
 
   @Test
-  public void validate_throwsException_forNullContent() {
+  void validate_throwsException_forNullContent() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
 
@@ -38,7 +38,7 @@ public class RequestBodyContextBuilderTest {
   }
 
   @Test
-  public void validate_throwsException_forMissingMediaType() {
+  void validate_throwsException_forMissingMediaType() {
     // Arrange
     RequestBody requestBody = mock(RequestBody.class);
     Content content = mock(Content.class);

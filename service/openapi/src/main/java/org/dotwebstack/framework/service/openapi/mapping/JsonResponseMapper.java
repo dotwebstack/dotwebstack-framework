@@ -90,7 +90,7 @@ public class JsonResponseMapper {
   }
 
   private Object mapDataToResponse(@NonNull ResponseWriteContext writeContext, String path) {
-    ResponseObject responseObject = writeContext.getResponseObject();
+    var responseObject = writeContext.getResponseObject();
     SchemaSummary summary = responseObject.getSummary();
 
     String newPath = addToPath(path, responseObject, false);
@@ -109,7 +109,7 @@ public class JsonResponseMapper {
 
         return null;
       case OBJECT_TYPE:
-        Object object = processObject(writeContext, summary, newPath);
+        var object = processObject(writeContext, summary, newPath);
 
         /*
          * After the object is mapped, we check if it was a composed schema. If that is the case one layer
@@ -272,7 +272,7 @@ public class JsonResponseMapper {
         .getSummary()
         .getChildren()
         .forEach(childSchema -> {
-          ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
+          var writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
           addDataToResponse(path, result, childSchema.getIdentifier(), writeContext);
         });
 
@@ -282,7 +282,7 @@ public class JsonResponseMapper {
   private void addDataToResponse(String path, Map<String, Object> response, String identifier,
       ResponseWriteContext writeContext) {
     boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, identifier));
-    Object object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
+    var object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
 
     if (Objects.nonNull(object) || (writeContext.isSchemaRequiredNillable() || isExpanded)) {
       response.put(identifier, convertType(writeContext, object));
@@ -427,8 +427,7 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Optional<String> evaluateJexl(ResponseWriteContext writeContext) {
-    JexlContext context =
-        JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField(), null);
+    var context = JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField(), null);
 
     // add object data to context
     writeContext.getParameters()
@@ -436,7 +435,7 @@ public class JsonResponseMapper {
 
     context.set("data", writeContext.getData());
 
-    StringBuilder fieldsBuilder = new StringBuilder("fields.");
+    var fieldsBuilder = new StringBuilder("fields.");
     writeContext.getDataStack()
         .stream()
         .map(FieldContext::getData)
@@ -448,7 +447,7 @@ public class JsonResponseMapper {
           fieldsBuilder.append("_parent.");
         });
 
-    StringBuilder argsBuilder = new StringBuilder("args.");
+    var argsBuilder = new StringBuilder("args.");
     writeContext.getDataStack()
         .stream()
         .map(FieldContext::getInput)
@@ -458,9 +457,9 @@ public class JsonResponseMapper {
         });
 
     // add uri to context
-    String path = writeContext.getUri()
+    var path = writeContext.getUri()
         .getPath();
-    String uriString = writeContext.getUri()
+    var uriString = writeContext.getUri()
         .toString();
     int pathIdx = uriString.indexOf(path);
     context.set("request.uri", uriString.substring(pathIdx));

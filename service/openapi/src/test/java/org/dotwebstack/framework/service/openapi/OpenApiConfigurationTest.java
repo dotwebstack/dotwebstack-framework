@@ -106,7 +106,7 @@ class OpenApiConfigurationTest {
   }
 
   @Test
-  public void route_ThrowsException_InvalidOpenApiConfigurationException() {
+  void route_ThrowsException_InvalidOpenApiConfigurationException() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
         Collections.emptyList(), responseContextValidator, requestBodyHandlerRouter, getOpenApiProperties(), jexlEngine,

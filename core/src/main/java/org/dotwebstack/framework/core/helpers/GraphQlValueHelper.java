@@ -16,7 +16,7 @@ public class GraphQlValueHelper {
   private GraphQlValueHelper() {}
 
   public static Object getValue(@NonNull Type<?> type, @NonNull Value<?> value) {
-    String stringValue = getStringValue(value);
+    var stringValue = getStringValue(value);
 
     if ((type instanceof TypeName) && Objects.equals("Date", ((TypeName) type).getName())
         && Objects.equals("NOW", stringValue)) {

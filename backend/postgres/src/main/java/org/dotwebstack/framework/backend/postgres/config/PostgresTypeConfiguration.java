@@ -225,7 +225,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
-    PostgresFieldConfiguration postgresFieldConfiguration = new PostgresFieldConfiguration();
+    var postgresFieldConfiguration = new PostgresFieldConfiguration();
     postgresFieldConfiguration.setColumn(column);
     return postgresFieldConfiguration;
   }

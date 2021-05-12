@@ -36,7 +36,7 @@ public final class NodeShape {
   private final Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
   public PropertyShape getPropertyShape(String propertyShapeName) {
-    PropertyShape propertyShape = this.propertyShapes.get(propertyShapeName);
+    var propertyShape = this.propertyShapes.get(propertyShapeName);
 
     // We need to validate the graphql definition against the shacl definition on bootstrap
     if (propertyShape == null) {

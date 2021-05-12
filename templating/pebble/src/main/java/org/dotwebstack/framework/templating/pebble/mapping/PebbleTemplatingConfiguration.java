@@ -51,10 +51,10 @@ public class PebbleTemplatingConfiguration {
   }
 
   private Loader<?> getTemplateLoader() {
-    ClasspathLoader classpathLoader = new ClasspathLoader();
+    var classpathLoader = new ClasspathLoader();
     classpathLoader.setPrefix(CLASSPATH_TEMPLATES_LOCATION);
 
-    FileLoader fileLoader = new FileLoader();
+    var fileLoader = new FileLoader();
     fileLoader.setPrefix(EXTERNAL_TEMPLATES_LOCATION);
 
     return new DelegatingLoader(List.of(classpathLoader, fileLoader));
@@ -70,9 +70,11 @@ public class PebbleTemplatingConfiguration {
 
       htmlTemplates = Stream.of(resourceList)
           .filter(Resource::exists)
-          .peek(location -> LOG.debug("Looking for HTML templates in {}", location))
-          .map(Resource::getFilename)
-          .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name))
+          .map(resource -> {
+            LOG.debug("Looking for HTML templates in {}", resource);
+            return resource.getFilename();
+          })
+          .peek(name -> LOG.debug("Adding '{}' as pre-compiled template", name)) // NOSONAR
           .collect(Collectors.toMap(Function.identity(), pebbleEngine::getTemplate));
     }
     return htmlTemplates;

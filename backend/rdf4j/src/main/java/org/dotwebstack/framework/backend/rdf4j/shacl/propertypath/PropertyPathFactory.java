@@ -11,7 +11,6 @@ import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sail.memory.model.MemBNode;
@@ -35,7 +34,7 @@ public class PropertyPathFactory {
   private static final Map<IRI, Function<List<BasePath>, BasePath>> MAP = BUILDER.build();
 
   public static BasePath create(Model model, Resource subject, IRI predicate) {
-    Value value = ValueUtils.findRequiredProperty(model, subject, predicate);
+    var value = ValueUtils.findRequiredProperty(model, subject, predicate);
 
     if (value instanceof MemBNode) {
       MemBNode blankNode = (MemBNode) value;

@@ -80,7 +80,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
     if (throwable instanceof ResponseStatusException) {
       // In case endpoint doesn't exists
-      ResponseStatusException responseStatusException = (ResponseStatusException) throwable;
+      var responseStatusException = (ResponseStatusException) throwable;
       responseEntity = advice.create(responseStatusException.getStatus(), throwable, exchange);
     } else {
       Optional<Problem> problem;
@@ -129,7 +129,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
         .map(HttpStatus::valueOf)
         .orElseThrow();
 
-    MapContext mapContext = getMapContext(exchange);
+    var mapContext = getMapContext(exchange);
 
     getSchema(exchange, responseStatus).ifPresent(schema -> {
       resolveExpressionUri(schema, mapContext, OAS_JSON_PROBLEM_TYPE).ifPresent(builder::withType);
@@ -159,7 +159,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
   }
 
   private MapContext getMapContext(ServerWebExchange exchange) {
-    MapContext mapContext = new MapContext();
+    var mapContext = new MapContext();
 
     String[] acceptableMimeTypes = getApiResponse(exchange, HttpStatus.OK).stream()
         .map(ApiResponse::getContent)

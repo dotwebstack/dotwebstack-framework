@@ -387,12 +387,12 @@ class ResponseContextHelperTest {
   }
 
   @Test
-  public void validate_isExpanded_withExpandedParameter() {
+  void validate_isExpanded_withExpandedParameter() {
     assertTrue(ResponseContextHelper.isExpanded(ImmutableMap.of(X_DWS_EXPANDED_PARAMS, List.of("test")), "test"));
   }
 
   @Test
-  public void validate_isExpanded_withUnExpandedParameter() {
+  void validate_isExpanded_withUnExpandedParameter() {
     assertFalse(ResponseContextHelper.isExpanded(Collections.emptyMap(), ""));
   }
 

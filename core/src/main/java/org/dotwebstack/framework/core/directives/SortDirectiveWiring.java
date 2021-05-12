@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring {
 
-  private CoreTraverser coreTraverser;
+  private final CoreTraverser coreTraverser;
 
   public SortDirectiveWiring(CoreTraverser coreTraverser) {
     this.coreTraverser = coreTraverser;
@@ -33,7 +33,7 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
   @Override
   @SuppressWarnings("unchecked")
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
-    GraphQLType rawType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldDefinition()
+    var rawType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldDefinition()
         .getType());
 
     GraphQLType unwrappedType = rawType;
@@ -53,14 +53,14 @@ public class SortDirectiveWiring implements AutoRegisteredSchemaDirectiveWiring 
       List<Object> defaultSortValues = (List<Object>) environment.getElement()
           .getDefaultValue();
       validateListSize(defaultSortValues, typeName, fieldName);
-      GraphQLType sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
+      var sortType = GraphQLTypeUtil.unwrapNonNull(environment.getElement()
           .getType());
       GraphQLUnmodifiedType unpackedSortType = GraphQLTypeUtil.unwrapAll(sortType);
       validateSortFieldList(sortType, unpackedSortType.getName(), typeName, fieldName, argumentName);
       Map<String, String> defaultSortValue = (Map<String, String>) defaultSortValues.get(0);
       validateFieldArgumentDoesNotExist(defaultSortValue, typeName, argumentName);
     } else {
-      SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
+      var sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
       GraphQLArgument sortArgument = environment.getElement();
       if (sortArgument != null && sortArgument.getDefaultValue() != null) {
         sortFieldValidator.validate(environment.getFieldDefinition(), sortArgument, sortArgument.getDefaultValue());

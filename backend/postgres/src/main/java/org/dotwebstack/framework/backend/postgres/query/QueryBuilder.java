@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -57,7 +56,7 @@ public class QueryBuilder {
 
   private QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
       QueryParameters queryParameters) {
-    JoinTable joinTable = queryParameters.getKeyConditions()
+    var joinTable = queryParameters.getKeyConditions()
         .stream()
         .map(ColumnKeyCondition.class::cast)
         .map(ColumnKeyCondition::getJoinTable)
@@ -65,10 +64,9 @@ public class QueryBuilder {
         .findFirst()
         .orElse(null);
 
-    SelectWrapperBuilder selectWrapperBuilder = selectWrapperBuilderFactory.getSelectWrapperBuilder();
+    var selectWrapperBuilder = selectWrapperBuilderFactory.getSelectWrapperBuilder();
 
-    SelectWrapper selectWrapper =
-        selectWrapperBuilder.build(new SelectContext(queryContext), typeConfiguration, "", joinTable);
+    var selectWrapper = selectWrapperBuilder.build(new SelectContext(queryContext), typeConfiguration, "", joinTable);
 
     if (queryParameters.getKeyConditions()
         .isEmpty()) {
@@ -96,7 +94,7 @@ public class QueryBuilder {
         .as(queryContext.newTableAlias(), keyColumnNames.values()
             .toArray(String[]::new));
 
-    Condition joinCondition = keyColumnNames.entrySet()
+    var joinCondition = keyColumnNames.entrySet()
         .stream()
         .map(entry -> DSL.field(DSL.name(selectWrapper.getTable()
             .getName(), entry.getKey()))

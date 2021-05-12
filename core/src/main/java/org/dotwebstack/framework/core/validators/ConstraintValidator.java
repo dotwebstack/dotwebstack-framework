@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -150,7 +149,7 @@ public class ConstraintValidator implements QueryValidator {
 
   private void checkExpr(String name, String constraint, Object value, GraphQLFieldDefinition fieldDefinition,
       Map<String, Object> requestArguments) {
-    JexlContext jexlContext = JexlHelper.getJexlContext(fieldDefinition);
+    var jexlContext = JexlHelper.getJexlContext(fieldDefinition);
     if (requestArguments != null) {
       JexlHelper.updateContext(jexlContext, requestArguments);
     }

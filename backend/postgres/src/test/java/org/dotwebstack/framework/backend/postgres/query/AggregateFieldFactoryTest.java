@@ -31,7 +31,7 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_returnsGroupConcatDistinctField_ForArgumentStringJoinWithDistintIsTrue() {
-    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.TRUE, "|");
+    SelectedField mockedField = mockStringJoinField(Boolean.TRUE, "|");
     Field<?> actualAggregateField =
         aggregateFieldFactory.create(postgresFieldConfiguration, mockedField, "beers", "name", "");
 
@@ -42,7 +42,7 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_returnsGroupConcatField_ForArgumentStringJoinWithDistintIsFalse() {
-    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.FALSE, "|");
+    SelectedField mockedField = mockStringJoinField(Boolean.FALSE, "|");
     Field<?> actualAggregateField =
         aggregateFieldFactory.create(postgresFieldConfiguration, mockedField, "beers", "name", "");
 
@@ -53,7 +53,7 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_returnsGroupConcatFieldWithDefaultSeparator_ForArgumentStringJoin() {
-    SelectedField mockedField = mockStringJoinField("stringJoin", null, null);
+    SelectedField mockedField = mockStringJoinField(null, null);
     Field<?> actualAggregateField =
         aggregateFieldFactory.create(postgresFieldConfiguration, mockedField, "beers", "name", "");
 
@@ -64,7 +64,7 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_returnsGroupConcatFieldOnColumnAlias_ForArgumentStringJoinOnListTypeField() {
-    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.FALSE, "|");
+    SelectedField mockedField = mockStringJoinField(Boolean.FALSE, "|");
     when(postgresFieldConfiguration.isList()).thenReturn(Boolean.TRUE);
 
     Field<?> actualAggregateField =
@@ -77,7 +77,7 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_returnsGroupConcatFieldOnColumnAlias_ForArgumentStringJoinWithDistinctTrueOnListTypeField() {
-    SelectedField mockedField = mockStringJoinField("stringJoin", Boolean.TRUE, "|");
+    SelectedField mockedField = mockStringJoinField(Boolean.TRUE, "|");
     when(postgresFieldConfiguration.isList()).thenReturn(Boolean.TRUE);
 
     Field<?> actualAggregateField =
@@ -205,14 +205,13 @@ class AggregateFieldFactoryTest {
 
   @Test
   void create_throwsException_ForUnknownArgument() {
-    assertThrows(IllegalArgumentException.class, () -> {
-      SelectedField unknownField = mockSelectedField("unknownField");
-      aggregateFieldFactory.create(postgresFieldConfiguration, unknownField, "beers", "soldPerYear", "");
-    });
+    SelectedField unknownField = mockSelectedField("unknownField");
+    assertThrows(IllegalArgumentException.class,
+        () -> aggregateFieldFactory.create(postgresFieldConfiguration, unknownField, "beers", "soldPerYear", ""));
   }
 
-  private SelectedField mockStringJoinField(String fieldName, Boolean isDistinct, String separator) {
-    SelectedField stringJoinField = mockSelectedField(fieldName);
+  private SelectedField mockStringJoinField(Boolean isDistinct, String separator) {
+    SelectedField stringJoinField = mockSelectedField("stringJoin");
     Map<String, Object> arguments = new HashMap<>() {
       {
         put(DISTINCT_ARGUMENT, isDistinct);

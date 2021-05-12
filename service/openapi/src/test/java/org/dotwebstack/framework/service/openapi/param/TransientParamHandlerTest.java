@@ -33,7 +33,7 @@ class TransientParamHandlerTest {
   }
 
   @Test
-  public void test_supports_TransientExtension() {
+  void test_supports_TransientExtension() {
     // Arrange
     when(this.parameter.getExtensions()).thenReturn(ImmutableMap.of(X_DWS_TRANSIENT, Boolean.TRUE));
 
@@ -42,7 +42,7 @@ class TransientParamHandlerTest {
   }
 
   @Test
-  public void test_not_supports_OtherExtension() {
+  void test_not_supports_OtherExtension() {
     // Arrange
     when(this.parameter.getExtensions()).thenReturn(ImmutableMap.of(X_DWS_TYPE, "SOMETHING ELSE"));
 

@@ -37,7 +37,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -61,7 +60,7 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     Map<String, PostgresFieldConfiguration> fieldNamesConfigurations =
         getFieldNames(typeConfiguration, selectedFields.values());
 
-    AtomicBoolean hasJoinCondition = new AtomicBoolean();
+    var hasJoinCondition = new AtomicBoolean();
 
     // nested object using same table
     fieldNamesConfigurations.entrySet()
@@ -221,21 +220,21 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
     }
 
     if (fieldConfiguration.getJoinColumns() != null || fieldConfiguration.getJoinTable() != null) {
-      SelectWrapperBuilder selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
+      var selectWrapperBuilder = factory.getSelectWrapperBuilder(fieldConfiguration);
 
       var selectWrapper = selectWrapperBuilder.build(selectContext, (PostgresTypeConfiguration) typeConfiguration,
           fieldConfiguration.getJoinTable(), selectedFields);
 
-      final PostgresTypeConfiguration otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(
-          fieldConfiguration, selectedField, (PostgresTypeConfiguration) typeConfiguration);
+      final var otherSideTypeConfiguration = getPostgresTypeConfigurationForCondition(fieldConfiguration, selectedField,
+          (PostgresTypeConfiguration) typeConfiguration);
 
-      Condition whereCondition = fieldConfiguration.findJoinColumns()
+      var whereCondition = fieldConfiguration.findJoinColumns()
           .stream()
           .map(joinColumn -> createJoinTableCondition(otherSideTypeConfiguration, fieldConfiguration, joinColumn,
               fromTable, selectWrapper.getTable()))
           .reduce(DSL.noCondition(), Condition::and);
 
-      QueryBuilder.TableWrapper tableWrapper = QueryBuilder.TableWrapper.builder()
+      var tableWrapper = QueryBuilder.TableWrapper.builder()
           .table(DSL.lateral(selectWrapper.getQuery()
               .where(whereCondition)
               .limit(1))
@@ -263,9 +262,9 @@ public class DefaultSelectWrapperBuilder extends AbstractSelectWrapperBuilder {
 
     boolean invert = fieldConfiguration.isAggregate() || fieldConfiguration.getJoinTable() != null;
 
-    Name leftColumn =
+    var leftColumn =
         DSL.name(leftTable.getName(), invert ? otherSideFieldConfiguration.getColumn() : joinColumn.getName());
-    Name rightColumn =
+    var rightColumn =
         DSL.name(rightTable.getName(), invert ? joinColumn.getName() : otherSideFieldConfiguration.getColumn());
 
     return DSL.field(leftColumn)
