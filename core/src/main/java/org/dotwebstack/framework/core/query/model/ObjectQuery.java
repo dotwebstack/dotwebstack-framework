@@ -12,9 +12,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class ObjectQuery<T extends AbstractFieldConfiguration> implements Query {
+public class ObjectQuery implements Query {
   // Brewery (keyCriteria: [identifier], scalarFields: [name, state, foundedAt], objectFields: [privateAddress, voorkomen(aparte tabel)], collectionFields: [teksten]
-  private TypeConfiguration<T> typeConfiguration;
+  private TypeConfiguration<?> typeConfiguration;
 
   private List<FieldConfiguration> scalarFields;
 
