@@ -7,5 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CollectionFieldConfiguration {
   private final String name;
+
   private final CollectionQuery collectionQuery;
 }

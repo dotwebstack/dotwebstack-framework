@@ -68,6 +68,8 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
     initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
+
+    postFieldProcessing();
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,

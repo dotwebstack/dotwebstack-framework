@@ -7,5 +7,6 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 
 public class EqualsFilterCriteria implements FilterCriteria {
   private final FieldConfiguration field;
+
   private final Object value;
 }

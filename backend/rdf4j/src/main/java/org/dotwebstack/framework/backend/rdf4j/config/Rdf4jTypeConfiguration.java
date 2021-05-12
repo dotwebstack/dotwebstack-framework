@@ -43,6 +43,8 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
               "Usage of 'aggregationOf' by field '{}.{}' is not supported with an RDF4J backend",
               objectTypeDefinition.getName(), entry.getKey());
         });
+
+    postFieldProcessing();
   }
 
   @Override

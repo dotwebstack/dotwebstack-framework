@@ -36,7 +36,13 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   @Valid
   protected Map<String, T> fields = new HashMap<>();
 
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
+    postFieldProcessing();
+  }
+
+  protected void postFieldProcessing() {
+    fields.forEach((key, value) -> value.setName(key));
+  }
 
   public KeyCondition getKeyCondition(String fieldName) {
     if (!fields.containsKey(fieldName)) {

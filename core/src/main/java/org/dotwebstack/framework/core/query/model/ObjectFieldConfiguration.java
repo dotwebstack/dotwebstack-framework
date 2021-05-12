@@ -7,5 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ObjectFieldConfiguration {
   private final String name;
+
   private final ObjectQuery objectQuery;
 }

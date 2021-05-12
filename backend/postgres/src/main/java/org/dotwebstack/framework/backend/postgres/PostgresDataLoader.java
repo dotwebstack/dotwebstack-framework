@@ -57,17 +57,18 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   // TODO: uitwerken
-  @Override public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
-//    QueryHolder qyeryHolder =  ObjectQueryBuilder.builder().
-    //.columns()
+  @Override
+  public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+    // QueryHolder qyeryHolder = ObjectQueryBuilder.builder().
+    // .columns()
     // .criteria
-//    .build()
+    // .build()
 
-//    return this.execute(queryHolder.getQuery())
-//        .fetch()
-//        .one()
-//        .map(row -> queryHolder.getMapAssembler()
-//            .apply(row));
+    // return this.execute(queryHolder.getQuery())
+    // .fetch()
+    // .one()
+    // .map(row -> queryHolder.getMapAssembler()
+    // .apply(row));
     return Mono.empty();
   }
 
