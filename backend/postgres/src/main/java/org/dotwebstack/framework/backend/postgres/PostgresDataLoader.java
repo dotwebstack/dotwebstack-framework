@@ -15,7 +15,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
-import org.dotwebstack.framework.backend.postgres.query.objectQuery.ObjectQueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;

@@ -6,7 +6,7 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 public class CollectionQuery implements Query {
   // beers (scalarFields: [name, beerType], objectFields: [brewery], collectionFields: [ingredients]
-  private TypeConfiguration typeConfiguration;
+  private TypeConfiguration<?> typeConfiguration;
 
   private List<FieldConfiguration> scalarFields;
 
