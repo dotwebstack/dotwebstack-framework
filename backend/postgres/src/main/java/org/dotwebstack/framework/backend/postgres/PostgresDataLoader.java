@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import org.dotwebstack.framework.backend.postgres.query.objectQuery.ObjectQueryBuilder;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -16,6 +15,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
+import org.dotwebstack.framework.backend.postgres.query.objectQuery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -61,14 +61,15 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   // TODO: uitwerken
-  @Override public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+  @Override
+  public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
     QueryHolder queryHolder = objectQueryBuilder.build(objectQuery);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
         .one()
         .map(row -> queryHolder.getMapAssembler()
-        .apply(row));
+            .apply(row));
   }
 
   @Override

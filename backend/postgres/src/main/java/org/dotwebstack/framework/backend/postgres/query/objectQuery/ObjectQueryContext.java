@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class ObjectQueryContext {
 
-    private final AtomicInteger selectCounter = new AtomicInteger();
+  private final AtomicInteger selectCounter = new AtomicInteger();
 
-    private AtomicReference<String> checkNullAlias = new AtomicReference<>();
+  private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
-    public String newSelectAlias() {
-        return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
-    }
+  public String newSelectAlias() {
+    return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
+  }
 }

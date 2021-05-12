@@ -9,7 +9,8 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 @Builder
 @Data
 public class ObjectQuery implements Query {
-  // Brewery (keyCriteria: [identifier], scalarFields: [name, state, foundedAt], objectFields: [privateAddress, voorkomen(aparte tabel)], collectionFields: [teksten]
+  // Brewery (keyCriteria: [identifier], scalarFields: [name, state, foundedAt], objectFields:
+  // [privateAddress, voorkomen(aparte tabel)], collectionFields: [teksten]
   private TypeConfiguration<?> typeConfiguration;
 
   private List<FieldConfiguration> scalarFields;
