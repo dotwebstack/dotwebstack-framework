@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import org.dotwebstack.framework.backend.postgres.query.objectQuery.ObjectQueryBuilder;
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -44,9 +45,12 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private final QueryBuilder queryBuilder;
 
+  private final ObjectQueryBuilder objectQueryBuilder;
+
   public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
-      QueryBuilder queryBuilder) {
+      QueryBuilder queryBuilder, ObjectQueryBuilder objectQueryBuilder) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
+    this.objectQueryBuilder = objectQueryBuilder;
     this.databaseClient = databaseClient;
     this.queryBuilder = queryBuilder;
   }
@@ -57,19 +61,14 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   // TODO: uitwerken
-  @Override
-  public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
-    // QueryHolder qyeryHolder = ObjectQueryBuilder.builder().
-    // .columns()
-    // .criteria
-    // .build()
+  @Override public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+    QueryHolder queryHolder = objectQueryBuilder.build(objectQuery);
 
-    // return this.execute(queryHolder.getQuery())
-    // .fetch()
-    // .one()
-    // .map(row -> queryHolder.getMapAssembler()
-    // .apply(row));
-    return Mono.empty();
+    return this.execute(queryHolder.getQuery())
+        .fetch()
+        .one()
+        .map(row -> queryHolder.getMapAssembler()
+        .apply(row));
   }
 
   @Override
