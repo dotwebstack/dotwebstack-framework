@@ -1,27 +1,16 @@
 package org.dotwebstack.framework.backend.postgres.query.objectQuery;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Getter;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
-import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
-import org.dotwebstack.framework.backend.postgres.query.objectQuery.ObjectQueryContext;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
-
-import java.util.Collection;
-import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -48,13 +37,13 @@ public class ObjectQueryBuilder {
 
     return QueryHolder.builder()
             .query(query)
-            .mapAssembler(createMapAssembler(objectQueryContext.getAssembleFns(), objectQueryContext.getCheckNullAlias(), true) )
+            .mapAssembler(createMapAssembler(assembleFns, objectQueryContext.getCheckNullAlias(), true) )
             .build();
   }
 
   public SelectJoinStep<Record> buildQuery(ObjectQueryContext objectQueryContext, ObjectQuery objectQuery){
 
-    Table<Record> fromTable = DSL.table(((PostgresTypeConfiguration)objectQuery.getTypeConfiguration()).getTable());
+    Table<Record> fromTable = DSL.table(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable());
 
     List<SelectFieldOrAsterisk> selectColumns = addScalarFields(objectQuery.getScalarFields(), fromTable, objectQueryContext);
 
@@ -70,7 +59,7 @@ public class ObjectQueryBuilder {
     // add filter criteria
 
     SelectJoinStep<Record> query = dslContext.select(selectColumns)
-            .from(fromTable);
+        .from(fromTable);
 
     return query;
   }
@@ -87,9 +76,10 @@ public class ObjectQueryBuilder {
               .as(columnAlias);
       objectQueryContext.getAssembleFns().put(scalarField.getName(), row -> row.get(column.getName()));
 
-      // TODO why set checkNullAlias
+          // TODO why set checkNullAlias
 
-      return column;
-    }).collect(Collectors.toList());
+          return column;
+        })
+        .collect(Collectors.toList());
   }
 }

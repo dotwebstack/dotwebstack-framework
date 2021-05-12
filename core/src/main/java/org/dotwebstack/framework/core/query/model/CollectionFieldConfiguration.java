@@ -8,5 +8,6 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 @RequiredArgsConstructor
 public class CollectionFieldConfiguration {
   private final FieldConfiguration field;
+
   private final CollectionQuery collectionQuery;
 }

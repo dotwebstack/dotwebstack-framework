@@ -37,6 +37,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.query.QueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,6 +71,8 @@ class GenericDataFetcherTest {
 
   private DataLoaderRegistry dataLoaderRegistry;
 
+  private QueryFactory queryFactory;
+
   @BeforeEach
   void doBeforeEach() {
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Brewery", typeConfiguration));
@@ -78,7 +81,7 @@ class GenericDataFetcherTest {
 
     dataLoaderRegistry = new DataLoaderRegistry();
 
-    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader));
+    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader), queryFactory);
   }
 
   @Test

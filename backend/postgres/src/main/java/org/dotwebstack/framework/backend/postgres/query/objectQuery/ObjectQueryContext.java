@@ -11,9 +11,9 @@ import lombok.Data;
 @Data
 public class ObjectQueryContext {
 
-    private final AtomicInteger selectCounter = new AtomicInteger();
+  private final AtomicInteger selectCounter = new AtomicInteger();
 
-    private AtomicReference<String> checkNullAlias = new AtomicReference<>();
+  private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
     Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 

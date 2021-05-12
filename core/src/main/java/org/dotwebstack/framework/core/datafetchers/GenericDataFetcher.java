@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.QueryFactory;
+import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -34,10 +36,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final Collection<BackendDataLoader> backendDataLoaders;
 
+  private final QueryFactory queryFactory;
+
   public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration,
-      Collection<BackendDataLoader> backendDataLoaders) {
+      Collection<BackendDataLoader> backendDataLoaders, QueryFactory queryFactory) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoaders = backendDataLoaders;
+    this.queryFactory = queryFactory;
   }
 
   public Object get(DataFetchingEnvironment environment) {
@@ -80,10 +85,10 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (!loadEnvironment.isSubscription()
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      // TODO
-      // ObjectQuery objectQuery =  QueryFactory.createObjectQuery(typeConfiguration, loadEnvironment/dataFetchingEnvironment, dotwebstackConfiguration)
-      // backendDataLoader.load(objectQuery)
-      return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
+
+      ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+
+      return backendDataLoader.load(objectQuery)
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
