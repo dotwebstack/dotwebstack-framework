@@ -80,6 +80,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (!loadEnvironment.isSubscription()
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
+      // TODO
+      // ObjectQuery objectQuery =  QueryFactory.createObjectQuery(typeConfiguration, loadEnvironment/dataFetchingEnvironment, dotwebstackConfiguration)
+      // backendDataLoader.load(objectQuery)
       return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();

@@ -1,12 +1,14 @@
 package org.dotwebstack.framework.core.datafetchers;
 
-import java.util.Map;
-import java.util.Set;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+
+import java.util.Map;
+import java.util.Set;
 
 public interface BackendDataLoader {
 
@@ -23,4 +25,8 @@ public interface BackendDataLoader {
 
   Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment);
+
+  default Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+    return Mono.empty();
+  }
 }

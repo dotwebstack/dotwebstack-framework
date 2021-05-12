@@ -20,6 +20,7 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.Param;
 import org.jooq.Query;
 import org.jooq.conf.ParamType;
@@ -53,6 +54,21 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public boolean supports(TypeConfiguration<?> typeConfiguration) {
     return typeConfiguration instanceof PostgresTypeConfiguration;
+  }
+
+  // TODO: uitwerken
+  @Override public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+//    QueryHolder qyeryHolder =  ObjectQueryBuilder.builder().
+    //.columns()
+    // .criteria
+//    .build()
+
+//    return this.execute(queryHolder.getQuery())
+//        .fetch()
+//        .one()
+//        .map(row -> queryHolder.getMapAssembler()
+//            .apply(row));
+    return Mono.empty();
   }
 
   @Override
