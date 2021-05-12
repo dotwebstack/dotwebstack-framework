@@ -2,6 +2,7 @@
 
   - [Getting started](overview/getting_started.md)
   - [Examples](overview/examples.md)
+  - [Diagrams](overview/diagrams.md)
 
 - Backend modules
 
