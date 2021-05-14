@@ -55,7 +55,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
       List<String> allValues = new ArrayList<>();
       ((List<String>) expandValueOptional.get()).forEach(value -> {
         String[] path = value.split("\\.");
-        StringJoiner pathBuilder = new StringJoiner(".");
+        var pathBuilder = new StringJoiner(".");
         Stream.of(path)
             .forEach(pathElement -> {
               pathBuilder.add(pathElement);
@@ -73,7 +73,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
-    Schema schema = parameter.getSchema();
+    var schema = parameter.getSchema();
 
     switch (schema.getType()) {
       case ARRAY_TYPE:
@@ -122,7 +122,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   private Schema<?> getPropertySchema(Schema<?> schema, String fieldName) {
     if (schema instanceof ComposedSchema) {
-      ComposedSchema composedSchema = (ComposedSchema) schema;
+      var composedSchema = (ComposedSchema) schema;
 
       return getComposedChilds(composedSchema).stream()
           .filter(ObjectSchema.class::isInstance)

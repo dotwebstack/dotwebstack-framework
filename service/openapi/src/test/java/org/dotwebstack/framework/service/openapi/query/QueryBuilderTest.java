@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class QueryBuilderTest {
+class QueryBuilderTest {
 
   private TypeDefinitionRegistry registry;
 
@@ -38,8 +39,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void toQuery_returns_validQuery() {
-    // Arrange
+  void toQuery_returns_validQuery() {
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
@@ -49,16 +49,14 @@ public class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
         new HashMap<>(), true, "");
 
-    // Assert
     assertEquals("{brewery{identifier}}", bodyJoiner.toString());
   }
 
   @Test
-  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
+  void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
@@ -66,7 +64,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void validateRequiredPathsQueried_doesNotReturnError_whenRequiredPathsAreQueried() {
+  void validateRequiredPathsQueried_doesNotReturnError_whenRequiredPathsAreQueried() {
     Set<String> requiredPaths = Set.of("beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
@@ -74,17 +72,17 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void validateRequiredPathsQueried_returnsError_whenRequiredPathsAreNotQueried() {
+  void validateRequiredPathsQueried_returnsError_whenRequiredPathsAreNotQueried() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
+    var graphQlQueryBuilder = new GraphQlQueryBuilder();
     assertThrows(InvalidConfigurationException.class,
-        () -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+        () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
-  public void toQuery_returns_validQueryWithArguments() {
-    // Arrange
+  void toQuery_returns_validQueryWithArguments() {
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
@@ -96,18 +94,15 @@ public class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
         arguments, true, "");
 
-    // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
     assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
   }
 
   @Test
-  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
-    // Arrange
+  void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
 
@@ -120,11 +115,9 @@ public class QueryBuilderTest {
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    // Act
     new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, new HashSet<>(), bodyJoiner, argumentJoiner,
         arguments, true, "");
 
-    // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
     assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
         + "supplements{identifier,name}}}}", bodyJoiner.toString());
@@ -142,9 +135,9 @@ public class QueryBuilderTest {
   }
 
   private TypeDefinitionRegistry loadTypeDefinitionRegistry() {
-    Reader reader = new InputStreamReader(this.getClass()
+    Reader reader = new InputStreamReader(Objects.requireNonNull(this.getClass()
         .getClassLoader()
-        .getResourceAsStream("config/brewery.graphqls"));
+        .getResourceAsStream("config/brewery.graphqls")));
     return new SchemaParser().parse(reader);
   }
 }

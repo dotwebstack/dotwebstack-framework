@@ -22,7 +22,7 @@ public class TypeEnforcer {
       new GeometryPrecisionReducer(new PrecisionModel(1000));
 
   public Geometry enforce(GeometryType type, Geometry geometry) {
-    GeometryType currentType = GeometryType.valueOf(geometry.getGeometryType()
+    var currentType = GeometryType.valueOf(geometry.getGeometryType()
         .toUpperCase());
 
     if (currentType.equals(type)) {

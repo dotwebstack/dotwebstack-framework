@@ -36,7 +36,6 @@ import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
-import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -128,11 +127,11 @@ public class OpenApiConfiguration {
 
     staticResourceRouter().ifPresent(routerFunctions::add);
 
-    ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplateBuilder.builder()
+    var responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
         .xdwsStringTypes(openApiProperties.getXdwsStringTypes())
         .build();
-    RequestBodyContextBuilder requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
+    var requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
     openApi.getPaths()
         .forEach((name, path) -> {
           Optional<List<HttpMethodOperation>> operations = Optional.of(path)
@@ -187,16 +186,15 @@ public class OpenApiConfiguration {
 
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
       RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
-    RequestBodyContext requestBodyContext =
-        requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
-            .getRequestBody());
+    var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
+        .getRequestBody());
 
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
     Optional<GraphQlField> graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
     List<String> requiredFields = DwsExtensionHelper.getDwsRequiredFields(httpMethodOperation.getOperation());
 
-    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
+    var responseSchemaContext = ResponseSchemaContext.builder()
         .graphQlField(graphQlField.orElse(null))
         .requiredFields(Objects.nonNull(requiredFields) ? requiredFields : Collections.emptyList())
         .responses(responseTemplates)
@@ -207,15 +205,15 @@ public class OpenApiConfiguration {
         .requestBodyContext(requestBodyContext)
         .build();
 
-    RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
+    var requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
     validateTemplateResponseMapper(responseTemplates);
-    TemplateResponseMapper templateResponseMapper = getTemplateResponseMapper();
+    var templateResponseMapper = getTemplateResponseMapper();
 
-    CoreRequestHandler coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(),
-        responseSchemaContext, responseContextValidator, graphQl, responseMappers, jsonResponseMapper,
-        templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    var coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext,
+        responseContextValidator, graphQl, responseMappers, jsonResponseMapper, templateResponseMapper,
+        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseTemplates.stream()
         .map(ResponseTemplate::getResponseCode)

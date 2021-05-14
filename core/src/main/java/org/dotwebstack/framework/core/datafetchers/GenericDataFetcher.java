@@ -4,12 +4,10 @@ import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static java.util.Optional.ofNullable;
 
 import graphql.execution.DataFetcherResult;
-import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import java.util.Collection;
@@ -46,7 +44,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   public Object get(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo = environment.getExecutionStepInfo();
+    var executionStepInfo = environment.getExecutionStepInfo();
     Map<String, Object> source = environment.getSource();
     TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
@@ -61,7 +59,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       // Create separate dataloader for every unique path, since evert path can have different arguments
       // or selection
-      String dataLoaderKey = String.join("/", executionStepInfo.getPath()
+      var dataLoaderKey = String.join("/", executionStepInfo.getPath()
           .getKeysOnly());
 
       // Retrieve dataloader instance for key, or create new instance when it does not exist yet
@@ -69,16 +67,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
           .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
       LocalDataFetcherContext context = environment.getLocalContext();
-      KeyCondition keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
+      var keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
 
       return dataLoader.load(keyCondition);
     }
 
-    BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
+    var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(environment);
+    var loadEnvironment = createLoadEnvironment(environment);
 
-    KeyCondition keyCondition = typeConfiguration.getKeyCondition(environment);
+    var keyCondition = typeConfiguration.getKeyCondition(environment);
 
     // R: loadSingle (cardinality is one-to-one or many-to-one)
     // R2: Is key passed als field argument? (TBD: only supported for query field? source always null?)
@@ -114,7 +112,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
-    GraphQLType nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
+    var nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(nullableType);
 
     if (!(rawType instanceof GraphQLObjectType)) {
@@ -130,9 +128,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
 
-    BackendDataLoader backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
+    var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
-    LoadEnvironment loadEnvironment = createLoadEnvironment(environment);
+    var loadEnvironment = createLoadEnvironment(environment);
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)

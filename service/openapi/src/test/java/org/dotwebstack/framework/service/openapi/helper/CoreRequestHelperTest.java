@@ -33,58 +33,49 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 class CoreRequestHelperTest {
 
   @Test
-  public void parameterValidation_throwsError_withNonexistentParam() {
-    // arrange
+  void parameterValidation_throwsError_withNonexistentParam() {
     Set<String> schemaParams = Set.of("extends");
     Set<String> givenParams = new LinkedHashSet<>();
     givenParams.add("cat");
     givenParams.add("dog");
 
-    // act & assert
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> validateParameterExistence("path", schemaParams, givenParams));
-    assertEquals(thrown.getMessage(),
-        "The following request path parameters are not allowed on this endpoint: [cat, dog]");
+    assertEquals("The following request path parameters are not allowed on this endpoint: [cat, dog]",
+        thrown.getMessage());
   }
 
   @Test
-  public void parameterValidation_throwsError_withPartialNonexistentParams() {
-    // arrange
+  void parameterValidation_throwsError_withPartialNonexistentParams() {
     Set<String> schemaParams = Set.of("cat");
     Set<String> givenParams = Set.of("cat", "dog");
 
-    // act & assert
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> validateParameterExistence("path", schemaParams, givenParams), "");
-    assertEquals(thrown.getMessage(), "The following request path parameters are not allowed on this endpoint: [dog]");
+    assertEquals("The following request path parameters are not allowed on this endpoint: [dog]", thrown.getMessage());
   }
 
   @Test
-  public void parameterValidation_doesNotThrowError_withOnlyExistingParam() {
-    // arrange
+  void parameterValidation_doesNotThrowError_withOnlyExistingParam() {
     Set<String> schemaParams = Set.of("cat", "dog");
     Set<String> givenParams = Set.of("cat");
 
-    // act & assert
     assertDoesNotThrow(() -> validateParameterExistence("path", schemaParams, givenParams));
   }
 
   @Test
-  public void parameterValidation_ThrowsError_withNonexistentRequestBody() {
-    // arrange
+  void parameterValidation_ThrowsError_withNonexistentRequestBody() {
     MockServerWebExchange mockServerWebExchange = MockServerWebExchange.from(MockServerHttpRequest.post("/")
         .contentType(MediaType.APPLICATION_JSON)
         .body("test"));
     ServerRequest request = ServerRequest.create(mockServerWebExchange, HandlerStrategies.withDefaults()
         .messageReaders());
 
-    // act & assert
     assertThrows(InvalidConfigurationException.class, () -> validateRequestBodyNonexistent(request));
   }
 
   @Test
-  public void addEvaluatedDwsParameters_addsEvaluatedJexlParams() {
-    // arrange
+  void addEvaluatedDwsParameters_addsEvaluatedJexlParams() {
     Map<String, Object> inputParams = Collections.singletonMap("someParam", "someValue");
     Map<String, String> dwsParameters = Collections.singletonMap("dwsParam", "request.path()");
 
@@ -94,30 +85,25 @@ class CoreRequestHelperTest {
     JexlEngine jexlEngine = new JexlBuilder().create();
     JexlHelper jexlHelper = new JexlHelper(jexlEngine);
 
-    // act
     Map<String, Object> result = addEvaluatedDwsParameters(inputParams, dwsParameters, request, jexlHelper);
 
-    // assert
-    assertEquals(result.get("someParam"), "someValue");
-    assertEquals(result.get("dwsParam"), "/path");
+    assertEquals("someValue", result.get("someParam"));
+    assertEquals("/path", result.get("dwsParam"));
   }
 
   @Test
-  public void validateRequiredPath_DoesNotThrowError_withValidInput() {
-    // Arrange
+  void validateRequiredPath_DoesNotThrowError_withValidInput() {
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()
             .name("postalCode")
             .build()))
         .build();
 
-    // Act & Assert
     assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredField(field, "postalCode", "breweries"));
   }
 
   @Test
-  public void validateRequiredPath_DoesNotThrowError_withValidNestedInput() {
-    // Arrange
+  void validateRequiredPath_DoesNotThrowError_withValidNestedInput() {
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()
             .name("beers")
@@ -127,13 +113,11 @@ class CoreRequestHelperTest {
             .build()))
         .build();
 
-    // Act & Assert
     assertDoesNotThrow(() -> CoreRequestHelper.validateRequiredField(field, "beers.id", "breweries"));
   }
 
   @Test
-  public void validateRequiredPath_ThrowsErrorWithInvalidInput() {
-    // Arrange
+  void validateRequiredPath_ThrowsErrorWithInvalidInput() {
     GraphQlField field = GraphQlField.builder()
         .fields(List.of(GraphQlField.builder()
             .name("beers")
@@ -143,7 +127,6 @@ class CoreRequestHelperTest {
             .build()))
         .build();
 
-    // Act & Assert
     assertThrows(InvalidOpenApiConfigurationException.class,
         () -> CoreRequestHelper.validateRequiredField(field, "beers.test", "breweries"));
   }

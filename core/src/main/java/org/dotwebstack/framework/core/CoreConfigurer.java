@@ -11,7 +11,6 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
@@ -24,6 +23,7 @@ import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
@@ -69,7 +69,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private DirectiveDefinition createSortDefinition() {
     return newDirectiveDefinition().name(CoreDirectives.SORT_NAME)
-        .directiveLocations(ImmutableList.of(
+        .directiveLocations(List.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                 .build(),
             newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
@@ -108,7 +108,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
             .name(CoreDirectives.FILTER_ARG_OPERATOR)
             .type(optionalString)
             .build())
-        .directiveLocations(ImmutableList.of(
+        .directiveLocations(List.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                 .build(),
             newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
@@ -172,7 +172,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
             newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_EXPR)
                 .type(new TypeName(GraphQLString.getName()))
                 .build()))
-        .directiveLocations(ImmutableList.of(
+        .directiveLocations(List.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                 .build(),
             newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())

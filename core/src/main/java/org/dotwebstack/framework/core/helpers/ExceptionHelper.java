@@ -30,7 +30,7 @@ public class ExceptionHelper {
   }
 
   public static Object[] joinArguments(Throwable cause, Object[] arguments) {
-    Object[] newArguments = new Object[arguments.length + 1];
+    var newArguments = new Object[arguments.length + 1];
     System.arraycopy(arguments, 0, newArguments, 0, arguments.length);
     newArguments[newArguments.length - 1] = cause;
 

@@ -41,10 +41,8 @@ public class ResponseTemplateBuilderTest {
   @ParameterizedTest
   @ValueSource(strings = {"/query1", "/query2"})
   void build_returnsTemplates_ForValidSpec() {
-    // Arrange / Act
     List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
-    // Assert
     assertEquals(1, responseTemplates.size());
     ResponseTemplate okResponse = responseTemplates.stream()
         .filter(rt -> rt.isApplicable(200, 299))
@@ -60,34 +58,28 @@ public class ResponseTemplateBuilderTest {
 
   @Test
   void build_throwsException_MissingSchema() {
-    // Arrange
     openApi.getComponents()
         .getSchemas()
         .remove("Object1");
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
   void build_throwsException_MissingSchema2() {
-    // Arrange
     openApi.getComponents()
         .getSchemas()
         .remove("Object2");
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
   void build_resolvesXdwsTemplate_forValidSchema() {
-    // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
-    // Assert
     assertEquals(1, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
     assertEquals(1, responseTemplate.getResponseObject()
@@ -104,28 +96,22 @@ public class ResponseTemplateBuilderTest {
 
   @Test
   void build_resolvesSchema_forRecursiveObjectSchema() {
-    // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query7", HttpMethod.GET);
 
-    // Assert
     assertEquals(1, templates.size());
   }
 
   @Test
   void build_resolvesSchema_forRecursiveArraySchema() {
-    // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query8", HttpMethod.GET);
 
-    // Assert
     assertEquals(1, templates.size());
   }
 
   @Test
   void build_resolvesAllOfTemplate_forValidSchema() {
-    // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query5", HttpMethod.GET);
 
-    // Assert
     assertEquals(2, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
     assertEquals(2, responseTemplate.getResponseObject()
@@ -135,8 +121,8 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   void build_throwsException_ObjectXdwsTemplateType() {
-    // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()
         .getSchemas()
         .get("Object1")
@@ -144,14 +130,13 @@ public class ResponseTemplateBuilderTest {
         .get("o1_prop1");
     property1.setType("object");
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   void build_throwsException_IntegerXdwsTemplateType() {
-    // Arrange
     Schema<?> property1 = (Schema) openApi.getComponents()
         .getSchemas()
         .get("Object1")
@@ -159,13 +144,11 @@ public class ResponseTemplateBuilderTest {
         .get("o1_prop1");
     property1.setType("integer");
 
-    // Act / Assert
     assertDoesNotThrow(() -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
   void build_throwsException_MissingXDwsExprInHeaderSchema() {
-    // Arrange
     this.openApi.getPaths()
         .get("/query6")
         .getGet()
@@ -177,7 +160,6 @@ public class ResponseTemplateBuilderTest {
         .getExtensions()
         .remove("x-dws-expr");
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query6", HttpMethod.GET));
   }
@@ -185,7 +167,6 @@ public class ResponseTemplateBuilderTest {
   @Test
   @SuppressWarnings("unchecked")
   void build_throwsException_MissingExtensionsInHeaderSchema() {
-    // Arrange
     this.openApi.getPaths()
         .get("/query6")
         .getGet()
@@ -196,21 +177,19 @@ public class ResponseTemplateBuilderTest {
         .getSchema()
         .setExtensions(null);
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class,
         () -> getResponseTemplates(this.openApi, "/query6", HttpMethod.GET));
   }
 
   @Test
   void build_throwsException_without_configuredXdwsStringType() {
-    // Act / Assert
+    List<String> xdwsStringTypes = ImmutableList.of("unknown type");
     assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, ImmutableList.of("unknown type"), "/query6", HttpMethod.GET));
+        () -> getResponseTemplates(this.openApi, xdwsStringTypes, "/query6", HttpMethod.GET));
   }
 
   @Test
   void build_succeeds_with_configuredXdwsStringType() {
-    // Act / Assert
     List<ResponseTemplate> responseTemplates =
         getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
 
@@ -227,45 +206,37 @@ public class ResponseTemplateBuilderTest {
 
   @Test
   void getXdwsType_returns_expectedValue() {
-    // Arrange
     Schema<?> schema = this.openApi.getComponents()
         .getSchemas()
         .get("Object5");
 
-    // Act
     Optional<String> xdwsType = ResponseTemplateBuilder.getXdwsType(schema);
 
-    // Assert
     assertTrue(xdwsType.isPresent());
     assertEquals("customType", xdwsType.get());
   }
 
   @Test
   void getXdwsType_returns_empty() {
-    // Arrange
     Schema<?> schema = this.openApi.getComponents()
         .getSchemas()
         .get("Object4");
 
-    // Assert
     assertTrue(ResponseTemplateBuilder.getXdwsType(schema)
         .isEmpty());
   }
 
   @Test
   void build_returnsResponseHeaders() {
-    // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header")
         .dwsExpressionMap(Map.of(X_DWS_EXPR_VALUE, "`value`"))
         .type("string")
         .build();
 
-    // Act
     List<ResponseTemplate> responseTemplates =
         getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
 
-    // Assert
     Map<String, ResponseHeader> responseHeaders = responseTemplates.get(0)
         .getResponseHeaders();
     assertEquals(expectedResponseHeader, responseHeaders.get("X-Response-Header"));
@@ -273,18 +244,15 @@ public class ResponseTemplateBuilderTest {
 
   @Test
   void build_returnsResponseHeaders_forHeaderWithRef() {
-    // Arrange
     ResponseHeader expectedResponseHeader = ResponseHeader.builder()
         .name("X-Response-Header-Ref")
         .dwsExpressionMap(Map.of(X_DWS_EXPR_VALUE, "`ref`"))
         .type("string")
         .build();
 
-    // Act
     List<ResponseTemplate> responseTemplates =
         getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
 
-    // Assert
     Map<String, ResponseHeader> responseHeaders = responseTemplates.get(0)
         .getResponseHeaders();
     assertEquals(expectedResponseHeader, responseHeaders.get("X-Response-Header-Ref"));
@@ -320,10 +288,8 @@ public class ResponseTemplateBuilderTest {
 
   @Test
   void build_returns_withArrayDefaultValue() {
-    // Act
     List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query12", HttpMethod.GET);
 
-    // Assert
     assertNotNull(templates);
     assertEquals(1, templates.size());
     ResponseObject responseObject = templates.get(0)

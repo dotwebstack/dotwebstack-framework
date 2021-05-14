@@ -40,7 +40,7 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonNode jsonData = getJsonDocumentByFile(typeConfiguration.getDataSourceFile());
 
-    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
+    var jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
     return jsonQueryResult.getResult(keyCondition)
         .map(Mono::just)
@@ -61,7 +61,7 @@ public class JsonDataLoader implements BackendDataLoader {
 
     JsonNode jsonData = getJsonDocumentByFile(typeConfiguration.getDataSourceFile());
 
-    JsonQueryResult jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
+    var jsonQueryResult = new JsonQueryResult(jsonData, jsonPathTemplate);
 
     return Flux.fromIterable(jsonQueryResult.getResults(keyCondition));
   }

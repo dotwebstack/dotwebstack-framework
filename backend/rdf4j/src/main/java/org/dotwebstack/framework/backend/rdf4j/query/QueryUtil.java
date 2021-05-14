@@ -24,7 +24,7 @@ public class QueryUtil {
   public static Geometry parseGeometryOrNull(String wktString) {
 
     if (Objects.nonNull(wktString)) {
-      WKTReader reader = new WKTReader();
+      var reader = new WKTReader();
       try {
         return reader.read(wktString);
       } catch (ParseException ignore) {

@@ -9,8 +9,8 @@ public class GraphQlFormatHelper {
   private GraphQlFormatHelper() {}
 
   public static String formatQuery(@NonNull String query) {
-    int indents = 0;
-    StringBuilder builder = new StringBuilder();
+    var indents = 0;
+    var builder = new StringBuilder();
     for (String character : query.split("")) {
       switch (character) {
         case "{":

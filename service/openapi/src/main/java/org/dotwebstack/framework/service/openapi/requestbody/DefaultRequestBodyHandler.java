@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.InputObjectTypeDefinition;
-import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
@@ -119,7 +118,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   @SuppressWarnings("rawtypes")
   private void validate(String propertyName, Schema<?> propertySchema, Type graphQlType, String pathName) {
     Schema<?> schema = resolveSchema(openApi, propertySchema);
-    Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
+    var unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     validatePropertyType(propertyName, schema.getType(), unwrapped);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
       TypeDefinition<?> typeDefinition = this.typeDefinitionRegistry.getType(unwrapped)
@@ -156,7 +155,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   private void validateProperties(String pathName, Schema<?> schema, InputObjectTypeDefinition typeDefinition) {
     Map<String, Schema> properties = schema.getProperties();
     properties.forEach((name, childSchema) -> {
-      InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
+      var inputValueDefinition = typeDefinition.getInputValueDefinitions()
           .stream()
           .filter(iv -> Objects.equals(iv.getName(), name))
           .findFirst()

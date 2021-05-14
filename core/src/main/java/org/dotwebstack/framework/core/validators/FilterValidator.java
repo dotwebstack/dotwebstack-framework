@@ -44,7 +44,7 @@ public class FilterValidator {
         .ifPresent(parentInfo -> {
           GraphQLType type = GraphQLTypeUtil.unwrapType(((GraphQLFieldDefinition) parentInfo.getElement()).getType())
               .lastElement();
-          TypeName typeName = TypeName.newTypeName(getTypeName(type))
+          var typeName = TypeName.newTypeName(getTypeName(type))
               .build();
 
           if (!(type instanceof GraphQLTypeReference) && !GraphQLTypeUtil.isLeaf(type)

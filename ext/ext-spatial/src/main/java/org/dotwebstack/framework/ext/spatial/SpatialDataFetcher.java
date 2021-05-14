@@ -33,7 +33,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
       throw illegalArgumentException("Source is not an instance of Geometry");
     }
 
-    Geometry geometry = dataFetchingEnvironment.getSource();
+    var geometry = (Geometry) dataFetchingEnvironment.getSource();
     String fieldName = dataFetchingEnvironment.getFieldDefinition()
         .getName();
 
@@ -59,12 +59,12 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkt(Geometry geometry) {
-    WKTWriter wktWriter = new WKTWriter();
+    var wktWriter = new WKTWriter();
     return wktWriter.write(geometry);
   }
 
   private String createWkb(Geometry geometry) {
-    WKBWriter wkbWriter = new WKBWriter();
+    var wkbWriter = new WKBWriter();
     return encodeHexString(wkbWriter.write(geometry));
   }
 }

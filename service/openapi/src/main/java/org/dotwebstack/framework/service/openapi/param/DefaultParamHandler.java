@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
@@ -86,7 +85,7 @@ public class DefaultParamHandler implements ParamHandler {
       if (defaultValue.isPresent()) {
         validateValues(defaultValue.get(), parameter);
       } else {
-        if (parameter.getRequired()) {
+        if (Boolean.TRUE.equals(parameter.getRequired())) {
           if (Objects.nonNull(parameter.getExtensions()) && parameter.getExtensions()
               .containsKey(X_DWS_VALIDATE)) {
             return Optional.empty();
@@ -277,7 +276,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Object deserializeArray(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
@@ -296,7 +295,7 @@ public class DefaultParamHandler implements ParamHandler {
       throw ExceptionHelper.unsupportedOperationException(
           "Array deserialization not supported for parameter with 'explode=false' and style "
               + "'{}'. Supported styles are '{}'.",
-          style, ImmutableList.of(SIMPLE, FORM, SPACEDELIMITED, PIPEDELIMITED));
+          style, List.of(SIMPLE, FORM, SPACEDELIMITED, PIPEDELIMITED));
     }
   }
 
@@ -312,7 +311,7 @@ public class DefaultParamHandler implements ParamHandler {
     } else {
       throw ExceptionHelper.unsupportedOperationException(
           "Object deserialization not supported for parameter style " + "'{}'. Supported styles are '{}'.", style,
-          ImmutableList.of(SIMPLE));
+          List.of(SIMPLE));
     }
   }
 
@@ -323,7 +322,7 @@ public class DefaultParamHandler implements ParamHandler {
           keyValueString);
     }
     Map<String, String> result = new HashMap<>();
-    for (int i = 0; i < split.length; i += 2) {
+    for (var i = 0; i < split.length; i += 2) {
       String key = split[i];
       String value = split[i + 1];
       result.put(key, value);
@@ -360,7 +359,7 @@ public class DefaultParamHandler implements ParamHandler {
         .get(parameter.getName());
 
     if (ARRAY_TYPE.equals(parameter.getSchema()
-        .getType()) && parameter.getExplode()) {
+        .getType()) && Boolean.TRUE.equals(parameter.getExplode())) {
       return result;
     }
     return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
@@ -375,9 +374,8 @@ public class DefaultParamHandler implements ParamHandler {
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
   Optional<Object> getDefault(Parameter parameter) {
-    Schema schema = resolveSchema(openApi, parameter.getSchema());
+    var schema = resolveSchema(openApi, parameter.getSchema());
     if (schema != null && schema.getDefault() != null) {
       switch (schema.getType()) {
         case ARRAY_TYPE:
@@ -392,7 +390,7 @@ public class DefaultParamHandler implements ParamHandler {
 
   private boolean hasEnum(Parameter parameter) {
     if (parameter.getSchema() instanceof ArraySchema) {
-      ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
+      var arraySchema = (ArraySchema) parameter.getSchema();
       return Objects.nonNull(arraySchema.getItems()
           .getEnum())
           && !arraySchema.getItems()

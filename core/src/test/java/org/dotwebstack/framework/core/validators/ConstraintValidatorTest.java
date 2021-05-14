@@ -38,11 +38,14 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator.validate(GraphQLArgument.newArgument()
+    var graphQlArgument = GraphQLArgument.newArgument()
         .name("unknownArg")
         .value(1L)
         .type(GraphQLInt)
-        .build(), "name", 1, fieldDefinitionMock, null));
+        .build();
+
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(graphQlArgument, "name", 1, fieldDefinitionMock, null));
   }
 
   @Test
@@ -60,8 +63,9 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForInvalidMinArgument() {
+    var graphQlArgument = minArgument(2);
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(minArgument(2), "name", 1, fieldDefinitionMock, null));
+        () -> validator.validate(graphQlArgument, "name", 1, fieldDefinitionMock, null));
   }
 
   @Test
@@ -71,8 +75,9 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForInvalidMaxArgument() {
+    var graphQlArgument = maxArgument(21);
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(maxArgument(21), "name", 22, fieldDefinitionMock, null));
+        () -> validator.validate(graphQlArgument, "name", 22, fieldDefinitionMock, null));
   }
 
   @Test
@@ -82,8 +87,9 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForOneOfArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator
-        .validate(oneOfArgument(Arrays.asList("foo", "bar")), "name", "boom!", fieldDefinitionMock, null));
+    var graphQlArgument = oneOfArgument(Arrays.asList("foo", "bar"));
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(graphQlArgument, "name", "boom!", fieldDefinitionMock, null));
   }
 
   @Test
@@ -93,8 +99,9 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForOneOfIntArgument() {
+    var graphQlArgument = oneOfIntArgument(Arrays.asList(1, 2));
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(oneOfIntArgument(Arrays.asList(1, 2)), "name", 3, fieldDefinitionMock, null));
+        () -> validator.validate(graphQlArgument, "name", 3, fieldDefinitionMock, null));
   }
 
   @Test
@@ -104,8 +111,10 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForValuesInArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator
-        .validate(valuesInArgument(Arrays.asList("foo", "bar")), "name", List.of("boom!"), fieldDefinitionMock, null));
+    var graphQlArgument = valuesInArgument(Arrays.asList("foo", "bar"));
+    var value = List.of("boom!");
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(graphQlArgument, "name", value, fieldDefinitionMock, null));
   }
 
   @Test
@@ -116,15 +125,17 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_patternArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator.validate(stringArgument("^[a-z][0-9]$"), "pattern",
-        "Alfa Brouwerij", fieldDefinitionMock, null));
+    var graphQlArgument = stringArgument("^[a-z][0-9]$");
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(graphQlArgument, "pattern", "Alfa Brouwerij", fieldDefinitionMock, null));
   }
 
   @Test
   void validate_throwsException_exprArgument() {
+    var graphQlArgument = expressionArgument("args.page > 10 && args.pageSize == 99");
+    Map<String, Object> requestArguments = Map.of("page", 15, "pageSize", 100);
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(expressionArgument("args.page > 10 && args.pageSize == 99"), "expr", 15,
-            fieldDefinitionMock, Map.of("page", 15, "pageSize", 100)));
+        () -> validator.validate(graphQlArgument, "expr", 15, fieldDefinitionMock, requestArguments));
   }
 
   @Test

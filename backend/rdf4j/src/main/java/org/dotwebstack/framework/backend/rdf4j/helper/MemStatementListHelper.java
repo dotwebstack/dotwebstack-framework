@@ -13,7 +13,7 @@ public class MemStatementListHelper {
   public static List<MemStatement> listOf(@NonNull MemStatementList memStatementList) {
     List<MemStatement> result = new ArrayList<>();
 
-    for (int i = 0; i < memStatementList.size(); i++) {
+    for (var i = 0; i < memStatementList.size(); i++) {
       result.add(memStatementList.get(i));
     }
     return result;

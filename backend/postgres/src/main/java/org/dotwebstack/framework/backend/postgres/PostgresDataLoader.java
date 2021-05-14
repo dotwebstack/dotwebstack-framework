@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -76,12 +75,12 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryParameters queryParameters = QueryParameters.builder()
+    var queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
         .build();
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
+    var queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -100,7 +99,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryParameters.QueryParametersBuilder queryParametersBuilder = QueryParameters.builder()
+    var queryParametersBuilder = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of());
 
@@ -108,7 +107,7 @@ public class PostgresDataLoader implements BackendDataLoader {
       queryParametersBuilder.page(pageWithDefaultSize());
     }
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
+    var queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -122,12 +121,12 @@ public class PostgresDataLoader implements BackendDataLoader {
       LoadEnvironment environment) {
     PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
 
-    QueryParameters queryParameters = QueryParameters.builder()
+    var queryParameters = QueryParameters.builder()
         .selectionSet(environment.getSelectionSet())
         .keyConditions(keyConditions)
         .build();
 
-    QueryHolder queryHolder = queryBuilder.build(typeConfiguration, queryParameters, true);
+    var queryHolder = queryBuilder.build(typeConfiguration, queryParameters, true);
 
     return this.execute(queryHolder.getQuery())
         .fetch()
@@ -167,7 +166,7 @@ public class PostgresDataLoader implements BackendDataLoader {
 
     DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(sql);
 
-    for (int index = 0; index < params.size(); index++) {
+    for (var index = 0; index < params.size(); index++) {
       executeSpec = executeSpec.bind(index, Objects.requireNonNull(params.get(index)
           .getValue()));
     }

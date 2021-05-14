@@ -7,7 +7,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -44,8 +43,10 @@ public class JsonDataService {
 
       Stream.of(resourceList)
           .filter(Resource::exists)
-          .peek(location -> LOG.debug("Looking for JSON files in {}", location))
-          .map(Resource::getFilename)
+          .map(resource -> {
+            LOG.debug("Looking for JSON files in {}", resource);
+            return resource.getFilename();
+          })
           .forEach(this::readJsonDataFile);
     }
   }
@@ -57,15 +58,14 @@ public class JsonDataService {
   }
 
   private JsonNode readJsonDataFile(String fileName) {
-    Optional<Resource> data = loadJsonResource(fileName);
+    var data = loadJsonResource(fileName).orElseThrow();
 
-    try (InputStream jsonDataInputStream = data.get()
-        .getInputStream()) {
+    try (var jsonDataInputStream = data.getInputStream()) {
+
       JsonNode jsonDataAsNode = jsonMapper.readTree(jsonDataInputStream);
       jsonSourceCache.put(fileName, jsonDataAsNode);
 
       return jsonDataAsNode;
-
     } catch (IOException exception) {
       throw illegalStateException(
           String.format("Encountered IOException while reading: %s.", JSON_DATA_PATH + fileName));

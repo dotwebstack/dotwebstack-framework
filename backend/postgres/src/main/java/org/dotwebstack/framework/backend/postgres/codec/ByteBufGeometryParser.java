@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 class ByteBufGeometryParser extends JtsBinaryParser {
 
   public Geometry parse(ByteBuf byteBuf) {
-    ByteBufByteGetter byteGetter = new ByteBufByteGetter(byteBuf);
+    var byteGetter = new ByteBufByteGetter(byteBuf);
     return parseGeometry(valueGetterForEndian(byteGetter));
   }
 

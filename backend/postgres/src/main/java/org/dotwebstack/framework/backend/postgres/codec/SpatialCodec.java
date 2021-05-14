@@ -34,7 +34,7 @@ class SpatialCodec implements Codec<Geometry> {
     }
 
     if (format.equals(Format.FORMAT_TEXT)) {
-      String hex = byteBuf.toString(StandardCharsets.US_ASCII);
+      var hex = byteBuf.toString(StandardCharsets.US_ASCII);
       return geometryParser.parse(hex);
     }
 

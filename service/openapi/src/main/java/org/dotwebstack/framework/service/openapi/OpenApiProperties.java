@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 public class OpenApiProperties {
 
   // source: https://tools.ietf.org/html/rfc3986#appendix-A
+  @SuppressWarnings("java:S5998")
   private static final String PATH_ABEMPTY =
       "(?:(\\/(?:(?:(?:[A-Za-z0-9-._~])|(?:%(?:[0-9ABCDEF]){2})|(?:[!$&'()*+,;=])|[:@])*))*)";
 

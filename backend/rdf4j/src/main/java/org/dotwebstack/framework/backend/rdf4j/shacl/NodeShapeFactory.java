@@ -51,7 +51,7 @@ public class NodeShapeFactory {
       return nodeShapeMap.get(identifier);
     }
 
-    NodeShape nodeShape = NodeShape.builder()
+    var nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
         .classes(Models.getPropertyIRIs(shapeModel, identifier, SHACL.CLASS)
@@ -167,8 +167,8 @@ public class NodeShapeFactory {
                   .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
                   .forEach(statement -> {
                     if (resource instanceof MemResource && statement.getObject() instanceof MemResource) {
-                      MemStatement memStatement = new MemStatement((MemResource) resource,
-                          (MemIRI) statement.getPredicate(), (MemResource) statement.getObject(), null, 0);
+                      var memStatement = new MemStatement((MemResource) resource, (MemIRI) statement.getPredicate(),
+                          (MemResource) statement.getObject(), null, 0);
                       ((MemBNode) resource).getSubjectStatementList()
                           .add(memStatement);
                       shapeModel.add(memStatement);
@@ -203,7 +203,7 @@ public class NodeShapeFactory {
        * if a sh:node is present, it means a reference exist to another NodeShape. For that reason the
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
-      IRI nodeIri = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
+      var nodeIri = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
       builder.node(createShapeFromModel(shapeModel, nodeIri, nodeShapeMap));
 
       usedShape = nodeIri;
@@ -214,7 +214,7 @@ public class NodeShapeFactory {
     }
 
     if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE_KIND_PROP)) {
-      IRI nodeKind = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE_KIND_PROP);
+      var nodeKind = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE_KIND_PROP);
       builder.nodeKind(nodeKind);
 
       if (nodeKind.equals(SHACL.LITERAL)) {
@@ -286,7 +286,7 @@ public class NodeShapeFactory {
     ArrayList<IRI> parents = new ArrayList<>();
     chainSuperclasses(nodeShape, nodeShapeMap, parents);
     parents.forEach(parent -> {
-      NodeShape parentShape = nodeShapeMap.get(parent);
+      var parentShape = nodeShapeMap.get(parent);
       parentShape.getPropertyShapes()
           .forEach((key, value) -> {
             if (!nodeShape.getPropertyShapes()

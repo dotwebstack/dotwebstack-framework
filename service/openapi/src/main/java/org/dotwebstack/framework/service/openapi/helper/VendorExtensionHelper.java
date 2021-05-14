@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,7 +27,7 @@ public class VendorExtensionHelper {
     if (node.isObject()) {
       removeExtensionNodesFromObject((ObjectNode) node);
     } else if (node.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) node;
+      var arrayNode = (ArrayNode) node;
       arrayNode.forEach(arrayElement -> {
         if (arrayElement.isContainerNode()) {
           removeExtensionNodes((ContainerNode<?>) arrayElement);
@@ -49,7 +48,7 @@ public class VendorExtensionHelper {
     node.retain(passedFields);
     node.fieldNames()
         .forEachRemaining(name -> {
-          JsonNode jsonNode = node.get(name);
+          var jsonNode = node.get(name);
           if (jsonNode.isContainerNode()) {
             removeExtensionNodes((ContainerNode<?>) jsonNode);
           }

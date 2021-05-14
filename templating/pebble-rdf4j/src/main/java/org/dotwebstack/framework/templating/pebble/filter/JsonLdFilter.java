@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.JSONLDMode;
 import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
@@ -27,8 +26,8 @@ public class JsonLdFilter implements Filter {
   @Override
   public Object apply(Object model, Map<String, Object> map, PebbleTemplate pebbleTemplate,
       EvaluationContext evaluationContext, int i) {
-    StringWriter stringWriter = new StringWriter();
-    RDFWriter rdfWriter = Rio.createWriter(RDFFormat.JSONLD, stringWriter);
+    var stringWriter = new StringWriter();
+    var rdfWriter = Rio.createWriter(RDFFormat.JSONLD, stringWriter);
 
     rdfWriter.getWriterConfig()
         .set(JSONLDSettings.JSONLD_MODE, JSONLDMode.COMPACT);
