@@ -30,6 +30,16 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private boolean isNested = false;
 
+  @Override
+  public boolean isScalarField() {
+    return isScalar();
+  }
+
+  @Override
+  public boolean isObjectField() {
+    return !isScalar();
+  }
+
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null
         && !isNested;

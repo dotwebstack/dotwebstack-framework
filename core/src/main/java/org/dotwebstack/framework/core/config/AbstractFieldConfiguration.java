@@ -18,5 +18,12 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private String aggregationOf;
 
+  private TypeConfiguration<?> typeConfiguration;
+
   private List<FieldArgumentConfiguration> arguments = new ArrayList<>();
+
+  public abstract boolean isScalarField();
+
+  public abstract boolean isObjectField();
+
 }

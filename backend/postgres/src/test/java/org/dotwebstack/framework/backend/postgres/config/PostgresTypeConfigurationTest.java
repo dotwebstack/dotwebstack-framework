@@ -224,6 +224,15 @@ class PostgresTypeConfigurationTest {
   }
 
   static class TestFieldConfiguration extends AbstractFieldConfiguration {
+    @Override
+    public boolean isScalarField() {
+      return false;
+    }
+
+    @Override
+    public boolean isObjectField() {
+      return false;
+    }
   }
 
   static class TestTypeConfiguration extends AbstractTypeConfiguration<TestFieldConfiguration> {

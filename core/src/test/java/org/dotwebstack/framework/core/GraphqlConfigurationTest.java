@@ -306,5 +306,15 @@ class GraphqlConfigurationTest {
       }
       return super.getType();
     }
+
+    @Override
+    public boolean isScalarField() {
+      return false;
+    }
+
+    @Override
+    public boolean isObjectField() {
+      return false;
+    }
   }
 }

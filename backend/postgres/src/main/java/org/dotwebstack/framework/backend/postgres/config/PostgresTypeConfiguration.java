@@ -68,7 +68,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
     initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
-
+    initObjectTypes(dotWebStackConfiguration.getObjectTypes());
     postFieldProcessing();
   }
 
@@ -163,6 +163,18 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return ColumnKeyCondition.builder()
         .valueMap(columnValues)
         .build();
+  }
+
+  private void initObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    fields.values()
+            .stream()
+            .filter(PostgresFieldConfiguration::isObjectField)
+            .forEach(fieldConfiguration -> {
+
+              PostgresTypeConfiguration typeConfiguration =
+                      (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
+              fieldConfiguration.setTypeConfiguration(typeConfiguration);
+            });
   }
 
   private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
