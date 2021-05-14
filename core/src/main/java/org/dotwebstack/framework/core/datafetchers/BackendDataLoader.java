@@ -25,7 +25,11 @@ public interface BackendDataLoader {
   Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment);
 
-  default Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+  default Mono<Map<String, Object>> loadSingObject(ObjectQuery objectQuery) {
     return Mono.empty();
+  }
+
+  default Flux<Map<String, Object>> loadManyObject(ObjectQuery objectQuery) {
+    return Flux.empty();
   }
 }

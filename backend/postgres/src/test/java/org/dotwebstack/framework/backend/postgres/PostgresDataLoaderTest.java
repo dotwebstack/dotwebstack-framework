@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -54,13 +55,18 @@ class PostgresDataLoaderTest {
   @Mock
   private QueryBuilder queryBuilder;
 
+  @Mock
+  private ObjectQueryBuilder objectQueryBuilder;
+
+
+
   private FetchSpec<Map<String, Object>> fetchSpec;
 
   private PostgresDataLoader postgresDataLoader;
 
   @BeforeEach
   void beforeAll() {
-    postgresDataLoader = new PostgresDataLoader(dotWebStackConfiguration, databaseClient, queryBuilder);
+    postgresDataLoader = new PostgresDataLoader(dotWebStackConfiguration, databaseClient, queryBuilder, objectQueryBuilder);
   }
 
   @Test

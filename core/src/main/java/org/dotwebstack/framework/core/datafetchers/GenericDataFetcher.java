@@ -86,12 +86,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
-      return backendDataLoader.load(objectQuery)
+      return backendDataLoader.loadSingObject(objectQuery)
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
 
-    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
+    ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+
+    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadManyObject(objectQuery)
         .map(data -> createDataFetcherResult(typeConfiguration, data));
 
     if (loadEnvironment.isSubscription()) {

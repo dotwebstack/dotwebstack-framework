@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
+import java.util.Objects;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectJoinStep;
+import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -40,26 +42,12 @@ public class ObjectQueryBuilder {
         .build();
   }
 
-  public SelectJoinStep<Record> buildQuery(ObjectQueryContext objectQueryContext, ObjectQuery objectQuery) {
+  public SelectQuery<?> buildQuery(ObjectQueryContext objectQueryContext, ObjectQuery objectQuery) {
 
-    var fromTable = DSL.table(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable());
+    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable());
+    SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
-    var selectColumns = addScalarFields(objectQuery.getScalarFields(), fromTable, objectQueryContext);
-
-    // add nested objects using same table
-    objectQuery.getObjectFields()
-        .stream()
-        .filter(objectFieldConfig -> ((PostgresFieldConfiguration) objectFieldConfig.getField()).isNested())
-        .forEach(nestedObject -> {
-          // TODO: should we create a new ObjectQueryObject
-          var nestedSelectedColumns = addNestedObjectFields(nestedObject, fromTable, objectQueryContext);
-          selectColumns.addAll(nestedSelectedColumns);
-        });
-
-
-    // add filter criteria
-    SelectJoinStep<Record> query = dslContext.select(selectColumns)
-        .from(fromTable);
+    addScalarFields(objectQuery.getScalarFields(), objectQueryContext, query, fromTable);
 
     return query;
   }
@@ -69,21 +57,24 @@ public class ObjectQueryBuilder {
     return List.of();
   }
 
-  private List<SelectFieldOrAsterisk> addScalarFields(List<FieldConfiguration> scalarFields, Table<Record> fromTable,
-      ObjectQueryContext objectQueryContext) {
-    return scalarFields.stream()
-        .map(scalarField -> {
+  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectQueryContext objectQueryContext, SelectQuery<?> query, Table<?> table) {
+    scalarFields.forEach(scalarField -> {
           String columnAlias = objectQueryContext.newSelectAlias();
-          Field<Object> column =
-              DSL.field(DSL.name(fromTable.getName(), ((PostgresFieldConfiguration) scalarField).getColumn()))
-                  .as(columnAlias);
+          Field<?> column = Objects.requireNonNull( table.field(scalarField.getName()) ).as(columnAlias);
           objectQueryContext.getAssembleFns()
               .put(scalarField.getName(), row -> row.get(column.getName()));
 
           // TODO why set checkNullAlias
 
-          return column;
-        })
-        .collect(Collectors.toList());
+            query.addSelect(column);
+        });
+  }
+
+  private Table<?> findTable( String name ){
+
+    String [] path = name.split("\\." );
+    var tables = dslContext.meta().getTables( path[ path.length - 1 ] );
+
+    return tables.get( 0 );
   }
 }

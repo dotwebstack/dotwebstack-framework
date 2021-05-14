@@ -31,7 +31,13 @@ public class PostgresConfiguration {
   public DSLContext dslContext() {
     System.getProperties()
         .setProperty("org.jooq.no-logo", "true");
-    return DSL.using(SQLDialect.POSTGRES);
+
+    // TODO ???
+    return DSL.using(buildPostgresqlUrl(), postgresProperties.getUsername(), postgresProperties.getPassword());
+  }
+
+  private String buildPostgresqlUrl(){
+    return "jdbc:postgresql://" + postgresProperties.getHost() + ":" + postgresProperties.getPort() + "/postgres";
   }
 
   @Bean

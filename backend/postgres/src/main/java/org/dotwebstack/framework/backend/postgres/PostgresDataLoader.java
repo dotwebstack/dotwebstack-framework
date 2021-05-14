@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
+import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -61,7 +62,7 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   // TODO: uitwerken
   @Override
-  public Mono<Map<String, Object>> load(ObjectQuery objectQuery) {
+  public Mono<Map<String, Object>> loadSingObject(ObjectQuery objectQuery) {
     QueryHolder queryHolder = objectQueryBuilder.build(objectQuery);
 
     return this.execute(queryHolder.getQuery())
@@ -69,6 +70,18 @@ public class PostgresDataLoader implements BackendDataLoader {
         .one()
         .map(row -> queryHolder.getMapAssembler()
             .apply(row));
+  }
+
+  // TODO: uitwerken
+  @Override
+  public Flux<Map<String, Object>> loadManyObject(ObjectQuery objectQuery) {
+    QueryHolder queryHolder = objectQueryBuilder.build(objectQuery);
+
+    return this.execute(queryHolder.getQuery())
+            .fetch()
+            .all()
+            .map(row -> queryHolder.getMapAssembler()
+                    .apply(row));
   }
 
   @Override
