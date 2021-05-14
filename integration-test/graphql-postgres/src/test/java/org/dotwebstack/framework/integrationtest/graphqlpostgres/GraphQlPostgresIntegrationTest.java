@@ -61,6 +61,7 @@ class GraphQlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
     registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
     registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
+    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
   }
 
   @org.springframework.boot.test.context.TestConfiguration

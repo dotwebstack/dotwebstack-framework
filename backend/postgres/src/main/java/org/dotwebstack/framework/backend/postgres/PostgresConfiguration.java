@@ -7,7 +7,6 @@ import io.r2dbc.spi.ConnectionFactory;
 import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +31,14 @@ public class PostgresConfiguration {
     System.getProperties()
         .setProperty("org.jooq.no-logo", "true");
 
-    // TODO ???
     return DSL.using(buildPostgresqlUrl(), postgresProperties.getUsername(), postgresProperties.getPassword());
   }
 
-  private String buildPostgresqlUrl(){
-    return "jdbc:postgresql://" + postgresProperties.getHost() + ":" + postgresProperties.getPort() + "/postgres";
+  private String buildPostgresqlUrl() {
+    return String.format("jdbc:postgresql://%s:%d/%s",
+        postgresProperties.getHost(),
+        postgresProperties.getPort(),
+        postgresProperties.getDatabase());
   }
 
   @Bean
