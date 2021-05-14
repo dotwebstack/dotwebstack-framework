@@ -26,12 +26,10 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.r2dbc.connection.init.CompositeDatabasePopulator;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
-import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -47,7 +45,8 @@ class GraphQlPostgresIntegrationTest {
   private GraphQL graphQL;
 
   @Container
-  static TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer();
+  static TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
+      .withClasspathResourceMapping("config/model", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY);
 
   private static class TestPostgreSqlContainer extends PostgreSQLContainer<TestPostgreSqlContainer> {
     public TestPostgreSqlContainer() {
@@ -70,11 +69,6 @@ class GraphQlPostgresIntegrationTest {
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
       ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
       initializer.setConnectionFactory(connectionFactory);
-
-      CompositeDatabasePopulator populator = new CompositeDatabasePopulator();
-      populator.addPopulators(new ResourceDatabasePopulator(new ClassPathResource("config/model/schema.sql")));
-      populator.addPopulators(new ResourceDatabasePopulator(new ClassPathResource("config/model/data.sql")));
-      initializer.setDatabasePopulator(populator);
 
       return initializer;
     }
