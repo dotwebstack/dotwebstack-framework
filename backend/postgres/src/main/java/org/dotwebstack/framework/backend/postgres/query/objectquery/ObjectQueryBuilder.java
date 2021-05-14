@@ -32,9 +32,10 @@ public class ObjectQueryBuilder {
   }
 
   public Flux<Map<String, Object>> build(ObjectQuery objectQuery) {
-    var objectQueryContext = new ObjectQueryContext();
-    var query = buildQuery(objectQueryContext, objectQuery);
-    var rowMapper = createMapAssembler(objectQueryContext.getAssembleFns(), objectQueryContext.getCheckNullAlias(),
+
+    var objectSelectContext = new ObjectSelectContext( new ObjectQueryContext());
+    var query = buildQuery(objectSelectContext, objectQuery);
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getObjectQueryContext().getCheckNullAlias(),
         true);
 
     return databaseClient.sql(query.getSQL())
@@ -43,24 +44,25 @@ public class ObjectQueryBuilder {
         .map(rowMapper);
   }
 
-  public SelectQuery<?> buildQuery(ObjectQueryContext objectQueryContext, ObjectQuery objectQuery) {
+  public SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery) {
     var fromTable =
-        findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable()).as(objectQueryContext.newTableAlias());
+        findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable()).as(objectSelectContext.newTableAlias());
 
     SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
-    addScalarFields(objectQuery.getScalarFields(), objectQueryContext, query, fromTable);
-    addObjectFields(objectQuery, objectQueryContext, query, fromTable);
+    addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
+    addObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
     return query;
   }
 
-  private void addObjectFields(ObjectQuery objectQuery, ObjectQueryContext objectQueryContext, SelectQuery<?> query,
+  private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
       Table<?> table) {
 
     objectQuery.getObjectFields().forEach(objectField -> {
 
-      SelectQuery<?> subSelect = buildQuery(objectQueryContext, objectField.getObjectQuery());
+      ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
+      SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery());
 
       Table<?> objectFieldTable =
           findTable(((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration()).getTable());
@@ -71,17 +73,18 @@ public class ObjectQueryBuilder {
       // var rightColumn = DSL.name(objectFieldTable.getName(), "identifier_address");
 
       Condition joinCondition = leftColumn.eq(rightColumn);
-      query.addJoin(subSelect, JoinType.OUTER_APPLY, joinCondition);
+      query.addJoin(subSelect, JoinType.OUTER_APPLY, joinCondition);  // TODO join condition is incorrect for some reason
+      objectSelectContext.getAssembleFns().put( objectField.getField().getName(), createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getObjectQueryContext().getCheckNullAlias(), true)::apply);
     });
   }
 
-  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectQueryContext objectQueryContext,
+  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> table) {
 
     scalarFields.forEach(scalarField -> {
-      String columnAlias = objectQueryContext.newSelectAlias();
+      String columnAlias = objectSelectContext.newSelectAlias();
       Field<?> column = Objects.requireNonNull(table.field(scalarField.getName())).as(columnAlias);
-      objectQueryContext.getAssembleFns()
+      objectSelectContext.getAssembleFns()
           .put(scalarField.getName(), row -> row.get(column.getName()));
 
       // TODO why set checkNullAlias

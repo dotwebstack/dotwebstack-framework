@@ -16,8 +16,6 @@ public class ObjectQueryContext {
 
   private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
-  Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
-
   public String newSelectAlias() {
     return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
   }
