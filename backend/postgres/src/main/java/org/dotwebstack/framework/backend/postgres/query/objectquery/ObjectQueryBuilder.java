@@ -15,6 +15,7 @@ import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -48,6 +49,11 @@ public class ObjectQueryBuilder {
     var fromTable =
         findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable()).as(objectSelectContext.newTableAlias());
 
+    return buildQuery(objectSelectContext, objectQuery, fromTable) ;
+  }
+
+  public SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery, Table<?> fromTable) {
+
     SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
     addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
@@ -61,19 +67,22 @@ public class ObjectQueryBuilder {
 
     objectQuery.getObjectFields().forEach(objectField -> {
 
-      ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
-      SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery());
-
       Table<?> objectFieldTable =
-          findTable(((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration()).getTable());
+              findTable(((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration()).getTable()).asTable(objectSelectContext.newTableAlias());
 
-      var leftColumn = table.field("postal_address", String.class);
-      var rightColumn = objectFieldTable.field("identifier_address", String.class);
-      // var leftColumn = DSL.name(table.getName(), "postal_address");
-      // var rightColumn = DSL.name(objectFieldTable.getName(), "identifier_address");
+      ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
+      Table<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable).asTable(objectSelectContext.newTableAlias());
+
+      // var leftColumn = table.field("postal_address", String.class);
+      // var rightColumn = subSelect.field("identifier_address", String.class);
+      var leftColumn = DSL.field(DSL.name(table.getName(), "postal_address"));
+      var rightColumn = DSL.field(DSL.name(subSelect.getName(), "identifier_address"));
 
       Condition joinCondition = leftColumn.eq(rightColumn);
-      query.addJoin(subSelect, JoinType.OUTER_APPLY, joinCondition);  // TODO join condition is incorrect for some reason
+
+      subSelect = subSelect.where( joinCondition);
+
+      query.addJoin(subSelect, JoinType.OUTER_APPLY);  // TODO join condition is incorrect for some reason
       objectSelectContext.getAssembleFns().put( objectField.getField().getName(), createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getObjectQueryContext().getCheckNullAlias(), true)::apply);
     });
   }
