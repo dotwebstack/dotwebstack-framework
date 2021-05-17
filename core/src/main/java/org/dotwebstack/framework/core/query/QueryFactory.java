@@ -64,9 +64,9 @@ public class QueryFactory {
       AbstractFieldConfiguration fieldConfiguration = typeConfiguration.getFields().get(selectedField.getName());
       if( fieldConfiguration.isObjectField()){
 
-        String PathPrefix = selectedField.getFullyQualifiedName().concat("/");
+        String pathPrefix = selectedField.getFullyQualifiedName().concat("/");
         var type = fieldConfiguration.getTypeConfiguration();
-        objectFields.add( new ObjectFieldConfiguration(fieldConfiguration, createObjectQuery( PathPrefix, type, environment) ) );
+        objectFields.add( new ObjectFieldConfiguration(fieldConfiguration, createObjectQuery( pathPrefix, type, environment) ) );
       }
     }
 
@@ -82,9 +82,9 @@ public class QueryFactory {
       AbstractFieldConfiguration fieldConfiguration = typeConfiguration.getFields().get(selectedField.getName());
       if( fieldConfiguration.isNestedObjectField()){
 
-        String PathPrefix = selectedField.getFullyQualifiedName().concat("/");
+        String pathPrefix = selectedField.getFullyQualifiedName().concat("/");
         var type = fieldConfiguration.getTypeConfiguration();
-        nestedObjectFields.add( new NestedObjectFieldConfiguration(fieldConfiguration, getScalarFields( PathPrefix, type, environment) ) );
+        nestedObjectFields.add( new NestedObjectFieldConfiguration(fieldConfiguration, getScalarFields( pathPrefix, type, environment) ) );
       }
     }
 
