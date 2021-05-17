@@ -66,7 +66,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
-    initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
+    initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
     postFieldProcessing();
@@ -198,7 +198,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private void initNestedFieldTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+  private void initNestedObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     fields.values()
         .forEach(fieldConfiguration -> {
 
@@ -207,7 +207,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
           if (Objects.nonNull(typeConfiguration) && Objects.isNull(typeConfiguration.getTable())) {
             fieldConfiguration.setNested(true);
+            fieldConfiguration.setTypeConfiguration(typeConfiguration);
           }
+
         });
   }
 

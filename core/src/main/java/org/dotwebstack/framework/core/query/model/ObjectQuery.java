@@ -20,7 +20,7 @@ public class ObjectQuery implements Query {
 
   private List<ObjectFieldConfiguration> objectFields;
 
-  private List<ObjectFieldConfiguration> nestedObjectFields;
+  private List<NestedObjectFieldConfiguration> nestedObjectFields;
 
   private List<ObjectFieldConfiguration> aggregateObjectFields;
 

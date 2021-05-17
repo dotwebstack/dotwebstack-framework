@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.springframework.stereotype.Component;
@@ -30,11 +31,13 @@ public class QueryFactory {
 
     List<FieldConfiguration> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
+    List<NestedObjectFieldConfiguration> nestedObjectFields = getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
     return ObjectQuery.builder()
             .typeConfiguration(typeConfiguration)
             .scalarFields(scalarFields)
             .objectFields(objectFields)
+            .nestedObjectFields(nestedObjectFields)
             .build();
   }
 
@@ -68,5 +71,23 @@ public class QueryFactory {
     }
 
     return objectFields;
+  }
+
+  private List<NestedObjectFieldConfiguration> getNestedObjectFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+                                                                     DataFetchingEnvironment environment){
+
+    List<NestedObjectFieldConfiguration> nestedObjectFields = new ArrayList<>();
+    for( SelectedField selectedField : getSelectedFields(fieldPathPrefix, environment) ){
+
+      AbstractFieldConfiguration fieldConfiguration = typeConfiguration.getFields().get(selectedField.getName());
+      if( fieldConfiguration.isNestedObjectField()){
+
+        String PathPrefix = selectedField.getFullyQualifiedName().concat("/");
+        var type = fieldConfiguration.getTypeConfiguration();
+        nestedObjectFields.add( new NestedObjectFieldConfiguration(fieldConfiguration, getScalarFields( PathPrefix, type, environment) ) );
+      }
+    }
+
+    return nestedObjectFields;
   }
 }

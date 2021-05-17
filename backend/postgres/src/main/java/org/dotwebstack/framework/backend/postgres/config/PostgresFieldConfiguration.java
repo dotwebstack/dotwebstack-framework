@@ -37,7 +37,12 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   @Override
   public boolean isObjectField() {
-    return !isScalar();
+    return !isScalar() && !isNested;
+  }
+
+  @Override
+  public boolean isNestedObjectField() {
+    return isNested;
   }
 
   public boolean isScalar() {

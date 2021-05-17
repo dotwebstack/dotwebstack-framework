@@ -316,5 +316,10 @@ class GraphqlConfigurationTest {
     public boolean isObjectField() {
       return false;
     }
+
+    @Override
+    public boolean isNestedObjectField() {
+      return false;
+    }
   }
 }

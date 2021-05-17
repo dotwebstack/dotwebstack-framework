@@ -233,6 +233,11 @@ class PostgresTypeConfigurationTest {
     public boolean isObjectField() {
       return false;
     }
+
+    @Override
+    public boolean isNestedObjectField() {
+      return false;
+    }
   }
 
   static class TestTypeConfiguration extends AbstractTypeConfiguration<TestFieldConfiguration> {

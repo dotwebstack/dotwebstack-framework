@@ -28,4 +28,6 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   public abstract boolean isObjectField();
 
+  public abstract boolean isNestedObjectField();
+
 }
