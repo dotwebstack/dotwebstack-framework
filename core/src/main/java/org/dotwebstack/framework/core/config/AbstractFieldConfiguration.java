@@ -18,6 +18,8 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private String aggregationOf;
 
+  private boolean isKeyField = false;
+
   private TypeConfiguration<?> typeConfiguration;
 
   private List<FieldArgumentConfiguration> arguments = new ArrayList<>();

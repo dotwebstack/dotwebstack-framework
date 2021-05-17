@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.Data;
 
@@ -9,6 +10,8 @@ import lombok.Data;
 public class ObjectSelectContext {
 
     private ObjectQueryContext objectQueryContext;
+
+    private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
     private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 

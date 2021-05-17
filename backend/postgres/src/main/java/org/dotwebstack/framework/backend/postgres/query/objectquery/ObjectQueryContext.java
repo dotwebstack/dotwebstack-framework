@@ -14,8 +14,6 @@ public class ObjectQueryContext {
 
   private final AtomicInteger tableCounter = new AtomicInteger();
 
-  private AtomicReference<String> checkNullAlias = new AtomicReference<>();
-
   public String newSelectAlias() {
     return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
   }

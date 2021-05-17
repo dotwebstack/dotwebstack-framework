@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 
 import java.util.List;
@@ -36,8 +37,8 @@ public class ObjectQueryBuilder {
 
     var objectSelectContext = new ObjectSelectContext( new ObjectQueryContext());
     var query = buildQuery(objectSelectContext, objectQuery);
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getObjectQueryContext().getCheckNullAlias(),
-        true);
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
+        false);
 
     return databaseClient.sql(query.getSQL())
         .fetch()
@@ -63,7 +64,7 @@ public class ObjectQueryBuilder {
   }
 
   private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
-      Table<?> table) {
+      Table<?> fieldTable) {
 
     objectQuery.getObjectFields().forEach(objectField -> {
 
@@ -71,19 +72,14 @@ public class ObjectQueryBuilder {
               findTable(((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration()).getTable()).asTable(objectSelectContext.newTableAlias());
 
       ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
-      Table<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable).asTable(objectSelectContext.newTableAlias());
+      SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
+      Condition condition = getJoinCondition( (PostgresFieldConfiguration) objectField.getField(), fieldTable, (PostgresTypeConfiguration) objectField.getObjectQuery().getTypeConfiguration(), objectFieldTable );
+      subSelect.addConditions(condition);
 
-      // var leftColumn = table.field("postal_address", String.class);
-      // var rightColumn = subSelect.field("identifier_address", String.class);
-      var leftColumn = DSL.field(DSL.name(table.getName(), "postal_address"));
-      var rightColumn = DSL.field(DSL.name(subSelect.getName(), "identifier_address"));
-
-      Condition joinCondition = leftColumn.eq(rightColumn);
-
-      subSelect = subSelect.where( joinCondition);
-
-      query.addJoin(subSelect, JoinType.OUTER_APPLY);  // TODO join condition is incorrect for some reason
-      objectSelectContext.getAssembleFns().put( objectField.getField().getName(), createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getObjectQueryContext().getCheckNullAlias(), true)::apply);
+      var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
+      query.addSelect(lateralTable.asterisk());
+      query.addJoin(lateralTable, JoinType.OUTER_APPLY);
+      objectSelectContext.getAssembleFns().put( objectField.getField().getName(), createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(), false)::apply);
     });
   }
 
@@ -96,8 +92,9 @@ public class ObjectQueryBuilder {
       objectSelectContext.getAssembleFns()
           .put(scalarField.getName(), row -> row.get(column.getName()));
 
-      // TODO why set checkNullAlias
-
+      if( ((AbstractFieldConfiguration) scalarField).isKeyField() ){
+        objectSelectContext.getCheckNullAlias().set(columnAlias);
+      }
       query.addSelect(column);
     });
   }
@@ -109,5 +106,21 @@ public class ObjectQueryBuilder {
     var tables = dslContext.meta().getTables(path[path.length - 1]);
 
     return tables.get(0);
+  }
+
+  private Condition getJoinCondition( PostgresFieldConfiguration fieldConfiguration, Table<?> fieldTable, PostgresTypeConfiguration otherSideTypeConfiguration, Table<?> otherSideTable){
+
+    // TODO invert (for aggregate) needs to be resolved in configuration
+    return fieldConfiguration.findJoinColumns()
+            .stream()
+            .map(joinColumn -> {
+
+              var otherSideFieldConfiguration = otherSideTypeConfiguration.getFields()
+                      .get(joinColumn.getField());
+              var leftColumn = fieldTable.field(joinColumn.getName(), Object.class);
+              var rightColumn = otherSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
+              return Objects.requireNonNull(leftColumn).eq(rightColumn);
+            })
+            .reduce(DSL.noCondition(), Condition::and);
   }
 }

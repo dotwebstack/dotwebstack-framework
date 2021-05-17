@@ -70,6 +70,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
     postFieldProcessing();
+    initKeyFields();
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
@@ -228,6 +229,18 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .collect(Collectors.toMap(PostgresFieldConfiguration::getColumn, fieldConfig -> fieldConfig, (a, b) -> a));
 
     fields.putAll(referencedColumns);
+  }
+
+  private void initKeyFields(){
+      fields.values()
+              .forEach(fieldConfiguration -> {
+
+                  if((getKeys()
+                          .stream()
+                          .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldConfiguration.getName())))){
+                      fieldConfiguration.setKeyField(true);
+                  }
+              });
   }
 
   private FieldDefinition getFieldDefinition(String fieldName, List<FieldDefinition> fieldDefinitions) {
