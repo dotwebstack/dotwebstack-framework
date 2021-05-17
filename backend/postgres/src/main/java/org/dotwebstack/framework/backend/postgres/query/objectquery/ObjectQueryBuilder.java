@@ -36,7 +36,9 @@ public class ObjectQueryBuilder {
   public Flux<Map<String, Object>> build(ObjectQuery objectQuery) {
 
     var objectSelectContext = new ObjectSelectContext( new ObjectQueryContext());
-    var query = buildQuery(objectSelectContext, objectQuery);
+    var fromTable =
+            findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable()).as(objectSelectContext.newTableAlias());
+    var query = buildQuery(objectSelectContext, objectQuery, fromTable);
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
         false);
 
@@ -46,21 +48,42 @@ public class ObjectQueryBuilder {
         .map(rowMapper);
   }
 
-  public SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery) {
-    var fromTable =
-        findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable()).as(objectSelectContext.newTableAlias());
-
-    return buildQuery(objectSelectContext, objectQuery, fromTable) ;
-  }
-
   public SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery, Table<?> fromTable) {
 
     SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
     addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
+    addNestedObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
     return query;
+  }
+
+  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectSelectContext objectSelectContext,
+                               SelectQuery<?> query, Table<?> table) {
+
+    scalarFields.forEach(scalarField -> {
+      String columnAlias = objectSelectContext.newSelectAlias();
+      Field<?> column = Objects.requireNonNull(table.field(((PostgresFieldConfiguration)scalarField).getColumn())).as(columnAlias);
+      objectSelectContext.getAssembleFns()
+              .put(scalarField.getName(), row -> row.get(column.getName()));
+
+      if( ((AbstractFieldConfiguration) scalarField).isKeyField() ){
+        objectSelectContext.getCheckNullAlias().set(columnAlias);
+      }
+      query.addSelect(column);
+    });
+  }
+
+  private void addNestedObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
+                                     Table<?> fieldTable){
+
+    objectQuery.getNestedObjectFields().forEach( nestedObjectField ->{
+
+      ObjectSelectContext nestedObjectContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
+      addScalarFields(nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
+      objectSelectContext.getAssembleFns().put( nestedObjectField.getField().getName(), createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(), false)::apply);
+    });
   }
 
   private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
@@ -80,22 +103,6 @@ public class ObjectQueryBuilder {
       query.addSelect(lateralTable.asterisk());
       query.addJoin(lateralTable, JoinType.OUTER_APPLY);
       objectSelectContext.getAssembleFns().put( objectField.getField().getName(), createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(), false)::apply);
-    });
-  }
-
-  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectSelectContext objectSelectContext,
-      SelectQuery<?> query, Table<?> table) {
-
-    scalarFields.forEach(scalarField -> {
-      String columnAlias = objectSelectContext.newSelectAlias();
-      Field<?> column = Objects.requireNonNull(table.field(scalarField.getName())).as(columnAlias);
-      objectSelectContext.getAssembleFns()
-          .put(scalarField.getName(), row -> row.get(column.getName()));
-
-      if( ((AbstractFieldConfiguration) scalarField).isKeyField() ){
-        objectSelectContext.getCheckNullAlias().set(columnAlias);
-      }
-      query.addSelect(column);
     });
   }
 
