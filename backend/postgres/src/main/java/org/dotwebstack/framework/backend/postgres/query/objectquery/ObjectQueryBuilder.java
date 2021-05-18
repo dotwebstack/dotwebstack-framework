@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 import static org.jooq.impl.DSL.trueCondition;
 
@@ -84,7 +86,7 @@ public class ObjectQueryBuilder {
     addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
     addNestedObjectFields(objectQuery.getNestedObjectFields(), objectSelectContext, query, fromTable);
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
-    addAggregateObjectFields(objectQuery.getAggregateObjectFields(), objectSelectContext, query, fromTable);
+    addAggregateObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
     if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
       return addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
@@ -96,6 +98,7 @@ public class ObjectQueryBuilder {
   private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> table) {
 
+    AtomicBoolean keyFieldAdded = new AtomicBoolean(false);
     scalarFields.forEach(scalarField -> {
       String columnAlias = objectSelectContext.newSelectAlias();
       Field<?> column = Objects.requireNonNull(table.field(((PostgresFieldConfiguration) scalarField).getColumn()))
@@ -104,11 +107,17 @@ public class ObjectQueryBuilder {
           .put(scalarField.getName(), row -> row.get(column.getName()));
 
       if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
+        keyFieldAdded.set(true);
         objectSelectContext.getCheckNullAlias()
             .set(columnAlias);
       }
       query.addSelect(column);
     });
+
+    if(!keyFieldAdded.get()){
+
+        // TODO
+    }
   }
 
   private void addNestedObjectFields(List<NestedObjectFieldConfiguration> nestedObjectFields,
@@ -155,9 +164,9 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private void addAggregateObjectFields(List<AggregateObjectFieldConfiguration> aggregateObjectFieldConfigurations,
+  private void addAggregateObjectFields(ObjectQuery objectQuery,
       ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> fieldTable) {
-    aggregateObjectFieldConfigurations.forEach(aggregateObjectFieldConfiguration -> {
+      objectQuery.getAggregateObjectFields().forEach(aggregateObjectFieldConfiguration -> {
       PostgresTypeConfiguration aggregateTypeConfiguration =
           (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
               .getTypeConfiguration();
@@ -173,8 +182,8 @@ public class ObjectQueryBuilder {
       addAggregateField(aggregateObjectFieldConfiguration, lateralJoinContext, subSelect, aggregateTable.getName());
 
       // add join condition to subselect query
-      Condition condition = getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(),
-          fieldTable, aggregateTypeConfiguration, aggregateTable);
+      Condition condition = getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(), aggregateTable,
+              (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
       subSelect.addConditions(condition);
 
       // join with query
@@ -202,8 +211,7 @@ public class ObjectQueryBuilder {
               .as(columnAlias);
 
           objectSelectContext.getAssembleFns()
-              .put(aggregateFieldConfiguration.getField()
-                  .getName(), row -> row.get(column.getName()));
+              .put(aggregateFieldConfiguration.getAlias(), row -> row.get(column.getName()));
 
           query.addSelect(column);
         });
@@ -265,18 +273,18 @@ public class ObjectQueryBuilder {
     return tables.get(0);
   }
 
-  private Condition getJoinCondition(PostgresFieldConfiguration fieldConfiguration, Table<?> fieldTable,
-      PostgresTypeConfiguration otherSideTypeConfiguration, Table<?> otherSideTable) {
+  private Condition getJoinCondition(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
+      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
 
-    // TODO invert (for aggregate) needs to be resolved in configuration
-    return fieldConfiguration.findJoinColumns()
+    return leftSideConfiguration.findJoinColumns()
         .stream()
         .map(joinColumn -> {
 
-          var otherSideFieldConfiguration = otherSideTypeConfiguration.getFields()
-              .get(joinColumn.getField());
-          var leftColumn = fieldTable.field(joinColumn.getName(), Object.class);
-          var rightColumn = otherSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
+          var otherSideFieldConfiguration = rightSideConfiguration.getFields()
+                    .get(joinColumn.getField());
+
+          var leftColumn = leftSideTable.field(joinColumn.getName(), Object.class);
+          var rightColumn = rightSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
           return Objects.requireNonNull(leftColumn)
               .eq(rightColumn);
         })

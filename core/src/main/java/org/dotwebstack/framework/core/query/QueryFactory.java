@@ -119,6 +119,7 @@ public class QueryFactory {
         .field(fieldConfigurationPair.getFieldConfiguration())
         .aggregateFunctionType(aggregateFunctionType)
         .type(type)
+        .alias(aggregateField.getName())
         .distinct(distinct)
         .separator(separator)
         .build();
