@@ -37,12 +37,17 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   @Override
   public boolean isObjectField() {
-    return !isScalar() && !isNested;
+    return !isScalarField() && !isNestedObjectField() && !isAggregateField();
   }
 
   @Override
   public boolean isNestedObjectField() {
     return isNested;
+  }
+
+  @Override
+  public boolean isAggregateField() {
+    return isAggregate();
   }
 
   public boolean isScalar() {
@@ -54,6 +59,7 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
     return !isScalar() && !isNested;
   }
 
+  // TODO: rename to isAggregateField
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
   }
