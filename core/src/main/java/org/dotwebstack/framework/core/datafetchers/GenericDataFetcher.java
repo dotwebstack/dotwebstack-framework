@@ -19,6 +19,7 @@ import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.QueryFactory;
+import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -86,14 +87,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
       ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
-      return backendDataLoader.loadSingObject(objectQuery)
+      return backendDataLoader.loadSingleObject(objectQuery)
           .map(data -> createDataFetcherResult(typeConfiguration, data))
           .toFuture();
     }
 
-    ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
 
-    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadManyObject(objectQuery)
+    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadManyObject(collectionQuery)
         .map(data -> createDataFetcherResult(typeConfiguration, data));
 
     if (loadEnvironment.isSubscription()) {

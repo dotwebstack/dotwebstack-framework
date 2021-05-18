@@ -8,7 +8,7 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 @Builder
 @Data
 public class AggregateObjectFieldConfiguration {
-    private final FieldConfiguration field;
+  private final FieldConfiguration field;
 
-    private final List<AggregateFieldConfiguration> aggregateFields;
+  private final List<AggregateFieldConfiguration> aggregateFields;
 }

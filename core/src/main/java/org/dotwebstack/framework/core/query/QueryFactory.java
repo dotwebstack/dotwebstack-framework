@@ -10,13 +10,26 @@ import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.springframework.stereotype.Component;
 
 @Component
 public class QueryFactory {
+
+  public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    return CollectionQuery.builder()
+        .objectQuery(createObjectQuery(typeConfiguration, environment))
+        .pagingCriteria(PagingCriteria.builder()
+            .page(0)
+            .pageSize(10)
+            .build())
+        .build();
+  }
 
   public ObjectQuery createObjectQuery(TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
 

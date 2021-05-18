@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
@@ -53,7 +52,7 @@ class PostgresDataLoaderTest {
   private DatabaseClient databaseClient;
 
   @Mock
-  private QueryBuilder queryBuilder;
+  private org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder;
 
   @Mock
   private ObjectQueryBuilder objectQueryBuilder;
