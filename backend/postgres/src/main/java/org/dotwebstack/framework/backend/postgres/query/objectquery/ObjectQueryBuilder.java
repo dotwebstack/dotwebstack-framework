@@ -3,17 +3,19 @@ package org.dotwebstack.framework.backend.postgres.query.objectquery;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -21,7 +23,6 @@ import org.jooq.JoinType;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -30,18 +31,30 @@ public class ObjectQueryBuilder {
 
   private final DSLContext dslContext;
 
-  private final DatabaseClient databaseClient;
-
   private AggregateFieldFactory aggregateFieldFactory;
 
-  public ObjectQueryBuilder(DSLContext dslContext, DatabaseClient databaseClient, AggregateFieldFactory aggregateFieldFactory) {
+  public ObjectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
     this.dslContext = dslContext;
-    this.databaseClient = databaseClient;
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
-  public Flux<Map<String, Object>> build(ObjectQuery objectQuery) {
+  public SelectQueryBuilderResult build(CollectionQuery collectionQuery) {
+    SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery());
 
+    SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
+
+    if (collectionQuery.getPagingCriteria() != null) {
+      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
+      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+    }
+
+    return SelectQueryBuilderResult.builder()
+        .query(selectQuery)
+        .mapAssembler(objectQueryBuilderResult.getMapAssembler())
+        .build();
+  }
+
+  public SelectQueryBuilderResult build(ObjectQuery objectQuery) {
     var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
@@ -49,10 +62,10 @@ public class ObjectQueryBuilder {
     var rowMapper =
         createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(), false);
 
-    return databaseClient.sql(query.getSQL())
-        .fetch()
-        .all()
-        .map(rowMapper);
+    return SelectQueryBuilderResult.builder()
+        .query(query)
+        .mapAssembler(rowMapper)
+        .build();
   }
 
   public SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery,
@@ -88,21 +101,19 @@ public class ObjectQueryBuilder {
     });
   }
 
-  private void addNestedObjectFields(List<NestedObjectFieldConfiguration> nestedObjectFields, ObjectSelectContext objectSelectContext,
-      SelectQuery<?> query, Table<?> fieldTable) {
+  private void addNestedObjectFields(List<NestedObjectFieldConfiguration> nestedObjectFields,
+      ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> fieldTable) {
 
-    nestedObjectFields
-        .forEach(nestedObjectField -> {
+    nestedObjectFields.forEach(nestedObjectField -> {
 
-          ObjectSelectContext nestedObjectContext =
-              new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
-          addScalarFields(nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
-          objectSelectContext.getAssembleFns()
-              .put(nestedObjectField.getField()
-                  .getName(),
-                  createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
-                      false)::apply);
-        });
+      ObjectSelectContext nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+      addScalarFields(nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
+      objectSelectContext.getAssembleFns()
+          .put(nestedObjectField.getField()
+              .getName(),
+              createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
+                  false)::apply);
+    });
   }
 
   private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
@@ -117,10 +128,10 @@ public class ObjectQueryBuilder {
 
           ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
           SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
-          Condition condition = getJoinCondition((PostgresFieldConfiguration) objectField.getField(),
-                                                  fieldTable,
-                                                  (PostgresTypeConfiguration) objectField.getObjectQuery().getTypeConfiguration(),
-                                                  objectFieldTable);
+          Condition condition = getJoinCondition((PostgresFieldConfiguration) objectField.getField(), fieldTable,
+              (PostgresTypeConfiguration) objectField.getObjectQuery()
+                  .getTypeConfiguration(),
+              objectFieldTable);
           subSelect.addConditions(condition);
 
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
@@ -181,17 +192,14 @@ public class ObjectQueryBuilder {
     });
   }
 
-  private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable){
+  private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable) {
 
     /**
-    Condition condition = keyCriteria
-            .forEach(keyCondition -> {
-
-              var column = fromTable.field(keyCondition.getField(), String.class);
-              return column.equals(DSL.inline(keyCondition.getValue()));
-            })
-            .reduce(DSL.noCondition(), Condition::and);
-    query.addConditions(condition);
+     * Condition condition = keyCriteria .forEach(keyCondition -> {
+     *
+     * var column = fromTable.field(keyCondition.getField(), String.class); return
+     * column.equals(DSL.inline(keyCondition.getValue())); }) .reduce(DSL.noCondition(),
+     * Condition::and); query.addConditions(condition);
      **/
   }
 

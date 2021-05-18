@@ -10,19 +10,22 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
+import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.Param;
 import org.jooq.Query;
+import org.jooq.SelectQuery;
 import org.jooq.conf.ParamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +45,17 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private final DatabaseClient databaseClient;
 
-  private final QueryBuilder queryBuilder;
+  private final org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder;
 
   private final ObjectQueryBuilder objectQueryBuilder;
 
   public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
-      QueryBuilder queryBuilder, ObjectQueryBuilder objectQueryBuilder) {
+      org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder,
+      ObjectQueryBuilder objectQueryBuilder) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
-    this.objectQueryBuilder = objectQueryBuilder;
-    this.databaseClient = databaseClient;
     this.queryBuilder = queryBuilder;
+    this.databaseClient = databaseClient;
+    this.objectQueryBuilder = objectQueryBuilder;
   }
 
   @Override
@@ -61,15 +65,29 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   // TODO: uitwerken
   @Override
-  public Mono<Map<String, Object>> loadSingObject(ObjectQuery objectQuery) {
-    return objectQueryBuilder.build(objectQuery)
-        .single();
+  public Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
+    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(objectQuery);
+
+    return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
   }
 
   // TODO: uitwerken
   @Override
-  public Flux<Map<String, Object>> loadManyObject(ObjectQuery objectQuery) {
-    return objectQueryBuilder.build(objectQuery);
+  public Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
+    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery);
+
+    return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
+  }
+
+  private Flux<Map<String, Object>> fetch(SelectQuery<?> query, UnaryOperator<Map<String, Object>> mapAssembler) {
+    String sql = query.getSQL(ParamType.INLINED);
+
+    LOG.debug("Fetching with SQL: {}", sql);
+
+    return databaseClient.sql(sql)
+        .fetch()
+        .all()
+        .map(mapAssembler);
   }
 
   @Override
