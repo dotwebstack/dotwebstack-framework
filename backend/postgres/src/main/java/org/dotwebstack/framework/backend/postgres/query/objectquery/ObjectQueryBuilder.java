@@ -39,7 +39,7 @@ public class ObjectQueryBuilder {
 
   private final DSLContext dslContext;
 
-  private AggregateFieldFactory aggregateFieldFactory;
+  private final AggregateFieldFactory aggregateFieldFactory;
 
   public ObjectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
     this.dslContext = dslContext;
