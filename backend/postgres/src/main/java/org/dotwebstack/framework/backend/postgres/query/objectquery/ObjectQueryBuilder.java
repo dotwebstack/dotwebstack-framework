@@ -12,7 +12,6 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -114,10 +113,10 @@ public class ObjectQueryBuilder {
 
           ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
           SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
-          Condition condition = getJoinCondition((PostgresFieldConfiguration) objectField.getField(), fieldTable,
-              (PostgresTypeConfiguration) objectField.getObjectQuery()
-                  .getTypeConfiguration(),
-              objectFieldTable);
+          Condition condition = getJoinCondition((PostgresFieldConfiguration) objectField.getField(),
+                                                  fieldTable,
+                                                  (PostgresTypeConfiguration) objectField.getObjectQuery().getTypeConfiguration(),
+                                                  objectFieldTable);
           subSelect.addConditions(condition);
 
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());

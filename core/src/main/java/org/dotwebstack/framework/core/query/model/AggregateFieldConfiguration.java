@@ -10,14 +10,13 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public class AggregateFieldConfiguration {
     private final FieldConfiguration field;
 
-    private String aggregateFunctionType; // TODO enum type? SUM, JOIN, AVG, MAX, MIN
+    private String aggregateFunctionType; // TODO enum type? SUM, JOIN, AVG, MAX, MIN -> ENUM
 
     private boolean distinct;
 
     private String alias; // TODO even over nadenken omdat dit wil nodig gaat zijn
 
-    private String type; // String, Int, Float
-    private Class<?> scalarType;
+    private String type; // TODO enum String, Int, Float
 
-    private Map<String, String> arguments; // separator TODO enum type?
+    private String separator;
 }
