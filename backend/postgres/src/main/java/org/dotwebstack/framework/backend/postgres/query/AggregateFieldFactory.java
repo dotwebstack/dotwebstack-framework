@@ -18,6 +18,7 @@ import graphql.schema.SelectedField;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,32 @@ import org.springframework.stereotype.Component;
 @Component
 public class AggregateFieldFactory {
   private static final String DEFAULT_SEPARATOR = ",";
+
+  // TODO uitwerken AggregatieFieldFacory functions
+  public Field<?> create(AggregateFieldConfiguration aggregateFieldConfiguration, String fromTable, String columnName, String columnAlias) {
+    Field<?> result = null;
+    var aggregateFunction = aggregateFieldConfiguration.getAggregateFunctionType();
+    switch(aggregateFunction){
+      case AVG:
+        break;
+      case COUNT:
+        break;
+      case JOIN:
+//        result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
+        break;
+      case MAX:
+        break;
+      case MIN:
+        break;
+      case SUM:
+        result = DSL.sum(bigDecimalField(fromTable, columnName))
+            .cast(Integer.class);
+        break;
+      default:
+        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFieldConfiguration.getAggregateFunctionType());
+    }
+    return result;
+  }
 
   public Field<?> create(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField, // NOSONAR
       String fromTable, String columnName, String columnAlias) {
