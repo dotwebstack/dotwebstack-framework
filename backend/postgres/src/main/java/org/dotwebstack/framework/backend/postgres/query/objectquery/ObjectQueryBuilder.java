@@ -1,9 +1,15 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
+import static org.jooq.impl.DSL.trueCondition;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
@@ -19,10 +25,13 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JoinType;
+import org.jooq.Record;
+import org.jooq.RowN;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 @Component
 public class ObjectQueryBuilder {
@@ -73,7 +82,9 @@ public class ObjectQueryBuilder {
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addAggregateFields(objectQuery.getAggregateObjectFields(), objectSelectContext, query, fromTable);
 
-    addKeyCriteria(query, objectQuery.getKeyCriteria(), fromTable);
+    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
+      return addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
+    }
 
     return query;
   }
@@ -145,15 +156,50 @@ public class ObjectQueryBuilder {
 
   }
 
-  private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable) {
+  private SelectQuery<?> addKeyCriterias(SelectQuery<?> query, ObjectSelectContext objectSelectContext,
+      Table<?> fieldTable, List<KeyCriteria> keyCriterias) {
+    RowN[] valuesTableRows = keyCriterias.stream()
+        .map(keyCriteria -> DSL.row(keyCriteria.getValues()
+            .values()))
+        .toArray(RowN[]::new);
 
-    /**
-     * Condition condition = keyCriteria .forEach(keyCondition -> {
-     *
-     * var column = fromTable.field(keyCondition.getField(), String.class); return
-     * column.equals(DSL.inline(keyCondition.getValue())); }) .reduce(DSL.noCondition(),
-     * Condition::and); query.addConditions(condition);
-     **/
+    Map<String, String> keyColumnNames = keyCriterias.stream()
+        .findAny()
+        .orElseThrow()
+        .getValues()
+        .keySet()
+        .stream()
+        .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
+
+    Table<Record> valuesTable = DSL.values(valuesTableRows)
+        .as(objectSelectContext.newTableAlias(), keyColumnNames.values()
+            .toArray(String[]::new));
+
+    var joinCondition = keyColumnNames.entrySet()
+        .stream()
+        .map(entry -> DSL.field(DSL.name(fieldTable.getName(), entry.getKey()))
+            .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
+        .reduce(DSL.noCondition(), Condition::and);
+
+
+    Table<?> lateralTable = DSL.lateral(fieldTable.where(joinCondition))
+        .asTable(objectSelectContext.newTableAlias());
+
+    List<Field<Object>> selectedColumns = Stream.concat(keyColumnNames.values()
+        .stream()
+        .map(DSL::field),
+        Set.of(DSL.field(lateralTable.getName()
+            .concat(".*")))
+            .stream())
+        .collect(Collectors.toList());
+
+    SelectQuery<?> valuesQuery = dslContext.selectQuery();
+
+    valuesQuery.addSelect(selectedColumns);
+    valuesQuery.addFrom(valuesTable.leftJoin(lateralTable)
+        .on(trueCondition()));
+
+    return valuesQuery;
   }
 
   private Table<?> findTable(String name) {

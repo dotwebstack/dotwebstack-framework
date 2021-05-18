@@ -11,6 +11,7 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionQuery;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
@@ -32,7 +33,6 @@ public class QueryFactory {
   }
 
   public ObjectQuery createObjectQuery(TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-
     return createObjectQuery("", typeConfiguration, environment);
   }
 
@@ -44,12 +44,25 @@ public class QueryFactory {
     List<NestedObjectFieldConfiguration> nestedObjectFields =
         getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
+    List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
+
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
+        .keyCriteria(keyCriterias)
         .build();
+  }
+
+  private List<KeyCriteria> createKeyCriteria(DataFetchingEnvironment environment) {
+    return environment.getArguments()
+        .entrySet()
+        .stream()
+        .map(entry -> KeyCriteria.builder()
+            .values(environment.getArguments())
+            .build())
+        .collect(Collectors.toList());
   }
 
   private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {

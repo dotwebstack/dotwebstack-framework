@@ -56,6 +56,7 @@ public class QueryBuilder {
 
   private QueryHolder build(QueryContext queryContext, PostgresTypeConfiguration typeConfiguration,
       QueryParameters queryParameters) {
+
     var joinTable = queryParameters.getKeyConditions()
         .stream()
         .map(ColumnKeyCondition.class::cast)
