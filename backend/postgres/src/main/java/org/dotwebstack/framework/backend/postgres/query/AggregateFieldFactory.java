@@ -28,16 +28,17 @@ public class AggregateFieldFactory {
   private static final String DEFAULT_SEPARATOR = ",";
 
   // TODO uitwerken AggregatieFieldFacory functions
-  public Field<?> create(AggregateFieldConfiguration aggregateFieldConfiguration, String fromTable, String columnName, String columnAlias) {
+  public Field<?> create(AggregateFieldConfiguration aggregateFieldConfiguration, String fromTable, String columnName,
+      String columnAlias) {
     Field<?> result = null;
     var aggregateFunction = aggregateFieldConfiguration.getAggregateFunctionType();
-    switch(aggregateFunction){
+    switch (aggregateFunction) {
       case AVG:
         break;
       case COUNT:
         break;
       case JOIN:
-//        result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
+        // result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
         break;
       case MAX:
         break;
@@ -48,7 +49,8 @@ public class AggregateFieldFactory {
             .cast(Integer.class);
         break;
       default:
-        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFieldConfiguration.getAggregateFunctionType());
+        throw illegalArgumentException("Aggregate function {} is not supported",
+            aggregateFieldConfiguration.getAggregateFunctionType());
     }
     return result;
   }

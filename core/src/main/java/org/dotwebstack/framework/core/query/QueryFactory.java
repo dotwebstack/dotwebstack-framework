@@ -1,28 +1,5 @@
 package org.dotwebstack.framework.core.query;
 
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.SelectedField;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.Builder;
-import lombok.Data;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
-import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
-import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
-import org.dotwebstack.framework.core.query.model.PagingCriteria;
-import org.dotwebstack.framework.core.query.model.ScalarType;
-import org.springframework.stereotype.Component;
-
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.DISTINCT_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
@@ -37,6 +14,28 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.SelectedField;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Data;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
+import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.CollectionQuery;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarType;
+import org.springframework.stereotype.Component;
 
 @Component
 public class QueryFactory {
@@ -66,7 +65,8 @@ public class QueryFactory {
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
     List<NestedObjectFieldConfiguration> nestedObjectFields =
         getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
-    List<AggregateObjectFieldConfiguration> aggregateObjectFields = getAggregateObjectFields(fieldPathPrefix, typeConfiguration, environment);
+    List<AggregateObjectFieldConfiguration> aggregateObjectFields =
+        getAggregateObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
@@ -77,7 +77,8 @@ public class QueryFactory {
         .build();
   }
 
-  private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
+  private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix,
+      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
     return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
         .filter(pair -> pair.getFieldConfiguration()
             .isAggregateField())
@@ -88,7 +89,8 @@ public class QueryFactory {
         .collect(Collectors.toList());
   }
 
-  private List<AggregateFieldConfiguration> getAggregateFields(FieldConfigurationPair fieldConfigurationPair, DataFetchingEnvironment environment) {
+  private List<AggregateFieldConfiguration> getAggregateFields(FieldConfigurationPair fieldConfigurationPair,
+      DataFetchingEnvironment environment) {
     String fieldPathPrefix = fieldConfigurationPair.getSelectedField()
         .getFullyQualifiedName()
         .concat("/");
@@ -106,7 +108,7 @@ public class QueryFactory {
     boolean distinct = isDistinct(aggregateField);
     // TODO: rework after validation
     String separator = null;
-    if(aggregateFunctionType == AggregateFunctionType.JOIN){
+    if (aggregateFunctionType == AggregateFunctionType.JOIN) {
       separator = getSeparator(aggregateField);
     }
 
@@ -119,30 +121,31 @@ public class QueryFactory {
         .build();
   }
 
-// TODO: AggregateUtil
-private ScalarType getAggregateScalarType(SelectedField selectedField){
-  String aggregateFunction = selectedField.getName();
-  switch(aggregateFunction) {
-    case INT_MIN_FIELD:
-    case INT_MAX_FIELD:
-    case INT_AVG_FIELD:
-    case INT_SUM_FIELD:
-    case COUNT_FIELD:
-      return ScalarType.INT;
-    case STRING_JOIN_FIELD:
-      return ScalarType.STRING;
-    case FLOAT_MIN_FIELD:
-    case FLOAT_SUM_FIELD:
-    case FLOAT_MAX_FIELD:
-    case FLOAT_AVG_FIELD:
-      return ScalarType.FLOAT;
-    default:
-      throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
-  }
-}
-  private AggregateFunctionType getAggregateFunctionType(SelectedField selectedField){
+  // TODO: AggregateUtil
+  private ScalarType getAggregateScalarType(SelectedField selectedField) {
     String aggregateFunction = selectedField.getName();
-    switch(aggregateFunction) {
+    switch (aggregateFunction) {
+      case INT_MIN_FIELD:
+      case INT_MAX_FIELD:
+      case INT_AVG_FIELD:
+      case INT_SUM_FIELD:
+      case COUNT_FIELD:
+        return ScalarType.INT;
+      case STRING_JOIN_FIELD:
+        return ScalarType.STRING;
+      case FLOAT_MIN_FIELD:
+      case FLOAT_SUM_FIELD:
+      case FLOAT_MAX_FIELD:
+      case FLOAT_AVG_FIELD:
+        return ScalarType.FLOAT;
+      default:
+        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
+    }
+  }
+
+  private AggregateFunctionType getAggregateFunctionType(SelectedField selectedField) {
+    String aggregateFunction = selectedField.getName();
+    switch (aggregateFunction) {
       case COUNT_FIELD:
         return AggregateFunctionType.COUNT;
       case STRING_JOIN_FIELD:
@@ -242,7 +245,8 @@ private ScalarType getAggregateScalarType(SelectedField selectedField){
         .map(selectedField -> FieldConfigurationPair.builder()
             .selectedField(selectedField)
             .fieldConfiguration(typeConfiguration.getFields()
-                .get((String)selectedField.getArguments().get(FIELD_ARGUMENT)))
+                .get((String) selectedField.getArguments()
+                    .get(FIELD_ARGUMENT)))
             .build());
   }
 

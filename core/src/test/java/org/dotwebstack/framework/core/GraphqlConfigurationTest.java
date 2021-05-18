@@ -323,7 +323,7 @@ class GraphqlConfigurationTest {
     }
 
     @Override
-    public boolean isAggregateField(){
+    public boolean isAggregateField() {
       return isAggregate();
     }
   }

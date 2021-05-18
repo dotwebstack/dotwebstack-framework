@@ -239,7 +239,8 @@ class PostgresTypeConfigurationTest {
       return false;
     }
 
-    @Override public boolean isAggregateField() {
+    @Override
+    public boolean isAggregateField() {
       return false;
     }
   }

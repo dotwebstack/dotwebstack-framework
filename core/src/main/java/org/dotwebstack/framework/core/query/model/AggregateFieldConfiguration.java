@@ -7,15 +7,15 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 @Builder
 @Data
 public class AggregateFieldConfiguration {
-    private final FieldConfiguration field;
+  private final FieldConfiguration field;
 
-    private AggregateFunctionType aggregateFunctionType;
+  private AggregateFunctionType aggregateFunctionType;
 
-    private boolean distinct;
+  private boolean distinct;
 
-    private String alias; // TODO even over nadenken of we dit nodig hebben
+  private String alias; // TODO even over nadenken of we dit nodig hebben
 
-    private ScalarType type;
+  private ScalarType type;
 
-    private String separator;
+  private String separator;
 }

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -24,7 +24,6 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 
 @Component
 public class ObjectQueryBuilder {
@@ -145,10 +144,12 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private void addAggregateObjectFields(List<AggregateObjectFieldConfiguration> aggregateObjectFieldConfigurations, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
-      Table<?> fieldTable) {
+  private void addAggregateObjectFields(List<AggregateObjectFieldConfiguration> aggregateObjectFieldConfigurations,
+      ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> fieldTable) {
     aggregateObjectFieldConfigurations.forEach(aggregateObjectFieldConfiguration -> {
-      PostgresTypeConfiguration aggregateTypeConfiguration = (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField()).getTypeConfiguration();
+      PostgresTypeConfiguration aggregateTypeConfiguration =
+          (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
+              .getTypeConfiguration();
 
       Table<?> aggregateTable =
           findTable(aggregateTypeConfiguration.getTable()).asTable(objectSelectContext.newTableAlias());
@@ -156,12 +157,13 @@ public class ObjectQueryBuilder {
       SelectQuery<?> subSelect = dslContext.selectQuery(aggregateTable);
 
       // assemble all string joins and for each string join: create a sub select query
-      ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
+      ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
       addAggregateField(aggregateObjectFieldConfiguration, lateralJoinContext, subSelect, aggregateTable.getName());
 
       // add join condition to subselect query
-      Condition condition = getJoinCondition( (PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(), fieldTable, aggregateTypeConfiguration, aggregateTable );
+      Condition condition = getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(),
+          fieldTable, aggregateTypeConfiguration, aggregateTable);
       subSelect.addConditions(condition);
 
       // join with query
@@ -170,26 +172,30 @@ public class ObjectQueryBuilder {
       query.addJoin(lateralTable, JoinType.OUTER_APPLY);
       objectSelectContext.getAssembleFns()
           .put(aggregateObjectFieldConfiguration.getField()
-                  .getName(),
+              .getName(),
               createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
                   false)::apply);
     });
 
   }
 
-  private void addAggregateField(AggregateObjectFieldConfiguration aggregateObjectFieldConfiguration, ObjectSelectContext objectSelectContext, SelectQuery<?> query, String table) {
-    aggregateObjectFieldConfiguration.getAggregateFields().forEach(aggregateFieldConfiguration -> {
+  private void addAggregateField(AggregateObjectFieldConfiguration aggregateObjectFieldConfiguration,
+      ObjectSelectContext objectSelectContext, SelectQuery<?> query, String table) {
+    aggregateObjectFieldConfiguration.getAggregateFields()
+        .forEach(aggregateFieldConfiguration -> {
 
-      String columnAlias = objectSelectContext.newSelectAlias();
-      String columnName = ((PostgresFieldConfiguration) aggregateFieldConfiguration.getField()).getColumn();
+          String columnAlias = objectSelectContext.newSelectAlias();
+          String columnName = ((PostgresFieldConfiguration) aggregateFieldConfiguration.getField()).getColumn();
 
-      Field<?> column = aggregateFieldFactory.create(aggregateFieldConfiguration, table, columnName, columnAlias).as(columnAlias);
+          Field<?> column = aggregateFieldFactory.create(aggregateFieldConfiguration, table, columnName, columnAlias)
+              .as(columnAlias);
 
-      objectSelectContext.getAssembleFns()
-          .put(aggregateFieldConfiguration.getField().getName(), row -> row.get(column.getName()));
+          objectSelectContext.getAssembleFns()
+              .put(aggregateFieldConfiguration.getField()
+                  .getName(), row -> row.get(column.getName()));
 
-     query.addSelect(column);
-    });
+          query.addSelect(column);
+        });
   }
 
   private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable) {
