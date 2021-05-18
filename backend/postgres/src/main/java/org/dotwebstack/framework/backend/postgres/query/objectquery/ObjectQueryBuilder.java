@@ -9,6 +9,10 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -54,8 +58,11 @@ public class ObjectQueryBuilder {
     SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
     addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
-    addNestedObjectFields(objectQuery, objectSelectContext, query, fromTable);
+    addNestedObjectFields(objectQuery.getNestedObjectFields(), objectSelectContext, query, fromTable);
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
+    addAggregateFields(objectQuery.getAggregateObjectFields(), objectSelectContext, query, fromTable);
+
+    addKeyCriteria(query, objectQuery.getKeyCriteria(), fromTable);
 
     return query;
   }
@@ -78,10 +85,10 @@ public class ObjectQueryBuilder {
     });
   }
 
-  private void addNestedObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+  private void addNestedObjectFields(List<NestedObjectFieldConfiguration> nestedObjectFields, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> fieldTable) {
 
-    objectQuery.getNestedObjectFields()
+    nestedObjectFields
         .forEach(nestedObjectField -> {
 
           ObjectSelectContext nestedObjectContext =
@@ -122,6 +129,25 @@ public class ObjectQueryBuilder {
                   createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
                       false)::apply);
         });
+  }
+
+  private void addAggregateFields(List<AggregateObjectFieldConfiguration> aggregateObjectFields, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
+                                  Table<?> fieldTable) {
+
+  }
+
+  private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable){
+
+    /**
+    Condition condition = keyCriteria
+            .forEach(keyCondition -> {
+
+              var column = fromTable.field(keyCondition.getField(), String.class);
+              return column.equals(DSL.inline(keyCondition.getValue()));
+            })
+            .reduce(DSL.noCondition(), Condition::and);
+    query.addConditions(condition);
+     **/
   }
 
   private Table<?> findTable(String name) {

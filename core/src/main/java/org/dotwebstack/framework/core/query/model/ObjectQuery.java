@@ -22,7 +22,7 @@ public class ObjectQuery implements Query {
 
   private List<NestedObjectFieldConfiguration> nestedObjectFields;
 
-  private List<ObjectFieldConfiguration> aggregateObjectFields;
+  private List<AggregateObjectFieldConfiguration> aggregateObjectFields;
 
   private List<FilterCriteria> filterCriteria;
 
