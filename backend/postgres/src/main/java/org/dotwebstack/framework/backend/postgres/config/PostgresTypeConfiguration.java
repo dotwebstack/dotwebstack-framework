@@ -192,6 +192,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
                 .get(fieldConfiguration.getMappedBy());
 
             fieldConfiguration.setJoinColumns(mappedByFieldConfiguration.getJoinColumns());
+            fieldConfiguration.setTypeConfiguration(typeConfiguration);
           } else if (fieldConfiguration.getJoinTable() == null) {
             throw invalidConfigurationException("Invalid aggregate field configuration.");
           }

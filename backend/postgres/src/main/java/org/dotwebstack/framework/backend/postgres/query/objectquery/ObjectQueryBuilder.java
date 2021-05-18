@@ -135,6 +135,22 @@ public class ObjectQueryBuilder {
 
   }
 
+//  private void addAggregateObjectFields(List<AggregateObjectFieldConfiguration> aggregateObjectFieldConfigurations, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
+//      Table<?> fieldTable) {
+//    aggregateObjectFieldConfigurations.forEach(aggregateObjectFieldConfiguration -> {
+//      Table<?> aggregateTable =
+//          findTable(((PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField()).getTypeConfiguration()).getTable()).asTable(objectSelectContext.newTableAlias());
+//      ObjectSelectContext lateralJoinContext = new ObjectSelectContext( objectSelectContext.getObjectQueryContext() );
+//      // add aggregatefield, reuse add scalarfield?
+//      SelectQuery<?> subSelect = buildAggregateQuery(lateralJoinContext, aggregateObjectFieldConfiguration, aggregateTable);
+//      Condition condition = getJoinCondition( (PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(), fieldTable, (PostgresTypeConfiguration) aggregateObjectFieldConfiguration.getObjectQuery().getTypeConfiguration(), aggregateTable );
+//      subSelect.addConditions(condition);
+//
+//      //
+//    });
+//
+//  }
+
   private void addKeyCriteria(SelectQuery<?> query, List<KeyCriteria> keyCriteria, Table<?> fromTable){
 
     /**
