@@ -35,9 +35,7 @@ public class PostgresConfiguration {
   }
 
   private String buildPostgresqlUrl() {
-    return String.format("jdbc:postgresql://%s:%d/%s",
-        postgresProperties.getHost(),
-        postgresProperties.getPort(),
+    return String.format("jdbc:postgresql://%s:%d/%s", postgresProperties.getHost(), postgresProperties.getPort(),
         postgresProperties.getDatabase());
   }
 

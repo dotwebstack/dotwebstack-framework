@@ -168,14 +168,14 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
   private void initObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     fields.values()
-            .stream()
-            .filter(PostgresFieldConfiguration::isObjectField)
-            .forEach(fieldConfiguration -> {
+        .stream()
+        .filter(PostgresFieldConfiguration::isObjectField)
+        .forEach(fieldConfiguration -> {
 
-              PostgresTypeConfiguration typeConfiguration =
-                      (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
-              fieldConfiguration.setTypeConfiguration(typeConfiguration);
-            });
+          PostgresTypeConfiguration typeConfiguration =
+              (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
+          fieldConfiguration.setTypeConfiguration(typeConfiguration);
+        });
   }
 
   private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
@@ -233,16 +233,16 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     fields.putAll(referencedColumns);
   }
 
-  private void initKeyFields(){
-      fields.values()
-              .forEach(fieldConfiguration -> {
+  private void initKeyFields() {
+    fields.values()
+        .forEach(fieldConfiguration -> {
 
-                  if((getKeys()
-                          .stream()
-                          .anyMatch(keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldConfiguration.getName())))){
-                      fieldConfiguration.setKeyField(true);
-                  }
-              });
+          if ((getKeys().stream()
+              .anyMatch(
+                  keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldConfiguration.getName())))) {
+            fieldConfiguration.setKeyField(true);
+          }
+        });
   }
 
   private FieldDefinition getFieldDefinition(String fieldName, List<FieldDefinition> fieldDefinitions) {
