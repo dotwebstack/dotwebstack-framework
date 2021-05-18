@@ -8,4 +8,18 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 @EqualsAndHashCode(callSuper = true)
 public class JsonFieldConfiguration extends AbstractFieldConfiguration {
 
+    @Override
+    public boolean isScalarField() {
+        return false;
+    }
+
+    @Override
+    public boolean isObjectField() {
+        return false;
+    }
+
+    @Override
+    public boolean isNestedObjectField() {
+        return false;
+    }
 }

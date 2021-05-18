@@ -13,4 +13,18 @@ public class Rdf4jFieldConfiguration extends AbstractFieldConfiguration {
   @Valid
   private List<JoinProperty> joinProperties;
 
+  @Override
+  public boolean isScalarField() {
+    return false;
+  }
+
+  @Override
+  public boolean isObjectField() {
+    return false;
+  }
+
+  @Override
+  public boolean isNestedObjectField() {
+    return false;
+  }
 }
