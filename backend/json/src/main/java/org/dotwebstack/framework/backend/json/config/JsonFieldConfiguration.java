@@ -22,4 +22,9 @@ public class JsonFieldConfiguration extends AbstractFieldConfiguration {
   public boolean isNestedObjectField() {
     return false;
   }
+
+  @Override
+  public boolean isAggregateField() {
+    return false;
+  }
 }

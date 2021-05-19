@@ -85,24 +85,40 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (!loadEnvironment.isSubscription()
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
 
-      ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+      if (backendDataLoader.useObjectQueryApproach()) {
+        ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
-      return backendDataLoader.loadSingleObject(objectQuery)
-          .map(data -> createDataFetcherResult(typeConfiguration, data))
-          .toFuture();
+        return backendDataLoader
+            .loadSingleObject(objectQuery)
+            .map(data -> createDataFetcherResult(typeConfiguration, data))
+            .toFuture();
+      } else {
+        return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
+            .map(data -> createDataFetcherResult(typeConfiguration, data))
+            .toFuture();
+      }
     }
 
-    CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
+    Flux<DataFetcherResult<Object>> result;
 
-    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadManyObject(collectionQuery)
-        .map(data -> createDataFetcherResult(typeConfiguration, data));
+    if (backendDataLoader.useObjectQueryApproach()) {
+      CollectionQuery collectionQuery =
+          queryFactory.createCollectionQuery(typeConfiguration, environment);
+
+      result =
+          backendDataLoader
+              .loadManyObject(collectionQuery)
+              .map(data -> createDataFetcherResult(typeConfiguration, data));
+    } else {
+      result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
+          .map(data -> createDataFetcherResult(typeConfiguration, data));
+    }
 
     if (loadEnvironment.isSubscription()) {
       return result;
     }
 
-    return result.collectList()
-        .toFuture();
+    return result.collectList().toFuture();
   }
 
   private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration, Object data) {

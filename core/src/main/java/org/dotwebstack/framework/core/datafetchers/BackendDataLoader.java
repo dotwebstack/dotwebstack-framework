@@ -33,4 +33,6 @@ public interface BackendDataLoader {
   default Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
     return Flux.empty();
   }
+
+  default boolean useObjectQueryApproach() { return false; }
 }
