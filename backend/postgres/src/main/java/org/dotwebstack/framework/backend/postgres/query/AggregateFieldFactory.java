@@ -148,10 +148,11 @@ public class AggregateFieldFactory {
     }
   }
 
-  private Field<?> createStringJoin(AggregateFieldConfiguration aggregateFieldConfiguration,
-      String fromTable, String columnName, String columnAlias) {
+  private Field<?> createStringJoin(AggregateFieldConfiguration aggregateFieldConfiguration, String fromTable,
+      String columnName, String columnAlias) {
 
-    if (aggregateFieldConfiguration.getField().isList()) {
+    if (aggregateFieldConfiguration.getField()
+        .isList()) {
       return createGroupConcat(aggregateFieldConfiguration, columnAlias);
     } else {
       String separator = aggregateFieldConfiguration.getSeparator();
