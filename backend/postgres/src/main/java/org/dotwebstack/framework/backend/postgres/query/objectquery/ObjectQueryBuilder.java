@@ -88,6 +88,9 @@ public class ObjectQueryBuilder {
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addAggregateObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
+    // check if any non-key-fields need to be added in order to support joins
+    addReferenceColumns(objectQuery, objectSelectContext, query, fromTable);
+
     if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
       return addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
     }
@@ -256,6 +259,20 @@ public class ObjectQueryBuilder {
             .as(columnAlias), JoinType.CROSS_JOIN);
       }
     });
+  }
+
+  private void addReferenceColumns(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> table) {
+    if (!objectQuery.getObjectFields()
+        .isEmpty()
+        || !objectQuery.getAggregateObjectFields()
+            .isEmpty()) {
+      PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
+      typeConfiguration.getReferencedColumns()
+          .values()
+          .forEach(referenceFieldConfiguration -> addScalarField(referenceFieldConfiguration, objectSelectContext,
+              query, table, new AtomicBoolean()));
+    }
   }
 
   private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
