@@ -167,8 +167,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_ReturnsBreweries_Default() {
-    String query = "{breweries{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" )}}}";
-    // String query = "{breweries{name status}}";
+//    String query = "{breweries{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )}}}";
+//    String query = "{breweries{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) tastes: stringJoin( field: \"taste\" )}}}";
+
+     String query = "{breweries{name status}}";
 
     ExecutionResult result = graphQL.execute(query);
 
