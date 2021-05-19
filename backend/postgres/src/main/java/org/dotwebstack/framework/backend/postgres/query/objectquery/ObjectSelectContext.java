@@ -5,9 +5,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.Data;
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 
 @Data
 public class ObjectSelectContext {
+
+  private JoinTable joinTableConfiguration;
 
   private ObjectQueryContext objectQueryContext;
 
@@ -19,6 +22,12 @@ public class ObjectSelectContext {
 
   public ObjectSelectContext(ObjectQueryContext objectQueryContext) {
     this.objectQueryContext = objectQueryContext;
+  }
+
+  public ObjectSelectContext(ObjectQueryContext objectQueryContext, JoinTable joinTableConfiguration) {
+
+    this.objectQueryContext = objectQueryContext;
+    this.joinTableConfiguration = joinTableConfiguration;
   }
 
   public String newSelectAlias() {
