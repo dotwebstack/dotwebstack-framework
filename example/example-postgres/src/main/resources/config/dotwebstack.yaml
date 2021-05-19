@@ -26,6 +26,9 @@ objectTypes:
     table: dbeerpedia.beers
     keys:
       - field: identifier
+    filters:
+      identifier:
+        field: identifier
     fields:
       identifier:
         type: ID

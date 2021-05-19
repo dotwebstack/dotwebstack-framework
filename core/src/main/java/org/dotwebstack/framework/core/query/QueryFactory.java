@@ -36,6 +36,8 @@ import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
+import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,7 +70,9 @@ public class QueryFactory {
     List<AggregateObjectFieldConfiguration> aggregateObjectFields =
         getAggregateObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
-    List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
+   // List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
+
+    List<FilterCriteria> filterCriterias = createFilterCriterias(typeConfiguration);
 
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
@@ -76,8 +80,18 @@ public class QueryFactory {
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
         .aggregateObjectFields(aggregateObjectFields)
-        .keyCriteria(keyCriterias)
+       // .keyCriteria(keyCriterias)
+        .filterCriteria(filterCriterias)
         .build();
+  }
+
+  private List<FilterCriteria> createFilterCriterias(TypeConfiguration<?> typeConfiguration) {
+    FilterCriteria filterCriteria = EqualsFilterCriteria.builder()
+        .field(typeConfiguration.getFields().get("identifier"))
+        .value("d3654375-95fa-46b4-8529-08b0f777bd6b")
+        .build();
+
+    return List.of(filterCriteria);
   }
 
   private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix,

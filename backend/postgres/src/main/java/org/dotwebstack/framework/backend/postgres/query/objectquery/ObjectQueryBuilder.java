@@ -21,6 +21,8 @@ import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -95,7 +97,24 @@ public class ObjectQueryBuilder {
       return addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
     }
 
+    addFilterCriterias(objectQuery, fromTable, query);
+
     return query;
+  }
+
+  private void addFilterCriterias(ObjectQuery objectQuery, Table<?> fromTable, SelectQuery<?> query) {
+    if (objectQuery.getFilterCriteria() != null) {
+      FilterCriteria filterCriteria = objectQuery.getFilterCriteria().get(0);
+
+      if(filterCriteria instanceof EqualsFilterCriteria) {
+        EqualsFilterCriteria equalsFilterCriteria = (EqualsFilterCriteria) filterCriteria;
+
+        PostgresFieldConfiguration postgresFieldConfiguration = (PostgresFieldConfiguration) equalsFilterCriteria.getField();
+
+        query.addConditions(DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn())).eq(equalsFilterCriteria.getValue()));
+        System.out.println();
+      }
+    }
   }
 
   private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<FieldConfiguration> scalarFields,

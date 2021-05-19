@@ -36,6 +36,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   @Valid
   protected Map<String, T> fields = new HashMap<>();
 
+  protected Map<String, FilterConfiguration> filters = new HashMap<>();
+
   public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     postFieldProcessing();
   }
