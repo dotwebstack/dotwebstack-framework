@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 import lombok.Builder;
 import lombok.Data;
+import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectSelectContext;
 import org.jooq.SelectQuery;
 
 @Data
@@ -12,4 +13,6 @@ public class SelectQueryBuilderResult {
   private final SelectQuery<?> query;
 
   private final UnaryOperator<Map<String, Object>> mapAssembler;
+
+  private final ObjectSelectContext context;
 }

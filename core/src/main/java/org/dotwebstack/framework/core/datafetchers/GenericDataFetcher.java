@@ -152,18 +152,40 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     var loadEnvironment = createLoadEnvironment(environment);
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
-      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
-          .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
-              .collectList()
-              .map(list -> Map.entry(group.key(), list.stream()
-                  .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
-          .collectMap(Map.Entry::getKey, Map.Entry::getValue)
-          .toFuture());
+      if (backendDataLoader.useObjectQueryApproach()) {
+        CollectionQuery collectionQuery =
+            queryFactory.createCollectionQuery(typeConfiguration, environment);
+
+        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyObject(keys, collectionQuery)
+            .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
+                .collectList()
+                .map(list -> Map.entry(group.key(), list.stream()
+                    .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
+            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+            .toFuture());
+      } else {
+        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
+            .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
+                .collectList()
+                .map(list -> Map.entry(group.key(), list.stream()
+                    .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
+            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+            .toFuture());
+      }
     }
 
-    return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
-        .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
-        .toFuture());
+    if (backendDataLoader.useObjectQueryApproach()) {
+      ObjectQuery objectQuery =
+          queryFactory.createObjectQuery(typeConfiguration, environment);
+
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectQuery)
+          .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
+          .toFuture());
+    } else {
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
+          .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
+          .toFuture());
+    }
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {

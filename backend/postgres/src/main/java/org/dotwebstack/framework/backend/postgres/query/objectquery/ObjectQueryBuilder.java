@@ -58,6 +58,7 @@ public class ObjectQueryBuilder {
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
         .mapAssembler(objectQueryBuilderResult.getMapAssembler())
+        .context(objectQueryBuilderResult.getContext())
         .build();
   }
 
@@ -78,6 +79,7 @@ public class ObjectQueryBuilder {
     return SelectQueryBuilderResult.builder()
         .query(query)
         .mapAssembler(rowMapper)
+        .context(objectSelectContext)
         .build();
   }
 
@@ -324,6 +326,8 @@ public class ObjectQueryBuilder {
         .keySet()
         .stream()
         .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
+
+    objectSelectContext.setKeyColumnNames(keyColumnNames);
 
     // create virtual table
     Table<Record> valuesTable = DSL.values(valuesTableRows)
