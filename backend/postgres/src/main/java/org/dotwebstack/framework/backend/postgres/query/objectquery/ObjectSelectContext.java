@@ -15,6 +15,8 @@ public class ObjectSelectContext {
 
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
+  private Map<String, String> keyColumnNames;
+
   public ObjectSelectContext(ObjectQueryContext objectQueryContext) {
     this.objectQueryContext = objectQueryContext;
   }
@@ -25,5 +27,9 @@ public class ObjectSelectContext {
 
   public String newTableAlias() {
     return objectQueryContext.newTableAlias();
+  }
+
+  public void setKeyColumnNames(Map<String, String> keyColumnNames) {
+    this.keyColumnNames = keyColumnNames;
   }
 }

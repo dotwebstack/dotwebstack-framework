@@ -219,6 +219,7 @@ public class QueryFactory {
     return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
         .filter(pair -> pair.getFieldConfiguration()
             .isObjectField())
+        .filter(pair -> !pair.getFieldConfiguration().isList())
         .map(pair -> ObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
             .objectQuery(createObjectQuery(pair, environment))
