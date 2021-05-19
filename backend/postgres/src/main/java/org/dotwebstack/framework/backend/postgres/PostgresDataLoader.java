@@ -66,14 +66,14 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(objectQuery);
+    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, false);
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
   }
 
   @Override
   public Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery);
+    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, false);
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
@@ -90,7 +90,7 @@ public class PostgresDataLoader implements BackendDataLoader {
             )
             .collect(Collectors.toList()));
 
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery);
+    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, true);
 
     Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext().getKeyColumnNames();
 
