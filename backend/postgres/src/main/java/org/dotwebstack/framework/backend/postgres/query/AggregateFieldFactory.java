@@ -38,7 +38,7 @@ public class AggregateFieldFactory {
       case COUNT:
         break;
       case JOIN:
-        // result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
+        result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
         break;
       case MAX:
         break;
@@ -119,6 +119,19 @@ public class AggregateFieldFactory {
     return result;
   }
 
+  private Field<?> createGroupConcat(AggregateFieldConfiguration aggregateFieldConfiguration, String alias) {
+    Field<?> result;
+    String separator = aggregateFieldConfiguration.getSeparator();
+    if (aggregateFieldConfiguration.isDistinct()) {
+      result = DSL.groupConcatDistinct(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    } else {
+      result = DSL.groupConcat(DSL.field(DSL.name(alias)))
+          .separator(separator);
+    }
+    return result;
+  }
+
   private Field<?> createStringJoin(PostgresFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField,
       String fromTable, String columnName, String columnAlias) {
     if (aggregateFieldConfiguration.isList()) {
@@ -126,6 +139,23 @@ public class AggregateFieldFactory {
     } else {
       String separator = getSeparator(selectedField);
       if (isDistinct(selectedField)) {
+        return DSL.groupConcatDistinct(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      } else {
+        return DSL.groupConcat(DSL.field(DSL.name(fromTable, columnName)))
+            .separator(separator);
+      }
+    }
+  }
+
+  private Field<?> createStringJoin(AggregateFieldConfiguration aggregateFieldConfiguration,
+      String fromTable, String columnName, String columnAlias) {
+
+    if (aggregateFieldConfiguration.getField().isList()) {
+      return createGroupConcat(aggregateFieldConfiguration, columnAlias);
+    } else {
+      String separator = aggregateFieldConfiguration.getSeparator();
+      if (aggregateFieldConfiguration.isDistinct()) {
         return DSL.groupConcatDistinct(DSL.field(DSL.name(fromTable, columnName)))
             .separator(separator);
       } else {
