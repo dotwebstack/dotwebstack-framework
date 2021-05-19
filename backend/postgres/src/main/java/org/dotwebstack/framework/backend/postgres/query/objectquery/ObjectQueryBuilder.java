@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,7 +24,6 @@ import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.jooq.Condition;
@@ -67,6 +67,8 @@ public class ObjectQueryBuilder {
   }
 
   public SelectQueryBuilderResult build(ObjectQuery objectQuery) {
+
+    // TODO add table to selectContext? -> rename tableSelectContext
     var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
@@ -85,8 +87,9 @@ public class ObjectQueryBuilder {
 
     SelectQuery<?> query = dslContext.selectQuery(fromTable);
 
-    addScalarFields(objectQuery.getScalarFields(), objectSelectContext, query, fromTable);
-    addNestedObjectFields(objectQuery.getNestedObjectFields(), objectSelectContext, query, fromTable);
+    addScalarFields((PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), objectQuery.getScalarFields(),
+        objectSelectContext, query, fromTable);
+    addNestedObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addAggregateObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
@@ -97,44 +100,56 @@ public class ObjectQueryBuilder {
     return query;
   }
 
-  private void addScalarFields(List<FieldConfiguration> scalarFields, ObjectSelectContext objectSelectContext,
-      SelectQuery<?> query, Table<?> table) {
+  private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<FieldConfiguration> scalarFields,
+      ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> table) {
 
     AtomicBoolean keyFieldAdded = new AtomicBoolean(false);
-    scalarFields.forEach(scalarField -> {
-      String columnAlias = objectSelectContext.newSelectAlias();
-      Field<?> column = Objects.requireNonNull(table.field(((PostgresFieldConfiguration) scalarField).getColumn()))
-          .as(columnAlias);
-      objectSelectContext.getAssembleFns()
-          .put(scalarField.getName(), row -> row.get(column.getName()));
+    scalarFields.forEach(scalarField -> addScalarField(scalarField, objectSelectContext, query, table, keyFieldAdded));
 
-      if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
-        keyFieldAdded.set(true);
-        objectSelectContext.getCheckNullAlias()
-            .set(columnAlias);
-      }
-      query.addSelect(column);
-    });
+    if (!keyFieldAdded.get() && !typeConfiguration.getKeys()
+        .isEmpty()) {
 
-    if(!keyFieldAdded.get()){
-
-        // TODO
+      // TODO add TypeConfiguration to keys?
+      String name = typeConfiguration.getKeys()
+          .get(0)
+          .getField();
+      addScalarField(typeConfiguration.getFields()
+          .get(name), objectSelectContext, query, table, keyFieldAdded);
     }
   }
 
-  private void addNestedObjectFields(List<NestedObjectFieldConfiguration> nestedObjectFields,
-      ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> fieldTable) {
+  private void addScalarField(FieldConfiguration scalarField, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> table, AtomicBoolean keyFieldAdded) {
+    String columnAlias = objectSelectContext.newSelectAlias();
+    Field<?> column = Objects.requireNonNull(table.field(((PostgresFieldConfiguration) scalarField).getColumn()))
+        .as(columnAlias);
+    objectSelectContext.getAssembleFns()
+        .put(scalarField.getName(), row -> row.get(column.getName()));
 
-    nestedObjectFields.forEach(nestedObjectField -> {
+    if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
+      keyFieldAdded.set(true);
+      objectSelectContext.getCheckNullAlias()
+          .set(columnAlias);
+    }
+    query.addSelect(column);
+  }
 
-      ObjectSelectContext nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
-      addScalarFields(nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
-      objectSelectContext.getAssembleFns()
-          .put(nestedObjectField.getField()
-              .getName(),
-              createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
-                  false)::apply);
-    });
+  private void addNestedObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable) {
+
+    objectQuery.getNestedObjectFields()
+        .forEach(nestedObjectField -> {
+
+          ObjectSelectContext nestedObjectContext =
+              new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+          addScalarFields((PostgresTypeConfiguration) objectQuery.getTypeConfiguration(),
+              nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
+          objectSelectContext.getAssembleFns()
+              .put(nestedObjectField.getField()
+                  .getName(),
+                  createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
+                      false)::apply);
+        });
   }
 
   private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
@@ -301,7 +316,7 @@ public class ObjectQueryBuilder {
         .map(joinColumn -> {
 
           var otherSideFieldConfiguration = rightSideConfiguration.getFields()
-                    .get(joinColumn.getField());
+              .get(joinColumn.getField());
 
           var leftColumn = leftSideTable.field(joinColumn.getName(), Object.class);
           var rightColumn = rightSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
