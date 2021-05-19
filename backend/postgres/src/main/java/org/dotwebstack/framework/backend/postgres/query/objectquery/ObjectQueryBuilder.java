@@ -1,17 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
-import static org.jooq.impl.DSL.trueCondition;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
@@ -114,9 +110,9 @@ public class ObjectQueryBuilder {
       query.addSelect(column);
     });
 
-    if(!keyFieldAdded.get()){
+    if (!keyFieldAdded.get()) {
 
-        // TODO
+      // TODO
     }
   }
 
@@ -164,38 +160,40 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private void addAggregateObjectFields(ObjectQuery objectQuery,
-      ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> fieldTable) {
-      objectQuery.getAggregateObjectFields().forEach(aggregateObjectFieldConfiguration -> {
-      PostgresTypeConfiguration aggregateTypeConfiguration =
-          (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
-              .getTypeConfiguration();
+  private void addAggregateObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable) {
+    objectQuery.getAggregateObjectFields()
+        .forEach(aggregateObjectFieldConfiguration -> {
+          PostgresTypeConfiguration aggregateTypeConfiguration =
+              (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
+                  .getTypeConfiguration();
 
-      Table<?> aggregateTable =
-          findTable(aggregateTypeConfiguration.getTable()).asTable(objectSelectContext.newTableAlias());
+          Table<?> aggregateTable =
+              findTable(aggregateTypeConfiguration.getTable()).asTable(objectSelectContext.newTableAlias());
 
-      SelectQuery<?> subSelect = dslContext.selectQuery(aggregateTable);
+          SelectQuery<?> subSelect = dslContext.selectQuery(aggregateTable);
 
-      // assemble all string joins and for each string join: create a sub select query
-      ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+          // assemble all string joins and for each string join: create a sub select query
+          ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
-      addAggregateField(aggregateObjectFieldConfiguration, lateralJoinContext, subSelect, aggregateTable.getName());
+          addAggregateField(aggregateObjectFieldConfiguration, lateralJoinContext, subSelect, aggregateTable.getName());
 
-      // add join condition to subselect query
-      Condition condition = getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(), aggregateTable,
-              (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
-      subSelect.addConditions(condition);
+          // add join condition to subselect query
+          Condition condition =
+              getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(),
+                  aggregateTable, (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
+          subSelect.addConditions(condition);
 
-      // join with query
-      var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
-      query.addSelect(lateralTable.asterisk());
-      query.addJoin(lateralTable, JoinType.OUTER_APPLY);
-      objectSelectContext.getAssembleFns()
-          .put(aggregateObjectFieldConfiguration.getField()
-              .getName(),
-              createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
-                  false)::apply);
-    });
+          // join with query
+          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
+          query.addSelect(lateralTable.asterisk());
+          query.addJoin(lateralTable, JoinType.OUTER_APPLY);
+          objectSelectContext.getAssembleFns()
+              .put(aggregateObjectFieldConfiguration.getField()
+                  .getName(),
+                  createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
+                      false)::apply);
+        });
 
   }
 
@@ -217,13 +215,16 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private SelectQuery<?> addKeyCriterias(SelectQuery<?> query, ObjectSelectContext objectSelectContext,
+  private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
       Table<?> fieldTable, List<KeyCriteria> keyCriterias) {
+
+    // create value rows array
     RowN[] valuesTableRows = keyCriterias.stream()
         .map(keyCriteria -> DSL.row(keyCriteria.getValues()
             .values()))
         .toArray(RowN[]::new);
 
+    // create key column names map
     Map<String, String> keyColumnNames = keyCriterias.stream()
         .findAny()
         .orElseThrow()
@@ -232,35 +233,34 @@ public class ObjectQueryBuilder {
         .stream()
         .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
 
+    // create virtual table
     Table<Record> valuesTable = DSL.values(valuesTableRows)
         .as(objectSelectContext.newTableAlias(), keyColumnNames.values()
             .toArray(String[]::new));
 
+    // create joinCondition from subselect keycriteria values
     var joinCondition = keyColumnNames.entrySet()
         .stream()
         .map(entry -> DSL.field(DSL.name(fieldTable.getName(), entry.getKey()))
             .eq(DSL.field(DSL.name(valuesTable.getName(), entry.getValue()))))
         .reduce(DSL.noCondition(), Condition::and);
 
+    subSelectQuery.addConditions(joinCondition);
 
-    Table<?> lateralTable = DSL.lateral(fieldTable.where(joinCondition))
-        .asTable(objectSelectContext.newTableAlias());
+    // create select query for given keyCriteria and subSelectQuery
+    SelectQuery<?> query = dslContext.selectQuery();
 
-    List<Field<Object>> selectedColumns = Stream.concat(keyColumnNames.values()
+    var lateralTable = subSelectQuery.asTable(objectSelectContext.newTableAlias());
+    query.addFrom(valuesTable);
+    query.addSelect(lateralTable.asterisk());
+    query.addJoin(lateralTable, JoinType.OUTER_APPLY);
+
+    query.addSelect(keyColumnNames.values()
         .stream()
-        .map(DSL::field),
-        Set.of(DSL.field(lateralTable.getName()
-            .concat(".*")))
-            .stream())
-        .collect(Collectors.toList());
+        .map(DSL::field)
+        .collect(Collectors.toList()));
 
-    SelectQuery<?> valuesQuery = dslContext.selectQuery();
-
-    valuesQuery.addSelect(selectedColumns);
-    valuesQuery.addFrom(valuesTable.leftJoin(lateralTable)
-        .on(trueCondition()));
-
-    return valuesQuery;
+    return query;
   }
 
   private Table<?> findTable(String name) {
@@ -281,7 +281,7 @@ public class ObjectQueryBuilder {
         .map(joinColumn -> {
 
           var otherSideFieldConfiguration = rightSideConfiguration.getFields()
-                    .get(joinColumn.getField());
+              .get(joinColumn.getField());
 
           var leftColumn = leftSideTable.field(joinColumn.getName(), Object.class);
           var rightColumn = rightSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
