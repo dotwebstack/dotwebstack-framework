@@ -215,6 +215,9 @@ public class ObjectQueryBuilder {
       AggregateObjectFieldConfiguration aggregateObjectFieldConfiguration,
       ObjectSelectContext aggregateObjectSelectContext, SelectQuery<?> query,
       PostgresTypeConfiguration mainTypeConfiguration, Table<?> fieldTable) {
+    // aggregateFields [intCount, intSum]
+    // aggregateObjectFieldConfiguration: beerAgg
+    // aggregateObjectSelectContext (object for storing ass
     PostgresTypeConfiguration aggregateTypeConfiguration =
         (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
             .getTypeConfiguration();
