@@ -1,11 +1,12 @@
-package org.dotwebstack.framework.core.query.model;
+package org.dotwebstack.framework.core.query.model.filter;
 
+import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 
 @Data
-
-public class EqualsFilterCriteria implements FilterCriteria {
+@Builder
+public class LowerThenFilterCriteria implements FilterCriteria {
   private final FieldConfiguration field;
 
   private final Object value;

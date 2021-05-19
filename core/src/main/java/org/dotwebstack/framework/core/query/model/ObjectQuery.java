@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @Builder
 @Data
