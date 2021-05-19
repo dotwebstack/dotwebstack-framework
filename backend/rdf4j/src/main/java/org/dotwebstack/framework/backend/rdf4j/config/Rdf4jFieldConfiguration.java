@@ -27,4 +27,9 @@ public class Rdf4jFieldConfiguration extends AbstractFieldConfiguration {
   public boolean isNestedObjectField() {
     return false;
   }
+
+  @Override
+  public boolean isAggregateField() {
+    return false;
+  }
 }

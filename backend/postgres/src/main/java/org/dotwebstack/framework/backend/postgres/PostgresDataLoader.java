@@ -200,4 +200,9 @@ public class PostgresDataLoader implements BackendDataLoader {
         .filter(Predicate.not(Param::isInline))
         .collect(Collectors.toList());
   }
+
+  @Override
+  public boolean useObjectQueryApproach() {
+    return true;
+  }
 }

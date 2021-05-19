@@ -233,6 +233,11 @@ class JsonDataLoaderTest {
     public boolean isNestedObjectField() {
       return false;
     }
+
+    @Override
+    public boolean isAggregateField() {
+      return false;
+    }
   }
 
 }
