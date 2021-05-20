@@ -7,12 +7,19 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.GreaterThenFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.LowerThenEqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.LowerThenFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-public class FilterConditionHelper {
+public final class FilterConditionHelper {
+
+  private FilterConditionHelper() {}
 
   public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias, Table<?> fromTable) {
     return filterCriterias.stream()
@@ -23,6 +30,16 @@ public class FilterConditionHelper {
   private static Condition createFilterCondition(FilterCriteria filterCriteria, Table<?> fromTable) {
     if (filterCriteria instanceof EqualsFilterCriteria) {
       return createFilterCondition((EqualsFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof NotFilterCriteria) {
+      return createFilterCondition((NotFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof GreaterThenFilterCriteria) {
+      return createFilterCondition((GreaterThenFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof GreaterThenEqualsFilterCriteria) {
+      return createFilterCondition((GreaterThenEqualsFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof LowerThenFilterCriteria) {
+      return createFilterCondition((LowerThenFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof LowerThenEqualsFilterCriteria) {
+      return createFilterCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
@@ -30,12 +47,45 @@ public class FilterConditionHelper {
   }
 
   private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, Table<?> fromTable) {
-    PostgresFieldConfiguration postgresFieldConfiguration =
-        (PostgresFieldConfiguration) equalsFilterCriteria.getField();
-
-    Field<Object> field = DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()));
+    Field<Object> field = getField(equalsFilterCriteria, fromTable);
 
     return field.eq(equalsFilterCriteria.getValue());
   }
 
+  private static Condition createFilterCondition(NotFilterCriteria notFilterCriteria, Table<?> fromTable) {
+    var innerCondition = createFilterCondition(notFilterCriteria.getFilterCriteria(), fromTable);
+
+    return DSL.not(innerCondition);
+  }
+
+  private static Condition createFilterCondition(GreaterThenFilterCriteria greaterThenFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(greaterThenFilterCriteria, fromTable);
+
+    return field.gt(greaterThenFilterCriteria.getValue());
+  }
+
+  private static Condition createFilterCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(greaterThenEqualsFilterCriteria, fromTable);
+
+    return field.ge(greaterThenEqualsFilterCriteria.getValue());
+  }
+
+  private static Condition createFilterCondition(LowerThenFilterCriteria lowerThenFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(lowerThenFilterCriteria, fromTable);
+
+    return field.lt(lowerThenFilterCriteria.getValue());
+  }
+
+  private static Condition createFilterCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(lowerThenEqualsFilterCriteria, fromTable);
+
+    return field.le(lowerThenEqualsFilterCriteria.getValue());
+  }
+
+  private static Field<Object> getField(FilterCriteria filterCriteria, Table<?> fromTable) {
+    var postgresFieldConfiguration =
+        (PostgresFieldConfiguration) filterCriteria.getField();
+
+    return DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()));
+  }
 }
