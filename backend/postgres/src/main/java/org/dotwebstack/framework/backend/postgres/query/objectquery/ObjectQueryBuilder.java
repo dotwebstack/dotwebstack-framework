@@ -160,8 +160,6 @@ public class ObjectQueryBuilder {
 
     objectQuery.getObjectFields()
         .forEach(objectField -> {
-
-
           Table<?> objectFieldTable = findTable(
               ((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration())
                   .getTable()).asTable(objectSelectContext.newTableAlias());
@@ -225,9 +223,9 @@ public class ObjectQueryBuilder {
     // aggregateFields [intCount, intSum]
     // aggregateObjectFieldConfiguration: beerAgg
     // aggregateObjectSelectContext (object for storing ass
+    PostgresFieldConfiguration aggregateFieldConfiguration = (PostgresFieldConfiguration)aggregateObjectFieldConfiguration.getField();
     PostgresTypeConfiguration aggregateTypeConfiguration =
-        (PostgresTypeConfiguration) ((AbstractFieldConfiguration) aggregateObjectFieldConfiguration.getField())
-            .getTypeConfiguration();
+        (PostgresTypeConfiguration) aggregateFieldConfiguration.getTypeConfiguration();
 
     Table<?> aliasedAggregateTable =
         findTable(aggregateTypeConfiguration.getTable()).asTable(aggregateObjectSelectContext.newTableAlias());
@@ -237,8 +235,15 @@ public class ObjectQueryBuilder {
     addAggregateFields(aggregateFields, aggregateObjectSelectContext, subSelect, aliasedAggregateTable);
 
     // add join condition to subselect query
-    Condition condition = getJoinCondition((PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField(),
-        aliasedAggregateTable, mainTypeConfiguration, fieldTable);
+    Condition condition;
+    if(aggregateFieldConfiguration.getJoinTable() != null){
+      aggregateObjectSelectContext.setJoinTableConfiguration(aggregateFieldConfiguration.getJoinTable());
+      Table<?> joinTable = findTable(aggregateFieldConfiguration.getJoinTable().getName());
+      condition = getJoinCondition(aggregateFieldConfiguration, joinTable, mainTypeConfiguration, fieldTable);
+    }else{
+       condition = getJoinCondition(aggregateFieldConfiguration, aliasedAggregateTable, mainTypeConfiguration, fieldTable);
+    }
+
     subSelect.addConditions(condition);
 
     // join with query
@@ -371,6 +376,12 @@ public class ObjectQueryBuilder {
 
   private Condition getJoinCondition(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+    // Beer->ingredientAgg
+    // leftTable moet zijn: Beers
+    // rightTable moet zijn: beers_ingredients
+    // joinTable beers_ingredients
+    // leftColumn = beers.identifier
+    // rightColumn = beers_ingredients.beers_identifier
 
     return leftSideConfiguration.findJoinColumns()
         .stream()
