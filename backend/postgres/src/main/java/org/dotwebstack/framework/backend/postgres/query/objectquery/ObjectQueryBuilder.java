@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
+import static org.dotwebstack.framework.backend.postgres.query.objectquery.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.List;
@@ -21,8 +22,6 @@ import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
-import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
-import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -57,7 +56,10 @@ public class ObjectQueryBuilder {
       selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
-    addFilterCriterias(collectionQuery, objectQueryBuilderResult.getTable(), selectQuery);
+    if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
+      createFilterConditions(collectionQuery.getFilterCriterias(), objectQueryBuilderResult.getTable())
+          .forEach(selectQuery::addConditions);
+    }
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
@@ -101,25 +103,6 @@ public class ObjectQueryBuilder {
     }
 
     return query;
-  }
-
-  private void addFilterCriterias(CollectionQuery collectionQuery, Table<?> fromTable, SelectQuery<?> query) {
-    if (collectionQuery.getFilterCriteria() != null && !collectionQuery.getFilterCriteria()
-        .isEmpty()) {
-      FilterCriteria filterCriteria = collectionQuery.getFilterCriteria()
-          .get(0);
-
-      if (filterCriteria instanceof EqualsFilterCriteria) {
-        EqualsFilterCriteria equalsFilterCriteria = (EqualsFilterCriteria) filterCriteria;
-
-        PostgresFieldConfiguration postgresFieldConfiguration =
-            (PostgresFieldConfiguration) equalsFilterCriteria.getField();
-
-        query.addConditions(DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()))
-            .eq(equalsFilterCriteria.getValue()));
-        System.out.println();
-      }
-    }
   }
 
   private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<FieldConfiguration> scalarFields,

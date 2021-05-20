@@ -15,5 +15,5 @@ public class CollectionQuery implements Query {
 
   private PagingCriteria pagingCriteria;
 
-  private List<FilterCriteria> filterCriteria;
+  private List<FilterCriteria> filterCriterias;
 }

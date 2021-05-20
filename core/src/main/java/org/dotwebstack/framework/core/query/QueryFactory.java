@@ -66,7 +66,7 @@ public class QueryFactory {
             .page(0)
             .pageSize(10)
             .build())
-        .filterCriteria(filterCriterias)
+        .filterCriterias(filterCriterias)
         .build();
   }
 
