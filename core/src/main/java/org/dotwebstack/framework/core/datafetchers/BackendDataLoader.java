@@ -34,5 +34,7 @@ public interface BackendDataLoader {
     return Flux.empty();
   }
 
-  default boolean useObjectQueryApproach() { return false; }
+  default boolean useObjectQueryApproach() {
+    return false;
+  }
 }

@@ -57,6 +57,8 @@ public class ObjectQueryBuilder {
       selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
+    addFilterCriterias(collectionQuery, objectQueryBuilderResult.getTable(), selectQuery);
+
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
         .mapAssembler(objectQueryBuilderResult.getMapAssembler())
@@ -75,6 +77,7 @@ public class ObjectQueryBuilder {
 
     return SelectQueryBuilderResult.builder()
         .query(query)
+        .table(fromTable)
         .mapAssembler(rowMapper)
         .build();
   }
@@ -97,21 +100,23 @@ public class ObjectQueryBuilder {
       return addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
     }
 
-    addFilterCriterias(objectQuery, fromTable, query);
-
     return query;
   }
 
-  private void addFilterCriterias(ObjectQuery objectQuery, Table<?> fromTable, SelectQuery<?> query) {
-    if (objectQuery.getFilterCriteria() != null) {
-      FilterCriteria filterCriteria = objectQuery.getFilterCriteria().get(0);
+  private void addFilterCriterias(CollectionQuery collectionQuery, Table<?> fromTable, SelectQuery<?> query) {
+    if (collectionQuery.getFilterCriteria() != null && !collectionQuery.getFilterCriteria()
+        .isEmpty()) {
+      FilterCriteria filterCriteria = collectionQuery.getFilterCriteria()
+          .get(0);
 
-      if(filterCriteria instanceof EqualsFilterCriteria) {
+      if (filterCriteria instanceof EqualsFilterCriteria) {
         EqualsFilterCriteria equalsFilterCriteria = (EqualsFilterCriteria) filterCriteria;
 
-        PostgresFieldConfiguration postgresFieldConfiguration = (PostgresFieldConfiguration) equalsFilterCriteria.getField();
+        PostgresFieldConfiguration postgresFieldConfiguration =
+            (PostgresFieldConfiguration) equalsFilterCriteria.getField();
 
-        query.addConditions(DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn())).eq(equalsFilterCriteria.getValue()));
+        query.addConditions(DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()))
+            .eq(equalsFilterCriteria.getValue()));
         System.out.println();
       }
     }

@@ -13,6 +13,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TypeDefinitionRegistryFactory {
+public class TypeDefinitionRegistrySchemaFactory {
   private static final String QUERY_TYPE_NAME = "Query";
 
   private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
@@ -44,7 +45,7 @@ public class TypeDefinitionRegistryFactory {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
-  public TypeDefinitionRegistryFactory(DotWebStackConfiguration dotWebStackConfiguration) {
+  public TypeDefinitionRegistrySchemaFactory(DotWebStackConfiguration dotWebStackConfiguration) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
   }
 
@@ -70,18 +71,24 @@ public class TypeDefinitionRegistryFactory {
           objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
 
-          if (objectType.getFilters() != null) {
+          if (!objectType.getFilters()
+              .isEmpty()) {
             typeDefinitionRegistry.add(createFilter(name, objectType));
           }
         });
   }
 
-  private InputObjectTypeDefinition createFilter(String objectTypeName, AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
+  private InputObjectTypeDefinition createFilter(String objectTypeName,
+      AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
     var filterName = String.format("%sFilter", StringUtils.capitalize(objectTypeName));
     var inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
 
-    for (Map.Entry<String, FilterConfiguration> entry : objectType.getFilters().entrySet()) {
-      String type = objectType.getFields().get(entry.getValue().getField()).getType();
+    for (Map.Entry<String, FilterConfiguration> entry : objectType.getFilters()
+        .entrySet()) {
+      String type = objectType.getFields()
+          .get(entry.getValue()
+              .getField())
+          .getType();
 
       var inputValueDefinition = InputValueDefinition.newInputValueDefinition()
           .name(entry.getKey())
@@ -190,12 +197,30 @@ public class TypeDefinitionRegistryFactory {
 
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+
+    List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+
+    // add query arguments for keys
+    queryConfiguration.getKeys()
+        .stream()
+        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+        .forEach(inputValueDefinitions::add);
+
+    // add optional filter object
+    if (queryConfiguration.isList() && !objectTypeConfiguration.getFilters()
+        .isEmpty()) {
+      var filterName = String.format("%sFilter", StringUtils.capitalize(queryConfiguration.getType()));
+
+      InputValueDefinition inputValueDefinition = newInputValueDefinition().name("filter")
+          .type(newType(filterName))
+          .build();
+
+      inputValueDefinitions.add(inputValueDefinition);
+    }
+
     return newFieldDefinition().name(queryName)
         .type(createType(queryConfiguration))
-        .inputValueDefinitions(queryConfiguration.getKeys()
-            .stream()
-            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
-            .collect(Collectors.toList()))
+        .inputValueDefinitions(inputValueDefinitions)
         .build();
   }
 

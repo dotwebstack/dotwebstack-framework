@@ -42,13 +42,15 @@ public class GraphqlConfiguration {
 
   @Profile("!test")
   @Bean
-  public TypeDefinitionRegistry typeDefinitionRegistry(TypeDefinitionRegistryFactory typeDefinitionRegistryFactory) {
+  public TypeDefinitionRegistry typeDefinitionRegistry(
+      TypeDefinitionRegistrySchemaFactory typeDefinitionRegistryFactory) {
     return typeDefinitionRegistryFactory.createTypeDefinitionRegistry();
   }
 
   @Bean
   public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
-    return GraphQL.newGraphQL(graphqlSchema).build();
+    return GraphQL.newGraphQL(graphqlSchema)
+        .build();
   }
 
   @Bean

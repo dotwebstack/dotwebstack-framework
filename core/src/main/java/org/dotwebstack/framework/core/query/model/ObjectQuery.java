@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @Builder
 @Data
@@ -24,13 +23,4 @@ public class ObjectQuery implements Query {
   private List<NestedObjectFieldConfiguration> nestedObjectFields;
 
   private List<AggregateObjectFieldConfiguration> aggregateObjectFields;
-
-  private List<FilterCriteria> filterCriteria;
-
-  // je wilt naar mijn idee enkel sorteren bij een CollectionQuery
-  // private List<SortCriteria> sortCriteria;
-
-  // TODO: wordt nu nog niet ondersteund vanwege n+1
-  // private List<CollectionQuery> collectionFields;
-
 }

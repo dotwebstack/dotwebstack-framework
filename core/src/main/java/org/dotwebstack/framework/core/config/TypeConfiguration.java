@@ -13,6 +13,8 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   Map<String, T> getFields();
 
+  Map<String, FilterConfiguration> getFilters();
+
   void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition);
 
   KeyCondition getKeyCondition(DataFetchingEnvironment environment);

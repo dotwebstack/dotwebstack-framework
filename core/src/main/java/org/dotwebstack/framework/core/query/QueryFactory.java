@@ -16,8 +16,12 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +30,7 @@ import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaFactory;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -36,7 +41,6 @@ import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
-import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
@@ -45,14 +49,24 @@ public class QueryFactory {
 
   private static final String DEFAULT_SEPARATOR = ",";
 
+  private final FilterCriteriaFactory filterCriteriaFactory;
+
+  public QueryFactory(FilterCriteriaFactory filterCriteriaFactory) {
+    this.filterCriteriaFactory = filterCriteriaFactory;
+  }
+
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
+
+    List<FilterCriteria> filterCriterias = createFilterCriterias(typeConfiguration, environment);
+
     return CollectionQuery.builder()
         .objectQuery(createObjectQuery(typeConfiguration, environment))
         .pagingCriteria(PagingCriteria.builder()
             .page(0)
             .pageSize(10)
             .build())
+        .filterCriteria(filterCriterias)
         .build();
   }
 
@@ -70,9 +84,7 @@ public class QueryFactory {
     List<AggregateObjectFieldConfiguration> aggregateObjectFields =
         getAggregateObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
-   // List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
-
-    List<FilterCriteria> filterCriterias = createFilterCriterias(typeConfiguration);
+    List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
@@ -80,18 +92,35 @@ public class QueryFactory {
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
         .aggregateObjectFields(aggregateObjectFields)
-       // .keyCriteria(keyCriterias)
-        .filterCriteria(filterCriterias)
+        .keyCriteria(keyCriterias)
         .build();
   }
 
-  private List<FilterCriteria> createFilterCriterias(TypeConfiguration<?> typeConfiguration) {
-    FilterCriteria filterCriteria = EqualsFilterCriteria.builder()
-        .field(typeConfiguration.getFields().get("identifier"))
-        .value("d3654375-95fa-46b4-8529-08b0f777bd6b")
-        .build();
+  private List<FilterCriteria> createFilterCriterias(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    Optional<GraphQLArgument> filterArgument = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.equals(argument.getName(), "filter"))
+        .findFirst();
 
-    return List.of(filterCriteria);
+    if (filterArgument.isPresent()) {
+      GraphQLArgument argument = filterArgument.get();
+
+      // TODO: foutmelding gooien als het geen map is
+      Map<String, Object> filterData = (Map<String, Object>) environment.getArguments()
+          .get(argument.getName());
+
+      // TODO: foutmelding gooien als het geen object is
+      GraphQLInputObjectType graphQLInputObjectType = (GraphQLInputObjectType) argument.getType();
+
+      List<FilterCriteria> filterCriterias =
+          filterCriteriaFactory.getFilterCriterias(typeConfiguration, graphQLInputObjectType, filterData);
+
+      return filterCriterias;
+    }
+
+    return List.of();
   }
 
   private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix,
@@ -202,6 +231,7 @@ public class QueryFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
+        .filter(argument -> !Objects.equals(argument.getKey(), "filter"))
         .map(entry -> KeyCriteria.builder()
             .values(environment.getArguments())
             .build())
