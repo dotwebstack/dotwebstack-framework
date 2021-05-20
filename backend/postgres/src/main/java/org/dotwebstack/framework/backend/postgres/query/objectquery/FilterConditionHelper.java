@@ -42,7 +42,7 @@ public final class FilterConditionHelper {
     } else if (filterCriteria instanceof LowerThenEqualsFilterCriteria) {
       return createFilterCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof InFilterCriteria) {
-      return createFilterCondition((InFilterCriteria) filterCriteria,fromTable);
+      return createFilterCondition((InFilterCriteria) filterCriteria, fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
@@ -61,13 +61,15 @@ public final class FilterConditionHelper {
     return DSL.not(innerCondition);
   }
 
-  private static Condition createFilterCondition(GreaterThenFilterCriteria greaterThenFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(GreaterThenFilterCriteria greaterThenFilterCriteria,
+      Table<?> fromTable) {
     Field<Object> field = getField(greaterThenFilterCriteria, fromTable);
 
     return field.gt(greaterThenFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria,
+      Table<?> fromTable) {
     Field<Object> field = getField(greaterThenEqualsFilterCriteria, fromTable);
 
     return field.ge(greaterThenEqualsFilterCriteria.getValue());
@@ -79,7 +81,8 @@ public final class FilterConditionHelper {
     return field.lt(lowerThenFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria,
+      Table<?> fromTable) {
     Field<Object> field = getField(lowerThenEqualsFilterCriteria, fromTable);
 
     return field.le(lowerThenEqualsFilterCriteria.getValue());
@@ -92,8 +95,7 @@ public final class FilterConditionHelper {
   }
 
   private static Field<Object> getField(FilterCriteria filterCriteria, Table<?> fromTable) {
-    var postgresFieldConfiguration =
-        (PostgresFieldConfiguration) filterCriteria.getField();
+    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getField();
 
     return DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()));
   }

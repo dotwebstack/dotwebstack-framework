@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.datafetchers.filter;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
@@ -10,12 +11,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Data;
+import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
@@ -43,7 +45,6 @@ public class FilterCriteriaFactory {
 
         })
         .collect(Collectors.toList());
-
   }
 
   private FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
@@ -98,9 +99,19 @@ public class FilterCriteriaFactory {
   }
 
   private FilterCriteria createNotFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+    FilterCriteria innerCriteria;
+    if (filterItem.getChildren().size() > 1) {
+      innerCriteria = AndFilterCriteria.builder()
+          .filterCriterias(filterItem.getChildren().stream()
+              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration,innerFilterItem))
+              .collect(Collectors.toList()))
+          .build();
+    } else {
+      innerCriteria = createFilterCriteria(fieldConfiguration,filterItem.getChildren().get(0));
+    }
+
     return NotFilterCriteria.builder()
-        .filterCriteria(createFilterCriteria(fieldConfiguration, filterItem.getChildren()
-            .get(0)))
+        .filterCriteria(innerCriteria)
         .build();
   }
 
@@ -111,7 +122,6 @@ public class FilterCriteriaFactory {
         .build();
   }
 
-  @SuppressWarnings("unchecked")
   private FilterCriteria createInFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof List)) {
       throw illegalArgumentException("Filter item value not of type List!");
@@ -119,7 +129,7 @@ public class FilterCriteriaFactory {
 
     return InFilterCriteria.builder()
         .field(fieldConfiguration)
-        .values((List<Object>) filterItem.getValue())
+        .values((List<?>) filterItem.getValue())
         .build();
   }
 
@@ -130,10 +140,7 @@ public class FilterCriteriaFactory {
       return List.of();
     }
 
-    return inputObjectType.getChildren()
-        .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
-        .map(GraphQLInputObjectField.class::cast)
+    return getInputObjectFields(inputObjectType)
         .map(inputObjectField -> getFilterItem(typeConfiguration, inputObjectField, data))
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -141,45 +148,35 @@ public class FilterCriteriaFactory {
   }
 
   private List<FilterItem> getFilterItems(Filter filter) {
-    return filter.getInputObjectField()
-        .getChildren()
-        .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectType)
-        .map(GraphQLInputObjectType.class::cast)
+    return getInputObjectTypes(filter.getInputObjectField())
         .flatMap(inputObjectType -> getFilterItems(inputObjectType, filter.getData()).stream())
         .collect(Collectors.toList());
   }
 
   private List<FilterItem> getFilterItems(GraphQLInputObjectType inputObjectType, Map<String, Object> data) {
-    return inputObjectType.getChildren()
-        .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
-        .map(GraphQLInputObjectField.class::cast)
+    return getInputObjectFields(inputObjectType)
         .filter(inputObjectField -> Objects.nonNull(data.get(inputObjectField.getName())))
         .map(inputObjectField -> createFilterItem(data, inputObjectField).build())
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("unchecked")
   private FilterItem.FilterItemBuilder createFilterItem(Map<String, Object> data,
       GraphQLInputObjectField inputObjectField) {
+
+    FilterOperator filterOperator = FilterOperator.valueOf(inputObjectField.getName().toUpperCase());
+
     return FilterItem.builder()
-        .operator(FilterOperator.valueOf(inputObjectField.getName()
-            .toUpperCase()))
+        .operator(filterOperator)
         .value(data.get(inputObjectField.getName()))
-        .children(inputObjectField.getChildren()
-            .stream()
-            .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectType)
-            .map(GraphQLInputObjectType.class::cast)
-            .flatMap(inputObjectType1 -> getFilterItems(inputObjectType1,
-                (Map<String, Object>) data.get(inputObjectField.getName())).stream())
+        .children(getInputObjectTypes(inputObjectField)
+            .flatMap(inputObjectType -> getFilterItems(inputObjectType,
+                getNestedMap(data,inputObjectField.getName())).stream())
             .collect(Collectors.toList()));
   }
 
-  @SuppressWarnings("unchecked")
-  private Optional<Filter> getFilterItem(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
-                                         Map<String, Object> data) {
-    Map<String, Object> childData = (Map<String, Object>) data.get(inputObjectField.getName());
+  private Optional<Filter> getFilterItem(TypeConfiguration<?> typeConfiguration,
+      GraphQLInputObjectField inputObjectField, Map<String, Object> data) {
+    Map<String, Object> childData = getNestedMap(data,inputObjectField.getName());
 
     if (childData == null || childData.isEmpty()) {
       return Optional.empty();
@@ -199,32 +196,17 @@ public class FilterCriteriaFactory {
         .build());
   }
 
-  private enum FilterOperator {
-    EQ, IN, NOT, LT, LTE, GT, GTE
+  private Stream<GraphQLInputObjectType> getInputObjectTypes(GraphQLInputObjectField inputObjectField) {
+    return inputObjectField.getChildren()
+        .stream()
+        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectType)
+        .map(GraphQLInputObjectType.class::cast);
   }
 
-  @Data
-  @Builder
-  private static class FilterItem {
-    private FieldConfiguration fieldConfiguration;
-
-    private FilterOperator operator;
-
-    private Object value;
-
-    private List<FilterItem> children;
+  private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
+    return inputObjectType.getChildren()
+        .stream()
+        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
+        .map(GraphQLInputObjectField.class::cast);
   }
-
-  @Data
-  @Builder
-  private static class Filter {
-    private GraphQLInputObjectField inputObjectField;
-
-    private FilterConfiguration filterConfiguration;
-
-    private FieldConfiguration fieldConfiguration;
-
-    private Map<String, Object> data;
-  }
-
 }

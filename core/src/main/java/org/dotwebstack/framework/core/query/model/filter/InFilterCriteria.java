@@ -10,5 +10,5 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public class InFilterCriteria implements FilterCriteria {
   private final FieldConfiguration field;
 
-  private final List<Object> values;
+  private final List<?> values;
 }

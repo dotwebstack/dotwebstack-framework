@@ -4,6 +4,8 @@ public class FilterConstants {
 
   private FilterConstants() {}
 
+  public static final String FILTER_ARGUMENT_NAME = "filter";
+
   public static final String STRING_FILTER_INPUT_OBJECT_TYPE = "StringFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";

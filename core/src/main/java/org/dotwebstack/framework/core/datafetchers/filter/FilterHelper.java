@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
-
-
 import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
@@ -14,9 +12,19 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATETIME;
 
+import org.dotwebstack.framework.core.config.TypeConfiguration;
+
 public final class FilterHelper {
 
   private FilterHelper() {}
+
+  public static String getFilterNameForType(TypeConfiguration<?> typeConfiguration, String field) {
+    String type = typeConfiguration.getFields()
+        .get(field)
+        .getType();
+
+    return getFilterNameForType(type);
+  }
 
   public static String getFilterNameForType(String typeName) {
     if (GraphQLString.getName()

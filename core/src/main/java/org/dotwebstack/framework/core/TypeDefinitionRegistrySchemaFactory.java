@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core;
 
+import static graphql.language.EnumTypeDefinition.newEnumTypeDefinition;
+import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
@@ -7,15 +9,12 @@ import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 
-import graphql.language.EnumTypeDefinition;
-import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
@@ -23,11 +22,11 @@ import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.springframework.stereotype.Component;
 
@@ -73,31 +72,27 @@ public class TypeDefinitionRegistrySchemaFactory {
 
           if (!objectType.getFilters()
               .isEmpty()) {
-            typeDefinitionRegistry.add(createFilter(name, objectType));
+            typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));
           }
         });
   }
 
-  private InputObjectTypeDefinition createFilter(String objectTypeName,
+  private InputObjectTypeDefinition createFilterObjectTypeDefinition(String objectTypeName,
       AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
-    var filterName = String.format("%sFilter", StringUtils.capitalize(objectTypeName));
-    var inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
+    var filterName = createFilterName(objectTypeName);
 
-    for (Map.Entry<String, FilterConfiguration> entry : objectType.getFilters()
-        .entrySet()) {
-      String type = objectType.getFields()
-          .get(entry.getValue()
-              .getField())
-          .getType();
+    List<InputValueDefinition> inputValueDefinitions = objectType.getFilters()
+        .entrySet()
+        .stream()
+        .map(entry -> newInputValueDefinition().name(entry.getKey())
+            .type(newType(FilterHelper.getFilterNameForType(objectType, entry.getValue()
+                .getField())))
+            .build())
+        .collect(Collectors.toList());
 
-      var inputValueDefinition = InputValueDefinition.newInputValueDefinition()
-          .name(entry.getKey())
-          .type(newType(FilterHelper.getFilterNameForType(type)))
-          .build();
-      inputObjectTypeDefinitionBuilder.inputValueDefinition(inputValueDefinition);
-    }
-
-    return inputObjectTypeDefinitionBuilder.build();
+    return newInputObjectDefinition().name(filterName)
+        .inputValueDefinitions(inputValueDefinitions)
+        .build();
   }
 
   private List<FieldDefinition> createFieldDefinitions(
@@ -137,8 +132,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .collect(Collectors.toList());
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
-        .fieldDefinitions(
-            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
+        .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of() : queryFieldDefinitions)
         .build();
 
     typeDefinitionRegistry.add(queryTypeDefinition);
@@ -169,12 +163,10 @@ public class TypeDefinitionRegistrySchemaFactory {
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getEnumerations()
         .forEach((name, enumeration) -> {
-          var enumerationTypeDefinition = EnumTypeDefinition.newEnumTypeDefinition()
-              .name(name)
+          var enumerationTypeDefinition = newEnumTypeDefinition().name(name)
               .enumValueDefinitions(enumeration.getValues()
                   .stream()
-                  .map(value -> EnumValueDefinition.newEnumValueDefinition()
-                      .name(value)
+                  .map(value -> newEnumValueDefinition().name(value)
                       .build())
                   .collect(Collectors.toList()))
               .build();
@@ -209,9 +201,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     // add optional filter object
     if (queryConfiguration.isList() && !objectTypeConfiguration.getFilters()
         .isEmpty()) {
-      var filterName = String.format("%sFilter", StringUtils.capitalize(queryConfiguration.getType()));
+      var filterName = createFilterName(queryConfiguration.getType());
 
-      InputValueDefinition inputValueDefinition = newInputValueDefinition().name("filter")
+      InputValueDefinition inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
           .type(newType(filterName))
           .build();
 
@@ -221,12 +213,6 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newFieldDefinition().name(queryName)
         .type(createType(queryConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
-        .build();
-  }
-
-  private FieldDefinition createDummyQueryFieldDefinition() {
-    return newFieldDefinition().name("dummy")
-        .type(TypeUtils.newType("String"))
         .build();
   }
 
@@ -247,5 +233,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newInputValueDefinition().name(GEOMETRY_ARGUMENT_NAME)
         .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
+  }
+
+  private String createFilterName(String objectTypeName) {
+    return String.format("%sFilter", StringUtils.capitalize(objectTypeName));
   }
 }
