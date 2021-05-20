@@ -4,3 +4,4 @@ logging:
 
 dotwebstack:
   postgres:
+    database: postgres
