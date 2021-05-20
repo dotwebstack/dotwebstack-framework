@@ -71,26 +71,26 @@ public class TypeDefinitionRegistryFactory {
           typeDefinitionRegistry.add(objectTypeDefinition);
 
           if (objectType.getFilters() != null) {
-            addFilters(name, objectType.getFilters());
+            typeDefinitionRegistry.add(createFilter(name, objectType));
           }
         });
   }
 
-  private void addFilters(String objectTypeName, Map<String, FilterConfiguration> filterConfigurations) {
-    String filterName = String.format("%sFilter", StringUtils.capitalize(objectTypeName));
+  private InputObjectTypeDefinition createFilter(String objectTypeName, AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
+    var filterName = String.format("%sFilter", StringUtils.capitalize(objectTypeName));
+    var inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
 
-    InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
+    for (Map.Entry<String, FilterConfiguration> entry : objectType.getFilters().entrySet()) {
+      String type = objectType.getFields().get(entry.getValue().getField()).getType();
 
-    for (Map.Entry<String, FilterConfiguration> entry : filterConfigurations.entrySet()) {
-      InputValueDefinition inputValueDefinition = InputValueDefinition.newInputValueDefinition()
+      var inputValueDefinition = InputValueDefinition.newInputValueDefinition()
           .name(entry.getKey())
-          .type(newType(FilterHelper.getFilterNameForType("<Type of corresponding field>")))
+          .type(newType(FilterHelper.getFilterNameForType(type)))
           .build();
-
+      inputObjectTypeDefinitionBuilder.inputValueDefinition(inputValueDefinition);
     }
 
-
-    InputObjectTypeDefinition inputObjectTypeDefinition = inputObjectTypeDefinitionBuilder.build();
+    return inputObjectTypeDefinitionBuilder.build();
   }
 
   private List<FieldDefinition> createFieldDefinitions(
