@@ -45,8 +45,8 @@ public class ObjectQueryBuilder {
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
-  public SelectQueryBuilderResult build(CollectionQuery collectionQuery) {
-    SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery());
+  public SelectQueryBuilderResult build(CollectionQuery collectionQuery, boolean useNullMapWhenNotFound) {
+    SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery(), useNullMapWhenNotFound);
 
     SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
 
@@ -62,7 +62,7 @@ public class ObjectQueryBuilder {
         .build();
   }
 
-  public SelectQueryBuilderResult build(ObjectQuery objectQuery) {
+  public SelectQueryBuilderResult build(ObjectQuery objectQuery, boolean useNullMapWhenNotFound) {
 
     // TODO add table to selectContext? -> rename tableSelectContext
     var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
@@ -70,7 +70,7 @@ public class ObjectQueryBuilder {
         .as(objectSelectContext.newTableAlias());
     var query = buildQuery(objectSelectContext, objectQuery, fromTable);
     var rowMapper =
-        createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(), false);
+        createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(), useNullMapWhenNotFound);
 
     if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
       query = addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
