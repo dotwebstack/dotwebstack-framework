@@ -1,12 +1,21 @@
 package org.dotwebstack.framework.core;
 
-import com.google.common.base.CaseFormat;
+import static graphql.language.FieldDefinition.newFieldDefinition;
+import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
+import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static org.dotwebstack.framework.core.config.TypeUtils.createType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newType;
+
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
@@ -18,18 +27,8 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Filter;
-import java.util.stream.Collectors;
-
-import static graphql.language.FieldDefinition.newFieldDefinition;
-import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
-import static graphql.language.InputValueDefinition.newInputValueDefinition;
-import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
-import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 
 @Component
 public class TypeDefinitionRegistryFactory {
@@ -61,39 +60,37 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private void addObjectTypes(DotWebStackConfiguration dotWebStackConfiguration,
-                              TypeDefinitionRegistry typeDefinitionRegistry) {
+      TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .forEach((name, objectType) -> {
-          var objectTypeDefinition = newObjectTypeDefinition()
-              .name(name)
+          var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType))
               .build();
 
           objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
 
-          if(objectType.getFilters() != null) {
-            addFilters(name,objectType.getFilters());
+          if (objectType.getFilters() != null) {
+            typeDefinitionRegistry.add(createFilter(name, objectType));
           }
         });
   }
 
-  private void addFilters(String objectTypeName, Map<String, FilterConfiguration> filterConfigurations) {
-    //TODO: camelcase maken
-    String filterName = String.format("%sFilter",objectTypeName);
+  private InputObjectTypeDefinition createFilter(String objectTypeName, AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
+    var filterName = String.format("%sFilter", StringUtils.capitalize(objectTypeName));
+    var inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
 
-    InputObjectTypeDefinition.Builder inputObjectTypeDefinitionBuilder = newInputObjectDefinition().name(filterName);
+    for (Map.Entry<String, FilterConfiguration> entry : objectType.getFilters().entrySet()) {
+      String type = objectType.getFields().get(entry.getValue().getField()).getType();
 
-    for (Map.Entry<String,FilterConfiguration> entry  : filterConfigurations.entrySet()) {
-    //  InputValueDefinition inputValueDefinition = InputValueDefinition.newInputValueDefinition()
-   //       .name(entry.getKey())
-   //       .type(entry.getValue())
-   //       .build();
-
+      var inputValueDefinition = InputValueDefinition.newInputValueDefinition()
+          .name(entry.getKey())
+          .type(newType(FilterHelper.getFilterNameForType(type)))
+          .build();
+      inputObjectTypeDefinitionBuilder.inputValueDefinition(inputValueDefinition);
     }
 
-
-    InputObjectTypeDefinition inputObjectTypeDefinition = inputObjectTypeDefinitionBuilder.build();
+    return inputObjectTypeDefinitionBuilder.build();
   }
 
   private List<FieldDefinition> createFieldDefinitions(
@@ -101,8 +98,7 @@ public class TypeDefinitionRegistryFactory {
     return typeConfiguration.getFields()
         .entrySet()
         .stream()
-        .map(entry -> newFieldDefinition()
-            .name(entry.getKey())
+        .map(entry -> newFieldDefinition().name(entry.getKey())
             .type(createType(entry.getValue()))
             .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
             .build())
@@ -122,7 +118,7 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private void addQueryTypes(DotWebStackConfiguration dotWebStackConfiguration,
-                             TypeDefinitionRegistry typeDefinitionRegistry) {
+      TypeDefinitionRegistry typeDefinitionRegistry) {
 
     var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
         .entrySet()
@@ -133,8 +129,7 @@ public class TypeDefinitionRegistryFactory {
                     .getType())))
         .collect(Collectors.toList());
 
-    var queryTypeDefinition = newObjectTypeDefinition()
-        .name(QUERY_TYPE_NAME)
+    var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
         .fieldDefinitions(
             queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
         .build();
@@ -143,7 +138,7 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private void addSubscriptionTypes(DotWebStackConfiguration dotWebStackConfiguration,
-                                    TypeDefinitionRegistry typeDefinitionRegistry) {
+      TypeDefinitionRegistry typeDefinitionRegistry) {
 
     var subscriptionFieldDefinitions = dotWebStackConfiguration.getSubscriptions()
         .entrySet()
@@ -155,8 +150,7 @@ public class TypeDefinitionRegistryFactory {
         .collect(Collectors.toList());
 
     if (!subscriptionFieldDefinitions.isEmpty()) {
-      var subscriptionTypeDefinition = newObjectTypeDefinition()
-          .name(SUBSCRIPTION_TYPE_NAME)
+      var subscriptionTypeDefinition = newObjectTypeDefinition().name(SUBSCRIPTION_TYPE_NAME)
           .fieldDefinitions(subscriptionFieldDefinitions)
           .build();
 
@@ -165,7 +159,7 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private void addEnumerations(DotWebStackConfiguration dotWebStackConfiguration,
-                               TypeDefinitionRegistry typeDefinitionRegistry) {
+      TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getEnumerations()
         .forEach((name, enumeration) -> {
           var enumerationTypeDefinition = EnumTypeDefinition.newEnumTypeDefinition()
@@ -183,10 +177,9 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private FieldDefinition createSubscriptionFieldDefinition(String queryName,
-                                                            SubscriptionConfiguration subscriptionConfiguration,
-                                                            AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
-    return newFieldDefinition()
-        .name(queryName)
+      SubscriptionConfiguration subscriptionConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return newFieldDefinition().name(queryName)
         .type(createType(subscriptionConfiguration))
         .inputValueDefinitions(subscriptionConfiguration.getKeys()
             .stream()
@@ -196,9 +189,8 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
-                                                     AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
-    return newFieldDefinition()
-        .name(queryName)
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return newFieldDefinition().name(queryName)
         .type(createType(queryConfiguration))
         .inputValueDefinitions(queryConfiguration.getKeys()
             .stream()
@@ -208,30 +200,26 @@ public class TypeDefinitionRegistryFactory {
   }
 
   private FieldDefinition createDummyQueryFieldDefinition() {
-    return newFieldDefinition()
-        .name("dummy")
+    return newFieldDefinition().name("dummy")
         .type(TypeUtils.newType("String"))
         .build();
   }
 
   private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,
-                                                               AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
-    return newInputValueDefinition()
-        .name(keyConfiguration.getField())
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    return newInputValueDefinition().name(keyConfiguration.getField())
         .type(createType(keyConfiguration.getField(), objectTypeConfiguration))
         .build();
   }
 
   private InputValueDefinition createFieldInputValueDefinition(FieldArgumentConfiguration fieldArgumentConfiguration) {
-    return newInputValueDefinition()
-        .name(fieldArgumentConfiguration.getName())
+    return newInputValueDefinition().name(fieldArgumentConfiguration.getName())
         .type(createType(fieldArgumentConfiguration))
         .build();
   }
 
   private InputValueDefinition createGeometryInputValueDefinition() {
-    return newInputValueDefinition()
-        .name(GEOMETRY_ARGUMENT_NAME)
+    return newInputValueDefinition().name(GEOMETRY_ARGUMENT_NAME)
         .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
   }
