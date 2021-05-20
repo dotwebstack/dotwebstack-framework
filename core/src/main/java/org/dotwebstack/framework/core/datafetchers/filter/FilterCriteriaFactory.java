@@ -8,6 +8,7 @@ import graphql.schema.GraphQLInputObjectType;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
@@ -124,11 +125,18 @@ public class FilterCriteriaFactory {
 
   private List<Filter> getFilters(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectType inputObjectType,
       Map<String, Object> data) {
+
+    if (data == null || data.isEmpty()) {
+      return List.of();
+    }
+
     return inputObjectType.getChildren()
         .stream()
         .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
         .map(GraphQLInputObjectField.class::cast)
         .map(inputObjectField -> getFilterItem(typeConfiguration, inputObjectField, data))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(Collectors.toList());
   }
 
@@ -169,9 +177,13 @@ public class FilterCriteriaFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private Filter getFilterItem(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
-      Map<String, Object> data) {
+  private Optional<Filter> getFilterItem(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
+                                         Map<String, Object> data) {
     Map<String, Object> childData = (Map<String, Object>) data.get(inputObjectField.getName());
+
+    if (childData == null || childData.isEmpty()) {
+      return Optional.empty();
+    }
 
     FilterConfiguration filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
@@ -179,12 +191,12 @@ public class FilterCriteriaFactory {
     AbstractFieldConfiguration fieldConfiguration = typeConfiguration.getFields()
         .get(filterConfiguration.getField());
 
-    return Filter.builder()
+    return Optional.of(Filter.builder()
         .inputObjectField(inputObjectField)
         .filterConfiguration(filterConfiguration)
         .fieldConfiguration(fieldConfiguration)
         .data(childData)
-        .build();
+        .build());
   }
 
   private enum FilterOperator {

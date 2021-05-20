@@ -9,6 +9,7 @@ import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.InFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
@@ -40,6 +41,8 @@ public final class FilterConditionHelper {
       return createFilterCondition((LowerThenFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof LowerThenEqualsFilterCriteria) {
       return createFilterCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof InFilterCriteria) {
+      return createFilterCondition((InFilterCriteria) filterCriteria,fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
@@ -80,6 +83,12 @@ public final class FilterConditionHelper {
     Field<Object> field = getField(lowerThenEqualsFilterCriteria, fromTable);
 
     return field.le(lowerThenEqualsFilterCriteria.getValue());
+  }
+
+  private static Condition createFilterCondition(InFilterCriteria inFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(inFilterCriteria, fromTable);
+
+    return field.in(inFilterCriteria.getValues());
   }
 
   private static Field<Object> getField(FilterCriteria filterCriteria, Table<?> fromTable) {

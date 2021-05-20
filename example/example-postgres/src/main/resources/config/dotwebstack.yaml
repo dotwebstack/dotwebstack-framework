@@ -27,8 +27,10 @@ objectTypes:
     keys:
       - field: identifier
     filters:
-      identifier:
-        field: identifier
+      name:
+        field: name
+      soldPerYear:
+        field: soldPerYear
     fields:
       identifier:
         type: ID
