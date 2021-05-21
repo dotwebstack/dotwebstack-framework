@@ -1,8 +1,13 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+
 import graphql.schema.GraphQLInputObjectField;
 import java.util.Map;
 import java.util.Optional;
+import lombok.Builder;
+import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -12,14 +17,14 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
   Optional<Object> getChildData(GraphQLInputObjectField inputObjectField, FilterConfiguration filterConfiguration,
       Map<String, Object> data) {
     if (data.containsKey(inputObjectField.getName())) {
-      return Optional.ofNullable(data.get(inputObjectField.getName()));
+      return ofNullable(data.get(inputObjectField.getName()));
     }
 
     if (filterConfiguration.hasDefaultValue()) {
-      return Optional.ofNullable(filterConfiguration.getDefaultValue());
+      return ofNullable(filterConfiguration.getDefaultValue());
     }
 
-    return Optional.empty();
+    return empty();
   }
 
   Optional<Filter> getFilter(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
@@ -40,5 +45,13 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
 
     return typeConfiguration.getFields()
         .get(filterConfiguration.getField());
+  }
+
+  @Data
+  @Builder
+  static class Filter {
+    private GraphQLInputObjectField inputObjectField;
+
+    private Object data;
   }
 }
