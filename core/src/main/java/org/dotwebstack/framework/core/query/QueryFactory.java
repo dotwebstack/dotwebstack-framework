@@ -19,6 +19,7 @@ import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
 import java.util.List;
@@ -33,7 +34,7 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaFactory;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -52,10 +53,10 @@ public class QueryFactory {
 
   private static final String DEFAULT_SEPARATOR = ",";
 
-  private final FilterCriteriaFactory filterCriteriaFactory;
+  private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
-  public QueryFactory(FilterCriteriaFactory filterCriteriaFactory) {
-    this.filterCriteriaFactory = filterCriteriaFactory;
+  public QueryFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {
+    this.filterCriteriaParserFactory = filterCriteriaParserFactory;
   }
 
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
@@ -119,10 +120,21 @@ public class QueryFactory {
           .map(GraphQLInputObjectType.class::cast)
           .orElseThrow(() -> illegalStateException("Filter argument not of type 'GraphQLInputObjectType'"));
 
-      return filterCriteriaFactory.getFilterCriterias(typeConfiguration, graphQLInputObjectType, data);
+      return getInputObjectFields(graphQLInputObjectType)
+          .flatMap(inputObjectField -> filterCriteriaParserFactory.getFilterCriteriaParser(inputObjectField)
+              .parse(typeConfiguration, inputObjectField, data)
+              .stream())
+          .collect(Collectors.toList());
     }
 
     return List.of();
+  }
+
+  private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
+    return inputObjectType.getChildren()
+        .stream()
+        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
+        .map(GraphQLInputObjectField.class::cast);
   }
 
   private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix,

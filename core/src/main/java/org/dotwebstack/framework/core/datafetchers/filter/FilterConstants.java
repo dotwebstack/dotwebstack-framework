@@ -29,5 +29,4 @@ public class FilterConstants {
   public static final String GTE_FIELD = "gte";
 
   public static final String NOT_FIELD = "not";
-
 }

@@ -43,9 +43,9 @@ public class FilterConfigurer implements GraphqlConfigurer {
     var typeName = Scalars.GraphQLString.getName();
 
     return newInputObjectDefinition().name(STRING_FILTER_INPUT_OBJECT_TYPE)
-        .inputValueDefinition(createInputValue(EQ_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(EQ_FIELD, typeName))
         .inputValueDefinition(createArrayInputValue(typeName))
-        .inputValueDefinition(createInputValue(NOT_FIELD, STRING_FILTER_INPUT_OBJECT_TYPE))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, STRING_FILTER_INPUT_OBJECT_TYPE))
         .build();
   }
 
@@ -61,13 +61,13 @@ public class FilterConfigurer implements GraphqlConfigurer {
     var typeName = scalarType.getName();
 
     return newInputObjectDefinition().name(filterInputName)
-        .inputValueDefinition(createInputValue(EQ_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(EQ_FIELD, typeName))
         .inputValueDefinition(createArrayInputValue(typeName))
-        .inputValueDefinition(createInputValue(LT_FIELD, typeName))
-        .inputValueDefinition(createInputValue(LTE_FIELD, typeName))
-        .inputValueDefinition(createInputValue(GT_FIELD, typeName))
-        .inputValueDefinition(createInputValue(GTE_FIELD, typeName))
-        .inputValueDefinition(createInputValue(NOT_FIELD, filterInputName))
+        .inputValueDefinition(createInputValueDefinition(LT_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(LTE_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(GT_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(GTE_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, filterInputName))
         .build();
   }
 
@@ -83,12 +83,12 @@ public class FilterConfigurer implements GraphqlConfigurer {
     var typeName = scalarType.getName();
 
     return newInputObjectDefinition().name(filterInputName)
-        .inputValueDefinition(createInputValue(EQ_FIELD, typeName))
-        .inputValueDefinition(createInputValue(LT_FIELD, typeName))
-        .inputValueDefinition(createInputValue(LTE_FIELD, typeName))
-        .inputValueDefinition(createInputValue(GT_FIELD, typeName))
-        .inputValueDefinition(createInputValue(GTE_FIELD, typeName))
-        .inputValueDefinition(createInputValue(NOT_FIELD, filterInputName))
+        .inputValueDefinition(createInputValueDefinition(EQ_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(LT_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(LTE_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(GT_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(GTE_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, filterInputName))
         .build();
   }
 
@@ -102,7 +102,7 @@ public class FilterConfigurer implements GraphqlConfigurer {
         .build();
   }
 
-  private InputValueDefinition createInputValue(String inputValueName, String typeName) {
+  private InputValueDefinition createInputValueDefinition(String inputValueName, String typeName) {
     var type = newTypeName(typeName).build();
 
     return newInputValueDefinition().name(inputValueName)

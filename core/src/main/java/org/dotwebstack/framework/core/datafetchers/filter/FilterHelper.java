@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATETIME;
 
+import graphql.Scalars;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 public final class FilterHelper {
@@ -42,6 +43,9 @@ public final class FilterHelper {
     } else if (DATETIME.getName()
         .equals(typeName)) {
       return DATE_TIME_FILTER_INPUT_OBJECT_TYPE;
+    } else if (Scalars.GraphQLBoolean.getName()
+        .equals(typeName)) {
+      return typeName;
     }
     throw illegalArgumentException("Type name '{}' has no corresponding filter.", typeName);
   }
