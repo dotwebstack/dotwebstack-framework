@@ -166,8 +166,7 @@ public class ObjectQueryBuilder {
               findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable())
                   .asTable(objectSelectContext.newTableAlias());
 
-          ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext(),
-              ((PostgresFieldConfiguration) objectField.getField()).getJoinTable());
+          ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
           SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
           addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
               (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
