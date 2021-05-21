@@ -34,8 +34,6 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaFactory;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -113,9 +111,10 @@ public class QueryFactory {
     if (filterArgument.isPresent()) {
       GraphQLArgument argument = filterArgument.get();
 
-      Map<String, Object> data = getNestedMap(environment.getArguments(),argument.getName());
+      Map<String, Object> data = getNestedMap(environment.getArguments(), argument.getName());
 
-      GraphQLInputObjectType graphQLInputObjectType = Optional.of(argument).map(GraphQLArgument::getType)
+      GraphQLInputObjectType graphQLInputObjectType = Optional.of(argument)
+          .map(GraphQLArgument::getType)
           .filter(type -> type instanceof GraphQLInputObjectType)
           .map(GraphQLInputObjectType.class::cast)
           .orElseThrow(() -> illegalStateException("Filter argument not of type 'GraphQLInputObjectType'"));
@@ -266,7 +265,8 @@ public class QueryFactory {
     return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
         .filter(pair -> pair.getFieldConfiguration()
             .isObjectField())
-        .filter(pair -> !pair.getFieldConfiguration().isList())
+        .filter(pair -> !pair.getFieldConfiguration()
+            .isList())
         .map(pair -> ObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
             .objectQuery(createObjectQuery(pair, environment))

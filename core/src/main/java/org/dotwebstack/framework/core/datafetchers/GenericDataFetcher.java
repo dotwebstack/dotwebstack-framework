@@ -150,8 +150,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       if (backendDataLoader.useObjectQueryApproach()) {
-        CollectionQuery collectionQuery =
-            queryFactory.createCollectionQuery(typeConfiguration, environment);
+        CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
 
         return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyObject(keys, collectionQuery)
             .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
@@ -172,8 +171,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     if (backendDataLoader.useObjectQueryApproach()) {
-      ObjectQuery objectQuery =
-          queryFactory.createObjectQuery(typeConfiguration, environment);
+      ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectQuery)
           .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))

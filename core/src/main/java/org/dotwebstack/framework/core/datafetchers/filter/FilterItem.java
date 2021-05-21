@@ -1,10 +1,9 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-
-import java.util.List;
 
 @Data
 @Builder

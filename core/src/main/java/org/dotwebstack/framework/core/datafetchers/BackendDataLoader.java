@@ -38,9 +38,12 @@ public interface BackendDataLoader {
     return Flux.empty();
   }
 
-  default Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions, CollectionQuery collectionQuery) {
+  default Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
+      CollectionQuery collectionQuery) {
     return Flux.empty();
   }
 
-  default boolean useObjectQueryApproach() { return false; }
+  default boolean useObjectQueryApproach() {
+    return false;
+  }
 }

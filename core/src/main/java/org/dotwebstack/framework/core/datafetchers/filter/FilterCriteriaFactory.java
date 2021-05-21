@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
@@ -100,14 +99,17 @@ public class FilterCriteriaFactory {
 
   private FilterCriteria createNotFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     FilterCriteria innerCriteria;
-    if (filterItem.getChildren().size() > 1) {
+    if (filterItem.getChildren()
+        .size() > 1) {
       innerCriteria = AndFilterCriteria.builder()
-          .filterCriterias(filterItem.getChildren().stream()
-              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration,innerFilterItem))
+          .filterCriterias(filterItem.getChildren()
+              .stream()
+              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration, innerFilterItem))
               .collect(Collectors.toList()))
           .build();
     } else {
-      innerCriteria = createFilterCriteria(fieldConfiguration,filterItem.getChildren().get(0));
+      innerCriteria = createFilterCriteria(fieldConfiguration, filterItem.getChildren()
+          .get(0));
     }
 
     return NotFilterCriteria.builder()
@@ -163,20 +165,20 @@ public class FilterCriteriaFactory {
   private FilterItem.FilterItemBuilder createFilterItem(Map<String, Object> data,
       GraphQLInputObjectField inputObjectField) {
 
-    FilterOperator filterOperator = FilterOperator.valueOf(inputObjectField.getName().toUpperCase());
+    FilterOperator filterOperator = FilterOperator.valueOf(inputObjectField.getName()
+        .toUpperCase());
 
     return FilterItem.builder()
         .operator(filterOperator)
         .value(data.get(inputObjectField.getName()))
-        .children(getInputObjectTypes(inputObjectField)
-            .flatMap(inputObjectType -> getFilterItems(inputObjectType,
-                getNestedMap(data,inputObjectField.getName())).stream())
+        .children(getInputObjectTypes(inputObjectField).flatMap(
+            inputObjectType -> getFilterItems(inputObjectType, getNestedMap(data, inputObjectField.getName())).stream())
             .collect(Collectors.toList()));
   }
 
   private Optional<Filter> getFilterItem(TypeConfiguration<?> typeConfiguration,
       GraphQLInputObjectField inputObjectField, Map<String, Object> data) {
-    Map<String, Object> childData = getNestedMap(data,inputObjectField.getName());
+    Map<String, Object> childData = getNestedMap(data, inputObjectField.getName());
 
     if (childData == null || childData.isEmpty()) {
       return Optional.empty();
