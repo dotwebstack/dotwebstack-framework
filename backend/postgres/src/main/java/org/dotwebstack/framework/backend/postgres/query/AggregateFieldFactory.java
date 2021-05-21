@@ -35,7 +35,8 @@ public class AggregateFieldFactory {
     var aggregateFunction = aggregateFieldConfiguration.getAggregateFunctionType();
     switch (aggregateFunction) {
       case AVG:
-        result = DSL.avg(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
+        result = DSL.avg(bigDecimalField(fromTable, columnName))
+            .cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case COUNT:
         if (aggregateFieldConfiguration.isDistinct()) {
