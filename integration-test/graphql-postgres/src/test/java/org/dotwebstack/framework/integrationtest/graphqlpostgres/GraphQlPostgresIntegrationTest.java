@@ -365,7 +365,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeersWithIngredient_forQueryWithJoinTable() {
-    String query = "{beers{name ingredient{name}}}";
+    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){identifier_beer name ingredients{name}}}";
+//    String query = "{beers{name ingredient{name}}}";
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)

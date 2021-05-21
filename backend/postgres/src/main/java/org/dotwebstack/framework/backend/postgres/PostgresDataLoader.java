@@ -7,12 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectSelectContext;
+import org.dotwebstack.framework.backend.postgres.query.objectquery.PostgresKeyCriteria;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
@@ -63,14 +68,14 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
-    var selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, false);
+    var selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
   }
 
   @Override
   public Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
-    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, false);
+    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, new ObjectSelectContext());
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
@@ -78,16 +83,30 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
       CollectionQuery collectionQuery) {
+    // TODO: filter keycriteria with jointable
     collectionQuery.getObjectQuery()
         .getKeyCriteria()
         .addAll(keyConditions.stream()
             .map(ColumnKeyCondition.class::cast)
-            .map(key -> KeyCriteria.builder()
+            .filter(keyCriteria -> keyCriteria.getJoinTable() == null)
+            .map(key -> PostgresKeyCriteria.builder()
                 .values(key.getValueMap())
+                .joinTable(key.getJoinTable())
                 .build())
             .collect(Collectors.toList()));
 
-    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, true);
+    // TODO: tijdelijke even keycriteria doorgeven
+    // TODO: create joinCriteria based on keycriteria
+    List<PostgresKeyCriteria> joinCriteria = keyConditions.stream()
+        .map(ColumnKeyCondition.class::cast)
+        .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
+        .map(key -> PostgresKeyCriteria.builder()
+            .values(key.getValueMap())
+            .joinTable(key.getJoinTable())
+            .build())
+        .collect(Collectors.toList());
+
+    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, new ObjectSelectContext(joinCriteria, true));
 
     Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext()
         .getKeyColumnNames();
@@ -153,7 +172,7 @@ public class PostgresDataLoader implements BackendDataLoader {
           return false;
         })
         .findFirst()
-        .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
+       .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {

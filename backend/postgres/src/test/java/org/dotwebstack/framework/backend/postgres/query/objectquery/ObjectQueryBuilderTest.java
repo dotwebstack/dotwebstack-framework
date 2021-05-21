@@ -51,7 +51,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addScalarField(objectQuery, "name");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -60,7 +60,7 @@ class ObjectQueryBuilderTest {
   void build_ObjectQuery_Default() {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -70,7 +70,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addKeyCriteria(objectQuery);
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -79,7 +79,7 @@ class ObjectQueryBuilderTest {
   void build_ObjectQueryAddsKeyField_Default() {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -88,7 +88,7 @@ class ObjectQueryBuilderTest {
   void build_ObjectQueryAddsReferenceColumns_Default() {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -98,7 +98,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addObjectField(objectQuery, "Beer");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -108,7 +108,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addObjectField(objectQuery, "Beer");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -124,7 +124,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addNestedObjectField(objectQuery, "Beer");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -134,7 +134,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addAggregateObjectField(objectQuery, "BeerAgg");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -144,7 +144,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addAggregateObjectField(objectQuery, "BeerAgg");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
@@ -154,7 +154,7 @@ class ObjectQueryBuilderTest {
     ObjectQuery objectQuery = createObjectQuery("Brewery");
     addAggregateObjectField(objectQuery, "BeerAgg");
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, false);
+    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
 
     resultNonNullAssertions(result);
   }
