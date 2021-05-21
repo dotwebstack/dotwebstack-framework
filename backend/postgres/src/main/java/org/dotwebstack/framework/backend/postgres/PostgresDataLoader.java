@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.dotwebstack.framework.backend.postgres.query.Page.pageWithDefaultSize;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -13,8 +12,6 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
-import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -51,8 +48,8 @@ public class PostgresDataLoader implements BackendDataLoader {
   private final ObjectQueryBuilder objectQueryBuilder;
 
   public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
-                            org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder,
-                            ObjectQueryBuilder objectQueryBuilder) {
+      org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder,
+      ObjectQueryBuilder objectQueryBuilder) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.queryBuilder = queryBuilder;
     this.databaseClient = databaseClient;
@@ -66,39 +63,40 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, false);
+    var selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, false);
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
   }
 
   @Override
   public Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, false);
+    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, false);
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
 
   @Override
-  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions, CollectionQuery collectionQuery) {
-    collectionQuery.getObjectQuery().getKeyCriteria().addAll(
-        keyConditions.stream()
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
+      CollectionQuery collectionQuery) {
+    collectionQuery.getObjectQuery()
+        .getKeyCriteria()
+        .addAll(keyConditions.stream()
             .map(ColumnKeyCondition.class::cast)
-            .map(key ->
-                KeyCriteria.builder()
-                    .values(key.getValueMap())
-                    .build()
-            )
+            .map(key -> KeyCriteria.builder()
+                .values(key.getValueMap())
+                .build())
             .collect(Collectors.toList()));
 
-    SelectQueryBuilderResult selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, true);
+    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, true);
 
-    Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext().getKeyColumnNames();
+    Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext()
+        .getKeyColumnNames();
 
     return this.execute(selectQueryBuilderResult.getQuery())
         .fetch()
         .all()
         .map(row -> row)
-        .groupBy(row -> getKeyConditionByKey(keyConditions, row,keyColumnNames),
+        .groupBy(row -> getKeyConditionByKey(keyConditions, row, keyColumnNames),
             row -> selectQueryBuilderResult.getMapAssembler()
                 .apply(row));
   }
@@ -116,72 +114,28 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-
-    var queryParameters = QueryParameters.builder()
-        .selectionSet(environment.getSelectionSet())
-        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of())
-        .build();
-
-    var queryHolder = queryBuilder.build(typeConfiguration, queryParameters);
-
-    return this.execute(queryHolder.getQuery())
-        .fetch()
-        .one()
-        .map(row -> queryHolder.getMapAssembler()
-            .apply(row));
+    throw unsupportedOperationException("This is old implementation");
   }
 
   @Override
   public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
-                                                                         LoadEnvironment environment) {
-    throw unsupportedOperationException("Batch load single is not supported!");
+      LoadEnvironment environment) {
+    throw unsupportedOperationException("This is old implementation");
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-
-    var queryParametersBuilder = QueryParameters.builder()
-        .selectionSet(environment.getSelectionSet())
-        .keyConditions(keyCondition != null ? List.of(keyCondition) : List.of());
-
-    if (!environment.isSubscription()) {
-      queryParametersBuilder.page(pageWithDefaultSize());
-    }
-
-    var queryHolder = queryBuilder.build(typeConfiguration, queryParametersBuilder.build());
-
-    return this.execute(queryHolder.getQuery())
-        .fetch()
-        .all()
-        .map(row -> queryHolder.getMapAssembler()
-            .apply(row));
+    throw unsupportedOperationException("This is old implementation");
   }
 
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
-                                                                            LoadEnvironment environment) {
-    PostgresTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-
-    var queryParameters = QueryParameters.builder()
-        .selectionSet(environment.getSelectionSet())
-        .keyConditions(keyConditions)
-        .build();
-
-    var queryHolder = queryBuilder.build(typeConfiguration, queryParameters, true);
-
-    return this.execute(queryHolder.getQuery())
-        .fetch()
-        .all()
-        .groupBy(row -> getKeyConditionByKey(keyConditions, row, queryHolder.getKeyColumnNames()),
-            row -> queryHolder.getMapAssembler()
-                .apply(row));
+      LoadEnvironment environment) {
+    throw unsupportedOperationException("This is old implementation");
   }
 
-  // TODO: checkNullAlias?
   private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row,
-                                            Map<String, String> keyColumnNames) {
+      Map<String, String> keyColumnNames) {
     return keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
         .filter(keyCondition -> {
