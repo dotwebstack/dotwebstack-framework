@@ -9,25 +9,41 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATETIME;
 
 import graphql.Scalars;
+import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 public final class FilterHelper {
 
   private FilterHelper() {}
 
-  public static String getFilterNameForType(TypeConfiguration<?> typeConfiguration, String field) {
+  public static String getTypeNameForFilter(TypeConfiguration<?> typeConfiguration, String filterName,
+      FilterConfiguration filterConfiguration) {
+    String fieldName;
+
+    if (filterConfiguration.getField() != null) {
+      fieldName = filterConfiguration.getField();
+    } else {
+      fieldName = filterName;
+    }
+
+    if (!typeConfiguration.getFields()
+        .containsKey(fieldName)) {
+      throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
+    }
+
     String type = typeConfiguration.getFields()
-        .get(field)
+        .get(fieldName)
         .getType();
 
-    return getFilterNameForType(type);
+    return getTypeNameForFilter(type);
   }
 
-  public static String getFilterNameForType(String typeName) {
+  public static String getTypeNameForFilter(String typeName) {
     if (GraphQLString.getName()
         .equals(typeName)) {
       return STRING_FILTER_INPUT_OBJECT_TYPE;

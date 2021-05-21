@@ -8,7 +8,6 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterHelper.getFilterNameForType;
 
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
@@ -28,6 +27,7 @@ import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -85,8 +85,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> newInputValueDefinition().name(entry.getKey())
-            .type(newType(getFilterNameForType(objectType, entry.getValue()
-                .getField())))
+            .type(newType(FilterHelper.getTypeNameForFilter(objectType, entry.getKey(), entry.getValue())))
             .build())
         .collect(Collectors.toList());
 
