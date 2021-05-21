@@ -171,7 +171,6 @@ class ObjectQueryBuilderTest {
             .objectFields(new ArrayList<>())
             .nestedObjectFields(new ArrayList<>())
             .aggregateObjectFields(new ArrayList<>())
-            .filterCriteria(new ArrayList<>())
             .build();
   }
 
