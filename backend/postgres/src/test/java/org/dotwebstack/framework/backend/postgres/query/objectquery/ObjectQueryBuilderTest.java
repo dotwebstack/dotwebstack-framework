@@ -1,21 +1,21 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
+import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ObjectQueryBuilderTest {
 
@@ -163,45 +163,45 @@ class ObjectQueryBuilderTest {
     PostgresTypeConfiguration type = mock(PostgresTypeConfiguration.class);
     when(type.getTable()).thenReturn(typeName + TABLE_POSTFIX);
 
-    return ObjectQuery
-            .builder()
-            .typeConfiguration(type)
-            .keyCriteria(new ArrayList<>())
-            .scalarFields(new ArrayList<>())
-            .objectFields(new ArrayList<>())
-            .nestedObjectFields(new ArrayList<>())
-            .aggregateObjectFields(new ArrayList<>())
-            .filterCriteria(new ArrayList<>())
-            .build();
+    return ObjectQuery.builder()
+        .typeConfiguration(type)
+        .keyCriteria(new ArrayList<>())
+        .scalarFields(new ArrayList<>())
+        .objectFields(new ArrayList<>())
+        .nestedObjectFields(new ArrayList<>())
+        .aggregateObjectFields(new ArrayList<>())
+        .filterCriteria(new ArrayList<>())
+        .build();
   }
 
-  private void addKeyCriteria(ObjectQuery objectQuery){
+  private void addKeyCriteria(ObjectQuery objectQuery) {
 
   }
 
-  private void addScalarField(ObjectQuery objectQuery, String scalarName){
+  private void addScalarField(ObjectQuery objectQuery, String scalarName) {
 
     PostgresFieldConfiguration fieldConfiguration = mock(PostgresFieldConfiguration.class);
     when(fieldConfiguration.getName()).thenReturn(scalarName);
 
-    objectQuery.getScalarFields().add(fieldConfiguration);
+    objectQuery.getScalarFields()
+        .add(fieldConfiguration);
   }
 
-  private void addObjectField(ObjectQuery objectQuery, String objectName){
+  private void addObjectField(ObjectQuery objectQuery, String objectName) {
 
-    ObjectQuery field = createObjectQuery( objectName );
+    ObjectQuery field = createObjectQuery(objectName);
 
-    objectQuery.getObjectFields().add(ObjectFieldConfiguration
-            .builder()
+    objectQuery.getObjectFields()
+        .add(ObjectFieldConfiguration.builder()
             .objectQuery(field)
             .build());
   }
 
-  private void addNestedObjectField(ObjectQuery objectQuery, String nestedObjectName){
+  private void addNestedObjectField(ObjectQuery objectQuery, String nestedObjectName) {
 
   }
 
-  private void addAggregateObjectField(ObjectQuery objectQuery, String aggregateName){
+  private void addAggregateObjectField(ObjectQuery objectQuery, String aggregateName) {
 
   }
 

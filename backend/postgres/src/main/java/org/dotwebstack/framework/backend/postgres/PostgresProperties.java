@@ -19,5 +19,5 @@ public class PostgresProperties {
 
   private String password = "postgres";
 
-  private String database;
+  private String database = "postgres";
 }

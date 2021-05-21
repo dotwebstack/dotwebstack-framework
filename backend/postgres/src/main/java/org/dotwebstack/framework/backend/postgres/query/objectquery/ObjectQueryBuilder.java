@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
@@ -94,7 +95,7 @@ public class ObjectQueryBuilder {
     addObjectFields(objectQuery, objectSelectContext, query, fromTable);
     addAggregateObjectFields(objectQuery, objectSelectContext, query, fromTable);
 
-    // check if any non-key-fields need to be added in order to support joins
+    // check if any non-key-fields need to be added in order to support join
     addReferenceColumns(objectQuery, objectSelectContext, query, fromTable);
 
     // add inner join if this subselect with jointable
@@ -160,18 +161,17 @@ public class ObjectQueryBuilder {
 
     objectQuery.getObjectFields()
         .forEach(objectField -> {
-          Table<?> objectFieldTable = findTable(
-              ((PostgresTypeConfiguration) ((AbstractFieldConfiguration) objectField.getField()).getTypeConfiguration())
-                  .getTable()).asTable(objectSelectContext.newTableAlias());
+          PostgresFieldConfiguration objectFieldConfiguration = (PostgresFieldConfiguration) objectField.getField();
+          Table<?> objectFieldTable =
+              findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable())
+                  .asTable(objectSelectContext.newTableAlias());
 
           ObjectSelectContext lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext(),
               ((PostgresFieldConfiguration) objectField.getField()).getJoinTable());
           SelectQuery<?> subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
-          Condition condition = getJoinCondition((PostgresFieldConfiguration) objectField.getField(), fieldTable,
-              (PostgresTypeConfiguration) objectField.getObjectQuery()
-                  .getTypeConfiguration(),
-              objectFieldTable);
-          subSelect.addConditions(condition);
+          addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
+              (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
+          subSelect.addLimit(1);
 
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
           query.addSelect(lateralTable.asterisk());
@@ -236,20 +236,8 @@ public class ObjectQueryBuilder {
     addAggregateFields(aggregateFields, aggregateObjectSelectContext, subSelect, aliasedAggregateTable);
 
     // add join condition to subselect query
-    Condition condition;
-    if (aggregateFieldConfiguration.getJoinTable() != null) {
-
-      Table<?> joinTable = findTable(aggregateFieldConfiguration.getJoinTable()
-          .getName()).asTable(aggregateObjectSelectContext.newTableAlias());
-      condition = getJoinTableCondition(aggregateFieldConfiguration, aliasedAggregateTable, mainTypeConfiguration,
-          fieldTable, joinTable);
-      // create join with jointable and join condition on joinColumns and inverse joinColumn
-      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
-    } else {
-      condition =
-          getJoinCondition(aggregateFieldConfiguration, aliasedAggregateTable, mainTypeConfiguration, fieldTable);
-      subSelect.addConditions(condition);
-    }
+    addAggregateJoin(subSelect, aggregateObjectSelectContext, aggregateFieldConfiguration, aliasedAggregateTable,
+        mainTypeConfiguration, fieldTable);
 
     // join with query
     var lateralTable = subSelect.asTable(aggregateObjectSelectContext.newTableAlias());
@@ -298,6 +286,43 @@ public class ObjectQueryBuilder {
   private void addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
       ObjectSelectContext objectSelectContext, Table<?> table) {
 
+  }
+
+  private void addJoin(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
+      PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
+      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+    if (leftSideConfiguration.getJoinTable() != null) {
+
+      Table<?> joinTable = findTable(leftSideConfiguration.getJoinTable()
+          .getName()).asTable(objectSelectContext.newTableAlias());
+      Condition condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,
+          rightSideTable, joinTable);
+      // create join with jointable and join condition on joinColumns and inverse joinColumn
+      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
+    } else {
+      Condition condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
+          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
+          rightSideConfiguration, leftSideTable);
+      subSelect.addConditions(condition);
+    }
+  }
+
+  private void addAggregateJoin(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
+      PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
+      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+    if (leftSideConfiguration.getJoinTable() != null) {
+
+      Table<?> joinTable = findTable(leftSideConfiguration.getJoinTable()
+          .getName()).asTable(objectSelectContext.newTableAlias());
+      Condition condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,
+          rightSideTable, joinTable);
+      // create join with jointable and join condition on joinColumns and inverse joinColumn
+      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
+    } else {
+      Condition condition = getJoinCondition(leftSideConfiguration.getJoinColumns(), rightSideConfiguration.getFields(),
+          leftSideTable, rightSideConfiguration, rightSideTable);
+      subSelect.addConditions(condition);
+    }
   }
 
   private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
@@ -363,19 +388,18 @@ public class ObjectQueryBuilder {
   private Condition getJoinTableCondition(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable, Table<?> joinTable) {
 
-    return getJoinCondition(leftSideConfiguration, joinTable, rightSideConfiguration, rightSideTable)
-        .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
+    return getJoinCondition(leftSideConfiguration.findJoinColumns(), rightSideConfiguration.getFields(), joinTable,
+        rightSideConfiguration, rightSideTable)
+            .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
   }
 
-  private Condition getJoinCondition(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
-      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+  private Condition getJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
+      Table<?> leftSideTable, PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
 
-    return leftSideConfiguration.findJoinColumns()
-        .stream()
+    return joinColumns.stream()
         .map(joinColumn -> {
 
-          var otherSideFieldConfiguration = rightSideConfiguration.getFields()
-              .get(joinColumn.getField());
+          var otherSideFieldConfiguration = fields.get(joinColumn.getField());
 
           var leftColumn = leftSideTable.field(joinColumn.getName(), Object.class);
           var rightColumn = rightSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);

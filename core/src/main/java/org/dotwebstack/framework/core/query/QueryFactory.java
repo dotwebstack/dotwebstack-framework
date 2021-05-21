@@ -58,6 +58,16 @@ public class QueryFactory {
     return createObjectQuery("", typeConfiguration, environment);
   }
 
+  private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
+    String fieldPathPrefix = pair.getSelectedField()
+        .getFullyQualifiedName()
+        .concat("/");
+    TypeConfiguration<?> typeConfiguration = pair.getFieldConfiguration()
+        .getTypeConfiguration();
+
+    return createObjectQuery(fieldPathPrefix, typeConfiguration, environment);
+  }
+
   public ObjectQuery createObjectQuery(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
@@ -100,15 +110,15 @@ public class QueryFactory {
     TypeConfiguration<?> aggregateTypeConfiguration = fieldConfigurationPair.getFieldConfiguration()
         .getTypeConfiguration();
     return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration, environment)
-        .map(pair -> createAggregateFieldConfiguration(pair))
+        .map(this::createAggregateFieldConfiguration)
         .collect(Collectors.toList());
   }
 
   private AggregateFieldConfiguration createAggregateFieldConfiguration(FieldConfigurationPair fieldConfigurationPair) {
-    SelectedField aggregateField = fieldConfigurationPair.getSelectedField();
-    AggregateFunctionType aggregateFunctionType = getAggregateFunctionType(aggregateField);
-    ScalarType type = getAggregateScalarType(aggregateField);
-    boolean distinct = isDistinct(aggregateField);
+    var aggregateField = fieldConfigurationPair.getSelectedField();
+    var aggregateFunctionType = getAggregateFunctionType(aggregateField);
+    var type = getAggregateScalarType(aggregateField);
+    var distinct = isDistinct(aggregateField);
     // TODO: rework after validation
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
@@ -194,16 +204,6 @@ public class QueryFactory {
         .collect(Collectors.toList());
   }
 
-  private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
-    String fieldPathPrefix = pair.getSelectedField()
-        .getFullyQualifiedName()
-        .concat("/");
-    TypeConfiguration<?> typeConfiguration = pair.getFieldConfiguration()
-        .getTypeConfiguration();
-
-    return createObjectQuery(fieldPathPrefix, typeConfiguration, environment);
-  }
-
   private List<FieldConfiguration> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
     return getSelectedFields(fieldPathPrefix, environment).stream()
@@ -219,7 +219,8 @@ public class QueryFactory {
     return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
         .filter(pair -> pair.getFieldConfiguration()
             .isObjectField())
-        .filter(pair -> !pair.getFieldConfiguration().isList())
+        .filter(pair -> !pair.getFieldConfiguration()
+            .isList())
         .map(pair -> ObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
             .objectQuery(createObjectQuery(pair, environment))
