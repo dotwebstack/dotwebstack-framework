@@ -35,31 +35,26 @@ public class AggregateFieldFactory {
     var aggregateFunction = aggregateFieldConfiguration.getAggregateFunctionType();
     switch (aggregateFunction) {
       case AVG:
-        var avgField = DSL.field(DSL.name(fromTable, columnName), getNumericType(aggregateFieldConfiguration.getType()));
-        result = DSL.avg(avgField);
+        result = result = DSL.avg(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case COUNT:
-        var countField = DSL.field(DSL.name(fromTable, columnName), getNumericType(aggregateFieldConfiguration.getType()));
         if(aggregateFieldConfiguration.isDistinct()) {
-          result = DSL.countDistinct(countField);
-        } else {
-          result = DSL.count(DSL.field(countField));
-        }
+            result = DSL.countDistinct(DSL.field(DSL.name(fromTable, columnName)));
+          } else {
+            result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
+          }
         break;
       case JOIN:
         result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
         break;
       case MAX:
-        var maxField = DSL.field(DSL.name(fromTable, columnName), getNumericType(aggregateFieldConfiguration.getType()));
-        result = DSL.max(maxField);
+        result = DSL.max(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case MIN:
-        var minField = DSL.field(DSL.name(fromTable, columnName), getNumericType(aggregateFieldConfiguration.getType()));
-        result = DSL.min(minField);
+        result = DSL.min(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case SUM:
-        var sumField = DSL.field(DSL.name(fromTable, columnName), getNumericType(aggregateFieldConfiguration.getType()));
-        result = DSL.sum(sumField);
+        result = DSL.sum(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       default:
         throw illegalArgumentException("Aggregate function {} is not supported",
