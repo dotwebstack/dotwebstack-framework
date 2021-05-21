@@ -102,10 +102,12 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
-
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
+    filters:
+      name: {}
+      status: {}
 
   Ingredient:
     backend: postgres

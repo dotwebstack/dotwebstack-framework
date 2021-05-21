@@ -40,11 +40,13 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
 
   FieldConfiguration getFieldConfiguration(TypeConfiguration<?> typeConfiguration,
       GraphQLInputObjectField inputObjectField) {
-    FilterConfiguration filterConfiguration = typeConfiguration.getFilters()
+    var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
 
-    return typeConfiguration.getFields()
-        .get(filterConfiguration.getField());
+    var fieldName = Optional.ofNullable(filterConfiguration.getField())
+        .orElse(inputObjectField.getName());
+
+    return typeConfiguration.getFields().get(fieldName);
   }
 
   @Data
