@@ -12,7 +12,6 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GTE_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.IN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LTE_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
@@ -45,7 +44,7 @@ public class FilterConfigurer implements GraphqlConfigurer {
 
     return newInputObjectDefinition().name(STRING_FILTER_INPUT_OBJECT_TYPE)
         .inputValueDefinition(createInputValue(EQ_FIELD, typeName))
-        .inputValueDefinition(createArrayInputValue(IN_FIELD, typeName))
+        .inputValueDefinition(createArrayInputValue(typeName))
         .inputValueDefinition(createInputValue(NOT_FIELD, STRING_FILTER_INPUT_OBJECT_TYPE))
         .build();
   }
@@ -63,7 +62,7 @@ public class FilterConfigurer implements GraphqlConfigurer {
 
     return newInputObjectDefinition().name(filterInputName)
         .inputValueDefinition(createInputValue(EQ_FIELD, typeName))
-        .inputValueDefinition(createArrayInputValue(IN_FIELD, typeName))
+        .inputValueDefinition(createArrayInputValue(typeName))
         .inputValueDefinition(createInputValue(LT_FIELD, typeName))
         .inputValueDefinition(createInputValue(LTE_FIELD, typeName))
         .inputValueDefinition(createInputValue(GT_FIELD, typeName))
@@ -93,12 +92,12 @@ public class FilterConfigurer implements GraphqlConfigurer {
         .build();
   }
 
-  private InputValueDefinition createArrayInputValue(String inputValueName, String typeName) {
+  private InputValueDefinition createArrayInputValue(String typeName) {
     var type = newTypeName(typeName).build();
     var nonNullType = newNonNullType(type).build();
     var listType = newListType(nonNullType).build();
 
-    return newInputValueDefinition().name(inputValueName)
+    return newInputValueDefinition().name(FilterConstants.IN_FIELD)
         .type(listType)
         .build();
   }
