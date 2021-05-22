@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.query.objectquery;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -109,7 +110,8 @@ public class ObjectQueryBuilder {
   private void addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
       ObjectSelectContext objectSelectContext, Table<?> table) {
     if(!objectSelectContext.getJoinCriteria().isEmpty()) {
-      PostgresKeyCriteria postgresKeyCriteria = objectSelectContext.getJoinCriteria().get(0);
+      List<PostgresKeyCriteria> joinCriteria = objectSelectContext.getJoinCriteria();
+      PostgresKeyCriteria postgresKeyCriteria = joinCriteria.get(0);
       JoinTable joinTable = postgresKeyCriteria.getJoinTable();
       Table<?> aliasedJoinTable = findTable(joinTable.getName()).asTable(objectSelectContext.newTableAlias());
 
@@ -126,19 +128,44 @@ public class ObjectQueryBuilder {
 //          .keySet()
 //          .stream()
 //          .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
+      var keyColumnNames = new HashMap<String, String>();
+      joinCriteria.stream().forEach(criteria -> {
+        criteria.getJoinTable().getJoinColumns().forEach(
+            joinColumn -> {
+              String keyColumnAlias = objectSelectContext.newSelectAlias();
+              var keyColumn = aliasedJoinTable.field(joinColumn.getName(), Object.class).as(keyColumnAlias);
+              query.addSelect(keyColumn);
+              keyColumnNames.put(joinColumn.getName(), keyColumnAlias);
 
-      String keyColumnAlias = objectSelectContext.newSelectAlias();
-      var keyColumn = aliasedJoinTable.field("beer_identifier", Object.class).as(keyColumnAlias);
-      query.addSelect(keyColumn);
-      var keyColumnNames = Map.of("beer_identifier", keyColumnAlias);
+            }
+        );
+      });
+//      String keyColumnAlias = objectSelectContext.newSelectAlias();
+//      var keyColumn = aliasedJoinTable.field("beers_identifier", Object.class).as(keyColumnAlias);
+//      query.addSelect(keyColumn);
+//      var keyColumnNames = Map.of("beers_identifier", keyColumnAlias);
           // postgresKeyCriteria.getValues().keySet().stream().collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
       objectSelectContext.setKeyColumnNames(keyColumnNames);
 
       // add setKeyColumnNames
       Condition whereCondition = getJoinTableWhereCondition(aliasedJoinTable, postgresKeyCriteria.getValues());
-
-      query.addConditions(whereCondition);
+      Condition whereCondition2 = getJoinTableWhereCondition2(aliasedJoinTable, joinCriteria);
+      query.addConditions(whereCondition2);
     }
+  }
+  private Condition getJoinTableWhereCondition2(Table<?> joinTable, List<PostgresKeyCriteria> joinCriteria ) {
+    return joinCriteria.stream().map(criteria -> {
+      var andCond = criteria.getValues().entrySet().stream()
+          .map(joinField -> {
+            var leftColumn = DSL.field(DSL.name(joinTable.getName(), joinField.getKey()));
+            var rightColumn = DSL.field(DSL.value(joinField.getValue()));
+            return Objects.requireNonNull(leftColumn)
+                .eq(rightColumn);
+          })
+          .reduce(DSL.noCondition(), Condition::and);
+          return andCond;
+          }).reduce(DSL.noCondition(), Condition::or);
+
   }
 
   private Condition getJoinTableWhereCondition(Table<?> joinTable, Map<String, Object> values) {
