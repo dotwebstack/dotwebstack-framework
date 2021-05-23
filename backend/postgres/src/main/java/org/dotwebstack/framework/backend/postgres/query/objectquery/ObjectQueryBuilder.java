@@ -3,6 +3,9 @@ package org.dotwebstack.framework.backend.postgres.query.objectquery;
 import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +55,11 @@ public class ObjectQueryBuilder {
     SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery(), objectSelectContext);
 
     SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
-
-    if (collectionQuery.getPagingCriteria() != null) {
-      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
-      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
-    }
+// TODO: fix paging criteriaheb het eindelijk functioneel werkend
+//    if (collectionQuery.getPagingCriteria() != null) {
+//      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
+//      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+//    }
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
@@ -119,65 +122,47 @@ public class ObjectQueryBuilder {
           typeConfiguration, table);
       // query.addJoin using join condition
       query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
-      // create where condition
-      // create key column names map
-//      Map<String, String> keyColumnNames = keyCriterias.stream()
-//          .findAny()
-//          .orElseThrow()
-//          .getValues()
-//          .keySet()
-//          .stream()
-//          .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
-      var keyColumnNames = new HashMap<String, String>();
-      joinCriteria.stream().forEach(criteria -> {
-        criteria.getJoinTable().getJoinColumns().forEach(
-            joinColumn -> {
-              String keyColumnAlias = objectSelectContext.newSelectAlias();
-              var keyColumn = aliasedJoinTable.field(joinColumn.getName(), Object.class).as(keyColumnAlias);
-              query.addSelect(keyColumn);
-              keyColumnNames.put(joinColumn.getName(), keyColumnAlias);
 
-            }
-        );
-      });
-//      String keyColumnAlias = objectSelectContext.newSelectAlias();
-//      var keyColumn = aliasedJoinTable.field("beers_identifier", Object.class).as(keyColumnAlias);
-//      query.addSelect(keyColumn);
-//      var keyColumnNames = Map.of("beers_identifier", keyColumnAlias);
-          // postgresKeyCriteria.getValues().keySet().stream().collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
+      // create where condition
+      var keyColumnNames = new HashMap<String, String>();
+      var valuesPerKeyIdentifier = getKeyValuesPerKeyIdentifier(joinCriteria);
+      valuesPerKeyIdentifier.entrySet().stream().forEach(keyValue -> {
+        String keyColumnAlias = objectSelectContext.newSelectAlias();
+        String keyColumnName = keyValue.getKey();
+        var keyColumn = aliasedJoinTable.field(keyColumnName, Object.class).as(keyColumnAlias);
+        query.addSelect(keyColumn);
+        // add IN condition
+        Condition inCondition = getJoinTableWhereCondition(aliasedJoinTable, keyColumnName, keyValue.getValue());
+        query.addConditions(inCondition);
+        keyColumnNames.put(keyColumnName, keyColumnAlias);
+      } );
+      // add setKeyColumnNames
       objectSelectContext.setKeyColumnNames(keyColumnNames);
 
-      // add setKeyColumnNames
-      Condition whereCondition = getJoinTableWhereCondition(aliasedJoinTable, postgresKeyCriteria.getValues());
-      Condition whereCondition2 = getJoinTableWhereCondition2(aliasedJoinTable, joinCriteria);
-      query.addConditions(whereCondition2);
     }
   }
-  private Condition getJoinTableWhereCondition2(Table<?> joinTable, List<PostgresKeyCriteria> joinCriteria ) {
-    return joinCriteria.stream().map(criteria -> {
-      var andCond = criteria.getValues().entrySet().stream()
-          .map(joinField -> {
-            var leftColumn = DSL.field(DSL.name(joinTable.getName(), joinField.getKey()));
-            var rightColumn = DSL.field(DSL.value(joinField.getValue()));
-            return Objects.requireNonNull(leftColumn)
-                .eq(rightColumn);
-          })
-          .reduce(DSL.noCondition(), Condition::and);
-          return andCond;
-          }).reduce(DSL.noCondition(), Condition::or);
 
+  private Map<String, List<Object>> getKeyValuesPerKeyIdentifier(List<PostgresKeyCriteria> joinCriteria) {
+    var keyValuesPerKeyIdentifier = new HashMap<String, List<Object>>();
+    joinCriteria.stream().forEach(criteria -> {
+      criteria.getValues().entrySet().stream().forEach(keyValue -> {
+        if(keyValuesPerKeyIdentifier.containsKey(keyValue.getKey())){
+          var values = keyValuesPerKeyIdentifier.get(keyValue.getKey());
+          values.add(keyValue.getValue());
+          keyValuesPerKeyIdentifier.put(keyValue.getKey(), values);
+        }else{
+          keyValuesPerKeyIdentifier.put(keyValue.getKey(), new ArrayList<>(Arrays.asList(keyValue.getValue())));
+        }
+      });
+    });
+    return keyValuesPerKeyIdentifier;
   }
 
-  private Condition getJoinTableWhereCondition(Table<?> joinTable, Map<String, Object> values) {
-    return values.entrySet().stream()
-        .map(joinField -> {
-          var leftColumn = DSL.field(DSL.name(joinTable.getName(), joinField.getKey()));
-          var rightColumn = DSL.field(DSL.value(joinField.getValue()));
-          return Objects.requireNonNull(leftColumn)
-              .eq(rightColumn);
-        })
-        .reduce(DSL.noCondition(), Condition::and);
-
+  private Condition getJoinTableWhereCondition(Table<?> joinTable, String keyColumnName, List<Object> values) {
+    var leftColumn = DSL.field(DSL.name(joinTable.getName(), keyColumnName));
+    var rightColumn = DSL.field(DSL.value(values));
+    return Objects.requireNonNull(leftColumn)
+        .in(values);
   }
 
   private Condition getJoinTableJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
