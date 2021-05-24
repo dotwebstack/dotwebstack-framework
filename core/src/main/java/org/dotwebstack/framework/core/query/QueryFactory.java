@@ -80,12 +80,17 @@ public class QueryFactory {
 
     List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
+    // TODO: create list of CollectionQueries
+    List<ObjectFieldConfiguration> collectionObjectFields = getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
+    // TODO: change objectQueryQueryBuilder#addreferencecolumns, also add reference  columns when list !isEmpty
+
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
         .aggregateObjectFields(aggregateObjectFields)
+        .collectionObjectFields(collectionObjectFields)
         .keyCriteria(keyCriterias)
         .build();
   }
@@ -210,6 +215,19 @@ public class QueryFactory {
         .map(selectedField -> typeConfiguration.getFields()
             .get(selectedField.getName()))
         .filter(AbstractFieldConfiguration::isScalarField)
+        .collect(Collectors.toList());
+  }
+  private List<ObjectFieldConfiguration> getCollectionObjectFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+        .filter(pair -> pair.getFieldConfiguration()
+            .isObjectField())
+        .filter(pair -> pair.getFieldConfiguration()
+            .isList())
+        .map(pair -> ObjectFieldConfiguration.builder()
+            .field(pair.getFieldConfiguration())
+            .objectQuery(createObjectQuery(pair, environment))
+            .build())
         .collect(Collectors.toList());
   }
 

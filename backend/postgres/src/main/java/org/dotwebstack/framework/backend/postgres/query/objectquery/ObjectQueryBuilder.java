@@ -350,7 +350,8 @@ public class ObjectQueryBuilder {
     if (!objectQuery.getObjectFields()
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
-            .isEmpty()) {
+            .isEmpty()
+        || !objectQuery.getCollectionObjectFields().isEmpty()) {
       PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()
