@@ -86,7 +86,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
+    var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
 
     assertCollectionQuery(collectionQuery);
   }

@@ -44,14 +44,17 @@ public class QueryFactory {
   private static final String DEFAULT_SEPARATOR = ",";
 
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
-    return CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeConfiguration, environment))
-        .pagingCriteria(PagingCriteria.builder()
-            .page(0)
-            .pageSize(10)
-            .build())
-        .build();
+      DataFetchingEnvironment environment, boolean addLimit) {
+
+    CollectionQuery.CollectionQueryBuilder collectionQueryBuilder = CollectionQuery.builder()
+        .objectQuery(createObjectQuery(typeConfiguration, environment));
+    if (addLimit) {
+      collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
+          .page(0)
+          .pageSize(10)
+          .build());
+    }
+    return collectionQueryBuilder.build();
   }
 
   public ObjectQuery createObjectQuery(TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {

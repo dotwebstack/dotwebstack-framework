@@ -25,6 +25,7 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -53,11 +54,10 @@ public class ObjectQueryBuilder {
     SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery(), objectSelectContext);
 
     SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
-    // TODO: fix paging criteriaheb het eindelijk functioneel werkend
-    // if (collectionQuery.getPagingCriteria() != null) {
-    // PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
-    // selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
-    // }
+    if (collectionQuery.getPagingCriteria() != null) {
+      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
+      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+    }
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
@@ -69,7 +69,6 @@ public class ObjectQueryBuilder {
   public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
 
     // TODO add table to selectContext? -> rename tableSelectContext
-    // var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
     var query = buildQuery(objectSelectContext, objectQuery, fromTable);
@@ -146,27 +145,24 @@ public class ObjectQueryBuilder {
 
   private Map<String, List<Object>> getKeyValuesPerKeyIdentifier(List<PostgresKeyCriteria> joinCriteria) {
     var keyValuesPerKeyIdentifier = new HashMap<String, List<Object>>();
-    joinCriteria.stream()
-        .forEach(criteria -> {
-          criteria.getValues()
-              .entrySet()
-              .stream()
-              .forEach(keyValue -> {
-                if (keyValuesPerKeyIdentifier.containsKey(keyValue.getKey())) {
-                  var values = keyValuesPerKeyIdentifier.get(keyValue.getKey());
-                  values.add(keyValue.getValue());
-                  keyValuesPerKeyIdentifier.put(keyValue.getKey(), values);
-                } else {
-                  keyValuesPerKeyIdentifier.put(keyValue.getKey(), new ArrayList<>(Arrays.asList(keyValue.getValue())));
-                }
-              });
-        });
+    joinCriteria.forEach(criteria -> {
+      criteria.getValues()
+          .entrySet()
+          .forEach(keyValue -> {
+            if (keyValuesPerKeyIdentifier.containsKey(keyValue.getKey())) {
+              var values = keyValuesPerKeyIdentifier.get(keyValue.getKey());
+              values.add(keyValue.getValue());
+              keyValuesPerKeyIdentifier.put(keyValue.getKey(), values);
+            } else {
+              keyValuesPerKeyIdentifier.put(keyValue.getKey(), new ArrayList<>(Arrays.asList(keyValue.getValue())));
+            }
+          });
+    });
     return keyValuesPerKeyIdentifier;
   }
 
   private Condition getJoinTableWhereCondition(Table<?> joinTable, String keyColumnName, List<Object> values) {
     var leftColumn = DSL.field(DSL.name(joinTable.getName(), keyColumnName));
-    var rightColumn = DSL.field(DSL.value(values));
     return Objects.requireNonNull(leftColumn)
         .in(values);
   }
