@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.Data;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 
 @Data
 public class ObjectSelectContext {
@@ -19,7 +18,7 @@ public class ObjectSelectContext {
   private boolean useNullMapWhenNotFound = false;
 
   // TODO joinTable or joinCriteria
-  private List<PostgresKeyCriteria> joinCriteria=new ArrayList<>();
+  private List<PostgresKeyCriteria> joinCriteria = new ArrayList<>();
 
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
@@ -33,7 +32,7 @@ public class ObjectSelectContext {
     this.objectQueryContext = objectQueryContext;
   }
 
-  public ObjectSelectContext(List<PostgresKeyCriteria> joinCriteria, boolean useNullMapWhenNotFound){
+  public ObjectSelectContext(List<PostgresKeyCriteria> joinCriteria, boolean useNullMapWhenNotFound) {
     this(new ObjectQueryContext());
     this.joinCriteria = joinCriteria;
     this.useNullMapWhenNotFound = useNullMapWhenNotFound;

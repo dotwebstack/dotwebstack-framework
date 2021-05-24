@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.J
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.CollectionQuery;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
-import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -51,15 +49,15 @@ public class ObjectQueryBuilder {
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
-  public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext){
+  public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
     SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery(), objectSelectContext);
 
     SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
-// TODO: fix paging criteriaheb het eindelijk functioneel werkend
-//    if (collectionQuery.getPagingCriteria() != null) {
-//      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
-//      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
-//    }
+    // TODO: fix paging criteriaheb het eindelijk functioneel werkend
+    // if (collectionQuery.getPagingCriteria() != null) {
+    // PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
+    // selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+    // }
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
@@ -68,10 +66,10 @@ public class ObjectQueryBuilder {
         .build();
   }
 
-  public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext){
+  public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
 
     // TODO add table to selectContext? -> rename tableSelectContext
-//    var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
+    // var objectSelectContext = new ObjectSelectContext(new ObjectQueryContext());
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
     var query = buildQuery(objectSelectContext, objectQuery, fromTable);
@@ -112,30 +110,34 @@ public class ObjectQueryBuilder {
 
   private void addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
       ObjectSelectContext objectSelectContext, Table<?> table) {
-    if(!objectSelectContext.getJoinCriteria().isEmpty()) {
+    if (!objectSelectContext.getJoinCriteria()
+        .isEmpty()) {
       List<PostgresKeyCriteria> joinCriteria = objectSelectContext.getJoinCriteria();
       PostgresKeyCriteria postgresKeyCriteria = joinCriteria.get(0);
       JoinTable joinTable = postgresKeyCriteria.getJoinTable();
       Table<?> aliasedJoinTable = findTable(joinTable.getName()).asTable(objectSelectContext.newTableAlias());
 
-      Condition joinCondition = getJoinTableJoinCondition(joinTable.getInverseJoinColumns(), typeConfiguration.getFields(), aliasedJoinTable,
-          typeConfiguration, table);
+      Condition joinCondition = getJoinTableJoinCondition(joinTable.getInverseJoinColumns(),
+          typeConfiguration.getFields(), aliasedJoinTable, typeConfiguration, table);
       // query.addJoin using join condition
       query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
 
       // create where condition
       var keyColumnNames = new HashMap<String, String>();
       var valuesPerKeyIdentifier = getKeyValuesPerKeyIdentifier(joinCriteria);
-      valuesPerKeyIdentifier.entrySet().stream().forEach(keyValue -> {
-        String keyColumnAlias = objectSelectContext.newSelectAlias();
-        String keyColumnName = keyValue.getKey();
-        var keyColumn = aliasedJoinTable.field(keyColumnName, Object.class).as(keyColumnAlias);
-        query.addSelect(keyColumn);
-        // add IN condition
-        Condition inCondition = getJoinTableWhereCondition(aliasedJoinTable, keyColumnName, keyValue.getValue());
-        query.addConditions(inCondition);
-        keyColumnNames.put(keyColumnName, keyColumnAlias);
-      } );
+      valuesPerKeyIdentifier.entrySet()
+          .stream()
+          .forEach(keyValue -> {
+            String keyColumnAlias = objectSelectContext.newSelectAlias();
+            String keyColumnName = keyValue.getKey();
+            var keyColumn = aliasedJoinTable.field(keyColumnName, Object.class)
+                .as(keyColumnAlias);
+            query.addSelect(keyColumn);
+            // add IN condition
+            Condition inCondition = getJoinTableWhereCondition(aliasedJoinTable, keyColumnName, keyValue.getValue());
+            query.addConditions(inCondition);
+            keyColumnNames.put(keyColumnName, keyColumnAlias);
+          });
       // add setKeyColumnNames
       objectSelectContext.setKeyColumnNames(keyColumnNames);
 
@@ -144,17 +146,21 @@ public class ObjectQueryBuilder {
 
   private Map<String, List<Object>> getKeyValuesPerKeyIdentifier(List<PostgresKeyCriteria> joinCriteria) {
     var keyValuesPerKeyIdentifier = new HashMap<String, List<Object>>();
-    joinCriteria.stream().forEach(criteria -> {
-      criteria.getValues().entrySet().stream().forEach(keyValue -> {
-        if(keyValuesPerKeyIdentifier.containsKey(keyValue.getKey())){
-          var values = keyValuesPerKeyIdentifier.get(keyValue.getKey());
-          values.add(keyValue.getValue());
-          keyValuesPerKeyIdentifier.put(keyValue.getKey(), values);
-        }else{
-          keyValuesPerKeyIdentifier.put(keyValue.getKey(), new ArrayList<>(Arrays.asList(keyValue.getValue())));
-        }
-      });
-    });
+    joinCriteria.stream()
+        .forEach(criteria -> {
+          criteria.getValues()
+              .entrySet()
+              .stream()
+              .forEach(keyValue -> {
+                if (keyValuesPerKeyIdentifier.containsKey(keyValue.getKey())) {
+                  var values = keyValuesPerKeyIdentifier.get(keyValue.getKey());
+                  values.add(keyValue.getValue());
+                  keyValuesPerKeyIdentifier.put(keyValue.getKey(), values);
+                } else {
+                  keyValuesPerKeyIdentifier.put(keyValue.getKey(), new ArrayList<>(Arrays.asList(keyValue.getValue())));
+                }
+              });
+        });
     return keyValuesPerKeyIdentifier;
   }
 
@@ -165,8 +171,9 @@ public class ObjectQueryBuilder {
         .in(values);
   }
 
-  private Condition getJoinTableJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
-      Table<?> leftSideTable, PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+  private Condition getJoinTableJoinCondition(List<JoinColumn> joinColumns,
+      Map<String, PostgresFieldConfiguration> fields, Table<?> leftSideTable,
+      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
 
     return joinColumns.stream()
         .map(joinColumn -> {
@@ -351,7 +358,8 @@ public class ObjectQueryBuilder {
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
             .isEmpty()
-        || !objectQuery.getCollectionObjectFields().isEmpty()) {
+        || !objectQuery.getCollectionObjectFields()
+            .isEmpty()) {
       PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()

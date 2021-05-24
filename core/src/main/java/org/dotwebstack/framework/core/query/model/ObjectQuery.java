@@ -30,7 +30,6 @@ public class ObjectQuery implements Query {
   // private List<SortCriteria> sortCriteria;
 
   // TODO: wordt nu nog niet ondersteund vanwege n+1
-  // TODO: of moet dir zijn: List<CollectionQuery> collectionFields
   private List<ObjectFieldConfiguration> collectionObjectFields;
 
 }

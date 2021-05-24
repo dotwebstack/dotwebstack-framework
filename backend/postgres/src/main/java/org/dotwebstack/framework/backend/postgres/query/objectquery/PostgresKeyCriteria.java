@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;

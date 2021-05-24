@@ -7,13 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectSelectContext;
@@ -24,7 +21,6 @@ import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.jooq.Param;
 import org.jooq.Query;
@@ -106,7 +102,8 @@ public class PostgresDataLoader implements BackendDataLoader {
             .build())
         .collect(Collectors.toList());
 
-    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, new ObjectSelectContext(joinCriteria, true));
+    var selectQueryBuilderResult =
+        objectQueryBuilder.build(collectionQuery, new ObjectSelectContext(joinCriteria, true));
 
     Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext()
         .getKeyColumnNames();
@@ -172,7 +169,7 @@ public class PostgresDataLoader implements BackendDataLoader {
           return false;
         })
         .findFirst()
-       .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
+        .orElseThrow(() -> illegalStateException("Unable to find keyCondition."));
   }
 
   private DatabaseClient.GenericExecuteSpec execute(Query query) {
