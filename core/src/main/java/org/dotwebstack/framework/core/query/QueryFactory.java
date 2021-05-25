@@ -83,11 +83,8 @@ public class QueryFactory {
 
     List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
-    // TODO: create list of CollectionQueries
     List<ObjectFieldConfiguration> collectionObjectFields =
         getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
-    // TODO: change objectQueryQueryBuilder#addreferencecolumns, also add reference columns when list
-    // !isEmpty
 
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
