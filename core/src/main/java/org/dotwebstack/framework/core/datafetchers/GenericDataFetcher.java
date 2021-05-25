@@ -101,7 +101,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     Flux<DataFetcherResult<Object>> result;
 
     if (backendDataLoader.useObjectQueryApproach()) {
-      CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
+      CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
 
       result = backendDataLoader.loadManyObject(collectionQuery)
           .map(data -> createDataFetcherResult(typeConfiguration, data));
@@ -150,7 +150,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       if (backendDataLoader.useObjectQueryApproach()) {
-        CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment);
+        CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, false);
 
         return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyObject(keys, collectionQuery)
             .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))

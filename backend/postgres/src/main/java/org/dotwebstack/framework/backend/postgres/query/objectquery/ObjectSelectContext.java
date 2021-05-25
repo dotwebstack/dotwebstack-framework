@@ -1,33 +1,41 @@
 package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.Data;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 
 @Data
 public class ObjectSelectContext {
-
-  private JoinTable joinTableConfiguration;
 
   private ObjectQueryContext objectQueryContext;
 
   private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
+  private boolean useNullMapWhenNotFound = false;
+
+  // TODO joinTable or joinCriteria
+  private List<PostgresKeyCriteria> joinCriteria = new ArrayList<>();
+
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
-  private Map<String, String> keyColumnNames;
+  private Map<String, String> keyColumnNames = new HashMap<>();
+
+  public ObjectSelectContext() {
+    this(new ObjectQueryContext());
+  }
 
   public ObjectSelectContext(ObjectQueryContext objectQueryContext) {
     this.objectQueryContext = objectQueryContext;
   }
 
-  public ObjectSelectContext(ObjectQueryContext objectQueryContext, JoinTable joinTableConfiguration) {
-
-    this.objectQueryContext = objectQueryContext;
-    this.joinTableConfiguration = joinTableConfiguration;
+  public ObjectSelectContext(List<PostgresKeyCriteria> joinCriteria, boolean useNullMapWhenNotFound) {
+    this(new ObjectQueryContext());
+    this.joinCriteria = joinCriteria;
+    this.useNullMapWhenNotFound = useNullMapWhenNotFound;
   }
 
   public String newSelectAlias() {

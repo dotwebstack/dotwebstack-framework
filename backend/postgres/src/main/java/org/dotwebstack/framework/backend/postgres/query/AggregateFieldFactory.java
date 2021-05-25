@@ -35,26 +35,30 @@ public class AggregateFieldFactory {
     var aggregateFunction = aggregateFieldConfiguration.getAggregateFunctionType();
     switch (aggregateFunction) {
       case AVG:
-        result = result = DSL.avg(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
+        result = DSL.avg(bigDecimalField(fromTable, columnName))
+            .cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case COUNT:
-        if(aggregateFieldConfiguration.isDistinct()) {
-            result = DSL.countDistinct(DSL.field(DSL.name(fromTable, columnName)));
-          } else {
-            result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
-          }
+        if (aggregateFieldConfiguration.isDistinct()) {
+          result = DSL.countDistinct(DSL.field(DSL.name(fromTable, columnName)));
+        } else {
+          result = DSL.count(DSL.field(DSL.name(fromTable, columnName)));
+        }
         break;
       case JOIN:
         result = createStringJoin(aggregateFieldConfiguration, fromTable, columnName, columnAlias);
         break;
       case MAX:
-        result = DSL.max(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
+        result = DSL.max(bigDecimalField(fromTable, columnName))
+            .cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case MIN:
-        result = DSL.min(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
+        result = DSL.min(bigDecimalField(fromTable, columnName))
+            .cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       case SUM:
-        result = DSL.sum(bigDecimalField(fromTable, columnName)).cast(getNumericType(aggregateFieldConfiguration.getType()));
+        result = DSL.sum(bigDecimalField(fromTable, columnName))
+            .cast(getNumericType(aggregateFieldConfiguration.getType()));
         break;
       default:
         throw illegalArgumentException("Aggregate function {} is not supported",
@@ -192,7 +196,7 @@ public class AggregateFieldFactory {
 
 
   private Class<? extends Number> getNumericType(ScalarType scalarType) {
-    switch(scalarType) {
+    switch (scalarType) {
       case INT:
         return Integer.class;
       case FLOAT:

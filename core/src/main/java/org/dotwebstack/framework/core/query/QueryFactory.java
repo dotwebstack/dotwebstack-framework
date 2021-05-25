@@ -60,22 +60,31 @@ public class QueryFactory {
   }
 
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
+      DataFetchingEnvironment environment, boolean addLimit) {
 
-    List<FilterCriteria> filterCriterias = createFilterCriterias(typeConfiguration, environment);
-
-    return CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeConfiguration, environment))
-        .pagingCriteria(PagingCriteria.builder()
-            .page(0)
-            .pageSize(10)
-            .build())
-        .filterCriterias(filterCriterias)
-        .build();
+    CollectionQuery.CollectionQueryBuilder collectionQueryBuilder = CollectionQuery.builder()
+        .objectQuery(createObjectQuery(typeConfiguration, environment));
+    if (addLimit) {
+      collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
+          .page(0)
+          .pageSize(10)
+          .build());
+    }
+    return collectionQueryBuilder.build();
   }
 
   public ObjectQuery createObjectQuery(TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
     return createObjectQuery("", typeConfiguration, environment);
+  }
+
+  private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
+    String fieldPathPrefix = pair.getSelectedField()
+        .getFullyQualifiedName()
+        .concat("/");
+    TypeConfiguration<?> typeConfiguration = pair.getFieldConfiguration()
+        .getTypeConfiguration();
+
+    return createObjectQuery(fieldPathPrefix, typeConfiguration, environment);
   }
 
   public ObjectQuery createObjectQuery(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
@@ -90,12 +99,19 @@ public class QueryFactory {
 
     List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
+    // TODO: create list of CollectionQueries
+    List<ObjectFieldConfiguration> collectionObjectFields =
+        getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
+    // TODO: change objectQueryQueryBuilder#addreferencecolumns, also add reference columns when list
+    // !isEmpty
+
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
         .aggregateObjectFields(aggregateObjectFields)
+        .collectionObjectFields(collectionObjectFields)
         .keyCriteria(keyCriterias)
         .build();
   }
@@ -162,10 +178,10 @@ public class QueryFactory {
   }
 
   private AggregateFieldConfiguration createAggregateFieldConfiguration(FieldConfigurationPair fieldConfigurationPair) {
-    SelectedField aggregateField = fieldConfigurationPair.getSelectedField();
-    AggregateFunctionType aggregateFunctionType = getAggregateFunctionType(aggregateField);
-    ScalarType type = getAggregateScalarType(aggregateField);
-    boolean distinct = isDistinct(aggregateField);
+    var aggregateField = fieldConfigurationPair.getSelectedField();
+    var aggregateFunctionType = getAggregateFunctionType(aggregateField);
+    var type = getAggregateScalarType(aggregateField);
+    var distinct = isDistinct(aggregateField);
     // TODO: rework after validation
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
@@ -252,22 +268,26 @@ public class QueryFactory {
         .collect(Collectors.toList());
   }
 
-  private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
-    String fieldPathPrefix = pair.getSelectedField()
-        .getFullyQualifiedName()
-        .concat("/");
-    TypeConfiguration<?> typeConfiguration = pair.getFieldConfiguration()
-        .getTypeConfiguration();
-
-    return createObjectQuery(fieldPathPrefix, typeConfiguration, environment);
-  }
-
   private List<FieldConfiguration> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
     return getSelectedFields(fieldPathPrefix, environment).stream()
         .map(selectedField -> typeConfiguration.getFields()
             .get(selectedField.getName()))
         .filter(AbstractFieldConfiguration::isScalarField)
+        .collect(Collectors.toList());
+  }
+
+  private List<ObjectFieldConfiguration> getCollectionObjectFields(String fieldPathPrefix,
+      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+        .filter(pair -> pair.getFieldConfiguration()
+            .isObjectField())
+        .filter(pair -> pair.getFieldConfiguration()
+            .isList())
+        .map(pair -> ObjectFieldConfiguration.builder()
+            .field(pair.getFieldConfiguration())
+            .objectQuery(createObjectQuery(pair, environment))
+            .build())
         .collect(Collectors.toList());
   }
 
