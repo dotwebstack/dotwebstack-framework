@@ -200,7 +200,6 @@ public class QueryFactory {
         .orElse(DEFAULT_SEPARATOR);
   }
 
-
   private List<KeyCriteria> createKeyCriteria(DataFetchingEnvironment environment) {
     return environment.getArguments()
         .entrySet()

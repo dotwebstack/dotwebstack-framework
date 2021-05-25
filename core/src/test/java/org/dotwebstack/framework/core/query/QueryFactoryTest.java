@@ -62,6 +62,8 @@ class QueryFactoryTest {
 
   private static final String OBJECT_FIELDCONFIGURATION = "object";
 
+  private static final String COLLECTIONOBJECT_FIELDCONFIGURATION = "list";
+
   private QueryFactory queryFactory;
 
   @SuppressWarnings("rawtypes")
@@ -163,6 +165,27 @@ class QueryFactoryTest {
   }
 
   @Test
+  void createObjectQuery_withCollectionObjectField() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+    selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_BREWERY));
+
+    var breweryFieldConfiguration = getTestFieldConfiguration(FIELD_BREWERY, COLLECTIONOBJECT_FIELDCONFIGURATION);
+
+    Map<String, TestFieldConfiguration> fields =
+        Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration, FIELD_BREWERY, breweryFieldConfiguration);
+
+    when(environment.getSelectionSet()).thenReturn(selectionSet);
+    when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+
+    assertIdentifierScalarConfiguration(objectQuery);
+    assertCollectionObjectFieldConfiguration(objectQuery);
+  }
+
+  @Test
   void createObjectQuery_withNestedObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_HISTORY));
@@ -259,14 +282,16 @@ class QueryFactoryTest {
   }
 
   private void assertIdentifierScalarConfiguration(ObjectQuery objectQuery) {
-    var scalarFieldConfigurationName = objectQuery.getScalarFields()
+    var scalarFieldConfiguration = objectQuery.getScalarFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getName()
             .equals(FIELD_IDENTIFIER))
         .findFirst()
-        .orElseThrow()
-        .getName();
-    assertThat(scalarFieldConfigurationName, is(FIELD_IDENTIFIER));
+        .orElseThrow();
+    assertThat(scalarFieldConfiguration.getName(), is(FIELD_IDENTIFIER));
+
+    assertFieldTypes((TestFieldConfiguration) scalarFieldConfiguration, true, false, false, false, false);
+
   }
 
   private void assertKeyCriterias(ObjectQuery objectQuery) {
@@ -281,43 +306,60 @@ class QueryFactoryTest {
   }
 
   private void assertObjectFieldConfiguration(ObjectQuery objectQuery) {
-    var objectFieldConfigurationName = objectQuery.getObjectFields()
+    var objectFieldConfiguration = objectQuery.getObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
             .equals(FIELD_BREWERY))
         .findFirst()
         .orElseThrow()
-        .getField()
-        .getName();
-    assertThat(objectFieldConfigurationName, is(FIELD_BREWERY));
+        .getField();
+    assertThat(objectFieldConfiguration.getName(), is(FIELD_BREWERY));
+
+    assertFieldTypes((TestFieldConfiguration) objectFieldConfiguration, false, false, false, true, false);
+  }
+
+  private void assertCollectionObjectFieldConfiguration(ObjectQuery objectQuery) {
+    var collectionObjectFieldConfiguration = objectQuery.getCollectionObjectFields()
+        .stream()
+        .filter(fieldConfiguration -> fieldConfiguration.getField()
+            .getName()
+            .equals(FIELD_BREWERY))
+        .findFirst()
+        .orElseThrow()
+        .getField();
+    assertThat(collectionObjectFieldConfiguration.getName(), is(FIELD_BREWERY));
+
+    assertFieldTypes((TestFieldConfiguration) collectionObjectFieldConfiguration, false, false, false, true, true);
   }
 
   private void assertNestedObjectFieldConfiguration(ObjectQuery objectQuery) {
-    var nestedObjectFieldConfigurationName = objectQuery.getNestedObjectFields()
+    var nestedObjectFieldConfiguration = objectQuery.getNestedObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
             .equals(FIELD_HISTORY))
         .findFirst()
         .orElseThrow()
-        .getField()
-        .getName();
-    assertThat(nestedObjectFieldConfigurationName, is(FIELD_HISTORY));
+        .getField();
+    assertThat(nestedObjectFieldConfiguration.getName(), is(FIELD_HISTORY));
+
+    assertFieldTypes((TestFieldConfiguration) nestedObjectFieldConfiguration, false, false, true, false, false);
   }
 
   private void assertAggregateFieldConfiguration(ObjectQuery objectQuery, String aggregateFunction,
       ScalarType scalarType) {
-    var aggregateFieldConfigurationName = objectQuery.getAggregateObjectFields()
+    var aggregateFieldConfiguration = objectQuery.getAggregateObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
             .equals(FIELD_AGGREGATE))
         .findFirst()
         .orElseThrow()
-        .getField()
-        .getName();
-    assertThat(aggregateFieldConfigurationName, is(FIELD_AGGREGATE));
+        .getField();
+    assertThat(aggregateFieldConfiguration.getName(), is(FIELD_AGGREGATE));
+
+    assertFieldTypes((TestFieldConfiguration) aggregateFieldConfiguration, false, true, false, false, false);
 
     var aggregateFieldsResult = objectQuery.getAggregateObjectFields()
         .stream()
@@ -334,6 +376,15 @@ class QueryFactoryTest {
     assertThat(aggregateFieldsResult.get(0)
         .getField()
         .getName(), is("soldPerYear"));
+  }
+
+  private void assertFieldTypes(TestFieldConfiguration testFieldConfiguration, boolean isScalar, boolean isAggregate,
+      boolean isNestedObjectField, boolean isObjectField, boolean isList) {
+    assertThat(testFieldConfiguration.isScalarField(), is(isScalar));
+    assertThat(testFieldConfiguration.isAggregateField(), is(isAggregate));
+    assertThat(testFieldConfiguration.isNestedObjectField(), is(isNestedObjectField));
+    assertThat(testFieldConfiguration.isObjectField(), is(isObjectField));
+    assertThat(testFieldConfiguration.isList(), is(isList));
   }
 
   private TestFieldConfiguration getTestFieldConfiguration(String name, String fieldType) {
@@ -358,6 +409,10 @@ class QueryFactoryTest {
         break;
       case OBJECT_FIELDCONFIGURATION:
         fieldConfiguration.setObjectField(true);
+        break;
+      case COLLECTIONOBJECT_FIELDCONFIGURATION:
+        fieldConfiguration.setObjectField(true);
+        fieldConfiguration.setList(true);
         break;
       default:
         break;
