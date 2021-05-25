@@ -126,12 +126,12 @@ public class ObjectQueryBuilder {
     var keyColumnNames = new HashMap<String, String>();
     var valuesPerKeyIdentifier = getKeyValuesPerKeyIdentifier(joinCriteria);
     valuesPerKeyIdentifier.forEach((keyColumnName, value) -> {
-      String keyColumnAlias = objectSelectContext.newSelectAlias();
+      var keyColumnAlias = objectSelectContext.newSelectAlias();
       var keyColumn = aliasedJoinTable.field(keyColumnName, Object.class)
           .as(keyColumnAlias);
       query.addSelect(keyColumn);
       // add IN condition
-      Condition inCondition = createJoinTableInCondition(aliasedJoinTable, keyColumnName, value);
+      var inCondition = createJoinTableInCondition(aliasedJoinTable, keyColumnName, value);
       query.addConditions(inCondition);
       keyColumnNames.put(keyColumnName, keyColumnAlias);
     });
@@ -260,7 +260,7 @@ public class ObjectQueryBuilder {
 
     objectQuery.getAggregateObjectFields()
         .forEach(aggregateObjectFieldConfiguration -> {
-          ObjectSelectContext aggregateObjectSelectContext =
+          var aggregateObjectSelectContext =
               new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
           var stringJoinAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(true);
@@ -272,7 +272,7 @@ public class ObjectQueryBuilder {
                   aggregateObjectFieldConfiguration, aggregateObjectSelectContext, query,
                   (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable));
 
-          if (otherAggregateFields.size() > 0) {
+          if (!otherAggregateFields.isEmpty()) {
             processAggregateFields(otherAggregateFields, aggregateObjectFieldConfiguration,
                 aggregateObjectSelectContext, query, (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(),
                 fieldTable);
