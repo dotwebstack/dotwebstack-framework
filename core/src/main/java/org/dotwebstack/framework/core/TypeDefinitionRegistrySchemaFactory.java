@@ -15,6 +15,7 @@ import graphql.language.InputValueDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
@@ -107,15 +108,27 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
+    List<InputValueDefinition> result = new ArrayList<>();
     if (fieldConfiguration.getType()
         .equals(GEOMETRY_TYPE)) {
-      return List.of(createGeometryInputValueDefinition());
+      result.add(createGeometryInputValueDefinition());
     }
 
-    return fieldConfiguration.getArguments()
-        .stream()
-        .map(this::createFieldInputValueDefinition)
-        .collect(Collectors.toList());
+    // fieldConfiguration.getArguments()
+    // .stream()
+    // .map(this::createFieldInputValueDefinition)
+    // .forEach(result::add);
+
+    if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
+        .containsKey(fieldConfiguration.getType())) {
+      AbstractTypeConfiguration<?> objectTypeConfiguration =
+          dotWebStackConfiguration.getTypeConfiguration(fieldConfiguration.getType());
+
+      createInputValueDefinitionForFilteredObject(fieldConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(result::add);
+    }
+
+    return result;
   }
 
   private void addQueryTypes(DotWebStackConfiguration dotWebStackConfiguration,
@@ -198,21 +211,31 @@ public class TypeDefinitionRegistrySchemaFactory {
         .forEach(inputValueDefinitions::add);
 
     // add optional filter object
-    if (queryConfiguration.isList() && !objectTypeConfiguration.getFilters()
-        .isEmpty()) {
-      var filterName = createFilterName(queryConfiguration.getType());
-
-      InputValueDefinition inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
-          .type(newType(filterName))
-          .build();
-
-      inputValueDefinitions.add(inputValueDefinition);
+    if (queryConfiguration.isList()) {
+      createInputValueDefinitionForFilteredObject(queryConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(inputValueDefinitions::add);
     }
 
     return newFieldDefinition().name(queryName)
         .type(createType(queryConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
         .build();
+  }
+
+  private Optional<InputValueDefinition> createInputValueDefinitionForFilteredObject(String typeName,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    if (!objectTypeConfiguration.getFilters()
+        .isEmpty()) {
+      var filterName = createFilterName(typeName);
+
+      InputValueDefinition inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
+          .type(newType(filterName))
+          .build();
+
+      return Optional.of(inputValueDefinition);
+    }
+
+    return Optional.empty();
   }
 
   private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,

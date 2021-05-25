@@ -33,7 +33,8 @@ CREATE TABLE dbeerpedia.beers (
   abv NUMERIC(3,1) NOT NULL,
   brewery character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
   sold_per_year INT NOT NULL,
-  taste text[] NOT NULL
+  taste text[] NOT NULL,
+  retired boolean
 );
 
 CREATE INDEX brewery_idx ON dbeerpedia.beers (brewery);
