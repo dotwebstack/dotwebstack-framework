@@ -29,6 +29,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.ScalarType;
@@ -76,11 +77,14 @@ class QueryFactoryTest {
   private List<SelectedField> selectedFields;
 
   @Mock
+  private FilterCriteriaParserFactory filterCriteriaParserFactory;
+
+  @Mock
   private DataFetchingEnvironment environment;
 
   @BeforeEach
   void beforeEach() {
-    queryFactory = new QueryFactory();
+    queryFactory = new QueryFactory(filterCriteriaParserFactory);
     typeConfiguration = mock(TypeConfiguration.class);
     selectionSet = mock(DataFetchingFieldSelectionSet.class);
     fieldPathPrefix = "";

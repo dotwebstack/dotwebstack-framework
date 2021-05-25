@@ -29,13 +29,10 @@ objectTypes:
     filters:
       name:
         field: name
-        default:
-          eq: Beer 1
       soldPerYear:
         field: soldPerYear
       retired:
         field: retired
-        default: true
     fields:
       identifier:
         type: ID

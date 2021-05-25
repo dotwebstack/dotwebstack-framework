@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
@@ -43,10 +44,21 @@ public final class FilterConditionHelper {
       return createFilterCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof InFilterCriteria) {
       return createFilterCondition((InFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof AndFilterCriteria) {
+      return createFilterCondition((AndFilterCriteria) filterCriteria, fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
         .getName());
+  }
+
+  private static Condition createFilterCondition(AndFilterCriteria andFilterCriteria, Table<?> fromTable) {
+    var innerConditions = andFilterCriteria.getFilterCriterias()
+        .stream()
+        .map(innerCriteria -> createFilterCondition(innerCriteria, fromTable))
+        .collect(Collectors.toList());
+
+    return DSL.and(innerConditions);
   }
 
   private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, Table<?> fromTable) {

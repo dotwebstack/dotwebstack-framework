@@ -52,23 +52,35 @@ public class ObjectQueryBuilder {
   }
 
   public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
-    SelectQueryBuilderResult objectQueryBuilderResult = build(collectionQuery.getObjectQuery(), objectSelectContext);
+    ObjectQuery objectQuery = collectionQuery.getObjectQuery();
 
-    SelectQuery<?> selectQuery = objectQueryBuilderResult.getQuery();
-    if (collectionQuery.getPagingCriteria() != null) {
-      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
-      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
-    }
+    // TODO add table to selectContext? -> rename tableSelectContext
+    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
+        .as(objectSelectContext.newTableAlias());
+    var objectSelectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
+        objectSelectContext.isUseNullMapWhenNotFound());
+
 
     if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
-      createFilterConditions(collectionQuery.getFilterCriterias(), objectQueryBuilderResult.getTable())
-          .forEach(selectQuery::addConditions);
+      createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(objectSelectQuery::addConditions);
+    }
+
+    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
+      // TODO: if jointable in keycritera, add join table here
+      objectSelectQuery =
+          addKeyCriterias(objectSelectQuery, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
+    }
+
+    if (collectionQuery.getPagingCriteria() != null) {
+      PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
+      objectSelectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
     return SelectQueryBuilderResult.builder()
-        .query(selectQuery)
-        .mapAssembler(objectQueryBuilderResult.getMapAssembler())
-        .context(objectQueryBuilderResult.getContext())
+        .query(objectSelectQuery)
+        .mapAssembler(rowMapper)
+        .context(objectSelectContext)
         .build();
   }
 
@@ -360,8 +372,6 @@ public class ObjectQueryBuilder {
     if (!objectQuery.getObjectFields()
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
-            .isEmpty()
-        || !objectQuery.getCollectionObjectFields()
             .isEmpty()) {
       PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
