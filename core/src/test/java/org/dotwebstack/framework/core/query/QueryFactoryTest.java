@@ -1,10 +1,20 @@
 package org.dotwebstack.framework.core.query;
 
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_AVG_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MAX_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MIN_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_SUM_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_AVG_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MAX_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +24,7 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
@@ -24,6 +35,9 @@ import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -169,8 +183,9 @@ class QueryFactoryTest {
     assertNestedObjectFieldConfiguration(objectQuery);
   }
 
-  @Test
-  void createObjectQuery_withAggregateField() {
+  @ParameterizedTest
+  @MethodSource("aggregateTypes")
+  void createObjectQuery_forSupportedAggregateField(String aggregateFunction, ScalarType scalarType) {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
 
@@ -183,8 +198,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var aggregateSelectedFields =
-        List.of(mockSelectedAggregateField(INT_AVG_FIELD), mockSelectedAggregateField(FLOAT_MIN_FIELD));
+    var aggregateSelectedFields = List.of(mockSelectedAggregateField(aggregateFunction));
 
     var soldPerYearFieldConfiguration = getTestFieldConfiguration("soldPerYear", SCALAR_FIELDCONFIGURATION);
 
@@ -196,7 +210,43 @@ class QueryFactoryTest {
     var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
-    assertAggregateFieldConfiguration(objectQuery);
+    assertAggregateFieldConfiguration(objectQuery, aggregateFunction, scalarType);
+  }
+
+  @Test
+  void createObjectQuery_forUnsupportedAggregateField_throwsException() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+    selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
+
+    var aggregateTypeConfiguration = mock(TypeConfiguration.class);
+    var aggregateFieldConfiguration = getTestFieldConfigurationWithTypeConfiguration(FIELD_AGGREGATE,
+        AGGREGATE_FIELDCONFIGURATION, aggregateTypeConfiguration);
+
+    Map<String, TestFieldConfiguration> fields =
+        Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration, FIELD_AGGREGATE, aggregateFieldConfiguration);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    var aggregateSelectedFields = List.of(mockSelectedAggregateField("intRange"));
+
+    var soldPerYearFieldConfiguration = getTestFieldConfiguration("soldPerYear", SCALAR_FIELDCONFIGURATION);
+
+    Map<String, TestFieldConfiguration> aggregateFields = Map.of("soldPerYear", soldPerYearFieldConfiguration);
+
+    when(selectionSet.getFields("aggregateField/*.*")).thenReturn(aggregateSelectedFields);
+    when(aggregateTypeConfiguration.getFields()).thenReturn(aggregateFields);
+
+    IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+        () -> queryFactory.createObjectQuery(typeConfiguration, environment));
+    assertThat(thrown.getMessage(), is("Aggregate function intRange is not supported"));
+  }
+
+  private static Stream<Arguments> aggregateTypes() {
+    return Stream.of(arguments(COUNT_FIELD, ScalarType.INT), arguments(INT_AVG_FIELD, ScalarType.INT),
+        arguments(INT_MAX_FIELD, ScalarType.INT), arguments(INT_MIN_FIELD, ScalarType.INT),
+        arguments(INT_SUM_FIELD, ScalarType.INT), arguments(FLOAT_AVG_FIELD, ScalarType.FLOAT),
+        arguments(FLOAT_MIN_FIELD, ScalarType.FLOAT), arguments(FLOAT_MAX_FIELD, ScalarType.FLOAT),
+        arguments(FLOAT_SUM_FIELD, ScalarType.FLOAT), arguments(STRING_JOIN_FIELD, ScalarType.STRING));
   }
 
   private void assertCollectionQuery(org.dotwebstack.framework.core.query.model.CollectionQuery collectionQuery) {
@@ -256,7 +306,8 @@ class QueryFactoryTest {
     assertThat(nestedObjectFieldConfigurationName, is(FIELD_HISTORY));
   }
 
-  private void assertAggregateFieldConfiguration(ObjectQuery objectQuery) {
+  private void assertAggregateFieldConfiguration(ObjectQuery objectQuery, String aggregateFunction,
+      ScalarType scalarType) {
     var aggregateFieldConfigurationName = objectQuery.getAggregateObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
@@ -273,21 +324,14 @@ class QueryFactoryTest {
         .map(AggregateObjectFieldConfiguration::getAggregateFields)
         .findFirst()
         .orElseThrow();
-    assertThat(aggregateFieldsResult.size(), is(2));
+    assertThat(aggregateFieldsResult.size(), is(1));
 
     assertThat(aggregateFieldsResult.get(0)
-        .getAlias(), is(INT_AVG_FIELD));
+        .getAlias(), is(aggregateFunction));
     assertThat(aggregateFieldsResult.get(0)
-        .getType(), is(ScalarType.INT));
-    assertThat(aggregateFieldsResult.get(1)
-        .getAlias(), is(FLOAT_MIN_FIELD));
-    assertThat(aggregateFieldsResult.get(1)
-        .getType(), is(ScalarType.FLOAT));
+        .getType(), is(scalarType));
 
     assertThat(aggregateFieldsResult.get(0)
-        .getField()
-        .getName(), is("soldPerYear"));
-    assertThat(aggregateFieldsResult.get(1)
         .getField()
         .getName(), is("soldPerYear"));
   }
