@@ -233,20 +233,26 @@ public class ObjectQueryBuilder {
 
     objectQuery.getObjectFields()
         .forEach(objectField -> {
+          var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+
           var objectFieldConfiguration = (PostgresFieldConfiguration) objectField.getField();
+
           var objectFieldTable =
               findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable())
                   .asTable(objectSelectContext.newTableAlias());
 
-          var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+
           var subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
+
           addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
               (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
+
           subSelect.addLimit(1);
 
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
           query.addSelect(lateralTable.asterisk());
           query.addJoin(lateralTable, JoinType.OUTER_APPLY);
+
           objectSelectContext.getAssembleFns()
               .put(objectField.getField()
                   .getName(),
@@ -260,8 +266,7 @@ public class ObjectQueryBuilder {
 
     objectQuery.getAggregateObjectFields()
         .forEach(aggregateObjectFieldConfiguration -> {
-          var aggregateObjectSelectContext =
-              new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+          var aggregateObjectSelectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
           var stringJoinAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(true);
 
