@@ -59,7 +59,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
     return !isScalar() && !isNested;
   }
 
-  // TODO: rename to isAggregateField
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
   }

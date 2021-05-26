@@ -15,7 +15,6 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectSelectContext;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.PostgresKeyCriteria;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
@@ -40,19 +39,11 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(PostgresDataLoader.class);
 
-  private final DotWebStackConfiguration dotWebStackConfiguration;
-
   private final DatabaseClient databaseClient;
-
-  private final org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder;
 
   private final ObjectQueryBuilder objectQueryBuilder;
 
-  public PostgresDataLoader(DotWebStackConfiguration dotWebStackConfiguration, DatabaseClient databaseClient,
-      org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder,
-      ObjectQueryBuilder objectQueryBuilder) {
-    this.dotWebStackConfiguration = dotWebStackConfiguration;
-    this.queryBuilder = queryBuilder;
+  public PostgresDataLoader(DatabaseClient databaseClient, ObjectQueryBuilder objectQueryBuilder) {
     this.databaseClient = databaseClient;
     this.objectQueryBuilder = objectQueryBuilder;
   }
@@ -79,7 +70,6 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
       CollectionQuery collectionQuery) {
-    // TODO: filter keycriteria with jointable
     collectionQuery.getObjectQuery()
         .getKeyCriteria()
         .addAll(keyConditions.stream()
@@ -87,7 +77,6 @@ public class PostgresDataLoader implements BackendDataLoader {
             .filter(keyCriteria -> keyCriteria.getJoinTable() == null)
             .map(key -> PostgresKeyCriteria.builder()
                 .values(key.getValueMap())
-                .joinTable(key.getJoinTable())
                 .build())
             .collect(Collectors.toList()));
 

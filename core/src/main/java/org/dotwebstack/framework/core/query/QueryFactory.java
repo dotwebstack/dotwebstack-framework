@@ -62,9 +62,8 @@ public class QueryFactory {
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment, boolean addLimit) {
 
-    CollectionQuery.CollectionQueryBuilder collectionQueryBuilder = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeConfiguration, environment))
-        .filterCriterias(createFilterCriterias(typeConfiguration, environment));
+    var collectionQueryBuilder = CollectionQuery.builder()
+        .objectQuery(createObjectQuery(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)
@@ -101,11 +100,8 @@ public class QueryFactory {
 
     List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
-    // TODO: create list of CollectionQueries
     List<ObjectFieldConfiguration> collectionObjectFields =
         getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
-    // TODO: change objectQueryQueryBuilder#addreferencecolumns, also add reference columns when list
-    // !isEmpty
 
     return ObjectQuery.builder()
         .typeConfiguration(typeConfiguration)
@@ -257,7 +253,6 @@ public class QueryFactory {
         .orElse(DEFAULT_SEPARATOR);
   }
 
-
   private List<KeyCriteria> createKeyCriteria(DataFetchingEnvironment environment) {
     return environment.getArguments()
         .entrySet()
@@ -340,8 +335,9 @@ public class QueryFactory {
         .map(selectedField -> FieldConfigurationPair.builder()
             .selectedField(selectedField)
             .fieldConfiguration(typeConfiguration.getFields()
-                .get((String) selectedField.getArguments()
-                    .get(FIELD_ARGUMENT)))
+                .get(selectedField.getArguments()
+                    .get(FIELD_ARGUMENT)
+                    .toString()))
             .build());
   }
 
