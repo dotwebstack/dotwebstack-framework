@@ -58,9 +58,6 @@ public class ObjectQueryBuilder {
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
     var objectSelectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-        objectSelectContext.isUseNullMapWhenNotFound());
-
 
     if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
       createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(objectSelectQuery::addConditions);
@@ -76,6 +73,9 @@ public class ObjectQueryBuilder {
       PagingCriteria pagingCriteria = collectionQuery.getPagingCriteria();
       objectSelectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
+
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
+        objectSelectContext.isUseNullMapWhenNotFound());
 
     return SelectQueryBuilderResult.builder()
         .query(objectSelectQuery)

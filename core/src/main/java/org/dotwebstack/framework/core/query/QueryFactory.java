@@ -131,13 +131,13 @@ public class QueryFactory {
 
       Map<String, Object> data = getNestedMap(environment.getArguments(), argument.getName());
 
-      GraphQLInputObjectType graphQLInputObjectType = Optional.of(argument)
+      GraphQLInputObjectType graphQlInputObjectType = Optional.of(argument)
           .map(GraphQLArgument::getType)
           .filter(type -> type instanceof GraphQLInputObjectType)
           .map(GraphQLInputObjectType.class::cast)
           .orElseThrow(() -> illegalStateException("Filter argument not of type 'GraphQLInputObjectType'"));
 
-      return getInputObjectFields(graphQLInputObjectType)
+      return getInputObjectFields(graphQlInputObjectType)
           .flatMap(inputObjectField -> filterCriteriaParserFactory.getFilterCriteriaParser(inputObjectField)
               .parse(typeConfiguration, inputObjectField, data)
               .stream())
