@@ -26,9 +26,6 @@ public class ObjectQuery implements Query {
 
   private List<FilterCriteria> filterCriteria;
 
-  // je wilt naar mijn idee enkel sorteren bij een CollectionQuery
-  // private List<SortCriteria> sortCriteria;
-
   // TODO: wordt nu nog niet ondersteund vanwege n+1
   private List<ObjectFieldConfiguration> collectionObjectFields;
 

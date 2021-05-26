@@ -19,8 +19,6 @@ import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.QueryFactory;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -86,7 +84,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
 
       if (backendDataLoader.useObjectQueryApproach()) {
-        ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+        var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
         return backendDataLoader.loadSingleObject(objectQuery)
             .map(data -> createDataFetcherResult(typeConfiguration, data))
@@ -101,7 +99,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     Flux<DataFetcherResult<Object>> result;
 
     if (backendDataLoader.useObjectQueryApproach()) {
-      CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
+      var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
 
       result = backendDataLoader.loadManyObject(collectionQuery)
           .map(data -> createDataFetcherResult(typeConfiguration, data));
@@ -141,7 +139,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private DataLoader<KeyCondition, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
-    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
+    var unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
 
     var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
@@ -150,7 +148,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       if (backendDataLoader.useObjectQueryApproach()) {
-        CollectionQuery collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, false);
+        var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, false);
 
         return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyObject(keys, collectionQuery)
             .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
@@ -171,7 +169,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     if (backendDataLoader.useObjectQueryApproach()) {
-      ObjectQuery objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+      var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
 
       return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectQuery)
           .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
