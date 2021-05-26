@@ -18,7 +18,8 @@ CREATE TABLE db.brewery (
   visit_address character varying REFERENCES db.address (identifier_address),
   geometry geometry NOT NULL,
   his_age INT NOT NULL,
-  his_history character varying NOT NULL
+  his_history character varying NOT NULL,
+  multinational boolean NOT NULL
 );
 
 CREATE TABLE db.beer (
@@ -27,7 +28,9 @@ CREATE TABLE db.beer (
   abv NUMERIC(3,1) NOT NULL,
   brewery character varying NOT NULL REFERENCES db.brewery (identifier_brewery),
   sold_per_year INT NOT NULL,
-  taste db.taste[] NULL
+  taste db.taste[] NULL,
+  since date NOT NULL,
+  last_brewed timestamp NOT NULL
 );
 
 CREATE TABLE db.ingredient (

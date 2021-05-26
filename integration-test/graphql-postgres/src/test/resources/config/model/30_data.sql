@@ -2,20 +2,20 @@ INSERT INTO db.address(identifier_address, street, city) VALUES
   ('fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'Church Street', 'Dublin'),
   ('3fe6c706-54af-4420-89c4-926ff719236a', '5th Avenue', 'New York');
 
-INSERT INTO db.brewery(identifier_brewery, name, status, postal_address, visit_address, geometry, his_age, his_history) VALUES
-  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'active', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f','POINT(5.979274334569982 52.21715768613606)', 1988, 'hip and new'),
-  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL,'POINT(5.979274334569982 52.21715768613606)', 1900, 'A long time ago'),
-  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)', 1700, 'A king wanted a spicy beer'),
-  ('28649f76-ddcf-417a-8c1d-8e5012c11666', 'Brewery S', 'active', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)', 1600, 'Old');
+INSERT INTO db.brewery(identifier_brewery, name, status, postal_address, visit_address, geometry, his_age, his_history, multinational) VALUES
+  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'active', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f','POINT(5.979274334569982 52.21715768613606)', 1988, 'hip and new',true),
+  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL,'POINT(5.979274334569982 52.21715768613606)', 1900, 'A long time ago',false),
+  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)', 1700, 'A king wanted a spicy beer',false),
+  ('28649f76-ddcf-417a-8c1d-8e5012c11666', 'Brewery S', 'active', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)', 1600, 'Old',false);
 
 
-INSERT INTO db.beer(identifier_beer, name, abv, brewery, sold_per_year, taste) VALUES
-('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::db.taste[]),
-('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', NULL, 'SMOKY', 'WATERY', 'FRUITY']::db.taste[]),
-('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::db.taste[]),
-('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, NULL),
-('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::db.taste[]),
-('766883b5-3482-41cf-a66d-a81e79a4f666', 'Beer 6', 6.0, '28649f76-ddcf-417a-8c1d-8e5012c11666', 50000, array['MEATY', 'WATERY']::db.taste[]);
+INSERT INTO db.beer(identifier_beer, name, abv, brewery, sold_per_year, taste, since, last_brewed) VALUES
+('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::db.taste[],to_date('2010-01-01','YYYY-MM-DD'),to_timestamp('2020-08-12T20:17:46','YYYY-MM-DD HH24:MI:SS')),
+('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', NULL, 'SMOKY', 'WATERY', 'FRUITY']::db.taste[],to_date('2013-01-01','YYYY-MM-DD'),to_timestamp('2018-02-12T20:12:40','YYYY-MM-DD HH24:MI:SS')),
+('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::db.taste[],to_date('2016-01-01','YYYY-MM-DD'),to_timestamp('2021-01-24T12:10:00','YYYY-MM-DD HH24:MI:SS')),
+('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, NULL,to_date('2018-03-01','YYYY-MM-DD'),to_timestamp('2020-03-12T11:11:00','YYYY-MM-DD HH24:MI:SS')),
+('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::db.taste[],to_date('2019-06-01','YYYY-MM-DD'),to_timestamp('2020-03-12T20:20:20','YYYY-MM-DD HH24:MI:SS')),
+('766883b5-3482-41cf-a66d-a81e79a4f666', 'Beer 6', 6.0, '28649f76-ddcf-417a-8c1d-8e5012c11666', 50000, array['MEATY', 'WATERY']::db.taste[],to_date('2020-09-01','YYYY-MM-DD'),to_timestamp('2020-04-15T00:00:05','YYYY-MM-DD HH24:MI:SS'));
 
 INSERT INTO db.ingredient(identifier_ingredient, name, code, weight) VALUES
   ('cd795192-5fbb-11eb-ae93-0242ac130002', 'Water', 'WTR',1.2),

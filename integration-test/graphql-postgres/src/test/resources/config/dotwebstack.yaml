@@ -80,6 +80,15 @@ objectTypes:
       taste:
         type: Taste
         list: true
+      since:
+        type: Date
+      lastBrewed:
+        type: DateTime
+    filters:
+      name: {}
+      sinceDate:
+        field: since
+      lastBrewed: {}
 
   Ingredient:
     backend: postgres
@@ -142,6 +151,12 @@ objectTypes:
         mappedBy: brewery
       history:
         type: History
+      multinational:
+        type: Boolean
+    filters:
+      name: {}
+      multinational:
+        field: multinational
 
   Address:
     backend: postgres
