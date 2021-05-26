@@ -12,27 +12,6 @@ public class QueryUtil {
 
   private QueryUtil() {}
 
-  public static UnaryOperator<Map<String, Object>> createMapAssembler(SelectContext selectContext) {
-    return row -> {
-      if (!StringUtils.isEmpty(selectContext.getCheckNullAlias()
-          .get()) && row.get(
-              selectContext.getCheckNullAlias()
-                  .get()) == null) {
-        if (selectContext.getQueryContext()
-            .isUseNullMapWhenNotFound()) {
-          return GenericDataFetcher.NULL_MAP;
-        }
-        return null;
-      }
-
-      return selectContext.getAssembleFns()
-          .entrySet()
-          .stream()
-          .collect(HashMap::new, (acc, entry) -> acc.put(entry.getKey(), entry.getValue()
-              .apply(row)), HashMap::putAll);
-    };
-  }
-
   public static UnaryOperator<Map<String, Object>> createMapAssembler(
       Map<String, Function<Map<String, Object>, Object>> assembleFns, AtomicReference<String> checkNullAlias,
       boolean isUseNullMapWhenNotFound) {

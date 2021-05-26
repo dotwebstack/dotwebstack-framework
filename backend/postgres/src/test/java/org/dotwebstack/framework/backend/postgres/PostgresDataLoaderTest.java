@@ -15,7 +15,6 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -31,27 +30,16 @@ import org.springframework.r2dbc.core.FetchSpec;
 class PostgresDataLoaderTest {
 
   @Mock
-  private DotWebStackConfiguration dotWebStackConfiguration;
-
-  @Mock
   private DatabaseClient databaseClient;
 
   @Mock
-  private org.dotwebstack.framework.backend.postgres.query.QueryBuilder queryBuilder;
-
-  @Mock
   private ObjectQueryBuilder objectQueryBuilder;
-
-
-
-  private FetchSpec<Map<String, Object>> fetchSpec;
 
   private PostgresDataLoader postgresDataLoader;
 
   @BeforeEach
   void beforeAll() {
-    postgresDataLoader =
-        new PostgresDataLoader(dotWebStackConfiguration, databaseClient, queryBuilder, objectQueryBuilder);
+    postgresDataLoader = new PostgresDataLoader(databaseClient, objectQueryBuilder);
   }
 
   @Test
@@ -119,7 +107,7 @@ class PostgresDataLoaderTest {
   private void mockQueryContext() {
     DatabaseClient.GenericExecuteSpec genericExecuteSpec = mock(DatabaseClient.GenericExecuteSpec.class);
 
-    fetchSpec = mock(FetchSpec.class);
+    var fetchSpec = mock(FetchSpec.class);
 
     when(genericExecuteSpec.fetch()).thenReturn(fetchSpec);
 

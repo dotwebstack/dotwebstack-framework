@@ -12,8 +12,6 @@ public class ObjectQuery implements Query {
 
   private List<KeyCriteria> keyCriteria;
 
-  // Brewery (keyCriteria: [identifier], scalarFields: [name, state, foundedAt], objectFields:
-  // [privateAddress, voorkomen(aparte tabel)], collectionFields: [teksten]
   private TypeConfiguration<?> typeConfiguration;
 
   private List<FieldConfiguration> scalarFields;
@@ -26,7 +24,6 @@ public class ObjectQuery implements Query {
 
   private List<FilterCriteria> filterCriteria;
 
-  // TODO: wordt nu nog niet ondersteund vanwege n+1
   private List<ObjectFieldConfiguration> collectionObjectFields;
 
 }
