@@ -46,7 +46,7 @@ public class QueryFactory {
   public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment, boolean addLimit) {
 
-    CollectionQuery.CollectionQueryBuilder collectionQueryBuilder = CollectionQuery.builder()
+    var collectionQueryBuilder = CollectionQuery.builder()
         .objectQuery(createObjectQuery(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
@@ -281,8 +281,9 @@ public class QueryFactory {
         .map(selectedField -> FieldConfigurationPair.builder()
             .selectedField(selectedField)
             .fieldConfiguration(typeConfiguration.getFields()
-                .get((String) selectedField.getArguments()
-                    .get(FIELD_ARGUMENT)))
+                .get(selectedField.getArguments()
+                    .get(FIELD_ARGUMENT)
+                    .toString()))
             .build());
   }
 
