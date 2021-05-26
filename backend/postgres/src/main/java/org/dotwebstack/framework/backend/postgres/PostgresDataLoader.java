@@ -79,7 +79,6 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
       CollectionQuery collectionQuery) {
-    // TODO: filter keycriteria with jointable
     collectionQuery.getObjectQuery()
         .getKeyCriteria()
         .addAll(keyConditions.stream()
@@ -87,7 +86,6 @@ public class PostgresDataLoader implements BackendDataLoader {
             .filter(keyCriteria -> keyCriteria.getJoinTable() == null)
             .map(key -> PostgresKeyCriteria.builder()
                 .values(key.getValueMap())
-                .joinTable(key.getJoinTable())
                 .build())
             .collect(Collectors.toList()));
 

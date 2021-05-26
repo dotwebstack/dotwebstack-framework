@@ -72,6 +72,9 @@ public class ObjectQueryBuilder {
         objectSelectContext.isUseNullMapWhenNotFound());
 
     if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
+      // dit werkt niet voor keycriteria with a jointable en dit wordt opgelost in addJoinTableJoin
+      // Misschien moet dat wel hier opgelost worden
+      // query = addJoinCriteria?
       query = addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
     }
 
@@ -362,7 +365,7 @@ public class ObjectQueryBuilder {
       PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
     if (leftSideConfiguration.getJoinTable() != null) {
-
+      // TODO: wordt deze code wel geraakt?
       var joinTable = findTable(leftSideConfiguration.getJoinTable()
           .getName()).asTable(objectSelectContext.newTableAlias());
       var condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,
