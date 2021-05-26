@@ -64,7 +64,7 @@ public class QueryFactory {
 
     var collectionQueryBuilder = CollectionQuery.builder()
         .objectQuery(createObjectQuery(typeConfiguration, environment))
-        .filterCriterias(createFilterCriterias(typeConfiguration,environment));
+        .filterCriterias(createFilterCriterias(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)
