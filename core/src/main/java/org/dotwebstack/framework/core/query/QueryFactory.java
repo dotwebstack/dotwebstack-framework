@@ -63,7 +63,8 @@ public class QueryFactory {
       DataFetchingEnvironment environment, boolean addLimit) {
 
     var collectionQueryBuilder = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeConfiguration, environment));
+        .objectQuery(createObjectQuery(typeConfiguration, environment))
+        .filterCriterias(createFilterCriterias(typeConfiguration,environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)

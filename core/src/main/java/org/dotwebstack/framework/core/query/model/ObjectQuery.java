@@ -21,4 +21,6 @@ public class ObjectQuery implements Query {
   private List<NestedObjectFieldConfiguration> nestedObjectFields;
 
   private List<AggregateObjectFieldConfiguration> aggregateObjectFields;
+
+  private List<ObjectFieldConfiguration> collectionObjectFields;
 }

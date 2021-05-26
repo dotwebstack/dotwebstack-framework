@@ -62,10 +62,9 @@ public class ObjectQueryBuilder {
       createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(objectSelectQuery::addConditions);
     }
 
-    var selectQuery = objectQueryBuilderResult.getQuery();
     if (collectionQuery.getPagingCriteria() != null) {
       var pagingCriteria = collectionQuery.getPagingCriteria();
-      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+      objectSelectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
     return SelectQueryBuilderResult.builder()
