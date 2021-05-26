@@ -75,10 +75,6 @@ public class FilterConfigurer implements GraphqlConfigurer {
     return createDateFilterType(CoreScalars.DATE, DATE_FILTER_INPUT_OBJECT_TYPE);
   }
 
-  private InputObjectTypeDefinition createDateTimeFilterType() {
-    return createDateFilterType(CoreScalars.DATETIME, DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
-  }
-
   private InputObjectTypeDefinition createDateFilterType(GraphQLScalarType scalarType, String filterInputName) {
     var typeName = scalarType.getName();
 
@@ -90,6 +86,10 @@ public class FilterConfigurer implements GraphqlConfigurer {
         .inputValueDefinition(createInputValueDefinition(GTE_FIELD, typeName))
         .inputValueDefinition(createInputValueDefinition(NOT_FIELD, filterInputName))
         .build();
+  }
+
+  private InputObjectTypeDefinition createDateTimeFilterType() {
+    return createDateFilterType(CoreScalars.DATETIME, DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
   }
 
   private InputValueDefinition createArrayInputValue(String typeName) {
