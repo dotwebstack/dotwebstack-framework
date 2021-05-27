@@ -18,7 +18,9 @@ An `Boolean` field can be filtered with `true` or `false`.
 
 ## Setup
 
-The following snippet from an `dotwebstack.yaml` file shows the `filters` configuration properties. The `field`and `default`properties within the `filters` configuration property are both optional. When the `field` property isn't supplied the `filter` name needs to correspond with an existing field.
+The following snippet from an `dotwebstack.yaml` file shows the `filters` configuration properties. 
+
+The `field`and `default`properties within the `filters` configuration property are both optional. When the `field` property isn't supplied the `filter` name needs to correspond with an existing field.
 
 
 ```yaml
