@@ -365,7 +365,7 @@ public class ObjectQueryBuilder {
       PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
     if (leftSideConfiguration.getJoinTable() != null) {
-      // TODO: wordt deze code wel geraakt?
+      // wordt deze code wel geraakt?
       var joinTable = findTable(leftSideConfiguration.getJoinTable()
           .getName()).asTable(objectSelectContext.newTableAlias());
       var condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,

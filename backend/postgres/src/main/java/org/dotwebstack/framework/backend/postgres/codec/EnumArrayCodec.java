@@ -266,7 +266,6 @@ public class EnumArrayCodec implements Codec<String[]> {
 
     int dimensions = getDimensions(elements);
 
-    // TODO: type changed from String.class to Object.class, we cannot explain why this is necessary
     if (returnType != Object.class) {
       Assert.requireArrayDimension(returnType, dimensions, "Dimensions mismatch: %s expected, but %s returned from DB");
     }

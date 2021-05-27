@@ -17,7 +17,6 @@ public class ObjectSelectContext {
 
   private boolean useNullMapWhenNotFound = false;
 
-  // TODO joinTable or joinCriteria
   private List<PostgresKeyCriteria> joinCriteria = new ArrayList<>();
 
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();

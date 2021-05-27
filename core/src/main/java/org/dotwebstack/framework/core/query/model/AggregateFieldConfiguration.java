@@ -13,7 +13,7 @@ public class AggregateFieldConfiguration {
 
   private boolean distinct;
 
-  private String alias; // TODO even over nadenken of we dit nodig hebben
+  private String alias;
 
   private ScalarType type;
 

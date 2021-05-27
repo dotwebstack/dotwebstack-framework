@@ -36,6 +36,7 @@ import reactor.util.function.Tuple2;
 
 @Component
 public class PostgresDataLoader implements BackendDataLoader {
+  private static final String UNSUPPORTED_MESSAGE = "This is old implementation";
 
   private static final Logger LOG = LoggerFactory.getLogger(PostgresDataLoader.class);
 
@@ -80,8 +81,6 @@ public class PostgresDataLoader implements BackendDataLoader {
                 .build())
             .collect(Collectors.toList()));
 
-    // TODO: tijdelijke even keycriteria doorgeven
-    // TODO: create joinCriteria based on keycriteria
     List<PostgresKeyCriteria> joinCriteria = keyConditions.stream()
         .map(ColumnKeyCondition.class::cast)
         .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
@@ -119,24 +118,24 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment) {
-    throw unsupportedOperationException("This is old implementation");
+    throw unsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
   public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingle(Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
-    throw unsupportedOperationException("This is old implementation");
+    throw unsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
-    throw unsupportedOperationException("This is old implementation");
+    throw unsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(final Set<KeyCondition> keyConditions,
       LoadEnvironment environment) {
-    throw unsupportedOperationException("This is old implementation");
+    throw unsupportedOperationException(UNSUPPORTED_MESSAGE);
   }
 
   private KeyCondition getKeyConditionByKey(Set<KeyCondition> keyConditions, Map<String, Object> row,
