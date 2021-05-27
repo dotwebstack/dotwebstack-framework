@@ -110,6 +110,7 @@ public class QueryFactory {
         .objectFields(objectFields)
         .nestedObjectFields(nestedObjectFields)
         .aggregateObjectFields(aggregateObjectFields)
+        .collectionObjectFields(collectionObjectFields)
         .keyCriteria(keyCriterias)
         .build();
   }

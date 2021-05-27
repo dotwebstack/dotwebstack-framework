@@ -47,39 +47,43 @@ public class ObjectQueryBuilder {
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
+  // start new
   public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
-    ObjectQuery objectQuery = collectionQuery.getObjectQuery();
+    var objectQuery = collectionQuery.getObjectQuery();
 
-    // TODO add table to selectContext? -> rename tableSelectContext
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
-    var objectSelectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
+
+    SelectQueryBuilderResult objectQueryBuilderResult = build(objectQuery, objectSelectContext, fromTable);
+
+    var selectQuery = objectQueryBuilderResult.getQuery();
 
     if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
-      createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(objectSelectQuery::addConditions);
+      createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
     }
 
     if (collectionQuery.getPagingCriteria() != null) {
       var pagingCriteria = collectionQuery.getPagingCriteria();
-      objectSelectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-        objectSelectContext.isUseNullMapWhenNotFound());
-
     return SelectQueryBuilderResult.builder()
-        .query(objectSelectQuery)
-        .mapAssembler(rowMapper)
-        .context(objectSelectContext)
+        .query(selectQuery)
+        .mapAssembler(objectQueryBuilderResult.getMapAssembler())
+        .context(objectQueryBuilderResult.getContext())
         .build();
   }
 
   public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
-
-    // TODO add table to selectContext? -> rename tableSelectContext
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
+    return build(objectQuery, objectSelectContext, fromTable);
+  }
+
+  private SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+      Table<?> fromTable) {
     var query = buildQuery(objectSelectContext, objectQuery, fromTable);
+
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
         objectSelectContext.isUseNullMapWhenNotFound());
 
@@ -92,7 +96,6 @@ public class ObjectQueryBuilder {
 
     return SelectQueryBuilderResult.builder()
         .query(query)
-        .table(fromTable)
         .mapAssembler(rowMapper)
         .context(objectSelectContext)
         .build();
@@ -363,6 +366,8 @@ public class ObjectQueryBuilder {
     if (!objectQuery.getObjectFields()
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
+            .isEmpty()
+        || !objectQuery.getCollectionObjectFields()
             .isEmpty()) {
       var typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
