@@ -71,6 +71,11 @@ class QueryFactoryTest {
 
   private static final String COLLECTIONOBJECT_FIELDCONFIGURATION = "list";
 
+  private static final String NUMERIC = "numeric";
+
+  private static final String TEXT = "text";
+
+
   private QueryFactory queryFactory;
 
   @SuppressWarnings("rawtypes")
@@ -228,7 +233,8 @@ class QueryFactoryTest {
   @ParameterizedTest
   @MethodSource("aggregateTypes")
   @Disabled
-  void createObjectQuery_forSupportedAggregateField(String aggregateFunction, ScalarType scalarType) {
+  void createObjectQuery_forSupportedAggregateField(String aggregateFunction, ScalarType scalarType,
+      String numericOrText) {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
 
@@ -244,6 +250,17 @@ class QueryFactoryTest {
     var aggregateSelectedFields = List.of(mockSelectedAggregateField(aggregateFunction));
 
     var soldPerYearFieldConfiguration = getTestFieldConfiguration("soldPerYear", SCALAR_FIELDCONFIGURATION);
+
+    switch (numericOrText) {
+      case NUMERIC:
+        soldPerYearFieldConfiguration.setNumeric(true);
+        break;
+      case TEXT:
+        soldPerYearFieldConfiguration.setText(true);
+        break;
+      default:
+        break;
+    }
 
     Map<String, TestFieldConfiguration> aggregateFields = Map.of("soldPerYear", soldPerYearFieldConfiguration);
 
@@ -285,11 +302,11 @@ class QueryFactoryTest {
   }
 
   private static Stream<Arguments> aggregateTypes() {
-    return Stream.of(arguments(COUNT_FIELD, ScalarType.INT), arguments(INT_AVG_FIELD, ScalarType.INT),
-        arguments(INT_MAX_FIELD, ScalarType.INT), arguments(INT_MIN_FIELD, ScalarType.INT),
-        arguments(INT_SUM_FIELD, ScalarType.INT), arguments(FLOAT_AVG_FIELD, ScalarType.FLOAT),
-        arguments(FLOAT_MIN_FIELD, ScalarType.FLOAT), arguments(FLOAT_MAX_FIELD, ScalarType.FLOAT),
-        arguments(FLOAT_SUM_FIELD, ScalarType.FLOAT), arguments(STRING_JOIN_FIELD, ScalarType.STRING));
+    return Stream.of(arguments(COUNT_FIELD, ScalarType.INT, ""), arguments(INT_AVG_FIELD, ScalarType.INT, NUMERIC),
+        arguments(INT_MAX_FIELD, ScalarType.INT, NUMERIC), arguments(INT_MIN_FIELD, ScalarType.INT, NUMERIC),
+        arguments(INT_SUM_FIELD, ScalarType.INT, NUMERIC), arguments(FLOAT_AVG_FIELD, ScalarType.FLOAT, NUMERIC),
+        arguments(FLOAT_MIN_FIELD, ScalarType.FLOAT, NUMERIC), arguments(FLOAT_MAX_FIELD, ScalarType.FLOAT, NUMERIC),
+        arguments(FLOAT_SUM_FIELD, ScalarType.FLOAT, NUMERIC), arguments(STRING_JOIN_FIELD, ScalarType.STRING, TEXT));
   }
 
   private void assertCollectionQuery(org.dotwebstack.framework.core.query.model.CollectionQuery collectionQuery) {

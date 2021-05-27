@@ -44,8 +44,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryFactory {
 
-  private static final String DEFAULT_SEPARATOR = ",";
-
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
   public QueryFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {

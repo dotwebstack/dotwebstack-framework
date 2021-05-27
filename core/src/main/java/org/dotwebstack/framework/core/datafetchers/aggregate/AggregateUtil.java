@@ -21,9 +21,10 @@ import org.dotwebstack.framework.core.query.model.ScalarType;
 
 public class AggregateUtil {
 
+  private AggregateUtil() {}
+
   private static final String DEFAULT_SEPARATOR = ",";
 
-  // TODO: AggregateUtil
   public static ScalarType getAggregateScalarType(SelectedField selectedField) {
     String aggregateFunction = selectedField.getName();
     switch (aggregateFunction) {
