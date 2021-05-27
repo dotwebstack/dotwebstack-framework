@@ -3,17 +3,21 @@ package org.dotwebstack.framework.core.query.model;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @Builder
 @Data
 public class CollectionQuery implements Query {
 
-  private ObjectQuery objectQuery;
+  @NonNull
+  private final ObjectQuery objectQuery;
 
-  private List<SortCriteria> sortCriteria;
+  @Builder.Default
+  private final List<SortCriteria> sortCriteria = List.of();
 
-  private PagingCriteria pagingCriteria;
+  @Builder.Default
+  private final List<FilterCriteria> filterCriterias = List.of();
 
-  private List<FilterCriteria> filterCriterias;
+  private final PagingCriteria pagingCriteria;
 }

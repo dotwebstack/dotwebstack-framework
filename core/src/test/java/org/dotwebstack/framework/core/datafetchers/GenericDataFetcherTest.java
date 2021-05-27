@@ -411,13 +411,13 @@ class GenericDataFetcherTest {
   }
 
   private ObjectQuery createObjectQuery() {
-    var objectQuery = ObjectQuery.builder()
-        .build();
     var fieldConfig = new TestFieldConfiguration();
     fieldConfig.setScalarField(true);
     fieldConfig.setName("identifier");
-    objectQuery.setScalarFields(List.of(fieldConfig));
-    return objectQuery;
+
+    return ObjectQuery.builder()
+        .scalarFields(List.of(fieldConfig))
+        .build();
   }
 
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,

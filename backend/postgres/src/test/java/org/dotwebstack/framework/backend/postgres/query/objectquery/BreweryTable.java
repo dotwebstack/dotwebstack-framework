@@ -12,6 +12,9 @@ public class BreweryTable extends CustomTable<BreweryRecord> {
 
   public final TableField<BreweryRecord, String> name = createField(DSL.name("nameColumn"), VARCHAR);
 
+  public final TableField<BreweryRecord, String> postalAddress = createField(DSL.name("postal_address"), VARCHAR);
+
+
   public BreweryTable() {
     super(DSL.name("breweryTable"));
   }

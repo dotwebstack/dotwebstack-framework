@@ -47,7 +47,10 @@ public class ObjectQueryBuilder {
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
-  // start new
+  public SelectQueryBuilderResult build(CollectionQuery collectionQuery) {
+    return build(collectionQuery, new ObjectSelectContext());
+  }
+
   public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
     var objectQuery = collectionQuery.getObjectQuery();
 
@@ -79,7 +82,12 @@ public class ObjectQueryBuilder {
         .query(selectQuery)
         .mapAssembler(rowMapper)
         .context(objectSelectContext)
+        .table(fromTable)
         .build();
+  }
+
+  public SelectQueryBuilderResult build(ObjectQuery objectQuery) {
+    return build(objectQuery, new ObjectSelectContext());
   }
 
   public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
@@ -106,6 +114,7 @@ public class ObjectQueryBuilder {
         .query(query)
         .mapAssembler(rowMapper)
         .context(objectSelectContext)
+        .table(fromTable)
         .build();
   }
 
@@ -267,7 +276,6 @@ public class ObjectQueryBuilder {
           var objectFieldTable =
               findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable())
                   .asTable(objectSelectContext.newTableAlias());
-
 
           var subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
 

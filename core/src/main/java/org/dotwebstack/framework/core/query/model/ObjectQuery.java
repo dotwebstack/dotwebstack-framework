@@ -9,18 +9,23 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 @Builder
 @Data
 public class ObjectQuery implements Query {
+  // @NonNull
+  private final TypeConfiguration<?> typeConfiguration;
 
-  private List<KeyCriteria> keyCriteria;
+  private final List<FieldConfiguration> scalarFields;
 
-  private TypeConfiguration<?> typeConfiguration;
+  @Builder.Default
+  private final List<KeyCriteria> keyCriteria = List.of();
 
-  private List<FieldConfiguration> scalarFields;
+  @Builder.Default
+  private final List<ObjectFieldConfiguration> objectFields = List.of();
 
-  private List<ObjectFieldConfiguration> objectFields;
+  @Builder.Default
+  private final List<NestedObjectFieldConfiguration> nestedObjectFields = List.of();
 
-  private List<NestedObjectFieldConfiguration> nestedObjectFields;
+  @Builder.Default
+  private final List<AggregateObjectFieldConfiguration> aggregateObjectFields = List.of();
 
-  private List<AggregateObjectFieldConfiguration> aggregateObjectFields;
-
-  private List<ObjectFieldConfiguration> collectionObjectFields;
+  @Builder.Default
+  private final List<ObjectFieldConfiguration> collectionObjectFields = List.of();
 }
