@@ -181,8 +181,6 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
   @Data
   @Builder
   private static class FilterItem {
-    private FieldConfiguration fieldConfiguration;
-
     private FilterOperator operator;
 
     private Object value;
