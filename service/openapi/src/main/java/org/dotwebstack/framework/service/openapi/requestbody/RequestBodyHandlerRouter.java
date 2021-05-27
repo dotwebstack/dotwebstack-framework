@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RequestBodyHandlerRouter {
-  private List<RequestBodyHandler> customHandlers;
+  private final List<RequestBodyHandler> customHandlers;
 
-  private DefaultRequestBodyHandler defaultHandler;
+  private final DefaultRequestBodyHandler defaultHandler;
 
   public RequestBodyHandlerRouter(List<RequestBodyHandler> handlers,
       @NonNull DefaultRequestBodyHandler defaultHandler) {

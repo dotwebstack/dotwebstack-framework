@@ -13,20 +13,20 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 @Builder
 public class ResponseSchemaContext {
 
-  private GraphQlField graphQlField;
+  private final GraphQlField graphQlField;
 
   @Builder.Default
-  private List<String> requiredFields = new ArrayList<>();
+  private final List<String> requiredFields = new ArrayList<>();
 
   @Builder.Default
-  private List<ResponseTemplate> responses = new ArrayList<>();
+  private final List<ResponseTemplate> responses = new ArrayList<>();
 
   @Builder.Default
-  private List<Parameter> parameters = new ArrayList<>();
+  private final List<Parameter> parameters = new ArrayList<>();
 
   @Builder.Default
-  private Map<String, String> dwsParameters = new HashMap<>();
+  private final Map<String, String> dwsParameters = new HashMap<>();
 
-  private RequestBodyContext requestBodyContext;
+  private final RequestBodyContext requestBodyContext;
 
 }

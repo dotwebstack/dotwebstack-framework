@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class SchemaResolverTest {
 
-  private OpenAPI openApi = TestResources.openApi();
+  private final OpenAPI openApi = TestResources.openApi();
 
 
   @Test

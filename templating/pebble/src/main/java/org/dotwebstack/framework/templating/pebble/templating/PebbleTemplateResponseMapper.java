@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
 
-  private Map<String, PebbleTemplate> htmlTemplates;
+  private final Map<String, PebbleTemplate> htmlTemplates;
 
   private static final String INPUT_PARAMS_PREFIX = "args";
 

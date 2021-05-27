@@ -11,6 +11,8 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.NUMB
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 
 import java.util.List;
+import java.util.Objects;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
@@ -67,8 +69,7 @@ public class TypeValidator {
         }
         break;
       case INTEGER_TYPE:
-        if (!List.of(GraphQLInt.getName())
-            .contains(graphQlType)) {
+        if (!Objects.equals(GraphQLInt.getName(), graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(MAPPING_ERROR_FROM, oasType, identifier, graphQlType);
         }
         break;

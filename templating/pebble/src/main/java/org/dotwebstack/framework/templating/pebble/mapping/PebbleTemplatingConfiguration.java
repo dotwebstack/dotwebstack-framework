@@ -34,9 +34,9 @@ public class PebbleTemplatingConfiguration {
 
   private static final String EXTERNAL_TEMPLATES_LOCATION = "/config/" + TEMPLATES_LOCATION;
 
-  private PebbleEngine pebbleEngine;
+  private final PebbleEngine pebbleEngine;
 
-  private Optional<Resource> templatesResource;
+  private final Optional<Resource> templatesResource;
 
   private final ResourceLoader resourceLoader;
 

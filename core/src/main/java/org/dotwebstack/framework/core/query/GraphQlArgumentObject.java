@@ -9,5 +9,5 @@ import lombok.Getter;
 @Getter
 public class GraphQlArgumentObject {
   @Builder.Default
-  private List<GraphQlArgument> arguments = Collections.emptyList();
+  private final List<GraphQlArgument> arguments = Collections.emptyList();
 }

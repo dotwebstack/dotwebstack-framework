@@ -317,7 +317,7 @@ class OpenApiConfigurationTest {
   private static class RouterFunctionAnswer implements Answer<Optional<RouterFunction<ServerResponse>>> {
 
     @Getter
-    private List<RouterFunction<ServerResponse>> results = new ArrayList<>();
+    private final List<RouterFunction<ServerResponse>> results = new ArrayList<>();
 
     @Override
     public Optional<RouterFunction<ServerResponse>> answer(InvocationOnMock invocationOnMock) throws Throwable {

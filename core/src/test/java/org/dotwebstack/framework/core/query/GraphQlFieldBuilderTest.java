@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class GraphQlFieldBuilderTest {
 
-  private TypeDefinitionRegistry registry = mock(TypeDefinitionRegistry.class);
+  private final TypeDefinitionRegistry registry = mock(TypeDefinitionRegistry.class);
 
   @Test
   void toGraphQlField_throwsException_MissingType() {

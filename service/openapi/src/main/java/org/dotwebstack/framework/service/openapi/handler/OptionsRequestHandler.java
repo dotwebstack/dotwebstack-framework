@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 public class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private List<HttpMethod> allowMethods;
+  private final List<HttpMethod> allowMethods;
 
   public OptionsRequestHandler(@NonNull List<HttpMethod> allowMethods) {
     this.allowMethods = allowMethods;
@@ -21,7 +21,7 @@ public class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
   public Mono<ServerResponse> handle(@NonNull ServerRequest serverRequest) {
     return ServerResponse.ok()
         .header("Allow", String.format("OPTIONS, %s", allowMethods.stream()
-            .map(Enum<HttpMethod>::name)
+            .map(Enum::name)
             .collect(Collectors.joining(", "))))
         .build();
   }

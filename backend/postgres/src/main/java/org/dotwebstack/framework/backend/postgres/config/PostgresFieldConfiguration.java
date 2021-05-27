@@ -22,12 +22,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  // private boolean isNumeric = false;
-  //
-  // private boolean isText = false;
-
-  // private boolean isList = false;
-
   private boolean isNested = false;
 
   @Override

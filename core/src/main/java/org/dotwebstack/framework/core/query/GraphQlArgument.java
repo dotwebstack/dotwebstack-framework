@@ -10,16 +10,16 @@ import lombok.Getter;
 @Getter
 @Builder
 public class GraphQlArgument {
-  private String name;
+  private final String name;
 
-  private String baseType;
+  private final String baseType;
 
-  private Type<?> type;
+  private final Type<?> type;
 
-  private boolean required;
+  private final boolean required;
 
   private final Value<?> defaultValue;
 
   @Builder.Default
-  private List<GraphQlArgument> children = Collections.emptyList();
+  private final List<GraphQlArgument> children = Collections.emptyList();
 }

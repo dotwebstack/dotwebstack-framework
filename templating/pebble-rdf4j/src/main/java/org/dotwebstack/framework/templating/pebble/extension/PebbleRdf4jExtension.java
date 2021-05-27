@@ -12,7 +12,7 @@ public class PebbleRdf4jExtension extends AbstractExtension {
 
   private static final String JSON_LD_FILTER = "jsonld";
 
-  private JsonLdFilter jsonLdFilter;
+  private final JsonLdFilter jsonLdFilter;
 
   public PebbleRdf4jExtension(JsonLdFilter jsonLdFilter) {
     this.jsonLdFilter = jsonLdFilter;

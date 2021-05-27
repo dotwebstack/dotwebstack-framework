@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ParamHandlerRouter {
-  private List<ParamHandler> customHandlers;
+  private final List<ParamHandler> customHandlers;
 
-  private ParamHandler defaultHandler;
+  private final ParamHandler defaultHandler;
 
   public ParamHandlerRouter(List<ParamHandler> customHandlers, OpenAPI openApi) {
     this.customHandlers = customHandlers;

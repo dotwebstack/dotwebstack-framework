@@ -16,7 +16,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.ClassUtils;
 
 public class DotWebStackConfigurationReader {
-  private static ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+  private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
   public DotWebStackConfigurationReader() {
     registerSubTypes();

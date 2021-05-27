@@ -17,9 +17,9 @@ import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 @Builder
 public class QueryFieldHelper {
 
-  private TypeDefinitionRegistry typeDefinitionRegistry;
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  private GraphQlFieldBuilder graphQlFieldBuilder;
+  private final GraphQlFieldBuilder graphQlFieldBuilder;
 
   public Optional<GraphQlField> resolveGraphQlField(@NonNull Operation operation) {
     return getDwsQueryName(operation).map(this::getQueryFieldDefinition)

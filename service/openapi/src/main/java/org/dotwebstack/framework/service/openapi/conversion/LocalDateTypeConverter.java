@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 @EnableConfigurationProperties(OpenApiProperties.class)
 public class LocalDateTypeConverter implements TypeConverter<LocalDate, String> {
 
-  private OpenApiProperties openApiProperties;
+  private final OpenApiProperties openApiProperties;
 
-  private DateTimeFormatter dateTimeFormatter;
+  private final DateTimeFormatter dateTimeFormatter;
 
   public LocalDateTypeConverter(OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;

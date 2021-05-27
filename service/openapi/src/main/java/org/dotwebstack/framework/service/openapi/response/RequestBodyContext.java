@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class RequestBodyContext {
 
-  private RequestBody requestBodySchema;
+  private final RequestBody requestBodySchema;
 
   public RequestBodyContext(RequestBody requestBodySchema) {
     this.requestBodySchema = requestBodySchema;

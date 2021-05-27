@@ -10,11 +10,11 @@ import lombok.Getter;
 @EqualsAndHashCode
 public class ResponseHeader {
 
-  private String name;
+  private final String name;
 
-  private String defaultValue;
+  private final String defaultValue;
 
-  private String type;
+  private final String type;
 
-  private Map<String, String> dwsExpressionMap;
+  private final Map<String, String> dwsExpressionMap;
 }

@@ -10,7 +10,7 @@ public enum FilterOperator {
       "iContains");
 
   @Getter
-  private String value;
+  private final String value;
 
   FilterOperator(String value) {
     this.value = value;

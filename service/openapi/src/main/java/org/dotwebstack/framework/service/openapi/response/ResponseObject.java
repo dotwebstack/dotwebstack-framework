@@ -9,9 +9,9 @@ import lombok.Setter;
 @Getter
 public class ResponseObject {
 
-  private String identifier;
+  private final String identifier;
 
-  private ResponseObject parent;
+  private final ResponseObject parent;
 
   @Setter
   private SchemaSummary summary;
