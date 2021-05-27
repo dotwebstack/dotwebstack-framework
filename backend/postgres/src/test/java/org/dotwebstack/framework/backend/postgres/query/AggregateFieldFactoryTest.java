@@ -191,31 +191,6 @@ class AggregateFieldFactoryTest {
         () -> aggregateFieldFactory.create(unknownTypeAggregateFieldConfiguration, "beers", "soldPerYear", ""));
   }
 
-  // private SelectedField mockStringJoinField(Boolean isDistinct, String separator) {
-  // SelectedField stringJoinField = mockSelectedField("stringJoin");
-  // Map<String, Object> arguments = new HashMap<>() {
-  // {
-  // put(DISTINCT_ARGUMENT, isDistinct);
-  // put(SEPARATOR_ARGUMENT, separator);
-  // }
-  // };
-  // when(stringJoinField.getArguments()).thenReturn(arguments);
-  // return stringJoinField;
-  // }
-  //
-  // private SelectedField mockCountField(String fieldName, Boolean isDistinct) {
-  // SelectedField countField = mockSelectedField(fieldName);
-  // Map<String, Object> arguments = Collections.singletonMap(DISTINCT_ARGUMENT, isDistinct);
-  // when(countField.getArguments()).thenReturn(arguments);
-  // return countField;
-  // }
-  //
-  // private SelectedField mockSelectedField(String fieldName) {
-  // SelectedField selectedField = mock(SelectedField.class);
-  // when(selectedField.getName()).thenReturn(fieldName);
-  // return selectedField;
-  // }
-
   private Class<? extends Number> getNumericType(ScalarType scalarType) {
     switch (scalarType) {
       case INT:
