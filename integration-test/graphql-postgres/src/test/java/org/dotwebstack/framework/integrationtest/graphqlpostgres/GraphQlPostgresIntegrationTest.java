@@ -761,8 +761,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_withNestedFilter() {
-    String query =
-        "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) { identifier_beer name} }}";
+    String query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
+        + "{ identifier_beer name} }}";
 
     ExecutionResult result = graphQL.execute(newExecutionInput(query).dataLoaderRegistry(new DataLoaderRegistry())
         .build());
@@ -871,7 +871,8 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_returnsBeers_withMultiOperandFilter() {
     String query =
-        "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}}){ identifier_beer name }}";
+        "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}})"
+            + "{ identifier_beer name }}";
 
     ExecutionResult result = graphQL.execute(query);
 
