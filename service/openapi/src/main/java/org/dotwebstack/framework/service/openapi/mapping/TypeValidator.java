@@ -12,7 +12,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRI
 
 import java.util.List;
 import java.util.Objects;
-
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
