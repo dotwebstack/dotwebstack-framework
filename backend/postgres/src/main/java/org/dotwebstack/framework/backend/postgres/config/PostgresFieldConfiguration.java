@@ -49,10 +49,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
         && !isNested;
   }
 
-  public boolean isSubselect() {
-    return !isScalar() && !isNested;
-  }
-
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
   }

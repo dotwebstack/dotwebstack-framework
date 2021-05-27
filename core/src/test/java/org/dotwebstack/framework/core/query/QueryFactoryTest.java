@@ -39,7 +39,6 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -75,7 +74,6 @@ class QueryFactoryTest {
 
   private static final String TEXT = "text";
 
-
   private QueryFactory queryFactory;
 
   @SuppressWarnings("rawtypes")
@@ -106,11 +104,10 @@ class QueryFactoryTest {
     selectedFields = new ArrayList<>();
     when(environment.getSelectionSet()).thenReturn(selectionSet);
     when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
-
   }
 
   @Test
-  void createCollectionQuery_defaultWithScalarField() {
+  void createCollectionQuery_returnsCollectionQuery_forScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -132,7 +129,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_defaultWithScalarField() {
+  void createObjectQuery_returnsObjectQuery_withScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -148,7 +145,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_withKeyCriteria() {
+  void createObjectQuery_returnsObjectQuery_withKeyCriteria() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -168,7 +165,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_withObjectField() {
+  void createObjectQuery_returnsObjectQuery_forObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_BREWERY));
 
@@ -189,7 +186,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_withCollectionObjectField() {
+  void createObjectQuery_returnsObjectQuery_forCollectionObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_BREWERY));
 
@@ -210,7 +207,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_withNestedObjectField() {
+  void createObjectQuery_returnsObjectQuery_forNestedObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_HISTORY));
 
@@ -232,8 +229,7 @@ class QueryFactoryTest {
 
   @ParameterizedTest
   @MethodSource("aggregateTypes")
-  @Disabled
-  void createObjectQuery_forSupportedAggregateField(String aggregateFunction, ScalarType scalarType,
+  void createObjectQuery_returnsObjectQuery_forSupportedAggregateFields(String aggregateFunction, ScalarType scalarType,
       String numericOrText) {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
@@ -274,7 +270,7 @@ class QueryFactoryTest {
   }
 
   @Test
-  void createObjectQuery_forUnsupportedAggregateField_throwsException() {
+  void createObjectQuery_throwsException_forUnsupportedAggregateField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
 
