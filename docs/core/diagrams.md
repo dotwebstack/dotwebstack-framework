@@ -1,3 +1,4 @@
+# Core: `diagrams`
 
 ## GenericDataFetcher
 
