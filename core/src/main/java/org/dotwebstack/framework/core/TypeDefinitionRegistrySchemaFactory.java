@@ -114,10 +114,10 @@ public class TypeDefinitionRegistrySchemaFactory {
       result.add(createGeometryInputValueDefinition());
     }
 
-    // fieldConfiguration.getArguments()
-    // .stream()
-    // .map(this::createFieldInputValueDefinition)
-    // .forEach(result::add);
+    fieldConfiguration.getArguments()
+        .stream()
+        .map(this::createFieldInputValueDefinition)
+        .forEach(result::add);
 
     if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
         .containsKey(fieldConfiguration.getType())) {

@@ -62,6 +62,12 @@ abstract class FilterCriteriaParserBaseTest {
         .build();
   }
 
+  GraphQLInputObjectField createInputObjectField(String name, GraphQLNamedInputType type) {
+    return newInputObjectField().name(name)
+        .type(type)
+        .build();
+  }
+
   private List<GraphQLInputObjectField> getFields(String typeName,
       InputObjectTypeDefinition inputObjectTypeDefinition) {
     return inputObjectTypeDefinition.getInputValueDefinitions()
@@ -83,12 +89,6 @@ abstract class FilterCriteriaParserBaseTest {
             .type(mock(GraphQLInputType.class))
             .build())
         .collect(Collectors.toList());
-  }
-
-  GraphQLInputObjectField createInputObjectField(String name, GraphQLNamedInputType type) {
-    return newInputObjectField().name(name)
-        .type(type)
-        .build();
   }
 
   TypeConfigurationImpl createTypeConfiguration(String type) {

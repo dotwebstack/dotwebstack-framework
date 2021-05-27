@@ -56,9 +56,6 @@ public class ObjectQueryBuilder {
 
     var selectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
 
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-        objectSelectContext.isUseNullMapWhenNotFound());
-
     if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
       createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
     }
@@ -74,6 +71,9 @@ public class ObjectQueryBuilder {
       // query = addJoinCriteria?
       selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
     }
+
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
+        objectSelectContext.isUseNullMapWhenNotFound());
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)

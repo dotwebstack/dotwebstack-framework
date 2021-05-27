@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.core.query;
 
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInputObjectType.newInputObject;
+import static graphql.schema.GraphQLObjectType.newObject;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_AVG_FIELD;
@@ -29,6 +33,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
@@ -105,6 +110,15 @@ class QueryFactoryTest {
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
 
     when(typeConfiguration.getFields()).thenReturn(fields);
+
+    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+        .type(newObject().name("ReturnObject")
+            .build())
+        .argument(newArgument().name(FilterConstants.FILTER_ARGUMENT_NAME)
+            .type(newInputObject().name(FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE)
+                .build())
+            .build())
+        .build());
 
     var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
 
