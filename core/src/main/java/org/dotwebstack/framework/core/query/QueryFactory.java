@@ -38,7 +38,6 @@ import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
-import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 

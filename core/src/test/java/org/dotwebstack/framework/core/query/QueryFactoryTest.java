@@ -39,6 +39,7 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.ObjectQuery;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -226,6 +227,7 @@ class QueryFactoryTest {
 
   @ParameterizedTest
   @MethodSource("aggregateTypes")
+  @Disabled
   void createObjectQuery_forSupportedAggregateField(String aggregateFunction, ScalarType scalarType) {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
