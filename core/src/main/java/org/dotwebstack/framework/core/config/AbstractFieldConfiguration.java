@@ -14,6 +14,10 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private boolean list = false;
 
+  private boolean isNumeric = false;
+
+  private boolean isText = false;
+
   private String mappedBy;
 
   private String aggregationOf;

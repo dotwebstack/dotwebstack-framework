@@ -1,19 +1,13 @@
 package org.dotwebstack.framework.core.query;
 
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.DISTINCT_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_AVG_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MAX_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_MIN_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FLOAT_SUM_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_AVG_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MAX_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.NUMERIC_FUNCTIONS;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getAggregateFunctionType;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getAggregateScalarType;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getSeparator;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.isDistinct;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
@@ -182,6 +176,8 @@ public class QueryFactory {
     var type = getAggregateScalarType(aggregateField);
     var distinct = isDistinct(aggregateField);
     // TODO: rework after validation
+
+    validate(fieldConfigurationPair.getFieldConfiguration(), aggregateField);
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
       separator = getSeparator(aggregateField);
@@ -197,62 +193,34 @@ public class QueryFactory {
         .build();
   }
 
-  // TODO: AggregateUtil
-  private ScalarType getAggregateScalarType(SelectedField selectedField) {
-    String aggregateFunction = selectedField.getName();
-    switch (aggregateFunction) {
-      case INT_MIN_FIELD:
-      case INT_MAX_FIELD:
-      case INT_AVG_FIELD:
-      case INT_SUM_FIELD:
-      case COUNT_FIELD:
-        return ScalarType.INT;
+  private void validate(AbstractFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField) {
+
+    if (NUMERIC_FUNCTIONS.contains(selectedField.getName())) {
+      if (aggregateFieldConfiguration.isNumeric()) {
+        return;
+      } else {
+        throw new IllegalArgumentException(String.format(
+            "Numeric aggregation for non-numeric field %s is not supported.", aggregateFieldConfiguration.getName()));
+      }
+    }
+    switch (selectedField.getName()) {
       case STRING_JOIN_FIELD:
-        return ScalarType.STRING;
-      case FLOAT_MIN_FIELD:
-      case FLOAT_SUM_FIELD:
-      case FLOAT_MAX_FIELD:
-      case FLOAT_AVG_FIELD:
-        return ScalarType.FLOAT;
+        validateStringJoinField(aggregateFieldConfiguration);
+        break;
+      case COUNT_FIELD:
+        // no additional validation needed
+        break;
       default:
-        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
+        throw new IllegalArgumentException(
+            String.format("Unsupported aggregation function: %s.", selectedField.getName()));
     }
   }
 
-  private AggregateFunctionType getAggregateFunctionType(SelectedField selectedField) {
-    String aggregateFunction = selectedField.getName();
-    switch (aggregateFunction) {
-      case COUNT_FIELD:
-        return AggregateFunctionType.COUNT;
-      case STRING_JOIN_FIELD:
-        return AggregateFunctionType.JOIN;
-      case FLOAT_SUM_FIELD:
-      case INT_SUM_FIELD:
-        return AggregateFunctionType.SUM;
-      case FLOAT_MIN_FIELD:
-      case INT_MIN_FIELD:
-        return AggregateFunctionType.MIN;
-      case FLOAT_MAX_FIELD:
-      case INT_MAX_FIELD:
-        return AggregateFunctionType.MAX;
-      case INT_AVG_FIELD:
-      case FLOAT_AVG_FIELD:
-        return AggregateFunctionType.AVG;
-      default:
-        throw illegalArgumentException("Aggregate function {} is not supported", aggregateFunction);
+  private void validateStringJoinField(AbstractFieldConfiguration aggregateFieldConfiguration) {
+    if (!aggregateFieldConfiguration.isText()) {
+      throw new IllegalArgumentException(String.format("String aggregation for non-text field %s is not supported.",
+          aggregateFieldConfiguration.getName()));
     }
-  }
-
-  private boolean isDistinct(SelectedField selectedField) {
-    return Optional.ofNullable((Boolean) selectedField.getArguments()
-        .get(DISTINCT_ARGUMENT))
-        .orElse(Boolean.FALSE);
-  }
-
-  private String getSeparator(SelectedField selectedField) {
-    return Optional.ofNullable((String) selectedField.getArguments()
-        .get(SEPARATOR_ARGUMENT))
-        .orElse(DEFAULT_SEPARATOR);
   }
 
   private List<KeyCriteria> createKeyCriteria(DataFetchingEnvironment environment) {
