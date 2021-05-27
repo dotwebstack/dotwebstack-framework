@@ -54,9 +54,10 @@ public class ObjectQueryBuilder {
     var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
 
-    SelectQueryBuilderResult objectQueryBuilderResult = build(objectQuery, objectSelectContext, fromTable);
+    var selectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
 
-    var selectQuery = objectQueryBuilderResult.getQuery();
+    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
+        objectSelectContext.isUseNullMapWhenNotFound());
 
     if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
       createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
@@ -67,10 +68,17 @@ public class ObjectQueryBuilder {
       selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
+    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
+      // dit werkt niet voor keycriteria with a jointable en dit wordt opgelost in addJoinTableJoin
+      // Misschien moet dat wel hier opgelost worden
+      // query = addJoinCriteria?
+      selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
+    }
+
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
-        .mapAssembler(objectQueryBuilderResult.getMapAssembler())
-        .context(objectQueryBuilderResult.getContext())
+        .mapAssembler(rowMapper)
+        .context(objectSelectContext)
         .build();
   }
 
