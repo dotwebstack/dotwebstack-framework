@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query.objectquery;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,8 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-
-@Disabled("TODO")
 class ObjectQueryBuilderTest {
   private static final String TABLE_POSTFIX = "Table";
 
@@ -122,6 +121,7 @@ class ObjectQueryBuilderTest {
   }
 
   @Test
+  @Disabled
   void build_objectQuery_ForObjectFieldsWithJoinColumn() {
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
     ObjectQuery objectQuery = createObjectQuery("Brewery", scalarFields);
@@ -131,6 +131,7 @@ class ObjectQueryBuilderTest {
   }
 
   @Test
+  @Disabled
   void build_objectQuery_ForObjectFieldsWithJoinTable() {
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
     ObjectQuery objectQuery = createObjectQuery("Brewery", scalarFields);
@@ -140,6 +141,7 @@ class ObjectQueryBuilderTest {
   }
 
   @Test
+  @Disabled
   void build_objectQuery_ForObjectFieldsWithMappedBy() {
     // the same as with joincolumn?
   }
@@ -198,7 +200,8 @@ class ObjectQueryBuilderTest {
 
   private CollectionQuery createCollectionQuery(String typeName, List<FieldConfiguration> scalarFields) {
     PostgresTypeConfiguration type = mock(PostgresTypeConfiguration.class);
-    when(type.getTable()).thenReturn(typeName + TABLE_POSTFIX);
+    lenient().when(type.getTable())
+        .thenReturn(typeName + TABLE_POSTFIX);
     return CollectionQuery.builder()
         .objectQuery(createObjectQuery(typeName, scalarFields))
         .build();
