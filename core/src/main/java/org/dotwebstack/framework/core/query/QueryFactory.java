@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.core.query;
 
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.NUMERIC_FUNCTIONS;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getAggregateFunctionType;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getAggregateScalarType;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.getSeparator;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateUtil.isDistinct;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
@@ -120,9 +118,9 @@ public class QueryFactory {
 
       Map<String, Object> data = getNestedMap(environment.getArguments(), argument.getName());
 
-      GraphQLInputObjectType graphQlInputObjectType = Optional.of(argument)
+      var graphQlInputObjectType = Optional.of(argument)
           .map(GraphQLArgument::getType)
-          .filter(type -> type instanceof GraphQLInputObjectType)
+          .filter(GraphQLInputObjectType.class::isInstance)
           .map(GraphQLInputObjectType.class::cast)
           .orElseThrow(() -> illegalStateException("Filter argument not of type 'GraphQLInputObjectType'"));
 
@@ -139,7 +137,7 @@ public class QueryFactory {
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
     return inputObjectType.getChildren()
         .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
+        .filter(GraphQLInputObjectField.class::isInstance)
         .map(GraphQLInputObjectField.class::cast);
   }
 
@@ -172,9 +170,9 @@ public class QueryFactory {
     var aggregateFunctionType = getAggregateFunctionType(aggregateField);
     var type = getAggregateScalarType(aggregateField);
     var distinct = isDistinct(aggregateField);
-    // TODO: rework after validation
 
     validate(fieldConfigurationPair.getFieldConfiguration(), aggregateField);
+
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
       separator = getSeparator(aggregateField);
@@ -188,36 +186,6 @@ public class QueryFactory {
         .distinct(distinct)
         .separator(separator)
         .build();
-  }
-
-  private void validate(AbstractFieldConfiguration aggregateFieldConfiguration, SelectedField selectedField) {
-
-    if (NUMERIC_FUNCTIONS.contains(selectedField.getName())) {
-      if (aggregateFieldConfiguration.isNumeric()) {
-        return;
-      } else {
-        throw new IllegalArgumentException(String.format(
-            "Numeric aggregation for non-numeric field %s is not supported.", aggregateFieldConfiguration.getName()));
-      }
-    }
-    switch (selectedField.getName()) {
-      case STRING_JOIN_FIELD:
-        validateStringJoinField(aggregateFieldConfiguration);
-        break;
-      case COUNT_FIELD:
-        // no additional validation needed
-        break;
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unsupported aggregation function: %s.", selectedField.getName()));
-    }
-  }
-
-  private void validateStringJoinField(AbstractFieldConfiguration aggregateFieldConfiguration) {
-    if (!aggregateFieldConfiguration.isText()) {
-      throw new IllegalArgumentException(String.format("String aggregation for non-text field %s is not supported.",
-          aggregateFieldConfiguration.getName()));
-    }
   }
 
   private List<KeyCriteria> createKeyCriteria(DataFetchingEnvironment environment) {
