@@ -80,7 +80,8 @@ public class ObjectQueryBuilder {
     return build(objectQuery, objectSelectContext, fromTable);
   }
 
-  private SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+  private SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+      Table<?> fromTable) {
     var query = buildQuery(objectSelectContext, objectQuery, fromTable);
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
@@ -240,7 +241,7 @@ public class ObjectQueryBuilder {
               nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
           objectSelectContext.getAssembleFns()
               .put(nestedObjectField.getField()
-                      .getName(),
+                  .getName(),
                   createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
                       false)::apply);
         });
@@ -273,7 +274,7 @@ public class ObjectQueryBuilder {
 
           objectSelectContext.getAssembleFns()
               .put(objectField.getField()
-                      .getName(),
+                  .getName(),
                   createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
                       false)::apply);
         });
@@ -303,7 +304,7 @@ public class ObjectQueryBuilder {
 
           objectSelectContext.getAssembleFns()
               .put(aggregateObjectFieldConfiguration.getField()
-                      .getName(),
+                  .getName(),
                   createMapAssembler(aggregateObjectSelectContext.getAssembleFns(),
                       aggregateObjectSelectContext.getCheckNullAlias(), false)::apply);
 
@@ -365,9 +366,9 @@ public class ObjectQueryBuilder {
     if (!objectQuery.getObjectFields()
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
-        .isEmpty()
+            .isEmpty()
         || !objectQuery.getCollectionObjectFields()
-        .isEmpty()) {
+            .isEmpty()) {
       var typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()
@@ -479,7 +480,7 @@ public class ObjectQueryBuilder {
 
     return getJoinCondition(leftSideConfiguration.findJoinColumns(), rightSideConfiguration.getFields(), joinTable,
         rightSideConfiguration, rightSideTable)
-        .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
+            .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
   }
 
   private Condition getJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
