@@ -99,59 +99,6 @@ public class ObjectQueryBuilder {
         .context(objectSelectContext)
         .build();
   }
-  // old
-//  public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
-//    ObjectQuery objectQuery = collectionQuery.getObjectQuery();
-//
-//    // TODO add table to selectContext? -> rename tableSelectContext
-//    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
-//        .as(objectSelectContext.newTableAlias());
-//    var objectSelectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
-//
-//    if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
-//      createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(objectSelectQuery::addConditions);
-//    }
-//
-//    if (collectionQuery.getPagingCriteria() != null) {
-//      var pagingCriteria = collectionQuery.getPagingCriteria();
-//      objectSelectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
-//    }
-//
-//    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-//        objectSelectContext.isUseNullMapWhenNotFound());
-//
-//    return SelectQueryBuilderResult.builder()
-//        .query(objectSelectQuery)
-//        .mapAssembler(rowMapper)
-//        .context(objectSelectContext)
-//        .build();
-//  }
-//
-//  public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
-//
-//    // TODO add table to selectContext? -> rename tableSelectContext
-//    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
-//        .as(objectSelectContext.newTableAlias());
-//    var query = buildQuery(objectSelectContext, objectQuery, fromTable);
-//    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-//        objectSelectContext.isUseNullMapWhenNotFound());
-//
-//    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
-//      // dit werkt niet voor keycriteria with a jointable en dit wordt opgelost in addJoinTableJoin
-//      // Misschien moet dat wel hier opgelost worden
-//      // query = addJoinCriteria?
-//      query = addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
-//    }
-//
-//    return SelectQueryBuilderResult.builder()
-//        .query(query)
-//        .table(fromTable)
-//        .mapAssembler(rowMapper)
-//        .context(objectSelectContext)
-//        .build();
-//  }
-
-  // end old
 
   private SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery,
       Table<?> fromTable) {
@@ -293,7 +240,7 @@ public class ObjectQueryBuilder {
               nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
           objectSelectContext.getAssembleFns()
               .put(nestedObjectField.getField()
-                  .getName(),
+                      .getName(),
                   createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
                       false)::apply);
         });
@@ -326,7 +273,7 @@ public class ObjectQueryBuilder {
 
           objectSelectContext.getAssembleFns()
               .put(objectField.getField()
-                  .getName(),
+                      .getName(),
                   createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
                       false)::apply);
         });
@@ -356,7 +303,7 @@ public class ObjectQueryBuilder {
 
           objectSelectContext.getAssembleFns()
               .put(aggregateObjectFieldConfiguration.getField()
-                  .getName(),
+                      .getName(),
                   createMapAssembler(aggregateObjectSelectContext.getAssembleFns(),
                       aggregateObjectSelectContext.getCheckNullAlias(), false)::apply);
 
@@ -418,7 +365,9 @@ public class ObjectQueryBuilder {
     if (!objectQuery.getObjectFields()
         .isEmpty()
         || !objectQuery.getAggregateObjectFields()
-            .isEmpty()) {
+        .isEmpty()
+        || !objectQuery.getCollectionObjectFields()
+        .isEmpty()) {
       var typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()
@@ -530,7 +479,7 @@ public class ObjectQueryBuilder {
 
     return getJoinCondition(leftSideConfiguration.findJoinColumns(), rightSideConfiguration.getFields(), joinTable,
         rightSideConfiguration, rightSideTable)
-            .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
+        .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
   }
 
   private Condition getJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
