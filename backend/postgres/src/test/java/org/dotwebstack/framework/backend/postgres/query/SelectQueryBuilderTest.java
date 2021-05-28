@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ObjectRequestBuilderTest {
+class SelectQueryBuilderTest {
   private static final String TABLE_POSTFIX = "Table";
 
   private static final String COLUMN_POSTFIX = "Column";
@@ -51,7 +51,7 @@ class ObjectRequestBuilderTest {
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    objectQueryBuilder = new ObjectQueryBuilder(dslContext, new AggregateFieldFactory());
+    selectQueryBuilder = new SelectQueryBuilder(dslContext,new AggregateFieldFactory());
   }
 
   @Test
@@ -229,8 +229,8 @@ class ObjectRequestBuilderTest {
 
   @Test
   void build_objectQuery_ForObjectFieldsWithJoinTable() {
-    when(meta.getTables("IngredientTable")).thenReturn(List.of(new IngredientTable()));
-    when(meta.getTables("BeerIngredientTable")).thenReturn(List.of(new BeerIngredientTable()));
+    when(meta.getTables("IngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.IngredientTable()));
+    when(meta.getTables("BeerIngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.BeerIngredientTable()));
 
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
@@ -255,12 +255,12 @@ class ObjectRequestBuilderTest {
         .joinTable(joinTable)
         .build();
 
-    var objectQuery = ObjectQuery.builder()
+    var objectQuery = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(List.of(createScalarFieldConfiguration("identifier_ingredient")))
         .build();
 
-    var result = objectQueryBuilder.build(objectQuery, new ObjectSelectContext(List.of(keyCriteria), true));
+    var result = selectQueryBuilder.build(objectQuery, new ObjectSelectContext(List.of(keyCriteria), true));
 
     assertThat(result.getQuery()
         .toString(),
