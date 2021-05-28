@@ -140,6 +140,7 @@ class PostgresDataLoaderTest {
         .thenReturn(selectQueryBuilderResult);
 
     ObjectRequest objectRequest = ObjectRequest.builder()
+        .typeConfiguration(new PostgresTypeConfiguration())
         .build();
 
     Map<String, Object> result = postgresDataLoader.loadSingleRequest(objectRequest)
@@ -155,9 +156,11 @@ class PostgresDataLoaderTest {
 
   @Test
   void batchLoadSingleRequest() {
-    assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingleRequest(ObjectRequest.builder()
-            .build()));
+    ObjectRequest objectRequest = ObjectRequest.builder()
+        .typeConfiguration(new PostgresTypeConfiguration())
+        .build();
+
+    assertThrows(UnsupportedOperationException.class, () -> postgresDataLoader.batchLoadSingleRequest(objectRequest));
   }
 
   @Test
@@ -182,6 +185,7 @@ class PostgresDataLoaderTest {
 
     CollectionRequest objectRequest = CollectionRequest.builder()
         .objectRequest(ObjectRequest.builder()
+            .typeConfiguration(new PostgresTypeConfiguration())
             .build())
         .build();
 
@@ -229,6 +233,7 @@ class PostgresDataLoaderTest {
     CollectionRequest objectRequest = CollectionRequest.builder()
         .objectRequest(ObjectRequest.builder()
             .keyCriteria(new ArrayList<>())
+            .typeConfiguration(new PostgresTypeConfiguration())
             .build())
         .build();
 
