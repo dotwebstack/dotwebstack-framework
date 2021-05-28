@@ -29,7 +29,7 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
 
   Optional<Filter> getFilter(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
       Map<String, Object> data) {
-    FilterConfiguration filterConfiguration = typeConfiguration.getFilters()
+    var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
 
     return getChildData(inputObjectField, filterConfiguration, data).map(childData -> Filter.builder()

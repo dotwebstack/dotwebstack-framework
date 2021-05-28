@@ -173,8 +173,10 @@ class FilterConditionHelperTest {
       }
     };
 
+    List<FilterCriteria> filterCriterias = List.of(filterCriteria);
+
     Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> createFilterConditions(List.of(filterCriteria), fromTable));
+        () -> createFilterConditions(filterCriterias, fromTable));
 
   }
 

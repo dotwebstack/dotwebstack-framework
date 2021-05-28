@@ -73,10 +73,10 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadSingle() {
-    Set<KeyCondition> keyConditions = Set.of();
+    var keyCondition = mock(KeyCondition.class);
     var loadEnvironment = mockLoadEnvironment();
     assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+        () -> postgresDataLoader.loadSingle(keyCondition, loadEnvironment));
   }
 
   @Test
@@ -89,10 +89,9 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadMany() {
-    Set<KeyCondition> keyConditions = Set.of();
+    var keyCondition = mock(KeyCondition.class);
     var loadEnvironment = mockLoadEnvironment();
-    assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+    assertThrows(UnsupportedOperationException.class, () -> postgresDataLoader.loadMany(keyCondition, loadEnvironment));
   }
 
   @Test
@@ -100,7 +99,7 @@ class PostgresDataLoaderTest {
     Set<KeyCondition> keyConditions = Set.of();
     var loadEnvironment = mockLoadEnvironment();
     assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+        () -> postgresDataLoader.batchLoadMany(keyConditions, loadEnvironment));
   }
 
   @SuppressWarnings("unchecked")

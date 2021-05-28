@@ -152,7 +152,7 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
   }
 
   private FilterItem createFilterItem(Map<String, Object> data, GraphQLInputObjectField inputObjectField) {
-    FilterOperator filterOperator = FilterOperator.valueOf(inputObjectField.getName()
+    var filterOperator = FilterOperator.valueOf(inputObjectField.getName()
         .toUpperCase());
 
     return FilterItem.builder()
@@ -167,14 +167,14 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
   private Stream<GraphQLInputObjectType> getInputObjectTypes(GraphQLInputObjectField inputObjectField) {
     return inputObjectField.getChildren()
         .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectType)
+        .filter(GraphQLInputObjectType.class::isInstance)
         .map(GraphQLInputObjectType.class::cast);
   }
 
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
     return inputObjectType.getChildren()
         .stream()
-        .filter(schemaElement -> schemaElement instanceof GraphQLInputObjectField)
+        .filter(GraphQLInputObjectField.class::isInstance)
         .map(GraphQLInputObjectField.class::cast);
   }
 
