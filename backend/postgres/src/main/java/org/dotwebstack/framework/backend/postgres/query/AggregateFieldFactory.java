@@ -86,7 +86,6 @@ public class AggregateFieldFactory {
     return DSL.field(DSL.name(fromTable, columnName), BigDecimal.class);
   }
 
-
   private Class<? extends Number> getNumericType(ScalarType scalarType) {
     switch (scalarType) {
       case INT:

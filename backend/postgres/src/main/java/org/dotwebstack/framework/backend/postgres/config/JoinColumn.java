@@ -15,11 +15,6 @@ public class JoinColumn {
 
   private String referencedColumn;
 
-  public JoinColumn(String name, String referencedField) {
-    this.name = name;
-    this.referencedField = referencedField;
-  }
-
   public String getField() {
     return referencedField != null ? referencedField : referencedColumn;
   }
