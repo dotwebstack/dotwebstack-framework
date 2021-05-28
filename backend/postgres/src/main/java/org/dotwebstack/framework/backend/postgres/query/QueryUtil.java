@@ -16,7 +16,7 @@ public class QueryUtil {
       Map<String, Function<Map<String, Object>, Object>> assembleFns, AtomicReference<String> checkNullAlias,
       boolean isUseNullMapWhenNotFound) {
     return row -> {
-      if (!StringUtils.isEmpty(checkNullAlias.get()) && row.get(checkNullAlias.get()) == null) {
+      if (StringUtils.isNotEmpty(checkNullAlias.get()) && row.get(checkNullAlias.get()) == null) {
         if (isUseNullMapWhenNotFound) {
           return GenericDataFetcher.NULL_MAP;
         }

@@ -407,7 +407,7 @@ public class ObjectQueryBuilder {
     } else {
       var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
           ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-          rightSideConfiguration, leftSideTable);
+          leftSideTable);
       subSelect.addConditions(condition);
     }
   }
@@ -426,7 +426,7 @@ public class ObjectQueryBuilder {
       subSelect.addJoin(joinTable, JoinType.JOIN, condition);
     } else {
       var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(), rightSideConfiguration.getFields(),
-          leftSideTable, rightSideConfiguration, rightSideTable);
+          leftSideTable, rightSideTable);
       subSelect.addConditions(condition);
     }
   }
@@ -495,12 +495,11 @@ public class ObjectQueryBuilder {
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable, Table<?> joinTable) {
 
     return getJoinCondition(leftSideConfiguration.findJoinColumns(), rightSideConfiguration.getFields(), joinTable,
-        rightSideConfiguration, rightSideTable)
-            .and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration, joinTable));
+        rightSideTable).and(getInverseJoinCondition(leftSideConfiguration, leftSideTable, joinTable));
   }
 
   private Condition getJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
-      Table<?> leftSideTable, PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+      Table<?> leftSideTable, Table<?> rightSideTable) {
 
     return joinColumns.stream()
         .map(joinColumn -> {
@@ -516,7 +515,7 @@ public class ObjectQueryBuilder {
   }
 
   private Condition getInverseJoinCondition(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
-      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
+      Table<?> rightSideTable) {
 
     return leftSideConfiguration.findInverseJoinColumns()
         .stream()
