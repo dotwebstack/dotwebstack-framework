@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import org.jooq.TableField;
@@ -12,6 +13,10 @@ public class IngredientTable extends CustomTable<IngredientRecord> {
 
   public final TableField<IngredientRecord, String> identifierIngredient =
       createField(DSL.name("identifier_ingredientColumn"), VARCHAR);
+
+  public final TableField<IngredientRecord, String> name = createField(DSL.name("nameColumn"), VARCHAR);
+
+  public final TableField<IngredientRecord, Integer> weight = createField(DSL.name("weight"), INTEGER);
 
   public IngredientTable() {
     super(DSL.name("ingredientTable"));

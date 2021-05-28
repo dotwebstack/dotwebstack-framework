@@ -254,11 +254,77 @@ class SelectQueryBuilderTest {
   void buildObjectRequest_returnsQuery_forNestedObjects() {}
 
   @Test
-  @Disabled
-  void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinTable() {}
+  void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinTable() {
+    when(meta.getTables("BeerTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerTable()));
+    when(meta.getTables("IngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.IngredientTable()));
+    when(meta.getTables("BeerIngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerIngredientTable()));
+
+    var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    beerIdentifierFieldConfiguration.setColumn("identifier_beer");
+
+    var beerTypeConfiguration = new PostgresTypeConfiguration();
+    beerTypeConfiguration.setKeys(List.of());
+    beerTypeConfiguration.setTable("BeerTable");
+    beerTypeConfiguration.setFields(Map.of("identifierBeer", beerIdentifierFieldConfiguration));
+
+    var joinTable = new JoinTable();
+    joinTable.setName("BeerIngredientTable");
+    joinTable.setJoinColumns(List.of(createJoinColumn("beer_identifier", "identifierBeer")));
+    joinTable.setInverseJoinColumns(List.of(createJoinColumn("ingredient_identifier", "identifier_ingredient")));
+
+    var aggregatePostgresFieldConfiguration = new PostgresFieldConfiguration();
+    aggregatePostgresFieldConfiguration.setName("ingredientAgg");
+    aggregatePostgresFieldConfiguration.setAggregationOf("Ingredient");
+    aggregatePostgresFieldConfiguration.setJoinTable(joinTable);
+
+    var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
+
+    var ingredientTypeConfiguration = new PostgresTypeConfiguration();
+    ingredientTypeConfiguration.setKeys(List.of());
+    ingredientTypeConfiguration.setTable("IngredientTable");
+    ingredientTypeConfiguration.setFields(Map.of("identifier_ingredient", ingredientIdentifierFieldConfiguration));
+
+    aggregatePostgresFieldConfiguration.setTypeConfiguration(ingredientTypeConfiguration);
+
+    var ingredientFieldConfiguration = new PostgresFieldConfiguration();
+    ingredientFieldConfiguration.setName("weight");
+    ingredientFieldConfiguration.setColumn("weight");
+    ingredientFieldConfiguration.setType("Int");
+
+    var aggregateFieldConfiguration = AggregateObjectFieldConfiguration.builder()
+        .field(aggregatePostgresFieldConfiguration)
+        .aggregateFields(List.of(AggregateFieldConfiguration.builder()
+            .field(ingredientFieldConfiguration)
+            .aggregateFunctionType(AggregateFunctionType.AVG)
+            .alias("intAvg")
+            .type(ScalarType.INT)
+            .build()))
+        .build();
+
+    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(beerTypeConfiguration)
+        .scalarFields(scalarFields)
+        .aggregateObjectFields(List.of(aggregateFieldConfiguration))
+        .build();
+
+    var result = selectQueryBuilder.build(objectRequest);
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t4\".*\n" + "from \"beerTable\" as \"t1\"\n"
+            + "  left outer join lateral (\n" + "    select cast(avg(\"t2\".\"weight\") as int) as \"x2\"\n"
+            + "    from \"ingredientTable\" as \"t2\"\n" + "      join \"beerIngredientTable\" as \"t3\"\n"
+            + "        on (\n" + "          \"t3\".\"beer_identifier\" = \"t1\".\"identifier_beer\"\n"
+            + "          and \"t3\".\"ingredient_identifier\" = \"t2\".\"identifier_ingredientColumn\"\n"
+            + "        )\n" + "  ) as \"t4\"\n" + "    on 1 = 1"));
+  }
 
   @Test
-  @Disabled
   void buildObjectRequest_returnQuery_forAggregateFieldsWithJoinColumn() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
@@ -322,9 +388,68 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  @Disabled
   void buildObjectRequest_returnsQuery_forAggregateFieldsWithStringJoinOnArray() {
-    // TODO:
+    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
+    when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
+
+    var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
+
+    var breweryTypeConfiguration = new PostgresTypeConfiguration();
+    breweryTypeConfiguration.setKeys(List.of());
+    breweryTypeConfiguration.setTable("BreweryTable");
+    breweryTypeConfiguration.setFields(Map.of("identifier", breweryIdentifierFieldConfiguration));
+
+    var aggregatePostgresFieldConfiguration = new PostgresFieldConfiguration();
+    aggregatePostgresFieldConfiguration.setName("beerAgg");
+    aggregatePostgresFieldConfiguration.setMappedBy("brewery");
+    aggregatePostgresFieldConfiguration.setAggregationOf("Beer");
+    aggregatePostgresFieldConfiguration.setJoinColumns(List.of(createJoinColumn("breweryColumn", "identifier")));
+
+    var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    beerIdentifierFieldConfiguration.setColumn("identifierColumn");
+
+    var beerTypeConfiguration = new PostgresTypeConfiguration();
+    beerTypeConfiguration.setKeys(List.of());
+    beerTypeConfiguration.setTable("BeerTable");
+    beerTypeConfiguration.setFields(Map.of("identifier", beerIdentifierFieldConfiguration));
+
+    aggregatePostgresFieldConfiguration.setTypeConfiguration(beerTypeConfiguration);
+
+    var beerFieldConfiguration = new PostgresFieldConfiguration();
+    beerFieldConfiguration.setColumn("taste");
+    beerFieldConfiguration.setName("taste");
+    beerFieldConfiguration.setType("String");
+    beerFieldConfiguration.setList(true);
+
+    var aggregateFieldConfiguration = AggregateObjectFieldConfiguration.builder()
+        .field(aggregatePostgresFieldConfiguration)
+        .aggregateFields(List.of(AggregateFieldConfiguration.builder()
+            .field(beerFieldConfiguration)
+            .aggregateFunctionType(AggregateFunctionType.JOIN)
+            .alias("stringJoin")
+            .type(ScalarType.STRING)
+            .build()))
+        .build();
+
+    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(breweryTypeConfiguration)
+        .scalarFields(scalarFields)
+        .aggregateObjectFields(List.of(aggregateFieldConfiguration))
+        .build();
+
+    var result = selectQueryBuilder.build(objectRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
+            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select string_agg(cast(\"x2\" as varchar), ',') as \"x2\"\n" + "    from \"beerTable\" as \"t2\"\n"
+            + "      cross join unnest(\"t2\".\"taste\") as \"x2\" (\"COLUMN_VALUE\")\n"
+            + "    where \"t2\".\"breweryColumn\" = \"t1\".\"identifierColumn\"\n" + "  ) as \"t3\"\n"
+            + "    on 1 = 1"));
   }
 
   private ObjectRequest createObjectRequest(String typeName, List<FieldConfiguration> scalarFields) {
