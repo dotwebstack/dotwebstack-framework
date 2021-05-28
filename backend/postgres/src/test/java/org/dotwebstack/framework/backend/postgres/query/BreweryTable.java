@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import org.jooq.TableField;
@@ -15,6 +16,9 @@ public class BreweryTable extends CustomTable<BreweryRecord> {
   public final TableField<BreweryRecord, String> name = createField(DSL.name("nameColumn"), VARCHAR);
 
   public final TableField<BreweryRecord, String> postalAddress = createField(DSL.name("postal_address"), VARCHAR);
+
+  public final TableField<BreweryRecord, Integer> age = createField(DSL.name("ageColumn"), INTEGER);
+
 
 
   public BreweryTable() {

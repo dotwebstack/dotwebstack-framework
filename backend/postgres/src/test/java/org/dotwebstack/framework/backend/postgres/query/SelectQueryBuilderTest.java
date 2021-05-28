@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,6 +18,7 @@ import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
@@ -246,20 +246,46 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  @Disabled
-  void buildObjectRequest_returnsQuery_forObjectFieldsWithMappedBy() {}
+  void buildObjectRequest_returnsQuery_forNestedObjects() {
+    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-  @Test
-  @Disabled
-  void buildObjectRequest_returnsQuery_forNestedObjects() {}
+    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var typeName = "Brewery";
+
+    var typeConfiguration = mockTypeConfiguration(typeName);
+
+    var fieldConfiguration = new PostgresFieldConfiguration();
+
+    var nestedObjectFieldConfiguration = NestedObjectFieldConfiguration.builder()
+        .field(fieldConfiguration)
+        .scalarFields(List.of(createScalarFieldConfiguration("age")))
+        .build();
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(typeConfiguration)
+        .scalarFields(scalarFields)
+        .nestedObjectFields(List.of(nestedObjectFieldConfiguration))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectQueryBuilder.build(collectionRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t1\".\"ageColumn\" as \"x2\"\n"
+            + "from \"breweryTable\" as \"t1\""));
+  }
 
   @Test
   @Disabled
   void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinTable() {}
 
   @Test
-  @Disabled
-  void buildObjectRequest_returnQuery_forAggregateFieldsWithJoinColumn() {
+  void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinColumn() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
 
@@ -359,17 +385,6 @@ class SelectQueryBuilderTest {
     return fieldConfiguration;
   }
 
-  private void addNestedObjectField(ObjectRequest objectRequest, String nestedObjectName) {}
-
-  private void addAggregateObjectField(ObjectRequest objectRequest, String aggregateName) {}
-
-  private void assertNonNull(SelectQueryBuilderResult result) {
-    assertThat(result, notNullValue());
-    assertThat(result.getQuery(), notNullValue());
-    assertThat(result.getContext(), notNullValue());
-    assertThat(result.getMapAssembler(), notNullValue());
-  }
-
   private DSLContext createDslContext() {
     MetaProvider metaProvider = mock(MetaProvider.class);
     when(metaProvider.provide()).thenReturn(meta);
@@ -387,5 +402,4 @@ class SelectQueryBuilderTest {
     when(typeConfiguration.getTable()).thenReturn(tableName);
     return typeConfiguration;
   }
-
 }
