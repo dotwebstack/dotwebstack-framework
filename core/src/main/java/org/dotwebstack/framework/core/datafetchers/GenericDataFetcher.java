@@ -84,9 +84,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
 
       if (backendDataLoader.useRequestApproach()) {
-        var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+        var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-        return backendDataLoader.loadSingleRequest(objectQuery)
+        return backendDataLoader.loadSingleRequest(objectRequest)
             .map(data -> createDataFetcherResult(typeConfiguration, data))
             .toFuture();
       } else {
@@ -99,9 +99,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     Flux<DataFetcherResult<Object>> result;
 
     if (backendDataLoader.useRequestApproach()) {
-      var collectionQuery = requestFactory.createCollectionQuery(typeConfiguration, environment, true);
+      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
 
-      result = backendDataLoader.loadManyRequest(collectionQuery)
+      result = backendDataLoader.loadManyRequest(collectionRequest)
           .map(data -> createDataFetcherResult(typeConfiguration, data));
     } else {
       result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
@@ -148,9 +148,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       if (backendDataLoader.useRequestApproach()) {
-        var collectionQuery = requestFactory.createCollectionQuery(typeConfiguration, environment, false);
+        var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, false);
 
-        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyRequest(keys, collectionQuery)
+        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyRequest(keys, collectionRequest)
             .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
                 .collectList()
                 .map(list -> Map.entry(group.key(), list.stream()
@@ -169,9 +169,9 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     }
 
     if (backendDataLoader.useRequestApproach()) {
-      var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+      var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectQuery)
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectRequest)
           .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
           .toFuture());
     } else {

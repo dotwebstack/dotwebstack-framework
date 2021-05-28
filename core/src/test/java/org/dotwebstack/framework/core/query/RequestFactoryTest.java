@@ -124,7 +124,7 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionQuery(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
 
     assertCollectionQuery(collectionQuery);
   }

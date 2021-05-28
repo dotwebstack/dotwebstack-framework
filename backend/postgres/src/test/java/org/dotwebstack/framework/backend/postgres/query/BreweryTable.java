@@ -10,6 +10,8 @@ public class BreweryTable extends CustomTable<BreweryRecord> {
 
   private static final long serialVersionUID = 5517434277601288891L;
 
+  public final TableField<BreweryRecord, String> identifier = createField(DSL.name("identifierColumn"), VARCHAR);
+
   public final TableField<BreweryRecord, String> name = createField(DSL.name("nameColumn"), VARCHAR);
 
   public final TableField<BreweryRecord, String> postalAddress = createField(DSL.name("postal_address"), VARCHAR);

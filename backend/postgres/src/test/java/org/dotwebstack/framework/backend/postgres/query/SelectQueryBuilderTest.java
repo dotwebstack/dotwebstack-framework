@@ -14,11 +14,15 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
+import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.jooq.DSLContext;
 import org.jooq.Meta;
@@ -39,8 +43,6 @@ class SelectQueryBuilderTest {
 
   private static final String COLUMN_POSTFIX = "Column";
 
-  private static final String FIELD_NAME_POSTFIX = "Name";
-
   DSLContext dslContext;
 
   @Mock
@@ -55,7 +57,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildCollectioRequest_returnsSqlQuery_forScalarFields() {
+  void buildCollectionRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
@@ -73,7 +75,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildCollectionRequest_returnsSqlQuery_withPagingCriteria() {
+  void buildCollectionRequest_returnsQuery_withPagingCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
@@ -97,7 +99,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildCollectionRequest_returnsSqlQuery_withFilterCriteria() {
+  void buildCollectionRequest_returnsQuery_withFilterCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
@@ -121,7 +123,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildObjectRequest_returnsSqlQuery_forScalarFields() {
+  void buildObjectRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
@@ -134,7 +136,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildObjectRequest_returnsSqlQuery_withKeyCriteria() {
+  void buildObjectRequest_returnsQuery_withKeyCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
@@ -159,19 +161,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  @Disabled
-  void build_ObjectRequestAddsKeyField_Default() {
-    // TODO
-  }
-
-  @Test
-  @Disabled
-  void build_ObjectRequestAddsReferenceColumns_Default() {
-    // TODO
-  }
-
-  @Test
-  void buildObjectRequest_returnsSqlQuery_forObjectFieldsWithJoinColumn() {
+  void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinColumn() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     when(meta.getTables("AddressTable")).thenReturn(List.of(new AddressTable()));
 
@@ -212,7 +202,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void build_objectRequest_ForObjectFieldsWithJoinTable() {
+  void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinTable() {
     when(meta.getTables("IngredientTable"))
         .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.IngredientTable()));
     when(meta.getTables("BeerIngredientTable"))
@@ -257,23 +247,83 @@ class SelectQueryBuilderTest {
 
   @Test
   @Disabled
-  void build_objectRequest_ForObjectFieldsWithMappedBy() {}
+  void buildObjectRequest_returnsQuery_forObjectFieldsWithMappedBy() {}
 
   @Test
   @Disabled
-  void build_objectRequest_ForNestedObjects() {}
+  void buildObjectRequest_returnsQuery_forNestedObjects() {}
 
   @Test
   @Disabled
-  void build_objectRequest_ForAggregateFieldsWithJoinTable() {}
+  void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinTable() {}
 
   @Test
   @Disabled
-  void build_objectRequest_ForAggregateFieldsWithJoinColumn() {}
+  void buildObjectRequest_returnQuery_forAggregateFieldsWithJoinColumn() {
+    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
+    when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
+
+    var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
+
+    var breweryTypeConfiguration = new PostgresTypeConfiguration();
+    breweryTypeConfiguration.setKeys(List.of());
+    breweryTypeConfiguration.setTable("BreweryTable");
+    breweryTypeConfiguration.setFields(Map.of("identifier", breweryIdentifierFieldConfiguration));
+
+    var aggregatePostgresFieldConfiguration = new PostgresFieldConfiguration();
+    aggregatePostgresFieldConfiguration.setName("beerAgg");
+    aggregatePostgresFieldConfiguration.setMappedBy("brewery");
+    aggregatePostgresFieldConfiguration.setAggregationOf("Beer");
+    aggregatePostgresFieldConfiguration.setJoinColumns(List.of(createJoinColumn("breweryColumn", "identifier")));
+
+    var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    beerIdentifierFieldConfiguration.setColumn("identifierColumn");
+
+    var beerTypeConfiguration = new PostgresTypeConfiguration();
+    beerTypeConfiguration.setKeys(List.of());
+    beerTypeConfiguration.setTable("BeerTable");
+    beerTypeConfiguration.setFields(Map.of("identifier", beerIdentifierFieldConfiguration));
+
+    aggregatePostgresFieldConfiguration.setTypeConfiguration(beerTypeConfiguration);
+
+    var beerFieldConfiguration = new PostgresFieldConfiguration();
+    beerFieldConfiguration.setColumn("sold_per_year");
+    beerFieldConfiguration.setName("soldPerYear");
+    beerFieldConfiguration.setType("Int");
+
+    var aggregateFieldConfiguration = AggregateObjectFieldConfiguration.builder()
+        .field(aggregatePostgresFieldConfiguration)
+        .aggregateFields(List.of(AggregateFieldConfiguration.builder()
+            .field(beerFieldConfiguration)
+            .aggregateFunctionType(AggregateFunctionType.AVG)
+            .alias("intAvg")
+            .type(ScalarType.INT)
+            .build()))
+        .build();
+
+    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(breweryTypeConfiguration)
+        .scalarFields(scalarFields)
+        .aggregateObjectFields(List.of(aggregateFieldConfiguration))
+        .build();
+
+    var result = selectQueryBuilder.build(objectRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
+            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select cast(avg(\"t2\".\"sold_per_year\") as int) as \"x2\"\n" + "    from \"beerTable\" as \"t2\"\n"
+            + "    where \"t2\".\"breweryColumn\" = \"t1\".\"identifierColumn\"\n" + "  ) as \"t3\"\n"
+            + "    on 1 = 1"));
+  }
 
   @Test
   @Disabled
-  void build_objectRequest_ForAggregateFieldsWithStringJoinOnArray() {
+  void buildObjectRequest_returnsQuery_forAggregateFieldsWithStringJoinOnArray() {
     // TODO:
   }
 

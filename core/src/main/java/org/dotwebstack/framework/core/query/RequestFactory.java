@@ -48,7 +48,7 @@ public class RequestFactory {
     this.filterCriteriaParserFactory = filterCriteriaParserFactory;
   }
 
-  public CollectionRequest createCollectionQuery(TypeConfiguration<?> typeConfiguration,
+  public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment, boolean addLimit) {
 
     var collectionQueryBuilder = CollectionRequest.builder()
