@@ -51,7 +51,7 @@ class SelectQueryBuilderTest {
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext,new AggregateFieldFactory());
+    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory());
   }
 
   @Test
@@ -229,8 +229,10 @@ class SelectQueryBuilderTest {
 
   @Test
   void build_objectQuery_ForObjectFieldsWithJoinTable() {
-    when(meta.getTables("IngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.IngredientTable()));
-    when(meta.getTables("BeerIngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.BeerIngredientTable()));
+    when(meta.getTables("IngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.IngredientTable()));
+    when(meta.getTables("BeerIngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.BeerIngredientTable()));
 
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
