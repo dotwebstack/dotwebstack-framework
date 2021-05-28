@@ -55,40 +55,40 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildCollectionQuery_returnsSqlQuery_forScalarFields() {
+  void buildCollectioRequest_returnsSqlQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionRequest.builder()
-        .objectRequest(createObjectQuery(typeName, scalarFields))
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeName, scalarFields))
         .build();
 
-    var result = selectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionRequest);
 
     assertThat(result.getQuery()
         .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
   }
 
   @Test
-  void buildCollectionQuery_returnsSqlQuery_withPagingCriteria() {
+  void buildCollectionRequest_returnsSqlQuery_withPagingCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionRequest.builder()
-        .objectRequest(createObjectQuery(typeName, scalarFields))
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeName, scalarFields))
         .pagingCriteria(PagingCriteria.builder()
             .page(1)
             .pageSize(10)
             .build())
         .build();
 
-    var result = selectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionRequest);
 
     assertThat(result.getQuery()
         .toString(),
@@ -97,22 +97,22 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildCollectionQuery_returnsSqlQuery_withFilterCriteria() {
+  void buildCollectionRequest_returnsSqlQuery_withFilterCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionRequest.builder()
-        .objectRequest(createObjectQuery(typeName, scalarFields))
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeName, scalarFields))
         .filterCriterias(List.of(EqualsFilterCriteria.builder()
             .field(scalarFields.get(0))
             .value("Brewery X")
             .build()))
         .build();
 
-    var result = selectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionRequest);
 
     assertThat(result.getQuery()
         .toString(),
@@ -121,26 +121,26 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildObjectQuery_returnsSqlQuery_forScalarFields() {
+  void buildObjectRequest_returnsSqlQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
-    var objectQuery = createObjectQuery("Brewery", scalarFields);
+    var objectRequest = createObjectRequest("Brewery", scalarFields);
 
-    var result = selectQueryBuilder.build(objectQuery);
+    var result = selectQueryBuilder.build(objectRequest);
 
     assertThat(result.getQuery()
         .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
   }
 
   @Test
-  void buildObjectQuery_returnsSqlQuery_withKeyCriteria() {
+  void buildObjectRequest_returnsSqlQuery_withKeyCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
-    var objectQuery = ObjectRequest.builder()
+    var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .keyCriteria(List.of(KeyCriteria.builder()
@@ -148,7 +148,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    var result = selectQueryBuilder.build(objectQuery);
+    var result = selectQueryBuilder.build(objectRequest);
 
     assertThat(result.getQuery()
         .toString(),
@@ -160,13 +160,13 @@ class SelectQueryBuilderTest {
 
   @Test
   @Disabled
-  void build_ObjectQueryAddsKeyField_Default() {
+  void build_ObjectRequestAddsKeyField_Default() {
     // TODO
   }
 
   @Test
   @Disabled
-  void build_ObjectQueryAddsReferenceColumns_Default() {
+  void build_ObjectRequestAddsReferenceColumns_Default() {
     // TODO
   }
 
@@ -187,7 +187,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void buildObjectQuery_returnsSqlQuery_forObjectFieldsWithJoinColumn() {
+  void buildObjectRequest_returnsSqlQuery_forObjectFieldsWithJoinColumn() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     when(meta.getTables("AddressTable")).thenReturn(List.of(new AddressTable()));
 
@@ -202,7 +202,7 @@ class SelectQueryBuilderTest {
     var joinColumn = createJoinColumn("postal_address", "identifier_address");
     var fieldConfiguration = createPostgresFieldConfiguration(typeConfiguration, List.of(joinColumn));
 
-    var nestedFieldObjectQuery = ObjectFieldConfiguration.builder()
+    var nestedObjectField = ObjectFieldConfiguration.builder()
         .field(fieldConfiguration)
         .objectRequest(ObjectRequest.builder()
             .typeConfiguration(typeConfiguration)
@@ -210,13 +210,13 @@ class SelectQueryBuilderTest {
             .build())
         .build();
 
-    var objectQuery = ObjectRequest.builder()
+    var objectRequest = ObjectRequest.builder()
         .typeConfiguration(mockTypeConfiguration("Brewery"))
-        .objectFields(List.of(nestedFieldObjectQuery))
+        .objectFields(List.of(nestedObjectField))
         .scalarFields(List.of(createScalarFieldConfiguration("name")))
         .build();
 
-    SelectQueryBuilderResult result = selectQueryBuilder.build(objectQuery);
+    SelectQueryBuilderResult result = selectQueryBuilder.build(objectRequest);
 
     assertThat(result.getQuery()
         .toString(),
@@ -228,7 +228,7 @@ class SelectQueryBuilderTest {
   }
 
   @Test
-  void build_objectQuery_ForObjectFieldsWithJoinTable() {
+  void build_objectRequest_ForObjectFieldsWithJoinTable() {
     when(meta.getTables("IngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.IngredientTable()));
     when(meta.getTables("BeerIngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.BeerIngredientTable()));
 
@@ -255,12 +255,12 @@ class SelectQueryBuilderTest {
         .joinTable(joinTable)
         .build();
 
-    var objectQuery = ObjectRequest.builder()
+    var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(List.of(createScalarFieldConfiguration("identifier_ingredient")))
         .build();
 
-    var result = selectQueryBuilder.build(objectQuery, new ObjectSelectContext(List.of(keyCriteria), true));
+    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(List.of(keyCriteria), true));
 
     assertThat(result.getQuery()
         .toString(),
@@ -271,27 +271,27 @@ class SelectQueryBuilderTest {
 
   @Test
   @Disabled
-  void build_objectQuery_ForObjectFieldsWithMappedBy() {}
+  void build_objectRequest_ForObjectFieldsWithMappedBy() {}
 
   @Test
   @Disabled
-  void build_objectQuery_ForNestedObjects() {}
+  void build_objectRequest_ForNestedObjects() {}
 
   @Test
   @Disabled
-  void build_objectQuery_ForAggregateFieldsWithJoinTable() {}
+  void build_objectRequest_ForAggregateFieldsWithJoinTable() {}
 
   @Test
   @Disabled
-  void build_objectQuery_ForAggregateFieldsWithJoinColumn() {}
+  void build_objectRequest_ForAggregateFieldsWithJoinColumn() {}
 
   @Test
   @Disabled
-  void build_objectQuery_ForAggregateFieldsWithStringJoinOnArray() {
+  void build_objectRequest_ForAggregateFieldsWithStringJoinOnArray() {
     // TODO:
   }
 
-  private ObjectRequest createObjectQuery(String typeName, List<FieldConfiguration> scalarFields) {
+  private ObjectRequest createObjectRequest(String typeName, List<FieldConfiguration> scalarFields) {
     TypeConfiguration<?> typeConfiguration = mockTypeConfiguration(typeName);
 
     return ObjectRequest.builder()
