@@ -51,7 +51,7 @@ class SelectQueryBuilderTest {
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext,new AggregateFieldFactory());
+    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory());
   }
 
   @Test
@@ -170,22 +170,6 @@ class SelectQueryBuilderTest {
     // TODO
   }
 
-  private PostgresFieldConfiguration createPostgresFieldConfiguration(PostgresTypeConfiguration typeConfiguration,
-      List<JoinColumn> joinColumns) {
-    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
-    fieldConfiguration.setType(typeConfiguration.getName());
-    fieldConfiguration.setTypeConfiguration(typeConfiguration);
-    fieldConfiguration.setJoinColumns(joinColumns);
-    return fieldConfiguration;
-  }
-
-  private JoinColumn createJoinColumn(String name, String referencedField) {
-    JoinColumn joinColumn = new JoinColumn();
-    joinColumn.setName(name);
-    joinColumn.setReferencedField(referencedField);
-    return joinColumn;
-  }
-
   @Test
   void buildObjectRequest_returnsSqlQuery_forObjectFieldsWithJoinColumn() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
@@ -229,8 +213,10 @@ class SelectQueryBuilderTest {
 
   @Test
   void build_objectRequest_ForObjectFieldsWithJoinTable() {
-    when(meta.getTables("IngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.IngredientTable()));
-    when(meta.getTables("BeerIngredientTable")).thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.objectquery.BeerIngredientTable()));
+    when(meta.getTables("IngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.IngredientTable()));
+    when(meta.getTables("BeerIngredientTable"))
+        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerIngredientTable()));
 
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
@@ -298,6 +284,22 @@ class SelectQueryBuilderTest {
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .build();
+  }
+
+  private PostgresFieldConfiguration createPostgresFieldConfiguration(PostgresTypeConfiguration typeConfiguration,
+      List<JoinColumn> joinColumns) {
+    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
+    fieldConfiguration.setType(typeConfiguration.getName());
+    fieldConfiguration.setTypeConfiguration(typeConfiguration);
+    fieldConfiguration.setJoinColumns(joinColumns);
+    return fieldConfiguration;
+  }
+
+  private JoinColumn createJoinColumn(String name, String referencedField) {
+    JoinColumn joinColumn = new JoinColumn();
+    joinColumn.setName(name);
+    joinColumn.setReferencedField(referencedField);
+    return joinColumn;
   }
 
   private PostgresFieldConfiguration createScalarFieldConfiguration(String scalarName) {
