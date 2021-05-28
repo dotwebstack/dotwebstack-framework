@@ -40,9 +40,9 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.query.QueryFactory;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.RequestFactory;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +73,7 @@ class GenericDataFetcherTest {
   private ExecutionStepInfo executionStepInfo;
 
   @Mock
-  private QueryFactory queryFactory;
+  private RequestFactory requestFactory;
 
   private GenericDataFetcher genericDataFetcher;
 
@@ -87,7 +87,7 @@ class GenericDataFetcherTest {
 
     dataLoaderRegistry = new DataLoaderRegistry();
 
-    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader), queryFactory);
+    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader), requestFactory);
   }
 
   @Test
@@ -122,10 +122,10 @@ class GenericDataFetcherTest {
     var objectQuery = createObjectQuery();
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
-    when(backendDataLoader.loadSingleObject(any())).thenReturn(Mono.just(data));
+    when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(data));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.useObjectQueryApproach()).thenReturn(true);
-    when(queryFactory.createObjectQuery(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
 
     var future = genericDataFetcher.get(dataFetchingEnvironment);
 
@@ -138,7 +138,7 @@ class GenericDataFetcherTest {
         .orElseThrow()
         .entrySet(), equalTo(data.entrySet()));
 
-    verify(backendDataLoader).loadSingleObject(any(ObjectQuery.class));
+    verify(backendDataLoader).loadSingleRequest(any(ObjectRequest.class));
   }
 
   @Test
@@ -171,14 +171,14 @@ class GenericDataFetcherTest {
     List<Map<String, Object>> data = List.of(Map.of("identifier", "id-1"), Map.of("identifier", "id-2"));
     var outputType = GraphQLList.list(createBreweryType());
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery())
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
         .build();
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.loadManyObject(any())).thenReturn(Flux.fromIterable(data));
-    when(backendDataLoader.useObjectQueryApproach()).thenReturn(true);
-    when(queryFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, true))
+    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.fromIterable(data));
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, true))
         .thenReturn(collectionQuery);
 
     Object future = genericDataFetcher.get(dataFetchingEnvironment);
@@ -192,7 +192,7 @@ class GenericDataFetcherTest {
         .map(DataFetcherResult::getData)
         .collect(Collectors.toList()), equalTo(data));
 
-    verify(backendDataLoader).loadManyObject(any(CollectionQuery.class));
+    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
   }
 
   @Test
@@ -214,21 +214,21 @@ class GenericDataFetcherTest {
   void get_returnsFlux_forLoadManySubscriptionOperation_WhenUsingObjectQueryApproach() {
     var outputType = GraphQLList.list(createBreweryType());
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery())
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
         .build();
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.loadManyObject(any())).thenReturn(Flux.empty());
-    when(backendDataLoader.useObjectQueryApproach()).thenReturn(true);
-    when(queryFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, true))
+    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.empty());
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, true))
         .thenReturn(collectionQuery);
 
     var result = genericDataFetcher.get(dataFetchingEnvironment);
 
     assertThat(result, instanceOf(Flux.class));
 
-    verify(backendDataLoader).loadManyObject(any(CollectionQuery.class));
+    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
   }
 
   @Test
@@ -297,8 +297,8 @@ class GenericDataFetcherTest {
         .valueMap(Map.of("brewery", "id-brewery-2"))
         .build();
 
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery())
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
         .build();
 
     Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(List.of(
@@ -312,10 +312,10 @@ class GenericDataFetcherTest {
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithBeer);
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
-    when(backendDataLoader.batchLoadManyObject(any(), any())).thenReturn(batchLoadManyResult);
+    when(backendDataLoader.batchLoadManyRequest(any(), any())).thenReturn(batchLoadManyResult);
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.useObjectQueryApproach()).thenReturn(true);
-    when(queryFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, false))
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionQuery(typeConfiguration, dataFetchingEnvironment, false))
         .thenReturn(collectionQuery);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
@@ -392,8 +392,8 @@ class GenericDataFetcherTest {
 
     when(backendDataLoader.batchLoadSingleObject(any())).thenReturn(Flux.fromIterable(breweries));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.useObjectQueryApproach()).thenReturn(true);
-    when(queryFactory.createObjectQuery(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
@@ -410,12 +410,12 @@ class GenericDataFetcherTest {
     assertBatchLoadSingleDataloaderResult(breweryOneFuture, breweryTwoFuture);
   }
 
-  private ObjectQuery createObjectQuery() {
+  private ObjectRequest createObjectQuery() {
     var fieldConfig = new TestFieldConfiguration();
     fieldConfig.setScalarField(true);
     fieldConfig.setName("identifier");
 
-    return ObjectQuery.builder()
+    return ObjectRequest.builder()
         .scalarFields(List.of(fieldConfig))
         .build();
   }

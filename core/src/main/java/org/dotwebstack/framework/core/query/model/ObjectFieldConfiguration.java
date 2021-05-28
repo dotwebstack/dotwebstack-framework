@@ -9,5 +9,5 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public class ObjectFieldConfiguration {
   private final FieldConfiguration field;
 
-  private final ObjectQuery objectQuery;
+  private final ObjectRequest objectRequest;
 }

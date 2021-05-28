@@ -12,15 +12,15 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectSelectContext;
-import org.dotwebstack.framework.backend.postgres.query.objectquery.PostgresKeyCriteria;
+import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
+import org.dotwebstack.framework.backend.postgres.query.PostgresKeyCriteria;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Param;
 import org.jooq.Query;
 import org.jooq.SelectQuery;
@@ -42,11 +42,11 @@ public class PostgresDataLoader implements BackendDataLoader {
 
   private final DatabaseClient databaseClient;
 
-  private final ObjectQueryBuilder objectQueryBuilder;
+  private final SelectQueryBuilder selectQueryBuilder;
 
-  public PostgresDataLoader(DatabaseClient databaseClient, ObjectQueryBuilder objectQueryBuilder) {
+  public PostgresDataLoader(DatabaseClient databaseClient, SelectQueryBuilder selectQueryBuilder) {
     this.databaseClient = databaseClient;
-    this.objectQueryBuilder = objectQueryBuilder;
+    this.selectQueryBuilder = selectQueryBuilder;
   }
 
   @Override
@@ -55,23 +55,23 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
-    var selectQueryBuilderResult = objectQueryBuilder.build(objectQuery, new ObjectSelectContext());
+  public Mono<Map<String, Object>> loadSingleRequest(ObjectRequest objectRequest) {
+    var selectQueryBuilderResult = selectQueryBuilder.build(objectRequest, new ObjectSelectContext());
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
   }
 
   @Override
-  public Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
-    var selectQueryBuilderResult = objectQueryBuilder.build(collectionQuery, new ObjectSelectContext());
+  public Flux<Map<String, Object>> loadManyRequest(CollectionRequest collectionRequest) {
+    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext());
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
 
   @Override
-  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
-      CollectionQuery collectionQuery) {
-    collectionQuery.getObjectQuery()
+  public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyRequest(Set<KeyCondition> keyConditions,
+      CollectionRequest collectionRequest) {
+    collectionRequest.getObjectRequest()
         .getKeyCriteria()
         .addAll(keyConditions.stream()
             .map(ColumnKeyCondition.class::cast)
@@ -91,7 +91,7 @@ public class PostgresDataLoader implements BackendDataLoader {
         .collect(Collectors.toList());
 
     var selectQueryBuilderResult =
-        objectQueryBuilder.build(collectionQuery, new ObjectSelectContext(joinCriteria, true));
+        selectQueryBuilder.build(collectionRequest, new ObjectSelectContext(joinCriteria, true));
 
     Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext()
         .getKeyColumnNames();
@@ -185,7 +185,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public boolean useObjectQueryApproach() {
+  public boolean useRequestApproach() {
     return true;
   }
 }

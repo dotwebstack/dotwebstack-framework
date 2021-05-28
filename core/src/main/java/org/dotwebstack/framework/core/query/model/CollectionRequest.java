@@ -8,10 +8,10 @@ import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @Builder
 @Data
-public class CollectionQuery implements Query {
+public class CollectionRequest implements Request {
 
   @NonNull
-  private final ObjectQuery objectQuery;
+  private final ObjectRequest objectRequest;
 
   @Builder.Default
   private final List<SortCriteria> sortCriteria = List.of();

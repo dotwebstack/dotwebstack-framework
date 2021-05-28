@@ -8,7 +8,7 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 @Builder
 @Data
-public class ObjectQuery implements Query {
+public class ObjectRequest implements Request {
   // @NonNull
   private final TypeConfiguration<?> typeConfiguration;
 

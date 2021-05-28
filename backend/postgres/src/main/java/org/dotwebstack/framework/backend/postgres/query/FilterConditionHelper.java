@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
