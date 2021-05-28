@@ -171,7 +171,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (backendDataLoader.useRequestApproach()) {
       var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleObject(objectRequest)
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleRequest(objectRequest)
           .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
           .toFuture());
     } else {
