@@ -10,17 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CoreConfigurer implements GraphqlConfigurer {
 
-  private final TypeDefinitionRegistry typeDefinitionRegistry;
-
-  public CoreConfigurer(TypeDefinitionRegistry typeDefinitionRegistry) {
-    this.typeDefinitionRegistry = typeDefinitionRegistry;
-  }
-
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.OBJECT.getName()));
-    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
-    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    registry.add(new ScalarTypeDefinition(CoreScalars.OBJECT.getName()));
+    registry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
+    registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
   }
 
   @Override

@@ -35,6 +35,8 @@ import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -42,11 +44,18 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   private final DotWebStackConfigurationReader dwsReader =
       new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
 
+  private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
+    fieldFilterMap.put("String", FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put("Float", FilterConstants.FLOAT_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put("Int", FilterConstants.INT_FILTER_INPUT_OBJECT_TYPE);
+  };
+
   @Test
   void typeDefinitionRegistry_registerQueries_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Query")
@@ -79,7 +88,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerQueriesWithFilters_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries-with-filters.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Query")
@@ -138,7 +148,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-queries.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Query")
@@ -155,7 +166,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-subscriptions.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Subscription")
@@ -177,7 +189,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-no-subscriptions.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertTrue(registry.getType("Subscription")
@@ -188,7 +201,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-enumerations.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Taste")
@@ -215,7 +229,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Brewery")
@@ -250,7 +265,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
     var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Brewery")
