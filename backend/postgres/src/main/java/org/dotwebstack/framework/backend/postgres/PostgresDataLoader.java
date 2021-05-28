@@ -105,6 +105,11 @@ public class PostgresDataLoader implements BackendDataLoader {
                 .apply(row));
   }
 
+  @Override
+  public Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingleRequest(ObjectRequest objectRequest) {
+    throw unsupportedOperationException(UNSUPPORTED_MESSAGE);
+  }
+
   private Flux<Map<String, Object>> fetch(SelectQuery<?> query, UnaryOperator<Map<String, Object>> mapAssembler) {
     String sql = query.getSQL(ParamType.INLINED);
 
