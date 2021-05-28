@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Data;

@@ -3,8 +3,8 @@ package org.dotwebstack.framework.core.datafetchers;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -26,24 +26,24 @@ public interface BackendDataLoader {
   Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadMany(Set<KeyCondition> keyConditions,
       LoadEnvironment environment);
 
-  default Mono<Map<String, Object>> loadSingleObject(ObjectQuery objectQuery) {
+  default Mono<Map<String, Object>> loadSingleRequest(ObjectRequest objectRequest) {
     return Mono.empty();
   }
 
-  default Flux<Map<String, Object>> loadManyObject(CollectionQuery collectionQuery) {
+  default Flux<Map<String, Object>> loadManyRequest(CollectionRequest collectionRequest) {
     return Flux.empty();
   }
 
-  default Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingleObject(ObjectQuery objectQuery) {
+  default Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingleObject(ObjectRequest objectRequest) {
     return Flux.empty();
   }
 
-  default Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyObject(Set<KeyCondition> keyConditions,
-      CollectionQuery collectionQuery) {
+  default Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyRequest(Set<KeyCondition> keyConditions,
+      CollectionRequest collectionRequest) {
     return Flux.empty();
   }
 
-  default boolean useObjectQueryApproach() {
+  default boolean useRequestApproach() {
     return false;
   }
 }

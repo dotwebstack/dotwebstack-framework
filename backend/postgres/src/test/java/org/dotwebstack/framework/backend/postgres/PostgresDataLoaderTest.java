@@ -13,7 +13,7 @@ import graphql.schema.DataFetchingFieldSelectionSet;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.objectquery.ObjectQueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -33,13 +33,13 @@ class PostgresDataLoaderTest {
   private DatabaseClient databaseClient;
 
   @Mock
-  private ObjectQueryBuilder objectQueryBuilder;
+  private SelectQueryBuilder selectQueryBuilder;
 
   private PostgresDataLoader postgresDataLoader;
 
   @BeforeEach
   void beforeAll() {
-    postgresDataLoader = new PostgresDataLoader(databaseClient, objectQueryBuilder);
+    postgresDataLoader = new PostgresDataLoader(databaseClient, selectQueryBuilder);
   }
 
   @Test
@@ -73,10 +73,10 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadSingle() {
-    Set<KeyCondition> keyConditions = Set.of();
+    var keyCondition = mock(KeyCondition.class);
     var loadEnvironment = mockLoadEnvironment();
     assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+        () -> postgresDataLoader.loadSingle(keyCondition, loadEnvironment));
   }
 
   @Test
@@ -89,10 +89,9 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadMany() {
-    Set<KeyCondition> keyConditions = Set.of();
+    var keyCondition = mock(KeyCondition.class);
     var loadEnvironment = mockLoadEnvironment();
-    assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+    assertThrows(UnsupportedOperationException.class, () -> postgresDataLoader.loadMany(keyCondition, loadEnvironment));
   }
 
   @Test
@@ -100,7 +99,7 @@ class PostgresDataLoaderTest {
     Set<KeyCondition> keyConditions = Set.of();
     var loadEnvironment = mockLoadEnvironment();
     assertThrows(UnsupportedOperationException.class,
-        () -> postgresDataLoader.batchLoadSingle(keyConditions, loadEnvironment));
+        () -> postgresDataLoader.batchLoadMany(keyConditions, loadEnvironment));
   }
 
   @SuppressWarnings("unchecked")

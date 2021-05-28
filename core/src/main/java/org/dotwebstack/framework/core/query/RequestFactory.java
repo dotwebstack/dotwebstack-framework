@@ -30,29 +30,29 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFa
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QueryFactory {
+public class RequestFactory {
 
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
-  public QueryFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {
+  public RequestFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {
     this.filterCriteriaParserFactory = filterCriteriaParserFactory;
   }
 
-  public CollectionQuery createCollectionQuery(TypeConfiguration<?> typeConfiguration,
+  public CollectionRequest createCollectionQuery(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment, boolean addLimit) {
 
-    var collectionQueryBuilder = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeConfiguration, environment))
+    var collectionQueryBuilder = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeConfiguration, environment))
         .filterCriterias(createFilterCriterias(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
@@ -64,21 +64,22 @@ public class QueryFactory {
     return collectionQueryBuilder.build();
   }
 
-  public ObjectQuery createObjectQuery(TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return createObjectQuery("", typeConfiguration, environment);
+  public ObjectRequest createObjectRequest(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    return createObjectRequest("", typeConfiguration, environment);
   }
 
-  private ObjectQuery createObjectQuery(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
+  private ObjectRequest createObjectRequest(FieldConfigurationPair pair, DataFetchingEnvironment environment) {
     String fieldPathPrefix = pair.getSelectedField()
         .getFullyQualifiedName()
         .concat("/");
     TypeConfiguration<?> typeConfiguration = pair.getFieldConfiguration()
         .getTypeConfiguration();
 
-    return createObjectQuery(fieldPathPrefix, typeConfiguration, environment);
+    return createObjectRequest(fieldPathPrefix, typeConfiguration, environment);
   }
 
-  public ObjectQuery createObjectQuery(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+  public ObjectRequest createObjectRequest(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
     List<FieldConfiguration> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
@@ -93,7 +94,7 @@ public class QueryFactory {
     List<ObjectFieldConfiguration> collectionObjectFields =
         getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
-    return ObjectQuery.builder()
+    return ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .objectFields(objectFields)
@@ -217,7 +218,7 @@ public class QueryFactory {
             .isList())
         .map(pair -> ObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
-            .objectQuery(createObjectQuery(pair, environment))
+            .objectRequest(createObjectRequest(pair, environment))
             .build())
         .collect(Collectors.toList());
   }
@@ -232,7 +233,7 @@ public class QueryFactory {
             .isList())
         .map(pair -> ObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
-            .objectQuery(createObjectQuery(pair, environment))
+            .objectRequest(createObjectRequest(pair, environment))
             .build())
         .collect(Collectors.toList());
   }

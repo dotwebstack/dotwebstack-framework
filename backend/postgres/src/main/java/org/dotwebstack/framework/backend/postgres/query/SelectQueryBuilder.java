@@ -1,7 +1,7 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.QueryUtil.createMapAssembler;
-import static org.dotwebstack.framework.backend.postgres.query.objectquery.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.ArrayList;
@@ -16,15 +16,13 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
-import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
@@ -36,43 +34,40 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 @Component
-public class ObjectQueryBuilder {
+public class SelectQueryBuilder {
 
   private final DSLContext dslContext;
 
   private final AggregateFieldFactory aggregateFieldFactory;
 
-  public ObjectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
+  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
     this.dslContext = dslContext;
     this.aggregateFieldFactory = aggregateFieldFactory;
   }
 
-  public SelectQueryBuilderResult build(CollectionQuery collectionQuery) {
-    return build(collectionQuery, new ObjectSelectContext());
+  public SelectQueryBuilderResult build(CollectionRequest collectionRequest) {
+    return build(collectionRequest, new ObjectSelectContext());
   }
 
-  public SelectQueryBuilderResult build(CollectionQuery collectionQuery, ObjectSelectContext objectSelectContext) {
-    var objectQuery = collectionQuery.getObjectQuery();
+  public SelectQueryBuilderResult build(CollectionRequest collectionRequest, ObjectSelectContext objectSelectContext) {
+    var objectRequest = collectionRequest.getObjectRequest();
 
-    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
+    var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
 
-    var selectQuery = buildQuery(objectSelectContext, objectQuery, fromTable);
+    var selectQuery = buildQuery(objectSelectContext, objectRequest, fromTable);
 
-    if (!CollectionUtils.isEmpty(collectionQuery.getFilterCriterias())) {
-      createFilterConditions(collectionQuery.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
+    if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
+      createFilterConditions(collectionRequest.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
     }
 
-    if (collectionQuery.getPagingCriteria() != null) {
-      var pagingCriteria = collectionQuery.getPagingCriteria();
+    if (collectionRequest.getPagingCriteria() != null) {
+      var pagingCriteria = collectionRequest.getPagingCriteria();
       selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
     }
 
-    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
-      // dit werkt niet voor keycriteria with a jointable en dit wordt opgelost in addJoinTableJoin
-      // Misschien moet dat wel hier opgelost worden
-      // query = addJoinCriteria?
-      selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
+    if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {
+      selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectRequest.getKeyCriteria());
     }
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
@@ -86,28 +81,25 @@ public class ObjectQueryBuilder {
         .build();
   }
 
-  public SelectQueryBuilderResult build(ObjectQuery objectQuery) {
-    return build(objectQuery, new ObjectSelectContext());
+  public SelectQueryBuilderResult build(ObjectRequest objectRequest) {
+    return build(objectRequest, new ObjectSelectContext());
   }
 
-  public SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext) {
-    var fromTable = findTable(((PostgresTypeConfiguration) objectQuery.getTypeConfiguration()).getTable())
+  public SelectQueryBuilderResult build(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext) {
+    var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
-    return build(objectQuery, objectSelectContext, fromTable);
+    return build(objectRequest, objectSelectContext, fromTable);
   }
 
-  private SelectQueryBuilderResult build(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+  private SelectQueryBuilderResult build(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       Table<?> fromTable) {
-    var query = buildQuery(objectSelectContext, objectQuery, fromTable);
+    var query = buildQuery(objectSelectContext, objectRequest, fromTable);
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
         objectSelectContext.isUseNullMapWhenNotFound());
 
-    if (!CollectionUtils.isEmpty(objectQuery.getKeyCriteria())) {
-      // dit werkt niet voor keycriteria with a jointable en dit wordt opgelost in addJoinTableJoin
-      // Misschien moet dat wel hier opgelost worden
-      // query = addJoinCriteria?
-      query = addKeyCriterias(query, objectSelectContext, fromTable, objectQuery.getKeyCriteria());
+    if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {
+      query = addKeyCriterias(query, objectSelectContext, fromTable, objectRequest.getKeyCriteria());
     }
 
     return SelectQueryBuilderResult.builder()
@@ -118,22 +110,22 @@ public class ObjectQueryBuilder {
         .build();
   }
 
-  private SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectQuery objectQuery,
+  private SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectRequest objectRequest,
       Table<?> fromTable) {
 
     var query = dslContext.selectQuery(fromTable);
 
-    addScalarFields((PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), objectQuery.getScalarFields(),
+    addScalarFields((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), objectRequest.getScalarFields(),
         objectSelectContext, query, fromTable);
-    addNestedObjectFields(objectQuery, objectSelectContext, query, fromTable);
-    addObjectFields(objectQuery, objectSelectContext, query, fromTable);
-    addAggregateObjectFields(objectQuery, objectSelectContext, query, fromTable);
+    addNestedObjectFields(objectRequest, objectSelectContext, query, fromTable);
+    addObjectFields(objectRequest, objectSelectContext, query, fromTable);
+    addAggregateObjectFields(objectRequest, objectSelectContext, query, fromTable);
 
     // check if any non-key-fields need to be added in order to support join
-    addReferenceColumns(objectQuery, objectSelectContext, query, fromTable);
+    addReferenceColumns(objectRequest, objectSelectContext, query, fromTable);
 
     // add inner join if this subselect with jointable
-    addJoinTableJoin((PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), query, objectSelectContext,
+    addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), query, objectSelectContext,
         fromTable);
     return query;
   }
@@ -222,7 +214,6 @@ public class ObjectQueryBuilder {
     if (!keyFieldAdded.get() && !typeConfiguration.getKeys()
         .isEmpty()) {
 
-      // TODO add TypeConfiguration to keys?
       var name = typeConfiguration.getKeys()
           .get(0)
           .getField();
@@ -247,14 +238,14 @@ public class ObjectQueryBuilder {
     query.addSelect(column);
   }
 
-  private void addNestedObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+  private void addNestedObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> fieldTable) {
 
-    objectQuery.getNestedObjectFields()
+    objectRequest.getNestedObjectFields()
         .forEach(nestedObjectField -> {
 
           var nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
-          addScalarFields((PostgresTypeConfiguration) objectQuery.getTypeConfiguration(),
+          addScalarFields((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
               nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
           objectSelectContext.getAssembleFns()
               .put(nestedObjectField.getField()
@@ -264,10 +255,10 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private void addObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
-      Table<?> fieldTable) {
+  private void addObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable) {
 
-    objectQuery.getObjectFields()
+    objectRequest.getObjectFields()
         .forEach(objectField -> {
           var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
@@ -277,10 +268,10 @@ public class ObjectQueryBuilder {
               findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable())
                   .asTable(objectSelectContext.newTableAlias());
 
-          var subSelect = buildQuery(lateralJoinContext, objectField.getObjectQuery(), objectFieldTable);
+          var subSelect = buildQuery(lateralJoinContext, objectField.getObjectRequest(), objectFieldTable);
 
           addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
-              (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable);
+              (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable);
 
           subSelect.addLimit(1);
 
@@ -296,10 +287,10 @@ public class ObjectQueryBuilder {
         });
   }
 
-  private void addAggregateObjectFields(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+  private void addAggregateObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> fieldTable) {
 
-    objectQuery.getAggregateObjectFields()
+    objectRequest.getAggregateObjectFields()
         .forEach(aggregateObjectFieldConfiguration -> {
           var aggregateObjectSelectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
@@ -310,11 +301,11 @@ public class ObjectQueryBuilder {
           stringJoinAggregateFields
               .forEach(stringJoinAggregateField -> processAggregateFields(List.of(stringJoinAggregateField),
                   aggregateObjectFieldConfiguration, aggregateObjectSelectContext, query,
-                  (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(), fieldTable));
+                  (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable));
 
           if (!otherAggregateFields.isEmpty()) {
             processAggregateFields(otherAggregateFields, aggregateObjectFieldConfiguration,
-                aggregateObjectSelectContext, query, (PostgresTypeConfiguration) objectQuery.getTypeConfiguration(),
+                aggregateObjectSelectContext, query, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
                 fieldTable);
           }
 
@@ -331,9 +322,6 @@ public class ObjectQueryBuilder {
       AggregateObjectFieldConfiguration aggregateObjectFieldConfiguration,
       ObjectSelectContext aggregateObjectSelectContext, SelectQuery<?> query,
       PostgresTypeConfiguration mainTypeConfiguration, Table<?> fieldTable) {
-    // aggregateFields [intCount, intSum]
-    // aggregateObjectFieldConfiguration: beerAgg
-    // aggregateObjectSelectContext (object for storing ass
     var aggregateFieldConfiguration = (PostgresFieldConfiguration) aggregateObjectFieldConfiguration.getField();
     var aggregateTypeConfiguration = (PostgresTypeConfiguration) aggregateFieldConfiguration.getTypeConfiguration();
 
@@ -377,15 +365,15 @@ public class ObjectQueryBuilder {
     });
   }
 
-  private void addReferenceColumns(ObjectQuery objectQuery, ObjectSelectContext objectSelectContext,
+  private void addReferenceColumns(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> table) {
-    if (!objectQuery.getObjectFields()
+    if (!objectRequest.getObjectFields()
         .isEmpty()
-        || !objectQuery.getAggregateObjectFields()
+        || !objectRequest.getAggregateObjectFields()
             .isEmpty()
-        || !objectQuery.getCollectionObjectFields()
+        || !objectRequest.getCollectionObjectFields()
             .isEmpty()) {
-      var typeConfiguration = (PostgresTypeConfiguration) objectQuery.getTypeConfiguration();
+      var typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()
           .forEach(referenceFieldConfiguration -> addScalarField(referenceFieldConfiguration, objectSelectContext,
@@ -482,8 +470,6 @@ public class ObjectQueryBuilder {
   }
 
   private Table<?> findTable(String name) {
-
-    // TODO add to PostgresTypeConfig
     var path = name.split("\\.");
     var tables = dslContext.meta()
         .getTables(path[path.length - 1]);

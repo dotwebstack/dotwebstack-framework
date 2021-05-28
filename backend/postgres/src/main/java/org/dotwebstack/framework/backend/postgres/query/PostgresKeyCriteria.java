@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

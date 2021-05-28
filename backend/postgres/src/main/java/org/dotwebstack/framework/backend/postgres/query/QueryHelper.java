@@ -8,15 +8,15 @@ import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.datafetchers.GenericDataFetcher;
 
-public class QueryUtil {
+public class QueryHelper {
 
-  private QueryUtil() {}
+  private QueryHelper() {}
 
   public static UnaryOperator<Map<String, Object>> createMapAssembler(
       Map<String, Function<Map<String, Object>, Object>> assembleFns, AtomicReference<String> checkNullAlias,
       boolean isUseNullMapWhenNotFound) {
     return row -> {
-      if (!StringUtils.isEmpty(checkNullAlias.get()) && row.get(checkNullAlias.get()) == null) {
+      if (StringUtils.isNotEmpty(checkNullAlias.get()) && row.get(checkNullAlias.get()) == null) {
         if (isUseNullMapWhenNotFound) {
           return GenericDataFetcher.NULL_MAP;
         }

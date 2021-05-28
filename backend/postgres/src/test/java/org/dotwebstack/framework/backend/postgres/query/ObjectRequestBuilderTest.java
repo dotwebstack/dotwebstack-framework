@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -12,14 +12,12 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.AggregateFieldFactory;
-import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.query.model.CollectionQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.jooq.DSLContext;
@@ -36,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ObjectQueryBuilderTest {
+class ObjectRequestBuilderTest {
   private static final String TABLE_POSTFIX = "Table";
 
   private static final String COLUMN_POSTFIX = "Column";
@@ -48,7 +46,7 @@ class ObjectQueryBuilderTest {
   @Mock
   Meta meta;
 
-  private ObjectQueryBuilder objectQueryBuilder;
+  private SelectQueryBuilder selectQueryBuilder;
 
   @BeforeEach
   void beforeAll() {
@@ -64,11 +62,11 @@ class ObjectQueryBuilderTest {
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeName, scalarFields))
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery(typeName, scalarFields))
         .build();
 
-    var result = objectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionQuery);
 
     assertThat(result.getQuery()
         .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
@@ -82,15 +80,15 @@ class ObjectQueryBuilderTest {
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeName, scalarFields))
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery(typeName, scalarFields))
         .pagingCriteria(PagingCriteria.builder()
             .page(1)
             .pageSize(10)
             .build())
         .build();
 
-    var result = objectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionQuery);
 
     assertThat(result.getQuery()
         .toString(),
@@ -106,15 +104,15 @@ class ObjectQueryBuilderTest {
 
     var typeName = "Brewery";
 
-    var collectionQuery = CollectionQuery.builder()
-        .objectQuery(createObjectQuery(typeName, scalarFields))
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery(typeName, scalarFields))
         .filterCriterias(List.of(EqualsFilterCriteria.builder()
             .field(scalarFields.get(0))
             .value("Brewery X")
             .build()))
         .build();
 
-    var result = objectQueryBuilder.build(collectionQuery);
+    var result = selectQueryBuilder.build(collectionQuery);
 
     assertThat(result.getQuery()
         .toString(),
@@ -129,7 +127,7 @@ class ObjectQueryBuilderTest {
 
     var objectQuery = createObjectQuery("Brewery", scalarFields);
 
-    var result = objectQueryBuilder.build(objectQuery);
+    var result = selectQueryBuilder.build(objectQuery);
 
     assertThat(result.getQuery()
         .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
@@ -142,7 +140,7 @@ class ObjectQueryBuilderTest {
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
-    var objectQuery = ObjectQuery.builder()
+    var objectQuery = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .keyCriteria(List.of(KeyCriteria.builder()
@@ -150,7 +148,7 @@ class ObjectQueryBuilderTest {
             .build()))
         .build();
 
-    var result = objectQueryBuilder.build(objectQuery);
+    var result = selectQueryBuilder.build(objectQuery);
 
     assertThat(result.getQuery()
         .toString(),
@@ -206,19 +204,19 @@ class ObjectQueryBuilderTest {
 
     var nestedFieldObjectQuery = ObjectFieldConfiguration.builder()
         .field(fieldConfiguration)
-        .objectQuery(ObjectQuery.builder()
+        .objectRequest(ObjectRequest.builder()
             .typeConfiguration(typeConfiguration)
             .scalarFields(List.of(createScalarFieldConfiguration("street")))
             .build())
         .build();
 
-    var objectQuery = ObjectQuery.builder()
+    var objectQuery = ObjectRequest.builder()
         .typeConfiguration(mockTypeConfiguration("Brewery"))
         .objectFields(List.of(nestedFieldObjectQuery))
         .scalarFields(List.of(createScalarFieldConfiguration("name")))
         .build();
 
-    SelectQueryBuilderResult result = objectQueryBuilder.build(objectQuery);
+    SelectQueryBuilderResult result = selectQueryBuilder.build(objectQuery);
 
     assertThat(result.getQuery()
         .toString(),
@@ -293,10 +291,10 @@ class ObjectQueryBuilderTest {
     // TODO:
   }
 
-  private ObjectQuery createObjectQuery(String typeName, List<FieldConfiguration> scalarFields) {
+  private ObjectRequest createObjectQuery(String typeName, List<FieldConfiguration> scalarFields) {
     TypeConfiguration<?> typeConfiguration = mockTypeConfiguration(typeName);
 
-    return ObjectQuery.builder()
+    return ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
         .build();
@@ -309,9 +307,9 @@ class ObjectQueryBuilderTest {
     return fieldConfiguration;
   }
 
-  private void addNestedObjectField(ObjectQuery objectQuery, String nestedObjectName) {}
+  private void addNestedObjectField(ObjectRequest objectRequest, String nestedObjectName) {}
 
-  private void addAggregateObjectField(ObjectQuery objectQuery, String aggregateName) {}
+  private void addAggregateObjectField(ObjectRequest objectRequest, String aggregateName) {}
 
   private void assertNonNull(SelectQueryBuilderResult result) {
     assertThat(result, notNullValue());

@@ -1,6 +1,6 @@
-package org.dotwebstack.framework.backend.postgres.query.objectquery;
+package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.objectquery.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -173,8 +173,10 @@ class FilterConditionHelperTest {
       }
     };
 
+    List<FilterCriteria> filterCriterias = List.of(filterCriteria);
+
     Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> createFilterConditions(List.of(filterCriteria), fromTable));
+        () -> createFilterConditions(filterCriterias, fromTable));
 
   }
 

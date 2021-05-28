@@ -228,7 +228,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .isEmpty()) {
       var filterName = createFilterName(typeName);
 
-      InputValueDefinition inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
+      var inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
           .type(newType(filterName))
           .build();
 

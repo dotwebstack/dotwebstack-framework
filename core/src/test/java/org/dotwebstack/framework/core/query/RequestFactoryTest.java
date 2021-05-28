@@ -36,7 +36,8 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
-import org.dotwebstack.framework.core.query.model.ObjectQuery;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class QueryFactoryTest {
+class RequestFactoryTest {
 
   private static final String FIELD_IDENTIFIER = "identifier";
 
@@ -74,7 +75,7 @@ class QueryFactoryTest {
 
   private static final String TEXT = "text";
 
-  private QueryFactory queryFactory;
+  private RequestFactory requestFactory;
 
   @SuppressWarnings("rawtypes")
   private TypeConfiguration typeConfiguration;
@@ -95,7 +96,7 @@ class QueryFactoryTest {
 
   @BeforeEach
   void beforeEach() {
-    queryFactory = new QueryFactory(filterCriteriaParserFactory);
+    requestFactory = new RequestFactory(filterCriteriaParserFactory);
     typeConfiguration = mock(TypeConfiguration.class);
     selectionSet = mock(DataFetchingFieldSelectionSet.class);
     fieldPathPrefix = "";
@@ -123,7 +124,7 @@ class QueryFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = queryFactory.createCollectionQuery(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionQuery(typeConfiguration, environment, true);
 
     assertCollectionQuery(collectionQuery);
   }
@@ -139,7 +140,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
   }
@@ -158,7 +159,7 @@ class QueryFactoryTest {
     Map<String, Object> arguments = Map.of(FIELD_KEYCRITERIA, "1234-5678");
     when(environment.getArguments()).thenReturn(arguments);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
     assertKeyCriterias(objectQuery);
@@ -179,7 +180,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
     assertObjectFieldConfiguration(objectQuery);
@@ -200,7 +201,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
     assertCollectionObjectFieldConfiguration(objectQuery);
@@ -221,7 +222,7 @@ class QueryFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
     assertNestedObjectFieldConfiguration(objectQuery);
@@ -263,7 +264,7 @@ class QueryFactoryTest {
     when(selectionSet.getFields("aggregateField/*.*")).thenReturn(aggregateSelectedFields);
     when(aggregateTypeConfiguration.getFields()).thenReturn(aggregateFields);
 
-    var objectQuery = queryFactory.createObjectQuery(typeConfiguration, environment);
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
 
     assertIdentifierScalarConfiguration(objectQuery);
     assertAggregateFieldConfiguration(objectQuery, aggregateFunction, scalarType);
@@ -293,7 +294,7 @@ class QueryFactoryTest {
     when(aggregateTypeConfiguration.getFields()).thenReturn(aggregateFields);
 
     IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-        () -> queryFactory.createObjectQuery(typeConfiguration, environment));
+        () -> requestFactory.createObjectRequest(typeConfiguration, environment));
     assertThat(thrown.getMessage(), is("Aggregate function intRange is not supported"));
   }
 
@@ -305,17 +306,17 @@ class QueryFactoryTest {
         arguments(FLOAT_SUM_FIELD, ScalarType.FLOAT, NUMERIC), arguments(STRING_JOIN_FIELD, ScalarType.STRING, TEXT));
   }
 
-  private void assertCollectionQuery(org.dotwebstack.framework.core.query.model.CollectionQuery collectionQuery) {
-    assertThat(collectionQuery.getPagingCriteria()
+  private void assertCollectionQuery(CollectionRequest collectionRequest) {
+    assertThat(collectionRequest.getPagingCriteria()
         .getPage(), is(0));
-    assertThat(collectionQuery.getPagingCriteria()
+    assertThat(collectionRequest.getPagingCriteria()
         .getPageSize(), is(10));
 
-    assertIdentifierScalarConfiguration(collectionQuery.getObjectQuery());
+    assertIdentifierScalarConfiguration(collectionRequest.getObjectRequest());
   }
 
-  private void assertIdentifierScalarConfiguration(ObjectQuery objectQuery) {
-    var scalarFieldConfiguration = objectQuery.getScalarFields()
+  private void assertIdentifierScalarConfiguration(ObjectRequest objectRequest) {
+    var scalarFieldConfiguration = objectRequest.getScalarFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getName()
             .equals(FIELD_IDENTIFIER))
@@ -327,8 +328,8 @@ class QueryFactoryTest {
 
   }
 
-  private void assertKeyCriterias(ObjectQuery objectQuery) {
-    var keyCriterias = objectQuery.getKeyCriteria()
+  private void assertKeyCriterias(ObjectRequest objectRequest) {
+    var keyCriterias = objectRequest.getKeyCriteria()
         .stream()
         .filter(keyCriteria -> keyCriteria.getValues()
             .containsKey(FIELD_KEYCRITERIA))
@@ -338,8 +339,8 @@ class QueryFactoryTest {
         .get(FIELD_KEYCRITERIA), is("1234-5678"));
   }
 
-  private void assertObjectFieldConfiguration(ObjectQuery objectQuery) {
-    var objectFieldConfiguration = objectQuery.getObjectFields()
+  private void assertObjectFieldConfiguration(ObjectRequest objectRequest) {
+    var objectFieldConfiguration = objectRequest.getObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
@@ -352,8 +353,8 @@ class QueryFactoryTest {
     assertFieldTypes((TestFieldConfiguration) objectFieldConfiguration, false, false, false, true, false);
   }
 
-  private void assertCollectionObjectFieldConfiguration(ObjectQuery objectQuery) {
-    var collectionObjectFieldConfiguration = objectQuery.getCollectionObjectFields()
+  private void assertCollectionObjectFieldConfiguration(ObjectRequest objectRequest) {
+    var collectionObjectFieldConfiguration = objectRequest.getCollectionObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
@@ -366,8 +367,8 @@ class QueryFactoryTest {
     assertFieldTypes((TestFieldConfiguration) collectionObjectFieldConfiguration, false, false, false, true, true);
   }
 
-  private void assertNestedObjectFieldConfiguration(ObjectQuery objectQuery) {
-    var nestedObjectFieldConfiguration = objectQuery.getNestedObjectFields()
+  private void assertNestedObjectFieldConfiguration(ObjectRequest objectRequest) {
+    var nestedObjectFieldConfiguration = objectRequest.getNestedObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
@@ -380,9 +381,9 @@ class QueryFactoryTest {
     assertFieldTypes((TestFieldConfiguration) nestedObjectFieldConfiguration, false, false, true, false, false);
   }
 
-  private void assertAggregateFieldConfiguration(ObjectQuery objectQuery, String aggregateFunction,
+  private void assertAggregateFieldConfiguration(ObjectRequest objectRequest, String aggregateFunction,
       ScalarType scalarType) {
-    var aggregateFieldConfiguration = objectQuery.getAggregateObjectFields()
+    var aggregateFieldConfiguration = objectRequest.getAggregateObjectFields()
         .stream()
         .filter(fieldConfiguration -> fieldConfiguration.getField()
             .getName()
@@ -394,7 +395,7 @@ class QueryFactoryTest {
 
     assertFieldTypes((TestFieldConfiguration) aggregateFieldConfiguration, false, true, false, false, false);
 
-    var aggregateFieldsResult = objectQuery.getAggregateObjectFields()
+    var aggregateFieldsResult = objectRequest.getAggregateObjectFields()
         .stream()
         .map(AggregateObjectFieldConfiguration::getAggregateFields)
         .findFirst()
