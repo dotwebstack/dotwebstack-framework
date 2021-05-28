@@ -31,12 +31,18 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.RequestFactory;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +72,9 @@ class GenericDataFetcherTest {
   @Mock
   private ExecutionStepInfo executionStepInfo;
 
+  @Mock
+  private RequestFactory requestFactory;
+
   private GenericDataFetcher genericDataFetcher;
 
   private DataLoaderRegistry dataLoaderRegistry;
@@ -78,22 +87,20 @@ class GenericDataFetcherTest {
 
     dataLoaderRegistry = new DataLoaderRegistry();
 
-    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader));
+    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader), requestFactory);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void get_returnsFuture_forLoadSingleQueryOperation() throws Exception {
     Map<String, Object> data = Map.of("identifier", "id-1");
+    var outputType = createBreweryType();
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.just(data));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
 
-    GraphQLOutputType outputType = createBreweryType();
-
-    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
-
-    Object future = genericDataFetcher.get(dataFetchingEnvironment);
+    var future = genericDataFetcher.get(dataFetchingEnvironment);
 
     assertThat(future, instanceOf(Future.class));
 
@@ -109,15 +116,42 @@ class GenericDataFetcherTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  void get_returnsFuture_forLoadSingleQueryOperation_WhenUsingObjectQueryApproach() throws Exception {
+    Map<String, Object> data = Map.of("identifier", "id-1");
+    var outputType = createBreweryType();
+    var objectQuery = createObjectQuery();
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+
+    when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(data));
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+
+    var future = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(future, instanceOf(Future.class));
+
+    DataFetcherResult<Map<String, Object>> result = (DataFetcherResult<Map<String, Object>>) ((Future<?>) future).get();
+
+    assertThat(Optional.of(result)
+        .map(DataFetcherResult::getData)
+        .orElseThrow()
+        .entrySet(), equalTo(data.entrySet()));
+
+    verify(backendDataLoader).loadSingleRequest(any(ObjectRequest.class));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   void get_returnsFuture_ForLoadManyQueryOperation() throws Exception {
     List<Map<String, Object>> data = List.of(Map.of("identifier", "id-1"), Map.of("identifier", "id-2"));
-    GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
-    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+    var outputType = GraphQLList.list(createBreweryType());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.fromIterable(data));
 
-    Object future = genericDataFetcher.get(dataFetchingEnvironment);
+    var future = genericDataFetcher.get(dataFetchingEnvironment);
 
     assertThat(future, instanceOf(Future.class));
 
@@ -132,14 +166,44 @@ class GenericDataFetcherTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
+  void get_returnsFuture_ForLoadManyQueryOperation_WhenUsingObjectQueryApproach() throws Exception {
+    List<Map<String, Object>> data = List.of(Map.of("identifier", "id-1"), Map.of("identifier", "id-2"));
+    var outputType = GraphQLList.list(createBreweryType());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
+        .build();
+
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.fromIterable(data));
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, true))
+        .thenReturn(collectionQuery);
+
+    Object future = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(future, instanceOf(Future.class));
+
+    List<DataFetcherResult<Map<String, Object>>> result =
+        (List<DataFetcherResult<Map<String, Object>>>) ((Future<?>) future).get();
+
+    assertThat(result.stream()
+        .map(DataFetcherResult::getData)
+        .collect(Collectors.toList()), equalTo(data));
+
+    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
+  }
+
+  @Test
   void get_returnsFlux_forLoadManySubscriptionOperation() {
-    GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
-    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
+    var outputType = GraphQLList.list(createBreweryType());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.empty());
 
-    Object result = genericDataFetcher.get(dataFetchingEnvironment);
+    var result = genericDataFetcher.get(dataFetchingEnvironment);
 
     assertThat(result, instanceOf(Flux.class));
 
@@ -147,12 +211,33 @@ class GenericDataFetcherTest {
   }
 
   @Test
+  void get_returnsFlux_forLoadManySubscriptionOperation_WhenUsingObjectQueryApproach() {
+    var outputType = GraphQLList.list(createBreweryType());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
+        .build();
+
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.empty());
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, true))
+        .thenReturn(collectionQuery);
+
+    var result = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(result, instanceOf(Flux.class));
+
+    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   void get_returnsDatafetcherResult_ForEagerLoadedNestedQueryOperation() {
     Map<String, Object> data = Map.of("identifier", "id-1");
-    GraphQLOutputType outputType = GraphQLList.list(createBreweryType());
+    var outputType = GraphQLList.list(createBreweryType());
     Map<String, Object> source = Map.of("brewery", data);
-    DataFetchingEnvironment dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, source);
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, source);
 
     when(dataFetchingEnvironment.getExecutionStepInfo()
         .getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
@@ -166,22 +251,23 @@ class GenericDataFetcherTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void get_returnsDatafetcherResult_ForBatchLoadManyQueryOperation() throws Exception {
-    KeyCondition keyConditionWithBeer = TestKeyCondition.builder()
+    var keyConditionWithBeer = TestKeyCondition.builder()
         .valueMap(Map.of("brewery", "id-brewery-1"))
         .build();
-    KeyCondition keyConditionWithoutBeer = TestKeyCondition.builder()
+    var keyConditionWithoutBeer = TestKeyCondition.builder()
         .valueMap(Map.of("brewery", "id-brewery-2"))
         .build();
+
+    var outputType = GraphQLList.list(GraphQLObjectType.newObject()
+        .name("Beers")
+        .build());
 
     Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(List.of(
         new KeyConditionGroupedFlux(keyConditionWithBeer, Flux.fromIterable(List.of(Map.of("id", "id-1")))),
         new KeyConditionGroupedFlux(keyConditionWithoutBeer, Flux.fromIterable(List.of(GenericDataFetcher.NULL_MAP)))));
 
-    GraphQLOutputType outputType = GraphQLList.list(GraphQLObjectType.newObject()
-        .name("Beers")
-        .build());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithBeer);
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
     when(backendDataLoader.batchLoadMany(any(), any())).thenReturn(batchLoadManyResult);
@@ -190,8 +276,6 @@ class GenericDataFetcherTest {
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
 
-    DataFetchingEnvironment dataFetchingEnvironment =
-        createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithBeer);
     final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithoutBeer);
@@ -201,29 +285,64 @@ class GenericDataFetcherTest {
 
     dataLoader.dispatch();
 
-    List<DataFetcherResult<Map<String, Object>>> futureWithBeerResult =
-        (List<DataFetcherResult<Map<String, Object>>>) futureWithBeer.get();
-    assertThat(futureWithBeerResult.size(), is(1));
-    assertThat(futureWithBeerResult.get(0)
-        .getData()
-        .get("id"), is("id-1"));
-
-    List<DataFetcherResult<Map<String, Object>>> futureWithoutBeerResult =
-        (List<DataFetcherResult<Map<String, Object>>>) futureWithoutBeer.get();
-    assertThat(futureWithoutBeerResult.size(), is(0));
+    assertBatchLoadManyDataloaderResult(futureWithBeer, futureWithoutBeer);
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation() throws Exception {
-    GraphQLOutputType outputType = createBreweryType();
+  void get_returnsDatafetcherResult_ForBatchLoadManyQueryOperation_WhenUsingObjectQueryApproach() throws Exception {
+    var keyConditionWithBeer = TestKeyCondition.builder()
+        .valueMap(Map.of("brewery", "id-brewery-1"))
+        .build();
+    var keyConditionWithoutBeer = TestKeyCondition.builder()
+        .valueMap(Map.of("brewery", "id-brewery-2"))
+        .build();
 
-    KeyCondition breweryOneKey = TestKeyCondition.builder()
+    var collectionQuery = CollectionRequest.builder()
+        .objectRequest(createObjectQuery())
+        .build();
+
+    Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(List.of(
+        new KeyConditionGroupedFlux(keyConditionWithBeer, Flux.fromIterable(List.of(Map.of("id", "id-1")))),
+        new KeyConditionGroupedFlux(keyConditionWithoutBeer, Flux.fromIterable(List.of(GenericDataFetcher.NULL_MAP)))));
+
+    var outputType = GraphQLList.list(GraphQLObjectType.newObject()
+        .name("Beers")
+        .build());
+
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithBeer);
+
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
+    when(backendDataLoader.batchLoadManyRequest(any(), any())).thenReturn(batchLoadManyResult);
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, false))
+        .thenReturn(collectionQuery);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
+    when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
+    when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
+
+    final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), keyConditionWithoutBeer);
+    final Future<?> futureWithoutBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/beers");
+
+    dataLoader.dispatch();
+
+    assertBatchLoadManyDataloaderResult(futureWithBeer, futureWithoutBeer);
+  }
+
+  @Test
+  void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation() throws Exception {
+    var outputType = createBreweryType();
+
+    var breweryOneKey = TestKeyCondition.builder()
         .valueMap(Map.of("id", "id-1"))
         .build();
     Map<String, Object> breweryOneData = Map.of("id", "id-1");
 
-    KeyCondition breweryTwoKey = TestKeyCondition.builder()
+    var breweryTwoKey = TestKeyCondition.builder()
         .valueMap(Map.of("id", "id-2"))
         .build();
     Map<String, Object> breweryTwoData = Map.of("id", "id-2");
@@ -237,8 +356,7 @@ class GenericDataFetcherTest {
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
 
-    DataFetchingEnvironment dataFetchingEnvironment =
-        createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
     final Future<?> breweryOneFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
 
     dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryTwoKey);
@@ -248,14 +366,59 @@ class GenericDataFetcherTest {
 
     dataLoader.dispatch();
 
-    DataFetcherResult<Map<String, Object>> futureResult =
-        (DataFetcherResult<Map<String, Object>>) breweryOneFuture.get();
-    assertThat(futureResult.getData()
-        .get("id"), is("id-1"));
+    assertBatchLoadSingleDataloaderResult(breweryOneFuture, breweryTwoFuture);
+  }
 
-    futureResult = (DataFetcherResult<Map<String, Object>>) breweryTwoFuture.get();
-    assertThat(futureResult.getData()
-        .get("id"), is("id-2"));
+  @Test
+  void get_returnsDatafetcherResult_ForBatchLoadSingleQueryOperation_WhenUsingObjectQueryApproach() throws Exception {
+    var outputType = createBreweryType();
+    var objectQuery = createObjectQuery();
+
+    KeyCondition breweryOneKey = TestKeyCondition.builder()
+        .valueMap(Map.of("id", "id-1"))
+        .build();
+    Map<String, Object> breweryOneData = Map.of("id", "id-1");
+
+    var breweryTwoKey = TestKeyCondition.builder()
+        .valueMap(Map.of("id", "id-2"))
+        .build();
+    Map<String, Object> breweryTwoData = Map.of("id", "id-2");
+
+    List<Tuple2<KeyCondition, Map<String, Object>>> breweries =
+        List.of(Tuples.of(breweryOneKey, breweryOneData), Tuples.of(breweryTwoKey, breweryTwoData));
+
+    DataFetchingEnvironment dataFetchingEnvironment =
+        createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
+
+    when(backendDataLoader.batchLoadSingleRequest(any())).thenReturn(Flux.fromIterable(breweries));
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
+    when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
+    when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
+
+    final Future<?> breweryOneFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryTwoKey);
+    final Future<?> breweryTwoFuture = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/brewery");
+
+    dataLoader.dispatch();
+
+    assertBatchLoadSingleDataloaderResult(breweryOneFuture, breweryTwoFuture);
+  }
+
+  private ObjectRequest createObjectQuery() {
+    var fieldConfig = new TestFieldConfiguration();
+    fieldConfig.setScalarField(true);
+    fieldConfig.setName("identifier");
+
+    return ObjectRequest.builder()
+        .typeConfiguration(typeConfiguration)
+        .scalarFields(List.of(fieldConfig))
+        .build();
   }
 
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
@@ -290,10 +453,72 @@ class GenericDataFetcherTest {
         .build();
   }
 
+  @SuppressWarnings("unchecked")
+  private void assertBatchLoadManyDataloaderResult(Future<?> futureWithBeer, Future<?> futureWithoutBeer)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    List<DataFetcherResult<Map<String, Object>>> futureWithBeerResult =
+        (List<DataFetcherResult<Map<String, Object>>>) futureWithBeer.get();
+    assertThat(futureWithBeerResult.size(), is(1));
+    assertThat(futureWithBeerResult.get(0)
+        .getData()
+        .get("id"), is("id-1"));
+
+    List<DataFetcherResult<Map<String, Object>>> futureWithoutBeerResult =
+        (List<DataFetcherResult<Map<String, Object>>>) futureWithoutBeer.get();
+    assertThat(futureWithoutBeerResult.size(), is(0));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void assertBatchLoadSingleDataloaderResult(Future<?> breweryOneFuture, Future<?> breweryTwoFuture)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    DataFetcherResult<Map<String, Object>> futureResult =
+        (DataFetcherResult<Map<String, Object>>) breweryOneFuture.get();
+    assertThat(futureResult.getData()
+        .get("id"), is("id-1"));
+
+    futureResult = (DataFetcherResult<Map<String, Object>>) breweryTwoFuture.get();
+    assertThat(futureResult.getData()
+        .get("id"), is("id-2"));
+  }
+
   @Builder
   @Getter
   @EqualsAndHashCode
   private static class TestKeyCondition implements KeyCondition {
     private final Map<String, Object> valueMap;
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper = true)
+  static class TestFieldConfiguration extends AbstractFieldConfiguration {
+    private boolean isScalarField = false;
+
+    private boolean isObjectField = false;
+
+    private boolean isNestedObjectField = false;
+
+    private boolean isAggregateField = false;
+
+    private TypeConfiguration<?> typeConfiguration;
+
+    @Override
+    public boolean isScalarField() {
+      return isScalarField;
+    }
+
+    @Override
+    public boolean isObjectField() {
+      return isObjectField;
+    }
+
+    @Override
+    public boolean isNestedObjectField() {
+      return isNestedObjectField;
+    }
+
+    @Override
+    public boolean isAggregateField() {
+      return isAggregateField;
+    }
   }
 }

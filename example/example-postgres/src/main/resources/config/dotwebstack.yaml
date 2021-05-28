@@ -26,6 +26,13 @@ objectTypes:
     table: dbeerpedia.beers
     keys:
       - field: identifier
+    filters:
+      name:
+        field: name
+      soldPerYear:
+        field: soldPerYear
+      retired:
+        field: retired
     fields:
       identifier:
         type: ID
@@ -34,7 +41,9 @@ objectTypes:
       abv:
         type: Float
       soldPerYear:
-        type: Float
+        type: Int
+      retired:
+        type: Boolean
       brewery:
         type: Brewery
         joinColumns:
@@ -97,11 +106,12 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
-        list: true
-        nullable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
+    filters:
+      name: {}
+      status: {}
 
   Ingredient:
     backend: postgres

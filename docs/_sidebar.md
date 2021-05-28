@@ -3,6 +3,10 @@
   - [Getting started](overview/getting_started.md)
   - [Examples](overview/examples.md)
 
+- Core
+  - [Diagrams](core/diagrams.md)
+  - [Filtering](core/filtering.md)
+  
 - Backend modules
 
   - [JSON](backend/json.md)

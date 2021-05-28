@@ -114,9 +114,9 @@ class CoreRequestHandlerTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
-  private OpenAPI openApi = TestResources.openApi();
+  private final OpenAPI openApi = TestResources.openApi();
 
-  private ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
+  private final ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)

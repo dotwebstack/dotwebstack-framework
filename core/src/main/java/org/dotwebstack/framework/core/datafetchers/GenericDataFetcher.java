@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.query.RequestFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -32,10 +33,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private final Collection<BackendDataLoader> backendDataLoaders;
 
+  private final RequestFactory requestFactory;
+
   public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration,
-      Collection<BackendDataLoader> backendDataLoaders) {
+      Collection<BackendDataLoader> backendDataLoaders, RequestFactory requestFactory) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoaders = backendDataLoaders;
+    this.requestFactory = requestFactory;
   }
 
   public Object get(DataFetchingEnvironment environment) {
@@ -78,13 +82,31 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     // => get key from field argument
     if (!loadEnvironment.isSubscription()
         && !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(environment.getFieldType()))) {
-      return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
-          .map(data -> createDataFetcherResult(typeConfiguration, data))
-          .toFuture();
+
+      if (backendDataLoader.useRequestApproach()) {
+        var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+        return backendDataLoader.loadSingleRequest(objectRequest)
+            .map(data -> createDataFetcherResult(typeConfiguration, data))
+            .toFuture();
+      } else {
+        return backendDataLoader.loadSingle(keyCondition, loadEnvironment)
+            .map(data -> createDataFetcherResult(typeConfiguration, data))
+            .toFuture();
+      }
     }
 
-    Flux<DataFetcherResult<Object>> result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
-        .map(data -> createDataFetcherResult(typeConfiguration, data));
+    Flux<DataFetcherResult<Object>> result;
+
+    if (backendDataLoader.useRequestApproach()) {
+      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+
+      result = backendDataLoader.loadManyRequest(collectionRequest)
+          .map(data -> createDataFetcherResult(typeConfiguration, data));
+    } else {
+      result = backendDataLoader.loadMany(keyCondition, loadEnvironment)
+          .map(data -> createDataFetcherResult(typeConfiguration, data));
+    }
 
     if (loadEnvironment.isSubscription()) {
       return result;
@@ -117,7 +139,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private DataLoader<KeyCondition, ?> createDataLoader(DataFetchingEnvironment environment,
       TypeConfiguration<?> typeConfiguration) {
-    GraphQLOutputType unwrappedType = environment.getExecutionStepInfo()
+    var unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
 
     var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
@@ -125,18 +147,38 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     var loadEnvironment = createLoadEnvironment(environment);
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
-      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
-          .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
-              .collectList()
-              .map(list -> Map.entry(group.key(), list.stream()
-                  .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
-          .collectMap(Map.Entry::getKey, Map.Entry::getValue)
-          .toFuture());
+      if (backendDataLoader.useRequestApproach()) {
+        var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, false);
+
+        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadManyRequest(keys, collectionRequest)
+            .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
+                .collectList()
+                .map(list -> Map.entry(group.key(), list.stream()
+                    .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
+            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+            .toFuture());
+      } else {
+        return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadMany(keys, loadEnvironment)
+            .flatMap(group -> group.map(data -> createDataFetcherResult(typeConfiguration, data))
+                .collectList()
+                .map(list -> Map.entry(group.key(), list.stream()
+                    .noneMatch(dataFetcherResult -> dataFetcherResult.getData() == NULL_MAP) ? list : List.of())))
+            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+            .toFuture());
+      }
     }
 
-    return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
-        .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
-        .toFuture());
+    if (backendDataLoader.useRequestApproach()) {
+      var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingleRequest(objectRequest)
+          .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
+          .toFuture());
+    } else {
+      return DataLoader.newMappedDataLoader(keys -> backendDataLoader.batchLoadSingle(keys, loadEnvironment)
+          .collectMap(Tuple2::getT1, tuple -> createDataFetcherResult(typeConfiguration, tuple.getT2()))
+          .toFuture());
+    }
   }
 
   private LoadEnvironment createLoadEnvironment(DataFetchingEnvironment environment) {

@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
@@ -68,13 +69,18 @@ class PostgresTypeConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings({"rawtypes", "unchecked"})
   void init_shouldWork_withAggregationOfConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
     JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
 
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inversedJoinColumn, "Beers");
+    PostgresTypeConfiguration typeConfiguration =
+        createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
     ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
+
+    AbstractTypeConfiguration testTypeConfiguration = mock(PostgresTypeConfiguration.class);
+    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
 
     assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
   }
@@ -224,6 +230,25 @@ class PostgresTypeConfigurationTest {
   }
 
   static class TestFieldConfiguration extends AbstractFieldConfiguration {
+    @Override
+    public boolean isScalarField() {
+      return false;
+    }
+
+    @Override
+    public boolean isObjectField() {
+      return false;
+    }
+
+    @Override
+    public boolean isNestedObjectField() {
+      return false;
+    }
+
+    @Override
+    public boolean isAggregateField() {
+      return false;
+    }
   }
 
   static class TestTypeConfiguration extends AbstractTypeConfiguration<TestFieldConfiguration> {

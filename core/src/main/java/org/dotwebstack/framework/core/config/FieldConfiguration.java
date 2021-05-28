@@ -6,6 +6,8 @@ import javax.validation.constraints.NotNull;
 
 public interface FieldConfiguration {
 
+  String getName();
+
   @NotBlank
   String getType();
 

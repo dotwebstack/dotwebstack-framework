@@ -1,11 +1,17 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static graphql.ExecutionInput.newExecutionInput;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasValue;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import graphql.ExecutionInput;
@@ -61,6 +67,7 @@ class GraphQlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
     registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
     registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
+    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
   }
 
   @org.springframework.boot.test.context.TestConfiguration
@@ -207,12 +214,12 @@ class GraphQlPostgresIntegrationTest {
     assertThat(history.get("history"), is("hip and new"));
   }
 
+
   @Test
   void graphQlQuery_returnsBreweriesrWithMappedBy_default() {
     String query = "{breweries{name status beers{name}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -256,8 +263,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_returnsBreweryWithMappedBy_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -289,8 +295,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_returnsBreweryWithNoBeers_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\"){name status beers{name}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -318,8 +323,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{beers{name ingredients{name}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -360,8 +364,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_returnsBeersWithIngredient_forQueryWithJoinTable() {
     String query = "{beers{name ingredient{name}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -399,8 +402,7 @@ class GraphQlPostgresIntegrationTest {
   void graphQlQuery_returnsBeersWithDeepNesting_default() {
     String query = "{beers{identifier_beer name brewery{name beers{name ingredients{name}}}}}";
 
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -605,8 +607,7 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_ReturnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
     String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
+    ExecutionInput executionInput = newExecutionInput().query(query)
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
 
@@ -719,6 +720,184 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.size(), is(2));
     assertThat(beerAgg.get("tastes"), is("MEATY,SMOKY,SPICY"));
     assertThat(beerAgg.get("totalCount"), is(2));
+  }
 
+  @Test
+  void graphQlQuery_returnsBreweries_withStringFilter() {
+    String query = "{breweries(filter: {name: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+    assertThat(result.getData(), equalTo(Map.of("breweries",
+        List.of(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X")))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withBooleanFilter() {
+    String query = "{breweries(filter: {multinational: true}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(1)));
+    assertThat(result.getData(), hasValue(
+        containsInAnyOrder(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withBooleanNullFilter() {
+    String query = "{breweries(filter: {multinational: null}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(4)));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withNestedFilter() {
+    String query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
+        + "{ identifier_beer name} }}";
+
+    ExecutionResult result = graphQL.execute(newExecutionInput(query).dataLoaderRegistry(new DataLoaderRegistry())
+        .build());
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+
+    assertThat(result.getData(), hasValue(hasSize(4)));
+    assertThat(result.getData(),
+        hasValue(hasItem(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X",
+            "beers", List.of(Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"))))));
+
+    assertThat(result.getData(),
+        hasValue(hasItem(Map.of("identifier_brewery", "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9", "name", "Brewery Y",
+            "beers", List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+                Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"))))));
+
+    assertThat(result.getData(), hasValue(hasItem(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c31959",
+        "name", "Brewery Z", "beers", List.of()))));
+
+    assertThat(result.getData(),
+        hasValue(hasItem(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S",
+            "beers", List.of(Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withDateGreaterThenFilter() {
+    String query = "{beers(filter: {sinceDate: {gt: \"2016-01-01\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(3)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withDateGreaterThenEqualsFilter() {
+    String query = "{beers(filter: {sinceDate: {gte: \"2016-01-01\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(4)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withDateLowerThenFilter() {
+    String query = "{beers(filter: {sinceDate: {lt: \"2016-01-01\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(2)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+            Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withDateLowerThenEqualsFilter() {
+    String query = "{beers(filter: {sinceDate: {lte: \"2016-01-01\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+
+    assertThat(result.getData(), hasValue(hasSize(3)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+            Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+            Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withDateTimeGreaterThenEqualsFilter() {
+    String query = "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+
+    assertThat(result.getData(), hasValue(hasSize(2)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+            Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withMultiOperandFilter() {
+    String query =
+        "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}})"
+            + "{ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+
+    assertThat(result.getData(), hasValue(hasSize(1)));
+    assertThat(result.getData(), hasValue(
+        containsInAnyOrder(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_withNotFilter() {
+    String query = "{beers(filter: {lastBrewed: {not: {gte: \"2020-08-11T10:15:30+01:00\"}}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+
+    assertThat(result.getData(), hasValue(hasSize(4)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+            Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
 }

@@ -69,7 +69,7 @@ class PostgresFieldConfigurationTest {
 
   @Test
   void findJoinColumns_returnsEmptyList_forJoinTable() {
-    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();;
+    PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
 
     assertThat(fieldConfiguration.findJoinColumns(), equalTo(List.of()));
   }

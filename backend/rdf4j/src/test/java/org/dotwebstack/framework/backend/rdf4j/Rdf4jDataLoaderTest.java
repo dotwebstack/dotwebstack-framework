@@ -198,5 +198,24 @@ class Rdf4jDataLoaderTest {
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
+    @Override
+    public boolean isScalarField() {
+      return false;
+    }
+
+    @Override
+    public boolean isObjectField() {
+      return false;
+    }
+
+    @Override
+    public boolean isNestedObjectField() {
+      return false;
+    }
+
+    @Override
+    public boolean isAggregateField() {
+      return false;
+    }
   }
 }

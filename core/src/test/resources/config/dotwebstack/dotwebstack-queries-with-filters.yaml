@@ -1,0 +1,32 @@
+queries:
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      inceptionYear:
+        type: Int
+      status:
+        type: String
+    filters:
+      name:
+        field: name
+      abv:
+        field: abv
+      inceptionYear:
+        field: inceptionYear

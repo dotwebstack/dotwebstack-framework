@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public abstract class AbstractFieldConfiguration implements FieldConfiguration {
+  private String name;
 
   private String type;
 
@@ -13,9 +14,26 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private boolean list = false;
 
+  private boolean isNumeric = false;
+
+  private boolean isText = false;
+
   private String mappedBy;
 
   private String aggregationOf;
 
+  private boolean isKeyField = false;
+
+  private TypeConfiguration<?> typeConfiguration;
+
   private List<FieldArgumentConfiguration> arguments = new ArrayList<>();
+
+  public abstract boolean isScalarField();
+
+  public abstract boolean isObjectField();
+
+  public abstract boolean isNestedObjectField();
+
+  public abstract boolean isAggregateField();
+
 }

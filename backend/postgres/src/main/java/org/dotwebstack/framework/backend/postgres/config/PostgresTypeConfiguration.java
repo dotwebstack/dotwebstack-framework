@@ -66,8 +66,11 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
-    initNestedFieldTypes(dotWebStackConfiguration.getObjectTypes());
+    initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
+    initObjectTypes(dotWebStackConfiguration.getObjectTypes());
+    postFieldProcessing();
+    initKeyFields();
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
@@ -163,16 +166,30 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .build();
   }
 
+  private void initObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    fields.values()
+        .stream()
+        .filter(PostgresFieldConfiguration::isObjectField)
+        .forEach(fieldConfiguration -> {
+
+          PostgresTypeConfiguration typeConfiguration =
+              (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getType());
+          fieldConfiguration.setTypeConfiguration(typeConfiguration);
+        });
+  }
+
   private void initAggregateTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     fields.values()
         .stream()
         .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
         .forEach(fieldConfiguration -> {
 
+          PostgresTypeConfiguration typeConfiguration =
+              (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getAggregationOf());
+          fieldConfiguration.setTypeConfiguration(typeConfiguration);
+
           if (fieldConfiguration.getMappedBy() != null) {
 
-            PostgresTypeConfiguration typeConfiguration =
-                (PostgresTypeConfiguration) objectTypes.get(fieldConfiguration.getAggregationOf());
             PostgresFieldConfiguration mappedByFieldConfiguration = typeConfiguration.getFields()
                 .get(fieldConfiguration.getMappedBy());
 
@@ -183,7 +200,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private void initNestedFieldTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+  private void initNestedObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     fields.values()
         .forEach(fieldConfiguration -> {
 
@@ -192,7 +209,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
           if (Objects.nonNull(typeConfiguration) && Objects.isNull(typeConfiguration.getTable())) {
             fieldConfiguration.setNested(true);
+            fieldConfiguration.setTypeConfiguration(typeConfiguration);
           }
+
         });
   }
 
@@ -214,6 +233,18 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .collect(Collectors.toMap(PostgresFieldConfiguration::getColumn, fieldConfig -> fieldConfig, (a, b) -> a));
 
     fields.putAll(referencedColumns);
+  }
+
+  private void initKeyFields() {
+    fields.values()
+        .forEach(fieldConfiguration -> {
+
+          if ((getKeys().stream()
+              .anyMatch(
+                  keyConfiguration -> Objects.equals(keyConfiguration.getField(), fieldConfiguration.getName())))) {
+            fieldConfiguration.setKeyField(true);
+          }
+        });
   }
 
   private FieldDefinition getFieldDefinition(String fieldName, List<FieldDefinition> fieldDefinitions) {

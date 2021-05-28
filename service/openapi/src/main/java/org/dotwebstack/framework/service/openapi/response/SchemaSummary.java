@@ -13,19 +13,19 @@ import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 @Getter
 public class SchemaSummary {
 
-  private String type;
+  private final String type;
 
-  private boolean required;
+  private final boolean required;
 
-  private boolean nillable;
+  private final boolean nillable;
 
-  private boolean isTransient;
+  private final boolean isTransient;
 
-  private String dwsType;
+  private final String dwsType;
 
-  private Schema<?> schema;
+  private final Schema<?> schema;
 
-  private String ref;
+  private final String ref;
 
   @Builder.Default
   @Setter
@@ -39,7 +39,7 @@ public class SchemaSummary {
   @Setter
   private List<ResponseObject> items = new ArrayList<>();
 
-  private Map<String, String> dwsExpr;
+  private final Map<String, String> dwsExpr;
 
   public boolean hasIncludeCondition() {
     return getSchema() != null && getSchema().getExtensions() != null && getSchema().getExtensions()

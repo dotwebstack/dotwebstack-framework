@@ -8,9 +8,9 @@ import org.springframework.http.HttpMethod;
 @Builder
 @Getter
 public class HttpMethodOperation {
-  private String name;
+  private final String name;
 
-  private HttpMethod httpMethod;
+  private final HttpMethod httpMethod;
 
-  private Operation operation;
+  private final Operation operation;
 }

@@ -1,13 +1,14 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.jooq.conf.ParamType.INLINED;
+import static org.jooq.conf.ParamType.NAMED;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,21 +18,23 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.backend.postgres.query.QueryBuilder;
-import org.dotwebstack.framework.backend.postgres.query.QueryHolder;
-import org.dotwebstack.framework.backend.postgres.query.QueryParameters;
+import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
+import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
-import org.jooq.Query;
-import org.jooq.conf.ParamType;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.jooq.SelectQuery;
+import org.jooq.Table;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,27 +43,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.r2dbc.core.FetchSpec;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresDataLoaderTest {
 
   @Mock
-  private DotWebStackConfiguration dotWebStackConfiguration;
-
-  @Mock
   private DatabaseClient databaseClient;
 
   @Mock
-  private QueryBuilder queryBuilder;
-
-  private FetchSpec<Map<String, Object>> fetchSpec;
+  private SelectQueryBuilder selectQueryBuilder;
 
   private PostgresDataLoader postgresDataLoader;
 
   @BeforeEach
   void beforeAll() {
-    postgresDataLoader = new PostgresDataLoader(dotWebStackConfiguration, databaseClient, queryBuilder);
+    postgresDataLoader = new PostgresDataLoader(databaseClient, selectQueryBuilder);
   }
 
   @Test
@@ -94,39 +91,10 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadSingle() {
-    mockQueryContext();
-
-    Map<String, Object> data = Map.of("x1", "id-1", "x2", "Brewery 1");
-
-    ColumnKeyCondition keyCondition = mock(ColumnKeyCondition.class);
-
-    when(fetchSpec.one()).thenReturn(Mono.just(data));
-
-    Query query = mock(Query.class);
-    when(query.getSQL(ParamType.NAMED)).thenReturn("");
-    when(query.getParams()).thenReturn(Map.of());
-
-    QueryHolder queryHolder = QueryHolder.builder()
-        .query(query)
-        .mapAssembler(row -> row)
-        .build();
-
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class))).thenReturn(queryHolder);
-
-    LoadEnvironment loadEnvironment = mockLoadEnvironment();
-
-    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
-        .thenReturn(mock(PostgresTypeConfiguration.class));
-
-    Map<String, Object> result = postgresDataLoader.loadSingle(keyCondition, loadEnvironment)
-        .block(Duration.ofSeconds(5));
-
-    assertThat(result, notNullValue());
-    assertThat(data.entrySet(), equalTo(result.entrySet()));
-
-    verify(databaseClient, times(1)).sql(anyString());
-    verify(fetchSpec, times(1)).one();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class));
+    var keyCondition = mock(KeyCondition.class);
+    var loadEnvironment = mockLoadEnvironment();
+    assertThrows(UnsupportedOperationException.class,
+        () -> postgresDataLoader.loadSingle(keyCondition, loadEnvironment));
   }
 
   @Test
@@ -139,32 +107,89 @@ class PostgresDataLoaderTest {
 
   @Test
   void loadMany() {
-    mockQueryContext();
+    var keyCondition = mock(KeyCondition.class);
+    var loadEnvironment = mockLoadEnvironment();
+    assertThrows(UnsupportedOperationException.class, () -> postgresDataLoader.loadMany(keyCondition, loadEnvironment));
+  }
 
-    List<Map<String, Object>> data =
-        List.of(Map.of("x1", "id-1", "x2", "Brewery 1"), Map.of("x1", "id-2", "x2", "Brewery 2"));
+  @Test
+  void batchLoadMany() {
+    Set<KeyCondition> keyConditions = Set.of();
+    var loadEnvironment = mockLoadEnvironment();
+    assertThrows(UnsupportedOperationException.class,
+        () -> postgresDataLoader.batchLoadMany(keyConditions, loadEnvironment));
+  }
 
-    ColumnKeyCondition keyCondition = mock(ColumnKeyCondition.class);
+  @Test
+  void loadSingleRequest() {
+    Map<String, Object> data = Map.of("x1", "id-1", "x2", "Brewery 1");
+    var fetchSpec = mockQueryContext();
+    when(fetchSpec.all()).thenReturn(Flux.just(data));
 
-    when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
+    SelectQuery<?> query = mock(SelectQuery.class);
+    when(query.getSQL(INLINED)).thenReturn("");
 
-    Query query = mock(Query.class);
-    when(query.getSQL(ParamType.NAMED)).thenReturn("");
-    when(query.getParams()).thenReturn(Map.of());
-
-    QueryHolder queryHolder = QueryHolder.builder()
+    SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
         .query(query)
+        .table(mock(Table.class))
         .mapAssembler(row -> row)
+        .context(new ObjectSelectContext())
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class))).thenReturn(queryHolder);
+    when(selectQueryBuilder.build(any(ObjectRequest.class), any(ObjectSelectContext.class)))
+        .thenReturn(selectQueryBuilderResult);
 
-    LoadEnvironment loadEnvironment = mockLoadEnvironment();
+    ObjectRequest objectRequest = ObjectRequest.builder()
+        .typeConfiguration(new PostgresTypeConfiguration())
+        .build();
 
-    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
-        .thenReturn(mock(PostgresTypeConfiguration.class));
+    Map<String, Object> result = postgresDataLoader.loadSingleRequest(objectRequest)
+        .block(Duration.ofSeconds(5));
 
-    List<Map<String, Object>> result = postgresDataLoader.loadMany(keyCondition, loadEnvironment)
+    assertThat(result, notNullValue());
+    assertThat(data.entrySet(), equalTo(result.entrySet()));
+
+    verify(databaseClient, times(1)).sql(anyString());
+    verify(fetchSpec, times(1)).all();
+    verify(selectQueryBuilder, times(1)).build(any(ObjectRequest.class), any(ObjectSelectContext.class));
+  }
+
+  @Test
+  void batchLoadSingleRequest() {
+    ObjectRequest objectRequest = ObjectRequest.builder()
+        .typeConfiguration(new PostgresTypeConfiguration())
+        .build();
+
+    assertThrows(UnsupportedOperationException.class, () -> postgresDataLoader.batchLoadSingleRequest(objectRequest));
+  }
+
+  @Test
+  void loadManyRequest() {
+    List<Map<String, Object>> data =
+        List.of(Map.of("x1", "id-1", "x2", "Brewery 1"), Map.of("x1", "id-2", "x2", "Brewery 2"));
+    var fetchSpec = mockQueryContext();
+    when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
+
+    SelectQuery<?> query = mock(SelectQuery.class);
+    when(query.getSQL(INLINED)).thenReturn("");
+
+    SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
+        .query(query)
+        .table(mock(Table.class))
+        .mapAssembler(row -> row)
+        .context(new ObjectSelectContext())
+        .build();
+
+    when(selectQueryBuilder.build(any(CollectionRequest.class), any(ObjectSelectContext.class)))
+        .thenReturn(selectQueryBuilderResult);
+
+    CollectionRequest objectRequest = CollectionRequest.builder()
+        .objectRequest(ObjectRequest.builder()
+            .typeConfiguration(new PostgresTypeConfiguration())
+            .build())
+        .build();
+
+    List<Map<String, Object>> result = postgresDataLoader.loadManyRequest(objectRequest)
         .toStream()
         .collect(Collectors.toList());
 
@@ -173,15 +198,19 @@ class PostgresDataLoaderTest {
 
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).all();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class));
+    verify(selectQueryBuilder, times(1)).build(any(CollectionRequest.class), any(ObjectSelectContext.class));
   }
 
   @Test
-  void batchLoadMany() {
-    mockQueryContext();
-
+  void batchLoadManyRequest() {
     List<Map<String, Object>> data =
         List.of(Map.of("x1", "id-1", "x2", "Brewery 1"), Map.of("x1", "id-2", "x2", "Brewery 2"));
+    var fetchSpec = mockQueryContext();
+    when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
+
+    SelectQuery<?> query = mock(SelectQuery.class);
+    when(query.getSQL(NAMED)).thenReturn("");
+    when(query.getParams()).thenReturn(Map.of());
 
     Set<KeyCondition> keyConditions = Set.of(ColumnKeyCondition.builder()
         .valueMap(Map.of("identifier", "id-1"))
@@ -190,27 +219,25 @@ class PostgresDataLoaderTest {
             .valueMap(Map.of("identifier", "id-2"))
             .build());
 
-    when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
-
-    Query query = mock(Query.class);
-    when(query.getSQL(ParamType.NAMED)).thenReturn("");
-    when(query.getParams()).thenReturn(Map.of());
-
-    QueryHolder queryHolder = QueryHolder.builder()
+    SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
         .query(query)
+        .table(mock(Table.class))
         .mapAssembler(row -> row)
-        .keyColumnNames(Map.of("identifier", "x1"))
+        .context(new ObjectSelectContext())
+        .build();
+    selectQueryBuilderResult.getContext()
+        .setKeyColumnNames(Map.of("identifier", "x1"));
+
+    when(selectQueryBuilder.build(any(CollectionRequest.class), any(ObjectSelectContext.class)))
+        .thenReturn(selectQueryBuilderResult);
+    CollectionRequest objectRequest = CollectionRequest.builder()
+        .objectRequest(ObjectRequest.builder()
+            .keyCriteria(new ArrayList<>())
+            .typeConfiguration(new PostgresTypeConfiguration())
+            .build())
         .build();
 
-    when(queryBuilder.build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), eq(true)))
-        .thenReturn(queryHolder);
-
-    LoadEnvironment loadEnvironment = mockLoadEnvironment();
-
-    when(dotWebStackConfiguration.getTypeConfiguration(loadEnvironment))
-        .thenReturn(mock(PostgresTypeConfiguration.class));
-
-    List<Map<String, Object>> result = postgresDataLoader.batchLoadMany(keyConditions, loadEnvironment)
+    List<Map<String, Object>> result = postgresDataLoader.batchLoadManyRequest(keyConditions, objectRequest)
         .flatMap(group -> group.map(d -> d))
         .toStream()
         .collect(Collectors.toList());
@@ -220,18 +247,25 @@ class PostgresDataLoaderTest {
 
     verify(databaseClient, times(1)).sql(anyString());
     verify(fetchSpec, times(1)).all();
-    verify(queryBuilder, times(1)).build(any(PostgresTypeConfiguration.class), any(QueryParameters.class), eq(true));
+    verify(selectQueryBuilder, times(1)).build(any(CollectionRequest.class), any(ObjectSelectContext.class));
+  }
+
+  @Test
+  void useRequestApproach_returnsTrue_default() {
+    assertThat(postgresDataLoader.useRequestApproach(), is(true));
   }
 
   @SuppressWarnings("unchecked")
-  private void mockQueryContext() {
+  private FetchSpec<Map<String, Object>> mockQueryContext() {
     DatabaseClient.GenericExecuteSpec genericExecuteSpec = mock(DatabaseClient.GenericExecuteSpec.class);
 
-    fetchSpec = mock(FetchSpec.class);
+    var fetchSpec = mock(FetchSpec.class);
 
     when(genericExecuteSpec.fetch()).thenReturn(fetchSpec);
 
     when(databaseClient.sql(any(String.class))).thenReturn(genericExecuteSpec);
+
+    return fetchSpec;
   }
 
   private LoadEnvironment mockLoadEnvironment() {

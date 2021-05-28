@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 @EnableConfigurationProperties(OpenApiProperties.class)
 public class ZonedDateTimeTypeConverter implements TypeConverter<ZonedDateTime, String> {
 
-  private OpenApiProperties openApiProperties;
+  private final OpenApiProperties openApiProperties;
 
-  private DateTimeFormatter dateTimeFormatter;
+  private final DateTimeFormatter dateTimeFormatter;
 
-  private ZoneId zoneId;
+  private final ZoneId zoneId;
 
   public ZonedDateTimeTypeConverter(OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;

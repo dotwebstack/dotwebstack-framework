@@ -8,15 +8,15 @@ import lombok.Getter;
 @Getter
 @Builder
 public class GraphQlField {
-  private String name;
+  private final String name;
 
-  private String type;
+  private final String type;
 
   boolean listType;
 
   @Builder.Default
-  private List<GraphQlField> fields = Collections.emptyList();
+  private final List<GraphQlField> fields = Collections.emptyList();
 
   @Builder.Default
-  private List<GraphQlArgument> arguments = Collections.emptyList();
+  private final List<GraphQlArgument> arguments = Collections.emptyList();
 }

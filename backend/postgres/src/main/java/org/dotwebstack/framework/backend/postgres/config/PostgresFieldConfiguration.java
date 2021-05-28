@@ -22,21 +22,31 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
-  private boolean isNumeric = false;
-
-  private boolean isText = false;
-
-  private boolean isList = false;
-
   private boolean isNested = false;
+
+  @Override
+  public boolean isScalarField() {
+    return isScalar();
+  }
+
+  @Override
+  public boolean isObjectField() {
+    return !isScalarField() && !isNestedObjectField() && !isAggregateField();
+  }
+
+  @Override
+  public boolean isNestedObjectField() {
+    return isNested;
+  }
+
+  @Override
+  public boolean isAggregateField() {
+    return isAggregate();
+  }
 
   public boolean isScalar() {
     return getJoinColumns() == null && getJoinTable() == null && getMappedBy() == null && getAggregationOf() == null
         && !isNested;
-  }
-
-  public boolean isSubselect() {
-    return !isScalar() && !isNested;
   }
 
   public boolean isAggregate() {

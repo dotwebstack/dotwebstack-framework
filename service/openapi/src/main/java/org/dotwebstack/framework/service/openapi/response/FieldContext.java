@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public class FieldContext {
 
-  private Object data;
+  private final Object data;
 
-  private Map<String, Object> input;
+  private final Map<String, Object> input;
 }
