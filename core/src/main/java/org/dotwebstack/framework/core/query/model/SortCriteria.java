@@ -1,5 +1,5 @@
 package org.dotwebstack.framework.core.query.model;
 
-public class SortCriteria {
+public interface SortCriteria {
 
 }
