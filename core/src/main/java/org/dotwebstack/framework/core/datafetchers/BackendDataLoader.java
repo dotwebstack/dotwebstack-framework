@@ -34,7 +34,7 @@ public interface BackendDataLoader {
     return Flux.empty();
   }
 
-  default Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingleObject(ObjectRequest objectRequest) {
+  default Flux<Tuple2<KeyCondition, Map<String, Object>>> batchLoadSingleRequest(ObjectRequest objectRequest) {
     return Flux.empty();
   }
 

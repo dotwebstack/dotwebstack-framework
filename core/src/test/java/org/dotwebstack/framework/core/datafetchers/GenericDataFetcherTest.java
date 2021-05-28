@@ -390,7 +390,7 @@ class GenericDataFetcherTest {
     DataFetchingEnvironment dataFetchingEnvironment =
         createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
 
-    when(backendDataLoader.batchLoadSingleObject(any())).thenReturn(Flux.fromIterable(breweries));
+    when(backendDataLoader.batchLoadSingleRequest(any())).thenReturn(Flux.fromIterable(breweries));
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
