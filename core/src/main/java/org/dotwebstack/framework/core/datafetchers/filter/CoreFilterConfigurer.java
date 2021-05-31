@@ -30,11 +30,12 @@ import graphql.schema.GraphQLScalarType;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Map;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CoreFilterConfigurer implements FilterConfigurer {
+public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {

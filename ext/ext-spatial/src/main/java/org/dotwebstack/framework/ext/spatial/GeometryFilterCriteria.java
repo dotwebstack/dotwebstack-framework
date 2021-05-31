@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Geometry;
 public class GeometryFilterCriteria implements FilterCriteria {
   private final FieldConfiguration field;
 
-  private final GeometryFilterOperation filterOperation;
+  private final GeometryFilterOperator filterOperator;
 
   private final Geometry geometry;
 }

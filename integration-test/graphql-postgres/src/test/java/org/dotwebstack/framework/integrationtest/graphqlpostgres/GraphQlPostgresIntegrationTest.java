@@ -459,15 +459,20 @@ class GraphQlPostgresIntegrationTest {
 
     Map<String, Object> geometry = (Map<String, Object>) brewery.get("geometry");
     assertThat(geometry.size(), is(3));
-    assertThat(geometry.get("type"), is("POINT"));
-    assertThat(geometry.get("asWKT"), is("POINT (5.979274334569982 52.21715768613606)"));
-    assertThat(geometry.get("asWKB"), is("00000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
+            + "5.972053827981467 52.225279885758624, 5.971385957936759 52.225279885758624, "
+            + "5.971385957936759 52.22549347648849))"));
+    assertThat(geometry.get("asWKB"),
+        is("000000000300000001000000054017e2b30024872e404a1cdcf8617d5d4017e3621424872e404a1cdcf8617d5d401"
+            + "7e3621424872e404a1cd5f8a6e3d44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
   }
 
   @Test
   void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name geometry(type : MULTIPOINT){type asWKT asWKB}}}";
+        + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB}}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -483,9 +488,15 @@ class GraphQlPostgresIntegrationTest {
 
     Map<String, Object> geometry = (Map<String, Object>) brewery.get("geometry");
     assertThat(geometry.size(), is(3));
-    assertThat(geometry.get("type"), is("MULTIPOINT"));
-    assertThat(geometry.get("asWKT"), is("MULTIPOINT ((5.979274334569982 52.21715768613606))"));
-    assertThat(geometry.get("asWKB"), is("00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(geometry.get("type"), is("MULTIPOLYGON"));
+    assertThat(geometry.get("asWKT"),
+        is("MULTIPOLYGON (((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
+            + "5.972053827981467 52.225279885758624, 5.971385957936759 52.225279885758624, "
+            + "5.971385957936759 52.22549347648849)))"));
+    assertThat(geometry.get("asWKB"),
+        is("000000000600000001000000000300000001000000054017e2b30024872e404a1cdcf8"
+            + "617d5d4017e3621424872e404a1cdcf8617d5d4017e3621424872e404a1cd5f8a6e3d"
+            + "44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
   }
 
   @Test
@@ -900,4 +911,69 @@ class GraphQlPostgresIntegrationTest {
             Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
             Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withGeometryContainsFilter() {
+    String query = "{breweries(filter: {geometry: {contains: {fromWKT: \"POINT(5.971713187436576 "
+        + "52.22536859535056)\"}}}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(1)));
+    assertThat(result.getData(), hasValue(
+        containsInAnyOrder(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withGeometryNotContainsFilter() {
+    String query = "{breweries(filter: {geometry: {not: {contains: {fromWKT: \"POINT(5.971713187436576 "
+        + "52.22536859535056)\"}}}}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(3)));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withGeometryIntersectsFilter() {
+    String query = "{breweries(filter: {geometry: {intersects: {fromWKT: \"POLYGON((5.9718231580061865 "
+        + "52.225530431174555,5.971908988694663 52.225530431174555,5.971908988694663 "
+        + "52.22546799711944,5.9718231580061865 52.22546799711944,5.9718231580061865 "
+        + "52.225530431174555))\"}}}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(1)));
+    assertThat(result.getData(), hasValue(
+        containsInAnyOrder(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_withGeometryWithinFilter() {
+    String query = "{breweries(filter: {geometry: {within: {fromWKT: \"POLYGON((5.971744032840247 "
+        + "52.22543349405132,5.971781583766456 52.22543349405132,5.971781583766456 "
+        + "52.225404741474094,5.971744032840247 52.225404741474094,5.971744032840247 "
+        + "52.22543349405132))\"}}}){ identifier_brewery name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(1)));
+    assertThat(result.getData(), hasValue(
+        containsInAnyOrder(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"))));
+  }
+
+
+
 }

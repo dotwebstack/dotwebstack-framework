@@ -72,11 +72,11 @@ public final class FilterConditionHelper {
         DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
             .toString()));
 
-    switch (geometryFilterCriteria.getFilterOperation()) {
+    switch (geometryFilterCriteria.getFilterOperator()) {
       case CONTAINS:
         return DSL.condition("ST_CONTAINS({0}, {1})", field, geofilterField);
       case WITHIN:
-        return DSL.condition("ST_WITHIN({0}, {1})", field, geofilterField);
+        return DSL.condition("ST_WITHIN({0}, {1})", geofilterField, field);
       case INTERSECTS:
         return DSL.condition("ST_INTERSECTS({0}, {1})", field, geofilterField);
       default:

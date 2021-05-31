@@ -35,11 +35,12 @@ import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Map;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SpatialConfigurer implements FilterConfigurer {
+public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {

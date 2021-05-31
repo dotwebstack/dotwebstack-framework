@@ -1,5 +1,5 @@
 package org.dotwebstack.framework.ext.spatial;
 
-public enum GeometryFilterOperation {
+public enum GeometryFilterOperator {
   WITHIN, CONTAINS, INTERSECTS
 }
