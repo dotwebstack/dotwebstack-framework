@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 abstract class FilterCriteriaParserBaseTest {
 
-  private static final FilterConfigurer filterConfigurer = new FilterConfigurer();
+  private static final FilterConfigurer filterConfigurer = new CoreFilterConfigurer();
 
   private static final TypeDefinitionRegistry dataFetchingEnvironment = new TypeDefinitionRegistry();
 
