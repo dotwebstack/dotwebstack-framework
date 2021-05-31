@@ -422,7 +422,7 @@ class RequestFactoryTest {
   }
 
   private TestFieldConfiguration getTestFieldConfiguration(String name, String fieldType) {
-    return getTestFieldConfigurationWithTypeConfiguration(name, fieldType, null);
+    return getTestFieldConfigurationWithTypeConfiguration(name, fieldType, mock(TypeConfiguration.class));
   }
 
   @SuppressWarnings("rawtypes")
@@ -452,7 +452,7 @@ class RequestFactoryTest {
         break;
     }
 
-    fieldConfiguration.typeConfiguration = typeConfiguration;
+    fieldConfiguration.setTypeConfiguration(typeConfiguration);
 
     return fieldConfiguration;
   }

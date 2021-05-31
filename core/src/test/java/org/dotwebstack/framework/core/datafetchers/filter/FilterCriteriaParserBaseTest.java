@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 abstract class FilterCriteriaParserBaseTest {
 
-  private static final CoreFilterConfigurer CORE_FILTER_CONFIGURER = new CoreFilterConfigurer();
+  private static final FilterConfigurer filterConfigurer = new FilterConfigurer();
 
   private static final TypeDefinitionRegistry dataFetchingEnvironment = new TypeDefinitionRegistry();
 
@@ -40,7 +40,7 @@ abstract class FilterCriteriaParserBaseTest {
 
   @BeforeAll
   public static void init() {
-    CORE_FILTER_CONFIGURER.configureTypeDefinitionRegistry(dataFetchingEnvironment);
+    filterConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
   }
 
   @SuppressWarnings("rawtypes")

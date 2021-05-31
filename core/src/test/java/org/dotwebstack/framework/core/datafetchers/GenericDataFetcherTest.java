@@ -416,6 +416,7 @@ class GenericDataFetcherTest {
     fieldConfig.setName("identifier");
 
     return ObjectRequest.builder()
+        .typeConfiguration(typeConfiguration)
         .scalarFields(List.of(fieldConfig))
         .build();
   }

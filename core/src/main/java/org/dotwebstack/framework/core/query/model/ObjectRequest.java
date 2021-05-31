@@ -3,13 +3,14 @@ package org.dotwebstack.framework.core.query.model;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 @Builder
 @Data
 public class ObjectRequest implements Request {
-  // @NonNull
+  @NonNull
   private final TypeConfiguration<?> typeConfiguration;
 
   private final List<FieldConfiguration> scalarFields;
