@@ -38,6 +38,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   protected Map<String, FilterConfiguration> filters = new HashMap<>();
 
+  protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
+
   public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     postFieldProcessing();
   }

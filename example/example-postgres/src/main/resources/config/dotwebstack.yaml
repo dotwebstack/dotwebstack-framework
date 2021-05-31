@@ -33,6 +33,13 @@ objectTypes:
         field: soldPerYear
       retired:
         field: retired
+    sortableBy:
+      identifier:
+        - field: identifier
+          direction: ASC
+      postcode:
+        - field: postcode
+          direction: ASC
     fields:
       identifier:
         type: ID
@@ -142,4 +149,3 @@ objectTypes:
 enumerations:
   Taste:
     values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
-

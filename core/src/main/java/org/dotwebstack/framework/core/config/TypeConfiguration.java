@@ -15,6 +15,8 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   Map<String, FilterConfiguration> getFilters();
 
+  Map<String, List<SortableByConfiguration>> getSortableBy();
+
   void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition);
 
   KeyCondition getKeyCondition(DataFetchingEnvironment environment);
