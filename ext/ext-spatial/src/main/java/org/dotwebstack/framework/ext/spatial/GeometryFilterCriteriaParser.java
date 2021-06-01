@@ -21,6 +21,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
     return SpatialConstants.GEOMETRY_FILTER.equals(TypeHelper.getTypeName(inputObjectField.getType()));
   }
 
+  @Override
   protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case SpatialConstants.INTERSECTS:

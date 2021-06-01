@@ -27,6 +27,7 @@ public class CoreFilterCriteriaParser extends OperatorFilterCriteriaParser {
     return SUPPORTED_OBJECT_TYPES.contains(getTypeName(inputObjectField.getType()));
   }
 
+  @Override
   protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case FilterConstants.EQ_FIELD:
