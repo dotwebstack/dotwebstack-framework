@@ -4,7 +4,8 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 
-public interface GraphqlConfigurer {
+public interface
+GraphqlConfigurer {
 
   default void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     // Default empty method for simplicity and backwards compatibility

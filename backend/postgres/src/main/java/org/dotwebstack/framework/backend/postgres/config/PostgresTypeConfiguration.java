@@ -47,10 +47,15 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
 
-          if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
-            String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
-            fieldConfiguration.setColumn(columnName);
+          if(fieldConfiguration.isScalar()) {
+            fieldConfiguration.setTypeConfiguration(this);
+
+            if (fieldConfiguration.getColumn() == null) {
+              String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
+              fieldConfiguration.setColumn(columnName);
+            }
           }
+
 
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
             fieldConfiguration.setNumeric(true);

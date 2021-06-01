@@ -26,6 +26,13 @@ objectTypes:
     table: dbeerpedia.beers
     keys:
       - field: identifier
+    filters:
+      name:
+        field: name
+      soldPerYear:
+        field: soldPerYear
+      retired:
+        field: retired
     fields:
       identifier:
         type: ID
@@ -116,6 +123,9 @@ objectTypes:
     table: dbeerpedia.ingredients
     keys:
       - field: identifier
+    filters:
+      name: { }
+      weight: { }
     fields:
       identifier:
         type: ID
@@ -127,6 +137,8 @@ objectTypes:
   Address:
     backend: postgres
     table: dbeerpedia.addresses
+    filters:
+      city: { }
     keys:
       - field: identifier
     fields:

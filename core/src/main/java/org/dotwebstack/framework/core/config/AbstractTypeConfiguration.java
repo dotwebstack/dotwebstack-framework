@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -40,6 +43,28 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
     postFieldProcessing();
+  }
+
+  public Optional<T> getField(String fieldName) {
+    var fieldNames = StringUtils.split(fieldName, '.');
+    return getField(fieldNames);
+  }
+
+  // TODO optional?
+  protected Optional<T> getField(String[] fieldNames) {
+    T fieldConfiguration = null;
+    if(fieldNames.length >= 1) {
+      fieldConfiguration = fields.get(fieldNames[0]);
+      // TODO: check if fieldconfig exists?
+      // if(fieldConfiguration == null) {
+      //  throw IllegalStateException("Filter '{}' doesn't match existing field!", filterName);
+      // }
+      fieldNames = Arrays.copyOfRange(fieldNames, 1, fieldNames.length);
+    }
+    if(fieldNames.length == 0) {
+      return Optional.ofNullable(fieldConfiguration);
+    }
+    return ((AbstractTypeConfiguration) fieldConfiguration.getTypeConfiguration()).getField(fieldNames);
   }
 
   protected void postFieldProcessing() {

@@ -19,13 +19,15 @@ CREATE TABLE dbeerpedia.breweries (
   status dbeerpedia.brewery_status NOT NULL,
   postal_address character varying REFERENCES dbeerpedia.addresses (identifier),
   visit_address character varying REFERENCES dbeerpedia.addresses (identifier),
-  geometry geometry NOT NULL
+  geometry geometry NOT NULL,
+  his_age INT NOT NULL,
+  his_history character varying NOT NULL
 );
 
-INSERT INTO dbeerpedia.breweries(identifier, name, status, postal_address, visit_address, geometry) VALUES
-  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'active', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f','POINT(5.979274334569982 52.21715768613606)'),
-  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL,'POINT(5.979274334569982 52.21715768613606)'),
-  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)');
+INSERT INTO dbeerpedia.breweries(identifier, name, status, postal_address, visit_address, geometry, his_age, his_history) VALUES
+  ('d3654375-95fa-46b4-8529-08b0f777bd6b', 'Brewery X', 'active', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'fcb73181-a1b0-4748-8ae0-b7b51dd6497f','POINT(5.979274334569982 52.21715768613606)', 1988, 'hip and new'),
+  ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL,'POINT(5.979274334569982 52.21715768613606)', 1900, 'A long time ago'),
+  ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL,'POINT(5.979274334569982 52.21715768613606)', 1700, 'A king wanted a spicy beer');
 
 CREATE TABLE dbeerpedia.beers (
   identifier character varying NOT NULL PRIMARY KEY,
@@ -34,17 +36,19 @@ CREATE TABLE dbeerpedia.beers (
   brewery character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
   sold_per_year INT NOT NULL,
   taste text[] NOT NULL,
-  retired boolean
+  retired boolean NOT NULL
 );
 
 CREATE INDEX brewery_idx ON dbeerpedia.beers (brewery);
 
-INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year, taste) VALUES
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::text[]),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', 'SPICY', 'SMOKY', 'WATERY', 'FRUITY']::text[]),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::text[]),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, array['SPICY']::text[]),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::text[]);
+INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year, taste, retired) VALUES
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::text[], false),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', 'SPICY', 'SMOKY', 'WATERY', 'FRUITY']::text[], false),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::text[], false),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, array['SPICY']::text[], false),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::text[], false),
+  ('766883b5-3482-41cf-a66d-a81e79a4f321', 'Beer 6', 6.5, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 25100000, array['WATERY']::text[], true);
+
 
 CREATE TABLE dbeerpedia.ingredients (
   identifier character varying NOT NULL PRIMARY KEY,

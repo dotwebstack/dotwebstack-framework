@@ -23,6 +23,7 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
@@ -49,15 +50,50 @@ public class SelectQueryBuilder {
     return build(collectionRequest, new ObjectSelectContext());
   }
 
+//  private void createFilterConditions(List<FilterCriteria> filterCriterias, SelectQuery<?> selectQuery, Table<?> fromTable) {
+//    filterCriterias.forEach(filterCriteria -> {
+//      // ALLEEN indien isCompositeFilter
+//      var fieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getField();
+//      var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
+//      var filterFields = filterCriteria.getFilterFields();
+//      var filterTable = findTable(typeConfiguration.getTable()).asTable("fja_1");
+//      // create alias?
+//      // create join condition
+//      var leftColumn = fromTable.field(filterFields[0], Object.class);
+//      var rightColumn = filterTable.field(fieldConfiguration.getColumn());
+//      // DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()));
+//
+//      var joinCondition =
+//      selectQuery.addJoin(filterTable, JoinType.JOIN, joinCondition);
+//
+//    });
+//    var aliasedJoinTable = findTable(joinTable.getName()).asTable(objectSelectContext.newTableAlias());
+//
+//    var joinCondition = createJoinTableJoinCondition(joinTable.getInverseJoinColumns(), typeConfiguration.getFields(),
+//        aliasedJoinTable, table);
+//
+//    query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
+//  }
+
+
+
   public SelectQueryBuilderResult build(CollectionRequest collectionRequest, ObjectSelectContext objectSelectContext) {
     var objectRequest = collectionRequest.getObjectRequest();
 
     var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
 
+    // optie 1:
+    // objectRequest bewerken zodat je een join afdwingt tbv filter
+    // strat 1: we gebruiken huidige left join en voeg conditie toe aan de buitenste query
+      // je hebt tableAlias en columnAlias nodig voor address.city
+    // strat 2: we maken een aparte 'filter' join (inner) zodat we geen gebruik hoeven te maken van aliassen
     var selectQuery = buildQuery(objectSelectContext, objectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
+     // createFilterConditions(collectionRequest.getFilterCriterias(), selectQuery);
+      // visitAddress.city
+      // is er een join met address en bevat de select de kolom city
       createFilterConditions(collectionRequest.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
     }
 

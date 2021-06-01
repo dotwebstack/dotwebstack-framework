@@ -30,17 +30,14 @@ public final class FilterHelper {
     } else {
       fieldName = filterName;
     }
-
-    if (!typeConfiguration.getFields()
-        .containsKey(fieldName)) {
+    // TODO: onderstaande check aanpassen, ook composite/nested objects zijn toegestaan
+    var typeConfigurationForField = typeConfiguration.getField(fieldName);
+    if (typeConfigurationForField.isEmpty()) {
       throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
     }
 
-    String type = typeConfiguration.getFields()
-        .get(fieldName)
-        .getType();
+    return getTypeNameForFilter(typeConfigurationForField.get().getType());
 
-    return getTypeNameForFilter(type);
   }
 
   public static String getTypeNameForFilter(String typeName) {
