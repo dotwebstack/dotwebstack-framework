@@ -36,11 +36,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class OperandFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
+class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
 
   public static final String INT_TYPE = "Int";
 
-  private final OperandFilterCriteriaParser parser = new OperandFilterCriteriaParser();
+  private final CoreFilterCriteriaParser parser = new CoreFilterCriteriaParser();
 
   @ParameterizedTest
   @CsvSource({STRING_FILTER_INPUT_OBJECT_TYPE, DATE_FILTER_INPUT_OBJECT_TYPE, INT_FILTER_INPUT_OBJECT_TYPE,

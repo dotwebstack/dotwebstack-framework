@@ -27,15 +27,15 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class FilterConfigurerTest {
+class CoreFilterConfigurerTest {
 
-  private FilterConfigurer filterConfigurer;
+  private CoreFilterConfigurer coreFilterConfigurer;
 
   private TypeDefinitionRegistry dataFetchingEnvironment;
 
   @BeforeEach
   void beforeAll() {
-    filterConfigurer = new FilterConfigurer();
+    coreFilterConfigurer = new CoreFilterConfigurer();
     dataFetchingEnvironment = new TypeDefinitionRegistry();
   }
 
@@ -71,7 +71,7 @@ class FilterConfigurerTest {
 
   @SuppressWarnings("rawtypes")
   private void configureTypeDefinitionRegistry_addFilter_forType(List<String> expectedFieldNames, String typeName) {
-    filterConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
+    coreFilterConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(typeName);
     assertThat(optional.isPresent(), is(true));
