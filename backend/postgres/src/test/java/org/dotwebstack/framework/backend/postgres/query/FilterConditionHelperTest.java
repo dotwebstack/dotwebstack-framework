@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mock;
@@ -79,22 +81,27 @@ class FilterConditionHelperTest {
     assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
   }
 
-  @Test
-  void createFilterConditions_returnConditions_forGeometryCriteria() throws ParseException {
+  @ParameterizedTest
+  @CsvSource(delimiterString = ";",
+      value = {"CONTAINS;[(ST_CONTAINS(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]",
+          "WITHIN;[(ST_WITHIN(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))]",
+          "INTERSECTS;[(ST_INTERSECTS(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"})
+  void createFilterConditions_returnConditions_forGeometryCriteria(String filterOperator, String expected)
+      throws ParseException {
     var wkt = "POINT (1 1)";
 
     var wktReader = new WKTReader();
 
     var filterCriteria = GeometryFilterCriteria.builder()
         .field(fieldConfiguration)
-        .filterOperator(GeometryFilterOperator.CONTAINS)
+        .filterOperator(GeometryFilterOperator.valueOf(filterOperator))
         .geometry(wktReader.read(wkt))
         .build();
 
     List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(), equalTo("[(ST_CONTAINS(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"));
+    assertThat(result.toString(), equalTo(expected));
   }
 
   @Test
