@@ -23,6 +23,8 @@ import graphql.schema.GraphQLInputObjectField;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
+import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;

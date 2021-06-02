@@ -10,7 +10,6 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
@@ -22,21 +21,12 @@ import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.Type;
 import graphql.language.TypeName;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.idl.TypeUtil;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
-import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
+import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
+import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -371,65 +361,5 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   private static void assertNonNullListType(Type<?> type, String typeName) {
     assertThat(type, instanceOf(NonNullType.class));
     assertListType(TypeUtil.unwrapOne(type), typeName);
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @JsonTypeName("test")
-  static class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
-
-    @Override
-    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
-
-    @Override
-    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
-      return null;
-    }
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  static class FieldConfigurationImpl extends AbstractFieldConfiguration {
-    public boolean isAggregate() {
-      return AggregateHelper.isAggregate(this);
-    }
-
-    @Override
-    public String getType() {
-      if (isAggregate()) {
-        return AggregateConstants.AGGREGATE_TYPE;
-      }
-      return super.getType();
-    }
-
-    @Override
-    public boolean isScalarField() {
-      return false;
-    }
-
-    @Override
-    public boolean isObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isNestedObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isAggregateField() {
-      return isAggregate();
-    }
   }
 }

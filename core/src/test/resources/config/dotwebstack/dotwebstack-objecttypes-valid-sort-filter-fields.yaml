@@ -1,0 +1,58 @@
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      geometry:
+        type: Geometry
+      addresses:
+        type: Address
+        list: true
+        nullable: true
+        arguments:
+          - name: addressType
+            type: String
+            nullable: true
+            list: true
+      visitAddress:
+        type: Address
+        objectField: true
+        nullable: true
+      postalAddress:
+        type: Address
+        nestedObjectField: true
+        nullable: true
+      beers:
+        type: Beer
+        mappedBy: brewery
+        list: true
+        nullable: true
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+
+  Beer:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+
+  Address:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
