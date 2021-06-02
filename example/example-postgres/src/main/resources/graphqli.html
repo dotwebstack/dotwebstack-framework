@@ -12,7 +12,7 @@
 <script crossorigin src="https://unpkg.com/graphiql/graphiql.min.js"></script>
 <script>
     const graphQLFetcher = graphQLParams =>
-      fetch(`http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}`)
+      fetch(`http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`)
         .then(response => response.json())
         .catch(() => response.text());
 
