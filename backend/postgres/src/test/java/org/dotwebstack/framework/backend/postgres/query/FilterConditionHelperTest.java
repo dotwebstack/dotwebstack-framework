@@ -83,9 +83,9 @@ class FilterConditionHelperTest {
 
   @ParameterizedTest
   @CsvSource(delimiterString = ";",
-      value = {"CONTAINS;[(ST_CONTAINS(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]",
-          "WITHIN;[(ST_WITHIN(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))]",
-          "INTERSECTS;[(ST_INTERSECTS(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"})
+      value = {"CONTAINS;[(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]",
+          "WITHIN;[(ST_Within(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))]",
+          "INTERSECTS;[(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"})
   void createFilterConditions_returnConditions_forGeometryCriteria(String filterOperator, String expected)
       throws ParseException {
     var wkt = "POINT (1 1)";

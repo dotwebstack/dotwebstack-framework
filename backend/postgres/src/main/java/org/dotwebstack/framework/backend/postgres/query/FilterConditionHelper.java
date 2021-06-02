@@ -74,11 +74,11 @@ public final class FilterConditionHelper {
 
     switch (geometryFilterCriteria.getFilterOperator()) {
       case CONTAINS:
-        return DSL.condition("ST_CONTAINS({0}, {1})", field, geofilterField);
+        return DSL.condition("ST_Contains({0}, {1})", field, geofilterField);
       case WITHIN:
-        return DSL.condition("ST_WITHIN({0}, {1})", geofilterField, field);
+        return DSL.condition("ST_Within({0}, {1})", geofilterField, field);
       case INTERSECTS:
-        return DSL.condition("ST_INTERSECTS({0}, {1})", field, geofilterField);
+        return DSL.condition("ST_Intersects({0}, {1})", field, geofilterField);
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");
     }
