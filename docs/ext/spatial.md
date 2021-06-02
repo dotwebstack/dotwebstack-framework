@@ -110,7 +110,7 @@ Example graphql query which filters on a `Geometry` field with the `contains` fi
 
 ```graphql
 query {
-    breweries(filter: {geometry: {contains: "POINT(1 1)"} }) {
+    breweries(filter: {geometry: {contains: {fromWKT: "POINT(1 1)"}}}) {
         identifier
         name
     }
