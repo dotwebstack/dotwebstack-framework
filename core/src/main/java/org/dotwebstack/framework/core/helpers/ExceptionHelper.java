@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.helpers;
 
 import java.util.MissingFormatArgumentException;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
+import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.NotImplementedException;
 
@@ -55,5 +56,9 @@ public class ExceptionHelper {
 
   public static InvalidConfigurationException invalidConfigurationException(String message, Object... arguments) {
     return new InvalidConfigurationException(formatMessage(message, arguments), findCause(arguments));
+  }
+
+  public static InternalServerErrorException internalServerErrorException(Throwable throwable) {
+    return new InternalServerErrorException("An internal server error has occurred!", throwable);
   }
 }
