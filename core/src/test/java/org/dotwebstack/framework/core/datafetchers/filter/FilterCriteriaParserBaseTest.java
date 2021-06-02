@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import graphql.AssertException;
 import graphql.language.InputObjectTypeDefinition;
+import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLInputObjectField;
@@ -21,6 +22,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -140,6 +142,9 @@ abstract class FilterCriteriaParserBaseTest {
   @EqualsAndHashCode(callSuper = true)
   @JsonTypeName("test")
   static class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
+
+    @Override
+    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
 
     @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {

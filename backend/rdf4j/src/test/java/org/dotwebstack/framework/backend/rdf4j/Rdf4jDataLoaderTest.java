@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
@@ -154,6 +155,9 @@ class Rdf4jDataLoaderTest {
   }
 
   private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
+    @Override
+    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+
     @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
       return null;

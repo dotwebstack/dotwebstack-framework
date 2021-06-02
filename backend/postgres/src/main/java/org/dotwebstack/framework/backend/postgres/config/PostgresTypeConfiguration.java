@@ -69,7 +69,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
-    postFieldProcessing();
     initKeyFields();
   }
 
@@ -258,6 +257,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
     var postgresFieldConfiguration = new PostgresFieldConfiguration();
     postgresFieldConfiguration.setColumn(column);
+    postgresFieldConfiguration.setName(column);
     return postgresFieldConfiguration;
   }
 

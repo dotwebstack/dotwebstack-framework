@@ -253,6 +253,9 @@ class PostgresTypeConfigurationTest {
 
   static class TestTypeConfiguration extends AbstractTypeConfiguration<TestFieldConfiguration> {
     @Override
+    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+
+    @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
       return null;
     }

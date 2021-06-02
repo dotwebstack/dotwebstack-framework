@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import java.util.HashMap;
@@ -40,12 +39,9 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
 
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
-    postFieldProcessing();
-  }
-
-  protected void postFieldProcessing() {
+  public void setFields(Map<String, T> fields) {
     fields.forEach((key, value) -> value.setName(key));
+    this.fields = fields;
   }
 
   public KeyCondition getKeyCondition(String fieldName) {

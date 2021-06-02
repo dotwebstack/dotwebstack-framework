@@ -30,6 +30,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -331,6 +332,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   @EqualsAndHashCode(callSuper = true)
   @JsonTypeName("test")
   static class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
+
+    @Override
+    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
 
     @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {

@@ -41,8 +41,6 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
               "Usage of 'aggregationOf' by field '{}.{}' is not supported with an JSON backend",
               objectTypeDefinition.getName(), entry.getKey());
         });
-
-    postFieldProcessing();
   }
 
   public String getJsonPathTemplate(String queryName) {
