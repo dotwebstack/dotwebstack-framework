@@ -21,6 +21,7 @@ public class BooleanFilterCriteriaParser extends AbstractFilterCriteriaParser {
   @Override
   public List<FilterCriteria> parse(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
       Map<String, Object> data) {
+    // TODO: add fieldName
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .map(filter -> EqualsFilterCriteria.builder()
             .field(getFieldConfiguration(typeConfiguration, inputObjectField))

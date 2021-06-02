@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.dotwebstack.framework.backend.postgres.query.model.Origin;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -23,6 +24,8 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   private String column;
 
   private boolean isNested = false;
+
+  private Origin origin = Origin.REQUESTED;
 
   @Override
   public boolean isScalarField() {

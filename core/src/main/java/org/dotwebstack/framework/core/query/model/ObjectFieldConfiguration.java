@@ -2,12 +2,13 @@ package org.dotwebstack.framework.core.query.model;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 
 @Data
-@Builder
+@SuperBuilder
 public class ObjectFieldConfiguration {
-  private final FieldConfiguration field;
+  protected final FieldConfiguration field;
 
   private final ObjectRequest objectRequest;
 }

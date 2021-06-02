@@ -56,7 +56,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             }
           }
 
-
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
             fieldConfiguration.setNumeric(true);
           }

@@ -46,8 +46,7 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
     var fieldName = Optional.ofNullable(filterConfiguration.getField())
         .orElse(inputObjectField.getName());
 
-    return typeConfiguration.getFields()
-        .get(fieldName);
+    return typeConfiguration.getField(fieldName).orElseThrow(IllegalStateException::new);
   }
 
   @Data

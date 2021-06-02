@@ -1,25 +1,31 @@
 package org.dotwebstack.framework.core.query.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 
-@Builder
+@SuperBuilder
 @Data
+@RequiredArgsConstructor
 public class ObjectRequest implements Request {
+
   @NonNull
   private final TypeConfiguration<?> typeConfiguration;
 
-  private final List<FieldConfiguration> scalarFields;
+  @Builder.Default
+  private final List<FieldConfiguration> scalarFields = new ArrayList<>();
 
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = List.of();
 
   @Builder.Default
-  private final List<ObjectFieldConfiguration> objectFields = List.of();
+  protected final List<ObjectFieldConfiguration> objectFields = List.of();
 
   @Builder.Default
   private final List<NestedObjectFieldConfiguration> nestedObjectFields = List.of();
