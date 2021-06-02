@@ -52,7 +52,7 @@ class SelectQueryBuilderTest {
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory(), new FilterConditionHelper(dslContext));
+    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory());
   }
 
   @Test

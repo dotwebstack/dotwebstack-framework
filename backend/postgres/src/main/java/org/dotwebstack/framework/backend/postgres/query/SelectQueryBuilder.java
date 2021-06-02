@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 //import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
@@ -46,12 +47,9 @@ public class SelectQueryBuilder {
 
   private final AggregateFieldFactory aggregateFieldFactory;
 
-  private final FilterConditionHelper filterConditionHelper;
-
-  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory, FilterConditionHelper filterConditionHelper) {
+  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
     this.dslContext = dslContext;
     this.aggregateFieldFactory = aggregateFieldFactory;
-    this.filterConditionHelper = filterConditionHelper;
   }
 
   public SelectQueryBuilderResult build(CollectionRequest collectionRequest) {
@@ -76,16 +74,17 @@ public class SelectQueryBuilder {
     // extend objectrequest: PostgresObjectRequest en PostgresObjectFieldConfiguration with indicator usedForFiltering
     // de gefilterde kolommen worden niet gealised
     var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
+    postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
+
+    var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
     //  filterConditionHelper.createFilterConditions(collectionRequest.getFilterCriterias(), selectQuery, fromTable, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration());
-      postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
+
       // visitAddress.city
       // is er een join met address en bevat de select de kolom city
-      // createFilterConditions(collectionRequest.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
+       createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable).forEach(selectQuery::addConditions);
     }
-
-    var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (collectionRequest.getPagingCriteria() != null) {
       var pagingCriteria = collectionRequest.getPagingCriteria();
@@ -253,18 +252,21 @@ public class SelectQueryBuilder {
     var postgresScalarField = (PostgresFieldConfiguration) scalarField;
     var column = Objects.requireNonNull(table.field((postgresScalarField.getColumn())));
 
-    if(Origin.REQUESTED == postgresScalarField.getOrigin()) {
+    if (postgresScalarField.hasOrigin(Origin.REQUESTED)) {
       var columnAlias = objectSelectContext.newSelectAlias();
-      column = column.as(columnAlias);
-      var columnName = column.getName();
-      objectSelectContext.getAssembleFns().put(scalarField.getName(), row -> row.get(columnName));
+      var aliasedColumn = column.as(columnAlias);
+      objectSelectContext.getAssembleFns().put(scalarField.getName(), row -> row.get(aliasedColumn.getName()));
 
       if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
         keyFieldAdded.set(true);
         objectSelectContext.getCheckNullAlias().set(columnAlias);
       }
+      query.addSelect(aliasedColumn);
     }
-    query.addSelect(column);
+    if (postgresScalarField.hasOrigin(Origin.FILTERING) || postgresScalarField.hasOrigin(Origin.SORTING)) {
+      query.addSelect(column);
+    }
+
   }
 
   private void addNestedObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
@@ -304,7 +306,7 @@ public class SelectQueryBuilder {
 
           subSelect.addLimit(1);
 
-          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
+          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
           query.addSelect(lateralTable.asterisk());
           query.addJoin(lateralTable, JoinType.OUTER_APPLY);
 

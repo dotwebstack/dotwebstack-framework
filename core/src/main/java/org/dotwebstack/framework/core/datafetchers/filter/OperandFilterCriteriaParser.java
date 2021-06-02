@@ -44,73 +44,77 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .flatMap(filter -> getFilterItems(filter).stream())
-        .map(filterItem -> createFilterCriteria(getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
+        .map(filterItem -> createFilterCriteria(getFieldPath(typeConfiguration, inputObjectField), getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
         .collect(Collectors.toList());
   }
 
-  private FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case EQ:
-        return createEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case LT:
-        return createLowerThenFilterCriteria(fieldConfiguration, filterItem);
+        return createLowerThenFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case LTE:
-        return createLowerThenEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createLowerThenEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case GT:
-        return createGreaterThenFilterCriteria(fieldConfiguration, filterItem);
+        return createGreaterThenFilterCriteria(fieldPath,fieldConfiguration, filterItem);
       case GTE:
-        return createGreaterThenEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createGreaterThenEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case IN:
-        return createInFilterCriteria(fieldConfiguration, filterItem);
+        return createInFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case NOT:
-        return createNotFilterCriteria(fieldConfiguration, filterItem);
+        return createNotFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       default:
         throw unsupportedOperationException("Filter operator '{}' is not supported!", filterItem.getOperator());
     }
   }
 
-  private FilterCriteria createLowerThenFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createLowerThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     return LowerThenFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createLowerThenEqualsFilterCriteria(FieldConfiguration fieldConfiguration,
+  private FilterCriteria createLowerThenEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return LowerThenEqualsFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createGreaterThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     return GreaterThenFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenEqualsFilterCriteria(FieldConfiguration fieldConfiguration,
+  private FilterCriteria createGreaterThenEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return GreaterThenEqualsFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createNotFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createNotFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     FilterCriteria innerCriteria;
     if (filterItem.getChildren()
         .size() > 1) {
       innerCriteria = AndFilterCriteria.builder()
           .filterCriterias(filterItem.getChildren()
               .stream()
-              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration, innerFilterItem))
+              .map(innerFilterItem -> createFilterCriteria(fieldPath, fieldConfiguration, innerFilterItem))
               .collect(Collectors.toList()))
           .build();
     } else {
-      innerCriteria = createFilterCriteria(fieldConfiguration, filterItem.getChildren()
+      innerCriteria = createFilterCriteria(fieldPath, fieldConfiguration, filterItem.getChildren()
           .get(0));
     }
 
@@ -119,19 +123,21 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
         .build();
   }
 
-  private FilterCriteria createEqualsFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     return EqualsFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createInFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createInFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof List)) {
       throw illegalArgumentException("Filter item value not of type List!");
     }
 
     return InFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .values((List<?>) filterItem.getValue())
         .build();

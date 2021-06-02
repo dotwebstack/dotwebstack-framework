@@ -75,7 +75,13 @@ objectTypes:
     filters:
       name: { }
       status: { }
-      city:
+      postalStreet:
+        field: postalAddress.street
+      postalCity:
+        field: postalAddress.city
+      visitStreet:
+        field: visitAddress.street
+      visitCity:
         field: visitAddress.city
     fields:
       identifier:

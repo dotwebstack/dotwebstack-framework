@@ -6,18 +6,11 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public interface FilterCriteria {
 
   default boolean isCompositeFilter() {
-    return getFieldName().contains(".");
-  }
-
-  // TODO: implement getFieldName per subtype
-  default String getFieldName() {
-    return "visitAddress.city";
+    return getFieldPath().length > 0;
   }
 
   FieldConfiguration getField();
 
-  default String[] getFilterFields() {
-    return StringUtils.split(getFieldName(), '.');
-  }
+  String[] getFieldPath();
 
 }

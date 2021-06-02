@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -47,6 +48,16 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
         .orElse(inputObjectField.getName());
 
     return typeConfiguration.getField(fieldName).orElseThrow(IllegalStateException::new);
+  }
+
+  String getFieldPath(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField) {
+    var result = "";
+    var filterConfiguration = typeConfiguration.getFilters()
+        .get(inputObjectField.getName());
+    if(StringUtils.contains(filterConfiguration.getField(), ".")) {
+      result = filterConfiguration.getField();
+    }
+    return result;
   }
 
   @Data

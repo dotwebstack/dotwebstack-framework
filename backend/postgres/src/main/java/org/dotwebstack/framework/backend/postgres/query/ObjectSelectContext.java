@@ -45,6 +45,14 @@ public class ObjectSelectContext {
     return objectQueryContext.newTableAlias();
   }
 
+  public String newTableAlias(String fieldName) {
+    return objectQueryContext.newTableAlias(fieldName);
+  }
+
+  public String getTableAlias(String fieldName){
+    return objectQueryContext.getTableAlias(fieldName);
+  }
+
   public void setKeyColumnNames(Map<String, String> keyColumnNames) {
     this.keyColumnNames = keyColumnNames;
   }

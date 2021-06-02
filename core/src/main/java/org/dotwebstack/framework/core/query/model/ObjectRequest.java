@@ -25,7 +25,7 @@ public class ObjectRequest implements Request {
   private final List<KeyCriteria> keyCriteria = List.of();
 
   @Builder.Default
-  protected final List<ObjectFieldConfiguration> objectFields = List.of();
+  protected final List<ObjectFieldConfiguration> objectFields = new ArrayList<>();
 
   @Builder.Default
   private final List<NestedObjectFieldConfiguration> nestedObjectFields = List.of();
@@ -35,4 +35,10 @@ public class ObjectRequest implements Request {
 
   @Builder.Default
   private final List<ObjectFieldConfiguration> collectionObjectFields = List.of();
+
+  public void addScalarField(FieldConfiguration fieldConfiguration) {
+    if(!scalarFields.contains(fieldConfiguration)) {
+      scalarFields.add(fieldConfiguration);
+    }
+  }
 }
