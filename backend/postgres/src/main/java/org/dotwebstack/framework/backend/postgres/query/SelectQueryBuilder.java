@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-//import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
+// import static
+// org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -14,13 +15,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.model.Origin;
-import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequest;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
@@ -29,7 +27,6 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
@@ -65,13 +62,16 @@ public class SelectQueryBuilder {
     // optie 1:
     // objectRequest bewerken zodat je een join afdwingt tbv filter
     // strat 1: we gebruiken huidige left join en voeg conditie toe aan de buitenste query
-      // je hebt tableAlias en columnAlias nodig voor address.city
-    // strat 2: we maken een aparte 'filter' join (inner) zodat we geen gebruik hoeven te maken van aliassen
+    // je hebt tableAlias en columnAlias nodig voor address.city
+    // strat 2: we maken een aparte 'filter' join (inner) zodat we geen gebruik hoeven te maken van
+    // aliassen
 
     // generate objectfieldconfiguration and add to object request
-    // ObjectFieldConfiguration needs an indicator that it is used for filtering, origins: [REQUESTED, FILTERING, SORTING]
+    // ObjectFieldConfiguration needs an indicator that it is used for filtering, origins: [REQUESTED,
+    // FILTERING, SORTING]
     // of
-    // extend objectrequest: PostgresObjectRequest en PostgresObjectFieldConfiguration with indicator usedForFiltering
+    // extend objectrequest: PostgresObjectRequest en PostgresObjectFieldConfiguration with indicator
+    // usedForFiltering
     // de gefilterde kolommen worden niet gealised
     var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
     postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
@@ -79,11 +79,13 @@ public class SelectQueryBuilder {
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
-    //  filterConditionHelper.createFilterConditions(collectionRequest.getFilterCriterias(), selectQuery, fromTable, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration());
+      // filterConditionHelper.createFilterConditions(collectionRequest.getFilterCriterias(), selectQuery,
+      // fromTable, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration());
 
       // visitAddress.city
       // is er een join met address en bevat de select de kolom city
-       createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable).forEach(selectQuery::addConditions);
+      createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable)
+          .forEach(selectQuery::addConditions);
     }
 
     if (collectionRequest.getPagingCriteria() != null) {
@@ -255,11 +257,13 @@ public class SelectQueryBuilder {
     if (postgresScalarField.hasOrigin(Origin.REQUESTED)) {
       var columnAlias = objectSelectContext.newSelectAlias();
       var aliasedColumn = column.as(columnAlias);
-      objectSelectContext.getAssembleFns().put(scalarField.getName(), row -> row.get(aliasedColumn.getName()));
+      objectSelectContext.getAssembleFns()
+          .put(scalarField.getName(), row -> row.get(aliasedColumn.getName()));
 
       if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
         keyFieldAdded.set(true);
-        objectSelectContext.getCheckNullAlias().set(columnAlias);
+        objectSelectContext.getCheckNullAlias()
+            .set(columnAlias);
       }
       query.addSelect(aliasedColumn);
     }

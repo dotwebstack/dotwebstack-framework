@@ -37,7 +37,7 @@ public class ObjectRequest implements Request {
   private final List<ObjectFieldConfiguration> collectionObjectFields = List.of();
 
   public void addScalarField(FieldConfiguration fieldConfiguration) {
-    if(!scalarFields.contains(fieldConfiguration)) {
+    if (!scalarFields.contains(fieldConfiguration)) {
       scalarFields.add(fieldConfiguration);
     }
   }

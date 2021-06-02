@@ -5,7 +5,6 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 

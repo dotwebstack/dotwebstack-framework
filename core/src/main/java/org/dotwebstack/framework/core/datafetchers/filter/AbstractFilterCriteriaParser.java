@@ -47,14 +47,15 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
     var fieldName = Optional.ofNullable(filterConfiguration.getField())
         .orElse(inputObjectField.getName());
 
-    return typeConfiguration.getField(fieldName).orElseThrow(IllegalStateException::new);
+    return typeConfiguration.getField(fieldName)
+        .orElseThrow(IllegalStateException::new);
   }
 
   String getFieldPath(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField) {
     var result = "";
     var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
-    if(StringUtils.contains(filterConfiguration.getField(), ".")) {
+    if (StringUtils.contains(filterConfiguration.getField(), ".")) {
       result = filterConfiguration.getField();
     }
     return result;

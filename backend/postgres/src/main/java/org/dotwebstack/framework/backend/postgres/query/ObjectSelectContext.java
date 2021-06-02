@@ -49,7 +49,7 @@ public class ObjectSelectContext {
     return objectQueryContext.newTableAlias(fieldName);
   }
 
-  public String getTableAlias(String fieldName){
+  public String getTableAlias(String fieldName) {
     return objectQueryContext.getTableAlias(fieldName);
   }
 

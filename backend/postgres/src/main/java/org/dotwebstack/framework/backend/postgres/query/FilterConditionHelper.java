@@ -25,27 +25,13 @@ public final class FilterConditionHelper {
 
   private FilterConditionHelper() {}
 
-  //  public void createFilterConditions(List<FilterCriteria> filterCriterias, SelectQuery<?> query, Table<?> fromTable, PostgresTypeConfiguration mainTypeConfiguration) {
-//    List<Condition> filterConditions = new ArrayList<>();
-//    filterCriterias.forEach(filterCriteria -> {
-//      // ALLEEN indien isCompositeFilter
-//      var isCompositeFilter = true;
-//      if(isCompositeFilter) {
-//        var filterFields = filterCriteria.getFilterFields();
-//        var filterTable = createFilterJoin(filterFields, fromTable, mainTypeConfiguration, query);
-//        filterConditions.add(createFilterCondition(filterCriteria, filterTable));
-//      } else {
-//        filterConditions.add(createFilterCondition(filterCriteria, fromTable));
-//      }
-//
-//    });
-//    query.addConditions(filterConditions);
-//  }
-
-  public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias, ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+  public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias,
+      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
     return filterCriterias.stream()
         .map(filterCriteria -> {
-          var filterTable = filterCriteria.isCompositeFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()[0]) : fromTable.getName();
+          var filterTable =
+              filterCriteria.isCompositeFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()[0])
+                  : fromTable.getName();
           return createFilterCondition(filterCriteria, filterTable);
         })
         .collect(Collectors.toList());
@@ -73,33 +59,6 @@ public final class FilterConditionHelper {
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
         .getName());
   }
-
-//  private Table<?> createFilterJoin(String[] fields,  Table<?> fromTable, PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query) {
-//    var filterTable = fromTable;
-//    var field = fields[0];
-//    var fieldConfiguration = typeConfiguration.getFields().get(field);
-//    if(fieldConfiguration.isObjectField()) {
-//      // TODO: table alias en column alias(?)
-//      filterTable = findTable(((PostgresTypeConfiguration)fieldConfiguration.getTypeConfiguration()).getTable()).asTable("fjt_1");
-//      // TODO: use joinColumn
-//      var leftColumn = fromTable.field(fieldConfiguration.getJoinColumns().get(0).getName(), Object.class);
-//      var rightColumn = filterTable.field(fieldConfiguration.getJoinColumns().get(0).getReferencedField());
-//      var joinCondition = Objects.requireNonNull(leftColumn).eq(rightColumn);
-//      query.addJoin(filterTable, JoinType.JOIN, joinCondition);
-//      fields = Arrays.copyOfRange(fields, 1, fields.length);
-//      createFilterJoin(fields, filterTable, (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration(), query);
-//    }
-//    return filterTable;
-//
-//  }
-
-//  private Table<?> findTable(String name) {
-//    var path = name.split("\\.");
-//    var tables = dslContext.meta()
-//        .getTables(path[path.length - 1]);
-//
-//    return tables.get(0);
-//  }
 
   private static Condition createFilterCondition(AndFilterCriteria andFilterCriteria, String fromTable) {
     var innerConditions = andFilterCriteria.getFilterCriterias()

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,21 +49,21 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
     return getField(fieldNames);
   }
 
-  // TODO optional?
+  @SuppressWarnings("unchecked")
   protected Optional<T> getField(String[] fieldNames) {
     T fieldConfiguration = null;
-    if(fieldNames.length >= 1) {
+    if (fieldNames.length >= 1) {
       fieldConfiguration = fields.get(fieldNames[0]);
       // TODO: check if fieldconfig exists?
       // if(fieldConfiguration == null) {
-      //  throw IllegalStateException("Filter '{}' doesn't match existing field!", filterName);
+      // throw IllegalStateException("Filter '{}' doesn't match existing field!", filterName);
       // }
       fieldNames = Arrays.copyOfRange(fieldNames, 1, fieldNames.length);
     }
-    if(fieldNames.length == 0) {
+    if (fieldNames.length == 0) {
       return Optional.ofNullable(fieldConfiguration);
     }
-    return ((AbstractTypeConfiguration) fieldConfiguration.getTypeConfiguration()).getField(fieldNames);
+    return ((AbstractTypeConfiguration<T>) fieldConfiguration.getTypeConfiguration()).getField(fieldNames);
   }
 
   protected void postFieldProcessing() {

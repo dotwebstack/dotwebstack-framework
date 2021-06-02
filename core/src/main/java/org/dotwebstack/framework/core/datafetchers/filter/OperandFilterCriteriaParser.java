@@ -44,11 +44,13 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .flatMap(filter -> getFilterItems(filter).stream())
-        .map(filterItem -> createFilterCriteria(getFieldPath(typeConfiguration, inputObjectField), getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
+        .map(filterItem -> createFilterCriteria(getFieldPath(typeConfiguration, inputObjectField),
+            getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
         .collect(Collectors.toList());
   }
 
-  private FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case EQ:
         return createEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
@@ -57,7 +59,7 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
       case LTE:
         return createLowerThenEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case GT:
-        return createGreaterThenFilterCriteria(fieldPath,fieldConfiguration, filterItem);
+        return createGreaterThenFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case GTE:
         return createGreaterThenEqualsFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       case IN:
@@ -69,7 +71,8 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
     }
   }
 
-  private FilterCriteria createLowerThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createLowerThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     return LowerThenFilterCriteria.builder()
         .fieldPath(fieldPath)
         .field(fieldConfiguration)
@@ -86,7 +89,8 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
         .build();
   }
 
-  private FilterCriteria createGreaterThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createGreaterThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     return GreaterThenFilterCriteria.builder()
         .fieldPath(fieldPath)
         .field(fieldConfiguration)
@@ -103,7 +107,8 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
         .build();
   }
 
-  private FilterCriteria createNotFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createNotFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     FilterCriteria innerCriteria;
     if (filterItem.getChildren()
         .size() > 1) {
@@ -123,7 +128,8 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
         .build();
   }
 
-  private FilterCriteria createEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     return EqualsFilterCriteria.builder()
         .fieldPath(fieldPath)
         .field(fieldConfiguration)
@@ -131,7 +137,8 @@ public class OperandFilterCriteriaParser extends AbstractFilterCriteriaParser {
         .build();
   }
 
-  private FilterCriteria createInFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createInFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof List)) {
       throw illegalArgumentException("Filter item value not of type List!");
     }

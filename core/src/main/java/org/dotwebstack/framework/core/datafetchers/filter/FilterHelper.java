@@ -36,7 +36,8 @@ public final class FilterHelper {
       throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
     }
 
-    return getTypeNameForFilter(typeConfigurationForField.get().getType());
+    return getTypeNameForFilter(typeConfigurationForField.get()
+        .getType());
 
   }
 

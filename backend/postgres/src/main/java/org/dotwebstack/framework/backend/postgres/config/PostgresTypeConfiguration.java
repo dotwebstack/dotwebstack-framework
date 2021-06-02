@@ -47,7 +47,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
 
-          if(fieldConfiguration.isScalar()) {
+          if (fieldConfiguration.isScalar()) {
             fieldConfiguration.setTypeConfiguration(this);
 
             if (fieldConfiguration.getColumn() == null) {

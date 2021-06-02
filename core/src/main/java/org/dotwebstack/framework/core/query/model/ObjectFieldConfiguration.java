@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.query.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;

@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-//import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 
 import java.time.OffsetDateTime;
@@ -29,155 +30,164 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
 @ExtendWith(MockitoExtension.class)
 class FilterConditionHelperTest {
 
-//  @Mock
-//  private Table<?> fromTable;
-//
-//  @Mock
-//  private PostgresFieldConfiguration fieldConfiguration;
-//
-//  @BeforeEach
-//  public void doBefore() {
-//    lenient().when(fromTable.getName())
-//        .thenReturn("t1");
-//    lenient().when(fieldConfiguration.getColumn())
-//        .thenReturn("test_column");
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forEqualsCriteria() {
-//    var filterCriteria = EqualsFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .value("testValue")
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" = 'testValue']"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forNotCriteria() {
-//    var filterCriteria = NotFilterCriteria.builder()
-//        .filterCriteria(EqualsFilterCriteria.builder()
-//            .field(fieldConfiguration)
-//            .value("testValue")
-//            .build())
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forAndCriteria() {
-//    var filterCriteria = AndFilterCriteria.builder()
-//        .filterCriterias(List.of(EqualsFilterCriteria.builder()
-//            .field(fieldConfiguration)
-//            .value("testValue1")
-//            .build(),
-//            EqualsFilterCriteria.builder()
-//                .field(fieldConfiguration)
-//                .value("testValue2")
-//                .build()))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(),
-//        equalTo("[(\n  \"t1\".\"test_column\" = 'testValue1'\n  and \"t1\".\"test_column\" = 'testValue2'\n)]"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forInCriteria() {
-//    var filterCriteria = InFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .values(List.of("testValue1", "testValue2"))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" in (\n  'testValue1', 'testValue2'\n)]"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forGreaterThenFilterCriteria() {
-//    var filterCriteria = GreaterThenFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(),
-//        equalTo("[\"t1\".\"test_column\" > timestamp with time zone '2020-10-01 11:00:05+00:00']"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forGreaterThenEqualsFilterCriteria() {
-//    var filterCriteria = GreaterThenEqualsFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(),
-//        equalTo("[\"t1\".\"test_column\" >= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forLowerThenFilterCriteria() {
-//    var filterCriteria = LowerThenFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(),
-//        equalTo("[\"t1\".\"test_column\" < timestamp with time zone '2020-10-01 11:00:05+00:00']"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_returnConditions_forLowerThenEqualsFilterCriteria() {
-//    var filterCriteria = LowerThenEqualsFilterCriteria.builder()
-//        .field(fieldConfiguration)
-//        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
-//        .build();
-//
-//    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
-//
-//    assertThat(result, notNullValue());
-//    assertThat(result.toString(),
-//        equalTo("[\"t1\".\"test_column\" <= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
-//  }
-//
-//  @Test
-//  void createFilterConditions_throwsException_forUnsupportedCriteria() {
-//    var filterCriteria = new FilterCriteria() {
-//      @Override
-//      public FieldConfiguration getField() {
-//        return null;
-//      }
-//    };
-//
-//    List<FilterCriteria> filterCriterias = List.of(filterCriteria);
-//
-//    Assertions.assertThrows(UnsupportedOperationException.class,
-//        () -> createFilterConditions(filterCriterias, fromTable));
-//
-//  }
+  @Mock
+  private Table<?> fromTable;
+
+  @Mock
+  private ObjectSelectContext objectSelectContext;
+
+  @Mock
+  private PostgresFieldConfiguration fieldConfiguration;
+
+  @BeforeEach
+  public void doBefore() {
+    lenient().when(fromTable.getName())
+        .thenReturn("t1");
+    lenient().when(objectSelectContext.getTableAlias(anyString()))
+        .thenReturn("t1");
+    lenient().when(fieldConfiguration.getColumn())
+        .thenReturn("test_column");
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forEqualsCriteria() {
+    var filterCriteria = EqualsFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .value("testValue")
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" = 'testValue']"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forNotCriteria() {
+    var filterCriteria = NotFilterCriteria.builder()
+        .filterCriteria(EqualsFilterCriteria.builder()
+            .field(fieldConfiguration)
+            .value("testValue")
+            .build())
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forAndCriteria() {
+    var filterCriteria = AndFilterCriteria.builder()
+        .filterCriterias(List.of(EqualsFilterCriteria.builder()
+            .field(fieldConfiguration)
+            .value("testValue1")
+            .build(),
+            EqualsFilterCriteria.builder()
+                .field(fieldConfiguration)
+                .value("testValue2")
+                .build()))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("[(\n  \"t1\".\"test_column\" = 'testValue1'\n  and \"t1\".\"test_column\" = 'testValue2'\n)]"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forInCriteria() {
+    var filterCriteria = InFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .values(List.of("testValue1", "testValue2"))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" in (\n  'testValue1', 'testValue2'\n)]"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forGreaterThenFilterCriteria() {
+    var filterCriteria = GreaterThenFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("[\"t1\".\"test_column\" > timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forGreaterThenEqualsFilterCriteria() {
+    var filterCriteria = GreaterThenEqualsFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("[\"t1\".\"test_column\" >= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forLowerThenFilterCriteria() {
+    var filterCriteria = LowerThenFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("[\"t1\".\"test_column\" < timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+  }
+
+  @Test
+  void createFilterConditions_returnConditions_forLowerThenEqualsFilterCriteria() {
+    var filterCriteria = LowerThenEqualsFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("[\"t1\".\"test_column\" <= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+  }
+
+  @Test
+  void createFilterConditions_throwsException_forUnsupportedCriteria() {
+    var filterCriteria = new FilterCriteria() {
+      @Override
+      public FieldConfiguration getField() {
+        return null;
+      }
+
+      @Override
+      public String[] getFieldPath() {
+        return new String[0];
+      }
+    };
+
+    List<FilterCriteria> filterCriterias = List.of(filterCriteria);
+
+    Assertions.assertThrows(UnsupportedOperationException.class,
+        () -> createFilterConditions(filterCriterias, objectSelectContext, fromTable));
+
+  }
 
 }

@@ -28,7 +28,7 @@ public class ObjectQueryContext {
     return alias;
   }
 
-  public String getTableAlias(String fieldName){
+  public String getTableAlias(String fieldName) {
     return tableAliasByFieldName.get(fieldName);
   }
 }

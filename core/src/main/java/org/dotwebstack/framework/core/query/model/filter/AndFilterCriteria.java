@@ -19,6 +19,6 @@ public class AndFilterCriteria implements FilterCriteria {
 
   @Override
   public String[] getFieldPath() {
-    throw unsupportedOperationException("AndFilterCriteria doesn't have a fieldpath!");
+    return new String[0];
   }
 }
