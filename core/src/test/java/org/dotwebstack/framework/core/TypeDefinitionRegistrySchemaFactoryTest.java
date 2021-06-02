@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
@@ -133,6 +134,50 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .map(TypeName.class::cast)
         .map(TypeName::getName)
         .collect(Collectors.toList()), equalTo(List.of("StringFilter", "FloatFilter", "IntFilter")));
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerQueriesWithSortableBy_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries-with-sortable-by.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration).createTypeDefinitionRegistry();
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Query")
+        .isPresent(), is(true));
+    var queryTypeDefinition = registry.getType("Query")
+        .orElseThrow();
+    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(1));
+
+    var breweryCollectionFieldDefinition = fieldDefinitions.get(0);
+    assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
+    assertNonNullListType(breweryCollectionFieldDefinition.getType(), "Brewery");
+
+    assertThat(breweryCollectionFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var inputValueDefinition = breweryCollectionFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(inputValueDefinition.getName(), is("sort"));
+    assertThat(inputValueDefinition.getDefaultValue(), instanceOf(EnumValue.class));
+    assertThat(((EnumValue) inputValueDefinition.getDefaultValue()).getName(), is("NAME"));
+
+    assertThat(inputValueDefinition.getType(), instanceOf(TypeName.class));
+    assertThat(((TypeName) inputValueDefinition.getType()).getName(), equalTo("BreweryOrder"));
+
+    var sortTypeDefinition = (EnumTypeDefinition) registry.getType(inputValueDefinition.getType())
+        .orElse(null);
+
+    assertThat(sortTypeDefinition, notNullValue());
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .size(), is(2));
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .stream()
+        .map(EnumValueDefinition::getName)
+        .collect(Collectors.toList()), equalTo(List.of("NAME", "ADDRESS")));
   }
 
   @Test
