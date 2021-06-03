@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import org.dotwebstack.framework.core.query.model.filter.InFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
+import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Table;
@@ -46,6 +48,8 @@ public final class FilterConditionHelper {
       return createFilterCondition((InFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof AndFilterCriteria) {
       return createFilterCondition((AndFilterCriteria) filterCriteria, fromTable);
+    } else if (filterCriteria instanceof GeometryFilterCriteria) {
+      return createFilterCondition((GeometryFilterCriteria) filterCriteria, fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
@@ -59,6 +63,25 @@ public final class FilterConditionHelper {
         .collect(Collectors.toList());
 
     return DSL.and(innerConditions);
+  }
+
+  private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, Table<?> fromTable) {
+    Field<Object> field = getField(geometryFilterCriteria, fromTable);
+
+    Field<?> geofilterField =
+        DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+            .toString()));
+
+    switch (geometryFilterCriteria.getFilterOperator()) {
+      case CONTAINS:
+        return DSL.condition("ST_Contains({0}, {1})", field, geofilterField);
+      case WITHIN:
+        return DSL.condition("ST_Within({0}, {1})", geofilterField, field);
+      case INTERSECTS:
+        return DSL.condition("ST_Intersects({0}, {1})", field, geofilterField);
+      default:
+        throw illegalArgumentException("Unsupported geometry filter operation");
+    }
   }
 
   private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, Table<?> fromTable) {

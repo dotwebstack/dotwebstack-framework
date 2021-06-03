@@ -123,6 +123,7 @@ objectTypes:
     filters:
       name: {}
       status: {}
+      geometry: {}
 
   Ingredient:
     backend: postgres

@@ -4,8 +4,10 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLInputObjectType;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
@@ -14,8 +16,8 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 public abstract class AbstractFilterCriteriaParser implements FilterCriteriaParser {
 
-  Optional<Object> getChildData(GraphQLInputObjectField inputObjectField, FilterConfiguration filterConfiguration,
-      Map<String, Object> data) {
+  protected Optional<Object> getChildData(GraphQLInputObjectField inputObjectField,
+      FilterConfiguration filterConfiguration, Map<String, Object> data) {
     if (data.containsKey(inputObjectField.getName())) {
       return ofNullable(data.get(inputObjectField.getName()));
     }
@@ -27,7 +29,7 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
     return empty();
   }
 
-  Optional<Filter> getFilter(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
+  protected Optional<Filter> getFilter(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField,
       Map<String, Object> data) {
     var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
@@ -38,7 +40,7 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
         .build());
   }
 
-  FieldConfiguration getFieldConfiguration(TypeConfiguration<?> typeConfiguration,
+  protected FieldConfiguration getFieldConfiguration(TypeConfiguration<?> typeConfiguration,
       GraphQLInputObjectField inputObjectField) {
     var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
@@ -50,9 +52,23 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
         .get(fieldName);
   }
 
+  protected Stream<GraphQLInputObjectType> getInputObjectTypes(GraphQLInputObjectField inputObjectField) {
+    return inputObjectField.getChildren()
+        .stream()
+        .filter(GraphQLInputObjectType.class::isInstance)
+        .map(GraphQLInputObjectType.class::cast);
+  }
+
+  protected Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
+    return inputObjectType.getChildren()
+        .stream()
+        .filter(GraphQLInputObjectField.class::isInstance)
+        .map(GraphQLInputObjectField.class::cast);
+  }
+
   @Data
   @Builder
-  static class Filter {
+  protected static class Filter {
     private GraphQLInputObjectField inputObjectField;
 
     private Object data;

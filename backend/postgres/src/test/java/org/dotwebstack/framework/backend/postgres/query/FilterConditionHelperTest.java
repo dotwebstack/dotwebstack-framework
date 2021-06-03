@@ -20,12 +20,18 @@ import org.dotwebstack.framework.core.query.model.filter.InFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.LowerThenFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
+import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
+import org.dotwebstack.framework.ext.spatial.GeometryFilterOperator;
 import org.jooq.Condition;
 import org.jooq.Table;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -73,6 +79,29 @@ class FilterConditionHelperTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
+  }
+
+  @ParameterizedTest
+  @CsvSource(delimiterString = ";",
+      value = {"CONTAINS;[(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]",
+          "WITHIN;[(ST_Within(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))]",
+          "INTERSECTS;[(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"})
+  void createFilterConditions_returnConditions_forGeometryCriteria(String filterOperator, String expected)
+      throws ParseException {
+    var wkt = "POINT (1 1)";
+
+    var wktReader = new WKTReader();
+
+    var filterCriteria = GeometryFilterCriteria.builder()
+        .field(fieldConfiguration)
+        .filterOperator(GeometryFilterOperator.valueOf(filterOperator))
+        .geometry(wktReader.read(wkt))
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo(expected));
   }
 
   @Test

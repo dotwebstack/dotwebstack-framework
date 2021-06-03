@@ -15,22 +15,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.junit.jupiter.api.BeforeAll;
 
-abstract class FilterCriteriaParserBaseTest {
+public abstract class FilterCriteriaParserBaseTest {
 
-  private static final FilterConfigurer filterConfigurer = new FilterConfigurer();
+  private static final GraphqlConfigurer filterConfigurer = new CoreFilterConfigurer();
 
-  private static final TypeDefinitionRegistry dataFetchingEnvironment = new TypeDefinitionRegistry();
+  protected static final TypeDefinitionRegistry dataFetchingEnvironment = new TypeDefinitionRegistry();
 
-  static final String FIELD_DEFAULT_TEST = "fieldDefaultTest";
+  protected static final String FIELD_DEFAULT_TEST = "fieldDefaultTest";
 
-  static final String FIELD_TEST = "fieldTest";
+  protected static final String FIELD_TEST = "fieldTest";
 
-  static final String FIELD_NULL_TEST = "nullFieldTest";
+  protected static final String FIELD_NULL_TEST = "nullFieldTest";
 
   @BeforeAll
   public static void init() {
@@ -38,7 +39,7 @@ abstract class FilterCriteriaParserBaseTest {
   }
 
   @SuppressWarnings("rawtypes")
-  GraphQLInputObjectField createInputObjectField(String name, String typeName) {
+  protected GraphQLInputObjectField createInputObjectField(String name, String typeName) {
     Optional<TypeDefinition> typeDefinition = dataFetchingEnvironment.getType(typeName);
     InputObjectTypeDefinition inputObjectTypeDefinition = (InputObjectTypeDefinition) typeDefinition
         .orElseThrow(() -> new AssertException(String.format("No type definition found for type name %s.", typeName)));
@@ -56,7 +57,7 @@ abstract class FilterCriteriaParserBaseTest {
         .build();
   }
 
-  GraphQLInputObjectField createInputObjectField(String name, GraphQLNamedInputType type) {
+  protected GraphQLInputObjectField createInputObjectField(String name, GraphQLNamedInputType type) {
     return newInputObjectField().name(name)
         .type(type)
         .build();
@@ -85,11 +86,11 @@ abstract class FilterCriteriaParserBaseTest {
         .collect(Collectors.toList());
   }
 
-  TypeConfigurationImpl createTypeConfiguration(String type) {
+  protected TypeConfigurationImpl createTypeConfiguration(String type) {
     return createTypeConfiguration(type, null);
   }
 
-  TypeConfigurationImpl createTypeConfiguration(String type, Object defaultValue) {
+  protected TypeConfigurationImpl createTypeConfiguration(String type, Object defaultValue) {
     TypeConfigurationImpl typeConfiguration = new TypeConfigurationImpl();
     typeConfiguration.setFilters(createFilters(defaultValue));
     typeConfiguration.setFields(createFieldConfigurations(type));
