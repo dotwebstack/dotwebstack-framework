@@ -193,9 +193,12 @@ public class RequestFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
-        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME))
+        .filter(argument ->
+        // TODO: fix sort constant
+        !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
+            && !Objects.equals(argument.getKey(), "sort"))
         .map(entry -> KeyCriteria.builder()
-            .values(environment.getArguments())
+            .values(Map.of(entry.getKey(), entry.getValue()))
             .build())
         .collect(Collectors.toList());
   }
