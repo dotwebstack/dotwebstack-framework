@@ -13,4 +13,9 @@ public class NotFilterCriteria implements FilterCriteria {
   public FieldConfiguration getField() {
     return filterCriteria.getField();
   }
+
+  @Override
+  public String[] getFieldPath() {
+    return filterCriteria.getFieldPath();
+  }
 }

@@ -23,6 +23,7 @@ public class BooleanFilterCriteriaParser extends AbstractFilterCriteriaParser {
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .map(filter -> EqualsFilterCriteria.builder()
+            .fieldPath(getFieldPath(typeConfiguration, inputObjectField))
             .field(getFieldConfiguration(typeConfiguration, inputObjectField))
             .value(filter.getData())
             .build())

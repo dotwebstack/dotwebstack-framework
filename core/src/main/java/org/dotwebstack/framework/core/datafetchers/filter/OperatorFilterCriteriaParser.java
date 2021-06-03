@@ -24,29 +24,32 @@ public abstract class OperatorFilterCriteriaParser extends AbstractFilterCriteri
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .flatMap(filter -> getFilterItems(filter).stream())
-        .map(filterItem -> createFilterCriteria(getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
+        .map(filterItem -> createFilterCriteria(getFieldPath(typeConfiguration, inputObjectField),
+            getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
         .collect(Collectors.toList());
   }
 
-  protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  protected FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     if (FilterConstants.NOT_FIELD.equals(filterItem.getOperator())) {
-      return createNotFilterCriteria(fieldConfiguration, filterItem);
+      return createNotFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
     throw unsupportedOperationException("Filter operator '{}' is not supported!", filterItem.getOperator());
   }
 
-  private FilterCriteria createNotFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createNotFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     FilterCriteria innerCriteria;
     if (filterItem.getChildren()
         .size() > 1) {
       innerCriteria = AndFilterCriteria.builder()
           .filterCriterias(filterItem.getChildren()
               .stream()
-              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration, innerFilterItem))
+              .map(innerFilterItem -> createFilterCriteria(fieldPath, fieldConfiguration, innerFilterItem))
               .collect(Collectors.toList()))
           .build();
     } else {
-      innerCriteria = createFilterCriteria(fieldConfiguration, filterItem.getChildren()
+      innerCriteria = createFilterCriteria(fieldPath, fieldConfiguration, filterItem.getChildren()
           .get(0));
     }
 

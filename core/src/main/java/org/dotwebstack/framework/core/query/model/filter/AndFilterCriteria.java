@@ -16,4 +16,9 @@ public class AndFilterCriteria implements FilterCriteria {
   public FieldConfiguration getField() {
     throw unsupportedOperationException("AndFilterCriteria doesn't match a field!");
   }
+
+  @Override
+  public String[] getFieldPath() {
+    return new String[0];
+  }
 }

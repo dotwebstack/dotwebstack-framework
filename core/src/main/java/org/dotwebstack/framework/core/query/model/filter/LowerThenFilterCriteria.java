@@ -1,12 +1,14 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 
 @Data
-@Builder
-public class LowerThenFilterCriteria implements FilterCriteria {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class LowerThenFilterCriteria extends AbstractFilterCriteria {
   private final FieldConfiguration field;
 
   private final Object value;

@@ -22,19 +22,20 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @Override
-  protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  protected FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case SpatialConstants.INTERSECTS:
       case SpatialConstants.CONTAINS:
       case SpatialConstants.WITHIN:
-        return createGeometryFilterCriteria(fieldConfiguration, filterItem);
+        return createGeometryFilterCriteria(fieldPath, fieldConfiguration, filterItem);
       default:
-        return super.createFilterCriteria(fieldConfiguration, filterItem);
+        return super.createFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private GeometryFilterCriteria createGeometryFilterCriteria(FieldConfiguration fieldConfiguration,
+  private GeometryFilterCriteria createGeometryFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof Map)) {
       throw illegalArgumentException("Filter item value not of type Map!");
@@ -43,6 +44,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
     var data = (Map<String, String>) filterItem.getValue();
 
     return GeometryFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .field(fieldConfiguration)
         .filterOperator(GeometryFilterOperator.valueOf(filterItem.getOperator()
             .toUpperCase()))

@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHe
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 
 import java.time.OffsetDateTime;
@@ -35,7 +36,6 @@ import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
 @ExtendWith(MockitoExtension.class)
 class FilterConditionHelperTest {
 
@@ -43,11 +43,16 @@ class FilterConditionHelperTest {
   private Table<?> fromTable;
 
   @Mock
+  private ObjectSelectContext objectSelectContext;
+
+  @Mock
   private PostgresFieldConfiguration fieldConfiguration;
 
   @BeforeEach
   public void doBefore() {
     lenient().when(fromTable.getName())
+        .thenReturn("t1");
+    lenient().when(objectSelectContext.getTableAlias(anyString()))
         .thenReturn("t1");
     lenient().when(fieldConfiguration.getColumn())
         .thenReturn("test_column");
@@ -60,7 +65,7 @@ class FilterConditionHelperTest {
         .value("testValue")
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" = 'testValue']"));
@@ -75,7 +80,7 @@ class FilterConditionHelperTest {
             .build())
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
@@ -98,7 +103,7 @@ class FilterConditionHelperTest {
         .geometry(wktReader.read(wkt))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo(expected));
@@ -117,7 +122,7 @@ class FilterConditionHelperTest {
                 .build()))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -131,7 +136,7 @@ class FilterConditionHelperTest {
         .values(List.of("testValue1", "testValue2"))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" in (\n  'testValue1', 'testValue2'\n)]"));
@@ -144,7 +149,7 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -158,7 +163,7 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -172,7 +177,7 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -186,7 +191,7 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -200,12 +205,17 @@ class FilterConditionHelperTest {
       public FieldConfiguration getField() {
         return null;
       }
+
+      @Override
+      public String[] getFieldPath() {
+        return new String[0];
+      }
     };
 
     List<FilterCriteria> filterCriterias = List.of(filterCriteria);
 
     Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> createFilterConditions(filterCriterias, fromTable));
+        () -> createFilterConditions(filterCriterias, objectSelectContext, fromTable));
 
   }
 
