@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -32,8 +31,10 @@ public class PostgresObjectRequest extends ObjectRequest {
         });
   }
 
-  private ObjectFieldConfiguration createObjectField(String[] fieldPaths, PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
-    var fieldConfiguration = parentTypeConfiguration.getFields().get(fieldPaths[0]);
+  private ObjectFieldConfiguration createObjectField(String[] fieldPaths,
+      PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
+    var fieldConfiguration = parentTypeConfiguration.getFields()
+        .get(fieldPaths[0]);
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
     var objectField = Optional.ofNullable(objectFieldsByType.get(fieldConfiguration.getName()))
         .orElseGet(() -> {
@@ -48,24 +49,31 @@ public class PostgresObjectRequest extends ObjectRequest {
     return objectField;
   }
 
-  private ObjectFieldConfiguration addObjectFields(String[] fieldPaths, ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
-    var fieldConfiguration = parentTypeConfiguration.getFields().get(fieldPaths[0]);
+  private ObjectFieldConfiguration addObjectFields(String[] fieldPaths,
+      ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration,
+      Origin origin) {
+    var fieldConfiguration = parentTypeConfiguration.getFields()
+        .get(fieldPaths[0]);
     if (fieldConfiguration.isObjectField()) {
       var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
       var objectField = createObjectFieldConfiguration(fieldConfiguration, parentTypeConfiguration);
 
-      parentObjectFieldConfiguration.getObjectRequest().getObjectFields().add(objectField);
+      parentObjectFieldConfiguration.getObjectRequest()
+          .getObjectFields()
+          .add(objectField);
 
       fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
       addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
     } else if (fieldConfiguration.isScalarField()) {
       fieldConfiguration.addOrigin(origin);
-      parentObjectFieldConfiguration.getObjectRequest().addScalarField(fieldConfiguration);
+      parentObjectFieldConfiguration.getObjectRequest()
+          .addScalarField(fieldConfiguration);
     }
     return parentObjectFieldConfiguration;
   }
 
-  private ObjectFieldConfiguration createObjectFieldConfiguration(PostgresFieldConfiguration fieldConfiguration, PostgresTypeConfiguration typeConfiguration) {
+  private ObjectFieldConfiguration createObjectFieldConfiguration(PostgresFieldConfiguration fieldConfiguration,
+      PostgresTypeConfiguration typeConfiguration) {
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .build();
