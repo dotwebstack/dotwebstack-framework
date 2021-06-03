@@ -4,10 +4,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -25,59 +28,51 @@ public class PostgresObjectRequest extends ObjectRequest {
         .filter(FilterCriteria::isCompositeFilter)
         .forEach(filterCriteria -> {
           var mainTypeConfiguration = (PostgresTypeConfiguration) getTypeConfiguration();
-          createObjectField(filterCriteria.getFieldPath(), mainTypeConfiguration);
+          createObjectField(filterCriteria.getFieldPath(), mainTypeConfiguration, Origin.FILTERING);
         });
   }
 
-  private ObjectFieldConfiguration createObjectField(String[] filterFields,
-      PostgresTypeConfiguration typeConfiguration) {
-    var filterFieldConfiguration = typeConfiguration.getFields()
-        .get(filterFields[0]);
-    var filterObjectFieldConfiguration = objectFieldsByType.get(filterFieldConfiguration.getName());
-    var filterTypeConfiguration = (PostgresTypeConfiguration) filterFieldConfiguration.getTypeConfiguration();
-    // TODO use optional
-    if (filterObjectFieldConfiguration == null) {
-      var newObjectRequest = ObjectRequest.builder()
-          .typeConfiguration(filterTypeConfiguration)
-          .build();
-      filterObjectFieldConfiguration = ObjectFieldConfiguration.builder()
-          .field(filterFieldConfiguration)
-          .objectRequest(newObjectRequest)
-          .build();
-      objectFieldsByType.put(filterFieldConfiguration.getType(), filterObjectFieldConfiguration);
-      objectFields.add(filterObjectFieldConfiguration);
-    }
-    filterFields = Arrays.copyOfRange(filterFields, 1, filterFields.length);
-    createObjectField(filterFields, filterObjectFieldConfiguration, filterTypeConfiguration);
-    return filterObjectFieldConfiguration;
+  private ObjectFieldConfiguration createObjectField(String[] fieldPaths, PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
+    var fieldConfiguration = parentTypeConfiguration.getFields().get(fieldPaths[0]);
+    var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
+    var objectField = Optional.ofNullable(objectFieldsByType.get(fieldConfiguration.getName()))
+        .orElseGet(() -> {
+          var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
+          objectFieldsByType.put(fieldConfiguration.getType(), newObjectField);
+          objectFields.add(newObjectField);
+          return newObjectField;
+        });
+
+    fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
+    addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
+    return objectField;
   }
 
-  private ObjectFieldConfiguration createObjectField(String[] filterFields,
-      ObjectFieldConfiguration objectFieldConfiguration, PostgresTypeConfiguration typeConfiguration) {
-    var field = filterFields[0];
-    var fieldConfiguration = typeConfiguration.getFields()
-        .get(field);
+  private ObjectFieldConfiguration addObjectFields(String[] fieldPaths, ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
+    var fieldConfiguration = parentTypeConfiguration.getFields().get(fieldPaths[0]);
     if (fieldConfiguration.isObjectField()) {
-      var newTypeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
-      var newPostgresObjectRequest = ObjectRequest.builder()
-          .typeConfiguration(typeConfiguration)
-          .build();
-      var newPostgresObjectFieldConfiguration = ObjectFieldConfiguration.builder()
-          .field(fieldConfiguration)
-          .objectRequest(newPostgresObjectRequest)
-          .build();
+      var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
+      var objectField = createObjectFieldConfiguration(fieldConfiguration, parentTypeConfiguration);
 
-      objectFieldConfiguration.getObjectRequest()
-          .getObjectFields()
-          .add(newPostgresObjectFieldConfiguration);
-      filterFields = Arrays.copyOfRange(filterFields, 1, filterFields.length);
-      createObjectField(filterFields, newPostgresObjectFieldConfiguration, newTypeConfiguration);
+      parentObjectFieldConfiguration.getObjectRequest().getObjectFields().add(objectField);
+
+      fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
+      addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
     } else if (fieldConfiguration.isScalarField()) {
-      // add scalar
-      fieldConfiguration.addOrigin(Origin.FILTERING);
-      objectFieldConfiguration.getObjectRequest()
-          .addScalarField(fieldConfiguration);
+      fieldConfiguration.addOrigin(origin);
+      parentObjectFieldConfiguration.getObjectRequest().addScalarField(fieldConfiguration);
     }
-    return objectFieldConfiguration;
+    return parentObjectFieldConfiguration;
+  }
+
+  private ObjectFieldConfiguration createObjectFieldConfiguration(PostgresFieldConfiguration fieldConfiguration, PostgresTypeConfiguration typeConfiguration) {
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(typeConfiguration)
+        .build();
+
+    return ObjectFieldConfiguration.builder()
+        .field(fieldConfiguration)
+        .objectRequest(objectRequest)
+        .build();
   }
 }
