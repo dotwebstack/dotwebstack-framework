@@ -57,6 +57,10 @@ class RequestFactoryTest {
 
   private static final String FIELD_KEYCRITERIA = "fieldName";
 
+  private static final String SORT_KEYCRITERIA = "sort";
+
+  private static final String FILTER_KEYCRITERIA = "filter";
+
   private static final String FIELD_HISTORY = "history";
 
   private static final String FIELD_AGGREGATE = "aggregateField";
@@ -157,6 +161,27 @@ class RequestFactoryTest {
     when(typeConfiguration.getFields()).thenReturn(fields);
 
     Map<String, Object> arguments = Map.of(FIELD_KEYCRITERIA, "1234-5678");
+    when(environment.getArguments()).thenReturn(arguments);
+
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+    assertIdentifierScalarConfiguration(objectQuery);
+    assertKeyCriterias(objectQuery);
+  }
+
+  @Test
+  void createObjectQuery_returnsObjectQueryWithOneKeyCriteria_forArgumentsWithSortAndFilter() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(environment.getSelectionSet()).thenReturn(selectionSet);
+    when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    Map<String, Object> arguments =
+        Map.of(FIELD_KEYCRITERIA, "1234-5678", SORT_KEYCRITERIA, "testSort", FILTER_KEYCRITERIA, "testFilter");
     when(environment.getArguments()).thenReturn(arguments);
 
     var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
@@ -337,6 +362,8 @@ class RequestFactoryTest {
         .orElseThrow();
     assertThat(keyCriterias.getValues()
         .get(FIELD_KEYCRITERIA), is("1234-5678"));
+    assertThat(objectRequest.getKeyCriteria()
+        .size(), is(1));
   }
 
   private void assertObjectFieldConfiguration(ObjectRequest objectRequest) {
