@@ -17,7 +17,6 @@ import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectRequest extends ObjectRequest {
-  // TODO exclude from getter and setter
   @Builder.Default
   private final Map<String, ObjectFieldConfiguration> objectFieldsByType = new HashMap<>();
 
@@ -38,7 +37,6 @@ public class PostgresObjectRequest extends ObjectRequest {
     var filterTypeConfiguration = (PostgresTypeConfiguration) filterFieldConfiguration.getTypeConfiguration();
     // TODO use optional
     if (filterObjectFieldConfiguration == null) {
-      // TODO: should we add a keyfield as scalar to the objectRequest?
       var newObjectRequest = ObjectRequest.builder()
           .typeConfiguration(filterTypeConfiguration)
           .build();
@@ -76,8 +74,6 @@ public class PostgresObjectRequest extends ObjectRequest {
       createObjectField(filterFields, newPostgresObjectFieldConfiguration, newTypeConfiguration);
     } else if (fieldConfiguration.isScalarField()) {
       // add scalar
-      // TODO: if scalarfield already exists, create a new fieldconfiguration or add origin to
-      // fieldconfiguration
       fieldConfiguration.addOrigin(Origin.FILTERING);
       objectFieldConfiguration.getObjectRequest()
           .addScalarField(fieldConfiguration);

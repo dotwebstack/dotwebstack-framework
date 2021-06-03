@@ -54,6 +54,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addEnumerations(dotWebStackConfiguration, typeDefinitionRegistry);
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addQueryTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
@@ -71,6 +72,13 @@ public class TypeDefinitionRegistrySchemaFactory {
           objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
 
+        });
+  }
+
+  private void addFilterTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .forEach((name, objectType) -> {
           if (!objectType.getFilters()
               .isEmpty()) {
             typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));

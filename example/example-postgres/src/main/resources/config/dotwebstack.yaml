@@ -24,6 +24,9 @@ objectTypes:
   Beer:
     backend: postgres
     table: dbeerpedia.beers
+    filters:
+      breweryCity:
+        field: brewery.visitAddress.city
     keys:
       - field: identifier
     fields:
