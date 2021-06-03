@@ -30,7 +30,7 @@ class GraphqlController {
 
   private static final String QUERY = "query";
 
-  private static final String OPERATIONNAME = "operationName";
+  private static final String OPERATION_NAME = "operationName";
 
   private static final String VARIABLES = "variables";
 
@@ -42,7 +42,7 @@ class GraphqlController {
   @CrossOrigin
   @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<Map<String, Object>> handleGet(@RequestParam(QUERY) String query,
-      @RequestParam(value = OPERATIONNAME, required = false) String operationName,
+      @RequestParam(value = OPERATION_NAME, required = false) String operationName,
       @RequestParam(value = VARIABLES, required = false) String variablesJson) {
 
     Map<String, Object> variablesMap = convertVariablesJson(variablesJson);
@@ -88,7 +88,7 @@ class GraphqlController {
   }
 
   private ExecutionInput getExecutionInput(Map<String, Object> requestBody) {
-    return getExecutionInput((String) requestBody.get(QUERY), (String) requestBody.get(OPERATIONNAME),
+    return getExecutionInput((String) requestBody.get(QUERY), (String) requestBody.get(OPERATION_NAME),
         getNestedMap(requestBody, VARIABLES));
   }
 
