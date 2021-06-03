@@ -57,7 +57,7 @@ public class RequestFactory {
     var collectionQueryBuilder = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
         .filterCriterias(createFilterCriterias(typeConfiguration, environment))
-        .sortCriteria(createSortCriterias(typeConfiguration, environment));
+        .sortCriterias(createSortCriterias(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)

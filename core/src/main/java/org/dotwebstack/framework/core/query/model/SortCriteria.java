@@ -8,12 +8,14 @@ import org.apache.commons.lang3.StringUtils;
 @Builder
 public class SortCriteria {
 
+  // TODO: Field moet FieldConfiguration worden + aparte String fieldPath
+  // TODO: ValidSortAndFilterFields uitbreiden zodat deze een Map<String, FieldConfiguration> terug geeft?
   private final String field;
 
   private final SortDirection direction;
 
-  public static boolean hasNestedField(SortCriteria sortCriteria) {
-    return sortCriteria.getFieldPath().length > 0;
+  public boolean hasNestedField() {
+    return getFieldPath().length > 0;
   }
 
   public String[] getFieldPath() {

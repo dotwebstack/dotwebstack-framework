@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,11 +24,13 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfigurat
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
 import org.jooq.RowN;
 import org.jooq.SelectQuery;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -59,13 +60,17 @@ public class SelectQueryBuilder {
 
     var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
     postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
-    postgresObjectRequest.addSortCriteria(collectionRequest.getSortCriteria());
+    postgresObjectRequest.addSortCriteria(collectionRequest.getSortCriterias());
 
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
       createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable)
           .forEach(selectQuery::addConditions);
+    }
+    if (!CollectionUtils.isEmpty(collectionRequest.getSortCriterias())) {
+      createSortConditions(collectionRequest.getSortCriterias(), objectSelectContext, fromTable)
+          .forEach(selectQuery::addOrderBy);
     }
 
     if (collectionRequest.getPagingCriteria() != null) {
@@ -86,6 +91,21 @@ public class SelectQueryBuilder {
         .context(objectSelectContext)
         .table(fromTable)
         .build();
+  }
+
+  public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
+                                                     ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+    return sortCriterias.stream()
+        .map(sortCriteria -> {
+          var sortTable =
+              sortCriteria.hasNestedField() ? objectSelectContext.getTableAlias(sortCriteria.getFieldPath()[0])
+                  : fromTable.getName();
+
+          // TODO: getField().getColumn()
+          return DSL.field(DSL.name(sortTable, sortCriteria.getField())).asc();
+          //TODO: desc/asc conditie
+        })
+        .collect(Collectors.toList());
   }
 
   public SelectQueryBuilderResult build(ObjectRequest objectRequest) {
