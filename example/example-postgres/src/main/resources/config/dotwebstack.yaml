@@ -78,6 +78,7 @@ objectTypes:
     filters:
       name: { }
       status: { }
+      geometry: { }
       postalStreet:
         field: postalAddress.street
       postalCity:

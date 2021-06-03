@@ -26,7 +26,8 @@ public final class FilterHelper {
       throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
     }
 
-    var type = typeConfigurationForField.get().getType());
+    var type = typeConfigurationForField.get()
+        .getType();
 
     return getTypeNameForFilter(fieldFilterMap, type);
   }

@@ -53,7 +53,7 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
         .orElseThrow(IllegalStateException::new);
   }
 
-  String getFieldPath(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField) {
+  protected String getFieldPath(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField) {
     var result = "";
     var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());

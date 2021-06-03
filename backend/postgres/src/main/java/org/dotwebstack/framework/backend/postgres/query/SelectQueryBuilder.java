@@ -65,7 +65,7 @@ public class SelectQueryBuilder {
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
-          createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable)
+      createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable)
           .forEach(selectQuery::addConditions);
     }
 

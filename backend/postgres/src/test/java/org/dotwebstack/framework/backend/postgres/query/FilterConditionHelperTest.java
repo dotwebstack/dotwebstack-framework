@@ -103,7 +103,7 @@ class FilterConditionHelperTest {
         .geometry(wktReader.read(wkt))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), fromTable);
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo(expected));
