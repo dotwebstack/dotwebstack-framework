@@ -56,7 +56,8 @@ public class PostgresObjectRequest extends ObjectRequest {
         .get(fieldPaths[0]);
     if (fieldConfiguration.isObjectField()) {
       var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
-      var objectField = parentObjectFieldConfiguration.getObjectRequest().getObjectField(fieldConfiguration)
+      var objectField = parentObjectFieldConfiguration.getObjectRequest()
+          .getObjectField(fieldConfiguration)
           .orElseGet(() -> {
             var newObjectField = createObjectFieldConfiguration(fieldConfiguration, parentTypeConfiguration);
             parentObjectFieldConfiguration.getObjectRequest()
