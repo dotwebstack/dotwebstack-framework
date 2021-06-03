@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,7 @@ import graphql.schema.GraphQLOutputType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import lombok.Builder;
@@ -36,6 +38,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -408,6 +411,36 @@ class GenericDataFetcherTest {
     dataLoader.dispatch();
 
     assertBatchLoadSingleDataloaderResult(breweryOneFuture, breweryTwoFuture);
+  }
+
+  @Test
+  void get_throwsException_ForLoadManyQueryOperation() {
+    var outputType = GraphQLList.list(createBreweryType());
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.error(new RuntimeException("Query error!")));
+
+    var result = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(result, instanceOf(Future.class));
+    var executionException = assertThrows(ExecutionException.class, ((Future<?>) result)::get);
+    assertThat(executionException.getCause(), instanceOf(InternalServerErrorException.class));
+  }
+
+  @Test
+  void get_throwsException_ForLoadSingleQueryOperation() {
+    var outputType = createBreweryType();
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.error(new RuntimeException("Query error!")));
+
+    var result = genericDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(result, instanceOf(Future.class));
+    var executionException = assertThrows(ExecutionException.class, ((Future<?>) result)::get);
+    assertThat(executionException.getCause(), instanceOf(InternalServerErrorException.class));
   }
 
   private ObjectRequest createObjectQuery() {

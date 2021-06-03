@@ -88,3 +88,31 @@ Conversions that are possible:
 - `MultiLineString` => `Point` (centroid)
 - `Polygon` => `MultiPolygon`, `Point` (centroid)
 - `MultiPolygon` => `Point` (centroid)
+
+## Filtering
+
+An field of type `Geometry` can be filtered with the following filter operations. 
+
+```
+input GeometryFilter {
+  within: GeometryInput!
+  contains: GeometryInput!
+  intersects: GeometryInput!
+  not: GeometryFilter!
+}
+
+input GeometryInput {
+  fromWKT: String!
+}
+```
+
+Example graphql query which filters on a `Geometry` field with the `contains` filter operation:
+
+```graphql
+query {
+    breweries(filter: {geometry: {contains: {fromWKT: "POINT(1 1)"}}}) {
+        identifier
+        name
+    }
+}
+```

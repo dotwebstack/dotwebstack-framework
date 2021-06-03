@@ -8,6 +8,10 @@ public class SpatialConstants {
 
   static final String GEOMETRY = "Geometry";
 
+  static final String GEOMETRY_INPUT = "GeometryInput";
+
+  public static final String GEOMETRY_FILTER = "GeometryFilter";
+
   static final String GEOMETRY_TYPE = "GeometryType";
 
   // ArgumentNames
@@ -21,6 +25,14 @@ public class SpatialConstants {
   static final String AS_WKT = "asWKT";
 
   static final String AS_WKB = "asWKB";
+
+  static final String FROM_WKT = "fromWKT";
+
+  static final String WITHIN = "within";
+
+  static final String CONTAINS = "contains";
+
+  static final String INTERSECTS = "intersects";
 
   // GeometryTypes
 

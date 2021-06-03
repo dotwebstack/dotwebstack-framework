@@ -157,6 +157,7 @@ objectTypes:
       name: {}
       multinational:
         field: multinational
+      geometry: {}
 
   Address:
     backend: postgres

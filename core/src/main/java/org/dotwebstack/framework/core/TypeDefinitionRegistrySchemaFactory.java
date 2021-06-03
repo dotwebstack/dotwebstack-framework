@@ -14,7 +14,9 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,7 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.springframework.stereotype.Component;
@@ -45,8 +48,12 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
-  public TypeDefinitionRegistrySchemaFactory(DotWebStackConfiguration dotWebStackConfiguration) {
+  private final Map<String, String> fieldFilterMap = new HashMap<>();
+
+  public TypeDefinitionRegistrySchemaFactory(DotWebStackConfiguration dotWebStackConfiguration,
+      List<FilterConfigurer> filterConfigurers) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
+    filterConfigurers.forEach(filterConfigurer -> filterConfigurer.configureFieldFilterMapping(fieldFilterMap));
   }
 
   public TypeDefinitionRegistry createTypeDefinitionRegistry() {
@@ -94,7 +101,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> newInputValueDefinition().name(entry.getKey())
-            .type(newType(FilterHelper.getTypeNameForFilter(objectType, entry.getKey(), entry.getValue())))
+            .type(newType(
+                FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
             .build())
         .collect(Collectors.toList());
 
