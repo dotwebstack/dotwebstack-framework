@@ -13,6 +13,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @SuperBuilder
@@ -25,14 +26,17 @@ public class PostgresObjectRequest extends ObjectRequest {
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
     filterCriterias.stream()
         .filter(FilterCriteria::isCompositeFilter)
-        .forEach(filterCriteria -> {
-          var mainTypeConfiguration = (PostgresTypeConfiguration) getTypeConfiguration();
-          createObjectField(filterCriteria.getFieldPath(), mainTypeConfiguration, Origin.FILTERING);
-        });
+        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.FILTERING));
   }
 
-  private ObjectFieldConfiguration createObjectField(String[] fieldPaths,
-      PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
+  public void addSortCriteria(List<SortCriteria> sortCriterias) {
+    sortCriterias.stream()
+        .filter(SortCriteria::hasNestedField)
+        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.SORTING));
+  }
+
+  private void createObjectField(String[] fieldPaths, Origin origin) {
+    var parentTypeConfiguration = (PostgresTypeConfiguration) getTypeConfiguration();
     var fieldConfiguration = parentTypeConfiguration.getFields()
         .get(fieldPaths[0]);
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
@@ -46,10 +50,9 @@ public class PostgresObjectRequest extends ObjectRequest {
 
     fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
     addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
-    return objectField;
   }
 
-  private ObjectFieldConfiguration addObjectFields(String[] fieldPaths,
+  private void addObjectFields(String[] fieldPaths,
       ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration,
       Origin origin) {
     var fieldConfiguration = parentTypeConfiguration.getFields()
@@ -75,7 +78,6 @@ public class PostgresObjectRequest extends ObjectRequest {
       parentObjectFieldConfiguration.getObjectRequest()
           .addScalarField(fieldConfiguration);
     }
-    return parentObjectFieldConfiguration;
   }
 
   private ObjectFieldConfiguration createObjectFieldConfiguration(PostgresFieldConfiguration fieldConfiguration,

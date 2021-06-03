@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-// import static
-// org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -61,6 +59,7 @@ public class SelectQueryBuilder {
 
     var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
     postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
+    postgresObjectRequest.addSortCriteria(collectionRequest.getSortCriteria());
 
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
