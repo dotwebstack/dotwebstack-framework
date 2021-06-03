@@ -2,6 +2,8 @@ package org.dotwebstack.framework.core.query.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -40,5 +42,11 @@ public class ObjectRequest implements Request {
     if (!scalarFields.contains(fieldConfiguration)) {
       scalarFields.add(fieldConfiguration);
     }
+  }
+
+  public Optional<ObjectFieldConfiguration> getObjectField(FieldConfiguration field){
+    return objectFields.stream()
+        .filter(objectField -> objectField.getField().getName().equals(field.getName()))
+        .findFirst();
   }
 }
