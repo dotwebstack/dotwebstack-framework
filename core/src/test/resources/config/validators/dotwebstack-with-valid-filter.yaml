@@ -22,6 +22,7 @@ objectTypes:
     filters:
       name:
         field: name
+      status: {}
       city:
         field: visitAddress.city
 
