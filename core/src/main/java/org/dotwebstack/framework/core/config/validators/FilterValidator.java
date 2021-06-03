@@ -67,8 +67,7 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
       fieldName = filterEntry.getKey();
     }
 
-    return fieldName.contains(".") ? fieldName
-        : uncapitalize(objectTypeName).concat(".")
-            .concat(fieldName);
+    return uncapitalize(objectTypeName).concat(".")
+        .concat(fieldName);
   }
 }

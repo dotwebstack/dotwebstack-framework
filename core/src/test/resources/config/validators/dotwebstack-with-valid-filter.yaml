@@ -1,0 +1,38 @@
+queries:
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      visitAddress:
+        type: Address
+        objectField: true
+        nullable: true
+    filters:
+      name:
+        field: name
+      city:
+        field: visitAddress.city
+
+  Address:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String

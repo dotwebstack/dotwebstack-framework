@@ -55,4 +55,3 @@ objectTypes:
         type: String
       city:
         type: String
-

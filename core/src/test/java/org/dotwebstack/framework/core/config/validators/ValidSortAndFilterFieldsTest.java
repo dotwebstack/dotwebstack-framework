@@ -17,7 +17,7 @@ class ValidSortAndFilterFieldsTest {
 
   @Test
   void get_returnsValidFields_withDotWebStackConfiguration() {
-    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-objecttypes-valid-sort-filter-fields.yaml");
+    var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-sort-filter-fields.yaml");
 
     List<String> result = ValidSortAndFilterFields.get(dotWebStackConfiguration);
 

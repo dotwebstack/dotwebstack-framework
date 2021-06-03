@@ -63,8 +63,7 @@ public class SortValidator implements DotWebStackConfigurationValidator {
   private String getSortableByFieldName(String objectTypeName, SortableByConfiguration sortableByConfiguration) {
     String fieldName = sortableByConfiguration.getField();
 
-    return fieldName.contains(".") ? fieldName
-        : uncapitalize(objectTypeName).concat(".")
-            .concat(fieldName);
+    return uncapitalize(objectTypeName).concat(".")
+        .concat(fieldName);
   }
 }
