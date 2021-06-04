@@ -7,11 +7,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -21,7 +21,9 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.jooq.DSLContext;
@@ -59,7 +61,7 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
@@ -77,7 +79,7 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_withPagingCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
@@ -101,14 +103,15 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_withFilterCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
         .filterCriterias(List.of(EqualsFilterCriteria.builder()
-            .field(scalarFields.get(0))
+            .field(scalarFields.get(0)
+                .getField())
             .value("Brewery X")
             .build()))
         .build();
@@ -124,7 +127,7 @@ class SelectQueryBuilderTest {
   @Test
   void buildObjectRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var objectRequest = createObjectRequest("Brewery", scalarFields);
 
@@ -137,7 +140,7 @@ class SelectQueryBuilderTest {
   @Test
   void buildObjectRequest_returnsQuery_withKeyCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
@@ -248,7 +251,7 @@ class SelectQueryBuilderTest {
   void buildObjectRequest_returnsQuery_forNestedObjects() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var typeName = "Brewery";
 
@@ -331,7 +334,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
@@ -394,7 +397,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(breweryTypeConfiguration)
@@ -458,7 +461,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<FieldConfiguration> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(breweryTypeConfiguration)
@@ -478,7 +481,7 @@ class SelectQueryBuilderTest {
             + "    on 1 = 1"));
   }
 
-  private ObjectRequest createObjectRequest(String typeName, List<FieldConfiguration> scalarFields) {
+  private ObjectRequest createObjectRequest(String typeName, List<ScalarField> scalarFields) {
     TypeConfiguration<?> typeConfiguration = mockTypeConfiguration(typeName);
 
     return ObjectRequest.builder()
@@ -503,11 +506,14 @@ class SelectQueryBuilderTest {
     return joinColumn;
   }
 
-  private PostgresFieldConfiguration createScalarFieldConfiguration(String scalarName) {
+  private ScalarField createScalarFieldConfiguration(String scalarName) {
     PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
     fieldConfiguration.setName(scalarName);
     fieldConfiguration.setColumn(scalarName + COLUMN_POSTFIX);
-    return fieldConfiguration;
+    return ScalarField.builder()
+        .field(fieldConfiguration)
+        .origins(Set.of(Origin.REQUESTED))
+        .build();
   }
 
   private DSLContext createDslContext() {
