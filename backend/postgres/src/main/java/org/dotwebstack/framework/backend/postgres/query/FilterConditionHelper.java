@@ -30,8 +30,9 @@ public final class FilterConditionHelper {
     return filterCriterias.stream()
         .map(filterCriteria -> {
           var filterTable =
-              filterCriteria.isNestedFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()[0])
-                  : fromTable.getName();
+              filterCriteria.isNestedFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()
+                  .getFieldConfiguration()
+                  .getName()) : fromTable.getName();
           return createFilterCondition(filterCriteria, filterTable);
         })
         .collect(Collectors.toList());
@@ -136,7 +137,9 @@ public final class FilterConditionHelper {
   }
 
   private static Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
-    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getField();
+    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getFieldPath()
+        .getLeaf()
+        .getFieldConfiguration();
 
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
   }

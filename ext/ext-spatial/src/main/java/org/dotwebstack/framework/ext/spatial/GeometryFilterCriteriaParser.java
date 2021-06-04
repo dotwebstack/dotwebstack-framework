@@ -7,6 +7,7 @@ import java.util.Map;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.OperatorFilterCriteriaParser;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -22,7 +23,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @Override
-  protected FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case SpatialConstants.INTERSECTS:
@@ -35,8 +36,8 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @SuppressWarnings("unchecked")
-  private GeometryFilterCriteria createGeometryFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
-      FilterItem filterItem) {
+  private GeometryFilterCriteria createGeometryFilterCriteria(FieldPath fieldPath,
+      FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof Map)) {
       throw illegalArgumentException("Filter item value not of type Map!");
     }
@@ -45,7 +46,6 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
 
     return GeometryFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .filterOperator(GeometryFilterOperator.valueOf(filterItem.getOperator()
             .toUpperCase()))
         .geometry(readGeometry(data.get(SpatialConstants.FROM_WKT)))

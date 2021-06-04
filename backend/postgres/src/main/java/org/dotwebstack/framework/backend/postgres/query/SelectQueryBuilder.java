@@ -125,22 +125,6 @@ public class SelectQueryBuilder {
         .build();
   }
 
-  public static List<SortField<?>> createSortConditions(List<SortCriteria> sortCriterias,
-      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
-    return sortCriterias.stream()
-        .map(sortCriteria -> {
-          var sortTable =
-              sortCriteria.hasNestedField() ? objectSelectContext.getTableAlias(sortCriteria.getFieldPath()[0])
-                  : fromTable.getName();
-
-          // TODO: getField().getColumn()
-          return DSL.field(DSL.name(sortTable, sortCriteria.getField()))
-              .asc();
-          // TODO: desc/asc conditie
-        })
-        .collect(Collectors.toList());
-  }
-
   private SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectRequest objectRequest,
       Table<?> fromTable) {
 

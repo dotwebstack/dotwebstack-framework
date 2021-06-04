@@ -17,7 +17,7 @@ public class PostgresObjectRequestFactory {
     return PostgresObjectRequest.builder()
         .typeConfiguration(objectRequest.getTypeConfiguration())
         .scalarFields(objectRequest.getScalarFields())
-        .objectFieldsByType(objectFieldsByType)
+        .objectFieldsByFieldName(objectFieldsByType)
         .objectFields(objectRequest.getObjectFields())
         .keyCriteria(objectRequest.getKeyCriteria())
         .nestedObjectFields(objectRequest.getNestedObjectFields())

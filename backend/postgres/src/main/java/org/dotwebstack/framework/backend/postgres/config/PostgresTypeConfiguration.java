@@ -30,7 +30,7 @@ import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -97,29 +97,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private SortCriteria createSortCriteria(DotWebStackConfiguration dotWebStackConfiguration,
       SortableByConfiguration sortableByConfiguration) {
     return SortCriteria.builder()
-        .fieldPath(createFieldPath(dotWebStackConfiguration, this, sortableByConfiguration.getField()))
+        .fieldPath(FieldPathHelper.createFieldPath(dotWebStackConfiguration, this, sortableByConfiguration.getField()))
         .direction(sortableByConfiguration.getDirection())
         .build();
-  }
-
-  private FieldPath createFieldPath(DotWebStackConfiguration dotWebStackConfiguration,
-      AbstractTypeConfiguration<?> typeConfiguration, String fieldPath) {
-    String field = StringUtils.substringBefore(fieldPath, ".");
-    String rest = StringUtils.substringAfter(fieldPath, ".");
-
-    return typeConfiguration.getField(field)
-        .map(abstractFieldConfiguration -> {
-          FieldPath.FieldPathBuilder builder = FieldPath.builder()
-              .fieldConfiguration(abstractFieldConfiguration);
-
-          if (!StringUtils.isBlank(rest)) {
-            builder.childPath(createFieldPath(dotWebStackConfiguration,
-                dotWebStackConfiguration.getTypeConfiguration(abstractFieldConfiguration.getType()), rest));
-          }
-
-          return builder.build();
-        })
-        .orElseThrow(() -> illegalStateException("Invalid field path!"));
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,

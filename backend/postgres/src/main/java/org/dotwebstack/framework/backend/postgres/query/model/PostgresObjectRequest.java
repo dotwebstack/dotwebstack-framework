@@ -21,13 +21,12 @@ import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectRequest extends ObjectRequest {
   @Builder.Default
-  private final Map<String, ObjectFieldConfiguration> objectFieldsByType = new HashMap<>();
+  private final Map<String, ObjectFieldConfiguration> objectFieldsByFieldName = new HashMap<>();
 
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
     filterCriterias.stream()
         .filter(FilterCriteria::isNestedFilter)
-        // TODO: FIXME
-        .forEach(filterCriteria -> createObjectField(null, Origin.FILTERING));
+        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.FILTERING));
   }
 
   public void addSortCriteria(List<SortCriteria> sortCriterias) {
@@ -43,16 +42,16 @@ public class PostgresObjectRequest extends ObjectRequest {
         .get(fieldPath.getFieldConfiguration()
             .getName());
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
-    var objectField = Optional.ofNullable(objectFieldsByType.get(fieldConfiguration.getName()))
+    var objectField = Optional.ofNullable(objectFieldsByFieldName.get(fieldConfiguration.getName()))
         .orElseGet(() -> {
           var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
-          objectFieldsByType.put(fieldConfiguration.getType(), newObjectField);
+          objectFieldsByFieldName.put(fieldConfiguration.getName(), newObjectField);
           objectFields.add(newObjectField);
           return newObjectField;
         });
 
     if (!fieldPath.isLeaf()) {
-      addObjectFields(fieldPath.getChildPath(), objectField, typeConfiguration, origin);
+      addObjectFields(fieldPath.getChild(), objectField, typeConfiguration, origin);
     }
   }
 
@@ -74,7 +73,7 @@ public class PostgresObjectRequest extends ObjectRequest {
           });
 
       if (!fieldPath.isLeaf()) {
-        addObjectFields(fieldPath.getChildPath(), objectField, typeConfiguration, origin);
+        addObjectFields(fieldPath.getChild(), objectField, typeConfiguration, origin);
       }
     } else if (fieldConfiguration.isScalarField()) {
       fieldConfiguration.addOrigin(origin);

@@ -76,14 +76,14 @@ objectTypes:
     keys:
       - field: identifier
     sortableBy:
-      name:
-        - field: name
+#      name:
+#        - field: name
+#          direction: ASC
+      address:
+        - field: postalAddress.street
           direction: ASC
-#      address:
-#        - field: postalAddress.street
-#          direction: ASC
-#        - field: postalAddress.city
-#          direction: ASC
+        - field: postalAddress.city
+          direction: ASC
     filters:
       name: { }
       status: { }

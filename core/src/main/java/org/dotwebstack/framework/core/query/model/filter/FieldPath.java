@@ -10,10 +10,10 @@ import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 public class FieldPath {
   private final @NonNull AbstractFieldConfiguration fieldConfiguration;
 
-  private final FieldPath childPath;
+  private final FieldPath child;
 
   public boolean isLeaf() {
-    return childPath == null;
+    return child == null;
   }
 
   public FieldPath getLeaf() {
@@ -21,6 +21,6 @@ public class FieldPath {
       return this;
     }
 
-    return childPath.getLeaf();
+    return child.getLeaf();
   }
 }

@@ -14,6 +14,8 @@ import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 
@@ -24,12 +26,13 @@ public abstract class OperatorFilterCriteriaParser extends AbstractFilterCriteri
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .flatMap(filter -> getFilterItems(filter).stream())
-        .map(filterItem -> createFilterCriteria(getFieldPath(typeConfiguration, inputObjectField),
+        .map(filterItem -> createFilterCriteria(
+            FieldPathHelper.createFieldPath(typeConfiguration, getFieldPath(typeConfiguration, inputObjectField)),
             getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
         .collect(Collectors.toList());
   }
 
-  protected FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     if (FilterConstants.NOT_FIELD.equals(filterItem.getOperator())) {
       return createNotFilterCriteria(fieldPath, fieldConfiguration, filterItem);
@@ -37,7 +40,7 @@ public abstract class OperatorFilterCriteriaParser extends AbstractFilterCriteri
     throw unsupportedOperationException("Filter operator '{}' is not supported!", filterItem.getOperator());
   }
 
-  private FilterCriteria createNotFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createNotFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     FilterCriteria innerCriteria;
     if (filterItem.getChildren()

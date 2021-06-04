@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +24,8 @@ public class BooleanFilterCriteriaParser extends AbstractFilterCriteriaParser {
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .map(filter -> EqualsFilterCriteria.builder()
-            .fieldPath(getFieldPath(typeConfiguration, inputObjectField))
-            .field(getFieldConfiguration(typeConfiguration, inputObjectField))
+            .fieldPath(
+                FieldPathHelper.createFieldPath(typeConfiguration, getFieldPath(typeConfiguration, inputObjectField)))
             .value(filter.getData())
             .build())
         .collect(Collectors.toList());

@@ -7,6 +7,7 @@ import graphql.schema.GraphQLInputObjectField;
 import java.util.List;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenFilterCriteria;
@@ -28,7 +29,7 @@ public class CoreFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @Override
-  protected FilterCriteria createFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case FilterConstants.EQ_FIELD:
@@ -48,52 +49,47 @@ public class CoreFilterCriteriaParser extends OperatorFilterCriteriaParser {
     }
   }
 
-  private FilterCriteria createLowerThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createLowerThenFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return LowerThenFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createLowerThenEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createLowerThenEqualsFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return LowerThenEqualsFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createGreaterThenFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return GreaterThenFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
-      FilterItem filterItem) {
+  private FilterCriteria createGreaterThenEqualsFilterCriteria(FieldPath fieldPath,
+      FieldConfiguration fieldConfiguration, FilterItem filterItem) {
     return GreaterThenEqualsFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createEqualsFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createEqualsFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     return EqualsFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createInFilterCriteria(String fieldPath, FieldConfiguration fieldConfiguration,
+  private FilterCriteria createInFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
       FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof List)) {
       throw illegalArgumentException("Filter item value not of type List!");
@@ -101,7 +97,6 @@ public class CoreFilterCriteriaParser extends OperatorFilterCriteriaParser {
 
     return InFilterCriteria.builder()
         .fieldPath(fieldPath)
-        .field(fieldConfiguration)
         .values((List<?>) filterItem.getValue())
         .build();
   }

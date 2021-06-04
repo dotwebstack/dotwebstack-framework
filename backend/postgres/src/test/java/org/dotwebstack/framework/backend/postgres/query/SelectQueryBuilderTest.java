@@ -11,6 +11,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
@@ -24,6 +25,7 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.jooq.DSLContext;
 import org.jooq.Meta;
 import org.jooq.MetaProvider;
@@ -108,7 +110,9 @@ class SelectQueryBuilderTest {
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
         .filterCriterias(List.of(EqualsFilterCriteria.builder()
-            .field(scalarFields.get(0))
+            .fieldPath(FieldPath.builder()
+                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0))
+                .build())
             .value("Brewery X")
             .build()))
         .build();
