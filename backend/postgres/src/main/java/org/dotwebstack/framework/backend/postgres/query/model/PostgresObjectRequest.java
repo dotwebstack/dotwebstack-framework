@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,6 +14,8 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfigurat
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
@@ -76,9 +80,19 @@ public class PostgresObjectRequest extends ObjectRequest {
         addObjectFields(fieldPath.getChild(), objectField, typeConfiguration, origin);
       }
     } else if (fieldConfiguration.isScalarField()) {
-      fieldConfiguration.addOrigin(origin);
-      parentObjectFieldConfiguration.getObjectRequest()
-          .addScalarField(fieldConfiguration);
+      var scalarField = parentObjectFieldConfiguration.getObjectRequest()
+          .getScalarField(fieldConfiguration)
+          .orElseGet(() -> {
+            var newScalarField = ScalarField.builder()
+                .field(fieldConfiguration)
+                .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+                .build();
+            parentObjectFieldConfiguration.getObjectRequest()
+                .addScalarField(newScalarField);
+            return newScalarField;
+          });
+
+      scalarField.addOrigin(origin);
     }
   }
 

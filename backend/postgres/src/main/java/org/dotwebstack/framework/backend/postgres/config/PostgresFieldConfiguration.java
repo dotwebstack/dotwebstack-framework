@@ -1,13 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dotwebstack.framework.backend.postgres.query.model.Origin;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -26,8 +23,6 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
   private String column;
 
   private boolean isNested = false;
-
-  private Set<Origin> origins = new HashSet<>(Set.of(Origin.REQUESTED));
 
   @Override
   public boolean isScalarField() {
@@ -86,11 +81,4 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
     return List.of();
   }
 
-  public void addOrigin(Origin origin) {
-    origins.add(origin);
-  }
-
-  public boolean hasOrigin(Origin origin) {
-    return origins.contains(origin);
-  }
 }

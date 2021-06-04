@@ -341,15 +341,16 @@ class RequestFactoryTest {
   }
 
   private void assertIdentifierScalarConfiguration(ObjectRequest objectRequest) {
-    var scalarFieldConfiguration = objectRequest.getScalarFields()
+    var scalarField = objectRequest.getScalarFields()
         .stream()
-        .filter(fieldConfiguration -> fieldConfiguration.getName()
+        .filter(sf -> sf.getField()
+            .getName()
             .equals(FIELD_IDENTIFIER))
         .findFirst()
         .orElseThrow();
-    assertThat(scalarFieldConfiguration.getName(), is(FIELD_IDENTIFIER));
+    assertThat(scalarField.getName(), is(FIELD_IDENTIFIER));
 
-    assertFieldTypes((TestFieldConfiguration) scalarFieldConfiguration, true, false, false, false, false);
+    assertFieldTypes((TestFieldConfiguration) scalarField.getField(), true, false, false, false, false);
 
   }
 

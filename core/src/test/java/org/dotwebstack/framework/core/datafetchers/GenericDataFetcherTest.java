@@ -26,9 +26,11 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -42,10 +44,13 @@ import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.RequestFactory;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -450,7 +455,14 @@ class GenericDataFetcherTest {
 
     return ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
-        .scalarFields(List.of(fieldConfig))
+        .scalarFields(List.of(createScalarField(fieldConfig)))
+        .build();
+  }
+
+  private ScalarField createScalarField(FieldConfiguration fieldConfiguration) {
+    return ScalarField.builder()
+        .field(fieldConfiguration)
+        .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
         .build();
   }
 

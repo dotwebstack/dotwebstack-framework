@@ -14,16 +14,19 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -36,7 +39,9 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
@@ -85,7 +90,7 @@ public class RequestFactory {
   public ObjectRequest createObjectRequest(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
-    List<FieldConfiguration> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
+    List<ScalarField> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
     List<NestedObjectFieldConfiguration> nestedObjectFields =
         getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
@@ -237,12 +242,16 @@ public class RequestFactory {
         .collect(Collectors.toList());
   }
 
-  private List<FieldConfiguration> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+  private List<ScalarField> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
     return getSelectedFields(fieldPathPrefix, environment).stream()
         .map(selectedField -> typeConfiguration.getFields()
             .get(selectedField.getName()))
         .filter(AbstractFieldConfiguration::isScalarField)
+        .map(field -> ScalarField.builder()
+            .field(field)
+            .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+            .build())
         .collect(Collectors.toList());
   }
 

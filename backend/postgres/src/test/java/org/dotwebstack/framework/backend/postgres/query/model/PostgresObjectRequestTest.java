@@ -7,15 +7,19 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
@@ -26,11 +30,12 @@ class PostgresObjectRequestTest {
   @Test
   void addFilterCriteria_createsNoObjectField_forSimpleFilter() {
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.empty());
+    var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
+        .get("name"));
 
     var postgresObjectRequest = PostgresObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
-        .scalarFields(List.of(beerTypeConfiguration.getFields()
-            .get("name")))
+        .scalarFields(List.of(beerNameScalarField))
         .build();
 
     FilterCriteria filterCriteria = null;
@@ -47,11 +52,12 @@ class PostgresObjectRequestTest {
   void addFilterCriteria_createsOneObjectField_forOneLevelNestedFilter() {
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.empty());
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.of(breweryTypeCOnfiguration));
+    var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
+        .get("name"));
 
     var postgresObjectRequest = PostgresObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
-        .scalarFields(List.of(beerTypeConfiguration.getFields()
-            .get("name")))
+        .scalarFields(List.of(beerNameScalarField))
         .build();
 
     FilterCriteria filterCriteria = null;
@@ -70,11 +76,12 @@ class PostgresObjectRequestTest {
     var addressTypeConfiguration = createAddressTypeConfiguration();
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.of(addressTypeConfiguration));
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.of(breweryTypeCOnfiguration));
+    var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
+        .get("name"));
 
     var postgresObjectRequest = PostgresObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
-        .scalarFields(List.of(beerTypeConfiguration.getFields()
-            .get("name")))
+        .scalarFields(List.of(beerNameScalarField))
         .build();
 
     FilterCriteria filterCriteria = null;
@@ -92,11 +99,12 @@ class PostgresObjectRequestTest {
     var addressTypeConfiguration = createAddressTypeConfiguration();
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.of(addressTypeConfiguration));
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.of(breweryTypeCOnfiguration));
+    var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
+        .get("name"));
 
     var postgresObjectRequest = PostgresObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
-        .scalarFields(List.of(beerTypeConfiguration.getFields()
-            .get("name")))
+        .scalarFields(List.of(beerNameScalarField))
         .build();
 
     ObjectFieldConfiguration breweryObjectField =
@@ -125,7 +133,7 @@ class PostgresObjectRequestTest {
     var scalarFields = objectField.getObjectRequest()
         .getScalarFields();
     assertThat(scalarFields, hasSize(1));
-    var scalarField = (PostgresFieldConfiguration) scalarFields.get(0);
+    var scalarField = scalarFields.get(0);
     assertThat(scalarField.getName(), is(fieldName));
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
@@ -133,7 +141,7 @@ class PostgresObjectRequestTest {
   private void assertObjectRequest(ObjectRequest objectRequest, String fieldName, Origin origin) {
     var scalarFields = objectRequest.getScalarFields();
     assertThat(scalarFields, hasSize(1));
-    var scalarField = (PostgresFieldConfiguration) scalarFields.get(0);
+    var scalarField = scalarFields.get(0);
     assertThat(scalarField.getName(), is(fieldName));
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
@@ -242,7 +250,7 @@ class PostgresObjectRequestTest {
 
     var addressObjectField = createObjectFieldConfiguration(addressFieldConfiguration, addressTypeConfiguration);
     addressObjectField.getObjectRequest()
-        .addScalarField(cityFieldConfiguration);
+        .addScalarField(createScalarField(cityFieldConfiguration));
 
     var breweryObjectField = createObjectFieldConfiguration(breweryFieldConfiguration, breweryTypeConfiguration);
     breweryObjectField.getObjectRequest()
@@ -261,6 +269,13 @@ class PostgresObjectRequestTest {
     return ObjectFieldConfiguration.builder()
         .field(fieldConfiguration)
         .objectRequest(objectRequest)
+        .build();
+  }
+
+  private ScalarField createScalarField(PostgresFieldConfiguration fieldConfiguration) {
+    return ScalarField.builder()
+        .field(fieldConfiguration)
+        .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
         .build();
   }
 }

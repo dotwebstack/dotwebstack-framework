@@ -20,7 +20,7 @@ public class ObjectRequest implements Request {
   private final TypeConfiguration<?> typeConfiguration;
 
   @Builder.Default
-  private final List<FieldConfiguration> scalarFields = new ArrayList<>();
+  private final List<ScalarField> scalarFields = new ArrayList<>();
 
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = List.of();
@@ -37,15 +37,23 @@ public class ObjectRequest implements Request {
   @Builder.Default
   private final List<ObjectFieldConfiguration> collectionObjectFields = List.of();
 
-  public void addScalarField(FieldConfiguration fieldConfiguration) {
-    if (!scalarFields.contains(fieldConfiguration)) {
-      scalarFields.add(fieldConfiguration);
+  public void addScalarField(ScalarField scalar) {
+    if (!scalarFields.contains(scalar)) {
+      scalarFields.add(scalar);
     }
   }
 
   public Optional<ObjectFieldConfiguration> getObjectField(FieldConfiguration field) {
     return objectFields.stream()
         .filter(objectField -> objectField.getField()
+            .getName()
+            .equals(field.getName()))
+        .findFirst();
+  }
+
+  public Optional<ScalarField> getScalarField(FieldConfiguration field) {
+    return scalarFields.stream()
+        .filter(scalarField -> scalarField.getField()
             .getName()
             .equals(field.getName()))
         .findFirst();
