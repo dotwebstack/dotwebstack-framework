@@ -29,6 +29,13 @@ objectTypes:
         field: brewery.visitAddress.city
     keys:
       - field: identifier
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
     fields:
       identifier:
         type: ID

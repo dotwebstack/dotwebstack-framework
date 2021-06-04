@@ -13,7 +13,6 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -115,7 +114,7 @@ class SelectQueryBuilderTest {
         .filterCriterias(List.of(EqualsFilterCriteria.builder()
             .fieldPath(FieldPath.builder()
                 .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
-                .getField())
+                    .getField())
                 .build())
             .value("Brewery X")
             .build()))

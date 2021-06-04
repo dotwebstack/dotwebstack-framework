@@ -66,6 +66,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addEnumerations(dotWebStackConfiguration, typeDefinitionRegistry);
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addSortTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addQueryTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
@@ -94,7 +95,13 @@ public class TypeDefinitionRegistrySchemaFactory {
               .isEmpty()) {
             typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));
           }
+        });
+  }
 
+  private void addSortTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .forEach((name, objectType) -> {
           if (!objectType.getSortableBy()
               .isEmpty()) {
             typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType));
@@ -172,6 +179,9 @@ public class TypeDefinitionRegistrySchemaFactory {
           dotWebStackConfiguration.getTypeConfiguration(fieldConfiguration.getType());
 
       createInputValueDefinitionForFilteredObject(fieldConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(result::add);
+
+      createInputValueDefinitionForSortableByObject(fieldConfiguration.getType(), objectTypeConfiguration)
           .ifPresent(result::add);
     }
 
