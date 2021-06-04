@@ -24,7 +24,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -152,6 +151,7 @@ public class RequestFactory {
 
       String orderEnumName = (String) environment.getArguments()
           .get(argument.getName());
+
       Optional<String> sortableByConfigurationKey = typeConfiguration.getSortableBy()
           .keySet()
           .stream()
@@ -159,17 +159,11 @@ public class RequestFactory {
               .equals(orderEnumName))
           .findFirst();
 
-      List<SortableByConfiguration> sortableByConfigurations = sortableByConfigurationKey
-          .map(key -> typeConfiguration.getSortableBy()
-              .get(key))
-          .orElseThrow(() -> illegalStateException("No sortableBy configuration found for enum '{}'", orderEnumName));
+      List<SortCriteria> sortCriterias = sortableByConfigurationKey.map(key -> typeConfiguration.getSortCriterias()
+          .get(key))
+          .orElseThrow(() -> illegalStateException("No sortCriterias found for enum '{}'", orderEnumName));
 
-      return sortableByConfigurations.stream()
-          .map(sortableByConfiguration -> SortCriteria.builder()
-              .field(sortableByConfiguration.getField())
-              .direction(sortableByConfiguration.getDirection())
-              .build())
-          .collect(Collectors.toList());
+      return sortCriterias;
     }
 
     return List.of();

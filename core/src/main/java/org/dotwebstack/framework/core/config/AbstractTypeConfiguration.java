@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
@@ -40,6 +41,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   protected Map<String, FilterConfiguration> filters = new HashMap<>();
 
   protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
+
+  protected Map<String, List<SortCriteria>> sortCriterias = new HashMap<>();
 
   public void setFields(Map<String, T> fields) {
     fields.forEach((key, value) -> value.setName(key));

@@ -24,10 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -71,9 +74,52 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
     initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
+
+    initSortCriterias(dotWebStackConfiguration);
+
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initKeyFields();
+  }
+
+  private void initSortCriterias(DotWebStackConfiguration dotWebStackConfiguration) {
+    sortCriterias = sortableBy.entrySet()
+        .stream()
+        .map(entry -> Map.entry(entry.getKey(), entry.getValue()
+            .stream()
+            .map(sortableByConfiguration -> createSortCriteria(dotWebStackConfiguration, sortableByConfiguration))
+            .collect(Collectors.toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    System.out.println();
+  }
+
+  private SortCriteria createSortCriteria(DotWebStackConfiguration dotWebStackConfiguration,
+      SortableByConfiguration sortableByConfiguration) {
+    return SortCriteria.builder()
+        .fieldPath(createFieldPath(dotWebStackConfiguration, this, sortableByConfiguration.getField()))
+        .direction(sortableByConfiguration.getDirection())
+        .build();
+  }
+
+  private FieldPath createFieldPath(DotWebStackConfiguration dotWebStackConfiguration,
+      AbstractTypeConfiguration<?> typeConfiguration, String fieldPath) {
+    String field = StringUtils.substringBefore(fieldPath, ".");
+    String rest = StringUtils.substringAfter(fieldPath, ".");
+
+    return typeConfiguration.getField(field)
+        .map(abstractFieldConfiguration -> {
+          FieldPath.FieldPathBuilder builder = FieldPath.builder()
+              .fieldConfiguration(abstractFieldConfiguration);
+
+          if (!StringUtils.isBlank(rest)) {
+            builder.childPath(createFieldPath(dotWebStackConfiguration,
+                dotWebStackConfiguration.getTypeConfiguration(abstractFieldConfiguration.getType()), rest));
+          }
+
+          return builder.build();
+        })
+        .orElseThrow(() -> illegalStateException("Invalid field path!"));
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,

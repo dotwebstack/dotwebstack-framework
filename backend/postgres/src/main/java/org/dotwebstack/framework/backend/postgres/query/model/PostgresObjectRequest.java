@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,7 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 @SuperBuilder
@@ -26,19 +26,22 @@ public class PostgresObjectRequest extends ObjectRequest {
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
     filterCriterias.stream()
         .filter(FilterCriteria::isCompositeFilter)
-        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.FILTERING));
+        // TODO: FIXME
+        .forEach(filterCriteria -> createObjectField(null, Origin.FILTERING));
   }
 
   public void addSortCriteria(List<SortCriteria> sortCriterias) {
     sortCriterias.stream()
-        .filter(SortCriteria::hasNestedField)
+        .filter(sortCriteria -> !sortCriteria.getFieldPath()
+            .isLeaf())
         .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.SORTING));
   }
 
-  private void createObjectField(String[] fieldPaths, Origin origin) {
+  private void createObjectField(FieldPath fieldPath, Origin origin) {
     var parentTypeConfiguration = (PostgresTypeConfiguration) getTypeConfiguration();
     var fieldConfiguration = parentTypeConfiguration.getFields()
-        .get(fieldPaths[0]);
+        .get(fieldPath.getFieldConfiguration()
+            .getName());
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
     var objectField = Optional.ofNullable(objectFieldsByType.get(fieldConfiguration.getName()))
         .orElseGet(() -> {
@@ -48,15 +51,16 @@ public class PostgresObjectRequest extends ObjectRequest {
           return newObjectField;
         });
 
-    fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
-    addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
+    if (!fieldPath.isLeaf()) {
+      addObjectFields(fieldPath.getChildPath(), objectField, typeConfiguration, origin);
+    }
   }
 
-  private void addObjectFields(String[] fieldPaths,
-      ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration,
-      Origin origin) {
+  private void addObjectFields(FieldPath fieldPath, ObjectFieldConfiguration parentObjectFieldConfiguration,
+      PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
     var fieldConfiguration = parentTypeConfiguration.getFields()
-        .get(fieldPaths[0]);
+        .get(fieldPath.getFieldConfiguration()
+            .getName());
     if (fieldConfiguration.isObjectField()) {
       var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
       var objectField = parentObjectFieldConfiguration.getObjectRequest()
@@ -69,10 +73,9 @@ public class PostgresObjectRequest extends ObjectRequest {
             return newObjectField;
           });
 
-
-
-      fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
-      addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
+      if (!fieldPath.isLeaf()) {
+        addObjectFields(fieldPath.getChildPath(), objectField, typeConfiguration, origin);
+      }
     } else if (fieldConfiguration.isScalarField()) {
       fieldConfiguration.addOrigin(origin);
       parentObjectFieldConfiguration.getObjectRequest()

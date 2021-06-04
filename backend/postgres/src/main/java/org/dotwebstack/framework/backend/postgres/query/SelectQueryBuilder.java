@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import org.dotwebstack.framework.backend.postgres.query.model.Origin;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -27,6 +29,7 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.RowN;
 import org.jooq.SelectQuery;
@@ -91,21 +94,6 @@ public class SelectQueryBuilder {
         .context(objectSelectContext)
         .table(fromTable)
         .build();
-  }
-
-  public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
-                                                     ObjectSelectContext objectSelectContext, Table<?> fromTable) {
-    return sortCriterias.stream()
-        .map(sortCriteria -> {
-          var sortTable =
-              sortCriteria.hasNestedField() ? objectSelectContext.getTableAlias(sortCriteria.getFieldPath()[0])
-                  : fromTable.getName();
-
-          // TODO: getField().getColumn()
-          return DSL.field(DSL.name(sortTable, sortCriteria.getField())).asc();
-          //TODO: desc/asc conditie
-        })
-        .collect(Collectors.toList());
   }
 
   public SelectQueryBuilderResult build(ObjectRequest objectRequest) {
@@ -428,10 +416,12 @@ public class SelectQueryBuilder {
       // create join with jointable and join condition on joinColumns and inverse joinColumn
       subSelect.addJoin(joinTable, JoinType.JOIN, condition);
     } else {
-      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
-          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-          leftSideTable);
-      subSelect.addConditions(condition);
+      if (leftSideConfiguration.getJoinColumns() != null) {
+        var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
+            ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
+            leftSideTable);
+        subSelect.addConditions(condition);
+      }
     }
   }
 
@@ -552,5 +542,35 @@ public class SelectQueryBuilder {
               .eq(rightColumn);
         })
         .reduce(DSL.noCondition(), Condition::and);
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
+      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+    return sortCriterias.stream()
+        .map(sortCriteria -> {
+          var sortTable = !sortCriteria.getFieldPath()
+              .isLeaf() ? objectSelectContext.getTableAlias(
+                  sortCriteria.getFieldPath()
+                      .getFieldConfiguration()
+                      .getName())
+                  : fromTable.getName();
+
+          // TODO: getField().getColumn()
+          Field<?> sortField = DSL.field(DSL.name(sortTable, sortCriteria.getFieldPath()
+              .getLeaf()
+              .getFieldConfiguration()
+              .getName()));
+
+          switch (sortCriteria.getDirection()) {
+            case ASC:
+              return sortField.asc();
+            case DESC:
+              return sortField.desc();
+            default:
+              throw ExceptionHelper.illegalStateException("Direction unknown!");
+          }
+        })
+        .collect(Collectors.toList());
   }
 }

@@ -79,11 +79,11 @@ objectTypes:
       name:
         - field: name
           direction: ASC
-      address:
-        - field: postalAddress.street
-          direction: ASC
-        - field: postalAddress.city
-          direction: ASC
+#      address:
+#        - field: postalAddress.street
+#          direction: ASC
+#        - field: postalAddress.city
+#          direction: ASC
     filters:
       name: { }
       status: { }

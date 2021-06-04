@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
@@ -19,6 +20,8 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
   Map<String, FilterConfiguration> getFilters();
 
   Map<String, List<SortableByConfiguration>> getSortableBy();
+
+  Map<String, List<SortCriteria>> getSortCriterias();
 
   void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition);
 
