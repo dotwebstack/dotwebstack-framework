@@ -54,13 +54,14 @@ public abstract class AbstractFilterCriteriaParser implements FilterCriteriaPars
   }
 
   protected String getFieldPath(TypeConfiguration<?> typeConfiguration, GraphQLInputObjectField inputObjectField) {
-    var result = "";
     var filterConfiguration = typeConfiguration.getFilters()
         .get(inputObjectField.getName());
-    if (StringUtils.contains(filterConfiguration.getField(), ".")) {
-      result = filterConfiguration.getField();
+
+    if (StringUtils.isNotBlank(filterConfiguration.getField())) {
+      return filterConfiguration.getField();
     }
-    return result;
+
+    return inputObjectField.getName();
   }
 
   protected Stream<GraphQLInputObjectType> getInputObjectTypes(GraphQLInputObjectField inputObjectField) {

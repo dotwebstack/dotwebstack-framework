@@ -41,10 +41,7 @@ public class PostgresObjectRequest extends ObjectRequest {
   }
 
   private void createObjectField(FieldPath fieldPath, Origin origin) {
-    var parentTypeConfiguration = (PostgresTypeConfiguration) getTypeConfiguration();
-    var fieldConfiguration = parentTypeConfiguration.getFields()
-        .get(fieldPath.getFieldConfiguration()
-            .getName());
+    var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
     var objectField = Optional.ofNullable(objectFieldsByFieldName.get(fieldConfiguration.getName()))
         .orElseGet(() -> {
@@ -55,15 +52,13 @@ public class PostgresObjectRequest extends ObjectRequest {
         });
 
     if (!fieldPath.isLeaf()) {
-      addObjectFields(fieldPath.getChild(), objectField, typeConfiguration, origin);
+      addObjectFields(fieldPath.getChild(), objectField, origin);
     }
   }
 
   private void addObjectFields(FieldPath fieldPath, ObjectFieldConfiguration parentObjectFieldConfiguration,
-      PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
-    var fieldConfiguration = parentTypeConfiguration.getFields()
-        .get(fieldPath.getFieldConfiguration()
-            .getName());
+      Origin origin) {
+    var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
     if (fieldConfiguration.isObjectField()) {
       var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
       var objectField = parentObjectFieldConfiguration.getObjectRequest()
@@ -77,7 +72,7 @@ public class PostgresObjectRequest extends ObjectRequest {
           });
 
       if (!fieldPath.isLeaf()) {
-        addObjectFields(fieldPath.getChild(), objectField, typeConfiguration, origin);
+        addObjectFields(fieldPath.getChild(), objectField, origin);
       }
     } else if (fieldConfiguration.isScalarField()) {
       var scalarField = parentObjectFieldConfiguration.getObjectRequest()

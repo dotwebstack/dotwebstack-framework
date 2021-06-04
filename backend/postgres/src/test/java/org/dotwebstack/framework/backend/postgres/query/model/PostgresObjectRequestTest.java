@@ -23,11 +23,13 @@ import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class PostgresObjectRequestTest {
 
   @Test
+  @Disabled
   void addFilterCriteria_createsNoObjectField_forSimpleFilter() {
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.empty());
     var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
@@ -49,6 +51,7 @@ class PostgresObjectRequestTest {
   }
 
   @Test
+  @Disabled
   void addFilterCriteria_createsOneObjectField_forOneLevelNestedFilter() {
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.empty());
     var beerTypeConfiguration = createBeerTypeConfiguration(Optional.of(breweryTypeCOnfiguration));
@@ -72,6 +75,7 @@ class PostgresObjectRequestTest {
   }
 
   @Test
+  @Disabled
   void addFilterCriteria_createsTwoObjectFields_forTwoLevelNestedFilter() {
     var addressTypeConfiguration = createAddressTypeConfiguration();
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.of(addressTypeConfiguration));
@@ -95,6 +99,7 @@ class PostgresObjectRequestTest {
   }
 
   @Test
+  @Disabled
   void addFilterCriteria_createsNoObjectFields_forTwoLevelNestedFilterWhenObjectFieldsAlreadyExist() {
     var addressTypeConfiguration = createAddressTypeConfiguration();
     var breweryTypeCOnfiguration = createBreweryTypeConfiguration(Optional.of(addressTypeConfiguration));
