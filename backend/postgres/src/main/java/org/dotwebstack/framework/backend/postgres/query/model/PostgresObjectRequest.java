@@ -25,7 +25,7 @@ public class PostgresObjectRequest extends ObjectRequest {
 
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
     filterCriterias.stream()
-        .filter(FilterCriteria::isCompositeFilter)
+        .filter(FilterCriteria::isNestedFilter)
         // TODO: FIXME
         .forEach(filterCriteria -> createObjectField(null, Origin.FILTERING));
   }
@@ -66,7 +66,7 @@ public class PostgresObjectRequest extends ObjectRequest {
       var objectField = parentObjectFieldConfiguration.getObjectRequest()
           .getObjectField(fieldConfiguration)
           .orElseGet(() -> {
-            var newObjectField = createObjectFieldConfiguration(fieldConfiguration, parentTypeConfiguration);
+            var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
             parentObjectFieldConfiguration.getObjectRequest()
                 .getObjectFields()
                 .add(newObjectField);
