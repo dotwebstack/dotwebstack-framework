@@ -9,7 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 public class SortCriteria {
 
   // TODO: Field moet FieldConfiguration worden + aparte String fieldPath
-  // TODO: ValidSortAndFilterFields uitbreiden zodat deze een Map<String, FieldConfiguration> terug geeft?
+  // TODO: ValidSortAndFilterFields uitbreiden zodat deze een Map<String, FieldConfiguration> terug
+  // geeft?
   private final String field;
 
   private final SortDirection direction;

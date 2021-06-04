@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -93,21 +94,6 @@ public class SelectQueryBuilder {
         .build();
   }
 
-  public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
-                                                     ObjectSelectContext objectSelectContext, Table<?> fromTable) {
-    return sortCriterias.stream()
-        .map(sortCriteria -> {
-          var sortTable =
-              sortCriteria.hasNestedField() ? objectSelectContext.getTableAlias(sortCriteria.getFieldPath()[0])
-                  : fromTable.getName();
-
-          // TODO: getField().getColumn()
-          return DSL.field(DSL.name(sortTable, sortCriteria.getField())).asc();
-          //TODO: desc/asc conditie
-        })
-        .collect(Collectors.toList());
-  }
-
   public SelectQueryBuilderResult build(ObjectRequest objectRequest) {
     return build(objectRequest, new ObjectSelectContext());
   }
@@ -135,6 +121,22 @@ public class SelectQueryBuilder {
         .context(objectSelectContext)
         .table(fromTable)
         .build();
+  }
+
+  public static List<SortField<?>> createSortConditions(List<SortCriteria> sortCriterias,
+      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+    return sortCriterias.stream()
+        .map(sortCriteria -> {
+          var sortTable =
+              sortCriteria.hasNestedField() ? objectSelectContext.getTableAlias(sortCriteria.getFieldPath()[0])
+                  : fromTable.getName();
+
+          // TODO: getField().getColumn()
+          return DSL.field(DSL.name(sortTable, sortCriteria.getField()))
+              .asc();
+          // TODO: desc/asc conditie
+        })
+        .collect(Collectors.toList());
   }
 
   private SelectQuery<?> buildQuery(ObjectSelectContext objectSelectContext, ObjectRequest objectRequest,

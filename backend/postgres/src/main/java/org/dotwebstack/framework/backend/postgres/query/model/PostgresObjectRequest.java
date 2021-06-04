@@ -50,12 +50,10 @@ public class PostgresObjectRequest extends ObjectRequest {
 
     fieldPaths = Arrays.copyOfRange(fieldPaths, 1, fieldPaths.length);
     addObjectFields(fieldPaths, objectField, typeConfiguration, origin);
-    return objectField;
   }
 
-  private void addObjectFields(String[] fieldPaths,
-      ObjectFieldConfiguration parentObjectFieldConfiguration, PostgresTypeConfiguration parentTypeConfiguration,
-      Origin origin) {
+  private void addObjectFields(String[] fieldPaths, ObjectFieldConfiguration parentObjectFieldConfiguration,
+      PostgresTypeConfiguration parentTypeConfiguration, Origin origin) {
     var fieldConfiguration = parentTypeConfiguration.getFields()
         .get(fieldPaths[0]);
     if (fieldConfiguration.isObjectField()) {
