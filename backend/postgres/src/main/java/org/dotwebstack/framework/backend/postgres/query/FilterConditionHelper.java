@@ -30,7 +30,7 @@ public final class FilterConditionHelper {
     return filterCriterias.stream()
         .map(filterCriteria -> {
           var filterTable =
-              filterCriteria.isCompositeFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()[0])
+              filterCriteria.isNestedFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()[0])
                   : fromTable.getName();
           return createFilterCondition(filterCriteria, filterTable);
         })
