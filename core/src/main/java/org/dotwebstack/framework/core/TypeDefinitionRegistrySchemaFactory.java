@@ -8,6 +8,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
@@ -48,8 +49,6 @@ public class TypeDefinitionRegistrySchemaFactory {
   private static final String GEOMETRY_ARGUMENT_NAME = "type";
 
   private static final String GEOMETRY_ARGUMENT_TYPE = "GeometryType";
-
-  private static final String SORT_ARGUMENT_NAME = "sort";
 
   private final DotWebStackConfiguration dotWebStackConfiguration;
 

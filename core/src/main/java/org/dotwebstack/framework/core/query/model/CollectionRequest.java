@@ -14,7 +14,7 @@ public class CollectionRequest implements Request {
   private final ObjectRequest objectRequest;
 
   @Builder.Default
-  private final List<SortCriteria> sortCriteria = List.of();
+  private final List<SortCriteria> sortCriterias = List.of();
 
   @Builder.Default
   private final List<FilterCriteria> filterCriterias = List.of();

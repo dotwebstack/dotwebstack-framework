@@ -24,7 +24,9 @@ import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
@@ -36,6 +38,7 @@ import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +56,8 @@ public class RequestFactory {
 
     var collectionQueryBuilder = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
-        .filterCriterias(createFilterCriterias(typeConfiguration, environment));
+        .filterCriterias(createFilterCriterias(typeConfiguration, environment))
+        .sortCriterias(createSortCriterias(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)
@@ -135,6 +139,42 @@ public class RequestFactory {
     return List.of();
   }
 
+  private List<SortCriteria> createSortCriterias(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    Optional<GraphQLArgument> sortArgument = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.equals(argument.getName(), SortConstants.SORT_ARGUMENT_NAME))
+        .findFirst();
+
+    if (sortArgument.isPresent()) {
+      GraphQLArgument argument = sortArgument.get();
+
+      String orderEnumName = (String) environment.getArguments()
+          .get(argument.getName());
+      Optional<String> sortableByConfigurationKey = typeConfiguration.getSortableBy()
+          .keySet()
+          .stream()
+          .filter(key -> key.toUpperCase()
+              .equals(orderEnumName))
+          .findFirst();
+
+      List<SortableByConfiguration> sortableByConfigurations = sortableByConfigurationKey
+          .map(key -> typeConfiguration.getSortableBy()
+              .get(key))
+          .orElseThrow(() -> illegalStateException("No sortableBy configuration found for enum '{}'", orderEnumName));
+
+      return sortableByConfigurations.stream()
+          .map(sortableByConfiguration -> SortCriteria.builder()
+              .field(sortableByConfiguration.getField())
+              .direction(sortableByConfiguration.getDirection())
+              .build())
+          .collect(Collectors.toList());
+    }
+
+    return List.of();
+  }
+
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
     return inputObjectType.getChildren()
         .stream()
@@ -196,7 +236,7 @@ public class RequestFactory {
         .filter(argument ->
         // TODO: fix sort constant
         !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
-            && !Objects.equals(argument.getKey(), "sort"))
+            && !Objects.equals(argument.getKey(), SortConstants.SORT_ARGUMENT_NAME))
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
             .build())
