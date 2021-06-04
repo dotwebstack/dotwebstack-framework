@@ -45,6 +45,14 @@ class GraphqlController {
       @RequestParam(value = OPERATION_NAME, required = false) String operationName,
       @RequestParam(value = VARIABLES, required = false) String variablesJson) {
 
+    if (query.contains("$")) {
+      var parameterName = query.substring(query.indexOf('$') + 1, query.indexOf(":"));
+      if (!variablesJson.contains(parameterName)) {
+        throw illegalArgumentException(String.format("Missing value '%s' in variables '%s', for parameter '%s'.",
+            parameterName, variablesJson, parameterName));
+      }
+    }
+
     Map<String, Object> variablesMap = convertVariablesJson(variablesJson);
 
     var executionInput = getExecutionInput(query, operationName, variablesMap);

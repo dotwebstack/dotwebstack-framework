@@ -22,6 +22,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsIn;
+import org.jooq.tools.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,11 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -121,7 +124,7 @@ class GraphqlControllerIntegrationTest {
   @Test
   void getRequest_ReturnsBeers_Default() {
     var query = "{beers{identifier_beer name}}";
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -136,7 +139,8 @@ class GraphqlControllerIntegrationTest {
         .get(NAME), is("Beer 1"));
   }
 
-  // TODO: Fix publisher test to use webTestClient
+  // Using the httpController won't return a Publisher, therefore this test still uses the
+  // graphQl.execute() method.
   @Test
   @SuppressWarnings("unchecked")
   void getRequest_ReturnsPublisher_forBeerSubscription() {
@@ -174,7 +178,7 @@ class GraphqlControllerIntegrationTest {
   @Test
   void getRequest_ReturnsBeer_forIdentifier() {
     var query = "{beer(identifier_beer: \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\" ){name}}";
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -191,7 +195,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_ReturnsBeerWithNestedObject_forIdentifier() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -211,7 +215,7 @@ class GraphqlControllerIntegrationTest {
   @Test
   void getRequest_ReturnsBreweries_Default() {
     var query = "{breweries {name status}}";
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -234,7 +238,7 @@ class GraphqlControllerIntegrationTest {
     String query =
         "{brewery(identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status history{age history}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -255,7 +259,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweriesrWithMappedBy_default() {
     String query = "{breweries{name status beers{name}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -292,7 +296,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweryWithMappedBy_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -319,7 +323,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweryWithNoBeers_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\"){name status beers{name}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -342,7 +346,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{beers{name ingredients{name}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -377,7 +381,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeersWithIngredient_forQueryWithJoinTable() {
     String query = "{beers{name ingredient{name}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -409,7 +413,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeersWithDeepNesting_default() {
     String query = "{beers{identifier_beer name brewery{name beers{name ingredients{name}}}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -446,7 +450,7 @@ class GraphqlControllerIntegrationTest {
     String query =
         "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -460,17 +464,22 @@ class GraphqlControllerIntegrationTest {
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
     assertThat(geometry.size(), is(3));
-    assertThat(geometry.get("type"), is("POINT"));
-    assertThat(geometry.get("asWKT"), is("POINT (5.979274334569982 52.21715768613606)"));
-    assertThat(geometry.get("asWKB"), is("00000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
+            + "5.972053827981467 52.225279885758624, 5.971385957936759 52.225279885758624, "
+            + "5.971385957936759 52.22549347648849))"));
+    assertThat(geometry.get("asWKB"),
+        is("000000000300000001000000054017e2b30024872e404a1cdcf8617d5d4017e3621424872e404a1cdcf8617d5d401"
+            + "7e3621424872e404a1cd5f8a6e3d44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
   }
 
   @Test
   void getRequest_ReturnsBreweryWithGeometryType_forGeometryType() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name geometry(type : MULTIPOINT){type asWKT asWKB}}}";
+        + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB}}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -484,9 +493,15 @@ class GraphqlControllerIntegrationTest {
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
     assertThat(geometry.size(), is(3));
-    assertThat(geometry.get("type"), is("MULTIPOINT"));
-    assertThat(geometry.get("asWKT"), is("MULTIPOINT ((5.979274334569982 52.21715768613606))"));
-    assertThat(geometry.get("asWKB"), is("00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(geometry.get("type"), is("MULTIPOLYGON"));
+    assertThat(geometry.get("asWKT"),
+        is("MULTIPOLYGON (((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
+            + "5.972053827981467 52.225279885758624, 5.971385957936759 52.225279885758624, "
+            + "5.971385957936759 52.22549347648849)))"));
+    assertThat(geometry.get("asWKB"),
+        is("000000000600000001000000000300000001000000054017e2b30024872e404a1cdcf8"
+            + "617d5d4017e3621424872e404a1cdcf8617d5d4017e3621424872e404a1cd5f8a6e3d"
+            + "44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
   }
 
   @Test
@@ -495,7 +510,7 @@ class GraphqlControllerIntegrationTest {
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -518,7 +533,7 @@ class GraphqlControllerIntegrationTest {
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -543,7 +558,7 @@ class GraphqlControllerIntegrationTest {
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) "
         + "tastes: stringJoin( field: \"taste\" ) } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -565,7 +580,7 @@ class GraphqlControllerIntegrationTest {
         + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -589,7 +604,7 @@ class GraphqlControllerIntegrationTest {
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
         + "avgC : floatAvg( field : \"weight\" )  } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -610,7 +625,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_ReturnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
     String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -636,7 +651,7 @@ class GraphqlControllerIntegrationTest {
         + "countWeightDef : count( field : \"weight\" ) "
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -659,7 +674,7 @@ class GraphqlControllerIntegrationTest {
         + "{name taste ingredientAgg{ totalCount : count( field : \"weight\" )"
         + "names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -681,7 +696,7 @@ class GraphqlControllerIntegrationTest {
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true ) } } }";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -703,7 +718,7 @@ class GraphqlControllerIntegrationTest {
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true )} " + "name postalAddress { street city } "
         + " visitAddress {street city} } }";
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -729,7 +744,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweries_withStringFilter() {
     String query = "{breweries(filter: {name: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -743,7 +758,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweries_withBooleanFilter() {
     String query = "{breweries(filter: {multinational: true}){ identifier_brewery name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -762,7 +777,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBreweries_withBooleanNullFilter() {
     String query = "{breweries(filter: {multinational: null}){ identifier_brewery name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -783,7 +798,7 @@ class GraphqlControllerIntegrationTest {
     String query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
         + "{ identifier_beer name} }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -815,7 +830,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeers_withDateGreaterThenFilter() {
     String query = "{beers(filter: {sinceDate: {gt: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -837,7 +852,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeers_withDateGreaterThenEqualsFilter() {
     String query = "{beers(filter: {sinceDate: {gte: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -860,7 +875,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeers_withDateLowerThenFilter() {
     String query = "{beers(filter: {sinceDate: {lt: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -881,7 +896,7 @@ class GraphqlControllerIntegrationTest {
   void getRequest_returnsBeers_withDateLowerThenEqualsFilter() {
     String query = "{beers(filter: {sinceDate: {lte: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -899,10 +914,10 @@ class GraphqlControllerIntegrationTest {
   }
 
   @Test
-  void getRequest_returnsBeers_withDateTimeGreaterThenEqualsFilter() {
+  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withDateTimeGreaterThenEqualsFilter() {
     String query = "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\"}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executePostRequest(query, "application/graphql");
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -918,12 +933,12 @@ class GraphqlControllerIntegrationTest {
   }
 
   @Test
-  void getRequest_returnsBeers_withMultiOperandFilter() {
+  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withMultiOperandFilter() {
     String query =
         "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}})"
             + "{ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executePostRequest(query, "application/graphql");
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -938,10 +953,10 @@ class GraphqlControllerIntegrationTest {
   }
 
   @Test
-  void getRequest_returnsBeers_withNotFilter() {
+  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withNotFilter() {
     String query = "{beers(filter: {lastBrewed: {not: {gte: \"2020-08-11T10:15:30+01:00\"}}}){ identifier_beer name }}";
 
-    JsonNode json = getRequestResult(query);
+    JsonNode json = executePostRequest(query, "application/graphql");
 
     assertThat(json.has(ERRORS), is(false));
 
@@ -959,13 +974,188 @@ class GraphqlControllerIntegrationTest {
             Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
 
-  private JsonNode getRequestResult(String query) {
-    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/")
-        .queryParam("query", query);
+  @Test
+  void getRequest_returnsBeers_forQueryStringWithMultipleQueriesAndOperationNameProvided() {
+    var query =
+        "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
+    var operationName = "beerCollection";
+    JsonNode json = executeGetRequestWithOperationName(query, operationName);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEERS), is(true));
+
+    List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
+    assertThat(beers.size(), is(6));
+    assertThat(beers.get(0)
+        .get(NAME), is("Beer 1"));
+  }
+
+  @Test
+  void getRequest_returnsBeer_forParameterProvidedInVariables() {
+    var query = "query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}";
+    var variables = "{\n" + "  \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "}";
+
+    JsonNode json = executeGetRequestWithVariables(query, variables);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEER), is(true));
+
+    Map<String, Object> beer = getNestedObject(data, BEER);
+    assertThat(beer.get(NAME), is("Beer 1"));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_forQueryStringWithMultipleQueriesAndOperationNameNotProvided() {
+    var query =
+        "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
+    var operationName = "";
+    JsonNode json = executeGetRequestWithOperationName(query, operationName);
+
+    assertThat(json.get("status")
+        .asInt(), is(400));
+    assertThat(json.get("detail")
+        .textValue(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_forEmptyQueryString() {
+    var query = "";
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.get("status")
+        .asInt(), is(400));
+    assertThat(json.get("detail")
+        .textValue(), is("400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_ifParameterNotProvidedInVariables() {
+    var query = "query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}";
+    var variables = "{\n" + "  \"\": \"\"\n" + "}";
+
+    JsonNode json = executeGetRequestWithVariables(query, variables);
+
+    assertThat(json.get("status")
+        .asInt(), is(400));
+    assertThat(json.get("detail")
+        .textValue(),
+        is("Missing value 'identifier' in variables '{\n" + "  \"\": \"\"\n" + "}', for parameter 'identifier'."));
+  }
+
+  @Test
+  void postRequestUsingContentTypeApplicationJson_returnsBeers_default() {
+    var body = "{\n" + "  \"query\": \"{beers{identifier_beer name}}\",\n" + "  \"operationName\": \"\",\n"
+        + "  \"variables\": {  }\n" + "}";
+
+    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEERS), is(true));
+
+    List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
+    assertThat(beers.size(), is(6));
+    assertThat(beers.get(0)
+        .get(NAME), is("Beer 1"));
+  }
+
+  @Test
+  void postRequestUsingContentTypeApplicationJson_returnsBeers_forQueryStringWithMultipleQueriesAndOperationName() {
+    var body = "{\n" + "  \"query\": \"query beerCollection{beers{identifier_beer name}}"
+        + "query breweryCollection{breweries{identifier_brewery name}}\",\n"
+        + "  \"operationName\": \"beerCollection\",\n" + "  \"variables\": {  }\n" + "}";
+
+    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEERS), is(true));
+
+    List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
+    assertThat(beers.size(), is(6));
+    assertThat(beers.get(0)
+        .get(NAME), is("Beer 1"));
+  }
+
+  @Test
+  void postRequestUsingContentTypeApplicationJson_returnsBeer_forParameterProvidedInVariables() {
+    var body =
+        "{\n" + "  \"query\": \"query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}\",\n"
+            + "  \"operationName\": \"\",\n" + "  \"variables\": {\n"
+            + "      \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "      }\n" + "}";
+
+    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEER), is(true));
+
+    Map<String, Object> beer = getNestedObject(data, BEER);
+    assertThat(beer.get(NAME), is("Beer 1"));
+  }
+
+  // TODO: paar fout siutaties voor post request
+
+  private JsonNode executeGetRequestDefault(String query) {
+    return executeGetRequest(query, "", "");
+  }
+
+  private JsonNode executeGetRequestWithOperationName(String query, String operationName) {
+    return executeGetRequest(query, operationName, "");
+  }
+
+  private JsonNode executeGetRequestWithVariables(String query, String variables) {
+    return executeGetRequest(query, "", variables);
+  }
+
+  private JsonNode executeGetRequest(String query, String operationName, String variables) {
+    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/");
+
+    if (!StringUtils.isBlank(query)) {
+      uriBuilder.queryParam("query", query);
+    }
+
+    if (!StringUtils.isBlank(operationName)) {
+      uriBuilder.queryParam("operationName", operationName);
+    }
+
+    if (!StringUtils.isBlank(variables)) {
+      uriBuilder.queryParam("variables", variables);
+    }
 
     var result = client.get()
         .uri(uriBuilder.build()
             .toUri())
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    return getJson(result);
+  }
+
+  private JsonNode executePostRequest(String body, String contentType) {
+    var result = client.post()
+        .uri("/graphql")
+        .header("content-type", contentType)
+        .body(BodyInserters.fromValue(body))
         .exchange()
         .expectBody(String.class)
         .returnResult()
