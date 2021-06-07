@@ -52,7 +52,8 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
 
     if (!validSortFields.contains(filterFieldName)) {
       throw new InvalidConfigurationException(
-          String.format("Filter field '%s' in object type '%s' can't be resolved.", filterFieldName, objectTypeName));
+          String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
+              filterFieldName, objectTypeName));
     }
   }
 

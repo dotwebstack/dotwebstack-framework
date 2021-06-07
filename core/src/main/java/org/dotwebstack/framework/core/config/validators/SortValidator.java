@@ -55,8 +55,9 @@ public class SortValidator implements DotWebStackConfigurationValidator {
     String sortableByFieldName = getSortableByFieldName(objectTypeName, sortableByConfiguration);
 
     if (!validSortFields.contains(sortableByFieldName)) {
-      throw new InvalidConfigurationException(String
-          .format("SortableBy field '%s' in object type '%s' can't be resolved.", sortableByFieldName, objectTypeName));
+      throw new InvalidConfigurationException(
+          String.format("Sort field '%s' in object type '%s' can't be resolved to a single scalar type.",
+              sortableByFieldName, objectTypeName));
     }
   }
 

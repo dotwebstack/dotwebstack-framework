@@ -30,7 +30,7 @@ class FilterValidatorTest {
     var exception =
         assertThrows(InvalidConfigurationException.class, () -> validator.validate(dotWebStackConfiguration));
 
-    assertThat(exception.getMessage(),
-        is("Filter field 'brewery.visitAddress.invalid' in object type 'Brewery' can't be resolved."));
+    assertThat(exception.getMessage(), is("Filter field 'brewery.visitAddress.invalid' in object type 'Brewery' "
+        + "can't be resolved to a single scalar type."));
   }
 }
