@@ -27,6 +27,8 @@ import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.jooq.DSLContext;
@@ -140,6 +142,60 @@ class SelectQueryBuilderTest {
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
             + "where \"t1\".\"nameColumn\" = 'Brewery X'"));
+  }
+
+  @Test
+  void buildCollectionRequest_returnsQuery_withSortCriteriaAscending() {
+    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
+
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var typeName = "Brewery";
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeName, scalarFields))
+        .sortCriterias(List.of(SortCriteria.builder()
+            .fieldPath(FieldPath.builder()
+                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
+                    .getField())
+                .build())
+            .direction(SortDirection.ASC)
+            .build()))
+        .build();
+
+    var result = selectQueryBuilder.build(collectionRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
+            + "order by \"t1\".\"name\" asc"));
+  }
+
+  @Test
+  void buildCollectionRequest_returnsQuery_withSortCriteriaDescending() {
+    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
+
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+
+    var typeName = "Brewery";
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(createObjectRequest(typeName, scalarFields))
+        .sortCriterias(List.of(SortCriteria.builder()
+            .fieldPath(FieldPath.builder()
+                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
+                    .getField())
+                .build())
+            .direction(SortDirection.DESC)
+            .build()))
+        .build();
+
+    var result = selectQueryBuilder.build(collectionRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
+            + "order by \"t1\".\"name\" desc"));
   }
 
   @Test
