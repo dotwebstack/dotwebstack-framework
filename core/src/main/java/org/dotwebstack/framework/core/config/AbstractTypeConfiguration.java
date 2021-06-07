@@ -54,6 +54,7 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
     return getField(fieldNames);
   }
 
+  @SuppressWarnings("unchecked")
   protected Optional<T> getField(String[] fieldNames) {
     T fieldConfiguration = null;
     if (fieldNames.length >= 1) {
@@ -68,7 +69,7 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
     return Optional.of(fieldConfiguration)
         .map(AbstractFieldConfiguration::getTypeConfiguration)
-        .flatMap(typeConfiguration -> getField(nestedFieldNames));
+        .flatMap(typeConfiguration -> ((AbstractTypeConfiguration<T>) typeConfiguration).getField(nestedFieldNames));
   }
 
   public KeyCondition getKeyCondition(String fieldName) {

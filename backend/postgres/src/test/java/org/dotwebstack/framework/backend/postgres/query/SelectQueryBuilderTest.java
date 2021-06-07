@@ -13,6 +13,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -63,18 +64,31 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
+    var typeConfiguration = mockTypeConfiguration("Brewery");
+
+    var keyConfiguration = new KeyConfiguration();
+    keyConfiguration.setField("identifier");
+
+    when(typeConfiguration.getKeys()).thenReturn(List.of(keyConfiguration));
+
+    var identifierFieldConfiguration = new PostgresFieldConfiguration();
+    identifierFieldConfiguration.setName("identifier");
+    identifierFieldConfiguration.setColumn("identifierColumn");
+
+    when(typeConfiguration.getFields()).thenReturn(Map.of("identifier", identifierFieldConfiguration));
+
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
 
-    var typeName = "Brewery";
-
     var collectionRequest = CollectionRequest.builder()
-        .objectRequest(createObjectRequest(typeName, scalarFields))
+        .objectRequest(createObjectRequest(typeConfiguration, scalarFields))
         .build();
 
     var result = selectQueryBuilder.build(collectionRequest);
 
     assertThat(result.getQuery()
-        .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t1\".\"identifierColumn\" as \"x2\"\n"
+            + "from \"breweryTable\" as \"t1\""));
   }
 
   @Test
@@ -488,6 +502,10 @@ class SelectQueryBuilderTest {
   private ObjectRequest createObjectRequest(String typeName, List<ScalarField> scalarFields) {
     TypeConfiguration<?> typeConfiguration = mockTypeConfiguration(typeName);
 
+    return createObjectRequest(typeConfiguration, scalarFields);
+  }
+
+  private ObjectRequest createObjectRequest(TypeConfiguration<?> typeConfiguration, List<ScalarField> scalarFields) {
     return ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
