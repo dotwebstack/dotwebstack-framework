@@ -568,7 +568,6 @@ public class SelectQueryBuilder {
                       .getName())
                   : fromTable.getName();
 
-          // TODO: getField().getColumn()
           Field<?> sortField = DSL.field(DSL.name(sortTable, sortCriteria.getFieldPath()
               .getLeaf()
               .getFieldConfiguration()

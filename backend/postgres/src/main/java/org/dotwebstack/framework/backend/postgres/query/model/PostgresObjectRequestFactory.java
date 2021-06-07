@@ -8,6 +8,9 @@ import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 
 public class PostgresObjectRequestFactory {
+
+  private PostgresObjectRequestFactory() {}
+
   public static PostgresObjectRequest create(ObjectRequest objectRequest) {
     return createPostgresObjectRequest(objectRequest);
   }

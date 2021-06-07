@@ -54,21 +54,21 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
     return getField(fieldNames);
   }
 
-  @SuppressWarnings("unchecked")
   protected Optional<T> getField(String[] fieldNames) {
     T fieldConfiguration = null;
     if (fieldNames.length >= 1) {
       fieldConfiguration = fields.get(fieldNames[0]);
-      // TODO: check if fieldconfig exists?
-      // if(fieldConfiguration == null) {
-      // throw IllegalStateException("Filter '{}' doesn't match existing field!", filterName);
-      // }
       fieldNames = Arrays.copyOfRange(fieldNames, 1, fieldNames.length);
     }
     if (fieldNames.length == 0) {
       return Optional.ofNullable(fieldConfiguration);
     }
-    return ((AbstractTypeConfiguration<T>) fieldConfiguration.getTypeConfiguration()).getField(fieldNames);
+
+    final String[] nestedFieldNames = fieldNames;
+
+    return Optional.of(fieldConfiguration)
+        .map(AbstractFieldConfiguration::getTypeConfiguration)
+        .flatMap(typeConfiguration -> getField(nestedFieldNames));
   }
 
   public KeyCondition getKeyCondition(String fieldName) {

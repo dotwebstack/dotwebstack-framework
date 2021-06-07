@@ -162,11 +162,9 @@ public class RequestFactory {
               .equals(orderEnumName))
           .findFirst();
 
-      List<SortCriteria> sortCriterias = sortableByConfigurationKey.map(key -> typeConfiguration.getSortCriterias()
+      return sortableByConfigurationKey.map(key -> typeConfiguration.getSortCriterias()
           .get(key))
           .orElseThrow(() -> illegalStateException("No sortCriterias found for enum '{}'", orderEnumName));
-
-      return sortCriterias;
     }
 
     return List.of();

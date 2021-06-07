@@ -90,8 +90,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             .map(sortableByConfiguration -> createSortCriteria(dotWebStackConfiguration, sortableByConfiguration))
             .collect(Collectors.toList())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    System.out.println();
   }
 
   private SortCriteria createSortCriteria(DotWebStackConfiguration dotWebStackConfiguration,

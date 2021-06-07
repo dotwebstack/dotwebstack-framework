@@ -29,15 +29,14 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
       case SpatialConstants.INTERSECTS:
       case SpatialConstants.CONTAINS:
       case SpatialConstants.WITHIN:
-        return createGeometryFilterCriteria(fieldPath, fieldConfiguration, filterItem);
+        return createGeometryFilterCriteria(fieldPath, filterItem);
       default:
         return super.createFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private GeometryFilterCriteria createGeometryFilterCriteria(FieldPath fieldPath,
-      FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private GeometryFilterCriteria createGeometryFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof Map)) {
       throw illegalArgumentException("Filter item value not of type Map!");
     }

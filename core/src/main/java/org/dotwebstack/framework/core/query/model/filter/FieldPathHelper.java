@@ -10,6 +10,8 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 
 public class FieldPathHelper {
 
+  private FieldPathHelper() {}
+
   public static FieldPath createFieldPath(DotWebStackConfiguration dotWebStackConfiguration,
       TypeConfiguration<?> typeConfiguration, String fieldPath) {
     return createFieldPath(typeConfiguration, fieldPath, abstractFieldConfiguration -> dotWebStackConfiguration
@@ -22,8 +24,8 @@ public class FieldPathHelper {
 
   public static FieldPath createFieldPath(TypeConfiguration<?> typeConfiguration, String fieldPath,
       Function<AbstractFieldConfiguration, TypeConfiguration<?>> typeProvider) {
-    String field = StringUtils.substringBefore(fieldPath, ".");
-    String rest = StringUtils.substringAfter(fieldPath, ".");
+    var field = StringUtils.substringBefore(fieldPath, ".");
+    var rest = StringUtils.substringAfter(fieldPath, ".");
 
     return typeConfiguration.getField(field)
         .map(fieldConfiguration -> {
