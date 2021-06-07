@@ -155,7 +155,7 @@ public class RequestFactory {
       String orderEnumName = (String) environment.getArguments()
           .get(argument.getName());
 
-      Optional<String> sortableByConfigurationKey = typeConfiguration.getSortableBy()
+      Optional<String> sortableByConfigurationKey = typeConfiguration.getSortCriterias()
           .keySet()
           .stream()
           .filter(key -> key.toUpperCase()
@@ -228,9 +228,7 @@ public class RequestFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
-        .filter(argument ->
-        // TODO: fix sort constant
-        !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
+        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
             && !Objects.equals(argument.getKey(), SortConstants.SORT_ARGUMENT_NAME))
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
