@@ -12,7 +12,6 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,8 +46,6 @@ class GraphqlController {
       @RequestParam(value = OPERATION_NAME, required = false) String operationName,
       @RequestParam(value = VARIABLES, required = false) String variablesJson) {
 
-    validateValueIsPresentForParameter(query, variablesJson);
-
     Map<String, Object> variablesMap = convertVariablesJson(variablesJson);
 
     var executionInput = getExecutionInput(query, operationName, variablesMap);
@@ -63,18 +60,13 @@ class GraphqlController {
   public Mono<Map<String, Object>> handlePost(@RequestBody Map<String, Object> requestBody) {
 
     if (!requestBody.containsKey(QUERY)) {
-      throw ExceptionHelper.illegalArgumentException("Required parameter 'query' is not present.");
+      throw illegalArgumentException("Required parameter 'query' is not present.");
     }
 
     if (StringUtils.isBlank(requestBody.get(QUERY)
         .toString())) {
-      throw ExceptionHelper.illegalArgumentException("Required parameter 'query' can not be empty.");
+      throw illegalArgumentException("Required parameter 'query' can not be empty.");
     }
-
-    validateValueIsPresentForParameter(requestBody.get(QUERY)
-        .toString(),
-        requestBody.get(VARIABLES)
-            .toString());
 
     var executionInput = getExecutionInput(requestBody);
 
@@ -90,17 +82,6 @@ class GraphqlController {
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
         .map(ExecutionResult::toSpecification);
-  }
-
-  // TODO: What if multiple parameters provided?
-  private void validateValueIsPresentForParameter(String query, String variablesJson) {
-    if (query.contains("$")) {
-      var parameterName = query.substring(query.indexOf('$') + 1, query.indexOf(":"));
-      if (!variablesJson.contains(parameterName)) {
-        throw illegalArgumentException(String.format("Missing value '%s' in variables '%s', for parameter '%s'.",
-            parameterName, variablesJson, parameterName));
-      }
-    }
   }
 
   @SuppressWarnings("unchecked")

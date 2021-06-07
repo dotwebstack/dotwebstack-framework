@@ -1043,11 +1043,12 @@ class GraphQlPostgresIntegrationTest {
 
     JsonNode json = executeGetRequestWithVariables(query, variables);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(),
-        is("Missing value 'identifier' in variables '{\n" + "  \"\": \"\"\n" + "}', for parameter 'identifier'."));
+    assertThat(json.has(ERRORS), is(true));
+
+    assertThat(json.get(ERRORS)
+        .get(0)
+        .get("message")
+        .textValue(), is("Variable 'identifier' has coerced Null value for NonNull type 'ID!'"));
   }
 
   @Test
@@ -1120,12 +1121,12 @@ class GraphQlPostgresIntegrationTest {
 
     JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(),
-        is("Missing value 'identifier' in variables '{otherVariableName=otherVariableValue}', "
-            + "for parameter 'identifier'."));
+    assertThat(json.has(ERRORS), is(true));
+
+    assertThat(json.get(ERRORS)
+        .get(0)
+        .get("message")
+        .textValue(), is("Variable 'identifier' has coerced Null value for NonNull type 'ID!'"));
   }
 
   @Test

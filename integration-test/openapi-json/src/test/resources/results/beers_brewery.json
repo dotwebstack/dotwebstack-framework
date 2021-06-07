@@ -5,7 +5,6 @@
         "identifier": "1",
         "brewery": {
           "identifier": "3",
-          "localName": null,
           "beerCount": 3,
           "founded": "2014-05-03",
           "name": "De Brouwerij",
@@ -24,7 +23,6 @@
         "identifier": "2",
         "brewery": {
           "identifier": "3",
-          "localName": null,
           "beerCount": 3,
           "founded": "2014-05-03",
           "name": "De Brouwerij",
@@ -43,7 +41,6 @@
         "identifier": "3",
         "brewery": {
           "identifier": "4",
-          "localName": null,
           "beerCount": 3,
           "founded": "2015-05-03",
           "name": "Das Bier",

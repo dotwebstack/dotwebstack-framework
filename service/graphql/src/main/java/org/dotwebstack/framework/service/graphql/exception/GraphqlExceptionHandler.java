@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ServerWebExchange;
 import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 import org.zalando.problem.ThrowableProblem;
 import org.zalando.problem.spring.webflux.advice.ProblemHandling;
 import reactor.core.publisher.Mono;
@@ -18,26 +19,29 @@ import reactor.core.publisher.Mono;
 public class GraphqlExceptionHandler implements ProblemHandling {
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public Mono<ResponseEntity<Problem>> handleIllegalArgumentException(Exception exception, ServerWebExchange request) {
+  public Mono<ResponseEntity<Problem>> handleIllegalArgumentException(IllegalArgumentException exception,
+      ServerWebExchange request) {
     LOG.error(exception.getMessage());
 
-    ThrowableProblem problem = Problem.builder()
-        .withStatus(BAD_REQUEST)
-        .withDetail(exception.getMessage())
-        .build();
+    var problem = getThrowableProblem(BAD_REQUEST, exception.getMessage());
 
     return create(problem, request);
   }
 
   @ExceptionHandler(UnknownOperationException.class)
-  public Mono<ResponseEntity<Problem>> handleUnknownOperationException(Exception exception, ServerWebExchange request) {
+  public Mono<ResponseEntity<Problem>> handleUnknownOperationException(UnknownOperationException exception,
+      ServerWebExchange request) {
     LOG.error(exception.getMessage());
 
-    ThrowableProblem problem = Problem.builder()
-        .withStatus(BAD_REQUEST)
-        .withDetail(exception.getMessage())
-        .build();
+    var problem = getThrowableProblem(BAD_REQUEST, exception.getMessage());
 
     return create(problem, request);
+  }
+
+  private ThrowableProblem getThrowableProblem(Status status, String message) {
+    return Problem.builder()
+        .withStatus(status)
+        .withDetail(message)
+        .build();
   }
 }
