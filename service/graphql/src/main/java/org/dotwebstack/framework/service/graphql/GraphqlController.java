@@ -46,6 +46,10 @@ class GraphqlController {
       @RequestParam(value = OPERATION_NAME, required = false) String operationName,
       @RequestParam(value = VARIABLES, required = false) String variablesJson) {
 
+    if (operationName != null) {
+      validateOperationNameIsNotEmptyString(operationName);
+    }
+
     Map<String, Object> variablesMap = convertVariablesJson(variablesJson);
 
     var executionInput = getExecutionInput(query, operationName, variablesMap);
@@ -55,8 +59,7 @@ class GraphqlController {
   }
 
   @CrossOrigin
-  @PostMapping(value = "/graphql", consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<Map<String, Object>> handlePost(@RequestBody Map<String, Object> requestBody) {
 
     if (!requestBody.containsKey(QUERY)) {
@@ -68,6 +71,11 @@ class GraphqlController {
       throw illegalArgumentException("Required parameter 'query' can not be empty.");
     }
 
+    if (requestBody.containsKey(OPERATION_NAME)) {
+      validateOperationNameIsNotEmptyString(requestBody.get(OPERATION_NAME)
+          .toString());
+    }
+
     var executionInput = getExecutionInput(requestBody);
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
@@ -75,13 +83,19 @@ class GraphqlController {
   }
 
   @CrossOrigin
-  @PostMapping(value = "/graphql", consumes = "application/graphql", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/", consumes = "application/graphql", produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<Map<String, Object>> handlePost(@RequestBody(required = false) String body) {
 
     var executionInput = getExecutionInput(body, null, Map.of());
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
         .map(ExecutionResult::toSpecification);
+  }
+
+  private void validateOperationNameIsNotEmptyString(String operationName) {
+    if (operationName.equals("")) {
+      throw illegalArgumentException("Must provide operation name if query contains multiple operations.");
+    }
   }
 
   @SuppressWarnings("unchecked")

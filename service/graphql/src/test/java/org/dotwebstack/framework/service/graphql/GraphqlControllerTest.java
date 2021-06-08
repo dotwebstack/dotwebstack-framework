@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import graphql.ExecutionInput;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
+import graphql.execution.UnknownOperationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -74,8 +75,33 @@ class GraphqlControllerTest {
   }
 
   @Test
+  void handleGet_shouldThrowException_whenOperationNameIsEmptyString() {
+    var query =
+        "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
+
+    Throwable throwable =
+        assertThrows(IllegalArgumentException.class, () -> graphqlController.handleGet(query, "", null));
+
+    assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
+  void handleGet_shouldThrowException_forMultipleOperationsNameAndOperationNotProvided() {
+    var query =
+        "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
+
+    var exception = new UnknownOperationException("Must provide operation name if query contains multiple operations.");
+    when(graphQL.executeAsync(any(ExecutionInput.class))).thenThrow(exception);
+
+    Throwable throwable =
+        assertThrows(UnknownOperationException.class, () -> graphqlController.handleGet(query, null, null));
+
+    assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
   void handlePost_shouldReturnMono_applicationJson() {
-    var body = Map.of("query", "{beers{identifier_beer name}}", "operationName", "", "variables", Map.of());
+    var body = Map.of("query", "{beers{identifier_beer name}}", "variables", Map.of());
 
     ExecutionResultImpl executionResult = ExecutionResultImpl.newExecutionResult()
         .data(Map.of("beers",
@@ -149,6 +175,32 @@ class GraphqlControllerTest {
     Throwable throwable = assertThrows(IllegalArgumentException.class, () -> graphqlController.handlePost(body));
 
     assertThat(throwable.getMessage(), is("Required parameter 'query' can not be empty."));
+  }
+
+  @Test
+  void handlePost_shouldThrowException_whenOperationNameIsEmptyString() {
+    var body = Map.of("query",
+        "query beerCollection{beers{identifier_beer name}} "
+            + "query breweryCollection{breweries{identifier_brewery name}}",
+        "operationName", "", "variables", Map.of());
+
+    Throwable throwable = assertThrows(IllegalArgumentException.class, () -> graphqlController.handlePost(body));
+
+    assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
+  void handlePost_shouldThrowException_whenOperationNameIsNotProvided() {
+    var body = Map.of("query",
+        "query beerCollection {beers{identifier_beer name}} query breweryCollection {breweries{identifier_brewery}}",
+        "variables", Map.of());
+
+    var exception = new UnknownOperationException("Must provide operation name if query contains multiple operations.");
+    when(graphQL.executeAsync(any(ExecutionInput.class))).thenThrow(exception);
+
+    Throwable throwable = assertThrows(UnknownOperationException.class, () -> graphqlController.handlePost(body));
+
+    assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
   }
 
   @SuppressWarnings("unchecked")

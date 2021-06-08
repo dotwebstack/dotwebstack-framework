@@ -1016,6 +1016,19 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsProblemJson_forQueryStringWithMultipleQueriesAndOperationNameNotProvided() {
     var query =
         "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.get("status")
+        .asInt(), is(400));
+    assertThat(json.get("detail")
+        .textValue(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_forQueryStringWithMultipleQueriesAndOperationNameIsEmptyString() {
+    var query =
+        "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
     var operationName = "";
     JsonNode json = executeGetRequestWithOperationName(query, operationName);
 
@@ -1053,8 +1066,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void postRequestUsingContentTypeApplicationJson_returnsBeers_default() {
-    var body = "{\n" + "  \"query\": \"{beers{identifier_beer name}}\",\n" + "  \"operationName\": \"\",\n"
-        + "  \"variables\": {  }\n" + "}";
+    var body = "{\n" + "  \"query\": \"{beers{identifier_beer name}}\",\n" + "  \"variables\": {  }\n" + "}";
 
     JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
 
@@ -1096,8 +1108,8 @@ class GraphQlPostgresIntegrationTest {
   void postRequestUsingContentTypeApplicationJson_returnsBeer_forParameterProvidedInVariables() {
     var body =
         "{\n" + "  \"query\": \"query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}\",\n"
-            + "  \"operationName\": \"\",\n" + "  \"variables\": {\n"
-            + "      \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "      }\n" + "}";
+            + "  \"variables\": {\n" + "      \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "      }\n"
+            + "}";
 
     JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
 
@@ -1116,8 +1128,7 @@ class GraphQlPostgresIntegrationTest {
   void postRequest_returnsProblemJson_ifParameterNotProvidedInVariables() {
     var body =
         "{\n" + "  \"query\": \"query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}\",\n"
-            + "  \"operationName\": \"\",\n" + "  \"variables\": {\n"
-            + "      \"otherVariableName\": \"otherVariableValue\"\n" + "      }\n" + "}";
+            + "  \"variables\": {\n" + "      \"otherVariableName\": \"otherVariableValue\"\n" + "      }\n" + "}";
 
     JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
 
@@ -1206,7 +1217,7 @@ class GraphQlPostgresIntegrationTest {
 
   private JsonNode executePostRequest(String body, String contentType) {
     var result = client.post()
-        .uri("/graphql")
+        .uri("/")
         .header("content-type", contentType)
         .body(BodyInserters.fromValue(body))
         .exchange()
