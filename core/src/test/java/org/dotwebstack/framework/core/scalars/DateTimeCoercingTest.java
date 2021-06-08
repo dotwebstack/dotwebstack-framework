@@ -72,7 +72,8 @@ class DateTimeCoercingTest {
 
   @Test
   void parseLiteral_ReturnsDateTime_ForNowLiteral() {
-    OffsetDateTime dateTime = coercing.parseLiteral(new StringValue("NOW"));
+    OffsetDateTime dateTime = coercing.parseLiteral(new StringValue("NOW"))
+        .get();
 
     assertThat(dateTime.getYear(), equalTo(OffsetDateTime.now()
         .getYear()));
@@ -85,7 +86,8 @@ class DateTimeCoercingTest {
   @Test
   void parseLiteral_ReturnsDateTime_ForOffsetDateTime() {
     OffsetDateTime dateTime = coercing.parseLiteral(new StringValue(OffsetDateTime.now()
-        .toString()));
+        .toString()))
+        .get();
 
     assertThat(dateTime.getYear(), equalTo(OffsetDateTime.now()
         .getYear()));

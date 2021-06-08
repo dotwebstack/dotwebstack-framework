@@ -83,7 +83,8 @@ class DateCoercingTest {
 
   @Test
   void parseLiteral_ReturnsDateTime_ForNowLiteral() {
-    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"));
+    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"))
+        .get();
 
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));
@@ -96,7 +97,8 @@ class DateCoercingTest {
   @Test
   void parseLiteral_ReturnsDateTime_ForLocalDateNow() {
     LocalDate localDate = coercing.parseLiteral(new StringValue(LocalDate.now()
-        .toString()));
+        .toString()))
+        .get();
 
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));
