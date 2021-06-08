@@ -76,6 +76,14 @@ class DateCoercingTest {
   }
 
   @Test
+  void parseValue_ReturnsDate_ForValidDateString() { // NOSONAR
+    LocalDate date = coercing.parseValue("2018-05-30")
+        .get();
+
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
+  }
+
+  @Test
   void parseLiteral_ThrowsException() {
     var value = new Object();
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
