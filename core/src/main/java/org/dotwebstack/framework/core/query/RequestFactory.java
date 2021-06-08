@@ -14,17 +14,19 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
@@ -35,7 +37,10 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarField;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +58,8 @@ public class RequestFactory {
 
     var collectionQueryBuilder = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
-        .filterCriterias(createFilterCriterias(typeConfiguration, environment));
+        .filterCriterias(createFilterCriterias(typeConfiguration, environment))
+        .sortCriterias(createSortCriterias(typeConfiguration, environment));
     if (addLimit) {
       collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
           .page(0)
@@ -82,7 +88,7 @@ public class RequestFactory {
   public ObjectRequest createObjectRequest(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
-    List<FieldConfiguration> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
+    List<ScalarField> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
     List<NestedObjectFieldConfiguration> nestedObjectFields =
         getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
@@ -130,6 +136,35 @@ public class RequestFactory {
               .parse(typeConfiguration, inputObjectField, data)
               .stream())
           .collect(Collectors.toList());
+    }
+
+    return List.of();
+  }
+
+  private List<SortCriteria> createSortCriterias(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    Optional<GraphQLArgument> sortArgument = environment.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .filter(argument -> Objects.equals(argument.getName(), SortConstants.SORT_ARGUMENT_NAME))
+        .findFirst();
+
+    if (sortArgument.isPresent()) {
+      GraphQLArgument argument = sortArgument.get();
+
+      String orderEnumName = (String) environment.getArguments()
+          .get(argument.getName());
+
+      Optional<String> sortableByConfigurationKey = typeConfiguration.getSortCriterias()
+          .keySet()
+          .stream()
+          .filter(key -> key.toUpperCase()
+              .equals(orderEnumName))
+          .findFirst();
+
+      return sortableByConfigurationKey.map(key -> typeConfiguration.getSortCriterias()
+          .get(key))
+          .orElseThrow(() -> illegalStateException("No sortCriterias found for enum '{}'", orderEnumName));
     }
 
     return List.of();
@@ -193,19 +228,24 @@ public class RequestFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
-        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME))
+        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
+            && !Objects.equals(argument.getKey(), SortConstants.SORT_ARGUMENT_NAME))
         .map(entry -> KeyCriteria.builder()
-            .values(environment.getArguments())
+            .values(Map.of(entry.getKey(), entry.getValue()))
             .build())
         .collect(Collectors.toList());
   }
 
-  private List<FieldConfiguration> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+  private List<ScalarField> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
     return getSelectedFields(fieldPathPrefix, environment).stream()
         .map(selectedField -> typeConfiguration.getFields()
             .get(selectedField.getName()))
         .filter(AbstractFieldConfiguration::isScalarField)
+        .map(field -> ScalarField.builder()
+            .field(field)
+            .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+            .build())
         .collect(Collectors.toList());
   }
 

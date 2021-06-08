@@ -14,6 +14,8 @@ import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 
@@ -24,29 +26,33 @@ public abstract class OperatorFilterCriteriaParser extends AbstractFilterCriteri
       Map<String, Object> data) {
     return getFilter(typeConfiguration, inputObjectField, data).stream()
         .flatMap(filter -> getFilterItems(filter).stream())
-        .map(filterItem -> createFilterCriteria(getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
+        .map(filterItem -> createFilterCriteria(
+            FieldPathHelper.createFieldPath(typeConfiguration, getFieldPath(typeConfiguration, inputObjectField)),
+            getFieldConfiguration(typeConfiguration, inputObjectField), filterItem))
         .collect(Collectors.toList());
   }
 
-  protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     if (FilterConstants.NOT_FIELD.equals(filterItem.getOperator())) {
-      return createNotFilterCriteria(fieldConfiguration, filterItem);
+      return createNotFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
     throw unsupportedOperationException("Filter operator '{}' is not supported!", filterItem.getOperator());
   }
 
-  private FilterCriteria createNotFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createNotFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     FilterCriteria innerCriteria;
     if (filterItem.getChildren()
         .size() > 1) {
       innerCriteria = AndFilterCriteria.builder()
           .filterCriterias(filterItem.getChildren()
               .stream()
-              .map(innerFilterItem -> createFilterCriteria(fieldConfiguration, innerFilterItem))
+              .map(innerFilterItem -> createFilterCriteria(fieldPath, fieldConfiguration, innerFilterItem))
               .collect(Collectors.toList()))
           .build();
     } else {
-      innerCriteria = createFilterCriteria(fieldConfiguration, filterItem.getChildren()
+      innerCriteria = createFilterCriteria(fieldPath, fieldConfiguration, filterItem.getChildren()
           .get(0));
     }
 

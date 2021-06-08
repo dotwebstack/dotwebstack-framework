@@ -7,6 +7,7 @@ import graphql.schema.GraphQLInputObjectField;
 import java.util.List;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenFilterCriteria;
@@ -28,69 +29,68 @@ public class CoreFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @Override
-  protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case FilterConstants.EQ_FIELD:
-        return createEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createEqualsFilterCriteria(fieldPath, filterItem);
       case FilterConstants.LT_FIELD:
-        return createLowerThenFilterCriteria(fieldConfiguration, filterItem);
+        return createLowerThenFilterCriteria(fieldPath, filterItem);
       case FilterConstants.LTE_FIELD:
-        return createLowerThenEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createLowerThenEqualsFilterCriteria(fieldPath, filterItem);
       case FilterConstants.GT_FIELD:
-        return createGreaterThenFilterCriteria(fieldConfiguration, filterItem);
+        return createGreaterThenFilterCriteria(fieldPath, filterItem);
       case FilterConstants.GTE_FIELD:
-        return createGreaterThenEqualsFilterCriteria(fieldConfiguration, filterItem);
+        return createGreaterThenEqualsFilterCriteria(fieldPath, filterItem);
       case FilterConstants.IN_FIELD:
-        return createInFilterCriteria(fieldConfiguration, filterItem);
+        return createInFilterCriteria(fieldPath, filterItem);
       default:
-        return super.createFilterCriteria(fieldConfiguration, filterItem);
+        return super.createFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
   }
 
-  private FilterCriteria createLowerThenFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createLowerThenFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     return LowerThenFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createLowerThenEqualsFilterCriteria(FieldConfiguration fieldConfiguration,
-      FilterItem filterItem) {
+  private FilterCriteria createLowerThenEqualsFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     return LowerThenEqualsFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createGreaterThenFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     return GreaterThenFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createGreaterThenEqualsFilterCriteria(FieldConfiguration fieldConfiguration,
-      FilterItem filterItem) {
+  private FilterCriteria createGreaterThenEqualsFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     return GreaterThenEqualsFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createEqualsFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createEqualsFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     return EqualsFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .value(filterItem.getValue())
         .build();
   }
 
-  private FilterCriteria createInFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  private FilterCriteria createInFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof List)) {
       throw illegalArgumentException("Filter item value not of type List!");
     }
 
     return InFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .values((List<?>) filterItem.getValue())
         .build();
   }

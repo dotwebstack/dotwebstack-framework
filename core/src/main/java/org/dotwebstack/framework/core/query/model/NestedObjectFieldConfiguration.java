@@ -10,5 +10,5 @@ import org.dotwebstack.framework.core.config.FieldConfiguration;
 public class NestedObjectFieldConfiguration {
   private final FieldConfiguration field;
 
-  private final List<FieldConfiguration> scalarFields;
+  private final List<ScalarField> scalarFields;
 }

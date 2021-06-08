@@ -21,13 +21,12 @@ public final class FilterHelper {
       fieldName = filterName;
     }
 
-    if (!typeConfiguration.getFields()
-        .containsKey(fieldName)) {
+    var typeConfigurationForField = typeConfiguration.getField(fieldName);
+    if (typeConfigurationForField.isEmpty()) {
       throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
     }
 
-    String type = typeConfiguration.getFields()
-        .get(fieldName)
+    var type = typeConfigurationForField.get()
         .getType();
 
     return getTypeNameForFilter(fieldFilterMap, type);

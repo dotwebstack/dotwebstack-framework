@@ -25,13 +25,20 @@ public final class FilterConditionHelper {
 
   private FilterConditionHelper() {}
 
-  public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias, Table<?> fromTable) {
+  public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias,
+      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
     return filterCriterias.stream()
-        .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable))
+        .map(filterCriteria -> {
+          var filterTable =
+              filterCriteria.isNestedFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()
+                  .getFieldConfiguration()
+                  .getName()) : fromTable.getName();
+          return createFilterCondition(filterCriteria, filterTable);
+        })
         .collect(Collectors.toList());
   }
 
-  private static Condition createFilterCondition(FilterCriteria filterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(FilterCriteria filterCriteria, String fromTable) {
     if (filterCriteria instanceof EqualsFilterCriteria) {
       return createFilterCondition((EqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof NotFilterCriteria) {
@@ -56,7 +63,7 @@ public final class FilterConditionHelper {
         .getName());
   }
 
-  private static Condition createFilterCondition(AndFilterCriteria andFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(AndFilterCriteria andFilterCriteria, String fromTable) {
     var innerConditions = andFilterCriteria.getFilterCriterias()
         .stream()
         .map(innerCriteria -> createFilterCondition(innerCriteria, fromTable))
@@ -65,7 +72,7 @@ public final class FilterConditionHelper {
     return DSL.and(innerConditions);
   }
 
-  private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, String fromTable) {
     Field<Object> field = getField(geometryFilterCriteria, fromTable);
 
     Field<?> geofilterField =
@@ -84,54 +91,56 @@ public final class FilterConditionHelper {
     }
   }
 
-  private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, String fromTable) {
     Field<Object> field = getField(equalsFilterCriteria, fromTable);
 
     return field.eq(equalsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(NotFilterCriteria notFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(NotFilterCriteria notFilterCriteria, String fromTable) {
     var innerCondition = createFilterCondition(notFilterCriteria.getFilterCriteria(), fromTable);
 
     return DSL.not(innerCondition);
   }
 
   private static Condition createFilterCondition(GreaterThenFilterCriteria greaterThenFilterCriteria,
-      Table<?> fromTable) {
+      String fromTable) {
     Field<Object> field = getField(greaterThenFilterCriteria, fromTable);
 
     return field.gt(greaterThenFilterCriteria.getValue());
   }
 
   private static Condition createFilterCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria,
-      Table<?> fromTable) {
+      String fromTable) {
     Field<Object> field = getField(greaterThenEqualsFilterCriteria, fromTable);
 
     return field.ge(greaterThenEqualsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(LowerThenFilterCriteria lowerThenFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(LowerThenFilterCriteria lowerThenFilterCriteria, String fromTable) {
     Field<Object> field = getField(lowerThenFilterCriteria, fromTable);
 
     return field.lt(lowerThenFilterCriteria.getValue());
   }
 
   private static Condition createFilterCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria,
-      Table<?> fromTable) {
+      String fromTable) {
     Field<Object> field = getField(lowerThenEqualsFilterCriteria, fromTable);
 
     return field.le(lowerThenEqualsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(InFilterCriteria inFilterCriteria, Table<?> fromTable) {
+  private static Condition createFilterCondition(InFilterCriteria inFilterCriteria, String fromTable) {
     Field<Object> field = getField(inFilterCriteria, fromTable);
 
     return field.in(inFilterCriteria.getValues());
   }
 
-  private static Field<Object> getField(FilterCriteria filterCriteria, Table<?> fromTable) {
-    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getField();
+  private static Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
+    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getFieldPath()
+        .getLeaf()
+        .getFieldConfiguration();
 
-    return DSL.field(DSL.name(fromTable.getName(), postgresFieldConfiguration.getColumn()));
+    return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
   }
 }

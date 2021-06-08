@@ -89,6 +89,18 @@ objectTypes:
       sinceDate:
         field: since
       lastBrewed: {}
+      breweryCity:
+        field: brewery.visitAddress.city
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      nameDesc:
+        - field: name
+          direction: DESC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
 
   Ingredient:
     backend: postgres
@@ -158,6 +170,10 @@ objectTypes:
       multinational:
         field: multinational
       geometry: {}
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
 
   Address:
     backend: postgres

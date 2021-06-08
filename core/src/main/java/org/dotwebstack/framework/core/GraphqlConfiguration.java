@@ -25,8 +25,7 @@ import org.springframework.context.annotation.Profile;
 public class GraphqlConfiguration {
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
-      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<SchemaValidator> schemaValidators,
-      @NonNull List<WiringFactory> wiringFactories) {
+      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories) {
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
@@ -34,8 +33,6 @@ public class GraphqlConfiguration {
 
     graphqlConfigurers
         .forEach(graphqlConfigurer -> graphqlConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry));
-
-    schemaValidators.forEach(SchemaValidator::validate);
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }

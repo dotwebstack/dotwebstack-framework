@@ -24,10 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -47,9 +50,13 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
           PostgresFieldConfiguration fieldConfiguration =
               fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
 
-          if (fieldConfiguration.getColumn() == null && fieldConfiguration.isScalar()) {
-            String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
-            fieldConfiguration.setColumn(columnName);
+          if (fieldConfiguration.isScalar()) {
+            fieldConfiguration.setTypeConfiguration(this);
+
+            if (fieldConfiguration.getColumn() == null) {
+              String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
+              fieldConfiguration.setColumn(columnName);
+            }
           }
 
           if (TypeHelper.isNumericType(fieldDefinition.getType())) {
@@ -67,10 +74,30 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
     initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
+
+    initSortCriterias(dotWebStackConfiguration);
+
     initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
-    postFieldProcessing();
     initKeyFields();
+  }
+
+  private void initSortCriterias(DotWebStackConfiguration dotWebStackConfiguration) {
+    sortCriterias = sortableBy.entrySet()
+        .stream()
+        .map(entry -> Map.entry(entry.getKey(), entry.getValue()
+            .stream()
+            .map(sortableByConfiguration -> createSortCriteria(dotWebStackConfiguration, sortableByConfiguration))
+            .collect(Collectors.toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private SortCriteria createSortCriteria(DotWebStackConfiguration dotWebStackConfiguration,
+      SortableByConfiguration sortableByConfiguration) {
+    return SortCriteria.builder()
+        .fieldPath(FieldPathHelper.createFieldPath(dotWebStackConfiguration, this, sortableByConfiguration.getField()))
+        .direction(sortableByConfiguration.getDirection())
+        .build();
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
@@ -258,6 +285,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
     var postgresFieldConfiguration = new PostgresFieldConfiguration();
     postgresFieldConfiguration.setColumn(column);
+    postgresFieldConfiguration.setName(column);
     return postgresFieldConfiguration;
   }
 

@@ -2,32 +2,39 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.Origin;
+import org.dotwebstack.framework.core.query.model.ScalarField;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.RowN;
 import org.jooq.SelectQuery;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
@@ -55,10 +62,19 @@ public class SelectQueryBuilder {
     var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable())
         .as(objectSelectContext.newTableAlias());
 
-    var selectQuery = buildQuery(objectSelectContext, objectRequest, fromTable);
+    var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
+    postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
+    postgresObjectRequest.addSortCriteria(collectionRequest.getSortCriterias());
+
+    var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
-      createFilterConditions(collectionRequest.getFilterCriterias(), fromTable).forEach(selectQuery::addConditions);
+      createFilterConditions(collectionRequest.getFilterCriterias(), objectSelectContext, fromTable)
+          .forEach(selectQuery::addConditions);
+    }
+    if (!CollectionUtils.isEmpty(collectionRequest.getSortCriterias())) {
+      createSortConditions(collectionRequest.getSortCriterias(), objectSelectContext, fromTable)
+          .forEach(selectQuery::addOrderBy);
     }
 
     if (collectionRequest.getPagingCriteria() != null) {
@@ -205,7 +221,7 @@ public class SelectQueryBuilder {
     return keyValuesPerKeyIdentifier;
   }
 
-  private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<FieldConfiguration> scalarFields,
+  private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<ScalarField> scalarFields,
       ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> table) {
 
     var keyFieldAdded = new AtomicBoolean(false);
@@ -217,25 +233,39 @@ public class SelectQueryBuilder {
       var name = typeConfiguration.getKeys()
           .get(0)
           .getField();
-      addScalarField(typeConfiguration.getFields()
-          .get(name), objectSelectContext, query, table, keyFieldAdded);
+      var fieldConfiguration = typeConfiguration.getFields()
+          .get(name);
+      var scalarField = ScalarField.builder()
+          .field(fieldConfiguration)
+          .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+          .build();
+
+      addScalarField(scalarField, objectSelectContext, query, table, keyFieldAdded);
     }
   }
 
-  private void addScalarField(FieldConfiguration scalarField, ObjectSelectContext objectSelectContext,
-      SelectQuery<?> query, Table<?> table, AtomicBoolean keyFieldAdded) {
-    var columnAlias = objectSelectContext.newSelectAlias();
-    var column = Objects.requireNonNull(table.field(((PostgresFieldConfiguration) scalarField).getColumn()))
-        .as(columnAlias);
-    objectSelectContext.getAssembleFns()
-        .put(scalarField.getName(), row -> row.get(column.getName()));
+  private void addScalarField(ScalarField scalarField, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
+      Table<?> table, AtomicBoolean keyFieldAdded) {
+    var scalarFieldConfiguration = (PostgresFieldConfiguration) scalarField.getField();
+    var column = Objects.requireNonNull(table.field((scalarFieldConfiguration.getColumn())));
 
-    if (((AbstractFieldConfiguration) scalarField).isKeyField()) {
-      keyFieldAdded.set(true);
-      objectSelectContext.getCheckNullAlias()
-          .set(columnAlias);
+    if (scalarField.hasOrigin(Origin.REQUESTED)) {
+      var columnAlias = objectSelectContext.newSelectAlias();
+      var aliasedColumn = column.as(columnAlias);
+      objectSelectContext.getAssembleFns()
+          .put(scalarField.getName(), row -> row.get(aliasedColumn.getName()));
+
+      if (scalarFieldConfiguration.isKeyField()) {
+        keyFieldAdded.set(true);
+        objectSelectContext.getCheckNullAlias()
+            .set(columnAlias);
+      }
+      query.addSelect(aliasedColumn);
     }
-    query.addSelect(column);
+    if (scalarField.hasOrigin(Origin.FILTERING) || scalarField.hasOrigin(Origin.SORTING)) {
+      query.addSelect(column);
+    }
+
   }
 
   private void addNestedObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
@@ -275,7 +305,7 @@ public class SelectQueryBuilder {
 
           subSelect.addLimit(1);
 
-          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias());
+          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
           query.addSelect(lateralTable.asterisk());
           query.addJoin(lateralTable, JoinType.OUTER_APPLY);
 
@@ -376,8 +406,13 @@ public class SelectQueryBuilder {
       var typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
       typeConfiguration.getReferencedColumns()
           .values()
-          .forEach(referenceFieldConfiguration -> addScalarField(referenceFieldConfiguration, objectSelectContext,
-              query, table, new AtomicBoolean()));
+          .forEach(referenceFieldConfiguration -> {
+            var refScalarField = ScalarField.builder()
+                .field(referenceFieldConfiguration)
+                .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+                .build();
+            addScalarField(refScalarField, objectSelectContext, query, table, new AtomicBoolean());
+          });
     }
   }
 
@@ -393,10 +428,12 @@ public class SelectQueryBuilder {
       // create join with jointable and join condition on joinColumns and inverse joinColumn
       subSelect.addJoin(joinTable, JoinType.JOIN, condition);
     } else {
-      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
-          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-          leftSideTable);
-      subSelect.addConditions(condition);
+      if (leftSideConfiguration.getJoinColumns() != null) {
+        var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
+            ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
+            leftSideTable);
+        subSelect.addConditions(condition);
+      }
     }
   }
 
@@ -517,5 +554,34 @@ public class SelectQueryBuilder {
               .eq(rightColumn);
         })
         .reduce(DSL.noCondition(), Condition::and);
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
+      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
+    return sortCriterias.stream()
+        .map(sortCriteria -> {
+          var sortTable = !sortCriteria.getFieldPath()
+              .isLeaf() ? objectSelectContext.getTableAlias(
+                  sortCriteria.getFieldPath()
+                      .getFieldConfiguration()
+                      .getName())
+                  : fromTable.getName();
+
+          Field<?> sortField = DSL.field(DSL.name(sortTable, sortCriteria.getFieldPath()
+              .getLeaf()
+              .getFieldConfiguration()
+              .getName()));
+
+          switch (sortCriteria.getDirection()) {
+            case ASC:
+              return sortField.asc();
+            case DESC:
+              return sortField.desc();
+            default:
+              throw unsupportedOperationException("Unsupported direction: {}", sortCriteria.getDirection());
+          }
+        })
+        .collect(Collectors.toList());
   }
 }

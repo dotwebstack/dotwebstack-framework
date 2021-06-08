@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
-import lombok.Builder;
 import lombok.Data;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 public class EqualsFilterCriteria implements FilterCriteria {
-  private FieldConfiguration field;
+  private FieldPath fieldPath;
 
   private Object value;
 }

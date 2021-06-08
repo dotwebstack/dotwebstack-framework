@@ -8,7 +8,11 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValue;
+import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
@@ -61,6 +65,8 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addEnumerations(dotWebStackConfiguration, typeDefinitionRegistry);
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addSortTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addQueryTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
@@ -78,10 +84,29 @@ public class TypeDefinitionRegistrySchemaFactory {
           objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
 
+        });
+  }
+
+  private void addFilterTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .forEach((name, objectType) -> {
           if (!objectType.getFilters()
               .isEmpty()) {
             typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));
           }
+        });
+  }
+
+  private void addSortTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .forEach((name, objectType) -> {
+          if (!objectType.getSortableBy()
+              .isEmpty()) {
+            typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType));
+          }
+
         });
   }
 
@@ -101,6 +126,27 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newInputObjectDefinition().name(filterName)
         .inputValueDefinitions(inputValueDefinitions)
         .build();
+  }
+
+  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName,
+      AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
+    var orderName = createOrderName(objectTypeName);
+
+    List<EnumValueDefinition> enumValueDefinitions = getEnumValueDefinitions(objectType);
+
+    return newEnumTypeDefinition().name(orderName)
+        .enumValueDefinitions(enumValueDefinitions)
+        .build();
+  }
+
+  private List<EnumValueDefinition> getEnumValueDefinitions(
+      AbstractTypeConfiguration<? extends FieldConfiguration> objectType) {
+    return objectType.getSortableBy()
+        .keySet()
+        .stream()
+        .map(key -> newEnumValueDefinition().name(key.toUpperCase())
+            .build())
+        .collect(Collectors.toList());
   }
 
   private List<FieldDefinition> createFieldDefinitions(
@@ -133,6 +179,9 @@ public class TypeDefinitionRegistrySchemaFactory {
           dotWebStackConfiguration.getTypeConfiguration(fieldConfiguration.getType());
 
       createInputValueDefinitionForFilteredObject(fieldConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(result::add);
+
+      createInputValueDefinitionForSortableByObject(fieldConfiguration.getType(), objectTypeConfiguration)
           .ifPresent(result::add);
     }
 
@@ -212,22 +261,34 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
-    // add query arguments for keys
-    queryConfiguration.getKeys()
-        .stream()
-        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
-        .forEach(inputValueDefinitions::add);
+    addQueryArgumentsForKeys(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
-    // add optional filter object
-    if (queryConfiguration.isList()) {
-      createInputValueDefinitionForFilteredObject(queryConfiguration.getType(), objectTypeConfiguration)
-          .ifPresent(inputValueDefinitions::add);
-    }
+    addOptionalFilterObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
+
+    addOptionalSortableByObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
     return newFieldDefinition().name(queryName)
         .type(createType(queryConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
         .build();
+  }
+
+  private void addQueryArgumentsForKeys(QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    queryConfiguration.getKeys()
+        .stream()
+        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+        .forEach(inputValueDefinitions::add);
+  }
+
+  private void addOptionalFilterObject(QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    if (queryConfiguration.isList()) {
+      createInputValueDefinitionForFilteredObject(queryConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(inputValueDefinitions::add);
+    }
   }
 
   private Optional<InputValueDefinition> createInputValueDefinitionForFilteredObject(String typeName,
@@ -238,6 +299,39 @@ public class TypeDefinitionRegistrySchemaFactory {
 
       var inputValueDefinition = newInputValueDefinition().name(FilterConstants.FILTER_ARGUMENT_NAME)
           .type(newType(filterName))
+          .build();
+
+      return Optional.of(inputValueDefinition);
+    }
+
+    return Optional.empty();
+  }
+
+  private void addOptionalSortableByObject(QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    if (queryConfiguration.isList()) {
+      createInputValueDefinitionForSortableByObject(queryConfiguration.getType(), objectTypeConfiguration)
+          .ifPresent(inputValueDefinitions::add);
+    }
+  }
+
+  private Optional<InputValueDefinition> createInputValueDefinitionForSortableByObject(String typeName,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    if (!objectTypeConfiguration.getSortableBy()
+        .isEmpty()) {
+      var orderName = createOrderName(typeName);
+
+      var firstSortableByArgument = objectTypeConfiguration.getSortableBy()
+          .keySet()
+          .iterator()
+          .next()
+          .toUpperCase();
+
+      var inputValueDefinition = newInputValueDefinition().name(SORT_ARGUMENT_NAME)
+          .type(newType(orderName))
+          .defaultValue(EnumValue.newEnumValue(firstSortableByArgument)
+              .build())
           .build();
 
       return Optional.of(inputValueDefinition);
@@ -267,5 +361,9 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private String createFilterName(String objectTypeName) {
     return String.format("%sFilter", StringUtils.capitalize(objectTypeName));
+  }
+
+  private String createOrderName(String objectTypeName) {
+    return String.format("%sOrder", StringUtils.capitalize(objectTypeName));
   }
 }

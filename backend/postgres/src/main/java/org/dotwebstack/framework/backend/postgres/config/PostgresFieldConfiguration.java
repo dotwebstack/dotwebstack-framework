@@ -80,4 +80,5 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
     return List.of();
   }
+
 }
