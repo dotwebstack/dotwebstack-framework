@@ -15,7 +15,9 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_MIN_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -24,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLEnumType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +36,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarType;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +51,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +62,10 @@ class RequestFactoryTest {
   private static final String FIELD_BREWERY = "brewery";
 
   private static final String FIELD_KEYCRITERIA = "fieldName";
+
+  private static final String SORT_KEYCRITERIA = "sort";
+
+  private static final String FILTER_KEYCRITERIA = "filter";
 
   private static final String FIELD_HISTORY = "history";
 
@@ -130,6 +140,37 @@ class RequestFactoryTest {
   }
 
   @Test
+  void createCollectionQuery_returnsCollectionQuery_forSortedScalarField() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    var sortCriteria = Mockito.mock(SortCriteria.class);
+
+    when(typeConfiguration.getSortCriterias()).thenReturn(Map.of("IDENTIFICATIE", List.of(sortCriteria)));
+
+    var fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    when(environment.getArguments()).thenReturn(Map.of("sort", "IDENTIFICATIE"));
+
+    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+        .type(newObject().name("ReturnObject")
+            .build())
+        .argument(newArgument().name(SortConstants.SORT_ARGUMENT_NAME)
+            .type(GraphQLEnumType.newEnum()
+                .name("TestOrder")
+                .build())
+            .build())
+        .build());
+
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+
+    assertCollectionQuery(collectionQuery);
+    assertThat(collectionQuery.getSortCriterias(), notNullValue());
+    assertThat(collectionQuery.getSortCriterias(), equalTo(List.of(sortCriteria)));
+  }
+
+  @Test
   void createObjectQuery_returnsObjectQuery_withScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
@@ -157,6 +198,27 @@ class RequestFactoryTest {
     when(typeConfiguration.getFields()).thenReturn(fields);
 
     Map<String, Object> arguments = Map.of(FIELD_KEYCRITERIA, "1234-5678");
+    when(environment.getArguments()).thenReturn(arguments);
+
+    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+    assertIdentifierScalarConfiguration(objectQuery);
+    assertKeyCriterias(objectQuery);
+  }
+
+  @Test
+  void createObjectQuery_returnsObjectQueryWithOneKeyCriteria_forArgumentsWithSortAndFilter() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(environment.getSelectionSet()).thenReturn(selectionSet);
+    when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    Map<String, Object> arguments =
+        Map.of(FIELD_KEYCRITERIA, "1234-5678", SORT_KEYCRITERIA, "testSort", FILTER_KEYCRITERIA, "testFilter");
     when(environment.getArguments()).thenReturn(arguments);
 
     var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
@@ -316,15 +378,16 @@ class RequestFactoryTest {
   }
 
   private void assertIdentifierScalarConfiguration(ObjectRequest objectRequest) {
-    var scalarFieldConfiguration = objectRequest.getScalarFields()
+    var scalarField = objectRequest.getScalarFields()
         .stream()
-        .filter(fieldConfiguration -> fieldConfiguration.getName()
+        .filter(sf -> sf.getField()
+            .getName()
             .equals(FIELD_IDENTIFIER))
         .findFirst()
         .orElseThrow();
-    assertThat(scalarFieldConfiguration.getName(), is(FIELD_IDENTIFIER));
+    assertThat(scalarField.getName(), is(FIELD_IDENTIFIER));
 
-    assertFieldTypes((TestFieldConfiguration) scalarFieldConfiguration, true, false, false, false, false);
+    assertFieldTypes((TestFieldConfiguration) scalarField.getField(), true, false, false, false, false);
 
   }
 
@@ -337,6 +400,8 @@ class RequestFactoryTest {
         .orElseThrow();
     assertThat(keyCriterias.getValues()
         .get(FIELD_KEYCRITERIA), is("1234-5678"));
+    assertThat(objectRequest.getKeyCriteria()
+        .size(), is(1));
   }
 
   private void assertObjectFieldConfiguration(ObjectRequest objectRequest) {

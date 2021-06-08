@@ -1,15 +1,15 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import lombok.Builder;
 import lombok.Data;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
+import lombok.experimental.SuperBuilder;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.locationtech.jts.geom.Geometry;
 
 @Data
-@Builder
+@SuperBuilder
 public class GeometryFilterCriteria implements FilterCriteria {
-  private final FieldConfiguration field;
+  private final FieldPath fieldPath;
 
   private final GeometryFilterOperator filterOperator;
 

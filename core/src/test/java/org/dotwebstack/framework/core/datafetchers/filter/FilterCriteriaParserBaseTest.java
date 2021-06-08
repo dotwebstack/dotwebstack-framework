@@ -3,11 +3,9 @@ package org.dotwebstack.framework.core.datafetchers.filter;
 import static graphql.schema.GraphQLInputObjectField.newInputObjectField;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import graphql.AssertException;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.TypeDefinition;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLInputType;
@@ -17,14 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
-import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.junit.jupiter.api.BeforeAll;
 
 public abstract class FilterCriteriaParserBaseTest {
@@ -135,51 +129,5 @@ public abstract class FilterCriteriaParserBaseTest {
     fieldConfiguration.setType(type);
 
     return fieldConfiguration;
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @JsonTypeName("test")
-  protected static class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
-
-    @Override
-    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
-      return null;
-    }
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  protected static class FieldConfigurationImpl extends AbstractFieldConfiguration {
-
-    @Override
-    public boolean isScalarField() {
-      return false;
-    }
-
-    @Override
-    public boolean isObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isNestedObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isAggregateField() {
-      return false;
-    }
   }
 }

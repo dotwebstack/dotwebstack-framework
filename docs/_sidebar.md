@@ -6,6 +6,7 @@
 - Core
   - [Diagrams](core/diagrams.md)
   - [Filtering](core/filtering.md)
+  - [Sorting](core/sorting.md)
   
 - Backend modules
 

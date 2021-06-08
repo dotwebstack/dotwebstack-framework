@@ -24,15 +24,20 @@ objectTypes:
   Beer:
     backend: postgres
     table: dbeerpedia.beers
+    filters:
+      breweryCity:
+        field: brewery.visitAddress.city
+      taste:
+        field: taste
     keys:
       - field: identifier
-    filters:
+    sortableBy:
       name:
-        field: name
-      soldPerYear:
-        field: soldPerYear
-      retired:
-        field: retired
+        - field: name
+          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
     fields:
       identifier:
         type: ID
@@ -79,6 +84,27 @@ objectTypes:
     table: dbeerpedia.breweries
     keys:
       - field: identifier
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      address:
+        - field: postalAddress.street
+          direction: ASC
+        - field: postalAddress.city
+          direction: ASC
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalStreet:
+        field: postalAddress.street
+      postalCity:
+        field: postalAddress.city
+      visitStreet:
+        field: visitAddress.street
+      visitCity:
+        field: visitAddress.city
     fields:
       identifier:
         type: ID
@@ -109,10 +135,9 @@ objectTypes:
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
-    filters:
-      name: {}
-      status: {}
-      geometry: {}
+      history:
+        type: History
+
 
   Ingredient:
     backend: postgres
@@ -140,7 +165,18 @@ objectTypes:
       city:
         type: String
 
+  History:
+    backend: postgres
+    keys:
+      - field: identifier
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+
 enumerations:
   Taste:
     values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
-

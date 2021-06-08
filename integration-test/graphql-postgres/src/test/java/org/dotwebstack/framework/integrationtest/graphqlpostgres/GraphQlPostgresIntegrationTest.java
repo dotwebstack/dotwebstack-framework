@@ -1,11 +1,19 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static graphql.ExecutionInput.newExecutionInput;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasValue;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,8 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsCollectionWithSize;
+import org.hamcrest.collection.IsEmptyCollection;
 import org.hamcrest.collection.IsIn;
 import org.jooq.tools.StringUtils;
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -571,6 +584,9 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> beerAgg = getNestedObject(brewery, BEER_AGG);
     assertThat(beerAgg.size(), is(1));
     assertThat(beerAgg.get("totalCount"), is(0));
+    assertThat(beerAgg.get("averageSold"), is(nullValue()));
+    assertThat(beerAgg.get("maxSold"), is(nullValue()));
+    assertThat(beerAgg.get("tastes"), is(nullValue()));
   }
 
   @Test
@@ -739,7 +755,6 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beerAgg.get("totalCount"), is(2));
   }
 
-
   @Test
   void getRequest_returnsBreweries_withStringFilter() {
     String query = "{breweries(filter: {name: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
@@ -890,7 +905,6 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers, is(List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
         Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"))));
   }
-
 
   @Test
   void getRequest_returnsBeers_withDateLowerThenEqualsFilter() {
@@ -1175,6 +1189,112 @@ class GraphQlPostgresIntegrationTest {
         .asInt(), is(400));
     assertThat(json.get("detail")
         .textValue(), is("Required parameter 'query' is not present."));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_forFilterQueryWithNestedFieldPath() {
+    String query = "{beers(filter: {breweryCity: {eq: \"Dublin\"}}){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(3)));
+    assertThat(result.getData(),
+        hasValue(containsInAnyOrder(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+            Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+            Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_forSortNameDescQuery() {
+    String query = "{beers(sort: NAMEDESC){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(6)));
+    assertThat(result.getData(),
+        hasValue(contains(Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"),
+            Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+            Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBeers_forSortQueryWithNestedFieldPath() {
+    String query = "{beers(sort: BREWERYCITY){ identifier_beer name }}";
+
+    ExecutionResult result = graphQL.execute(query);
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("beers"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(6)));
+    assertThat(result.getData(),
+        hasValue(contains(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+            Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+            Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"),
+            Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_forNestedSortQuery() {
+    String query = "{breweries { identifier_brewery name beers(sort: NAMEDESC){ identifier_beer name }} }";
+
+    ExecutionResult result = graphQL.execute(ExecutionInput.newExecutionInput(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build());
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(4)));
+
+    assertThat(result.getData(),
+        IsMapContaining.hasValue(IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S"),
+            IsMapContaining.hasEntry("name", "Brewery X"), IsMapContaining.hasEntry("name", "Brewery Y"),
+            IsMapContaining.hasEntry("name", "Brewery Z"))));
+
+    assertThat(result.getData(),
+        IsMapContaining.hasValue(IsIterableContaining.hasItems(IsMapContaining.hasEntry(equalTo("beers"),
+            IsIterableContainingInOrder.contains(IsMapContaining.hasEntry(equalTo("name"), equalTo("Beer 4")),
+                IsMapContaining.hasEntry(equalTo("name"), equalTo("Beer 2")),
+                IsMapContaining.hasEntry(equalTo("name"), equalTo("Beer 1")))))));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_forNestedFilterQuery() {
+    String query = "{breweries { identifier_brewery name beers(filter: {breweryCity: {eq: \"Dublin\"}})"
+        + "{ identifier_beer name }} }";
+
+    ExecutionResult result = graphQL.execute(ExecutionInput.newExecutionInput(query)
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build());
+
+    assertThat(result.getErrors(), equalTo(List.of()));
+
+    assertThat(result.getData(), hasEntry(equalTo("breweries"), Matchers.instanceOf(List.class)));
+    assertThat(result.getData(), hasValue(hasSize(4)));
+
+    assertThat(result.getData(),
+        IsMapContaining.hasValue(IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S"),
+            IsMapContaining.hasEntry("name", "Brewery X"), IsMapContaining.hasEntry("name", "Brewery Y"),
+            IsMapContaining.hasEntry("name", "Brewery Z"))));
+
+    assertThat(result.getData(),
+        IsMapContaining.hasValue(
+            IsIterableContainingInOrder.contains(IsMapContaining.hasEntry(equalTo("beers"), IsEmptyCollection.empty()),
+                IsMapContaining.hasEntry(equalTo("beers"), IsCollectionWithSize.hasSize(equalTo(3))),
+                IsMapContaining.hasEntry(equalTo("beers"), IsEmptyCollection.empty()),
+                IsMapContaining.hasEntry(equalTo("beers"), IsEmptyCollection.empty()))));
   }
 
   private JsonNode executeGetRequestDefault(String query) {

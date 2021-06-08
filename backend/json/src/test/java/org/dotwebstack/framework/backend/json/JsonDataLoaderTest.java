@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.util.ArrayList;
@@ -202,6 +203,9 @@ class JsonDataLoaderTest {
   }
 
   private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
+    @Override
+    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+
     @Override
     public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
       return null;

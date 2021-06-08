@@ -4,9 +4,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +17,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
@@ -38,12 +40,36 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   protected Map<String, FilterConfiguration> filters = new HashMap<>();
 
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
-    postFieldProcessing();
+  protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
+
+  protected Map<String, List<SortCriteria>> sortCriterias = new HashMap<>();
+
+  public void setFields(Map<String, T> fields) {
+    fields.forEach((key, value) -> value.setName(key));
+    this.fields = fields;
   }
 
-  protected void postFieldProcessing() {
-    fields.forEach((key, value) -> value.setName(key));
+  public Optional<T> getField(String fieldName) {
+    var fieldNames = StringUtils.split(fieldName, '.');
+    return getField(fieldNames);
+  }
+
+  @SuppressWarnings("unchecked")
+  protected Optional<T> getField(String[] fieldNames) {
+    T fieldConfiguration = null;
+    if (fieldNames.length >= 1) {
+      fieldConfiguration = fields.get(fieldNames[0]);
+      fieldNames = Arrays.copyOfRange(fieldNames, 1, fieldNames.length);
+    }
+    if (fieldNames.length == 0) {
+      return Optional.ofNullable(fieldConfiguration);
+    }
+
+    final String[] nestedFieldNames = fieldNames;
+
+    return Optional.of(fieldConfiguration)
+        .map(AbstractFieldConfiguration::getTypeConfiguration)
+        .flatMap(typeConfiguration -> ((AbstractTypeConfiguration<T>) typeConfiguration).getField(nestedFieldNames));
   }
 
   public KeyCondition getKeyCondition(String fieldName) {

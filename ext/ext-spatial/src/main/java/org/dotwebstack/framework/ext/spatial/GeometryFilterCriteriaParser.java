@@ -7,6 +7,7 @@ import java.util.Map;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.OperatorFilterCriteriaParser;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -22,20 +23,20 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   @Override
-  protected FilterCriteria createFilterCriteria(FieldConfiguration fieldConfiguration, FilterItem filterItem) {
+  protected FilterCriteria createFilterCriteria(FieldPath fieldPath, FieldConfiguration fieldConfiguration,
+      FilterItem filterItem) {
     switch (filterItem.getOperator()) {
       case SpatialConstants.INTERSECTS:
       case SpatialConstants.CONTAINS:
       case SpatialConstants.WITHIN:
-        return createGeometryFilterCriteria(fieldConfiguration, filterItem);
+        return createGeometryFilterCriteria(fieldPath, filterItem);
       default:
-        return super.createFilterCriteria(fieldConfiguration, filterItem);
+        return super.createFilterCriteria(fieldPath, fieldConfiguration, filterItem);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private GeometryFilterCriteria createGeometryFilterCriteria(FieldConfiguration fieldConfiguration,
-      FilterItem filterItem) {
+  private GeometryFilterCriteria createGeometryFilterCriteria(FieldPath fieldPath, FilterItem filterItem) {
     if (!(filterItem.getValue() instanceof Map)) {
       throw illegalArgumentException("Filter item value not of type Map!");
     }
@@ -43,7 +44,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
     var data = (Map<String, String>) filterItem.getValue();
 
     return GeometryFilterCriteria.builder()
-        .field(fieldConfiguration)
+        .fieldPath(fieldPath)
         .filterOperator(GeometryFilterOperator.valueOf(filterItem.getOperator()
             .toUpperCase()))
         .geometry(readGeometry(data.get(SpatialConstants.FROM_WKT)))

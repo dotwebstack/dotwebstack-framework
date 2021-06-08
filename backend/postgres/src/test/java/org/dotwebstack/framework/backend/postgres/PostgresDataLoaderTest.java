@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
@@ -28,6 +29,7 @@ import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
@@ -70,6 +72,9 @@ class PostgresDataLoaderTest {
   @Test
   void supports_returnsFalse_withNonPostgresTypeConfiguration() {
     boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {
+      @Override
+      public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+
       @Override
       public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
         return null;

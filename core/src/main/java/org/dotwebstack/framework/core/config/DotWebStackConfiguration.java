@@ -30,6 +30,11 @@ public class DotWebStackConfiguration {
   @Valid
   private Map<String, EnumerationConfiguration> enumerations = new HashMap<>();
 
+  public void setObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    objectTypes.forEach((key, value) -> value.setName(key));
+    this.objectTypes = objectTypes;
+  }
+
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(LoadEnvironment loadEnvironment) {
     return getTypeConfiguration(loadEnvironment.getExecutionStepInfo());
   }
@@ -50,10 +55,6 @@ public class DotWebStackConfiguration {
   @SuppressWarnings("unchecked")
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(String typeName) {
     return Optional.ofNullable(objectTypes.get(typeName))
-        .map(type -> {
-          type.setName(typeName);
-          return type;
-        })
         .map(type -> (T) type)
         .orElseThrow(() -> illegalStateException("Unknown type configuration: {}", typeName));
   }

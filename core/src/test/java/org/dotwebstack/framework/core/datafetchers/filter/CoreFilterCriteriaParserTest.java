@@ -14,6 +14,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +24,8 @@ import graphql.schema.GraphQLInputObjectField;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
+import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
@@ -63,8 +66,9 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"String, testString, eq", "Date, 2021-01-01, eq", "Int, 1234, eq", "Float, 12345, eq",
+  @CsvSource({"String, testString, eq", "Date, 2021-01-01, eq", "Int, 1234, eq", "Float, 12345,eq",
       "DateTime, 2021-01-01T00:00:00+02:00, eq"})
+
   void parse_returnsFilterCriteriaList_forDifferentFilters(String type, String value) {
     TypeConfigurationImpl typeConfiguration = createTypeConfiguration(type);
     GraphQLInputObjectField inputObjectField = createInputObjectField(FIELD_TEST, type + "Filter");
@@ -147,14 +151,16 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     List<FilterCriteria> result = parser.parse(typeConfiguration, inputObjectField, data);
 
     assertThat(result.size(), is(1));
-    assertFieldName(result.get(0));
 
     assertThat(result.get(0), instanceOf(NotFilterCriteria.class));
     NotFilterCriteria notFilterCriteria = (NotFilterCriteria) result.get(0);
 
     assertThat(notFilterCriteria.getFilterCriteria(), instanceOf(EqualsFilterCriteria.class));
     assertThat(notFilterCriteria.getFilterCriteria()
-        .getField(), instanceOf(FieldConfigurationImpl.class));
+        .getFieldPath(), notNullValue());
+    assertThat(notFilterCriteria.getFilterCriteria()
+        .getFieldPath()
+        .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((EqualsFilterCriteria) notFilterCriteria.getFilterCriteria()).getValue(), is(1));
   }
 
@@ -180,7 +186,11 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
         .get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(0)
-        .getField(), instanceOf(FieldConfigurationImpl.class));
+        .getFieldPath(), notNullValue());
+    assertThat(andFilterCriteria.getFilterCriterias()
+        .get(0)
+        .getFieldPath()
+        .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((EqualsFilterCriteria) andFilterCriteria.getFilterCriterias()
         .get(0)).getValue(), is(1));
 
@@ -188,7 +198,11 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
         .get(1), instanceOf(LowerThenFilterCriteria.class));
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(1)
-        .getField(), instanceOf(FieldConfigurationImpl.class));
+        .getFieldPath(), notNullValue());
+    assertThat(andFilterCriteria.getFilterCriterias()
+        .get(1)
+        .getFieldPath()
+        .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((LowerThenFilterCriteria) andFilterCriteria.getFilterCriterias()
         .get(1)).getValue(), is(2));
   }
@@ -204,7 +218,10 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getField()
+        .getFieldPath(), notNullValue());
+    assertThat(result.get(0)
+        .getFieldPath()
+        .getFieldConfiguration()
         .getName(), is(FIELD_DEFAULT_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(99));
   }
@@ -220,7 +237,10 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getField()
+        .getFieldPath(), notNullValue());
+    assertThat(result.get(0)
+        .getFieldPath()
+        .getFieldConfiguration()
         .getName(), is(FIELD_NULL_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(1));
   }
@@ -237,7 +257,9 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
   }
 
   private void assertFieldName(FilterCriteria filterCriteria) {
-    assertThat(filterCriteria.getField()
+    assertThat(filterCriteria.getFieldPath(), notNullValue());
+    assertThat(filterCriteria.getFieldPath()
+        .getFieldConfiguration()
         .getName(), is(FIELD_TEST));
   }
 }
