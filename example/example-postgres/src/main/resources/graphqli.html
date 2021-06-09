@@ -11,15 +11,28 @@
 <script crossorigin src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/graphiql/graphiql.min.js"></script>
 <script>
-    const graphQLFetcher = graphQLParams =>
-      fetch(`http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`)
-        .then(response => response.json())
-        .catch(() => response.text());
+    const graphQLFetcher = graphQLParams => {
 
-    ReactDOM.render(
-      React.createElement(GraphiQL, { fetcher: graphQLFetcher }),
-      document.getElementById('graphiql'),
-    );
+      var uri;
+      if (graphQLParams.operationName == null && graphQLParams.variables == null) {
+        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}`;
+      } else if (graphQLParams.operationName != null && graphQLParams.variables == null) {
+        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}`;
+      } else if (graphQLParams.operationName == null && graphQLParams.variables != null) {
+        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
+      } else {
+        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
+      }
+
+      return fetch(uri)
+              .then(response => response.json())
+              .catch(() => response.text());
+    }
+
+      ReactDOM.render(
+              React.createElement(GraphiQL, {fetcher: graphQLFetcher}),
+              document.getElementById('graphiql'),
+      );
   </script>
 </body>
 
