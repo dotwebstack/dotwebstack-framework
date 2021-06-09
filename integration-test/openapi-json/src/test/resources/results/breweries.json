@@ -3,7 +3,6 @@
     "breweries": [
       {
         "identifier": "1",
-        "localName": null,
         "beerCount": 3,
         "founded": "2014-05-03",
         "name": "De Brouwerij",

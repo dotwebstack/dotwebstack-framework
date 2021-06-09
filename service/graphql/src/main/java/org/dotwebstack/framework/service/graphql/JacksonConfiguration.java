@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi;
+package org.dotwebstack.framework.service.graphql;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.Module;
