@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.json.query;
 
 import static com.jayway.jsonpath.Criteria.where;
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.helpers.MapHelper.copyAndProcessSuppliers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +49,8 @@ public class JsonQueryFetcher implements DataFetcher<Object> {
     JsonNode jsonNode = getJsonDocumentByFile(jsonDirective);
 
     GraphQLArgument jsonPathTemplate = jsonDirective.getArgument(JsonDirectives.ARGS_PATH);
-    List<Filter> jsonPathFilters =
-        createJsonPathWithArguments(environment.getArguments(), environment.getFieldDefinition());
+    Map<String, Object> arguments = copyAndProcessSuppliers(environment.getArguments());
+    List<Filter> jsonPathFilters = createJsonPathWithArguments(arguments, environment.getFieldDefinition());
 
     JSONArray jsonPathResult = JsonPath.parse(jsonNode.toString())
         .read(jsonPathTemplate.getValue()
