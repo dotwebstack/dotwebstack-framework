@@ -14,6 +14,11 @@ public class DateSupplier implements Supplier<LocalDate> {
     this.date = date;
   }
 
+  public DateSupplier(boolean isNow) {
+    this.isNow = isNow;
+    this.date = null;
+  }
+
   @Override
   public LocalDate get() {
     if (isNow) {

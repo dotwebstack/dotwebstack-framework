@@ -14,6 +14,11 @@ public class DateTimeSupplier implements Supplier<OffsetDateTime> {
     this.dateTime = dateTime;
   }
 
+  public DateTimeSupplier(boolean isNow) {
+    this.isNow = isNow;
+    this.dateTime = null;
+  }
+
   @Override
   public OffsetDateTime get() {
     if (isNow) {

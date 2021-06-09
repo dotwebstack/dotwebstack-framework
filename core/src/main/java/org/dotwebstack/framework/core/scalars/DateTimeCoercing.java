@@ -43,7 +43,7 @@ class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
     if (value instanceof StringValue) {
       var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return new DateTimeSupplier(true, null);
+        return new DateTimeSupplier(true);
       }
 
       return new DateTimeSupplier(false, OffsetDateTime.parse(stringValue.getValue()));

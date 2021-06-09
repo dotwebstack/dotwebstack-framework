@@ -67,7 +67,7 @@ public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
     if (value instanceof StringValue) {
       var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return new DateSupplier(true, null);
+        return new DateSupplier(true);
       }
 
       return new DateSupplier(false, LocalDate.parse(stringValue.getValue()));
