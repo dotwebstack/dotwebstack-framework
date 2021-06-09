@@ -81,9 +81,7 @@ public class TypeDefinitionRegistrySchemaFactory {
               .fieldDefinitions(createFieldDefinitions(objectType))
               .build();
 
-          objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
-
         });
   }
 
@@ -152,19 +150,19 @@ public class TypeDefinitionRegistrySchemaFactory {
   private List<FieldDefinition> createFieldDefinitions(
       AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
     return typeConfiguration.getFields()
-        .entrySet()
+        .values()
         .stream()
-        .map(entry -> newFieldDefinition().name(entry.getKey())
-            .type(createType(entry.getValue()))
-            .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
+        .filter(fieldConfiguration -> StringUtils.isNotBlank(fieldConfiguration.getType()))
+        .map(fieldConfiguration -> newFieldDefinition().name(fieldConfiguration.getName())
+            .type(createType(fieldConfiguration))
+            .inputValueDefinitions(createInputValueDefinitions(fieldConfiguration))
             .build())
         .collect(Collectors.toList());
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
     List<InputValueDefinition> result = new ArrayList<>();
-    if (fieldConfiguration.getType()
-        .equals(GEOMETRY_TYPE)) {
+    if (GEOMETRY_TYPE.equals(fieldConfiguration.getType())) {
       result.add(createGeometryInputValueDefinition());
     }
 

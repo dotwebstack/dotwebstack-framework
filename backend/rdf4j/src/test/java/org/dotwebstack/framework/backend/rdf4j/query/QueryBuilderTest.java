@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 
-import static graphql.language.FieldDefinition.newFieldDefinition;
-import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -159,14 +157,7 @@ class QueryBuilderTest {
 
     typeConfiguration.setName("Beer");
 
-    typeConfiguration.init(dotWebStackConfigurationMock, newObjectTypeDefinition().name("Beer")
-        .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
-            .build())
-        .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
-            .build())
-        .fieldDefinition(newFieldDefinition().name(FIELD_BREWERY)
-            .build())
-        .build());
+    typeConfiguration.init(dotWebStackConfigurationMock);
 
     return typeConfiguration;
   }

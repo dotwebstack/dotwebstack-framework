@@ -106,12 +106,17 @@ public class TypeHelper {
         .build();
   }
 
-  public static boolean isNumericType(@NonNull Type<?> type) {
+  public static boolean isNumericType(String type) {
+    if (type == null) {
+      return false;
+    }
+
     List<String> numericType = List.of(Scalars.GraphQLFloat.getName(), Scalars.GraphQLInt.getName());
-    return numericType.contains(getTypeName(type));
+    return numericType.contains(type);
   }
 
-  public static boolean isTextType(@NonNull Type<?> type) {
-    return getTypeName(type).equals(Scalars.GraphQLString.getName());
+  public static boolean isTextType(String type) {
+    return Scalars.GraphQLString.getName()
+        .equals(type);
   }
 }

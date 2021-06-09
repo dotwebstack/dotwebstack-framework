@@ -1,13 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
-import graphql.language.FieldDefinition;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,41 +40,33 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private Map<String, PostgresFieldConfiguration> referencedColumns = new HashMap<>();
 
   @Override
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
-    // Calculate the column names once on init
-    objectTypeDefinition.getFieldDefinitions()
-        .forEach(fieldDefinition -> {
-          PostgresFieldConfiguration fieldConfiguration =
-              fields.computeIfAbsent(fieldDefinition.getName(), fieldName -> new PostgresFieldConfiguration());
+  public void init(DotWebStackConfiguration dotWebStackConfiguration) {
 
+    getFields().values()
+        .forEach(fieldConfiguration -> {
           if (fieldConfiguration.isScalar()) {
             fieldConfiguration.setTypeConfiguration(this);
 
             if (fieldConfiguration.getColumn() == null) {
-              String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldDefinition.getName());
+              String columnName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, fieldConfiguration.getName());
               fieldConfiguration.setColumn(columnName);
             }
           }
 
-          if (TypeHelper.isNumericType(fieldDefinition.getType())) {
+          if (TypeHelper.isNumericType(fieldConfiguration.getType())) {
             fieldConfiguration.setNumeric(true);
           }
 
-          if (TypeHelper.hasListType(fieldDefinition.getType())) {
-            fieldConfiguration.setList(true);
-          }
-
-          if (TypeHelper.isTextType(fieldDefinition.getType()) || isEnum(fieldDefinition, dotWebStackConfiguration)) {
+          if (TypeHelper.isTextType(fieldConfiguration.getType())
+              || isEnum(fieldConfiguration.getType(), dotWebStackConfiguration)) {
             fieldConfiguration.setText(true);
           }
         });
 
     initAggregateTypes(dotWebStackConfiguration.getObjectTypes());
     initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
-
     initSortCriterias(dotWebStackConfiguration);
-
-    initReferencedColumns(dotWebStackConfiguration.getObjectTypes(), objectTypeDefinition.getFieldDefinitions());
+    initReferencedColumns(dotWebStackConfiguration.getObjectTypes());
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initKeyFields();
   }
@@ -101,7 +90,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   private void validateJoinTableConfig(PostgresFieldConfiguration fieldConfiguration,
-      Map<String, AbstractTypeConfiguration<?>> objectTypes, FieldDefinition fieldDefinition) {
+      Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     List<JoinColumn> joinColumns = new ArrayList<>();
     Optional.ofNullable(fieldConfiguration.findInverseJoinColumns())
         .ifPresent(joinColumns::addAll);
@@ -112,9 +101,9 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
       if (isNotValidJoinColumn(joinColumn)) {
         throw invalidConfigurationException(
             "The field 'referencedField' or 'referencedColumn' must have a value in field '{}'.",
-            fieldDefinition.getName());
+            fieldConfiguration.getName());
       }
-      validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, objectTypes, fieldDefinition);
+      validateTargetObjectTypeHasPostgresBackend(joinColumn, fieldConfiguration, objectTypes);
     });
   }
 
@@ -134,15 +123,14 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   private void validateTargetObjectTypeHasPostgresBackend(JoinColumn joinColumn,
-      PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> objectTypes,
-      FieldDefinition fieldDefinition) {
+      PostgresFieldConfiguration fieldConfiguration, Map<String, AbstractTypeConfiguration<?>> objectTypes) {
     if (StringUtils.isNoneBlank(joinColumn.getReferencedColumn()) && !fieldConfiguration.isAggregate()) {
-      String targetType = TypeHelper.getTypeName(fieldDefinition.getType());
-      TypeConfiguration<?> typeConfiguration = objectTypes.get(targetType);
+      TypeConfiguration<?> typeConfiguration = objectTypes.get(fieldConfiguration.getType());
       if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-
         throw invalidConfigurationException("Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.",
-            typeConfiguration.getClass());
+            Optional.ofNullable(typeConfiguration)
+                .map(TypeConfiguration::getClass)
+                .orElse(null));
       }
     }
   }
@@ -242,16 +230,13 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> objectTypes,
-      List<FieldDefinition> fieldDefinitions) {
-    referencedColumns = fields.entrySet()
+  private void initReferencedColumns(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    referencedColumns = fields.values()
         .stream()
-        .filter(entry -> entry.getValue()
-            .getJoinTable() != null)
-        .flatMap(entry -> {
-          validateJoinTableConfig(entry.getValue(), objectTypes, getFieldDefinition(entry.getKey(), fieldDefinitions));
-          return entry.getValue()
-              .getJoinTable()
+        .filter(fieldConfiguration -> fieldConfiguration.getJoinTable() != null)
+        .flatMap(fieldConfiguration -> {
+          validateJoinTableConfig(fieldConfiguration, objectTypes);
+          return fieldConfiguration.getJoinTable()
               .getJoinColumns()
               .stream();
         })
@@ -274,14 +259,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         });
   }
 
-  private FieldDefinition getFieldDefinition(String fieldName, List<FieldDefinition> fieldDefinitions) {
-    return fieldDefinitions.stream()
-        .filter(fieldDefinition -> fieldDefinition.getName()
-            .equals(fieldName))
-        .findFirst()
-        .orElseThrow(() -> illegalStateException("No fielddefinition available for field {}", fieldName));
-  }
-
   private PostgresFieldConfiguration createPostgresFieldConfiguration(String column) {
     var postgresFieldConfiguration = new PostgresFieldConfiguration();
     postgresFieldConfiguration.setColumn(column);
@@ -289,8 +266,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     return postgresFieldConfiguration;
   }
 
-  private boolean isEnum(FieldDefinition fieldDefinition, DotWebStackConfiguration dotWebStackConfiguration) {
-    var type = TypeHelper.getTypeName(fieldDefinition.getType());
+  private boolean isEnum(String type, DotWebStackConfiguration dotWebStackConfiguration) {
     return dotWebStackConfiguration.getEnumerations()
         .containsKey(type);
   }

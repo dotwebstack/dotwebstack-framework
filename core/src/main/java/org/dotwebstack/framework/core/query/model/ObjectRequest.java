@@ -29,7 +29,7 @@ public class ObjectRequest implements Request {
   protected final List<ObjectFieldConfiguration> objectFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<NestedObjectFieldConfiguration> nestedObjectFields = List.of();
+  protected final List<NestedObjectFieldConfiguration> nestedObjectFields = new ArrayList<>();
 
   @Builder.Default
   private final List<AggregateObjectFieldConfiguration> aggregateObjectFields = List.of();
