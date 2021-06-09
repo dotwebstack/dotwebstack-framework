@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.r2dbc.spi.ConnectionFactory;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -140,6 +141,9 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.size(), is(6));
     assertThat(beers.get(0)
         .get(NAME), is("Beer 1"));
+    assertThat(beers.get(0)
+        .get("since"), is(LocalDate.of(2010, 1, 1)));
+
   }
 
   // Using the httpController won't return a Publisher, therefore this test still uses the
