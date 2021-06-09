@@ -127,7 +127,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_ReturnsBeers_Default() {
-    var query = "{beers{identifier_beer name}}";
+    var query = "{beers{identifier_beer name since}}";
     JsonNode json = executeGetRequestDefault(query);
 
     assertThat(json.has(ERRORS), is(false));
@@ -142,7 +142,9 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.get(0)
         .get(NAME), is("Beer 1"));
     assertThat(beers.get(0)
-        .get("since"), is(LocalDate.of(2010, 1, 1)));
+        .get("since"),
+        is(LocalDate.of(2010, 1, 1)
+            .toString()));
 
   }
 
