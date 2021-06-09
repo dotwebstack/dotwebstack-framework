@@ -76,6 +76,14 @@ class DateCoercingTest {
   }
 
   @Test
+  void parseValue_ReturnsDate_ForValidDateString() { // NOSONAR
+    LocalDate date = coercing.parseValue("2018-05-30")
+        .get();
+
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
+  }
+
+  @Test
   void parseLiteral_ThrowsException() {
     var value = new Object();
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
@@ -83,7 +91,8 @@ class DateCoercingTest {
 
   @Test
   void parseLiteral_ReturnsDateTime_ForNowLiteral() {
-    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"));
+    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"))
+        .get();
 
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));
@@ -96,7 +105,8 @@ class DateCoercingTest {
   @Test
   void parseLiteral_ReturnsDateTime_ForLocalDateNow() {
     LocalDate localDate = coercing.parseLiteral(new StringValue(LocalDate.now()
-        .toString()));
+        .toString()))
+        .get();
 
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));

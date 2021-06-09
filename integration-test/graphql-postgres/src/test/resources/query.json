@@ -1,0 +1,11 @@
+query beers($identifier: ID!) {
+beer(identifier: $identifier) {
+identifier
+}
+}
+
+query breweries {
+breweryCollection {
+identifier
+}
+}

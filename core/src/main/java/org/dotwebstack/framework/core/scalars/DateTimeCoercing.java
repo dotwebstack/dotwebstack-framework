@@ -12,7 +12,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class DateTimeCoercing implements Coercing<OffsetDateTime, OffsetDateTime> {
+class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
 
   @Override
   public OffsetDateTime serialize(@NonNull Object value) {
@@ -34,19 +34,19 @@ class DateTimeCoercing implements Coercing<OffsetDateTime, OffsetDateTime> {
   }
 
   @Override
-  public OffsetDateTime parseValue(@NonNull Object value) {
-    return serialize(value);
+  public DateTimeSupplier parseValue(@NonNull Object value) {
+    return new DateTimeSupplier(false, serialize(value));
   }
 
   @Override
-  public OffsetDateTime parseLiteral(@NonNull Object value) {
+  public DateTimeSupplier parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
       var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return OffsetDateTime.now();
+        return new DateTimeSupplier(true);
       }
 
-      return OffsetDateTime.parse(stringValue.getValue());
+      return new DateTimeSupplier(false, OffsetDateTime.parse(stringValue.getValue()));
     }
 
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
