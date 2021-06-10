@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.RequestFactory;
 import org.springframework.stereotype.Component;
@@ -62,7 +63,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
-    if (source != null) {
+    if (source != null && !(environment.getLocalContext() instanceof PagingDataFetcherContext)) {
       return doNestedGet(environment, executionStepInfo, source, typeConfiguration);
     }
 
@@ -90,7 +91,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     Flux<DataFetcherResult<Object>> result;
 
     if (backendDataLoader.useRequestApproach()) {
-      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
       result = mapLoadMany(typeConfiguration, backendDataLoader.loadManyRequest(collectionRequest));
     } else {
@@ -162,7 +163,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     if (GraphQLTypeUtil.isList(unwrappedType)) {
       if (backendDataLoader.useRequestApproach()) {
-        var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment, false);
+        var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
         return newMappedDataLoader(keys -> mapLoadBatchLoadMany(typeConfiguration,
             backendDataLoader.batchLoadManyRequest(keys, collectionRequest)).toFuture());

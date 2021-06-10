@@ -134,7 +134,7 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
     assertCollectionQuery(collectionQuery);
   }
@@ -163,7 +163,7 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getSortCriterias(), notNullValue());

@@ -7,15 +7,21 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
+import graphql.Scalars;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
+import graphql.language.IntValue;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +42,7 @@ import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -67,6 +74,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSortTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addConnectionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addQueryTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
@@ -108,6 +116,27 @@ public class TypeDefinitionRegistrySchemaFactory {
           }
 
         });
+  }
+
+  private void addConnectionTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    dotWebStackConfiguration.getObjectTypes()
+        .values()
+        .stream()
+        .map(this::createConnectionTypeDefinition)
+        .forEach(typeDefinitionRegistry::add);
+  }
+
+  private ObjectTypeDefinition createConnectionTypeDefinition(AbstractTypeConfiguration<?> typeConfiguration) {
+    var connectionName = createConnectionName(typeConfiguration.getName());
+    return newObjectTypeDefinition().name(connectionName)
+        .fieldDefinition(newFieldDefinition().name(PagingConstants.NODES_FIELD_NAME)
+            .type(newNonNullableListType(typeConfiguration.getName()))
+            .build())
+        .fieldDefinition(newFieldDefinition().name(PagingConstants.OFFSET_FIELD_NAME)
+            .type(newNonNullableType(Scalars.GraphQLInt.getName()))
+            .build())
+        .build();
   }
 
   private InputObjectTypeDefinition createFilterObjectTypeDefinition(String objectTypeName,
@@ -155,10 +184,22 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> newFieldDefinition().name(entry.getKey())
-            .type(createType(entry.getValue()))
+            .type(createTypeForField(entry.getValue()))
             .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
             .build())
         .collect(Collectors.toList());
+  }
+
+  private Type<?> createTypeForField(FieldConfiguration fieldConfiguration) {
+    var type = fieldConfiguration.getType();
+
+    if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
+        .containsKey(fieldConfiguration.getType())) {
+      var connectionTypeName = createConnectionName(type);
+      return newNonNullableType(connectionTypeName);
+    }
+
+    return createType(fieldConfiguration);
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
@@ -263,14 +304,27 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addQueryArgumentsForKeys(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
+    addPagingArguments(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
+
     addOptionalFilterObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
     addOptionalSortableByObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
     return newFieldDefinition().name(queryName)
-        .type(createType(queryConfiguration))
+        .type(createTypeForQuery(queryConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
         .build();
+  }
+
+  private Type<?> createTypeForQuery(QueryConfiguration queryConfiguration) {
+    var type = queryConfiguration.getType();
+
+    if (queryConfiguration.isList()) {
+      var connectionTypeName = createConnectionName(type);
+      return newNonNullableType(connectionTypeName);
+    }
+
+    return createType(queryConfiguration);
   }
 
   private void addQueryArgumentsForKeys(QueryConfiguration queryConfiguration,
@@ -340,6 +394,35 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
+  private void addPagingArguments(QueryConfiguration queryConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    if (queryConfiguration.isList()) {
+      addFirstArgument(inputValueDefinitions);
+      addOffsetArgument(inputValueDefinitions);
+    }
+  }
+
+  private void addFirstArgument(List<InputValueDefinition> inputValueDefinitions) {
+    var inputValueDefinition = newInputValueDefinition().name(PagingConstants.FIRST_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLInt.getName()))
+        .defaultValue(IntValue.newIntValue(PagingConstants.FIRST_DEFAULT_VALUE)
+            .build())
+        .build();
+
+    inputValueDefinitions.add(inputValueDefinition);
+  }
+
+  private void addOffsetArgument(List<InputValueDefinition> inputValueDefinitions) {
+    var inputValueDefinition = newInputValueDefinition().name(PagingConstants.OFFSET_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLInt.getName()))
+        .defaultValue(IntValue.newIntValue(PagingConstants.OFFSET_DEFAULT_VALUE)
+            .build())
+        .build();
+
+    inputValueDefinitions.add(inputValueDefinition);
+  }
+
   private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     return newInputValueDefinition().name(keyConfiguration.getField())
@@ -365,5 +448,9 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private String createOrderName(String objectTypeName) {
     return String.format("%sOrder", StringUtils.capitalize(objectTypeName));
+  }
+
+  private String createConnectionName(String objectTypeName) {
+    return String.format("%sConnection", StringUtils.capitalize(objectTypeName));
   }
 }

@@ -29,6 +29,7 @@ import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -54,20 +55,14 @@ public class RequestFactory {
   }
 
   public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment, boolean addLimit) {
+      DataFetchingEnvironment environment) {
 
-    var collectionQueryBuilder = CollectionRequest.builder()
+    return CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
         .filterCriterias(createFilterCriterias(typeConfiguration, environment))
-        .sortCriterias(createSortCriterias(typeConfiguration, environment));
-    if (addLimit) {
-      collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
-          .page(0)
-          .pageSize(10)
-          .build());
-    }
-
-    return collectionQueryBuilder.build();
+        .sortCriterias(createSortCriterias(typeConfiguration, environment))
+        .pagingCriteria(createPagingCriteria(typeConfiguration, environment))
+        .build();
   }
 
   public ObjectRequest createObjectRequest(TypeConfiguration<?> typeConfiguration,
@@ -168,6 +163,15 @@ public class RequestFactory {
     }
 
     return List.of();
+  }
+
+  private PagingCriteria createPagingCriteria(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+    var context = (PagingDataFetcherContext) environment.getLocalContext();
+    return PagingCriteria.builder()
+        .page(context.getFirst())
+        .pageSize(context.getOffset())
+        .build();
   }
 
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {

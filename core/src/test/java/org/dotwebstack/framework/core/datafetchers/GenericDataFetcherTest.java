@@ -186,7 +186,7 @@ class GenericDataFetcherTest {
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.fromIterable(data));
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
-    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, true))
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
 
     Object future = genericDataFetcher.get(dataFetchingEnvironment);
@@ -229,7 +229,7 @@ class GenericDataFetcherTest {
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.empty());
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
-    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, true))
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
 
     var result = genericDataFetcher.get(dataFetchingEnvironment);
@@ -323,7 +323,7 @@ class GenericDataFetcherTest {
     when(backendDataLoader.batchLoadManyRequest(any(), any())).thenReturn(batchLoadManyResult);
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
-    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment, false))
+    when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
