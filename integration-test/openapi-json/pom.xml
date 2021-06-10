@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>integration-test</artifactId>
-        <version>0.2.10</version>
+        <version>0.2.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>openapi-json</artifactId>
-    <version>0.2.10</version>
+    <version>0.2.11-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
