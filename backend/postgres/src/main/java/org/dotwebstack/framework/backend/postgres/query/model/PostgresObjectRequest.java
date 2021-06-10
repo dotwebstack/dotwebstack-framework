@@ -57,9 +57,15 @@ public class PostgresObjectRequest extends ObjectRequest {
           .filter(nof -> Objects.equals(nof.getField()
               .getName(), fieldConfiguration.getName()))
           .findFirst()
-          .orElseGet(() -> NestedObjectFieldConfiguration.builder()
-              .field(fieldConfiguration)
-              .build());
+          .orElseGet(() -> {
+            NestedObjectFieldConfiguration nofc = NestedObjectFieldConfiguration.builder()
+                .field(fieldConfiguration)
+                .build();
+
+            nestedObjectFields.add(nofc);
+
+            return nofc;
+          });
 
       nestedObjectField.getScalarFields()
           .add(ScalarField.builder()
