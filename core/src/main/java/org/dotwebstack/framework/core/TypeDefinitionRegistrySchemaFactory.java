@@ -199,7 +199,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .collect(Collectors.toList());
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
-        .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of() : queryFieldDefinitions)
+        .fieldDefinitions(
+            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
         .build();
 
     typeDefinitionRegistry.add(queryTypeDefinition);
@@ -364,4 +365,12 @@ public class TypeDefinitionRegistrySchemaFactory {
   private String createOrderName(String objectTypeName) {
     return String.format("%sOrder", StringUtils.capitalize(objectTypeName));
   }
+
+  private FieldDefinition createDummyQueryFieldDefinition() {
+    return FieldDefinition.newFieldDefinition()
+        .name("dummy")
+        .type(TypeUtils.newType("String"))
+        .build();
+  }
+
 }
