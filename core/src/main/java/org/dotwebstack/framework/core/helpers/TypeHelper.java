@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.Scalars;
 import graphql.language.ListType;
@@ -26,7 +27,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return false;
     } else {
-      throw ExceptionHelper.illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
     }
   }
 
@@ -83,7 +84,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return ((TypeName) type).getName();
     } else {
-      throw ExceptionHelper.illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
     }
   }
 
@@ -95,7 +96,7 @@ public class TypeHelper {
     } else if (type instanceof GraphQLNamedType) {
       return ((GraphQLNamedType) type).getName();
     } else {
-      throw ExceptionHelper.illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
     }
   }
 
