@@ -16,7 +16,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DateCoercing implements Coercing<LocalDate, LocalDate> {
+public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
 
   @Override
   public LocalDate serialize(@NonNull Object value) {
@@ -49,28 +49,28 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   private LocalDate getLocalDateFromDateTimeString(@NonNull String value) {
     try {
-      ZonedDateTime zonedDateTime = ZonedDateTime.parse(value);
+      var zonedDateTime = ZonedDateTime.parse(value);
       return zonedDateTime.toLocalDate();
     } catch (DateTimeParseException e) {
-      LocalDateTime localDateTime = LocalDateTime.parse(value);
+      var localDateTime = LocalDateTime.parse(value);
       return localDateTime.toLocalDate();
     }
   }
 
   @Override
-  public LocalDate parseValue(@NonNull Object value) {
-    return serialize(value);
+  public DateSupplier parseValue(@NonNull Object value) {
+    return new DateSupplier(false, serialize(value));
   }
 
   @Override
-  public LocalDate parseLiteral(@NonNull Object value) {
+  public DateSupplier parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
-      StringValue stringValue = (StringValue) value;
+      var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return LocalDate.now();
+        return new DateSupplier(true);
       }
 
-      return LocalDate.parse(stringValue.getValue());
+      return new DateSupplier(false, LocalDate.parse(stringValue.getValue()));
     }
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
   }

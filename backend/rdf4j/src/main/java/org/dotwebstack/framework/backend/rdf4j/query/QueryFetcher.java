@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static org.dotwebstack.framework.backend.rdf4j.helper.SparqlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.backend.rdf4j.query.helper.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.MapHelper.copyAndProcessSuppliers;
 import static org.dotwebstack.framework.core.input.CoreInputTypes.SORT_FIELD_IS_RESOURCE;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 
@@ -107,15 +108,14 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .fieldDefinition(environment.getFieldDefinition())
         .build();
 
+    Map<String, Object> arguments = copyAndProcessSuppliers(environment.getArguments());
     List<DirectiveContainerObject> filterMapping = coreTraverser
-        .getTuples(environment.getFieldDefinition(), environment.getArguments(),
-            directiveWithValueFilter(CoreDirectives.FILTER_NAME))
+        .getTuples(environment.getFieldDefinition(), arguments, directiveWithValueFilter(CoreDirectives.FILTER_NAME))
         .stream()
         .map(determineIsResource(environment))
         .collect(Collectors.toList());
 
-    List<IRI> subjects =
-        fetchSubjects(environment, queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
+    List<IRI> subjects = fetchSubjects(environment, queryEnvironment, filterMapping, arguments, repositoryAdapter);
 
     LOG.debug("Fetched subjects: {}", subjects);
 

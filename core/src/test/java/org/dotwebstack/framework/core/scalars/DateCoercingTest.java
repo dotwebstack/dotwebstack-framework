@@ -20,87 +20,80 @@ class DateCoercingTest {
 
   @Test
   void serialize_ReturnsDate_ForLocalDate() {
-    // Arrange
     LocalDate input = LocalDate.now();
 
-    // Act
     LocalDate date = coercing.serialize(input);
 
-    // Assert
     assertThat(date, is(sameInstance(input)));
   }
 
   @Test
   void serialize_ReturnsDate_ForDate() {
-    // Arrange
     Date input = new Date();
 
-    // Act
     LocalDate date = coercing.serialize(input);
 
-    // Assert
     assertEquals(input.toInstant()
         .atZone(ZoneId.systemDefault())
         .toLocalDate(), date);
   }
 
   @Test
-  void serialize_ReturnsDate_ForValidDateString() {
-    // Act
+  void serialize_ReturnsDate_ForValidDateString() { // NOSONAR
     LocalDate date = coercing.serialize("2018-05-30");
 
-    // Assert
     assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
-  void serialize_ReturnsDate_ForLocalDateString() {
-    // Act
+  void serialize_ReturnsDate_ForLocalDateString() { // NOSONAR
     LocalDate date = coercing.serialize("2018-05-30T00:00:00");
 
-    // Assert
     assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
-  void serialize_ReturnsDate_ForZonedDateString() {
-    // Act
+  void serialize_ReturnsDate_ForZonedDateString() { // NOSONAR
     LocalDate date = coercing.serialize("2018-05-30T00:00:00Z");
 
-    // Assert
     assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
   void serialize_ThrowsException_ForInvalidDateString() {
-    // Act / Assert
     assertThrows(CoercingSerializeException.class, () -> coercing.serialize("foo"));
   }
 
   @Test
   void serialize_ReturnsDate_ForOtherTypes() {
-    // Act / Assert
     assertThrows(CoercingSerializeException.class, () -> coercing.serialize(123));
   }
 
   @Test
   void parseValue_ThrowsException() {
-    // Act / Assert
-    assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(new Object()));
+    var value = new Object();
+    assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(value));
+  }
+
+  @Test
+  void parseValue_ReturnsDate_ForValidDateString() { // NOSONAR
+    LocalDate date = coercing.parseValue("2018-05-30")
+        .get();
+
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
   void parseLiteral_ThrowsException() {
-    // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
+    var value = new Object();
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
   }
 
   @Test
   void parseLiteral_ReturnsDateTime_ForNowLiteral() {
-    // Act
-    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"));
+    LocalDate localDate = coercing.parseLiteral(new StringValue("NOW"))
+        .get();
 
-    // Assert
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));
     assertThat(localDate.getMonth(), equalTo(LocalDate.now()
@@ -111,11 +104,10 @@ class DateCoercingTest {
 
   @Test
   void parseLiteral_ReturnsDateTime_ForLocalDateNow() {
-    // Act
     LocalDate localDate = coercing.parseLiteral(new StringValue(LocalDate.now()
-        .toString()));
+        .toString()))
+        .get();
 
-    // Assert
     assertThat(localDate.getYear(), equalTo(LocalDate.now()
         .getYear()));
     assertThat(localDate.getMonth(), equalTo(LocalDate.now()

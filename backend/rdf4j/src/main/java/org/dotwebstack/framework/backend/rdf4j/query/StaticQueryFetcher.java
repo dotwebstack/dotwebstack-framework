@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.dotwebstack.framework.backend.rdf4j.helper.GraphQlFieldDefinitionHelper.graphQlFieldDefinitionIsOfType;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.MapHelper.copyAndProcessSuppliers;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;
@@ -187,7 +188,7 @@ public final class StaticQueryFetcher implements DataFetcher<Object> {
   private Map<String, Value> getBindingValues(DataFetchingEnvironment environment,
       GraphQLFieldDefinition fieldDefinition) {
     GraphQLDirective sparqlDirective = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<String, Object> queryParameters = environment.getArguments();
+    Map<String, Object> queryParameters = copyAndProcessSuppliers(environment.getArguments());
     List<GraphQLArgument> definedArguments = fieldDefinition.getArguments();
 
     String subjectTemplate =

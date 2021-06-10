@@ -12,7 +12,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
+class DateTimeCoercing implements Coercing<DateTimeSupplier, ZonedDateTime> {
 
   @Override
   public ZonedDateTime serialize(@NonNull Object value) {
@@ -34,19 +34,19 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
   }
 
   @Override
-  public ZonedDateTime parseValue(@NonNull Object value) {
-    return serialize(value);
+  public DateTimeSupplier parseValue(@NonNull Object value) {
+    return new DateTimeSupplier(false, serialize(value));
   }
 
   @Override
-  public ZonedDateTime parseLiteral(@NonNull Object value) {
+  public DateTimeSupplier parseLiteral(@NonNull Object value) {
     if (value instanceof StringValue) {
-      StringValue stringValue = (StringValue) value;
+      var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
-        return ZonedDateTime.now();
+        return new DateTimeSupplier(true);
       }
 
-      return ZonedDateTime.parse(stringValue.getValue());
+      return new DateTimeSupplier(false, ZonedDateTime.parse(stringValue.getValue()));
     }
 
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
