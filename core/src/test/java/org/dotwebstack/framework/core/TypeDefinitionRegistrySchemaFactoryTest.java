@@ -196,7 +196,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(queryTypeDefinition.getName(), is("Query"));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(0));
+    assertThat(fieldDefinitions.size(), is(1));
   }
 
   @Test

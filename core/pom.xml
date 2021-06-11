@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.3.11-SNAPSHOT</version>
+    <version>0.3.12-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -61,6 +61,10 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.zalando</groupId>
+      <artifactId>problem-spring-webflux</artifactId>
     </dependency>
   </dependencies>
 

@@ -27,8 +27,6 @@ objectTypes:
     filters:
       breweryCity:
         field: brewery.visitAddress.city
-      taste:
-        field: taste
     keys:
       - field: identifier
     sortableBy:
@@ -93,6 +91,9 @@ objectTypes:
           direction: ASC
         - field: postalAddress.city
           direction: ASC
+      historyAge:
+        - field: history.age
+          direction: ASC
     filters:
       name: { }
       status: { }
@@ -105,6 +106,8 @@ objectTypes:
         field: visitAddress.street
       visitCity:
         field: visitAddress.city
+      historyAge:
+        field: history.age
     fields:
       identifier:
         type: ID

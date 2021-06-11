@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,7 +40,6 @@ class PostgresObjectRequestTest {
         .scalarFields(List.of(beerNameScalarField))
         .build();
 
-
     FilterCriteria filterCriteria = createEqualsFilterCriteria(FieldPath.builder()
         .fieldConfiguration(beerNameFieldConfiguration)
         .build());
@@ -47,6 +47,46 @@ class PostgresObjectRequestTest {
     postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
 
     assertObjectRequest(postgresObjectRequest, "name", Origin.REQUESTED);
+  }
+
+  @Test
+  void addFilterCriteria_createsNestedObjectField_forOneLevelNestedFilter() {
+    var breweryTypeConfiguration = createBreweryTypeConfiguration(null);
+    var beerTypeConfiguration = createBeerTypeConfiguration(breweryTypeConfiguration);
+    var beerNameScalarField = createScalarField(beerTypeConfiguration.getFields()
+        .get("name"));
+
+    var postgresObjectRequest = PostgresObjectRequest.builder()
+        .typeConfiguration(beerTypeConfiguration)
+        .scalarFields(List.of(beerNameScalarField))
+        .build();
+
+    var fieldPath = FieldPath.builder()
+        .fieldConfiguration(breweryTypeConfiguration.getFields()
+            .get("history"))
+        .child(FieldPath.builder()
+            .fieldConfiguration(breweryTypeConfiguration.getFields()
+                .get("history")
+                .getTypeConfiguration()
+                .getFields()
+                .get("age"))
+            .build())
+        .build();
+
+    FilterCriteria filterCriteria = createEqualsFilterCriteria(fieldPath);
+
+    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+
+    assertThat(postgresObjectRequest.getNestedObjectFields()
+        .size(), is(1));
+
+    var scalarFields = postgresObjectRequest.getNestedObjectFields()
+        .get(0)
+        .getScalarFields();
+
+    assertThat(scalarFields.size(), is(1));
+    assertThat(scalarFields.get(0)
+        .getName(), equalTo("age"));
   }
 
   @Test
@@ -244,6 +284,20 @@ class PostgresObjectRequestTest {
       addressFieldConfiguration.setTypeConfiguration(addressTypeConfiguration);
       breweryFields.put("address", addressFieldConfiguration);
     }
+
+    var historyTypeConfiguration = new PostgresTypeConfiguration();
+    PostgresFieldConfiguration historyAgeFieldConfiguration = new PostgresFieldConfiguration();
+    historyAgeFieldConfiguration.setName("age");
+    historyAgeFieldConfiguration.setType("String");
+    historyAgeFieldConfiguration.setColumn("ageColumn");
+    historyAgeFieldConfiguration.setTypeConfiguration(historyTypeConfiguration);
+    historyTypeConfiguration.setFields(Map.of("age", historyAgeFieldConfiguration));
+
+    var historyFieldConfiguration = new PostgresFieldConfiguration();
+    historyFieldConfiguration.setTypeConfiguration(historyTypeConfiguration);
+    historyFieldConfiguration.setName("history");
+    historyFieldConfiguration.setNested(true);
+    breweryFields.put("history", historyFieldConfiguration);
 
     breweryTypeConfiguration.setFields(breweryFields);
 

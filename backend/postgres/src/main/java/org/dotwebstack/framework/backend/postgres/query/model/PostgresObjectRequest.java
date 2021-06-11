@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Builder;
@@ -12,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.Origin;
@@ -43,16 +47,45 @@ public class PostgresObjectRequest extends ObjectRequest {
   private void createObjectField(FieldPath fieldPath, Origin origin) {
     var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
-    var objectField = Optional.ofNullable(objectFieldsByFieldName.get(fieldConfiguration.getName()))
-        .orElseGet(() -> {
-          var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
-          objectFieldsByFieldName.put(fieldConfiguration.getName(), newObjectField);
-          objectFields.add(newObjectField);
-          return newObjectField;
-        });
 
-    if (!fieldPath.isLeaf()) {
-      addObjectFields(fieldPath.getChild(), objectField, origin);
+    if (fieldConfiguration.isNested()) {
+      if (fieldConfiguration.isList()) {
+        throw unsupportedOperationException("Nested object list is unsupported!");
+      }
+
+      NestedObjectFieldConfiguration nestedObjectField = nestedObjectFields.stream()
+          .filter(nof -> Objects.equals(nof.getField()
+              .getName(), fieldConfiguration.getName()))
+          .findFirst()
+          .orElseGet(() -> {
+            NestedObjectFieldConfiguration nofc = NestedObjectFieldConfiguration.builder()
+                .field(fieldConfiguration)
+                .build();
+
+            nestedObjectFields.add(nofc);
+
+            return nofc;
+          });
+
+      nestedObjectField.getScalarFields()
+          .add(ScalarField.builder()
+              .field(fieldPath.getChild()
+                  .getFieldConfiguration())
+              .origins(new HashSet<>(Set.of(origin)))
+              .build());
+
+    } else {
+      var objectField = Optional.ofNullable(objectFieldsByFieldName.get(fieldConfiguration.getName()))
+          .orElseGet(() -> {
+            var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
+            objectFieldsByFieldName.put(fieldConfiguration.getName(), newObjectField);
+            objectFields.add(newObjectField);
+            return newObjectField;
+          });
+
+      if (!fieldPath.isLeaf()) {
+        addObjectFields(fieldPath.getChild(), objectField, origin);
+      }
     }
   }
 

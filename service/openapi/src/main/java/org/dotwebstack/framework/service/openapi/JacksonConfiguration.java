@@ -13,12 +13,6 @@ import org.zalando.problem.ProblemModule;
 @Configuration
 public class JacksonConfiguration {
 
-  private final OpenApiProperties openApiProperties;
-
-  public JacksonConfiguration(OpenApiProperties openApiProperties) {
-    this.openApiProperties = openApiProperties;
-  }
-
   @Bean
   public Module javaTimeModule() {
     return new JavaTimeModule();
@@ -35,9 +29,8 @@ public class JacksonConfiguration {
     builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT)
         .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .modules(modules);
-    if (!openApiProperties.isSerializeNull()) {
-      builder.serializationInclusion(Include.NON_NULL);
-    }
+    builder.serializationInclusion(Include.NON_NULL);
+
     return builder;
   }
 }

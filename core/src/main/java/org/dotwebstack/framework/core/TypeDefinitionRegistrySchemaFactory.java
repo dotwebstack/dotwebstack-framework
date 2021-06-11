@@ -89,9 +89,7 @@ public class TypeDefinitionRegistrySchemaFactory {
               .fieldDefinitions(createFieldDefinitions(objectType))
               .build();
 
-          objectType.init(dotWebStackConfiguration, objectTypeDefinition);
           typeDefinitionRegistry.add(objectTypeDefinition);
-
         });
   }
 
@@ -181,11 +179,12 @@ public class TypeDefinitionRegistrySchemaFactory {
   private List<FieldDefinition> createFieldDefinitions(
       AbstractTypeConfiguration<? extends FieldConfiguration> typeConfiguration) {
     return typeConfiguration.getFields()
-        .entrySet()
+        .values()
         .stream()
-        .map(entry -> newFieldDefinition().name(entry.getKey())
-            .type(createTypeForField(entry.getValue()))
-            .inputValueDefinitions(createInputValueDefinitions(entry.getValue()))
+        .filter(fieldConfiguration -> StringUtils.isNotBlank(fieldConfiguration.getType()))
+        .map(fieldConfiguration -> newFieldDefinition().name(fieldConfiguration.getName())
+            .type(createTypeForField(fieldConfiguration))
+            .inputValueDefinitions(createInputValueDefinitions(fieldConfiguration))
             .build())
         .collect(Collectors.toList());
   }
@@ -204,8 +203,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
     List<InputValueDefinition> result = new ArrayList<>();
-    if (fieldConfiguration.getType()
-        .equals(GEOMETRY_TYPE)) {
+    if (GEOMETRY_TYPE.equals(fieldConfiguration.getType())) {
       result.add(createGeometryInputValueDefinition());
     }
 
@@ -242,7 +240,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .collect(Collectors.toList());
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
-        .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of() : queryFieldDefinitions)
+        .fieldDefinitions(
+            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
         .build();
 
     typeDefinitionRegistry.add(queryTypeDefinition);
@@ -449,6 +448,14 @@ public class TypeDefinitionRegistrySchemaFactory {
   private String createOrderName(String objectTypeName) {
     return String.format("%sOrder", StringUtils.capitalize(objectTypeName));
   }
+
+  private FieldDefinition createDummyQueryFieldDefinition() {
+    return FieldDefinition.newFieldDefinition()
+        .name("dummy")
+        .type(TypeUtils.newType("String"))
+        .build();
+  }
+
 
   private String createConnectionName(String objectTypeName) {
     return String.format("%sConnection", StringUtils.capitalize(objectTypeName));

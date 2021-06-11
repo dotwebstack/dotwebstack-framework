@@ -1,29 +1,20 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-import static graphql.language.FieldDefinition.newFieldDefinition;
-import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
-import static graphql.language.TypeName.newTypeName;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-import graphql.Scalars;
-import graphql.language.ObjectTypeDefinition;
-import graphql.schema.DataFetchingEnvironment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
-import org.dotwebstack.framework.core.datafetchers.KeyCondition;
-import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,8 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PostgresTypeConfigurationTest {
 
   private static final String FIELD_IDENTIFIER = "identifier";
-
-  private static final String FIELD_NAME = "name";
 
   private static final String FIELD_PART_OF = "partOf";
 
@@ -60,16 +49,15 @@ class PostgresTypeConfigurationTest {
 
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inversedJoinColumn);
 
-    ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
     AbstractTypeConfiguration postgresTypeConfiguration = new PostgresTypeConfiguration();
 
-    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(postgresTypeConfiguration);
+    lenient().when(objectTypesMock.get(BEER_TYPE_NAME))
+        .thenReturn(postgresTypeConfiguration);
 
-    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration));
   }
 
   @Test
-  @SuppressWarnings({"rawtypes", "unchecked"})
   void init_shouldWork_withAggregationOfConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
     JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
@@ -77,12 +65,7 @@ class PostgresTypeConfigurationTest {
     PostgresTypeConfiguration typeConfiguration =
         createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
-    ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
-
-    AbstractTypeConfiguration testTypeConfiguration = mock(PostgresTypeConfiguration.class);
-    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
-
-    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
+    assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration));
   }
 
   @Test
@@ -92,10 +75,8 @@ class PostgresTypeConfigurationTest {
 
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
 
-    ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
-
-    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
+    InvalidConfigurationException thrown =
+        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
@@ -108,49 +89,11 @@ class PostgresTypeConfigurationTest {
 
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
 
-    ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
-
-    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
+    InvalidConfigurationException thrown =
+        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
 
     assertThat(thrown.getMessage(),
         is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
-  }
-
-  @Test
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  void init_shouldThrowException_whenTargetTypeConfigurationDoesNotMatchPostgresTypeConfiguration() {
-    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inverseJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
-
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
-
-    ObjectTypeDefinition objectTypeDefinition = createObjectTypeDefinition();
-
-    AbstractTypeConfiguration testTypeConfiguration = new TestTypeConfiguration();
-
-    when(objectTypesMock.get(BEER_TYPE_NAME)).thenReturn(testTypeConfiguration);
-
-    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> typeConfiguration.init(dotWebStackConfiguration, objectTypeDefinition));
-
-    assertThat(thrown.getMessage(),
-        is(String.format("Target objectType must be an 'PostgresTypeConfiguration' but is an '%s'.",
-            testTypeConfiguration.getClass())));
-  }
-
-  private ObjectTypeDefinition createObjectTypeDefinition() {
-    return newObjectTypeDefinition().name("Ingredient")
-        .fieldDefinition(newFieldDefinition().name(FIELD_IDENTIFIER)
-            .type(newTypeName(Scalars.GraphQLString.getName()).build())
-            .build())
-        .fieldDefinition(newFieldDefinition().name(FIELD_NAME)
-            .type(newTypeName(Scalars.GraphQLString.getName()).build())
-            .build())
-        .fieldDefinition(newFieldDefinition().name(FIELD_PART_OF)
-            .type(newTypeName(BEER_TYPE_NAME).build())
-            .build())
-        .build();
   }
 
   private JoinColumn createJoinColumnWithReferencedField(String name, String fieldName) {
@@ -191,13 +134,17 @@ class PostgresTypeConfigurationTest {
 
     JoinTable joinTable = createJoinTable(joinColumn, inverseJoinColumn);
     PostgresFieldConfiguration fieldConfiguration = createPostgresFieldConfiguration(joinTable);
+    fieldConfiguration.setType("Beer");
 
     if (StringUtils.isNoneBlank(aggregationOf)) {
       fieldConfiguration.setAggregationOf(aggregationOf);
     }
 
+    PostgresFieldConfiguration stringFieldConfiguration = new PostgresFieldConfiguration();
+    stringFieldConfiguration.setType("String");
+
     Map<String, PostgresFieldConfiguration> fieldsMap =
-        new HashMap<>(Map.of(FIELD_IDENTIFIER, new PostgresFieldConfiguration(), FIELD_PART_OF, fieldConfiguration));
+        new HashMap<>(Map.of(FIELD_IDENTIFIER, stringFieldConfiguration, FIELD_PART_OF, fieldConfiguration));
 
     typeConfiguration.setFields(fieldsMap);
 
@@ -229,51 +176,9 @@ class PostgresTypeConfigurationTest {
     return fieldConfiguration;
   }
 
-  static class TestFieldConfiguration extends AbstractFieldConfiguration {
-    @Override
-    public boolean isScalarField() {
-      return false;
-    }
-
-    @Override
-    public boolean isObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isNestedObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isAggregateField() {
-      return false;
-    }
-  }
-
-  static class TestTypeConfiguration extends AbstractTypeConfiguration<TestFieldConfiguration> {
-    @Override
-    public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
-
-    @Override
-    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
-      return null;
-    }
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
   private void dotWebStackConfigurationMock() {
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
-    when(objectTypesMock.get(null)).thenReturn(null);
+    lenient().when(objectTypesMock.get(null))
+        .thenReturn(null);
   }
 }
