@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -99,6 +100,9 @@ class RequestFactoryTest {
   private List<SelectedField> selectedFields;
 
   @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
+  @Mock
   private FilterCriteriaParserFactory filterCriteriaParserFactory;
 
   @Mock
@@ -106,7 +110,7 @@ class RequestFactoryTest {
 
   @BeforeEach
   void beforeEach() {
-    requestFactory = new RequestFactory(filterCriteriaParserFactory);
+    requestFactory = new RequestFactory(dotWebStackConfiguration, filterCriteriaParserFactory);
     typeConfiguration = mock(TypeConfiguration.class);
     selectionSet = mock(DataFetchingFieldSelectionSet.class);
     fieldPathPrefix = "";

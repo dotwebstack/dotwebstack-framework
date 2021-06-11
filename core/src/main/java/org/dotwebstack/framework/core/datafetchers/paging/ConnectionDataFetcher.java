@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_MAX_VALUE;
 
 import graphql.execution.DataFetcherResult;
@@ -13,13 +15,22 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   @Override
   public Object get(DataFetchingEnvironment environment) throws Exception {
-    int firstArgumentValue = (int) Optional.ofNullable(environment.getArguments()
-        .get(PagingConstants.FIRST_ARGUMENT_NAME))
-        .orElseThrow();
-    int offsetArgumentValue = (int) Optional.ofNullable(environment.getArguments()
-        .get(PagingConstants.OFFSET_ARGUMENT_NAME))
-        .orElseThrow();
+    var fieldDefinition = environment.getFieldDefinition();
 
+    var firstArgument = fieldDefinition.getArgument(FIRST_ARGUMENT_NAME);
+    var offsetArgument = fieldDefinition.getArgument(OFFSET_ARGUMENT_NAME);
+
+    int firstArgumentValue = (int) Optional.of(firstArgument)
+        .map(argument -> environment.getArguments()
+            .get(argument.getName()))
+        .orElse(firstArgument.getDefaultValue());
+
+    int offsetArgumentValue = (int) Optional.of(offsetArgument)
+        .map(argument -> environment.getArguments()
+            .get(argument.getName()))
+        .orElse(offsetArgument.getDefaultValue());
+
+    // TODO: willen in deze situatie niet liever een foutmelding gooien?
     int first = Math.min(firstArgumentValue, FIRST_MAX_VALUE);
     int offset = Math.min(offsetArgumentValue, OFFSET_MAX_VALUE);
 

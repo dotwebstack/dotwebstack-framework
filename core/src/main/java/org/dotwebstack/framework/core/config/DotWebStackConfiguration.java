@@ -6,6 +6,7 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -16,6 +17,9 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 
 @Data
 public class DotWebStackConfiguration {
+
+  @Valid
+  private List<Feature> features;
 
   @NotNull
   @Valid
@@ -47,7 +51,6 @@ public class DotWebStackConfiguration {
     return getTypeConfiguration(fieldDefinition.getType());
   }
 
-  @SuppressWarnings("unchecked")
   public <T extends AbstractTypeConfiguration<?>> T getTypeConfiguration(GraphQLOutputType outputType) {
     return getTypeConfiguration(TypeHelper.getTypeName(outputType));
   }
@@ -57,5 +60,9 @@ public class DotWebStackConfiguration {
     return Optional.ofNullable(objectTypes.get(typeName))
         .map(type -> (T) type)
         .orElseThrow(() -> illegalStateException("Unknown type configuration: {}", typeName));
+  }
+
+  public boolean isFeatureEnabled(Feature feature) {
+    return features != null && features.contains(feature);
   }
 }

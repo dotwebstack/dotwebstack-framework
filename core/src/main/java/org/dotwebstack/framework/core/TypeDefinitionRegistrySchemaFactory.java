@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
@@ -74,7 +76,11 @@ public class TypeDefinitionRegistrySchemaFactory {
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSortTypes(dotWebStackConfiguration, typeDefinitionRegistry);
-    addConnectionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      addConnectionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    }
+
     addQueryTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSubscriptionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
@@ -181,12 +187,19 @@ public class TypeDefinitionRegistrySchemaFactory {
     return typeConfiguration.getFields()
         .values()
         .stream()
-        .filter(fieldConfiguration -> StringUtils.isNotBlank(fieldConfiguration.getType()))
-        .map(fieldConfiguration -> newFieldDefinition().name(fieldConfiguration.getName())
-            .type(createTypeForField(fieldConfiguration))
-            .inputValueDefinitions(createInputValueDefinitions(fieldConfiguration))
-            .build())
+        .flatMap(fieldConfiguration -> createFieldDefinition(fieldConfiguration).stream())
         .collect(Collectors.toList());
+  }
+
+  private Optional<FieldDefinition> createFieldDefinition(FieldConfiguration fieldConfiguration) {
+    if (StringUtils.isBlank(fieldConfiguration.getType())) {
+      return Optional.empty();
+    }
+
+    return Optional.of(newFieldDefinition().name(fieldConfiguration.getName())
+        .type(createTypeForField(fieldConfiguration))
+        .inputValueDefinitions(createInputValueDefinitions(fieldConfiguration))
+        .build());
   }
 
   private Type<?> createTypeForField(FieldConfiguration fieldConfiguration) {
@@ -194,23 +207,28 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
         .containsKey(fieldConfiguration.getType())) {
-      var connectionTypeName = createConnectionName(type);
-      return newNonNullableType(connectionTypeName);
+
+      if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+        var connectionTypeName = createConnectionName(type);
+        return newNonNullableType(connectionTypeName);
+      } else {
+        return newNonNullableListType(type);
+      }
     }
 
     return createType(fieldConfiguration);
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
-    List<InputValueDefinition> result = new ArrayList<>();
+    List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
     if (GEOMETRY_TYPE.equals(fieldConfiguration.getType())) {
-      result.add(createGeometryInputValueDefinition());
+      inputValueDefinitions.add(createGeometryInputValueDefinition());
     }
 
     fieldConfiguration.getArguments()
         .stream()
         .map(this::createFieldInputValueDefinition)
-        .forEach(result::add);
+        .forEach(inputValueDefinitions::add);
 
     if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
         .containsKey(fieldConfiguration.getType())) {
@@ -218,13 +236,19 @@ public class TypeDefinitionRegistrySchemaFactory {
           dotWebStackConfiguration.getTypeConfiguration(fieldConfiguration.getType());
 
       createInputValueDefinitionForFilteredObject(fieldConfiguration.getType(), objectTypeConfiguration)
-          .ifPresent(result::add);
+          .ifPresent(inputValueDefinitions::add);
 
       createInputValueDefinitionForSortableByObject(fieldConfiguration.getType(), objectTypeConfiguration)
-          .ifPresent(result::add);
+          .ifPresent(inputValueDefinitions::add);
+
+      if (fieldConfiguration.isList()) {
+        createFirstArgument().ifPresent(inputValueDefinitions::add);
+        createOffsetArgument().ifPresent(inputValueDefinitions::add);
+      }
+
     }
 
-    return result;
+    return inputValueDefinitions;
   }
 
   private void addQueryTypes(DotWebStackConfiguration dotWebStackConfiguration,
@@ -303,7 +327,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addQueryArgumentsForKeys(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
-    addPagingArguments(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
+    inputValueDefinitions.addAll(createPagingArguments(queryConfiguration));
 
     addOptionalFilterObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
@@ -319,8 +343,12 @@ public class TypeDefinitionRegistrySchemaFactory {
     var type = queryConfiguration.getType();
 
     if (queryConfiguration.isList()) {
-      var connectionTypeName = createConnectionName(type);
-      return newNonNullableType(connectionTypeName);
+      if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+        var connectionTypeName = createConnectionName(type);
+        return newNonNullableType(connectionTypeName);
+      } else {
+        return newNonNullableListType(type);
+      }
     }
 
     return createType(queryConfiguration);
@@ -393,33 +421,36 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
-  private void addPagingArguments(QueryConfiguration queryConfiguration,
-      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
-      List<InputValueDefinition> inputValueDefinitions) {
+  private List<InputValueDefinition> createPagingArguments(QueryConfiguration queryConfiguration) {
     if (queryConfiguration.isList()) {
-      addFirstArgument(inputValueDefinitions);
-      addOffsetArgument(inputValueDefinitions);
+      return Stream.concat(createFirstArgument().stream(), createOffsetArgument().stream())
+          .collect(Collectors.toList());
     }
+
+    return List.of();
   }
 
-  private void addFirstArgument(List<InputValueDefinition> inputValueDefinitions) {
-    var inputValueDefinition = newInputValueDefinition().name(PagingConstants.FIRST_ARGUMENT_NAME)
-        .type(newType(Scalars.GraphQLInt.getName()))
-        .defaultValue(IntValue.newIntValue(PagingConstants.FIRST_DEFAULT_VALUE)
-            .build())
-        .build();
+  private Optional<InputValueDefinition> createFirstArgument() {
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      return Optional.of(newInputValueDefinition().name(PagingConstants.FIRST_ARGUMENT_NAME)
+          .type(newType(Scalars.GraphQLInt.getName()))
+          .defaultValue(IntValue.newIntValue(PagingConstants.FIRST_DEFAULT_VALUE)
+              .build())
+          .build());
+    }
 
-    inputValueDefinitions.add(inputValueDefinition);
+    return Optional.empty();
   }
 
-  private void addOffsetArgument(List<InputValueDefinition> inputValueDefinitions) {
-    var inputValueDefinition = newInputValueDefinition().name(PagingConstants.OFFSET_ARGUMENT_NAME)
-        .type(newType(Scalars.GraphQLInt.getName()))
-        .defaultValue(IntValue.newIntValue(PagingConstants.OFFSET_DEFAULT_VALUE)
-            .build())
-        .build();
-
-    inputValueDefinitions.add(inputValueDefinition);
+  private Optional<InputValueDefinition> createOffsetArgument() {
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      return Optional.of(newInputValueDefinition().name(PagingConstants.OFFSET_ARGUMENT_NAME)
+          .type(newType(Scalars.GraphQLInt.getName()))
+          .defaultValue(IntValue.newIntValue(PagingConstants.OFFSET_DEFAULT_VALUE)
+              .build())
+          .build());
+    }
+    return Optional.empty();
   }
 
   private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,

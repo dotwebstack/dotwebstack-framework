@@ -18,9 +18,9 @@ public final class PagingConstants {
 
   public static final String FIRST_ARGUMENT_NAME = "first";
 
-  public static final BigInteger FIRST_DEFAULT_VALUE = BigInteger.valueOf(10);
+  public static final BigInteger FIRST_DEFAULT_VALUE = BigInteger.ZERO;
 
   public static final String OFFSET_ARGUMENT_NAME = "offset";
 
-  public static final BigInteger OFFSET_DEFAULT_VALUE = BigInteger.ZERO;
+  public static final BigInteger OFFSET_DEFAULT_VALUE = BigInteger.valueOf(10);
 }

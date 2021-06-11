@@ -24,12 +24,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -48,9 +52,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestFactory {
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
-  public RequestFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {
+  public RequestFactory(DotWebStackConfiguration dotWebStackConfiguration,
+      FilterCriteriaParserFactory filterCriteriaParserFactory) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.filterCriteriaParserFactory = filterCriteriaParserFactory;
   }
 
@@ -61,7 +69,7 @@ public class RequestFactory {
         .objectRequest(createObjectRequest(typeConfiguration, environment))
         .filterCriterias(createFilterCriterias(typeConfiguration, environment))
         .sortCriterias(createSortCriterias(typeConfiguration, environment))
-        .pagingCriteria(createPagingCriteria(typeConfiguration, environment))
+        .pagingCriteria(createPagingCriteria(environment).orElse(null))
         .build();
   }
 
@@ -165,13 +173,15 @@ public class RequestFactory {
     return List.of();
   }
 
-  private PagingCriteria createPagingCriteria(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
-    var context = (PagingDataFetcherContext) environment.getLocalContext();
-    return PagingCriteria.builder()
-        .page(context.getFirst())
-        .pageSize(context.getOffset())
-        .build();
+  private Optional<PagingCriteria> createPagingCriteria(DataFetchingEnvironment environment) {
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      var context = (PagingDataFetcherContext) environment.getLocalContext();
+      return Optional.of(PagingCriteria.builder()
+          .page(context.getFirst())
+          .pageSize(context.getOffset())
+          .build());
+    }
+    return Optional.empty();
   }
 
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
@@ -323,7 +333,12 @@ public class RequestFactory {
 
   private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingEnvironment environment) {
     return environment.getSelectionSet()
-        .getFields(fieldPathPrefix.concat("*.*"));
+        .getFields(fieldPathPrefix.concat("*.*"))
+        .stream()
+        // TODO: Deze filter stap moeten we nog iets netter maken
+        .filter(selectedField -> !StringUtils.endsWith(TypeHelper.getTypeName(selectedField.getFieldDefinition()
+            .getType()), "Connection"))
+        .collect(Collectors.toList());
   }
 
   @Data
