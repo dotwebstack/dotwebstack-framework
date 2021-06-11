@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.config;
 
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   Map<String, List<SortCriteria>> getSortCriterias();
 
-  void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition);
+  void init(DotWebStackConfiguration dotWebStackConfiguration);
 
   KeyCondition getKeyCondition(DataFetchingEnvironment environment);
 

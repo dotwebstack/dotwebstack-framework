@@ -5,10 +5,8 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
-import java.util.Objects;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,17 +27,15 @@ public class JsonTypeConfiguration extends AbstractTypeConfiguration<JsonFieldCo
   private String file;
 
   @Override
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
-    fields.entrySet()
+  public void init(DotWebStackConfiguration dotWebStackConfiguration) {
+    fields.values()
         .stream()
-        .filter(entry -> Objects.nonNull(entry.getValue()))
-        .filter(entry -> isNotEmpty(entry.getValue()
-            .getAggregationOf()))
+        .filter(fieldConfiguration -> isNotEmpty(fieldConfiguration.getAggregationOf()))
         .findFirst()
-        .ifPresent(entry -> {
+        .ifPresent(fieldConfiguration -> {
           throw invalidConfigurationException(
               "Usage of 'aggregationOf' by field '{}.{}' is not supported with an JSON backend",
-              objectTypeDefinition.getName(), entry.getKey());
+              fieldConfiguration.getType(), fieldConfiguration.getName());
         });
   }
 

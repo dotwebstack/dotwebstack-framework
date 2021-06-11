@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
@@ -73,7 +72,7 @@ class PostgresDataLoaderTest {
   void supports_returnsFalse_withNonPostgresTypeConfiguration() {
     boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {
       @Override
-      public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {}
+      public void init(DotWebStackConfiguration dotWebStackConfiguration) {}
 
       @Override
       public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {

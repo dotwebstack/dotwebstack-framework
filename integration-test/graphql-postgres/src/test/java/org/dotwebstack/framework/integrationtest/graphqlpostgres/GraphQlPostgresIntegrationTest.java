@@ -1311,6 +1311,25 @@ class GraphQlPostgresIntegrationTest {
     assertThat(getNestedObjects(breweries.get(3), BEERS).size(), is(0));
   }
 
+  @Test
+  void graphQlQuery_returnsBreweries_forNestedObjectFilterQuery() {
+    String query = "{breweries(filter: {historyAge: {eq: 1988}}) { identifier_brewery name }}";
+
+    JsonNode json = executePostRequest(query, "application/graphql");
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERIES), is(true));
+
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(1));
+
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+  }
+
   private JsonNode executeGetRequestDefault(String query) {
     return executeGetRequest(query, "", "");
   }

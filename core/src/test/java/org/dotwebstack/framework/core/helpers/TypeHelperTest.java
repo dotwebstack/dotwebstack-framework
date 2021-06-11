@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -19,6 +20,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -110,6 +112,31 @@ class TypeHelperTest {
     } else {
       assertEquals(expected, TypeHelper.hasListType(inputType));
     }
+  }
+
+  @Test
+  void isNumericType_returnsFalse_forNullValue() {
+    assertThat(TypeHelper.isNumericType(null), CoreMatchers.equalTo(Boolean.FALSE));
+  }
+
+  @Test
+  void isNumericType_returnsTrue_forFloat() {
+    assertThat(TypeHelper.isNumericType(Scalars.GraphQLFloat.getName()), CoreMatchers.equalTo(Boolean.TRUE));
+  }
+
+  @Test
+  void isNumericType_returnsFalse_forString() {
+    assertThat(TypeHelper.isNumericType(Scalars.GraphQLString.getName()), CoreMatchers.equalTo(Boolean.FALSE));
+  }
+
+  @Test
+  void isTextType_returnsFalse_forFloat() {
+    assertThat(TypeHelper.isTextType(Scalars.GraphQLFloat.getName()), CoreMatchers.equalTo(Boolean.FALSE));
+  }
+
+  @Test
+  void isTextType_returnsTrue_forString() {
+    assertThat(TypeHelper.isTextType(Scalars.GraphQLString.getName()), CoreMatchers.equalTo(Boolean.TRUE));
   }
 
   private static Stream<Arguments> unwrapTypeArguments() {

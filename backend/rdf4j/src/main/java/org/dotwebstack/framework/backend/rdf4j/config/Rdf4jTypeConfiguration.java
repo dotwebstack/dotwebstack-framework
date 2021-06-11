@@ -4,7 +4,6 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import graphql.language.ObjectTypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
 import java.util.Objects;
@@ -26,12 +25,7 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
   private String nodeShape;
 
   @Override
-  public void init(DotWebStackConfiguration dotWebStackConfiguration, ObjectTypeDefinition objectTypeDefinition) {
-    // Calculate the column names once on init
-    objectTypeDefinition.getFieldDefinitions()
-        .forEach(fieldDefinition -> fields.computeIfAbsent(fieldDefinition.getName(),
-            fieldName -> new Rdf4jFieldConfiguration()));
-
+  public void init(DotWebStackConfiguration dotWebStackConfiguration) {
     fields.entrySet()
         .stream()
         .filter(entry -> Objects.nonNull(entry.getValue()))
@@ -40,8 +34,9 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
         .findFirst()
         .ifPresent(entry -> {
           throw invalidConfigurationException(
-              "Usage of 'aggregationOf' by field '{}.{}' is not supported with an RDF4J backend",
-              objectTypeDefinition.getName(), entry.getKey());
+              "Usage of 'aggregationOf' by field '{}.{}' is not supported with an RDF4J backend", entry.getValue()
+                  .getType(),
+              entry.getKey());
         });
   }
 
