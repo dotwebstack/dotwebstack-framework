@@ -209,17 +209,62 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Subscription")
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Subscription")
+    var subscriptionTypeDefinition = registry.getType("Subscription")
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Subscription"));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    assertThat(subscriptionTypeDefinition.getName(), is("Subscription"));
+    assertThat(subscriptionTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) subscriptionTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(1));
 
     var brewerySubscriptionFieldDefinition = fieldDefinitions.get(0);
     assertThat(brewerySubscriptionFieldDefinition.getName(), is("brewerySubscription"));
     assertNonNullType(brewerySubscriptionFieldDefinition.getType(), "Brewery");
     assertThat(brewerySubscriptionFieldDefinition.getInputValueDefinitions(), empty());
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerSubscriptionsWithSortableBy_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-subscriptions-with-sortable-by.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Subscription")
+        .isPresent(), is(true));
+    var subscriptionTypeDefinition = registry.getType("Subscription")
+        .orElseThrow();
+    assertThat(subscriptionTypeDefinition.getName(), is("Subscription"));
+    assertThat(subscriptionTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) subscriptionTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(1));
+
+    var brewerySubscriptionFieldDefinition = fieldDefinitions.get(0);
+    assertThat(brewerySubscriptionFieldDefinition.getName(), is("brewerySubscription"));
+    assertNonNullType(brewerySubscriptionFieldDefinition.getType(), "Brewery");
+
+    assertThat(brewerySubscriptionFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var inputValueDefinition = brewerySubscriptionFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(inputValueDefinition.getName(), is("sort"));
+    assertThat(inputValueDefinition.getDefaultValue(), instanceOf(EnumValue.class));
+    assertThat(((EnumValue) inputValueDefinition.getDefaultValue()).getName(), is("NAME"));
+
+    assertThat(inputValueDefinition.getType(), instanceOf(TypeName.class));
+    assertThat(((TypeName) inputValueDefinition.getType()).getName(), equalTo("BreweryOrder"));
+
+    var sortTypeDefinition = (EnumTypeDefinition) registry.getType(inputValueDefinition.getType())
+        .orElse(null);
+
+    assertThat(sortTypeDefinition, notNullValue());
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .size(), is(2));
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .stream()
+        .map(EnumValueDefinition::getName)
+        .collect(Collectors.toList()), equalTo(List.of("NAME", "ADDRESS")));
   }
 
   @Test
@@ -257,9 +302,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
   @Test
   void typeDefinitionRegistry_validationException_whenEnumerationHasNoValues() {
-    assertThrows(InvalidConfigurationException.class, () -> {
-      dwsReader.read("dotwebstack/dotwebstack-enumerations-empty-values.yaml");
-    });
+    assertThrows(InvalidConfigurationException.class,
+        () -> dwsReader.read("dotwebstack/dotwebstack-enumerations-empty-values.yaml"));
   }
 
   @Test

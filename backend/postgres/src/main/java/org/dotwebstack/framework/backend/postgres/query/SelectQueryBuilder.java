@@ -568,10 +568,11 @@ public class SelectQueryBuilder {
                       .getName())
                   : fromTable.getName();
 
-          Field<?> sortField = DSL.field(DSL.name(sortTable, sortCriteria.getFieldPath()
+          var sortFieldConfiguration = (PostgresFieldConfiguration) sortCriteria.getFieldPath()
               .getLeaf()
-              .getFieldConfiguration()
-              .getName()));
+              .getFieldConfiguration();
+
+          Field<?> sortField = DSL.field(DSL.name(sortTable, sortFieldConfiguration.getColumn()));
 
           switch (sortCriteria.getDirection()) {
             case ASC:

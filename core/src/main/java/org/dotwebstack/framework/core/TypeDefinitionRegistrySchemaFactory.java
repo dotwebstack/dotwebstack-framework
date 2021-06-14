@@ -246,12 +246,15 @@ public class TypeDefinitionRegistrySchemaFactory {
   private FieldDefinition createSubscriptionFieldDefinition(String queryName,
       SubscriptionConfiguration subscriptionConfiguration,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+    var inputValueDefinitions = subscriptionConfiguration.getKeys()
+        .stream()
+        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
+        .collect(Collectors.toList());
+
+    addOptionalSortableByObject(subscriptionConfiguration, objectTypeConfiguration, inputValueDefinitions);
     return newFieldDefinition().name(queryName)
         .type(createType(subscriptionConfiguration))
-        .inputValueDefinitions(subscriptionConfiguration.getKeys()
-            .stream()
-            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
-            .collect(Collectors.toList()))
+        .inputValueDefinitions(inputValueDefinitions)
         .build();
   }
 
@@ -314,6 +317,14 @@ public class TypeDefinitionRegistrySchemaFactory {
           .ifPresent(inputValueDefinitions::add);
     }
   }
+
+  private void addOptionalSortableByObject(SubscriptionConfiguration subscriptionConfiguration,
+      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    createInputValueDefinitionForSortableByObject(subscriptionConfiguration.getType(), objectTypeConfiguration)
+        .ifPresent(inputValueDefinitions::add);
+  }
+
 
   private Optional<InputValueDefinition> createInputValueDefinitionForSortableByObject(String typeName,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
