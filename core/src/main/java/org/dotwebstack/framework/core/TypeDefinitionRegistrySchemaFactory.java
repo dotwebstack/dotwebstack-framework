@@ -488,8 +488,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private FieldDefinition createDummyQueryFieldDefinition() {
-    return FieldDefinition.newFieldDefinition()
-        .name("dummy")
+    return newFieldDefinition().name("dummy")
         .type(TypeUtils.newType("String"))
         .build();
   }
