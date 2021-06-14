@@ -8,12 +8,14 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
@@ -33,7 +34,6 @@ import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -56,10 +56,13 @@ public class RequestFactory {
 
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
+
   public RequestFactory(DotWebStackConfiguration dotWebStackConfiguration,
-      FilterCriteriaParserFactory filterCriteriaParserFactory) {
+      FilterCriteriaParserFactory filterCriteriaParserFactory, TypeDefinitionRegistry typeDefinitionRegistry) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.filterCriteriaParserFactory = filterCriteriaParserFactory;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
@@ -335,9 +338,8 @@ public class RequestFactory {
     return environment.getSelectionSet()
         .getFields(fieldPathPrefix.concat("*.*"))
         .stream()
-        // TODO: Deze filter stap moeten we nog iets netter maken
-        .filter(selectedField -> !StringUtils.endsWith(TypeHelper.getTypeName(selectedField.getFieldDefinition()
-            .getType()), "Connection"))
+        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinition()
+            .getType()))
         .collect(Collectors.toList());
   }
 

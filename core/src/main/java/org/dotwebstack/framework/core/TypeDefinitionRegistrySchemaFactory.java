@@ -7,6 +7,7 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
@@ -45,6 +46,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -140,6 +142,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .fieldDefinition(newFieldDefinition().name(PagingConstants.OFFSET_FIELD_NAME)
             .type(newNonNullableType(Scalars.GraphQLInt.getName()))
             .build())
+        .additionalData(Map.of(TypeHelper.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
         .build();
   }
 
@@ -208,16 +211,35 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (fieldConfiguration.isList() && dotWebStackConfiguration.getObjectTypes()
         .containsKey(fieldConfiguration.getType())) {
 
-      if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
-        var connectionTypeName = createConnectionName(type);
-        return newNonNullableType(connectionTypeName);
-      } else {
-        return newNonNullableListType(type);
-      }
+      return createListType(type, fieldConfiguration.isNullable());
     }
 
     return createType(fieldConfiguration);
   }
+
+  private Type<?> createTypeForQuery(QueryConfiguration queryConfiguration) {
+    var type = queryConfiguration.getType();
+
+    if (queryConfiguration.isList()) {
+      return createListType(type, queryConfiguration.isNullable());
+    }
+
+    return createType(queryConfiguration);
+  }
+
+  private Type<?> createListType(String type, boolean nullable) {
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      var connectionTypeName = createConnectionName(type);
+      return newNonNullableType(connectionTypeName);
+    } else {
+      if (nullable) {
+        return newListType(type);
+      } else {
+        return newNonNullableListType(type);
+      }
+    }
+  }
+
 
   private List<InputValueDefinition> createInputValueDefinitions(FieldConfiguration fieldConfiguration) {
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
@@ -337,21 +359,6 @@ public class TypeDefinitionRegistrySchemaFactory {
         .type(createTypeForQuery(queryConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
         .build();
-  }
-
-  private Type<?> createTypeForQuery(QueryConfiguration queryConfiguration) {
-    var type = queryConfiguration.getType();
-
-    if (queryConfiguration.isList()) {
-      if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
-        var connectionTypeName = createConnectionName(type);
-        return newNonNullableType(connectionTypeName);
-      } else {
-        return newNonNullableListType(type);
-      }
-    }
-
-    return createType(queryConfiguration);
   }
 
   private void addQueryArgumentsForKeys(QueryConfiguration queryConfiguration,
