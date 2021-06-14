@@ -5,6 +5,8 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -77,5 +79,24 @@ class ConnectionDataFetcherTest {
         .first(1)
         .offset(10)
         .build()));
+  }
+
+  @Test
+  void get_throwsException_forInvalidFirstArgumentValue() {
+    when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, 101, OFFSET_ARGUMENT_NAME, 20));
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    assertThat(exception.getMessage(), is("Argument first can't be bigger then 100."));
+  }
+
+  @Test
+  void get_throwsException_forInvalidOffsetArgumentValue() {
+    when(dataFetchingEnvironment.getArguments())
+        .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 2, OFFSET_ARGUMENT_NAME, 10001));
+
+    IllegalArgumentException exception =
+        assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    assertThat(exception.getMessage(), is("Argument offset can't be bigger then 10000."));
   }
 }
