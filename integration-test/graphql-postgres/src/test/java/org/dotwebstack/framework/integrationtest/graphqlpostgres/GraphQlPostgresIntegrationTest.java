@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import io.r2dbc.spi.ConnectionFactory;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +33,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -112,17 +109,6 @@ class GraphQlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
     registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
     registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
-  }
-
-  @org.springframework.boot.test.context.TestConfiguration
-  static class TestConfiguration {
-    @Bean
-    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
-      ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
-      initializer.setConnectionFactory(connectionFactory);
-
-      return initializer;
-    }
   }
 
   @Test

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.config.validators.DotWebStackConfigurationValidator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,12 +13,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CoreConfiguration {
 
-  private static final String CONFIG_FILE = "dotwebstack.yaml";
 
   @Bean
-  public DotWebStackConfiguration dotWebStackConfiguration(List<DotWebStackConfigurationValidator> validators) {
+  public DotWebStackConfiguration dotWebStackConfiguration(
+      @Value("${dotwebstack.config:dotwebstack.yaml}") String configFilename,
+      List<DotWebStackConfigurationValidator> validators) {
     var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
-    var dotWebStackConfiguration = dotWebStackConfigurationReader.read(CONFIG_FILE);
+    var dotWebStackConfiguration = dotWebStackConfigurationReader.read(configFilename);
 
     dotWebStackConfiguration.getObjectTypes()
         .values()
