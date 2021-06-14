@@ -168,7 +168,7 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
-            + "order by \"t1\".\"name\" asc"));
+            + "order by \"t1\".\"nameColumn\" asc"));
   }
 
   @Test
@@ -195,7 +195,7 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
-            + "order by \"t1\".\"name\" desc"));
+            + "order by \"t1\".\"nameColumn\" desc"));
   }
 
   @Test
