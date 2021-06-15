@@ -8,12 +8,14 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +27,13 @@ import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -47,27 +52,28 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestFactory {
 
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
 
-  public RequestFactory(FilterCriteriaParserFactory filterCriteriaParserFactory) {
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
+
+  public RequestFactory(DotWebStackConfiguration dotWebStackConfiguration,
+      FilterCriteriaParserFactory filterCriteriaParserFactory, TypeDefinitionRegistry typeDefinitionRegistry) {
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.filterCriteriaParserFactory = filterCriteriaParserFactory;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment, boolean addLimit) {
+      DataFetchingEnvironment environment) {
 
-    var collectionQueryBuilder = CollectionRequest.builder()
+    return CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
         .filterCriterias(createFilterCriterias(typeConfiguration, environment))
-        .sortCriterias(createSortCriterias(typeConfiguration, environment));
-    if (addLimit) {
-      collectionQueryBuilder.pagingCriteria(PagingCriteria.builder()
-          .page(0)
-          .pageSize(10)
-          .build());
-    }
-
-    return collectionQueryBuilder.build();
+        .sortCriterias(createSortCriterias(typeConfiguration, environment))
+        .pagingCriteria(createPagingCriteria(environment).orElse(null))
+        .build();
   }
 
   public ObjectRequest createObjectRequest(TypeConfiguration<?> typeConfiguration,
@@ -168,6 +174,17 @@ public class RequestFactory {
     }
 
     return List.of();
+  }
+
+  private Optional<PagingCriteria> createPagingCriteria(DataFetchingEnvironment environment) {
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      var context = (PagingDataFetcherContext) environment.getLocalContext();
+      return Optional.of(PagingCriteria.builder()
+          .page(context.getFirst())
+          .pageSize(context.getOffset())
+          .build());
+    }
+    return Optional.empty();
   }
 
   private Stream<GraphQLInputObjectField> getInputObjectFields(GraphQLInputObjectType inputObjectType) {
@@ -319,7 +336,11 @@ public class RequestFactory {
 
   private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingEnvironment environment) {
     return environment.getSelectionSet()
-        .getFields(fieldPathPrefix.concat("*.*"));
+        .getFields(fieldPathPrefix.concat("*.*"))
+        .stream()
+        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinition()
+            .getType()))
+        .collect(Collectors.toList());
   }
 
   @Data

@@ -7,6 +7,7 @@
   - [Diagrams](core/diagrams.md)
   - [Filtering](core/filtering.md)
   - [Sorting](core/sorting.md)
+  - [Paging](core/paging.md)
   
 - Backend modules
 

@@ -7,16 +7,20 @@ import graphql.Scalars;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
+import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
 public class TypeHelper {
+  public static final String IS_CONNECTION_TYPE = "isConnectionType";
+
   private TypeHelper() {}
 
   public static boolean hasListType(@NonNull Type<?> type) {
@@ -119,5 +123,33 @@ public class TypeHelper {
   public static boolean isTextType(String type) {
     return Scalars.GraphQLString.getName()
         .equals(type);
+  }
+
+  public static boolean isConnectionType(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+      @NonNull GraphQLType type) {
+    return isConnectionType(typeDefinitionRegistry, TypeHelper.getTypeName(type));
+  }
+
+  public static boolean isConnectionType(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+      @NonNull Type<?> type) {
+    var unwrappedType = unwrapType(type);
+
+    var typeName = getTypeName(unwrappedType);
+
+    return isConnectionType(typeDefinitionRegistry, typeName);
+  }
+
+  public static boolean isConnectionType(@NonNull TypeDefinitionRegistry typeDefinitionRegistry, @NonNull String type) {
+    TypeDefinition<?> typeDefinition = typeDefinitionRegistry.types()
+        .get(type);
+
+    if (typeDefinition == null) {
+      return false;
+    }
+
+    return typeDefinition.getAdditionalData()
+        .containsKey(IS_CONNECTION_TYPE)
+        && Boolean.parseBoolean(typeDefinition.getAdditionalData()
+            .get(IS_CONNECTION_TYPE));
   }
 }

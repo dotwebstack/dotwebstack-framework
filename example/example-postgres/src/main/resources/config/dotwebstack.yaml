@@ -1,3 +1,6 @@
+features:
+  - PAGING
+
 subscriptions:
   beerSubscription:
     type: Beer

@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.core;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +31,9 @@ import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -74,6 +79,43 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
     assertNonNullListType(breweryCollectionFieldDefinition.getType(), "Brewery");
     assertThat(breweryCollectionFieldDefinition.getInputValueDefinitions(), empty());
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerQueries_whenConfiguredWithPagingFeature() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Query")
+        .isPresent(), is(true));
+    var queryTypeDefinition = registry.getType("Query")
+        .orElseThrow();
+    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(2));
+
+    var breweryFieldDefinition = fieldDefinitions.get(0);
+    assertThat(breweryFieldDefinition.getName(), is("brewery"));
+    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertThat(breweryFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var queryInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(queryInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(queryInputValueDefinition.getType(), "ID");
+
+    var breweryConnectionFieldDefinition = fieldDefinitions.get(1);
+    assertThat(breweryConnectionFieldDefinition.getName(), is("breweryCollection"));
+    assertThat(TypeHelper.getTypeName(breweryConnectionFieldDefinition.getType()), equalTo("BreweryConnection"));
+
+    assertThat(breweryConnectionFieldDefinition.getInputValueDefinitions(),
+        IsIterableContaining.hasItems(allOf(hasProperty("name", equalTo(PagingConstants.FIRST_ARGUMENT_NAME))),
+            hasProperty("name", equalTo(PagingConstants.OFFSET_FIELD_NAME))));
   }
 
   @Test

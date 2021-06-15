@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.config;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
@@ -20,10 +21,12 @@ public class DotWebStackConfigurationReader {
 
   public DotWebStackConfigurationReader() {
     registerSubTypes();
+    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
   }
 
   public DotWebStackConfigurationReader(Class<?>... configurationClasses) {
     objectMapper.registerSubtypes(configurationClasses);
+    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
   }
 
   private void registerSubTypes() {

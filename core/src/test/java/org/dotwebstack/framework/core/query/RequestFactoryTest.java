@@ -27,7 +27,10 @@ import static org.mockito.Mockito.when;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +38,17 @@ import java.util.stream.Stream;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,14 +106,20 @@ class RequestFactoryTest {
   private List<SelectedField> selectedFields;
 
   @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
+  @Mock
   private FilterCriteriaParserFactory filterCriteriaParserFactory;
+
+  @Mock
+  private TypeDefinitionRegistry typeDefinitionRegistry;
 
   @Mock
   private DataFetchingEnvironment environment;
 
   @BeforeEach
   void beforeEach() {
-    requestFactory = new RequestFactory(filterCriteriaParserFactory);
+    requestFactory = new RequestFactory(dotWebStackConfiguration, filterCriteriaParserFactory, typeDefinitionRegistry);
     typeConfiguration = mock(TypeConfiguration.class);
     selectionSet = mock(DataFetchingFieldSelectionSet.class);
     fieldPathPrefix = "";
@@ -134,7 +147,7 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
     assertCollectionQuery(collectionQuery);
   }
@@ -163,11 +176,43 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment, true);
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getSortCriterias(), notNullValue());
     assertThat(collectionQuery.getSortCriterias(), equalTo(List.of(sortCriteria)));
+  }
+
+  @Test
+  void createCollectionQuery_returnsCollectionQuery_forPaging() {
+    when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+
+    when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
+        .first(1)
+        .offset(10)
+        .build());
+
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    var fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    when(environment.getArguments()).thenReturn(Map.of());
+
+    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+        .type(newObject().name("ReturnObject")
+            .build())
+        .build());
+
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
+
+    assertCollectionQuery(collectionQuery);
+    assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
+        .page(1)
+        .pageSize(10)
+        .build()));
+
   }
 
   @Test
@@ -369,11 +414,6 @@ class RequestFactoryTest {
   }
 
   private void assertCollectionQuery(CollectionRequest collectionRequest) {
-    assertThat(collectionRequest.getPagingCriteria()
-        .getPage(), is(0));
-    assertThat(collectionRequest.getPagingCriteria()
-        .getPageSize(), is(10));
-
     assertIdentifierScalarConfiguration(collectionRequest.getObjectRequest());
   }
 
@@ -539,8 +579,17 @@ class RequestFactoryTest {
   }
 
   private SelectedField mockSelectedField(String name) {
-    SelectedField selectedField = mock(SelectedField.class);
+    var selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
+
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+
+    var type = mock(GraphQLObjectType.class);
+    when(type.getName()).thenReturn("testType");
+
+    when(fieldDefinition.getType()).thenReturn(type);
+
+    when(selectedField.getFieldDefinition()).thenReturn(fieldDefinition);
 
     return selectedField;
   }
