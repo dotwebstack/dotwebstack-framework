@@ -39,13 +39,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,9 +62,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-// TODO: Scenarios met PAGING feature enabled missen nog
-// TODO: Als PAGING feature uitstaat wat zal dan het gedrag moeten zijn. complete lijst of default
-// paging
 class RequestFactoryTest {
 
   private static final String FIELD_IDENTIFIER = "identifier";
@@ -181,6 +181,38 @@ class RequestFactoryTest {
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getSortCriterias(), notNullValue());
     assertThat(collectionQuery.getSortCriterias(), equalTo(List.of(sortCriteria)));
+  }
+
+  @Test
+  void createCollectionQuery_returnsCollectionQuery_forPaging() {
+    when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+
+    when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
+        .first(1)
+        .offset(10)
+        .build());
+
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    var fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    when(environment.getArguments()).thenReturn(Map.of());
+
+    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+        .type(newObject().name("ReturnObject")
+            .build())
+        .build());
+
+    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
+
+    assertCollectionQuery(collectionQuery);
+    assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
+        .page(1)
+        .pageSize(10)
+        .build()));
+
   }
 
   @Test
@@ -382,11 +414,6 @@ class RequestFactoryTest {
   }
 
   private void assertCollectionQuery(CollectionRequest collectionRequest) {
-    // assertThat(collectionRequest.getPagingCriteria()
-    // .getPage(), is(0));
-    // assertThat(collectionRequest.getPagingCriteria()
-    // .getPageSize(), is(10));
-
     assertIdentifierScalarConfiguration(collectionRequest.getObjectRequest());
   }
 
