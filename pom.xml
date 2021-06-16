@@ -67,6 +67,7 @@
     <testcontainers.version>1.15.3</testcontainers.version>
     <postgis-jdbc.version>2.5.0</postgis-jdbc.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.organization>dotwebstack</sonar.organization>
   </properties>
 
   <modules>
