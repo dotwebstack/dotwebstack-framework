@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: v0.3
+          ref: DHUB-479-2
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
