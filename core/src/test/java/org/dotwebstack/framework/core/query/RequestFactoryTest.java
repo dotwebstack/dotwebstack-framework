@@ -22,8 +22,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLEnumType;
@@ -58,7 +61,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -117,6 +119,9 @@ class RequestFactoryTest {
   @Mock
   private DataFetchingEnvironment environment;
 
+  @Mock
+  private ExecutionStepInfo executionStepInfo;
+
   @BeforeEach
   void beforeEach() {
     requestFactory = new RequestFactory(dotWebStackConfiguration, filterCriteriaParserFactory, typeDefinitionRegistry);
@@ -138,7 +143,8 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
         .type(newObject().name("ReturnObject")
             .build())
         .argument(newArgument().name(FilterConstants.FILTER_ARGUMENT_NAME)
@@ -156,7 +162,7 @@ class RequestFactoryTest {
   void createCollectionQuery_returnsCollectionQuery_forSortedScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
-    var sortCriteria = Mockito.mock(SortCriteria.class);
+    var sortCriteria = mock(SortCriteria.class);
 
     when(typeConfiguration.getSortCriterias()).thenReturn(Map.of("IDENTIFICATIE", List.of(sortCriteria)));
 
@@ -164,9 +170,10 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    when(environment.getArguments()).thenReturn(Map.of("sort", "IDENTIFICATIE"));
+    when(executionStepInfo.getArguments()).thenReturn(Map.of("sort", "IDENTIFICATIE"));
 
-    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
         .type(newObject().name("ReturnObject")
             .build())
         .argument(newArgument().name(SortConstants.SORT_ARGUMENT_NAME)
@@ -192,6 +199,8 @@ class RequestFactoryTest {
         .offset(10)
         .build());
 
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     var fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -200,10 +209,15 @@ class RequestFactoryTest {
 
     when(environment.getArguments()).thenReturn(Map.of());
 
-    when(environment.getFieldDefinition()).thenReturn(newFieldDefinition().name("testQuery")
+    var fieldDefinition = newFieldDefinition().name("testQuery")
         .type(newObject().name("ReturnObject")
             .build())
-        .build());
+        .build();
+
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(environment.getExecutionStepInfo()
+        .getParent()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinition);
 
     var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
@@ -212,6 +226,8 @@ class RequestFactoryTest {
         .page(1)
         .pageSize(10)
         .build()));
+
+    verify(executionStepInfo, times(1)).getParent();
 
   }
 
