@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Release
 
 # Controls when the action will run. 
@@ -21,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: DHUB-479
+          ref: v0.3
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
@@ -43,14 +41,6 @@ jobs:
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          
-#       - name: Code signing
-#         run: |
-#           openssl aes-256-cbc -K $encrypted_1cc2137e332d_key -iv $encrypted_1cc2137e332d_iv -in codesigning.asc.enc -out codesigning.asc -d
-#           gpg --fast-import codesigning.asc
-#         env:
-#           encrypted_1cc2137e332d_key: ${{ secrets.ENCRYPTED_1CC2137E332D_KEY }}
-#           encrypted_1cc2137e332d_iv: ${{ secrets.ENCRYPTED_1CC2137E332D_IV }} 
 
       - name: Maven Release
         run: mvn release:prepare release:perform -B -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
