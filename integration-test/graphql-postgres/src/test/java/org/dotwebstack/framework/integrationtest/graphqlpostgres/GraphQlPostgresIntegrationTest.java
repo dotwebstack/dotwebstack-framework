@@ -1316,6 +1316,28 @@ class GraphQlPostgresIntegrationTest {
     assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
   }
 
+  @Test
+  void graphQlQuery_returnsBreweries_forGeometryFilterQuery() {
+    String query = "{breweries(filter: {geometry: {intersects: {fromWKT: \"POLYGON((5.964649080071114 "
+        + "52.23028289185018,5.983188508782051 52.23028289185018,5.983188508782051 "
+        + "52.22134502735609,5.964649080071114 52.22134502735609,5.964649080071114 "
+        + "52.23028289185018))\"}}}) { identifier_brewery name }}";
+
+    JsonNode json = executePostRequest(query, "application/graphql");
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERIES), is(true));
+
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(1));
+
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+  }
+
   private JsonNode executeGetRequestDefault(String query) {
     return executeGetRequest(query, "", "");
   }
