@@ -10,7 +10,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
@@ -68,10 +70,18 @@ public class RequestFactory {
   public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
+    ExecutionStepInfo executionStepInfo;
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      executionStepInfo = environment.getExecutionStepInfo()
+          .getParent();
+    } else {
+      executionStepInfo = environment.getExecutionStepInfo();
+    }
+
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
-        .filterCriterias(createFilterCriterias(typeConfiguration, environment))
-        .sortCriterias(createSortCriterias(typeConfiguration, environment))
+        .filterCriterias(createFilterCriterias(typeConfiguration, executionStepInfo))
+        .sortCriterias(createSortCriterias(typeConfiguration, executionStepInfo))
         .pagingCriteria(createPagingCriteria(environment).orElse(null))
         .build();
   }
@@ -94,12 +104,14 @@ public class RequestFactory {
   public ObjectRequest createObjectRequest(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
-    List<ScalarField> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, environment);
+    DataFetchingFieldSelectionSet selectionSet = environment.getSelectionSet();
+
+    List<ScalarField> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, selectionSet);
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
     List<NestedObjectFieldConfiguration> nestedObjectFields =
-        getNestedObjectFields(fieldPathPrefix, typeConfiguration, environment);
+        getNestedObjectFields(fieldPathPrefix, typeConfiguration, selectionSet);
     List<AggregateObjectFieldConfiguration> aggregateObjectFields =
-        getAggregateObjectFields(fieldPathPrefix, typeConfiguration, environment);
+        getAggregateObjectFields(fieldPathPrefix, typeConfiguration, selectionSet);
 
     List<KeyCriteria> keyCriterias = createKeyCriteria(environment);
 
@@ -118,9 +130,9 @@ public class RequestFactory {
   }
 
   private List<FilterCriteria> createFilterCriterias(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
+      ExecutionStepInfo executionStepInfo) {
 
-    Optional<GraphQLArgument> filterArgument = environment.getFieldDefinition()
+    Optional<GraphQLArgument> filterArgument = executionStepInfo.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> Objects.equals(argument.getName(), FilterConstants.FILTER_ARGUMENT_NAME))
@@ -129,7 +141,7 @@ public class RequestFactory {
     if (filterArgument.isPresent()) {
       GraphQLArgument argument = filterArgument.get();
 
-      Map<String, Object> data = getNestedMap(environment.getArguments(), argument.getName());
+      Map<String, Object> data = getNestedMap(executionStepInfo.getArguments(), argument.getName());
 
       var graphQlInputObjectType = Optional.of(argument)
           .map(GraphQLArgument::getType)
@@ -148,8 +160,8 @@ public class RequestFactory {
   }
 
   private List<SortCriteria> createSortCriterias(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
-    Optional<GraphQLArgument> sortArgument = environment.getFieldDefinition()
+      ExecutionStepInfo executionStepInfo) {
+    Optional<GraphQLArgument> sortArgument = executionStepInfo.getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argument -> Objects.equals(argument.getName(), SortConstants.SORT_ARGUMENT_NAME))
@@ -158,7 +170,7 @@ public class RequestFactory {
     if (sortArgument.isPresent()) {
       GraphQLArgument argument = sortArgument.get();
 
-      String orderEnumName = (String) environment.getArguments()
+      String orderEnumName = (String) executionStepInfo.getArguments()
           .get(argument.getName());
 
       Optional<String> sortableByConfigurationKey = typeConfiguration.getSortCriterias()
@@ -195,25 +207,25 @@ public class RequestFactory {
   }
 
   private List<AggregateObjectFieldConfiguration> getAggregateObjectFields(String fieldPathPrefix,
-      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, selectionSet)
         .filter(pair -> pair.getFieldConfiguration()
             .isAggregateField())
         .map(pair -> AggregateObjectFieldConfiguration.builder()
             .field(pair.getFieldConfiguration())
-            .aggregateFields(getAggregateFields(pair, environment))
+            .aggregateFields(getAggregateFields(pair, selectionSet))
             .build())
         .collect(Collectors.toList());
   }
 
   private List<AggregateFieldConfiguration> getAggregateFields(FieldConfigurationPair fieldConfigurationPair,
-      DataFetchingEnvironment environment) {
+      DataFetchingFieldSelectionSet selectionSet) {
     String fieldPathPrefix = fieldConfigurationPair.getSelectedField()
         .getFullyQualifiedName()
         .concat("/");
     TypeConfiguration<?> aggregateTypeConfiguration = fieldConfigurationPair.getFieldConfiguration()
         .getTypeConfiguration();
-    return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration, environment)
+    return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration, selectionSet)
         .map(this::createAggregateFieldConfiguration)
         .collect(Collectors.toList());
   }
@@ -254,8 +266,8 @@ public class RequestFactory {
   }
 
   private List<ScalarField> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
-    return getSelectedFields(fieldPathPrefix, environment).stream()
+      DataFetchingFieldSelectionSet selectionSet) {
+    return getSelectedFields(fieldPathPrefix, selectionSet).stream()
         .map(selectedField -> typeConfiguration.getFields()
             .get(selectedField.getName()))
         .filter(AbstractFieldConfiguration::isScalarField)
@@ -268,7 +280,7 @@ public class RequestFactory {
 
   private List<ObjectFieldConfiguration> getCollectionObjectFields(String fieldPathPrefix,
       TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment.getSelectionSet())
         .filter(pair -> pair.getFieldConfiguration()
             .isObjectField())
         .filter(pair -> pair.getFieldConfiguration()
@@ -283,7 +295,7 @@ public class RequestFactory {
   private List<ObjectFieldConfiguration> getObjectFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
       DataFetchingEnvironment environment) {
 
-    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment.getSelectionSet())
         .filter(pair -> pair.getFieldConfiguration()
             .isObjectField())
         .filter(pair -> !pair.getFieldConfiguration()
@@ -296,8 +308,8 @@ public class RequestFactory {
   }
 
   private List<NestedObjectFieldConfiguration> getNestedObjectFields(String fieldPathPrefix,
-      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, environment)
+      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
+    return getFieldConfigurationPairs(fieldPathPrefix, typeConfiguration, selectionSet)
         .filter(pair -> pair.getFieldConfiguration()
             .isNestedObjectField())
         .map(pair -> NestedObjectFieldConfiguration.builder()
@@ -307,14 +319,14 @@ public class RequestFactory {
                 .concat("/"),
                 pair.getFieldConfiguration()
                     .getTypeConfiguration(),
-                environment))
+                selectionSet))
             .build())
         .collect(Collectors.toList());
   }
 
   private Stream<FieldConfigurationPair> getFieldConfigurationPairs(String fieldPathPrefix,
-      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return getSelectedFields(fieldPathPrefix, environment).stream()
+      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
+    return getSelectedFields(fieldPathPrefix, selectionSet).stream()
         .map(selectedField -> FieldConfigurationPair.builder()
             .selectedField(selectedField)
             .fieldConfiguration(typeConfiguration.getFields()
@@ -323,8 +335,8 @@ public class RequestFactory {
   }
 
   private Stream<FieldConfigurationPair> getAggregateFieldConfigurationPairs(String fieldPathPrefix,
-      TypeConfiguration<?> typeConfiguration, DataFetchingEnvironment environment) {
-    return getSelectedFields(fieldPathPrefix, environment).stream()
+      TypeConfiguration<?> typeConfiguration, DataFetchingFieldSelectionSet selectionSet) {
+    return getSelectedFields(fieldPathPrefix, selectionSet).stream()
         .map(selectedField -> FieldConfigurationPair.builder()
             .selectedField(selectedField)
             .fieldConfiguration(typeConfiguration.getFields()
@@ -334,9 +346,8 @@ public class RequestFactory {
             .build());
   }
 
-  private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingEnvironment environment) {
-    return environment.getSelectionSet()
-        .getFields(fieldPathPrefix.concat("*.*"))
+  private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingFieldSelectionSet selectionSet) {
+    return selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
         .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinition()
             .getType()))
