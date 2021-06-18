@@ -1,11 +1,11 @@
+# This is a basic workflow to help you get started with Actions
+
 name: Release
+
+# Controls when the action will run. 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: "The branch to checkout when cutting the release."
-        required: true
-        default: "master"
       releaseVersion:
         description: "Default version to use when preparing a release."
         required: true
@@ -14,17 +14,14 @@ on:
         description: "Default version to use for new local working copy."
         required: true
         default: "X.Y.Z-SNAPSHOT"
-
 jobs:
   release:
     runs-on: ubuntu-latest
-
-    steps:
+    steps: 
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.inputs.branch }}
-
+          ref: DHUB-479
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
@@ -38,16 +35,26 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+          server-id: ossrh
+          server-username: ${{ secrets.OSSRH_USERNAME }}
+          server-password: ${{ secrets.OSSRH_TOKEN }}
 
       - name: Configure Git User
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
+          
+#       - name: Code signing
+#         run: |
+#           openssl aes-256-cbc -K $encrypted_1cc2137e332d_key -iv $encrypted_1cc2137e332d_iv -in codesigning.asc.enc -out codesigning.asc -d
+#           gpg --fast-import codesigning.asc
+#         env:
+#           encrypted_1cc2137e332d_key: ${{ secrets.ENCRYPTED_1CC2137E332D_KEY }}
+#           encrypted_1cc2137e332d_iv: ${{ secrets.ENCRYPTED_1CC2137E332D_IV }} 
 
       - name: Maven Release
-        run: mvn release:prepare release:perform -B -s .maven_settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn release:prepare release:perform -B -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ github.token }}
+  
