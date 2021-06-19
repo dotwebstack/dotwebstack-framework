@@ -13,7 +13,6 @@ Documentation website: https://dotwebstack.org/dotwebstack-framework/
 
 ## Links
 
-* Travis CI: https://travis-ci.org/dotwebstack/dotwebstack-framework
 * SonarCloud: https://sonarcloud.io/dashboard/index/org.dotwebstack.framework:dotwebstack-framework
 
 ## License
