@@ -14,4 +14,6 @@ public class GeometryFilterCriteria implements FilterCriteria {
   private final GeometryFilterOperator filterOperator;
 
   private final Geometry geometry;
+
+  private final String crs;
 }

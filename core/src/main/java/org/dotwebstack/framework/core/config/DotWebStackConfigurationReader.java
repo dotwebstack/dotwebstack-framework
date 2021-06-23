@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.config;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -22,11 +23,14 @@ public class DotWebStackConfigurationReader {
   public DotWebStackConfigurationReader() {
     registerSubTypes();
     objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
   }
 
   public DotWebStackConfigurationReader(Class<?>... configurationClasses) {
     objectMapper.registerSubtypes(configurationClasses);
     objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   private void registerSubTypes() {

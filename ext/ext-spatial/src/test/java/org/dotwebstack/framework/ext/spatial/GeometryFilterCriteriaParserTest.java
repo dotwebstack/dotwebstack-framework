@@ -14,17 +14,30 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserBa
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
 
-  private final GeometryFilterCriteriaParser parser = new GeometryFilterCriteriaParser();
+  @Mock
+  private SpatialConfigurationProperties spatialConfigurationProperties;
+
+  private GeometryFilterCriteriaParser parser;
 
   @BeforeAll
   public static void init() {
     new SpatialConfigurer().configureTypeDefinitionRegistry(dataFetchingEnvironment);
+  }
+
+  @BeforeEach
+  public void beforeEach() {
+    parser = new GeometryFilterCriteriaParser(spatialConfigurationProperties);
   }
 
   @ParameterizedTest
