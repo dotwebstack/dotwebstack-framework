@@ -67,6 +67,8 @@
     <jakarta.validation.api>2.0.2</jakarta.validation.api>
     <problem.version>0.25.0</problem.version>
     <spring-problem-webflux.version>0.26.2</spring-problem-webflux.version>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.organization>dotwebstack</sonar.organization>
   </properties>
 
   <modules>
