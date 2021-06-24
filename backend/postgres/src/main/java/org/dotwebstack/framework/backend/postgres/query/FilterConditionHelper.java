@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
@@ -16,6 +17,7 @@ import org.dotwebstack.framework.core.query.model.filter.LowerThenEqualsFilterCr
 import org.dotwebstack.framework.core.query.model.filter.LowerThenFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
+import org.dotwebstack.framework.ext.spatial.SpatialConfigurationProperties;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Table;
@@ -75,9 +77,7 @@ public final class FilterConditionHelper {
   private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, String fromTable) {
     Field<Object> field = getField(geometryFilterCriteria, fromTable);
 
-    Field<?> geofilterField =
-        DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-            .toString()));
+    Field<?> geofilterField = getGeofilterField(geometryFilterCriteria);
 
     switch (geometryFilterCriteria.getFilterOperator()) {
       case CONTAINS:
@@ -142,5 +142,21 @@ public final class FilterConditionHelper {
         .getFieldConfiguration();
 
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
+  }
+
+  private static Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
+    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
+      return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
+    }
+
+    return DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+        .toString()));
+  }
+
+  private static Integer getSrid(String crs) {
+    var srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
+
+    return Integer.parseInt(srid);
   }
 }

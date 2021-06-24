@@ -17,6 +17,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
 
+  private final SpatialConfigurationProperties spatialConfigurationProperties;
+
+  public GeometryFilterCriteriaParser(SpatialConfigurationProperties spatialConfigurationProperties) {
+    this.spatialConfigurationProperties = spatialConfigurationProperties;
+  }
+
   @Override
   public boolean supports(GraphQLInputObjectField inputObjectField) {
     return SpatialConstants.GEOMETRY_FILTER.equals(TypeHelper.getTypeName(inputObjectField.getType()));
@@ -48,6 +54,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
         .filterOperator(GeometryFilterOperator.valueOf(filterItem.getOperator()
             .toUpperCase()))
         .geometry(readGeometry(data.get(SpatialConstants.FROM_WKT)))
+        .crs(spatialConfigurationProperties.getSourceCrs())
         .build();
   }
 

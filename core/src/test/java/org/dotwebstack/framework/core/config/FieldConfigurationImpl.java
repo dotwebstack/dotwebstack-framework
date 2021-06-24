@@ -15,7 +15,6 @@ public class FieldConfigurationImpl extends AbstractFieldConfiguration {
 
   private boolean nestedObjectField = false;
 
-
   public boolean isAggregate() {
     return AggregateHelper.isAggregate(this);
   }

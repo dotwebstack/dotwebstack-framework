@@ -115,6 +115,30 @@ class FilterConditionHelperTest {
     assertThat(result.toString(), equalTo(expected));
   }
 
+  @ParameterizedTest
+  @CsvSource(delimiterString = ";",
+      value = {"CONTAINS;[(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))]",
+          "WITHIN;[(ST_Within(ST_GeomFromText('POINT (1 1)',4258), \"t1\".\"test_column\"))]",
+          "INTERSECTS;[(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))]"})
+  void createFilterConditions_returnConditions_forGeometryCriteriaWithCrs(String filterOperator, String expected)
+      throws ParseException {
+    var wkt = "POINT (1 1)";
+
+    var wktReader = new WKTReader();
+
+    var filterCriteria = GeometryFilterCriteria.builder()
+        .fieldPath(fieldPath)
+        .filterOperator(GeometryFilterOperator.valueOf(filterOperator))
+        .geometry(wktReader.read(wkt))
+        .crs("EPSG:4258")
+        .build();
+
+    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo(expected));
+  }
+
   @Test
   void createFilterConditions_returnConditions_forAndCriteria() {
     var filterCriteria = AndFilterCriteria.builder()
