@@ -23,12 +23,13 @@ public class YamlPropertySourceFactory implements PropertySourceFactory {
       throw illegalStateException("Unable to get properties from factory!");
     }
 
-    if (encodedResource.getResource() == null || encodedResource.getResource()
-        .getFilename() == null) {
+    var filename = encodedResource.getResource()
+        .getFilename();
+
+    if (filename == null) {
       throw illegalArgumentException("Resource filename is null!");
     }
 
-    return new PropertiesPropertySource(encodedResource.getResource()
-        .getFilename(), properties);
+    return new PropertiesPropertySource(filename, properties);
   }
 }
