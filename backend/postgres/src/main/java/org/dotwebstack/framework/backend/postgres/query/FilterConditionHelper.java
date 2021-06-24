@@ -77,9 +77,7 @@ public final class FilterConditionHelper {
   private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, String fromTable) {
     Field<Object> field = getField(geometryFilterCriteria, fromTable);
 
-    Field<?> geofilterField;
-
-    geofilterField = getGeofilterField(geometryFilterCriteria);
+    Field<?> geofilterField = getGeofilterField(geometryFilterCriteria);
 
     switch (geometryFilterCriteria.getFilterOperator()) {
       case CONTAINS:
@@ -138,12 +136,6 @@ public final class FilterConditionHelper {
     return field.in(inFilterCriteria.getValues());
   }
 
-  private static Integer getSrid(String crs) {
-    var srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
-
-    return Integer.parseInt(srid);
-  }
-
   private static Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
     var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getFieldPath()
         .getLeaf()
@@ -160,5 +152,11 @@ public final class FilterConditionHelper {
 
     return DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
         .toString()));
+  }
+
+  private static Integer getSrid(String crs) {
+    var srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
+
+    return Integer.parseInt(srid);
   }
 }
