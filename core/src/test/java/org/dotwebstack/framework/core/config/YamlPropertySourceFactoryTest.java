@@ -18,7 +18,7 @@ class YamlPropertySourceFactoryTest {
   private YamlTestConfigurationProperties yamlTestConfigurationProperties;
 
   @Test
-  void whenFactoryProvidedThenYamlPropertiesInjected() {
+  void onBootstrap_fieldsAreInjected_forTestProperties() {
     assertThat(yamlTestConfigurationProperties.getName(), CoreMatchers.equalTo("foo"));
     assertThat(yamlTestConfigurationProperties.getAliases(), CoreMatchers.equalTo(List.of("abc", "xyz")));
   }

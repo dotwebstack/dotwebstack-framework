@@ -79,13 +79,7 @@ public final class FilterConditionHelper {
 
     Field<?> geofilterField;
 
-    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
-      geofilterField = DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
-    } else {
-      geofilterField = DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-          .toString()));
-    }
+    geofilterField = getGeofilterField(geometryFilterCriteria);
 
     switch (geometryFilterCriteria.getFilterOperator()) {
       case CONTAINS:
@@ -145,7 +139,7 @@ public final class FilterConditionHelper {
   }
 
   private static Integer getSrid(String crs) {
-    String srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
+    var srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
 
     return Integer.parseInt(srid);
   }
@@ -156,5 +150,15 @@ public final class FilterConditionHelper {
         .getFieldConfiguration();
 
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
+  }
+
+  private static Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
+    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
+      return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
+    }
+
+    return DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+        .toString()));
   }
 }
