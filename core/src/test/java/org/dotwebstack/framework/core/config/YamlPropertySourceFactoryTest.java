@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.core.config;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,8 +19,7 @@ class YamlPropertySourceFactoryTest {
 
   @Test
   void onBootstrap_fieldsAreInjected_forTestProperties() {
-    assertThat(yamlTestConfigurationProperties.getName(), CoreMatchers.equalTo("foo"));
-    assertThat(yamlTestConfigurationProperties.getAliases(), CoreMatchers.equalTo(List.of("abc", "xyz")));
+    assertThat(yamlTestConfigurationProperties.getName(), equalTo("foo"));
+    assertThat(yamlTestConfigurationProperties.getAliases(), equalTo(List.of("abc", "xyz")));
   }
-
 }

@@ -116,3 +116,16 @@ query {
     }
 }
 ```
+
+## Configuration
+
+### CRS
+
+The source CRS can be configured within the `dotwebstack.yml` as follows:
+
+```yaml
+spatial:
+  sourceCrs: EPSG:4258
+```
+
+When filtering on a `Geometry` field, the CRS must match the `sourceCrs`. There is currently no support for reprojection of a `Geometry` field.

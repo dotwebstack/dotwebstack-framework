@@ -1,6 +1,9 @@
 features:
   - paging
 
+spatial:
+  sourceCrs: EPSG:4258
+
 subscriptions:
   beerSubscription:
     type: Beer
