@@ -237,10 +237,10 @@ class FilterConditionHelperTest {
       }
     };
 
-    List<FilterCriteria> filterCriterias = List.of(filterCriteria);
+    String tableName = fromTable.getName();
 
     Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> createFilterCondition(filterCriteria, fromTable.getName()));
+        () -> createFilterCondition(filterCriteria, tableName));
 
   }
 
