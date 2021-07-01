@@ -314,7 +314,7 @@ public class SelectQueryBuilder {
               (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable);
 
           addFilterConditions(objectField.getObjectRequest()
-              .getScalarFields(), subSelect, fieldTable);
+              .getScalarFields(), subSelect, objectFieldTable);
 
           subSelect.addLimit(1);
 
