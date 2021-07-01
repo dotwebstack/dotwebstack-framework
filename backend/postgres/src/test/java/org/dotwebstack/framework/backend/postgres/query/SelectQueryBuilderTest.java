@@ -5,9 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
@@ -23,7 +23,6 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
@@ -31,6 +30,7 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.jooq.DSLContext;
 import org.jooq.Meta;
 import org.jooq.MetaProvider;
@@ -590,7 +590,7 @@ class SelectQueryBuilderTest {
     fieldConfiguration.setColumn(scalarName + COLUMN_POSTFIX);
     return ScalarField.builder()
         .field(fieldConfiguration)
-        .origins(Set.of(Origin.REQUESTED))
+        .origins(Sets.newHashSet(Origin.requested()))
         .build();
   }
 

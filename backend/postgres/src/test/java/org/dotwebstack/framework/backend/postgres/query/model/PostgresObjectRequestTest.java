@@ -6,24 +6,23 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
+import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.junit.jupiter.api.Test;
 
 class PostgresObjectRequestTest {
@@ -46,7 +45,7 @@ class PostgresObjectRequestTest {
 
     postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
 
-    assertObjectRequest(postgresObjectRequest, "name", Origin.REQUESTED);
+    assertObjectRequest(postgresObjectRequest, "name", Origin.requested());
   }
 
   @Test
@@ -114,7 +113,7 @@ class PostgresObjectRequestTest {
 
     postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
 
-    assertObjectFields(postgresObjectRequest, "brewery", "brewName", Origin.FILTERING);
+    assertObjectFields(postgresObjectRequest, "brewery", "brewName", Origin.filtering(filterCriteria));
   }
 
   @Test
@@ -147,7 +146,7 @@ class PostgresObjectRequestTest {
 
     postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
 
-    assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.FILTERING);
+    assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.filtering(filterCriteria));
   }
 
   @Test
@@ -188,17 +187,19 @@ class PostgresObjectRequestTest {
 
     postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
 
-    assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.FILTERING);
+    assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.filtering(filterCriteria));
   }
 
   private void assertObjectFields(PostgresObjectRequest objectRequest, String fieldPath, String fieldName,
       Origin origin) {
     assertThat(objectRequest.getObjectFields()
         .size(), is(1));
+
     var objectField = getObjectField(StringUtils.split(fieldPath, "."), objectRequest);
     var scalarFields = objectField.getObjectRequest()
         .getScalarFields();
     assertThat(scalarFields, hasSize(1));
+
     var scalarField = scalarFields.get(0);
     assertThat(scalarField.getName(), is(fieldName));
     assertThat(scalarField.getOrigins(), hasItem(origin));
@@ -353,7 +354,7 @@ class PostgresObjectRequestTest {
   private ScalarField createScalarField(PostgresFieldConfiguration fieldConfiguration) {
     return ScalarField.builder()
         .field(fieldConfiguration)
-        .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+        .origins(Sets.newHashSet(Origin.requested()))
         .build();
   }
 }

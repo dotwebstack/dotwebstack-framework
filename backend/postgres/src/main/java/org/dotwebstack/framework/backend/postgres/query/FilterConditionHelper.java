@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
-import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
@@ -20,27 +19,13 @@ import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConfigurationProperties;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 public final class FilterConditionHelper {
 
   private FilterConditionHelper() {}
 
-  public static List<Condition> createFilterConditions(List<FilterCriteria> filterCriterias,
-      ObjectSelectContext objectSelectContext, Table<?> fromTable) {
-    return filterCriterias.stream()
-        .map(filterCriteria -> {
-          var filterTable =
-              filterCriteria.isNestedFilter() ? objectSelectContext.getTableAlias(filterCriteria.getFieldPath()
-                  .getFieldConfiguration()
-                  .getName()) : fromTable.getName();
-          return createFilterCondition(filterCriteria, filterTable);
-        })
-        .collect(Collectors.toList());
-  }
-
-  private static Condition createFilterCondition(FilterCriteria filterCriteria, String fromTable) {
+  public static Condition createFilterCondition(FilterCriteria filterCriteria, String fromTable) {
     if (filterCriteria instanceof EqualsFilterCriteria) {
       return createFilterCondition((EqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof NotFilterCriteria) {

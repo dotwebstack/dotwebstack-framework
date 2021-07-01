@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterConditions;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterCondition;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -71,10 +71,10 @@ class FilterConditionHelperTest {
         .value("testValue")
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" = 'testValue']"));
+    assertThat(result.toString(), equalTo("\"t1\".\"test_column\" = 'testValue'"));
   }
 
   @Test
@@ -86,17 +86,17 @@ class FilterConditionHelperTest {
             .build())
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(), equalTo("[not (\"t1\".\"test_column\" = 'testValue')]"));
+    assertThat(result.toString(), equalTo("not (\"t1\".\"test_column\" = 'testValue')"));
   }
 
   @ParameterizedTest
   @CsvSource(delimiterString = ";",
-      value = {"CONTAINS;[(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]",
-          "WITHIN;[(ST_Within(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))]",
-          "INTERSECTS;[(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))]"})
+      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))",
+          "WITHIN;(ST_Within(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))",
+          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))"})
   void createFilterConditions_returnConditions_forGeometryCriteria(String filterOperator, String expected)
       throws ParseException {
     var wkt = "POINT (1 1)";
@@ -109,7 +109,7 @@ class FilterConditionHelperTest {
         .geometry(wktReader.read(wkt))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo(expected));
@@ -117,9 +117,9 @@ class FilterConditionHelperTest {
 
   @ParameterizedTest
   @CsvSource(delimiterString = ";",
-      value = {"CONTAINS;[(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))]",
-          "WITHIN;[(ST_Within(ST_GeomFromText('POINT (1 1)',4258), \"t1\".\"test_column\"))]",
-          "INTERSECTS;[(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))]"})
+      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))",
+          "WITHIN;(ST_Within(ST_GeomFromText('POINT (1 1)',4258), \"t1\".\"test_column\"))",
+          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))"})
   void createFilterConditions_returnConditions_forGeometryCriteriaWithCrs(String filterOperator, String expected)
       throws ParseException {
     var wkt = "POINT (1 1)";
@@ -133,7 +133,7 @@ class FilterConditionHelperTest {
         .crs("EPSG:4258")
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo(expected));
@@ -152,11 +152,11 @@ class FilterConditionHelperTest {
                 .build()))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("[(\n  \"t1\".\"test_column\" = 'testValue1'\n  and \"t1\".\"test_column\" = 'testValue2'\n)]"));
+        equalTo("(\n  \"t1\".\"test_column\" = 'testValue1'\n  and \"t1\".\"test_column\" = 'testValue2'\n)"));
   }
 
   @Test
@@ -166,10 +166,10 @@ class FilterConditionHelperTest {
         .values(List.of("testValue1", "testValue2"))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(), equalTo("[\"t1\".\"test_column\" in (\n  'testValue1', 'testValue2'\n)]"));
+    assertThat(result.toString(), equalTo("\"t1\".\"test_column\" in (\n  'testValue1', 'testValue2'\n)"));
   }
 
   @Test
@@ -179,11 +179,11 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("[\"t1\".\"test_column\" > timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+        equalTo("\"t1\".\"test_column\" > timestamp with time zone '2020-10-01 11:00:05+00:00'"));
   }
 
   @Test
@@ -193,11 +193,11 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("[\"t1\".\"test_column\" >= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+        equalTo("\"t1\".\"test_column\" >= timestamp with time zone '2020-10-01 11:00:05+00:00'"));
   }
 
   @Test
@@ -207,11 +207,11 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("[\"t1\".\"test_column\" < timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+        equalTo("\"t1\".\"test_column\" < timestamp with time zone '2020-10-01 11:00:05+00:00'"));
   }
 
   @Test
@@ -221,11 +221,11 @@ class FilterConditionHelperTest {
         .value(OffsetDateTime.of(2020, 10, 1, 11, 0, 5, 0, ZoneOffset.UTC))
         .build();
 
-    List<Condition> result = createFilterConditions(List.of(filterCriteria), objectSelectContext, fromTable);
+    Condition result = createFilterCondition(filterCriteria, fromTable.getName());
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("[\"t1\".\"test_column\" <= timestamp with time zone '2020-10-01 11:00:05+00:00']"));
+        equalTo("\"t1\".\"test_column\" <= timestamp with time zone '2020-10-01 11:00:05+00:00'"));
   }
 
   @Test
@@ -240,7 +240,7 @@ class FilterConditionHelperTest {
     List<FilterCriteria> filterCriterias = List.of(filterCriteria);
 
     Assertions.assertThrows(UnsupportedOperationException.class,
-        () -> createFilterConditions(filterCriterias, objectSelectContext, fromTable));
+        () -> createFilterCondition(filterCriteria, fromTable.getName()));
 
   }
 
