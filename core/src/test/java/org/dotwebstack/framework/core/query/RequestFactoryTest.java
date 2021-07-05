@@ -196,7 +196,7 @@ class RequestFactoryTest {
 
     when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
         .first(10)
-        .offset(1)
+        .offset(0)
         .build());
 
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
@@ -223,7 +223,7 @@ class RequestFactoryTest {
 
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
-        .offset(1)
+        .offset(0)
         .first(10)
         .build()));
 
