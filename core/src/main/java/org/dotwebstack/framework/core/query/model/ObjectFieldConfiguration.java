@@ -27,8 +27,4 @@ public class ObjectFieldConfiguration {
 
     return hasNestedFilteringOrigin;
   }
-
-  public boolean hasNoneNestedFilteringOrigin() {
-    return !hasNestedFilteringOrigin();
-  }
 }

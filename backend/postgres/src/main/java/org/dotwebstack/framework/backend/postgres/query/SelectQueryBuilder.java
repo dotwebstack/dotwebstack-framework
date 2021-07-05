@@ -321,10 +321,10 @@ public class SelectQueryBuilder {
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
           query.addSelect(lateralTable.asterisk());
 
-          if (objectField.hasNoneNestedFilteringOrigin()) {
-            query.addJoin(lateralTable, JoinType.OUTER_APPLY);
-          } else {
+          if (objectField.hasNestedFilteringOrigin()) {
             query.addFrom(DSL.lateral(lateralTable));
+          } else {
+            query.addJoin(lateralTable, JoinType.OUTER_APPLY);
           }
 
           objectSelectContext.getAssembleFns()

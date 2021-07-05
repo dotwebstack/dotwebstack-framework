@@ -32,10 +32,8 @@ class ObjectFieldConfigurationTest {
         .build();
 
     boolean result = objectFieldConfiguration.hasNestedFilteringOrigin();
-    boolean resultNegative = objectFieldConfiguration.hasNoneNestedFilteringOrigin();
 
     assertThat(result, is(true));
-    assertThat(resultNegative, is(false));
   }
 
   @Test
@@ -65,10 +63,8 @@ class ObjectFieldConfigurationTest {
         .build();
 
     boolean result = objectFieldConfiguration.hasNestedFilteringOrigin();
-    boolean resultNegative = objectFieldConfiguration.hasNoneNestedFilteringOrigin();
 
     assertThat(result, is(true));
-    assertThat(resultNegative, is(false));
   }
 
   @Test
@@ -84,9 +80,7 @@ class ObjectFieldConfigurationTest {
         .build();
 
     boolean result = objectFieldConfiguration.hasNestedFilteringOrigin();
-    boolean resultNegative = objectFieldConfiguration.hasNoneNestedFilteringOrigin();
 
     assertThat(result, is(false));
-    assertThat(resultNegative, is(true));
   }
 }
