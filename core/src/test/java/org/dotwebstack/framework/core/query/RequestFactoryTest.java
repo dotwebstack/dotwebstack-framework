@@ -195,8 +195,8 @@ class RequestFactoryTest {
     when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
 
     when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
-        .first(1)
-        .offset(10)
+        .first(10)
+        .offset(1)
         .build());
 
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);

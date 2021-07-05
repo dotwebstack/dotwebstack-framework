@@ -72,7 +72,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
 
   @Test
   void getRequest_ReturnsBreweries_withPagingArguments() {
-    var query = "{\n" + "    breweries(first: 1, offset: 2) {\n" + "      nodes {\n" + "        identifier_brewery\n"
+    var query = "{\n" + "    breweries(first: 2, offset: 1) {\n" + "      nodes {\n" + "        identifier_brewery\n"
         + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
 
     JsonNode json = executeGetRequestDefault(query);
@@ -87,13 +87,13 @@ class GraphQlPostgresWithPagingIntegrationTest {
             Map.of("nodes",
                 List.of(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"),
                     Map.of("identifier_brewery", "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9", "name", "Brewery Y")),
-                "offset", 2))));
+                "offset", 1))));
   }
 
   @Test
   void getRequest_ReturnsBreweries_withPagingAndFilterArguments() {
     var query =
-        "{\n" + "    breweries(first: 1, offset: 2, filter: {name: {not: {eq: \"Brewery Y\"}}}) {\n" + "      nodes {\n"
+        "{\n" + "    breweries(first: 2, offset: 1, filter: {name: {not: {eq: \"Brewery Y\"}}}) {\n" + "      nodes {\n"
             + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
 
     JsonNode json = executeGetRequestDefault(query);
@@ -108,7 +108,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
             Map.of("nodes",
                 List.of(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X"),
                     Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c31959", "name", "Brewery Z")),
-                "offset", 2))));
+                "offset", 1))));
   }
 
   private JsonNode executeGetRequestDefault(String query) {
