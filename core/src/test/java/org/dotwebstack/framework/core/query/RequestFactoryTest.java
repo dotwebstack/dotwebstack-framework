@@ -223,8 +223,8 @@ class RequestFactoryTest {
 
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
-        .page(1)
-        .pageSize(10)
+        .offset(1)
+        .first(10)
         .build()));
 
     verify(executionStepInfo, times(1)).getParent();

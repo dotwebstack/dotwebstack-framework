@@ -104,8 +104,8 @@ class SelectQueryBuilderTest {
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
         .pagingCriteria(PagingCriteria.builder()
-            .page(1)
-            .pageSize(10)
+            .offset(1)
+            .first(10)
             .build())
         .build();
 
