@@ -114,7 +114,7 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n" + "limit 10\n"
-            + "offset 10"));
+            + "offset 0"));
   }
 
   @Test
