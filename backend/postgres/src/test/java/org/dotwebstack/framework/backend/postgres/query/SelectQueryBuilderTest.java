@@ -104,8 +104,8 @@ class SelectQueryBuilderTest {
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
         .pagingCriteria(PagingCriteria.builder()
-            .page(1)
-            .pageSize(10)
+            .offset(0)
+            .first(10)
             .build())
         .build();
 
@@ -114,7 +114,7 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n" + "limit 10\n"
-            + "offset 1"));
+            + "offset 0"));
   }
 
   @Test
