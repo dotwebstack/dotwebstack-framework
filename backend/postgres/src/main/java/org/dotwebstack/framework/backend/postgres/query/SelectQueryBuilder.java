@@ -267,13 +267,14 @@ public class SelectQueryBuilder {
         keyFieldAdded.set(true);
         objectSelectContext.getCheckNullAlias()
             .set(columnAlias);
+
+        query.addSelect(column);
       }
       query.addSelect(aliasedColumn);
     }
     if (scalarField.hasOrigin(Filtering.class) || scalarField.hasOrigin(Sorting.class)) {
       query.addSelect(column);
     }
-
   }
 
   private void addNestedObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
@@ -310,23 +311,24 @@ public class SelectQueryBuilder {
 
           var subSelect = buildQuery(lateralJoinContext, objectField.getObjectRequest(), objectFieldTable);
 
-          addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
-              (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable);
-
-          subSelect.addConditions(createFilterConditions(objectField.getObjectRequest()
-              .getScalarFields(), objectFieldTable));
+          createFilterConditions(objectField.getObjectRequest()
+              .getScalarFields(), objectFieldTable).forEach(subSelect::addConditions);
 
           subSelect.addLimit(1);
 
           var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
+
           query.addSelect(lateralTable.asterisk());
 
           if (objectField.hasNestedFilteringOrigin()) {
-            // join conditie nodig
-            Condition[] conditions = new Condition[0];
+            Condition[] joinConditions =
+                createJoinConditions(objectFieldConfiguration, lateralTable, fieldTable).toArray(Condition[]::new);
 
-            query.addJoin(DSL.lateral(lateralTable), conditions);
+            query.addJoin(DSL.lateral(lateralTable), joinConditions);
           } else {
+            createJoinConditions(objectFieldConfiguration, objectFieldTable, fieldTable)
+                .forEach(subSelect::addConditions);
+
             query.addJoin(lateralTable, JoinType.OUTER_APPLY);
           }
 
@@ -447,25 +449,16 @@ public class SelectQueryBuilder {
     }
   }
 
-  private void addJoin(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
-      PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
-      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable) {
-    if (leftSideConfiguration.getJoinTable() != null) {
-      // wordt deze code wel geraakt?
-      var joinTable = findTable(leftSideConfiguration.getJoinTable()
-          .getName()).asTable(objectSelectContext.newTableAlias());
-      var condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,
-          rightSideTable, joinTable);
-      // create join with jointable and join condition on joinColumns and inverse joinColumn
-      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
-    } else {
-      if (leftSideConfiguration.getJoinColumns() != null) {
-        var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
-            ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-            leftSideTable);
-        subSelect.addConditions(condition);
-      }
+  private List<Condition> createJoinConditions(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
+      Table<?> rightSideTable) {
+    if (leftSideConfiguration.getJoinColumns() != null) {
+      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
+          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
+          leftSideTable);
+      return List.of(condition);
     }
+
+    return List.of();
   }
 
   private void addAggregateJoin(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
@@ -561,6 +554,7 @@ public class SelectQueryBuilder {
           var otherSideFieldConfiguration = fields.get(joinColumn.getField());
 
           var leftColumn = leftSideTable.field(joinColumn.getName(), Object.class);
+
           var rightColumn = rightSideTable.field(otherSideFieldConfiguration.getColumn(), Object.class);
           return Objects.requireNonNull(leftColumn)
               .eq(rightColumn);
