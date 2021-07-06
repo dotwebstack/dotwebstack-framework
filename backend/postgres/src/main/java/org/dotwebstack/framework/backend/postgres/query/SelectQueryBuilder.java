@@ -291,7 +291,7 @@ public class SelectQueryBuilder {
                   createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
                       false)::apply);
 
-          addFilterConditions(nestedObjectField.getScalarFields(), query, fieldTable);
+          query.addConditions(createFilterConditions(nestedObjectField.getScalarFields(), fieldTable));
         });
   }
 
@@ -313,8 +313,8 @@ public class SelectQueryBuilder {
           addJoin(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
               (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable);
 
-          addFilterConditions(objectField.getObjectRequest()
-              .getScalarFields(), subSelect, objectFieldTable);
+          subSelect.addConditions(createFilterConditions(objectField.getObjectRequest()
+              .getScalarFields(), objectFieldTable));
 
           subSelect.addLimit(1);
 
@@ -322,7 +322,10 @@ public class SelectQueryBuilder {
           query.addSelect(lateralTable.asterisk());
 
           if (objectField.hasNestedFilteringOrigin()) {
-            query.addFrom(DSL.lateral(lateralTable));
+            // join conditie nodig
+            Condition[] conditions = new Condition[0];
+
+            query.addJoin(DSL.lateral(lateralTable), conditions);
           } else {
             query.addJoin(lateralTable, JoinType.OUTER_APPLY);
           }
@@ -335,14 +338,14 @@ public class SelectQueryBuilder {
         });
   }
 
-  private void addFilterConditions(List<ScalarField> scalarFields, SelectQuery<?> query, Table<?> fieldTable) {
-    scalarFields.stream()
+  private List<Condition> createFilterConditions(List<ScalarField> scalarFields, Table<?> fieldTable) {
+    return scalarFields.stream()
         .map(ScalarField::getOrigins)
         .flatMap(Collection::stream)
         .filter(Filtering.class::isInstance)
         .map(Filtering.class::cast)
         .map(filtering -> createFilterCondition(filtering.getFilterCriteria(), fieldTable.getName()))
-        .forEach(query::addConditions);
+        .collect(Collectors.toList());
   }
 
   private void addAggregateObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
