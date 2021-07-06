@@ -111,6 +111,70 @@ class GraphQlPostgresWithPagingIntegrationTest {
                 "offset", 2))));
   }
 
+  @Test
+  void getRequest_ReturnsBreweriesWithBeers_withPagingArguments() {
+    var query = "{\n" + "  breweries(first: 2, offset: 0) {\n" + "    nodes {\n" + "      identifier_brewery\n"
+        + "      name\n" + "      beers {\n" + "        nodes {\n" + "          identifier_beer\n" + "          name\n"
+        + "        }\n" + "      }\n" + "    }\n" + "    , offset\n" + "  }\n" + "}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data,
+        equalTo(
+            Map.of("breweries",
+                Map.of("nodes",
+                    List.of(
+                        Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S",
+                            "beers",
+                            Map.of("nodes",
+                                List.of(Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name",
+                                    "Beer 6")))),
+                        Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X",
+                            "beers",
+                            Map.of("nodes", List.of(
+                                Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
+                                Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
+                                Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"))))),
+                    "offset", 0))));
+  }
+
+  @Test
+  void getRequest_ReturnsBeersWithBrewery_withoutPagingArguments() {
+    var query = "{\n" + "  beers {\n" + "    nodes {\n" + "      identifier_beer\n" + "      name\n"
+        + "      brewery {\n" + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    }\n"
+        + "    , offset\n" + "  }\n" + "}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data,
+        equalTo(Map.of("beers",
+            Map.of("nodes",
+                List.of(
+                    Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1", "brewery",
+                        Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X")),
+                    Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2", "brewery",
+                        Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X")),
+                    Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3", "brewery",
+                        Map.of("identifier_brewery", "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9", "name", "Brewery Y")),
+                    Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4", "brewery",
+                        Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X")),
+                    Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5", "brewery",
+                        Map.of("identifier_brewery", "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9", "name", "Brewery Y")),
+                    Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6", "brewery",
+                        Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S"))),
+                "offset", 0))));
+  }
+
   private JsonNode executeGetRequestDefault(String query) {
     return executeGetRequest(query, "", "");
   }

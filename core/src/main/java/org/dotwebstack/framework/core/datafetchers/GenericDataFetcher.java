@@ -6,6 +6,7 @@ import static org.dataloader.DataLoader.newMappedDataLoader;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
 import graphql.execution.DataFetcherResult;
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -58,13 +59,14 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
   }
 
   private Object doGet(DataFetchingEnvironment environment) {
-    var executionStepInfo = environment.getExecutionStepInfo();
-    Map<String, Object> source = environment.getSource();
-
     TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
 
-    if (source != null && !(environment.getLocalContext() instanceof PagingDataFetcherContext)) {
-      return doNestedGet(environment, executionStepInfo, source, typeConfiguration);
+    Optional<LocalDataFetcherContext> localContext = getLocalContext(environment);
+    Optional<Map<String, Object>> source = getSource(environment);
+    var executionStepInfo = getExecutionStepInfo(environment);
+
+    if (source.isPresent() && localContext.isPresent()) {
+      return doNestedGet(environment, localContext.get(), source.get(), executionStepInfo);
     }
 
     var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
@@ -106,8 +108,32 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .toFuture();
   }
 
-  private Object doNestedGet(DataFetchingEnvironment environment, graphql.execution.ExecutionStepInfo executionStepInfo,
-      Map<String, Object> source, TypeConfiguration<?> typeConfiguration) {
+  private Optional<LocalDataFetcherContext> getLocalContext(DataFetchingEnvironment environment) {
+    if (environment.getLocalContext() instanceof PagingDataFetcherContext) {
+      return Optional.ofNullable(((PagingDataFetcherContext) environment.getLocalContext()).getParentLocalContext());
+    }
+    return Optional.ofNullable(environment.getLocalContext());
+  }
+
+  private Optional<Map<String, Object>> getSource(DataFetchingEnvironment environment) {
+    if (environment.getLocalContext() instanceof PagingDataFetcherContext) {
+      return Optional.ofNullable(((PagingDataFetcherContext) environment.getLocalContext()).getParentSource());
+    }
+    return Optional.ofNullable(environment.getSource());
+  }
+
+  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
+    if (environment.getLocalContext() instanceof PagingDataFetcherContext) {
+      return environment.getExecutionStepInfo()
+          .getParent();
+    }
+    return environment.getExecutionStepInfo();
+  }
+
+  private Object doNestedGet(DataFetchingEnvironment environment, LocalDataFetcherContext context,
+      Map<String, Object> source, ExecutionStepInfo executionStepInfo) {
+    TypeConfiguration<?> typeConfiguration = getTypeConfiguration(environment.getFieldType()).orElseThrow();
+
     String fieldName = executionStepInfo.getFieldDefinition()
         .getName();
 
@@ -125,7 +151,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
         .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
 
-    LocalDataFetcherContext context = environment.getLocalContext();
     var keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
 
     return dataLoader.load(keyCondition);
