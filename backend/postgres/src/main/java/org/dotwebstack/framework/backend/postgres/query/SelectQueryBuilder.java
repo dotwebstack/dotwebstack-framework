@@ -89,7 +89,7 @@ public class SelectQueryBuilder {
 
     if (collectionRequest.getPagingCriteria() != null) {
       var pagingCriteria = collectionRequest.getPagingCriteria();
-      selectQuery.addLimit(pagingCriteria.getPage(), pagingCriteria.getPageSize());
+      selectQuery.addLimit(pagingCriteria.getOffset(), pagingCriteria.getFirst());
     }
 
     if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {

@@ -191,8 +191,8 @@ public class RequestFactory {
     if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
       var context = (PagingDataFetcherContext) environment.getLocalContext();
       return Optional.of(PagingCriteria.builder()
-          .page(context.getFirst())
-          .pageSize(context.getOffset())
+          .offset(context.getOffset())
+          .first(context.getFirst())
           .build());
     }
     return Optional.empty();

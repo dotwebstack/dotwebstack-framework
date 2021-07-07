@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class PagingCriteria {
-  private final int page;
+  private final int offset;
 
-  private final int pageSize;
+  private final int first;
 }
