@@ -36,11 +36,12 @@ public class PostgresObjectRequest extends ObjectRequest {
         .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.filtering(filterCriteria)));
   }
 
-  public void addSortCriteria(List<SortCriteria> sortCriterias) {
+  public void addSortCriteria(List<SortCriteria> sortCriterias, Map<String, String> fieldPathAliasMap) {
     sortCriterias.stream()
         .filter(sortCriteria -> !sortCriteria.getFieldPath()
             .isLeaf())
-        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.sorting()));
+        .forEach(sortCriteria -> createObjectField(sortCriteria.getFieldPath(),
+            Origin.sorting(sortCriteria, fieldPathAliasMap)));
   }
 
   private void createObjectField(FieldPath fieldPath, Origin origin) {
