@@ -268,12 +268,22 @@ public class SelectQueryBuilder {
         objectSelectContext.getCheckNullAlias()
             .set(columnAlias);
 
-        query.addSelect(column);
+        addNonAliasedSelectField(query, column, objectSelectContext);
       }
       query.addSelect(aliasedColumn);
     }
     if (scalarField.hasOrigin(Filtering.class) || scalarField.hasOrigin(Sorting.class)) {
+      addNonAliasedSelectField(query, column, objectSelectContext);
+    }
+  }
+
+  private void addNonAliasedSelectField(SelectQuery<?> query, Field<?> column,
+      ObjectSelectContext objectSelectContext) {
+    if (!objectSelectContext.getNonAliasSelectFields()
+        .contains(column)) {
       query.addSelect(column);
+      objectSelectContext.getNonAliasSelectFields()
+          .add(column);
     }
   }
 

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.Data;
+import org.jooq.Field;
 
 @Data
 public class ObjectSelectContext {
@@ -22,6 +23,8 @@ public class ObjectSelectContext {
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
   private Map<String, String> keyColumnNames = new HashMap<>();
+
+  private List<Field<?>> nonAliasSelectFields = new ArrayList<>();
 
   public ObjectSelectContext() {
     this(new ObjectQueryContext());
