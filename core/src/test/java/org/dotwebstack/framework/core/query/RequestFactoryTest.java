@@ -195,8 +195,8 @@ class RequestFactoryTest {
     when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
 
     when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
-        .first(1)
-        .offset(10)
+        .first(10)
+        .offset(0)
         .build());
 
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
@@ -223,8 +223,8 @@ class RequestFactoryTest {
 
     assertCollectionQuery(collectionQuery);
     assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
-        .page(1)
-        .pageSize(10)
+        .offset(0)
+        .first(10)
         .build()));
 
     verify(executionStepInfo, times(1)).getParent();

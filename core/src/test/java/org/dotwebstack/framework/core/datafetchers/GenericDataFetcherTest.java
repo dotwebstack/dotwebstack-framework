@@ -45,6 +45,7 @@ import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.RequestFactory;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -266,9 +267,7 @@ class GenericDataFetcherTest {
         .valueMap(Map.of("brewery", "id-brewery-2"))
         .build();
 
-    var outputType = GraphQLList.list(GraphQLObjectType.newObject()
-        .name("Beers")
-        .build());
+    var outputType = GraphQLList.list(createBeersType());
 
     Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(List.of(
         new KeyConditionGroupedFlux(keyConditionWithBeer, Flux.fromIterable(List.of(Map.of("id", "id-1")))),
@@ -293,6 +292,55 @@ class GenericDataFetcherTest {
     dataLoader.dispatch();
 
     assertBatchLoadManyDataloaderResult(futureWithBeer, futureWithoutBeer);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void get_returnsDatafetcherResult_ForBatchLoadManyQueryOperation_whenUsingPaging() throws Exception {
+    var keyConditionWithBeer = TestKeyCondition.builder()
+        .valueMap(Map.of("brewery", "id-brewery-1"))
+        .build();
+
+    var outputType = GraphQLList.list(createBeersType());
+
+    Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(
+        List.of(new KeyConditionGroupedFlux(keyConditionWithBeer, Flux.fromIterable(List.of(Map.of("id", "id-1"))))));
+
+    var parentLocalContext = LocalDataFetcherContext.builder()
+        .keyConditionFn((s, stringObjectMap) -> keyConditionWithBeer)
+        .build();
+
+    PagingDataFetcherContext pagingDataFetcherContext = PagingDataFetcherContext.builder()
+        .parentLocalContext(parentLocalContext)
+        .first(10)
+        .offset(0)
+        .parentSource(Map.of("name", "Brewery X", "identifier_brewery", "id-brewery-1"))
+        .build();
+
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), pagingDataFetcherContext);
+
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
+    when(backendDataLoader.batchLoadMany(any(), any())).thenReturn(batchLoadManyResult);
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+
+    when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
+    ExecutionStepInfo parentExecutionStepInfo = mock(ExecutionStepInfo.class);
+    when(parentExecutionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
+    when(parentExecutionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
+    when(executionStepInfo.getParent()).thenReturn(parentExecutionStepInfo);
+
+    final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
+
+    DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/beers");
+
+    dataLoader.dispatch();
+
+    List<DataFetcherResult<Map<String, Object>>> futureWithBeerResult =
+        (List<DataFetcherResult<Map<String, Object>>>) futureWithBeer.get();
+    assertThat(futureWithBeerResult.size(), is(1));
+    assertThat(futureWithBeerResult.get(0)
+        .getData()
+        .get("id"), is("id-1"));
   }
 
   @Test
@@ -477,6 +525,15 @@ class GenericDataFetcherTest {
 
   private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
       OperationDefinition.Operation operation, Object source, KeyCondition keyCondition) {
+    LocalDataFetcherContext localDataFetcherContext = LocalDataFetcherContext.builder()
+        .keyConditionFn((s, stringObjectMap) -> keyCondition)
+        .build();
+
+    return createDataFetchingEnvironment(outputType, operation, source, localDataFetcherContext);
+  }
+
+  private DataFetchingEnvironment createDataFetchingEnvironment(GraphQLOutputType outputType,
+      OperationDefinition.Operation operation, Object source, Object localDataFetcherContext) {
     return newDataFetchingEnvironment().executionStepInfo(executionStepInfo)
         .dataLoaderRegistry(dataLoaderRegistry)
         .fieldType(outputType)
@@ -485,9 +542,13 @@ class GenericDataFetcherTest {
         .operationDefinition(newOperationDefinition().operation(operation)
             .build())
         .source(source)
-        .localContext(LocalDataFetcherContext.builder()
-            .keyConditionFn((s, stringObjectMap) -> keyCondition)
-            .build())
+        .localContext(localDataFetcherContext)
+        .build();
+  }
+
+  private GraphQLOutputType createBeersType() {
+    return GraphQLObjectType.newObject()
+        .name("Beers")
         .build();
   }
 

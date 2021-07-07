@@ -50,7 +50,7 @@ Query:
 
 ```graphql
 query {
-    beers(first:1, offset: 10) {
+    beers(first:10, offset: 1) {
         nodes {
             identifier
             name
@@ -65,7 +65,7 @@ query {
         nodes {
             identifier
             name
-            beers(first: 1, offset: 10) {
+            beers(first: 10, offset: 1) {
                 nodes {
                     identifier
                     name
