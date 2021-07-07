@@ -25,6 +25,8 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
     PagingDataFetcherContext localContext = PagingDataFetcherContext.builder()
         .first(firstArgumentValue)
         .offset(offsetArgumentValue)
+        .parentLocalContext(environment.getLocalContext())
+        .parentSource(environment.getSource())
         .build();
 
     return DataFetcherResult.newResult()
