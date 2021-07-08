@@ -1,15 +1,18 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
+import java.util.List;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@Data
+@EqualsAndHashCode
 @Builder
 public class NotFilterCriteria implements FilterCriteria {
-  private FilterCriteria filterCriteria;
+  @Getter
+  private final FilterCriteria filterCriteria;
 
   @Override
-  public FieldPath getFieldPath() {
-    return null;
+  public List<FieldPath> getFieldPaths() {
+    return filterCriteria.getFieldPaths();
   }
 }

@@ -27,6 +27,7 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.origin.Filtering;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.dotwebstack.framework.core.query.model.origin.Requested;
@@ -76,7 +77,9 @@ public class SelectQueryBuilder {
     if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
       collectionRequest.getFilterCriterias()
           .stream()
-          .filter(filterCriteria -> !filterCriteria.isNestedFilter())
+          .filter(filterCriteria -> filterCriteria.getFieldPaths()
+              .stream()
+              .anyMatch(FieldPath::isLeaf))
           .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable.getName()))
           .collect(Collectors.toList())
           .forEach(selectQuery::addConditions);

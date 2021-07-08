@@ -31,9 +31,10 @@ public class PostgresObjectRequest extends ObjectRequest {
   private final Map<String, ObjectFieldConfiguration> objectFieldsByFieldName = new HashMap<>();
 
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
-    filterCriterias.stream()
-        .filter(FilterCriteria::isNestedFilter)
-        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.filtering(filterCriteria)));
+    filterCriterias.forEach(filterCriteria -> filterCriteria.getFieldPaths()
+        .stream()
+        .filter(fieldPath -> !fieldPath.isLeaf())
+        .forEach(fieldPath -> createObjectField(fieldPath, Origin.filtering(filterCriteria))));
   }
 
   public void addSortCriteria(List<SortCriteria> sortCriterias, Map<String, String> fieldPathAliasMap) {

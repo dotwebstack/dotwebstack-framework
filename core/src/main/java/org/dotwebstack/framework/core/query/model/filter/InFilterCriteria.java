@@ -1,13 +1,21 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
 import java.util.List;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@EqualsAndHashCode
 @SuperBuilder
 public class InFilterCriteria implements FilterCriteria {
   private final FieldPath fieldPath;
 
+  @Getter
   private final List<?> values;
+
+  @Override
+  public List<FieldPath> getFieldPaths() {
+    return List.of(fieldPath);
+  }
+
 }

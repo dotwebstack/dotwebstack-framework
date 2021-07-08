@@ -231,8 +231,9 @@ class FilterConditionHelperTest {
   @Test
   void createFilterConditions_throwsException_forUnsupportedCriteria() {
     var filterCriteria = new FilterCriteria() {
+
       @Override
-      public FieldPath getFieldPath() {
+      public List<FieldPath> getFieldPaths() {
         return null;
       }
     };

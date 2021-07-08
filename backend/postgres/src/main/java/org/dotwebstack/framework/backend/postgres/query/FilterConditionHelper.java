@@ -122,8 +122,15 @@ public final class FilterConditionHelper {
   }
 
   private static Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
-    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getFieldPath()
-        .getLeaf()
+    if (filterCriteria.getFieldPaths()
+        .size() > 1) {
+      throw illegalArgumentException("Filter criteria needs to contain a single fieldPath object!");
+    }
+
+    var fieldPath = filterCriteria.getFieldPaths()
+        .get(0);
+
+    var postgresFieldConfiguration = (PostgresFieldConfiguration) fieldPath.getLeaf()
         .getFieldConfiguration();
 
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
