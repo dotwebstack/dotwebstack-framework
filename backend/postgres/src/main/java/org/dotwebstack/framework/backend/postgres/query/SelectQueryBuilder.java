@@ -620,17 +620,19 @@ public class SelectQueryBuilder {
                       .getName())
                   : fromTable.getName();
 
-          var sortFieldName = objectSelectContext.getObjectQueryContext()
+          var sortColumn = objectSelectContext.getObjectQueryContext()
               .getFieldPathAliasMap()
               .get(sortCriteria.getFieldPath()
                   .getName());
 
-          if (sortFieldName == null) {
-            sortFieldName = sortCriteria.getFieldPath()
-                .getName();
+          if (sortColumn == null) {
+            PostgresFieldConfiguration postgresFieldConfiguration =
+                (PostgresFieldConfiguration) sortCriteria.getFieldPath()
+                    .getFieldConfiguration();
+            sortColumn = postgresFieldConfiguration.getColumn();
           }
 
-          Field<?> sortField = DSL.field(DSL.name(sortTable, sortFieldName));
+          Field<?> sortField = DSL.field(DSL.name(sortTable, sortColumn));
 
           switch (sortCriteria.getDirection()) {
             case ASC:
