@@ -91,6 +91,8 @@ objectTypes:
       lastBrewed: {}
       breweryCity:
         field: brewery.visitAddress.city
+      breweryPostalAdressCity:
+        field: brewery.postalAddress.city
     sortableBy:
       name:
         - field: name
