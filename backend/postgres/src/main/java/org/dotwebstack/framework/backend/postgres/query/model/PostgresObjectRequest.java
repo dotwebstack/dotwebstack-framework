@@ -2,13 +2,12 @@ package org.dotwebstack.framework.backend.postgres.query.model;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import com.google.common.collect.Sets;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,11 +17,11 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 
 @SuperBuilder
 @Data
@@ -32,16 +31,18 @@ public class PostgresObjectRequest extends ObjectRequest {
   private final Map<String, ObjectFieldConfiguration> objectFieldsByFieldName = new HashMap<>();
 
   public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
-    filterCriterias.stream()
-        .filter(FilterCriteria::isNestedFilter)
-        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.FILTERING));
+    filterCriterias.forEach(filterCriteria -> filterCriteria.getFieldPaths()
+        .stream()
+        .filter(fieldPath -> !fieldPath.isLeaf())
+        .forEach(fieldPath -> createObjectField(fieldPath, Origin.filtering(filterCriteria))));
   }
 
-  public void addSortCriteria(List<SortCriteria> sortCriterias) {
+  public void addSortCriteria(List<SortCriteria> sortCriterias, Map<String, String> fieldPathAliasMap) {
     sortCriterias.stream()
         .filter(sortCriteria -> !sortCriteria.getFieldPath()
             .isLeaf())
-        .forEach(filterCriteria -> createObjectField(filterCriteria.getFieldPath(), Origin.SORTING));
+        .forEach(sortCriteria -> createObjectField(sortCriteria.getFieldPath(),
+            Origin.sorting(sortCriteria, fieldPathAliasMap)));
   }
 
   private void createObjectField(FieldPath fieldPath, Origin origin) {
@@ -71,7 +72,7 @@ public class PostgresObjectRequest extends ObjectRequest {
           .add(ScalarField.builder()
               .field(fieldPath.getChild()
                   .getFieldConfiguration())
-              .origins(new HashSet<>(Set.of(origin)))
+              .origins(Sets.newHashSet(origin))
               .build());
 
     } else {
@@ -113,7 +114,7 @@ public class PostgresObjectRequest extends ObjectRequest {
           .orElseGet(() -> {
             var newScalarField = ScalarField.builder()
                 .field(fieldConfiguration)
-                .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+                .origins(Sets.newHashSet(Origin.requested()))
                 .build();
             parentObjectFieldConfiguration.getObjectRequest()
                 .addScalarField(newScalarField);

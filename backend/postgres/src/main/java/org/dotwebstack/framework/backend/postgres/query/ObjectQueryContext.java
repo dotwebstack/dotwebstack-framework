@@ -14,6 +14,8 @@ public class ObjectQueryContext {
 
   private final AtomicInteger tableCounter = new AtomicInteger();
 
+  private final Map<String, String> fieldPathAliasMap = new HashMap<>();
+
   public String newSelectAlias() {
     return "x".concat(String.valueOf(selectCounter.incrementAndGet()));
   }

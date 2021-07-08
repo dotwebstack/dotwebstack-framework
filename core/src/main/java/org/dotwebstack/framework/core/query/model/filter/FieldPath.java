@@ -23,4 +23,12 @@ public class FieldPath {
 
     return child.getLeaf();
   }
+
+  public String getName() {
+    if (isLeaf()) {
+      return fieldConfiguration.getName();
+    }
+
+    return String.format("%s.%s", fieldConfiguration.getName(), child.getName());
+  }
 }

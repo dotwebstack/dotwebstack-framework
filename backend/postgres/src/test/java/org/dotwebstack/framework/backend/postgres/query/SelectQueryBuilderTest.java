@@ -2,12 +2,14 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
@@ -23,7 +25,6 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
@@ -31,6 +32,7 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.jooq.DSLContext;
 import org.jooq.Meta;
 import org.jooq.MetaProvider;
@@ -79,7 +81,7 @@ class SelectQueryBuilderTest {
 
     when(typeConfiguration.getFields()).thenReturn(Map.of("identifier", identifierFieldConfiguration));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, scalarFields))
@@ -97,7 +99,7 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_withPagingCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
 
@@ -121,7 +123,7 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_withFilterCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
 
@@ -148,19 +150,25 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_withSortCriteriaAscending() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    var fieldConfiguration = createFieldConfiguration("name");
+
+    var sortCriteria = SortCriteria.builder()
+        .fieldPath(FieldPath.builder()
+            .fieldConfiguration(fieldConfiguration)
+            .build())
+        .direction(SortDirection.ASC)
+        .build();
+
+    Map<String, String> fieldPathAliasMap = new HashMap<>();
+
+    var scalarFields =
+        List.of(createScalarFieldConfiguration(fieldConfiguration, Origin.sorting(sortCriteria, fieldPathAliasMap)));
 
     var typeName = "Brewery";
 
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
-        .sortCriterias(List.of(SortCriteria.builder()
-            .fieldPath(FieldPath.builder()
-                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
-                    .getField())
-                .build())
-            .direction(SortDirection.ASC)
-            .build()))
+        .sortCriterias(List.of(sortCriteria))
         .build();
 
     var result = selectQueryBuilder.build(collectionRequest);
@@ -169,25 +177,32 @@ class SelectQueryBuilderTest {
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
             + "order by \"t1\".\"nameColumn\" asc"));
+    assertThat(fieldPathAliasMap, aMapWithSize(1));
   }
 
   @Test
   void buildCollectionRequest_returnsQuery_withSortCriteriaDescending() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    var fieldConfiguration = createFieldConfiguration("name");
+
+    var sortCriteria = SortCriteria.builder()
+        .fieldPath(FieldPath.builder()
+            .fieldConfiguration(fieldConfiguration)
+            .build())
+        .direction(SortDirection.DESC)
+        .build();
 
     var typeName = "Brewery";
 
+    Map<String, String> fieldPathAliasMap = new HashMap<>();
+
+    var scalarFields =
+        List.of(createScalarFieldConfiguration(fieldConfiguration, Origin.sorting(sortCriteria, fieldPathAliasMap)));
+
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
-        .sortCriterias(List.of(SortCriteria.builder()
-            .fieldPath(FieldPath.builder()
-                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
-                    .getField())
-                .build())
-            .direction(SortDirection.DESC)
-            .build()))
+        .sortCriterias(List.of(sortCriteria))
         .build();
 
     var result = selectQueryBuilder.build(collectionRequest);
@@ -196,12 +211,13 @@ class SelectQueryBuilderTest {
         .toString(),
         equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
             + "order by \"t1\".\"nameColumn\" desc"));
+    assertThat(fieldPathAliasMap, aMapWithSize(1));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forScalarFields() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var objectRequest = createObjectRequest("Brewery", scalarFields);
 
@@ -214,7 +230,7 @@ class SelectQueryBuilderTest {
   @Test
   void buildObjectRequest_returnsQuery_withKeyCriteria() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
@@ -256,14 +272,14 @@ class SelectQueryBuilderTest {
         .field(fieldConfiguration)
         .objectRequest(ObjectRequest.builder()
             .typeConfiguration(typeConfiguration)
-            .scalarFields(List.of(createScalarFieldConfiguration("street")))
+            .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("street"))))
             .build())
         .build();
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(mockTypeConfiguration("Brewery"))
         .objectFields(List.of(nestedObjectField))
-        .scalarFields(List.of(createScalarFieldConfiguration("name")))
+        .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("name"))))
         .build();
 
     SelectQueryBuilderResult result = selectQueryBuilder.build(objectRequest);
@@ -309,7 +325,7 @@ class SelectQueryBuilderTest {
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
-        .scalarFields(List.of(createScalarFieldConfiguration("identifier_ingredient")))
+        .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_ingredient"))))
         .build();
 
     var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(List.of(keyCriteria), true));
@@ -325,7 +341,7 @@ class SelectQueryBuilderTest {
   void buildObjectRequest_returnsQuery_forNestedObjects() {
     when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
 
@@ -335,7 +351,7 @@ class SelectQueryBuilderTest {
 
     var nestedObjectFieldConfiguration = NestedObjectFieldConfiguration.builder()
         .field(fieldConfiguration)
-        .scalarFields(List.of(createScalarFieldConfiguration("age")))
+        .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("age"))))
         .build();
 
     var objectRequest = ObjectRequest.builder()
@@ -408,7 +424,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(beerTypeConfiguration)
@@ -471,7 +487,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(breweryTypeConfiguration)
@@ -535,7 +551,7 @@ class SelectQueryBuilderTest {
             .build()))
         .build();
 
-    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration("name"));
+    List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(breweryTypeConfiguration)
@@ -584,14 +600,23 @@ class SelectQueryBuilderTest {
     return joinColumn;
   }
 
-  private ScalarField createScalarFieldConfiguration(String scalarName) {
+  private ScalarField createScalarFieldConfiguration(PostgresFieldConfiguration fieldConfiguration) {
+    return createScalarFieldConfiguration(fieldConfiguration, Origin.requested());
+  }
+
+  private ScalarField createScalarFieldConfiguration(PostgresFieldConfiguration fieldConfiguration, Origin origin) {
+    return ScalarField.builder()
+        .field(fieldConfiguration)
+        .origins(Sets.newHashSet(origin))
+        .build();
+  }
+
+  private PostgresFieldConfiguration createFieldConfiguration(String scalarName) {
     PostgresFieldConfiguration fieldConfiguration = new PostgresFieldConfiguration();
     fieldConfiguration.setName(scalarName);
     fieldConfiguration.setColumn(scalarName + COLUMN_POSTFIX);
-    return ScalarField.builder()
-        .field(fieldConfiguration)
-        .origins(Set.of(Origin.REQUESTED))
-        .build();
+
+    return fieldConfiguration;
   }
 
   private DSLContext createDslContext() {

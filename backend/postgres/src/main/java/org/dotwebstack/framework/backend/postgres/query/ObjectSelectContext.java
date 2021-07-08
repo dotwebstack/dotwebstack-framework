@@ -13,6 +13,8 @@ public class ObjectSelectContext {
 
   private ObjectQueryContext objectQueryContext;
 
+  private Map<String, String> fieldAliasMap = new HashMap<>();
+
   private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
   private boolean useNullMapWhenNotFound = false;

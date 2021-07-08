@@ -1,16 +1,19 @@
 package org.dotwebstack.framework.core.query.model;
 
+import java.util.HashSet;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 
 @Data
 @Builder
 public class ScalarField {
   private FieldConfiguration field;
 
-  private Set<Origin> origins;
+  @Builder.Default
+  private Set<Origin> origins = new HashSet<>();
 
   public String getName() {
     return field.getName();
@@ -20,8 +23,9 @@ public class ScalarField {
     origins.add(origin);
   }
 
-  public boolean hasOrigin(Origin origin) {
-    return origins.contains(origin);
+  public boolean hasOrigin(Class<? extends Origin> origin) {
+    return origins.stream()
+        .anyMatch(origin::isInstance);
   }
 
 }

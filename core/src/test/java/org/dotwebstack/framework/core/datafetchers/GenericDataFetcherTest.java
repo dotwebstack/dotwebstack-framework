@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import graphql.execution.DataFetcherResult;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.ResultPath;
@@ -26,11 +27,9 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -50,8 +49,8 @@ import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherConte
 import org.dotwebstack.framework.core.query.RequestFactory;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.ScalarField;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -510,7 +509,7 @@ class GenericDataFetcherTest {
   private ScalarField createScalarField(FieldConfiguration fieldConfiguration) {
     return ScalarField.builder()
         .field(fieldConfiguration)
-        .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+        .origins(Sets.newHashSet(Origin.requested()))
         .build();
   }
 

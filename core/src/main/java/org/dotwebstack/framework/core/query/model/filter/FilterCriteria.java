@@ -1,11 +1,8 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
 
+import java.util.List;
+
 public interface FilterCriteria {
-
-  default boolean isNestedFilter() {
-    return getFieldPath() != null && !getFieldPath().isLeaf();
-  }
-
-  FieldPath getFieldPath();
+  List<FieldPath> getFieldPaths();
 }

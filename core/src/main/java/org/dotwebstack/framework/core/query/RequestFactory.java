@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
+import com.google.common.collect.Sets;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -18,12 +19,10 @@ import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.SelectedField;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
@@ -44,11 +43,11 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.Origin;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
+import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -273,7 +272,7 @@ public class RequestFactory {
         .filter(AbstractFieldConfiguration::isScalarField)
         .map(field -> ScalarField.builder()
             .field(field)
-            .origins(new HashSet<>(Set.of(Origin.REQUESTED)))
+            .origins(Sets.newHashSet(Origin.requested()))
             .build())
         .collect(Collectors.toList());
   }
