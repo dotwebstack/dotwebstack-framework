@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
-import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.graphql.GraphqlService;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -41,6 +41,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContextValidat
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -51,6 +52,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait;
 
 @Configuration
 public class OpenApiConfiguration {
@@ -61,7 +63,7 @@ public class OpenApiConfiguration {
 
   private final InputStream openApiStream;
 
-  private final GraphQL graphQl;
+  private final GraphqlService graphQl;
 
   private final List<ResponseMapper> responseMappers;
 
@@ -83,9 +85,9 @@ public class OpenApiConfiguration {
 
   private final EnvironmentProperties environmentProperties;
 
-  public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+  public OpenApiConfiguration(OpenAPI openApi, @Qualifier("active") GraphqlService graphQl,
+      TypeDefinitionRegistry typeDefinitionRegistry, List<ResponseMapper> responseMappers,
+      JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
       RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
       EnvironmentProperties environmentProperties) {

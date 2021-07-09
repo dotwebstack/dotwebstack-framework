@@ -20,7 +20,6 @@ import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
-import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
@@ -39,6 +38,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.graphql.GraphqlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
@@ -94,7 +94,7 @@ class CoreRequestHandlerTest {
   private ResponseContextValidator responseContextValidator;
 
   @Mock
-  private GraphQL graphQl;
+  private GraphqlService graphQl;
 
   @Mock
   private JsonResponseMapper jsonResponseMapper;

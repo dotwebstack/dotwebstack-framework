@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.config.validators.DotWebStackConfigurationValidator;
+import org.dotwebstack.framework.core.graphql.GraphqlService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CoreConfiguration {
 
+  @Bean
+  public GraphqlService active(List<GraphqlService> beans) {
+    return beans.get(0);
+  }
 
   @Bean
   public DotWebStackConfiguration dotWebStackConfiguration(
