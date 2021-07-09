@@ -238,3 +238,20 @@ Geometry and Geography types, as part of the [PostGIS extension](https://postgis
 
 For an example implementation,
 see [example/example-postgres](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.3/example/example-postgres).
+
+## Connection configuration
+
+The postgres connection configuration are included within the spring `application.yml` as follows:
+
+```yaml
+dotwebstack:
+  postgres:
+    host: localhost
+    port: 5432
+    username: postgres
+    password: postgres
+    database: postgres
+    schema: dbeerpedia
+    options:
+      enable_seqscan: "off"
+```
