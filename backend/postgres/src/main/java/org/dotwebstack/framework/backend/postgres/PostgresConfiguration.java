@@ -46,8 +46,11 @@ public class PostgresConfiguration {
         .port(postgresProperties.getPort())
         .username(postgresProperties.getUsername())
         .password(postgresProperties.getPassword())
-        .options(postgresProperties.getOptions())
         .forceBinary(true);
+
+    if (postgresProperties.getOptions() != null) {
+      configurationBuilder.options(postgresProperties.getOptions());
+    }
 
     if (StringUtils.isNotEmpty(postgresProperties.getDatabase())) {
       configurationBuilder.database(postgresProperties.getDatabase());
