@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,4 +21,6 @@ public class PostgresProperties {
   private String password = "postgres";
 
   private String database = "postgres";
+
+  private Map<String, String> options;
 }
