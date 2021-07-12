@@ -23,7 +23,7 @@ import java.util.Optional;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.graphql.GraphqlService;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -53,7 +53,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 class OpenApiConfigurationTest {
 
   @Mock
-  private GraphqlService graphQL;
+  private GraphQlService graphQL;
 
   private TypeDefinitionRegistry registry;
 

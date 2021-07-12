@@ -38,7 +38,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
-import org.dotwebstack.framework.core.graphql.GraphqlService;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
@@ -94,7 +94,7 @@ class CoreRequestHandlerTest {
   private ResponseContextValidator responseContextValidator;
 
   @Mock
-  private GraphqlService graphQl;
+  private GraphQlService graphQl;
 
   @Mock
   private JsonResponseMapper jsonResponseMapper;

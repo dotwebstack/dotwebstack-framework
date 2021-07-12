@@ -11,7 +11,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
-import org.dotwebstack.framework.core.graphql.GraphqlService;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 @RestController
 class GraphqlController {
 
-  private final GraphqlService graphQL;
+  private final GraphQlService graphQL;
 
   private final ObjectMapper objectMapper;
 
@@ -36,7 +36,7 @@ class GraphqlController {
 
   private static final String VARIABLES = "variables";
 
-  public GraphqlController(@Qualifier("active") GraphqlService graphQL) {
+  public GraphqlController(@Qualifier("active") GraphQlService graphQL) {
     this.graphQL = graphQL;
     this.objectMapper = new ObjectMapper();
   }

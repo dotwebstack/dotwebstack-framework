@@ -12,7 +12,7 @@ import graphql.execution.UnknownOperationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.dotwebstack.framework.core.graphql.GraphqlService;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ import reactor.test.StepVerifier;
 class GraphqlControllerTest {
 
   @Mock
-  GraphqlService graphQL;
+  GraphQlService graphQL;
 
   GraphqlController graphqlController;
 

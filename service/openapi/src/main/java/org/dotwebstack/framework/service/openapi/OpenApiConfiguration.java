@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.graphql.GraphqlService;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -52,7 +52,6 @@ import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait;
 
 @Configuration
 public class OpenApiConfiguration {
@@ -63,7 +62,7 @@ public class OpenApiConfiguration {
 
   private final InputStream openApiStream;
 
-  private final GraphqlService graphQl;
+  private final GraphQlService graphQl;
 
   private final List<ResponseMapper> responseMappers;
 
@@ -85,7 +84,7 @@ public class OpenApiConfiguration {
 
   private final EnvironmentProperties environmentProperties;
 
-  public OpenApiConfiguration(OpenAPI openApi, @Qualifier("active") GraphqlService graphQl,
+  public OpenApiConfiguration(OpenAPI openApi, @Qualifier("active") GraphQlService graphQl,
       TypeDefinitionRegistry typeDefinitionRegistry, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,

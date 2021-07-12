@@ -4,7 +4,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import java.util.concurrent.CompletableFuture;
 
-public interface GraphqlService {
+public interface GraphQlService {
   ExecutionResult execute(ExecutionInput executionInput);
 
   CompletableFuture<ExecutionResult> executeAsync(ExecutionInput executionInput);

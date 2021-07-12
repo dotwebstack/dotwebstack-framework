@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 
 @Conditional(GraphQlNativeEnabled.class)
 @Service
-public class NativeGraphqlService implements GraphqlService {
+public class NativeGraphQlService implements GraphQlService {
   private final GraphQL graphQL;
 
-  public NativeGraphqlService(GraphQL graphQL) {
+  public NativeGraphQlService(GraphQL graphQL) {
     this.graphQL = graphQL;
   }
 
