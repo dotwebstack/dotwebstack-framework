@@ -20,17 +20,20 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.RequestFactory;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+@Conditional(GraphQlNativeEnabled.class)
 @Component
 @Slf4j
 public final class GenericDataFetcher implements DataFetcher<Object> {

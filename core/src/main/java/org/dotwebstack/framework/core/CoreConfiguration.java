@@ -26,9 +26,11 @@ public class CoreConfiguration {
     var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
     var dotWebStackConfiguration = dotWebStackConfigurationReader.read(configFilename);
 
-    dotWebStackConfiguration.getObjectTypes()
-        .values()
-        .forEach(objectType -> objectType.init(dotWebStackConfiguration));
+    if (dotWebStackConfiguration.getObjectTypes() != null) {
+      dotWebStackConfiguration.getObjectTypes()
+          .values()
+          .forEach(objectType -> objectType.init(dotWebStackConfiguration));
+    }
 
     validators.forEach(validator -> validator.validate(dotWebStackConfiguration));
 

@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.core.config.validators;
 
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.GraphQlSettingsConfiguration;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
+@Conditional(GraphQlNativeEnabled.class)
 @Component
 public class SettingsValidator implements DotWebStackConfigurationValidator {
 
