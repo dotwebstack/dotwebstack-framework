@@ -6,12 +6,13 @@ import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
-import graphql.GraphQL;
 import java.io.IOException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ import reactor.core.publisher.Mono;
 @RestController
 class GraphqlController {
 
-  private final GraphQL graphQL;
+  private final GraphQlService graphQL;
 
   private final ObjectMapper objectMapper;
 
@@ -35,7 +36,7 @@ class GraphqlController {
 
   private static final String VARIABLES = "variables";
 
-  public GraphqlController(GraphQL graphQL) {
+  public GraphqlController(@Qualifier("active") GraphQlService graphQL) {
     this.graphQL = graphQL;
     this.objectMapper = new ObjectMapper();
   }

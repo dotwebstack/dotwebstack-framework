@@ -66,6 +66,10 @@
       <groupId>org.zalando</groupId>
       <artifactId>problem-spring-webflux</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.projectreactor.netty</groupId>
+      <artifactId>reactor-netty-http</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

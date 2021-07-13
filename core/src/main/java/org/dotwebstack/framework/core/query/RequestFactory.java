@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
@@ -48,8 +49,10 @@ import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
+@Conditional(GraphQlNativeEnabled.class)
 @Component
 public class RequestFactory {
 

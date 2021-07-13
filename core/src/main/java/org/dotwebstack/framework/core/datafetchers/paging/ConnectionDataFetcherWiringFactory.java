@@ -6,8 +6,11 @@ import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.WiringFactory;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
+@Conditional(GraphQlNativeEnabled.class)
 @Component
 public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 

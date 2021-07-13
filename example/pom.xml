@@ -15,6 +15,7 @@
   <modules>
     <module>example-json</module>
     <module>example-postgres</module>
+    <module>example-postgres-proxy</module>
     <module>example-rdf4j</module>
   </modules>
 
