@@ -11,8 +11,8 @@ import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
-import static org.dotwebstack.framework.core.datafetchers.KeyCondition.ContextConstants.CONTEXT_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.KeyCondition.ContextConstants.CONTEXT_TYPE_NAME;
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_NAME;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import graphql.Scalars;

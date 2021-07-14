@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.datafetchers;
 
-class ContextConstants {
+public final class ContextConstants {
+
+  private ContextConstants() {}
 
   public static final String CONTEXT_TYPE_NAME = "Context";
 
