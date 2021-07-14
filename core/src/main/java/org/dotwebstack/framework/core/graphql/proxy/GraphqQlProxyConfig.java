@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql;
+package org.dotwebstack.framework.core.graphql.proxy;
 
 import static java.lang.String.format;
 
@@ -9,7 +9,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.graphql.client.ExecutionResultDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -17,18 +16,18 @@ import org.springframework.core.env.Environment;
 
 @Conditional(GraphQlNativeDisabled.class)
 @Configuration
-public class ProxyConfig {
+public class GraphqQlProxyConfig {
 
   private final Environment environment;
 
-  public ProxyConfig(@NonNull Environment environment) {
+  public GraphqQlProxyConfig(@NonNull Environment environment) {
     this.environment = environment;
   }
 
   @Bean
   public ObjectMapper proxyObjectMapper() {
     ObjectMapper result = new ObjectMapper();
-    SimpleModule sm = new SimpleModule("GraphqlResult");
+    SimpleModule sm = new SimpleModule("Graphql");
     sm.addDeserializer(ExecutionResult.class, new ExecutionResultDeserializer(ExecutionResult.class));
     result.registerModule(sm);
     return result;

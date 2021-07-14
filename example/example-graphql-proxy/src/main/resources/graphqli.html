@@ -15,13 +15,13 @@
 
       var uri;
       if (graphQLParams.operationName == null && graphQLParams.variables == null) {
-        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}`;
+        uri = `http://localhost:8081?query=${encodeURIComponent(graphQLParams.query)}`;
       } else if (graphQLParams.operationName != null && graphQLParams.variables == null) {
-        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}`;
+        uri = `http://localhost:8081?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}`;
       } else if (graphQLParams.operationName == null && graphQLParams.variables != null) {
-        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
+        uri = `http://localhost:8081?query=${encodeURIComponent(graphQLParams.query)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
       } else {
-        uri = `http://localhost:8080?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
+        uri = `http://localhost:8081?query=${encodeURIComponent(graphQLParams.query)}&operationName=${encodeURIComponent(graphQLParams.operationName)}&variables=${encodeURIComponent(JSON.stringify(graphQLParams.variables))}`;
       }
 
       return fetch(uri)

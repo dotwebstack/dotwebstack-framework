@@ -14,17 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dotwebstack.framework</groupId>
-            <artifactId>backend-postgres</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dotwebstack.framework</groupId>
             <artifactId>service-graphql</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dotwebstack.framework</groupId>
-            <artifactId>ext-spatial</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

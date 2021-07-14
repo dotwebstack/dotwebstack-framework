@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.client;
+package org.dotwebstack.framework.core.graphql.proxy;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -14,7 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import org.dotwebstack.framework.core.InternalServerErrorException;
+
+/**
+ * Custom jackson deserialzer for non-json friendly {@link ExecutionResult} classes.
+ */
 
 public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult> {
 
@@ -48,7 +51,6 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
   }
 
   private static class ErrorDeserializer implements Function<JsonParser, GraphQLError> {
-
     @SuppressWarnings("unchecked")
     @Override
     public GraphQLError apply(JsonParser jsonParser) {
@@ -74,7 +76,7 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
         }
         return builder.build();
       } catch (IOException e) {
-        throw new InternalServerErrorException("Could not deserialize error", e);
+        throw new GraphQlProxyException("Could not deserialize error", e);
       }
     }
 
@@ -106,7 +108,7 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
           }
           return new SourceLocation(line, column, sourceName);
         } catch (IOException e) {
-          throw new InternalServerErrorException("Could not deserialize error.locations", e);
+          throw new GraphQlProxyException("Could not deserialize error.locations", e);
         }
       }
     }

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.client;
+package org.dotwebstack.framework.core.graphql.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,14 +22,13 @@ class ExecutionResultDeserializerTest {
   @BeforeAll
   static void init() {
     OBJECT_MAPPER = new ObjectMapper();
-    SimpleModule sm = new SimpleModule("GraphqlResult");
+    SimpleModule sm = new SimpleModule("Graphql");
     sm.addDeserializer(ExecutionResult.class, new ExecutionResultDeserializer(ExecutionResult.class));
     OBJECT_MAPPER.registerModule(sm);
   }
 
   @Test
   void deserialize_returnsExpected_forSuccessResponse() throws JsonProcessingException {
-
     // Arrange
     Object data = Map.of("key", "value", "key2", List.of("1", "2"));
     ExecutionResult result = new ExecutionResultImpl(data, null, null);

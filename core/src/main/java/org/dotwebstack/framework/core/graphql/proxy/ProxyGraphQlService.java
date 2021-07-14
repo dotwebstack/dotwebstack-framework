@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql;
+package org.dotwebstack.framework.core.graphql.proxy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -39,7 +39,7 @@ public class ProxyGraphQlService implements GraphQlService {
   }
 
   @Override
-  public ExecutionResult execute(ExecutionInput executionInput) {
+  public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
     String body = createBody(executionInput);
     ByteBuf byteBuffer = client.post()
         .uri(uri)
@@ -51,7 +51,7 @@ public class ProxyGraphQlService implements GraphQlService {
   }
 
   @Override
-  public CompletableFuture<ExecutionResult> executeAsync(ExecutionInput executionInput) {
+  public CompletableFuture<ExecutionResult> executeAsync(@NonNull ExecutionInput executionInput) {
     LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
     String body = createBody(executionInput);
     return client.headers(h -> h.set("Content-Type", "application/json"))
@@ -68,7 +68,7 @@ public class ProxyGraphQlService implements GraphQlService {
       InputStream src = new ByteBufInputStream(byteBuffer);
       return objectMapper.readValue(src, ExecutionResult.class);
     } catch (IOException e) {
-      throw new InternalServerErrorException("Error unmarshalling body from graphQl reponse", e);
+      throw new GraphQlProxyException("Error unmarshalling body from graphQl reponse", e);
     }
   }
 
@@ -77,7 +77,7 @@ public class ProxyGraphQlService implements GraphQlService {
     try {
       return objectMapper.writeValueAsString(body);
     } catch (JsonProcessingException e) {
-      throw new InternalServerErrorException("Error creating body for graphQl executionInput", e);
+      throw new GraphQlProxyException("Error creating body for graphQl executionInput", e);
     }
   }
 }
