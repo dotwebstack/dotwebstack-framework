@@ -1,0 +1,197 @@
+features:
+  - paging
+
+spatial:
+  sourceCrs: EPSG:4258
+
+subscriptions:
+  beerSubscription:
+    type: Beer
+  brewerySubscription:
+    type: Brewery
+
+context:
+  fields:
+    validOn:
+      type: Date
+      default: NOW
+
+queries:
+  beer:
+    type: Beer
+    keys:
+      - field: identifier
+  beerCollection:
+    type: Beer
+    list: true
+  brewery:
+    type: Brewery
+    keys:
+      - field: identifier
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Beer:
+    backend: postgres
+    table: dbeerpedia.beers
+    filters:
+      breweryCity:
+        field: brewery.visitAddress.city
+    keys:
+      - field: identifier
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      retired:
+        type: Boolean
+      brewery:
+        type: Brewery
+        joinColumns:
+          - name: brewery
+            referencedField: identifier
+      ingredients:
+        type: Ingredient
+        list: true
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      ingredientAgg:
+        aggregationOf: Ingredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      taste:
+        type: Taste
+        list: true
+
+  Brewery:
+    backend: postgres
+    table: dbeerpedia.breweries
+    keys:
+      - field: identifier
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      address:
+        - field: postalAddress.street
+          direction: ASC
+        - field: postalAddress.city
+          direction: ASC
+      historyAge:
+        - field: history.age
+          direction: ASC
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalStreet:
+        field: postalAddress.street
+      postalCity:
+        field: postalAddress.city
+      visitStreet:
+        field: visitAddress.street
+      visitCity:
+        field: visitAddress.city
+      historyAge:
+        field: history.age
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+        nullable: true
+      postalAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+      beers:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: brewery
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+      history:
+        type: History
+
+
+  Ingredient:
+    backend: postgres
+    table: dbeerpedia.ingredients
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float
+
+  Address:
+    backend: postgres
+    table: dbeerpedia.addresses
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
+  History:
+    backend: postgres
+    keys:
+      - field: identifier
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

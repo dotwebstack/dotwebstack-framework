@@ -36,18 +36,20 @@ CREATE TABLE dbeerpedia.beers (
   brewery character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
   sold_per_year INT NOT NULL,
   taste text[] NOT NULL,
-  retired boolean NOT NULL
+  retired boolean NOT NULL,
+  valid_start DATE NOT NULL,
+  valid_end DATE
 );
 
 CREATE INDEX brewery_idx ON dbeerpedia.beers (brewery);
 
-INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year, taste, retired) VALUES
-  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::text[], false),
-  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', 'SPICY', 'SMOKY', 'WATERY', 'FRUITY']::text[], false),
-  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::text[], false),
-  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, array['SPICY']::text[], false),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::text[], false),
-  ('766883b5-3482-41cf-a66d-a81e79a4f321', 'Beer 6', 6.5, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 25100000, array['WATERY']::text[], true);
+INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year, taste, retired, valid_start, valid_end) VALUES
+  ('b0e7cf18-e3ce-439b-a63e-034c8452f59c', 'Beer 1', 5.4, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 1000000, array['MEATY', 'FRUITY']::text[], false,'2020-01-01','2050-01-01'),
+  ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 500000, array['MEATY', 'SPICY', 'SMOKY', 'WATERY', 'FRUITY']::text[], false,'2020-01-01','2020-06-01'),
+  ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 250000, array['MEATY', 'SMOKY', 'SMOKY']::text[], false,'2020-01-01',null),
+  ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 'd3654375-95fa-46b4-8529-08b0f777bd6b', 200000, array['SPICY']::text[], false,'2020-01-01',null),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 100000, array['MEATY', 'SPICY']::text[], false,'2020-01-01',null),
+  ('766883b5-3482-41cf-a66d-a81e79a4f321', 'Beer 6', 6.5, '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 25100000, array['WATERY']::text[], true,'2020-01-01',null);
 
 
 CREATE TABLE dbeerpedia.ingredients (
@@ -100,3 +102,24 @@ INSERT INTO dbeerpedia.beers_ingredients(beers_identifier, ingredients_identifie
   ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd794c14-5fbb-11eb-ae93-0242ac130002'),
   ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795196-5fbb-11eb-ae93-0242ac130002'),
   ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795191-5fbb-11eb-ae93-0242ac130002');
+
+
+CREATE FUNCTION dbeerpedia.breweries_ctx(date) RETURNS SETOF dbeerpedia.breweries AS $$
+   SELECT * FROM dbeerpedia.breweries
+$$ language SQL immutable;
+
+CREATE FUNCTION dbeerpedia.beers_ctx(date) RETURNS SETOF dbeerpedia.beers AS $$
+   SELECT * FROM dbeerpedia.beers WHERE daterange(valid_start, valid_end) @> $1
+$$ language SQL immutable;
+
+CREATE FUNCTION dbeerpedia.addresses_ctx(date) RETURNS SETOF dbeerpedia.addresses AS $$
+   SELECT * FROM dbeerpedia.addresses
+$$ language SQL immutable;
+
+CREATE FUNCTION dbeerpedia.ingredients_ctx(date) RETURNS SETOF dbeerpedia.ingredients AS $$
+   SELECT * FROM dbeerpedia.ingredients
+$$ language SQL immutable;
+
+CREATE FUNCTION dbeerpedia.beers_ingredients_ctx(date) RETURNS SETOF dbeerpedia.beers_ingredients AS $$
+   SELECT * FROM dbeerpedia.beers_ingredients
+$$ language SQL immutable;
