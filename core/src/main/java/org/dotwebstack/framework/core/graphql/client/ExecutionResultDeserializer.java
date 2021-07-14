@@ -118,6 +118,8 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
     while ((currentToken = jp.nextValue()) != null) {
       if (currentToken == JsonToken.START_OBJECT) {
         result.add(converter.apply(jp));
+      } else if (currentToken == JsonToken.END_ARRAY) {
+        break;
       }
     }
     return result;

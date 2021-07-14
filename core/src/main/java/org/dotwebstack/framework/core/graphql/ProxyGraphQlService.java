@@ -64,11 +64,9 @@ public class ProxyGraphQlService implements GraphQlService {
   }
 
   protected ExecutionResult readBody(ByteBuf byteBuffer) {
-    LOG.debug("Reading response");
     try {
       InputStream src = new ByteBufInputStream(byteBuffer);
-      ExecutionResult result = objectMapper.readValue(src, ExecutionResult.class);
-      return result;
+      return objectMapper.readValue(src, ExecutionResult.class);
     } catch (IOException e) {
       throw new InternalServerErrorException("Error unmarshalling body from graphQl reponse", e);
     }
