@@ -6,10 +6,12 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
@@ -19,11 +21,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientResponse;
 
 @Slf4j
 @Conditional(GraphQlNativeDisabled.class)
 @Service
-public class ProxyGraphQlService implements GraphQlService {
+public class GraphQlProxyService implements GraphQlService {
 
   private final ObjectMapper objectMapper;
 
@@ -32,7 +35,7 @@ public class ProxyGraphQlService implements GraphQlService {
   private final HttpClient client;
 
 
-  public ProxyGraphQlService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri) {
+  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri) {
     this.objectMapper = proxyObjectMapper;
     this.client = HttpClient.create();
     this.uri = proxyUri;
@@ -40,11 +43,12 @@ public class ProxyGraphQlService implements GraphQlService {
 
   @Override
   public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
+    LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
     String body = createBody(executionInput);
     ByteBuf byteBuffer = client.post()
         .uri(uri)
         .send(ByteBufMono.fromString(Mono.just(body)))
-        .responseSingle((res, content) -> content)
+        .responseSingle(checkResult())
         .block();
     return readBody(byteBuffer);
 
@@ -58,14 +62,13 @@ public class ProxyGraphQlService implements GraphQlService {
         .post()
         .uri(uri)
         .send(ByteBufMono.fromString(Mono.just(body)))
-        .responseSingle((res, content) -> content)
+        .responseSingle(checkResult())
         .map(this::readBody)
         .toFuture();
   }
 
-  protected ExecutionResult readBody(ByteBuf byteBuffer) {
-    try {
-      InputStream src = new ByteBufInputStream(byteBuffer);
+  private ExecutionResult readBody(ByteBuf byteBuffer) {
+    try (InputStream src = new ByteBufInputStream(byteBuffer)) {
       return objectMapper.readValue(src, ExecutionResult.class);
     } catch (IOException e) {
       throw new GraphQlProxyException("Error unmarshalling body from graphQl reponse", e);
@@ -79,5 +82,16 @@ public class ProxyGraphQlService implements GraphQlService {
     } catch (JsonProcessingException e) {
       throw new GraphQlProxyException("Error creating body for graphQl executionInput", e);
     }
+  }
+
+  private BiFunction<HttpClientResponse, ByteBufMono, Mono<ByteBuf>> checkResult() {
+    return (res, content) -> {
+      if (res.status() == HttpResponseStatus.OK) {
+        return content;
+      } else {
+        throw new GraphQlProxyException("Graphql Proxy returned status code {}", res.status()
+            .code());
+      }
+    };
   }
 }
