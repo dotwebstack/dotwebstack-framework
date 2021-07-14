@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>example-postgres-proxy</artifactId>
+    <artifactId>example-graphql-proxy</artifactId>
 
     <dependencies>
         <dependency>

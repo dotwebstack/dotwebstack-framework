@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.graphql;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import io.netty.buffer.ByteBuf;
@@ -14,34 +13,29 @@ import java.util.concurrent.CompletableFuture;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.InternalServerErrorException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.graphql.client.ExecutionResultDeserializer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
 
 @Slf4j
-@ConditionalOnMissingBean(NativeGraphQlService.class)
+@Conditional(GraphQlNativeDisabled.class)
 @Service
 public class ProxyGraphQlService implements GraphQlService {
 
   private final ObjectMapper objectMapper;
 
-  private final HttpClient client;
-
   private final String uri;
 
-  public ProxyGraphQlService(@NonNull DotWebStackConfiguration config) {
-    objectMapper = new ObjectMapper();
-    SimpleModule sm = new SimpleModule("GraphqlResult");
-    sm.addDeserializer(ExecutionResult.class, new ExecutionResultDeserializer(ExecutionResult.class));
-    objectMapper.registerModule(sm);
-    client = HttpClient.create();
-    this.uri = config.getSettings()
-        .getGraphql()
-        .getProxy();
+  private final HttpClient client;
+
+
+  public ProxyGraphQlService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri) {
+    this.objectMapper = proxyObjectMapper;
+    this.client = HttpClient.create();
+    this.uri = proxyUri;
   }
 
   @Override

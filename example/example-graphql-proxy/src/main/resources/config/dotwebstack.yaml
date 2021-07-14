@@ -1,0 +1,9 @@
+settings:
+  graphql:
+    proxy: localhostProxy
+
+features:
+  - paging
+
+spatial:
+  sourceCrs: EPSG:4258
