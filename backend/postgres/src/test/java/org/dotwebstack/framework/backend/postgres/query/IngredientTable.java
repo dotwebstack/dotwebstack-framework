@@ -18,6 +18,8 @@ public class IngredientTable extends CustomTable<IngredientRecord> {
 
   public final TableField<IngredientRecord, Integer> weight = createField(DSL.name("weight"), INTEGER);
 
+  public final TableField<IngredientRecord, String> code = createField(DSL.name("code"), VARCHAR);
+
   public IngredientTable() {
     super(DSL.name("ingredientTable"));
   }
