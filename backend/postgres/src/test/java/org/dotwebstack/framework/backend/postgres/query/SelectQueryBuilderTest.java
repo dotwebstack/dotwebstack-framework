@@ -35,7 +35,6 @@ import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.jooq.DSLContext;
 import org.jooq.Meta;
-import org.jooq.MetaProvider;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
@@ -66,8 +65,6 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildCollectionRequest_returnsQuery_forScalarFields() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
     var keyConfiguration = new KeyConfiguration();
@@ -92,12 +89,12 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t1\".\"identifierColumn\" as \"x2\"\n"
-            + "from \"breweryTable\" as \"t1\""));
+            + "from \"BreweryTable\" as \"t1\""));
   }
 
   @Test
   void buildCollectionRequest_returnsQuery_withPagingCriteria() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
+    // when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
 
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
@@ -115,14 +112,12 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n" + "limit 10\n"
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n" + "limit 10\n"
             + "offset 0"));
   }
 
   @Test
   void buildCollectionRequest_returnsQuery_withFilterCriteria() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
@@ -142,14 +137,12 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n"
             + "where \"t1\".\"nameColumn\" = 'Brewery X'"));
   }
 
   @Test
   void buildCollectionRequest_returnsQuery_withSortCriteriaAscending() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     var fieldConfiguration = createFieldConfiguration("name");
 
     var sortCriteria = SortCriteria.builder()
@@ -175,15 +168,13 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n"
             + "order by \"t1\".\"nameColumn\" asc"));
     assertThat(fieldPathAliasMap, aMapWithSize(1));
   }
 
   @Test
   void buildCollectionRequest_returnsQuery_withSortCriteriaDescending() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     var fieldConfiguration = createFieldConfiguration("name");
 
     var sortCriteria = SortCriteria.builder()
@@ -209,14 +200,13 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\"\n"
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n"
             + "order by \"t1\".\"nameColumn\" desc"));
     assertThat(fieldPathAliasMap, aMapWithSize(1));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forScalarFields() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var objectRequest = createObjectRequest("Brewery", scalarFields);
@@ -224,12 +214,11 @@ class SelectQueryBuilderTest {
     var result = selectQueryBuilder.build(objectRequest);
 
     assertThat(result.getQuery()
-        .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"breweryTable\" as \"t1\""));
+        .toString(), equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\""));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_withKeyCriteria() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
@@ -248,15 +237,12 @@ class SelectQueryBuilderTest {
         .toString(),
         equalTo("select\n" + "  \"t3\".*,\n" + "  x2\n" + "from (values ('Beer 1')) as \"t2\" (\"x2\")\n"
             + "  left outer join lateral (\n" + "    select \"t1\".\"nameColumn\" as \"x1\"\n"
-            + "    from \"breweryTable\" as \"t1\"\n" + "    where \"t1\".\"name\" = \"t2\".\"x2\"\n"
+            + "    from \"BreweryTable\" as \"t1\"\n" + "    where \"t1\".\"name\" = \"t2\".\"x2\"\n"
             + "  ) as \"t3\"\n" + "    on 1 = 1"));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinColumn() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    when(meta.getTables("AddressTable")).thenReturn(List.of(new AddressTable()));
-
     var addressIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     addressIdentifierFieldConfiguration.setColumn("identifier_address");
 
@@ -287,19 +273,14 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
-            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
-            + "    select \"t2\".\"streetColumn\" as \"x2\"\n" + "    from \"addressTable\" as \"t2\"\n"
+            + "from \"BreweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select \"t2\".\"streetColumn\" as \"x2\"\n" + "    from \"AddressTable\" as \"t2\"\n"
             + "    where \"t1\".\"postal_address\" = \"t2\".\"identifier_address\"\n" + "    limit 1\n"
             + "  ) as \"t3\"\n" + "    on 1 = 1"));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinTable() {
-    when(meta.getTables("IngredientTable"))
-        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.IngredientTable()));
-    when(meta.getTables("BeerIngredientTable"))
-        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerIngredientTable()));
-
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
 
@@ -332,15 +313,13 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n" + "from \"ingredientTable\" as \"t1\"\n"
-            + "  join \"beerIngredientTable\" as \"t2\"\n"
+        equalTo("select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n" + "from \"IngredientTable\" as \"t1\"\n"
+            + "  join \"BeerIngredientTable\" as \"t2\"\n"
             + "    on \"t2\".\"ingredient_identifier\" = \"t1\".\"identifier_ingredientColumn\""));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forNestedObjects() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
@@ -369,18 +348,11 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t1\".\"ageColumn\" as \"x2\"\n"
-            + "from \"breweryTable\" as \"t1\""));
+            + "from \"BreweryTable\" as \"t1\""));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forAggregateFieldsWithJoinTable() {
-    when(meta.getTables("BeerTable"))
-        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerTable()));
-    when(meta.getTables("IngredientTable"))
-        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.IngredientTable()));
-    when(meta.getTables("BeerIngredientTable"))
-        .thenReturn(List.of(new org.dotwebstack.framework.backend.postgres.query.BeerIngredientTable()));
-
     var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     beerIdentifierFieldConfiguration.setColumn("identifier_beer");
 
@@ -435,9 +407,9 @@ class SelectQueryBuilderTest {
     var result = selectQueryBuilder.build(objectRequest);
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t4\".*\n" + "from \"beerTable\" as \"t1\"\n"
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t4\".*\n" + "from \"BeerTable\" as \"t1\"\n"
             + "  left outer join lateral (\n" + "    select cast(avg(\"t2\".\"weight\") as int) as \"x2\"\n"
-            + "    from \"ingredientTable\" as \"t2\"\n" + "      join \"beerIngredientTable\" as \"t3\"\n"
+            + "    from \"IngredientTable\" as \"t2\"\n" + "      join \"BeerIngredientTable\" as \"t3\"\n"
             + "        on (\n" + "          \"t3\".\"beer_identifier\" = \"t1\".\"identifier_beer\"\n"
             + "          and \"t3\".\"ingredient_identifier\" = \"t2\".\"identifier_ingredientColumn\"\n"
             + "        )\n" + "  ) as \"t4\"\n" + "    on 1 = 1"));
@@ -445,9 +417,6 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildObjectRequest_returnQuery_forAggregateFieldsWithJoinColumn() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
-
     var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
 
@@ -500,17 +469,14 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
-            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
-            + "    select cast(avg(\"t2\".\"sold_per_year\") as int) as \"x2\"\n" + "    from \"beerTable\" as \"t2\"\n"
+            + "from \"BreweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select cast(avg(\"t2\".\"sold_per_year\") as int) as \"x2\"\n" + "    from \"BeerTable\" as \"t2\"\n"
             + "    where \"t2\".\"breweryColumn\" = \"t1\".\"identifierColumn\"\n" + "  ) as \"t3\"\n"
             + "    on 1 = 1"));
   }
 
   @Test
   void buildObjectRequest_returnsQuery_forAggregateFieldsWithStringJoinOnArray() {
-    when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-    when(meta.getTables("BeerTable")).thenReturn(List.of(new BeerTable()));
-
     var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
 
@@ -564,8 +530,8 @@ class SelectQueryBuilderTest {
     assertThat(result.getQuery()
         .toString(),
         equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
-            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
-            + "    select string_agg(cast(\"x2\" as varchar), ',') as \"x2\"\n" + "    from \"beerTable\" as \"t2\"\n"
+            + "from \"BreweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select string_agg(cast(\"x2\" as varchar), ',') as \"x2\"\n" + "    from \"BeerTable\" as \"t2\"\n"
             + "      cross join unnest(\"t2\".\"taste\") as \"x2\" (\"COLUMN_VALUE\")\n"
             + "    where \"t2\".\"breweryColumn\" = \"t1\".\"identifierColumn\"\n" + "  ) as \"t3\"\n"
             + "    on 1 = 1"));
@@ -620,12 +586,8 @@ class SelectQueryBuilderTest {
   }
 
   private DSLContext createDslContext() {
-    MetaProvider metaProvider = mock(MetaProvider.class);
-    when(metaProvider.provide()).thenReturn(meta);
-
     DefaultConfiguration configuration = new DefaultConfiguration();
     configuration.setSQLDialect(SQLDialect.POSTGRES);
-    configuration.setMetaProvider(metaProvider);
 
     return new DefaultDSLContext(configuration);
   }
