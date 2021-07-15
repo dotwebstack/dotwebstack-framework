@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -232,7 +233,7 @@ public class SelectQueryBuilder {
             values.add(value);
             keyValuesPerKeyIdentifier.put(key, values);
           } else {
-            keyValuesPerKeyIdentifier.put(key, new ArrayList<>(Arrays.asList(value)));
+            keyValuesPerKeyIdentifier.put(key, new ArrayList<>(Collections.singletonList(value)));
           }
         }));
     return keyValuesPerKeyIdentifier;
@@ -561,10 +562,10 @@ public class SelectQueryBuilder {
     AtomicInteger atomicInteger = new AtomicInteger(0);
 
     String bindingKeys = contextCriterias.stream()
-        .map(contextCriteria -> String.format("{%d}", atomicInteger.incrementAndGet()))
+        .map(contextCriteria -> String.format("{%d}", atomicInteger.getAndIncrement()))
         .collect(Collectors.joining(","));
 
-    Object bindingValues = contextCriterias.stream()
+    Object[] bindingValues = contextCriterias.stream()
         .map(ContextCriteria::getValue)
         .collect(Collectors.toList())
         .toArray(Object[]::new);

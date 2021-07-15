@@ -227,8 +227,7 @@ class RequestFactoryTest {
         .first(10)
         .build()));
 
-    verify(executionStepInfo, times(1)).getParent();
-
+    verify(executionStepInfo, times(2)).getParent();
   }
 
   @Test

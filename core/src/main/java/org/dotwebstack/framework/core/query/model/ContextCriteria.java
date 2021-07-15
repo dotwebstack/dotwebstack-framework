@@ -1,13 +1,15 @@
 package org.dotwebstack.framework.core.query.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
-@Data
+@Builder
+@Getter
 public class ContextCriteria {
   @NonNull
-  private String field;
+  private final String field;
 
   @NonNull
-  private Object value;
+  private final Object value;
 }

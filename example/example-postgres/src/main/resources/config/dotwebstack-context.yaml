@@ -15,6 +15,9 @@ context:
     validOn:
       type: Date
       default: NOW
+    availableOn:
+      type: DateTime
+      default: NOW
 
 queries:
   beer:
