@@ -52,9 +52,6 @@ class SelectQueryBuilderTest {
 
   DSLContext dslContext;
 
-  @Mock
-  Meta meta;
-
   private SelectQueryBuilder selectQueryBuilder;
 
   @BeforeEach
