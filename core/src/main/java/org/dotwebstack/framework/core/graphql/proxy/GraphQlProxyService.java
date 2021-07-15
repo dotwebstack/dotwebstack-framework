@@ -34,37 +34,35 @@ public class GraphQlProxyService implements GraphQlService {
 
   private final HttpClient client;
 
-
-  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri) {
+  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri,
+      @NonNull HttpClient proxyHttpClient) {
     this.objectMapper = proxyObjectMapper;
-    this.client = HttpClient.create();
     this.uri = proxyUri;
+    this.client = proxyHttpClient;
   }
 
   @Override
   public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
     LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
     String body = createBody(executionInput);
-    ByteBuf byteBuffer = client.post()
-        .uri(uri)
-        .send(ByteBufMono.fromString(Mono.just(body)))
-        .responseSingle(checkResult())
-        .block();
+    ByteBuf byteBuffer = executePost(body).block();
     return readBody(byteBuffer);
-
   }
 
   @Override
   public CompletableFuture<ExecutionResult> executeAsync(@NonNull ExecutionInput executionInput) {
     LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
     String body = createBody(executionInput);
+    return executePost(body).map(this::readBody)
+        .toFuture();
+  }
+
+  protected Mono<ByteBuf> executePost(String body) {
     return client.headers(h -> h.set("Content-Type", "application/json"))
         .post()
         .uri(uri)
         .send(ByteBufMono.fromString(Mono.just(body)))
-        .responseSingle(checkResult())
-        .map(this::readBody)
-        .toFuture();
+        .responseSingle(checkResult());
   }
 
   private ExecutionResult readBody(ByteBuf byteBuffer) {

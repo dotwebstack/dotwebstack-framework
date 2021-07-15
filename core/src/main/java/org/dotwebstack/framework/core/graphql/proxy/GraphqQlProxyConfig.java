@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import reactor.netty.http.client.HttpClient;
 
 @Conditional(GraphQlNativeDisabled.class)
 @Configuration
@@ -44,5 +45,10 @@ public class GraphqQlProxyConfig {
       throw new InvalidConfigurationException(format("Missing property %s", uriKey));
     }
     return uri;
+  }
+
+  @Bean
+  public HttpClient proxyHttpClient() {
+    return HttpClient.create();
   }
 }
