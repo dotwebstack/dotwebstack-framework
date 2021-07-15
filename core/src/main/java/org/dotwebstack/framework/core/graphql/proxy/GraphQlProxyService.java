@@ -73,7 +73,7 @@ public class GraphQlProxyService implements GraphQlService {
     }
   }
 
-  private String createBody(ExecutionInput executionInput) {
+  protected String createBody(ExecutionInput executionInput) {
     Map<String, Object> body = Map.of("query", executionInput.getQuery(), "operationName", "test");
     try {
       return objectMapper.writeValueAsString(body);
@@ -82,7 +82,7 @@ public class GraphQlProxyService implements GraphQlService {
     }
   }
 
-  private BiFunction<HttpClientResponse, ByteBufMono, Mono<ByteBuf>> checkResult() {
+  protected BiFunction<HttpClientResponse, ByteBufMono, Mono<ByteBuf>> checkResult() {
     return (res, content) -> {
       if (res.status() == HttpResponseStatus.OK) {
         return content;

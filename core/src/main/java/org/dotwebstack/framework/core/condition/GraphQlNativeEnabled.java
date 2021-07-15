@@ -15,12 +15,16 @@ public class GraphQlNativeEnabled implements Condition {
     if (configFilename == null) {
       configFilename = "dotwebstack.yaml";
     }
-    DotWebStackConfiguration config = new DotWebStackConfigurationReader().read(configFilename);
+    DotWebStackConfiguration config = readConfig(configFilename);
 
     // if no proxy is configured, use the local/native graphql service
     return config.getSettings() == null || config.getSettings()
         .getGraphql() == null || config.getSettings()
             .getGraphql()
             .getProxy() == null;
+  }
+
+  protected DotWebStackConfiguration readConfig(String configFilename) {
+    return new DotWebStackConfigurationReader().read(configFilename);
   }
 }

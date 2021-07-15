@@ -2,9 +2,12 @@ package org.dotwebstack.framework.core.graphql.proxy;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -12,6 +15,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -23,7 +27,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
+import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientResponse;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -60,6 +66,31 @@ class GraphQlProxyServiceTest {
   }
 
   @Test
+  void execute_throwsException_forInvalidResponse() {
+    // Arrange
+    ExecutionInput input = ExecutionInput.newExecutionInput()
+        .query("myquery")
+        .build();
+    mockResult("{\"data\":[_]}");
+
+    // Act / Assert
+    assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
+  }
+
+  @Test
+  void execute_throwsException_forHttpErrorCode() {
+    // Arrange
+    ExecutionInput input = ExecutionInput.newExecutionInput()
+        .query("myquery")
+        .build();
+    mockResult("{\"data\":[_]}");
+
+    // Act / Assert
+    assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
+  }
+
+
+  @Test
   void executeAsync_returnsResult_success() throws ExecutionException, InterruptedException {
     // Arrange
     ExecutionInput input = ExecutionInput.newExecutionInput()
@@ -73,6 +104,28 @@ class GraphQlProxyServiceTest {
     // Assert
     assertThat(cf.get()
         .getData(), is(Map.of("key", "value")));
+  }
+
+  @Test
+  void checkResult_doesntThrowException_onNon200() {
+    // Arrange
+    HttpClientResponse response = mock(HttpClientResponse.class);
+    when(response.status()).thenReturn(HttpResponseStatus.OK);
+
+    // Act / Assert
+    assertDoesNotThrow(() -> proxyService.checkResult()
+        .apply(response, mock(ByteBufMono.class)));
+  }
+
+  @Test
+  void checkResult_throwsException_onNon200Code() {
+    // Arrange
+    HttpClientResponse response = mock(HttpClientResponse.class);
+    when(response.status()).thenReturn(HttpResponseStatus.INSUFFICIENT_STORAGE);
+
+    // Act / Assert
+    assertThrows(GraphQlProxyException.class, () -> proxyService.checkResult()
+        .apply(response, mock(ByteBufMono.class)));
   }
 
   @SuppressWarnings("unchecked")
