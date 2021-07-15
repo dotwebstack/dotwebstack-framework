@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.J
 
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -350,13 +349,13 @@ public class SelectQueryBuilder {
           if (objectField.hasNestedFilteringOrigin()) {
             Condition[] joinConditions = createJoinConditions(subSelect, lateralJoinContext, objectFieldConfiguration,
                 lateralTable, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable,
-                lateralJoinContext.getFieldAliasMap()).toArray(Condition[]::new);
+                lateralJoinContext.getFieldAliasMap(), objectRequest.getContextCriteria()).toArray(Condition[]::new);
 
             query.addJoin(DSL.lateral(lateralTable), joinConditions);
           } else {
             createJoinConditions(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
-                (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable, Map.of())
-                .forEach(subSelect::addConditions);
+                (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable, Map.of(),
+                objectRequest.getContextCriteria()).forEach(subSelect::addConditions);
 
             query.addJoin(lateralTable, JoinType.OUTER_APPLY);
           }
@@ -481,10 +480,11 @@ public class SelectQueryBuilder {
 
   private List<Condition> createJoinConditions(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
       PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
-      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable, Map<String, String> fieldAliasMap) {
+      PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable, Map<String, String> fieldAliasMap,
+      List<ContextCriteria> contextCriterias) {
     if (leftSideConfiguration.getJoinTable() != null) {
       var joinTable = findTable(leftSideConfiguration.getJoinTable()
-          .getName()).asTable(objectSelectContext.newTableAlias());
+          .getName(), contextCriterias).asTable(objectSelectContext.newTableAlias());
       var condition = getJoinTableCondition(leftSideConfiguration, leftSideTable, rightSideConfiguration,
           rightSideTable, fieldAliasMap, joinTable);
 
