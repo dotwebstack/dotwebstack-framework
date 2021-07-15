@@ -34,6 +34,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,8 @@ import java.util.stream.Stream;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.ContextConfiguration;
+import org.dotwebstack.framework.core.config.ContextFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -50,10 +53,12 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFa
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -136,7 +141,7 @@ class RequestFactoryTest {
   }
 
   @Test
-  void createCollectionQuery_returnsCollectionQuery_forScalarField() {
+  void createCollectionRequest_returnsCollectionRequest_forScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -153,13 +158,13 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
+    var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
-    assertCollectionQuery(collectionQuery);
+    assertCollectionRequest(collectionRequest);
   }
 
   @Test
-  void createCollectionQuery_returnsCollectionQuery_forSortedScalarField() {
+  void createCollectionRequest_returnsCollectionRequest_forSortedScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     var sortCriteria = mock(SortCriteria.class);
@@ -183,15 +188,15 @@ class RequestFactoryTest {
             .build())
         .build());
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
+    var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
-    assertCollectionQuery(collectionQuery);
-    assertThat(collectionQuery.getSortCriterias(), notNullValue());
-    assertThat(collectionQuery.getSortCriterias(), equalTo(List.of(sortCriteria)));
+    assertCollectionRequest(collectionRequest);
+    assertThat(collectionRequest.getSortCriterias(), notNullValue());
+    assertThat(collectionRequest.getSortCriterias(), equalTo(List.of(sortCriteria)));
   }
 
   @Test
-  void createCollectionQuery_returnsCollectionQuery_forPaging() {
+  void createCollectionRequest_returnsCollectionRequest_forPaging() {
     when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
 
     when(environment.getLocalContext()).thenReturn(PagingDataFetcherContext.builder()
@@ -219,10 +224,10 @@ class RequestFactoryTest {
         .getParent()).thenReturn(executionStepInfo);
     when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinition);
 
-    var collectionQuery = requestFactory.createCollectionRequest(typeConfiguration, environment);
+    var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
-    assertCollectionQuery(collectionQuery);
-    assertThat(collectionQuery.getPagingCriteria(), equalTo(PagingCriteria.builder()
+    assertCollectionRequest(collectionRequest);
+    assertThat(collectionRequest.getPagingCriteria(), equalTo(PagingCriteria.builder()
         .offset(0)
         .first(10)
         .build()));
@@ -231,7 +236,7 @@ class RequestFactoryTest {
   }
 
   @Test
-  void createObjectQuery_returnsObjectQuery_withScalarField() {
+  void createObjectRequest_returnsObjectRequest_withScalarField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -241,13 +246,46 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
   }
 
   @Test
-  void createObjectQuery_returnsObjectQuery_withKeyCriteria() {
+  void createObjectRequest_returnsObjectRequest_withContextAndScalarField() {
+    ContextFieldConfiguration contextFieldConfiguration = new ContextFieldConfiguration();
+    contextFieldConfiguration.setType("Date");
+    contextFieldConfiguration.setDefaultValue("NOW");
+
+    ContextConfiguration contextConfiguration = new ContextConfiguration();
+    contextConfiguration.setFields(Map.of("validOn", contextFieldConfiguration));
+
+    when(dotWebStackConfiguration.getContext()).thenReturn(contextConfiguration);
+
+    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
+    when(executionStepInfo.getArguments()).thenReturn(Map.of("context", Map.of("validOn", LocalDate.of(2020, 1, 1))));
+
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+
+    Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
+
+    when(environment.getSelectionSet()).thenReturn(selectionSet);
+    when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+    assertThat(objectRequest.getContextCriteria(), IsIterableContainingInOrder.contains(ContextCriteria.builder()
+        .field("validOn")
+        .value(LocalDate.of(2020, 1, 1))
+        .build()));
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequest_withKeyCriteria() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -260,14 +298,14 @@ class RequestFactoryTest {
     Map<String, Object> arguments = Map.of(FIELD_KEYCRITERIA, "1234-5678");
     when(environment.getArguments()).thenReturn(arguments);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertKeyCriterias(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertKeyCriterias(objectRequest);
   }
 
   @Test
-  void createObjectQuery_returnsObjectQueryWithOneKeyCriteria_forArgumentsWithSortAndFilter() {
+  void createObjectRequest_returnsObjectRequestWithOneKeyCriteria_forArgumentsWithSortAndFilter() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -281,14 +319,14 @@ class RequestFactoryTest {
         Map.of(FIELD_KEYCRITERIA, "1234-5678", SORT_KEYCRITERIA, "testSort", FILTER_KEYCRITERIA, "testFilter");
     when(environment.getArguments()).thenReturn(arguments);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertKeyCriterias(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertKeyCriterias(objectRequest);
   }
 
   @Test
-  void createObjectQuery_returnsObjectQuery_forObjectField() {
+  void createObjectRequest_returnsObjectRequest_forObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_BREWERY));
 
@@ -302,14 +340,14 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertObjectFieldConfiguration(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertObjectFieldConfiguration(objectRequest);
   }
 
   @Test
-  void createObjectQuery_returnsObjectQuery_forCollectionObjectField() {
+  void createObjectRequest_returnsObjectRequest_forCollectionObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_BREWERY));
 
@@ -323,14 +361,14 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertCollectionObjectFieldConfiguration(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertCollectionObjectFieldConfiguration(objectRequest);
   }
 
   @Test
-  void createObjectQuery_returnsObjectQuery_forNestedObjectField() {
+  void createObjectRequest_returnsObjectRequest_forNestedObjectField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_HISTORY));
 
@@ -344,16 +382,16 @@ class RequestFactoryTest {
 
     when(typeConfiguration.getFields()).thenReturn(fields);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertNestedObjectFieldConfiguration(objectQuery);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertNestedObjectFieldConfiguration(objectRequest);
   }
 
   @ParameterizedTest
   @MethodSource("aggregateTypes")
-  void createObjectQuery_returnsObjectQuery_forSupportedAggregateFields(String aggregateFunction, ScalarType scalarType,
-      String numericOrText) {
+  void createObjectRequest_returnsObjectRequest_forSupportedAggregateFields(String aggregateFunction,
+      ScalarType scalarType, String numericOrText) {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
 
@@ -386,14 +424,14 @@ class RequestFactoryTest {
     when(selectionSet.getFields("aggregateField/*.*")).thenReturn(aggregateSelectedFields);
     when(aggregateTypeConfiguration.getFields()).thenReturn(aggregateFields);
 
-    var objectQuery = requestFactory.createObjectRequest(typeConfiguration, environment);
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertIdentifierScalarConfiguration(objectQuery);
-    assertAggregateFieldConfiguration(objectQuery, aggregateFunction, scalarType);
+    assertIdentifierScalarConfiguration(objectRequest);
+    assertAggregateFieldConfiguration(objectRequest, aggregateFunction, scalarType);
   }
 
   @Test
-  void createObjectQuery_throwsException_forUnsupportedAggregateField() {
+  void createObjectRequest_throwsException_forUnsupportedAggregateField() {
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
     selectedFields.add(mockSelectedFieldWithQualifiedName(FIELD_AGGREGATE));
 
@@ -428,7 +466,7 @@ class RequestFactoryTest {
         arguments(FLOAT_SUM_FIELD, ScalarType.FLOAT, NUMERIC), arguments(STRING_JOIN_FIELD, ScalarType.STRING, TEXT));
   }
 
-  private void assertCollectionQuery(CollectionRequest collectionRequest) {
+  private void assertCollectionRequest(CollectionRequest collectionRequest) {
     assertIdentifierScalarConfiguration(collectionRequest.getObjectRequest());
   }
 

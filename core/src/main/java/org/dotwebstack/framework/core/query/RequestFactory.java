@@ -36,7 +36,6 @@ import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -143,7 +142,7 @@ public class RequestFactory {
     ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
 
     if (dotWebStackConfiguration.getContext() != null) {
-      Map<String, Object> resolvedArguments = MapHelper.getNestedMap(executionStepInfo.getArguments(), "context");
+      Map<String, Object> resolvedArguments = getNestedMap(executionStepInfo.getArguments(), "context");
 
       return Optional.of(dotWebStackConfiguration.getContext())
           .map(ContextConfiguration::getFields)

@@ -346,17 +346,21 @@ public class SelectQueryBuilder {
 
           query.addSelect(lateralTable.asterisk());
 
+          var joinTable = objectField.hasNestedFilteringOrigin() ? lateralTable : objectFieldTable;
+          Map<String, String> fieldAliasMap =
+              objectField.hasNestedFilteringOrigin() ? lateralJoinContext.getFieldAliasMap() : Map.of();
+
+          createJoinTableCondition(subSelect, lateralJoinContext, objectFieldConfiguration, joinTable,
+              (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable, fieldAliasMap,
+              objectRequest.getContextCriteria());
+
+          List<Condition> joinConditions =
+              createJoinConditions(objectFieldConfiguration, joinTable, fieldTable, fieldAliasMap);
+
           if (objectField.hasNestedFilteringOrigin()) {
-            Condition[] joinConditions = createJoinConditions(subSelect, lateralJoinContext, objectFieldConfiguration,
-                lateralTable, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable,
-                lateralJoinContext.getFieldAliasMap(), objectRequest.getContextCriteria()).toArray(Condition[]::new);
-
-            query.addJoin(DSL.lateral(lateralTable), joinConditions);
+            query.addJoin(DSL.lateral(lateralTable), joinConditions.toArray(Condition[]::new));
           } else {
-            createJoinConditions(subSelect, lateralJoinContext, objectFieldConfiguration, objectFieldTable,
-                (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable, Map.of(),
-                objectRequest.getContextCriteria()).forEach(subSelect::addConditions);
-
+            subSelect.addConditions(joinConditions);
             query.addJoin(lateralTable, JoinType.OUTER_APPLY);
           }
 
@@ -478,7 +482,7 @@ public class SelectQueryBuilder {
     }
   }
 
-  private List<Condition> createJoinConditions(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
+  private void createJoinTableCondition(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
       PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
       PostgresTypeConfiguration rightSideConfiguration, Table<?> rightSideTable, Map<String, String> fieldAliasMap,
       List<ContextCriteria> contextCriterias) {
@@ -490,13 +494,17 @@ public class SelectQueryBuilder {
 
       // create join for query with single value jointable mapping & subscriptions
       subSelect.addJoin(joinTable, JoinType.JOIN, condition);
-    } else {
-      if (leftSideConfiguration.getJoinColumns() != null) {
-        var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
-            ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-            leftSideTable, fieldAliasMap);
-        return List.of(condition);
-      }
+    }
+  }
+
+  private List<Condition> createJoinConditions(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
+      Table<?> rightSideTable, Map<String, String> fieldAliasMap) {
+
+    if (leftSideConfiguration.getJoinColumns() != null) {
+      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
+          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
+          leftSideTable, fieldAliasMap);
+      return List.of(condition);
     }
 
     return List.of();
