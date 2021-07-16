@@ -58,6 +58,4 @@ public class ObjectSelectContext {
   public void setKeyColumnNames(Map<String, String> keyColumnNames) {
     this.keyColumnNames = keyColumnNames;
   }
-
-
 }
