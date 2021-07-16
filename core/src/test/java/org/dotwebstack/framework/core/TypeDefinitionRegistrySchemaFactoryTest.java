@@ -1,5 +1,11 @@
 package org.dotwebstack.framework.core;
 
+import static graphql.language.FieldDefinition.newFieldDefinition;
+import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
+import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.StringValue.newStringValue;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -432,6 +438,49 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var beerAggFieldDefinition = fieldDefinitions.get(5);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerContext_whenConfigured() {
+    var dotWebStackConfiguration = dwsReader.read("dotwebstack/dotwebstack-context.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType("Context")
+        .map(Object::toString)
+        .orElseThrow(),
+        equalTo(newInputObjectDefinition().name("Context")
+            .inputValueDefinition(newInputValueDefinition().name("validOn")
+                .type(newNonNullableType("Date"))
+                .defaultValue(newStringValue("NOW").build())
+                .build())
+            .inputValueDefinition(newInputValueDefinition().name("availableOn")
+                .type(newNonNullableType("DateTime"))
+                .defaultValue(newStringValue("NOW").build())
+                .build())
+            .build()
+            .toString()));
+
+    var queryTypeDefinition = registry.getType("Query")
+        .orElseThrow();
+
+    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+
+    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    assertThat(fieldDefinitions.size(), is(1));
+
+    assertThat(fieldDefinitions.get(0)
+        .toString(),
+        equalTo(newFieldDefinition().name("breweryCollection")
+            .type(newNonNullableListType("Brewery"))
+            .inputValueDefinition(newInputValueDefinition().name("context")
+                .type(newNonNullableType("Context"))
+                .build())
+            .build()
+            .toString()));
   }
 
   private static void assertFieldDefinition(FieldDefinition fieldDefinition, String name, String type,
