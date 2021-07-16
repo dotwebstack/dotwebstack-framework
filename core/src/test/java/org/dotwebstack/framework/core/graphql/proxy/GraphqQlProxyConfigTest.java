@@ -29,28 +29,23 @@ class GraphqQlProxyConfigTest {
 
   @Test
   void proxyObjectMapper_returnsResult() {
-    // Arrange / Act / Assert
     assertThat(config.proxyObjectMapper(), notNullValue());
   }
 
   @Test
   void proxyUri_returnsExpectedValue() {
-    // Arrange
     when(dwsConfig.getSettings()
         .getGraphql()
         .getProxy()).thenReturn("theproxy");
     when(env.getProperty(any(String.class))).thenReturn("theuri");
 
-    // Act
     String uri = config.proxyUri(dwsConfig);
 
-    // Assert
     assertThat(uri, is("theuri"));
   }
 
   @Test
   void proxyHttpClient_returnResult() {
-    // Arrange / Act / Assert
     assertThat(config.proxyHttpClient(), notNullValue());
   }
 }
