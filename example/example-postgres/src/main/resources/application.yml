@@ -3,7 +3,7 @@ logging:
     org.dotwebstack: DEBUG
 
 dotwebstack:
-  config: dotwebstack-context.yaml
+  config: dotwebstack.yaml
   postgres:
     host: localhost
     port: 5432

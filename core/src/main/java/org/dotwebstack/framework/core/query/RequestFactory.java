@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.query;
 
+import static graphql.schema.GraphQLTypeUtil.isList;
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
@@ -32,6 +34,7 @@ import org.dotwebstack.framework.core.config.ContextConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
@@ -55,6 +58,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestFactory {
 
+  private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
+      SortConstants.SORT_ARGUMENT_NAME, ContextConstants.CONTEXT_ARGUMENT_NAME);
+
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
@@ -70,7 +76,10 @@ public class RequestFactory {
 
   private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
     ExecutionStepInfo executionStepInfo;
-    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+
+    var isList = isList(unwrapNonNull(environment.getFieldType()));
+
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING) && isList) {
       executionStepInfo = environment.getExecutionStepInfo()
           .getParent();
     } else {
@@ -287,8 +296,7 @@ public class RequestFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
-        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
-            && !Objects.equals(argument.getKey(), SortConstants.SORT_ARGUMENT_NAME))
+        .filter(argument -> !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
             .build())

@@ -22,8 +22,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
@@ -220,8 +218,6 @@ class RequestFactoryTest {
         .build();
 
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfo);
-    when(environment.getExecutionStepInfo()
-        .getParent()).thenReturn(executionStepInfo);
     when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinition);
 
     var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
@@ -231,8 +227,6 @@ class RequestFactoryTest {
         .offset(0)
         .first(10)
         .build()));
-
-    verify(executionStepInfo, times(2)).getParent();
   }
 
   @Test
