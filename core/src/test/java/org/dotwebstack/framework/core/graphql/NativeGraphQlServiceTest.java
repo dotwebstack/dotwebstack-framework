@@ -21,25 +21,19 @@ class NativeGraphQlServiceTest {
 
   @Test
   void execute() {
-    // Arrange
     ExecutionInput input = mock(ExecutionInput.class);
 
-    // Act
     service.execute(input);
 
-    // Assert
     verify(graphQL).execute(input);
   }
 
   @Test
   void executeAsync() {
-    // Arrange
     ExecutionInput input = mock(ExecutionInput.class);
 
-    // Act
     service.executeAsync(input);
 
-    // Assert
     verify(graphQL).executeAsync(input);
   }
 }

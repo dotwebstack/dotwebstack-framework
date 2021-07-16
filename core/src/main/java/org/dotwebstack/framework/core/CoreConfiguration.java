@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class CoreConfiguration {
 
   @Bean
-  public GraphQlService active(List<GraphQlService> beans) {
+  public GraphQlService graphQlService(List<GraphQlService> beans) {
     return beans.get(0);
   }
 

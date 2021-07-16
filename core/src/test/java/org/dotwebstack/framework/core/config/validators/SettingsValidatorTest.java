@@ -21,45 +21,37 @@ class SettingsValidatorTest {
 
   @Test
   void validate_succeeds_withProxySettings() {
-    // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     SettingsValidator validator = new SettingsValidator();
 
-    // Act / Assert
     assertDoesNotThrow(() -> validator.validate(config));
   }
 
   @Test
   void validate_fails_withQueriesAndProxySettings() {
-    // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setQueries(Map.of("q1", new QueryConfiguration()));
     SettingsValidator validator = new SettingsValidator();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 
   @Test
   void validate_fails_withSubscriptionsAndProxySettings() {
-    // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setSubscriptions(Map.of("q1", new SubscriptionConfiguration()));
     SettingsValidator validator = new SettingsValidator();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void validate_fails_withObjectTypesAndProxySettings() {
-    // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setObjectTypes(Map.of("q1", mock(AbstractTypeConfiguration.class)));
     SettingsValidator validator = new SettingsValidator();
 
-    // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 

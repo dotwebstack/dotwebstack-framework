@@ -29,21 +29,17 @@ class ExecutionResultDeserializerTest {
 
   @Test
   void deserialize_returnsExpected_forSuccessResponse() throws JsonProcessingException {
-    // Arrange
     Object data = Map.of("key", "value", "key2", List.of("1", "2"));
     ExecutionResult result = new ExecutionResultImpl(data, null, null);
     String json = OBJECT_MAPPER.writeValueAsString(result);
 
-    // Act
     ExecutionResult readback = OBJECT_MAPPER.readValue(json, ExecutionResult.class);
 
-    // Assert
     assertEquals(result.toSpecification(), readback.toSpecification());
   }
 
   @Test
   void deserialize_returnsExpected_forErrorResponse() throws JsonProcessingException {
-    // Arrange
     SourceLocation location1 = new SourceLocation(1, 2);
     List<SourceLocation> locations = List.of(location1);
     GraphQLError error1 = GraphqlErrorBuilder.newError()
@@ -55,10 +51,8 @@ class ExecutionResultDeserializerTest {
     ExecutionResult result = new ExecutionResultImpl(null, errors, null);
     String json = OBJECT_MAPPER.writeValueAsString(result);
 
-    // Act
     ExecutionResult readback = OBJECT_MAPPER.readValue(json, ExecutionResult.class);
 
-    // Assert
     assertEquals(result.toSpecification(), readback.toSpecification());
   }
 

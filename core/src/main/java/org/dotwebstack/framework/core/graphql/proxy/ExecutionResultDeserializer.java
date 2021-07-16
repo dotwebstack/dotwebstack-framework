@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Custom jackson deserialzer for non-json friendly {@link ExecutionResult} classes.
+ * Custom jackson deserializer for non-json friendly {@link ExecutionResult} classes.
  */
 
 public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult> {

@@ -53,78 +53,64 @@ class GraphQlProxyServiceTest {
 
   @Test
   void execute_returnsResult_success() {
-    // Arrange
     ExecutionInput input = ExecutionInput.newExecutionInput()
         .query("myquery")
         .build();
     mockResult("{\"data\":{\"key\":\"value\"}}");
 
-    // Act
     ExecutionResult result = proxyService.execute(input);
 
-    // Assert
     assertThat(result.getData(), is(Map.of("key", "value")));
   }
 
   @Test
   void execute_throwsException_forInvalidResponse() {
-    // Arrange
     ExecutionInput input = ExecutionInput.newExecutionInput()
         .query("myquery")
         .build();
     mockResult("{\"data\":[_]}");
 
-    // Act / Assert
     assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
   }
 
   @Test
   void execute_throwsException_forHttpErrorCode() {
-    // Arrange
     ExecutionInput input = ExecutionInput.newExecutionInput()
         .query("myquery")
         .build();
     mockResult("{\"data\":[_]}");
 
-    // Act / Assert
     assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
   }
 
 
   @Test
   void executeAsync_returnsResult_success() throws ExecutionException, InterruptedException {
-    // Arrange
     ExecutionInput input = ExecutionInput.newExecutionInput()
         .query("myquery")
         .build();
     mockResult("{\"data\":{\"key\":\"value\"}}");
 
-    // Act
     CompletableFuture<ExecutionResult> cf = proxyService.executeAsync(input);
 
-    // Assert
     assertThat(cf.get()
         .getData(), is(Map.of("key", "value")));
   }
 
   @Test
   void checkResult_doesntThrowException_onNon200() {
-    // Arrange
     HttpClientResponse response = mock(HttpClientResponse.class);
     when(response.status()).thenReturn(HttpResponseStatus.OK);
 
-    // Act / Assert
     assertDoesNotThrow(() -> proxyService.checkResult()
         .apply(response, mock(ByteBufMono.class)));
   }
 
   @Test
   void checkResult_throwsException_onNon200Code() {
-    // Arrange
     HttpClientResponse response = mock(HttpClientResponse.class);
     when(response.status()).thenReturn(HttpResponseStatus.INSUFFICIENT_STORAGE);
 
-    // Act / Assert
     BiFunction<HttpClientResponse, ByteBufMono, Mono<ByteBuf>> checkFunction = proxyService.checkResult();
     assertThrows(GraphQlProxyException.class, () -> checkFunction.apply(response, mock(ByteBufMono.class)));
   }
