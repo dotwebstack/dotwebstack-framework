@@ -56,7 +56,8 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
     public GraphQLError apply(JsonParser jsonParser) {
       GraphqlErrorBuilder builder = GraphqlErrorBuilder.newError();
       try {
-        while ((jsonParser.nextValue()) != null) {
+        JsonToken token;
+        while ((token = jsonParser.nextValue()) != null && token != JsonToken.END_OBJECT) {
           String name = jsonParser.getCurrentName();
           if (name != null) {
             switch (name) {
@@ -87,8 +88,8 @@ public class ExecutionResultDeserializer extends StdDeserializer<ExecutionResult
           int line = 0;
           int column = 0;
           String sourceName = null;
-
-          while ((jsonParser.nextValue()) != null) {
+          JsonToken token;
+          while ((token = jsonParser.nextValue()) != null && token != JsonToken.END_OBJECT) {
             String name = jsonParser.getCurrentName();
             if (name != null) {
               switch (name) {

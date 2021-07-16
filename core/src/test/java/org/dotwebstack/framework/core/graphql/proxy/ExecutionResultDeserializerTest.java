@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.graphql.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +50,7 @@ class ExecutionResultDeserializerTest {
     GraphQLError error1 = GraphqlErrorBuilder.newError()
         .message("message")
         .locations(locations)
+        .extensions(Map.of("k1", "v1"))
         .build();
     List<? extends GraphQLError> errors = List.of(error1);
     ExecutionResult result = new ExecutionResultImpl(null, errors, null);
@@ -59,5 +61,13 @@ class ExecutionResultDeserializerTest {
 
     // Assert
     assertEquals(result.toSpecification(), readback.toSpecification());
+  }
+
+  @Test
+  void deserialize_throwsException() {
+    String json = "notjson";
+    // Act
+    assertThrows(GraphQlProxyException.class, () -> OBJECT_MAPPER.readValue(json, ExecutionResult.class));
+
   }
 }
