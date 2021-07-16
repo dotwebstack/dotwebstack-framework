@@ -37,7 +37,7 @@ class SettingsValidatorTest {
     SettingsValidator validator = new SettingsValidator();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> new SettingsValidator().validate(config));
+    assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 
   @Test
