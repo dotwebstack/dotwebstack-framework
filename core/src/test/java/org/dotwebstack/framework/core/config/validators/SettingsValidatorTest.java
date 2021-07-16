@@ -23,9 +23,10 @@ class SettingsValidatorTest {
   void validate_succeeds_withProxySettings() {
     // Arrange
     DotWebStackConfiguration config = getBaseConfig();
+    SettingsValidator validator = new SettingsValidator();
 
     // Act / Assert
-    assertDoesNotThrow(() -> new SettingsValidator().validate(config));
+    assertDoesNotThrow(() -> validator.validate(config));
   }
 
   @Test
@@ -33,6 +34,7 @@ class SettingsValidatorTest {
     // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setQueries(Map.of("q1", new QueryConfiguration()));
+    SettingsValidator validator = new SettingsValidator();
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> new SettingsValidator().validate(config));
@@ -43,19 +45,22 @@ class SettingsValidatorTest {
     // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setSubscriptions(Map.of("q1", new SubscriptionConfiguration()));
+    SettingsValidator validator = new SettingsValidator();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> new SettingsValidator().validate(config));
+    assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void validate_fails_withObjectTypesAndProxySettings() {
     // Arrange
     DotWebStackConfiguration config = getBaseConfig();
     config.setObjectTypes(Map.of("q1", mock(AbstractTypeConfiguration.class)));
+    SettingsValidator validator = new SettingsValidator();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> new SettingsValidator().validate(config));
+    assertThrows(InvalidConfigurationException.class, () -> validator.validate(config));
   }
 
   private DotWebStackConfiguration getBaseConfig() {

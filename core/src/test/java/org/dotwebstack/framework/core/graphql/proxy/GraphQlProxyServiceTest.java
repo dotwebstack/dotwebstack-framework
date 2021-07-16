@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,8 +125,8 @@ class GraphQlProxyServiceTest {
     when(response.status()).thenReturn(HttpResponseStatus.INSUFFICIENT_STORAGE);
 
     // Act / Assert
-    assertThrows(GraphQlProxyException.class, () -> proxyService.checkResult()
-        .apply(response, mock(ByteBufMono.class)));
+    BiFunction<HttpClientResponse, ByteBufMono, Mono<ByteBuf>> checkFunction = proxyService.checkResult();
+    assertThrows(GraphQlProxyException.class, () -> checkFunction.apply(response, mock(ByteBufMono.class)));
   }
 
   @SuppressWarnings("unchecked")
