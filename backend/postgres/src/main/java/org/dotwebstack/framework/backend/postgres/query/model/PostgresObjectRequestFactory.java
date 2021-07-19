@@ -26,6 +26,7 @@ public class PostgresObjectRequestFactory {
         .nestedObjectFields(objectRequest.getNestedObjectFields())
         .aggregateObjectFields(objectRequest.getAggregateObjectFields())
         .collectionObjectFields(objectRequest.getCollectionObjectFields())
+        .contextCriteria(objectRequest.getContextCriteria())
         .build();
   }
 

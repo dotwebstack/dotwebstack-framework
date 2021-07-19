@@ -21,6 +21,9 @@ public class DotWebStackConfiguration {
   @Valid
   private List<Feature> features;
 
+  @Valid
+  private ContextConfiguration context;
+
   @NotNull
   @Valid
   private Map<String, AbstractTypeConfiguration<?>> objectTypes;

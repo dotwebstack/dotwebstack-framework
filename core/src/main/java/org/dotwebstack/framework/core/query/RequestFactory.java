@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.query;
 
+import static graphql.schema.GraphQLTypeUtil.isList;
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.FIELD_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
@@ -28,9 +30,11 @@ import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.ContextConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
@@ -39,6 +43,7 @@ import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
@@ -53,6 +58,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestFactory {
 
+  private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
+      SortConstants.SORT_ARGUMENT_NAME, ContextConstants.CONTEXT_ARGUMENT_NAME);
+
   private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final FilterCriteriaParserFactory filterCriteriaParserFactory;
@@ -66,16 +74,24 @@ public class RequestFactory {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
-      DataFetchingEnvironment environment) {
-
+  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
     ExecutionStepInfo executionStepInfo;
-    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+
+    var isList = isList(unwrapNonNull(environment.getFieldType()));
+
+    if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING) && isList) {
       executionStepInfo = environment.getExecutionStepInfo()
           .getParent();
     } else {
       executionStepInfo = environment.getExecutionStepInfo();
     }
+    return executionStepInfo;
+  }
+
+  public CollectionRequest createCollectionRequest(TypeConfiguration<?> typeConfiguration,
+      DataFetchingEnvironment environment) {
+
+    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeConfiguration, environment))
@@ -117,6 +133,8 @@ public class RequestFactory {
     List<ObjectFieldConfiguration> collectionObjectFields =
         getCollectionObjectFields(fieldPathPrefix, typeConfiguration, environment);
 
+    List<ContextCriteria> contextCriterias = createContextCriteria(environment);
+
     return ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
@@ -125,7 +143,29 @@ public class RequestFactory {
         .aggregateObjectFields(aggregateObjectFields)
         .collectionObjectFields(collectionObjectFields)
         .keyCriteria(keyCriterias)
+        .contextCriteria(contextCriterias)
         .build();
+  }
+
+  private List<ContextCriteria> createContextCriteria(DataFetchingEnvironment environment) {
+    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
+
+    if (dotWebStackConfiguration.getContext() != null) {
+      Map<String, Object> resolvedArguments = getNestedMap(executionStepInfo.getArguments(), "context");
+
+      return Optional.of(dotWebStackConfiguration.getContext())
+          .map(ContextConfiguration::getFields)
+          .stream()
+          .flatMap(map -> map.entrySet()
+              .stream())
+          .map(entry -> ContextCriteria.builder()
+              .field(entry.getKey())
+              .value(resolvedArguments.get(entry.getKey()))
+              .build())
+          .collect(Collectors.toList());
+    }
+
+    return List.of();
   }
 
   private List<FilterCriteria> createFilterCriterias(TypeConfiguration<?> typeConfiguration,
@@ -256,8 +296,7 @@ public class RequestFactory {
     return environment.getArguments()
         .entrySet()
         .stream()
-        .filter(argument -> !Objects.equals(argument.getKey(), FilterConstants.FILTER_ARGUMENT_NAME)
-            && !Objects.equals(argument.getKey(), SortConstants.SORT_ARGUMENT_NAME))
+        .filter(argument -> !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
             .build())

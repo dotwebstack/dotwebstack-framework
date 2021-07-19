@@ -11,6 +11,8 @@ import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_NAME;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import graphql.Scalars;
@@ -22,6 +24,7 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
@@ -34,6 +37,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
+import org.dotwebstack.framework.core.config.ContextConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
@@ -78,6 +82,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addObjectTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addFilterTypes(dotWebStackConfiguration, typeDefinitionRegistry);
     addSortTypes(dotWebStackConfiguration, typeDefinitionRegistry);
+    addContextTypes(dotWebStackConfiguration, typeDefinitionRegistry);
 
     if (dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
       addConnectionTypes(dotWebStackConfiguration, typeDefinitionRegistry);
@@ -122,6 +127,31 @@ public class TypeDefinitionRegistrySchemaFactory {
           }
 
         });
+  }
+
+  private void addContextTypes(DotWebStackConfiguration dotWebStackConfiguration,
+      TypeDefinitionRegistry typeDefinitionRegistry) {
+    Optional.ofNullable(dotWebStackConfiguration.getContext())
+        .ifPresent(contextConfiguration -> typeDefinitionRegistry
+            .add(createContextInputObjectTypeDefinition(contextConfiguration)));
+  }
+
+  private InputObjectTypeDefinition createContextInputObjectTypeDefinition(ContextConfiguration contextConfiguration) {
+    List<InputValueDefinition> inputValueDefinitions = contextConfiguration.getFields()
+        .entrySet()
+        .stream()
+        .map(entry -> newInputValueDefinition().name(entry.getKey())
+            .type(newNonNullableType(entry.getValue()
+                .getType()))
+            .defaultValue(StringValue.newStringValue(entry.getValue()
+                .getDefaultValue())
+                .build())
+            .build())
+        .collect(Collectors.toList());
+
+    return newInputObjectDefinition().name(CONTEXT_TYPE_NAME)
+        .inputValueDefinitions(inputValueDefinitions)
+        .build();
   }
 
   private void addConnectionTypes(DotWebStackConfiguration dotWebStackConfiguration,
@@ -279,10 +309,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
         .entrySet()
         .stream()
-        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(),
-            dotWebStackConfiguration.getObjectTypes()
-                .get(entry.getValue()
-                    .getType())))
+        .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue(), dotWebStackConfiguration))
         .collect(Collectors.toList());
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
@@ -346,7 +373,11 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
-      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
+      DotWebStackConfiguration dotWebStackConfiguration) {
+
+    AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration =
+        dotWebStackConfiguration.getObjectTypes()
+            .get(queryConfiguration.getType());
 
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
@@ -357,6 +388,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     addOptionalFilterObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
     addOptionalSortableByObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
+
+    addOptionalContext(dotWebStackConfiguration, inputValueDefinitions);
 
     return newFieldDefinition().name(queryName)
         .type(createTypeForQuery(queryConfiguration))
@@ -414,7 +447,6 @@ public class TypeDefinitionRegistrySchemaFactory {
         .ifPresent(inputValueDefinitions::add);
   }
 
-
   private Optional<InputValueDefinition> createInputValueDefinitionForSortableByObject(String typeName,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
     if (!objectTypeConfiguration.getSortableBy()
@@ -437,6 +469,14 @@ public class TypeDefinitionRegistrySchemaFactory {
     }
 
     return Optional.empty();
+  }
+
+  private void addOptionalContext(DotWebStackConfiguration dotWebStackConfiguration,
+      List<InputValueDefinition> inputValueDefinitions) {
+    Optional.ofNullable(dotWebStackConfiguration.getContext())
+        .ifPresent(context -> inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
+            .type(newNonNullableType(CONTEXT_TYPE_NAME))
+            .build()));
   }
 
   private List<InputValueDefinition> createPagingArguments(QueryConfiguration queryConfiguration) {
