@@ -23,7 +23,7 @@ public class ObjectRequest implements Request {
   private final List<ScalarField> scalarFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<KeyCriteria> keyCriteria = List.of();
+  private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
   @Builder.Default
   protected final List<ObjectFieldConfiguration> objectFields = new ArrayList<>();
@@ -32,10 +32,10 @@ public class ObjectRequest implements Request {
   protected final List<NestedObjectFieldConfiguration> nestedObjectFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<AggregateObjectFieldConfiguration> aggregateObjectFields = List.of();
+  private final List<AggregateObjectFieldConfiguration> aggregateObjectFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<ObjectFieldConfiguration> collectionObjectFields = List.of();
+  private final List<ObjectFieldConfiguration> collectionObjectFields = new ArrayList<>();
 
   @Builder.Default
   private final List<ContextCriteria> contextCriteria = List.of();

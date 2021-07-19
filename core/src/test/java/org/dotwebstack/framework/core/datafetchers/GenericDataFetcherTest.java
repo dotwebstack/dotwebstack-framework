@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,6 +44,7 @@ import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
@@ -184,7 +186,7 @@ class GenericDataFetcherTest {
         .build();
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.fromIterable(data));
+    when(backendDataLoader.loadManyRequest(any(), any())).thenReturn(Flux.fromIterable(data));
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
@@ -200,7 +202,7 @@ class GenericDataFetcherTest {
         .map(DataFetcherResult::getData)
         .collect(Collectors.toList()), equalTo(data));
 
-    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
+    verify(backendDataLoader).loadManyRequest(eq(null), any(CollectionRequest.class));
   }
 
   @Test
@@ -227,7 +229,7 @@ class GenericDataFetcherTest {
         .build();
 
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-    when(backendDataLoader.loadManyRequest(any())).thenReturn(Flux.empty());
+    when(backendDataLoader.loadManyRequest(any(), any())).thenReturn(Flux.empty());
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
@@ -236,7 +238,7 @@ class GenericDataFetcherTest {
 
     assertThat(result, instanceOf(Flux.class));
 
-    verify(backendDataLoader).loadManyRequest(any(CollectionRequest.class));
+    verify(backendDataLoader).loadManyRequest(eq(null), any(CollectionRequest.class));
   }
 
   @Test
@@ -296,15 +298,16 @@ class GenericDataFetcherTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void get_returnsDatafetcherResult_ForBatchLoadManyQueryOperation_whenUsingPaging() throws Exception {
+  void get_returnsDatafetcherResult_ForLoadManyRequestOperation_whenUsingPaging() throws Exception {
+    when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+
     var keyConditionWithBeer = TestKeyCondition.builder()
         .valueMap(Map.of("brewery", "id-brewery-1"))
         .build();
 
     var outputType = GraphQLList.list(createBeersType());
 
-    Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyResult = Flux.fromIterable(
-        List.of(new KeyConditionGroupedFlux(keyConditionWithBeer, Flux.fromIterable(List.of(Map.of("id", "id-1"))))));
+    Flux<Map<String, Object>> loadManyRequestResult = Flux.fromIterable(List.of(Map.of("id", "id-1")));
 
     var parentLocalContext = LocalDataFetcherContext.builder()
         .keyConditionFn((s, stringObjectMap) -> keyConditionWithBeer)
@@ -320,20 +323,15 @@ class GenericDataFetcherTest {
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), pagingDataFetcherContext);
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
-    when(backendDataLoader.batchLoadMany(any(), any())).thenReturn(batchLoadManyResult);
+    when(backendDataLoader.loadManyRequest(eq(keyConditionWithBeer), any())).thenReturn(loadManyRequestResult);
     when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
 
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
     ExecutionStepInfo parentExecutionStepInfo = mock(ExecutionStepInfo.class);
     when(parentExecutionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
-    when(parentExecutionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
     when(executionStepInfo.getParent()).thenReturn(parentExecutionStepInfo);
 
     final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
-
-    DataLoader<?, ?> dataLoader = dataFetchingEnvironment.getDataLoader("my/beers");
-
-    dataLoader.dispatch();
 
     List<DataFetcherResult<Map<String, Object>>> futureWithBeerResult =
         (List<DataFetcherResult<Map<String, Object>>>) futureWithBeer.get();

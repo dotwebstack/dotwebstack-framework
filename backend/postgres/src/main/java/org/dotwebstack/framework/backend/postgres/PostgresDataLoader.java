@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,8 +63,15 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   @Override
-  public Flux<Map<String, Object>> loadManyRequest(CollectionRequest collectionRequest) {
-    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext());
+  public Flux<Map<String, Object>> loadManyRequest(KeyCondition keyCondition, CollectionRequest collectionRequest) {
+    List<PostgresKeyCriteria> joinCriteria = new ArrayList<>();
+    if (keyCondition != null) {
+      addKeyConditionsToCollectionRequest(Set.of(keyCondition), collectionRequest);
+      joinCriteria.addAll(getJoinCriteria(Set.of(keyCondition)));
+    }
+
+    var selectQueryBuilderResult =
+        selectQueryBuilder.build(collectionRequest, new ObjectSelectContext(joinCriteria, true));
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
@@ -71,24 +79,9 @@ public class PostgresDataLoader implements BackendDataLoader {
   @Override
   public Flux<GroupedFlux<KeyCondition, Map<String, Object>>> batchLoadManyRequest(Set<KeyCondition> keyConditions,
       CollectionRequest collectionRequest) {
-    collectionRequest.getObjectRequest()
-        .getKeyCriteria()
-        .addAll(keyConditions.stream()
-            .map(ColumnKeyCondition.class::cast)
-            .filter(keyCriteria -> keyCriteria.getJoinTable() == null)
-            .map(key -> PostgresKeyCriteria.builder()
-                .values(key.getValueMap())
-                .build())
-            .collect(Collectors.toList()));
+    addKeyConditionsToCollectionRequest(keyConditions, collectionRequest);
 
-    List<PostgresKeyCriteria> joinCriteria = keyConditions.stream()
-        .map(ColumnKeyCondition.class::cast)
-        .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
-        .map(key -> PostgresKeyCriteria.builder()
-            .values(key.getValueMap())
-            .joinTable(key.getJoinTable())
-            .build())
-        .collect(Collectors.toList());
+    List<PostgresKeyCriteria> joinCriteria = getJoinCriteria(keyConditions);
 
     var selectQueryBuilderResult =
         selectQueryBuilder.build(collectionRequest, new ObjectSelectContext(joinCriteria, true));
@@ -103,6 +96,30 @@ public class PostgresDataLoader implements BackendDataLoader {
         .groupBy(row -> getKeyConditionByKey(keyConditions, row, keyColumnNames),
             row -> selectQueryBuilderResult.getMapAssembler()
                 .apply(row));
+  }
+
+  private void addKeyConditionsToCollectionRequest(Set<KeyCondition> keyConditions,
+      CollectionRequest collectionRequest) {
+    collectionRequest.getObjectRequest()
+        .getKeyCriteria()
+        .addAll(keyConditions.stream()
+            .map(ColumnKeyCondition.class::cast)
+            .filter(keyCriteria -> keyCriteria.getJoinTable() == null)
+            .map(key -> PostgresKeyCriteria.builder()
+                .values(key.getValueMap())
+                .build())
+            .collect(Collectors.toList()));
+  }
+
+  private List<PostgresKeyCriteria> getJoinCriteria(Set<KeyCondition> keyConditions) {
+    return keyConditions.stream()
+        .map(ColumnKeyCondition.class::cast)
+        .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
+        .map(key -> PostgresKeyCriteria.builder()
+            .values(key.getValueMap())
+            .joinTable(key.getJoinTable())
+            .build())
+        .collect(Collectors.toList());
   }
 
   @Override
