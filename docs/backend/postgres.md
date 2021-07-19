@@ -232,6 +232,59 @@ Simplified configuration example
         type: History
 ```
 
+### Context fields
+
+It is optional to define context fields. Context fields are common to all objects within the query. A practical application for context fields is time traveling within a bi-temportal datamodel.
+
+If there are context fields defined in the configuration, data for each object will be retrieved with an context table function named `<table>_ctx` with the context parameters in natural order.
+
+Example configuration:
+
+```yaml
+context:
+  fields:
+    validOn:
+      type: Date
+      default: NOW
+    availableOn:
+      type: DateTime
+      default: NOW
+
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier_beer
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Beer:
+    table: db.beer_v
+    backend: postgres
+    keys:
+      - field: identifier_beer
+    fields:
+      identifier_beer:
+        type: ID
+      name:
+        type: String
+```
+
+With this configured context within the `dotwebstack.yaml` you need to create the following table function:
+
+```sql
+CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_v AS $$
+   SELECT * FROM db.beer_v WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
+$$ language SQL immutable;
+```
+
+
 ## PostGIS
 
 Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are supported.
