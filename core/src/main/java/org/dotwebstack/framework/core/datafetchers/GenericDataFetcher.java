@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -98,7 +99,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (backendDataLoader.useRequestApproach()) {
       var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
 
-      result = mapLoadMany(typeConfiguration, backendDataLoader.loadManyRequest(collectionRequest));
+      result = mapLoadMany(typeConfiguration, backendDataLoader.loadManyRequest(null, collectionRequest));
     } else {
       result = mapLoadMany(typeConfiguration, backendDataLoader.loadMany(keyCondition, loadEnvironment));
     }
@@ -145,18 +146,26 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       return createDataFetcherResult(typeConfiguration, source.get(fieldName));
     }
 
-    // Create separate dataloader for every unique path, since evert path can have different arguments
-    // or selection
-    var dataLoaderKey = String.join("/", executionStepInfo.getPath()
-        .getKeysOnly());
-
-    // Retrieve dataloader instance for key, or create new instance when it does not exist yet
-    DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
-        .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
-
     var keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
 
-    return dataLoader.load(keyCondition);
+    var unwrappedType = environment.getExecutionStepInfo()
+        .getUnwrappedNonNullType();
+
+    if (GraphQLTypeUtil.isList(unwrappedType) && dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
+      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
+      var dataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
+      return mapLoadMany(typeConfiguration, dataLoader.loadManyRequest(keyCondition, collectionRequest)).collectList()
+          .toFuture();
+    } else {
+      // Create separate dataloader for every unique path, since evert path can have different arguments
+      // or selection
+      var dataLoaderKey = String.join("/", executionStepInfo.getPath()
+          .getKeysOnly());
+      // Retrieve dataloader instance for key, or create new instance when it does not exist yet
+      DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
+          .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
+      return dataLoader.load(keyCondition);
+    }
   }
 
   private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration, Object data) {

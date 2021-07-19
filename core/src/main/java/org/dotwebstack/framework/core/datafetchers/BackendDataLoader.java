@@ -30,7 +30,7 @@ public interface BackendDataLoader {
     return Mono.empty();
   }
 
-  default Flux<Map<String, Object>> loadManyRequest(CollectionRequest collectionRequest) {
+  default Flux<Map<String, Object>> loadManyRequest(KeyCondition keyCondition, CollectionRequest collectionRequest) {
     return Flux.empty();
   }
 

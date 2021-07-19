@@ -175,6 +175,65 @@ class GraphQlPostgresWithPagingIntegrationTest {
                 "offset", 0))));
   }
 
+  @Test
+  void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
+    String query = "{\n" + "  beers(first: 10, offset: 0) {\n" + "    nodes {\n" + "      identifier_beer\n"
+        + "      name\n" + "      ingredients{\n" + "        nodes {\n" + "          identifier_ingredient\n"
+        + "          name\n" + "        }\n" + "      }\n" + "    }\n" + "  }\n" + "}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data,
+        equalTo(Map.of("beers",
+            Map.of("nodes",
+                List.of(
+                    Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1", "ingredients",
+                        Map.of("nodes", List.of(
+                            Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name", "Water"),
+                            Map.of("identifier_ingredient", "cd794c14-5fbb-11eb-ae93-0242ac130002", "name", "Hop"),
+                            Map.of("identifier_ingredient", "cd795196-5fbb-11eb-ae93-0242ac130002", "name", "Barley"),
+                            Map.of("identifier_ingredient", "cd795191-5fbb-11eb-ae93-0242ac130002", "name", "Yeast"),
+                            Map.of("identifier_ingredient", "cd79538a-5fbb-11eb-ae93-0242ac130002", "name", "Orange"),
+                            Map.of("identifier_ingredient", "cd79545c-5fbb-11eb-ae93-0242ac130002", "name",
+                                "Caramel")))),
+                    Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2", "ingredients",
+                        Map.of("nodes", List.of(
+                            Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name", "Water"),
+                            Map.of("identifier_ingredient", "cd794c14-5fbb-11eb-ae93-0242ac130002", "name", "Hop"),
+                            Map.of("identifier_ingredient", "cd795196-5fbb-11eb-ae93-0242ac130002", "name", "Barley"),
+                            Map.of("identifier_ingredient", "cd795191-5fbb-11eb-ae93-0242ac130002", "name", "Yeast"),
+                            Map.of("identifier_ingredient", "cd79538a-5fbb-11eb-ae93-0242ac130002", "name",
+                                "Orange")))),
+                    Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3", "ingredients",
+                        Map.of("nodes", List.of(
+                            Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name", "Water"),
+                            Map.of("identifier_ingredient", "cd794c14-5fbb-11eb-ae93-0242ac130002", "name", "Hop"),
+                            Map.of("identifier_ingredient", "cd795196-5fbb-11eb-ae93-0242ac130002", "name", "Barley"),
+                            Map.of("identifier_ingredient", "cd795191-5fbb-11eb-ae93-0242ac130002", "name", "Yeast"),
+                            Map.of("identifier_ingredient", "cd79545c-5fbb-11eb-ae93-0242ac130002", "name",
+                                "Caramel")))),
+                    Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4", "ingredients",
+                        Map.of("nodes", List.of(
+                            Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name", "Water"),
+                            Map.of("identifier_ingredient", "cd794c14-5fbb-11eb-ae93-0242ac130002", "name", "Hop"),
+                            Map.of("identifier_ingredient", "cd795196-5fbb-11eb-ae93-0242ac130002", "name", "Barley"),
+                            Map.of("identifier_ingredient", "cd795191-5fbb-11eb-ae93-0242ac130002", "name", "Yeast")))),
+                    Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5", "ingredients",
+                        Map.of("nodes", List.of(
+                            Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name", "Water"),
+                            Map.of("identifier_ingredient", "cd794c14-5fbb-11eb-ae93-0242ac130002", "name", "Hop"),
+                            Map.of("identifier_ingredient", "cd795196-5fbb-11eb-ae93-0242ac130002", "name", "Barley"),
+                            Map.of("identifier_ingredient", "cd795191-5fbb-11eb-ae93-0242ac130002", "name", "Yeast")))),
+                    Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6", "ingredients",
+                        Map.of("nodes", List.of(Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002",
+                            "name", "Water")))))))));
+  }
+
   private JsonNode executeGetRequestDefault(String query) {
     return executeGetRequest(query, "", "");
   }

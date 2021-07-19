@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
@@ -193,7 +194,50 @@ class PostgresDataLoaderTest {
             .build())
         .build();
 
-    List<Map<String, Object>> result = postgresDataLoader.loadManyRequest(objectRequest)
+    List<Map<String, Object>> result = postgresDataLoader.loadManyRequest(null, objectRequest)
+        .toStream()
+        .collect(Collectors.toList());
+
+    assertThat(result, notNullValue());
+    assertThat(data, equalTo(result));
+
+    verify(databaseClient, times(1)).sql(anyString());
+    verify(fetchSpec, times(1)).all();
+    verify(selectQueryBuilder, times(1)).build(any(CollectionRequest.class), any(ObjectSelectContext.class));
+  }
+
+  @Test
+  void loadManyRequestWithKeyCondition() {
+    List<Map<String, Object>> data =
+        List.of(Map.of("x1", "id-1", "x2", "Beer 1"), Map.of("x1", "id-2", "x2", "Beer 2"));
+    var fetchSpec = mockQueryContext();
+    when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
+
+    SelectQuery<?> query = mock(SelectQuery.class);
+    when(query.getSQL(INLINED)).thenReturn("");
+
+    KeyCondition keyCondition = ColumnKeyCondition.builder()
+        .valueMap(Map.of("identifier", "id-1"))
+        .joinTable(mock(JoinTable.class))
+        .build();
+
+    SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
+        .query(query)
+        .table(mock(Table.class))
+        .mapAssembler(row -> row)
+        .context(new ObjectSelectContext())
+        .build();
+
+    when(selectQueryBuilder.build(any(CollectionRequest.class), any(ObjectSelectContext.class)))
+        .thenReturn(selectQueryBuilderResult);
+
+    CollectionRequest collectionRequest = CollectionRequest.builder()
+        .objectRequest(ObjectRequest.builder()
+            .typeConfiguration(new PostgresTypeConfiguration())
+            .build())
+        .build();
+
+    List<Map<String, Object>> result = postgresDataLoader.loadManyRequest(keyCondition, collectionRequest)
         .toStream()
         .collect(Collectors.toList());
 
