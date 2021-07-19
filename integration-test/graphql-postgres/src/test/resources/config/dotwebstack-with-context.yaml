@@ -1,0 +1,148 @@
+features:
+  - paging
+
+context:
+  fields:
+    validOn:
+      type: Date
+      default: NOW
+    availableOn:
+      type: DateTime
+      default: NOW
+
+queries:
+  beers:
+    type: Beer
+    list: true
+  beer:
+    type: Beer
+    keys:
+      - field: identifier_beer
+    nullable: true
+  breweries:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Beer:
+    table: db.beer_v
+    backend: postgres
+    keys:
+      - field: identifier_beer
+    fields:
+      identifier_beer:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      brewery:
+        type: Brewery
+        joinColumns:
+          - name: brewery
+            referencedField: identifier_brewery
+      taste:
+        type: Taste
+        list: true
+      since:
+        type: Date
+      lastBrewed:
+        type: DateTime
+    filters:
+      name: {}
+      sinceDate:
+        field: since
+      lastBrewed: {}
+      breweryCity:
+        field: brewery.visitAddress.city
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      nameDesc:
+        - field: name
+          direction: DESC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
+
+  Brewery:
+    backend: postgres
+    table: db.brewery_v
+    keys:
+      - field: identifier_brewery
+    fields:
+      identifier_brewery:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+      postalAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier_address
+      visitAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier_address
+      beers:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: brewery
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+      history:
+        type: History
+      multinational:
+        type: Boolean
+    filters:
+      name: {}
+      multinational:
+        field: multinational
+      geometry: {}
+      historyAge:
+        field: history.age
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+
+  Address:
+    backend: postgres
+    table: db.address_v
+    keys:
+      - field: identifier_address
+    fields:
+      identifier_address:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
+  History:
+    backend: postgres
+    keys:
+      - field: identifier_brewery
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

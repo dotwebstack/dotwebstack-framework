@@ -48,6 +48,10 @@ public class PostgresConfiguration {
         .password(postgresProperties.getPassword())
         .forceBinary(true);
 
+    if (postgresProperties.getOptions() != null) {
+      configurationBuilder.options(postgresProperties.getOptions());
+    }
+
     if (StringUtils.isNotEmpty(postgresProperties.getDatabase())) {
       configurationBuilder.database(postgresProperties.getDatabase());
     }

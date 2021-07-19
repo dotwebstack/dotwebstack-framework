@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -23,6 +24,10 @@ public class DotWebStackConfiguration {
   @Valid
   private List<Feature> features;
 
+  @Valid
+  private ContextConfiguration context;
+
+  @NotNull
   @Valid
   private Map<String, AbstractTypeConfiguration<?>> objectTypes;
 
