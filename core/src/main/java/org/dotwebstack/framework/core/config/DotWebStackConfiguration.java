@@ -19,6 +19,9 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 public class DotWebStackConfiguration {
 
   @Valid
+  private SettingsConfiguration settings;
+
+  @Valid
   private List<Feature> features;
 
   @Valid

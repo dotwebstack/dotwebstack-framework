@@ -4,9 +4,12 @@ import graphql.language.ScalarTypeDefinition;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
+@Conditional(GraphQlNativeEnabled.class)
 @Component
 public class CoreConfigurer implements GraphqlConfigurer {
 

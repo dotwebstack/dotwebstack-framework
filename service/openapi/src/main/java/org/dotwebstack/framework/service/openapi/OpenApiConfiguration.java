@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
-import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -61,7 +61,7 @@ public class OpenApiConfiguration {
 
   private final InputStream openApiStream;
 
-  private final GraphQL graphQl;
+  private final GraphQlService graphQl;
 
   private final List<ResponseMapper> responseMappers;
 
@@ -83,14 +83,14 @@ public class OpenApiConfiguration {
 
   private final EnvironmentProperties environmentProperties;
 
-  public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
+  public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService,
+      TypeDefinitionRegistry typeDefinitionRegistry, List<ResponseMapper> responseMappers,
+      JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
       RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
       EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
-    this.graphQl = graphQl;
+    this.graphQl = graphQlService;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
