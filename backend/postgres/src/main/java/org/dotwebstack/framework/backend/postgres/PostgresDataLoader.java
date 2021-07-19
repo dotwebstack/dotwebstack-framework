@@ -128,7 +128,6 @@ public class PostgresDataLoader implements BackendDataLoader {
   }
 
   private Flux<Map<String, Object>> fetch(SelectQuery<?> query, UnaryOperator<Map<String, Object>> mapAssembler) {
-    LOG.debug("fetch");
     String sql = query.getSQL(ParamType.INLINED);
 
     LOG.debug("Fetching with SQL: {}", sql);
