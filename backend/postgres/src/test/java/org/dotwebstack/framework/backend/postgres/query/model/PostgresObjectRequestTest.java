@@ -45,7 +45,7 @@ class PostgresObjectRequestTest {
 
     postgresObjectRequest.addFields(filterCriteria);
 
-    assertObjectRequest(postgresObjectRequest, "name", Origin.requested());
+    assertObjectRequest(postgresObjectRequest, Origin.requested());
   }
 
   @Test
@@ -167,9 +167,6 @@ class PostgresObjectRequestTest {
     postgresObjectRequest.getObjectFields()
         .add(breweryObjectField);
 
-    // postgresObjectRequest.getObjectFieldsByFieldName()
-    // .put("brewery", breweryObjectField);
-
     var fieldPath = FieldPath.builder()
         .fieldConfiguration(beerTypeConfiguration.getFields()
             .get("brewery"))
@@ -205,11 +202,11 @@ class PostgresObjectRequestTest {
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
 
-  private void assertObjectRequest(ObjectRequest objectRequest, String fieldName, Origin origin) {
+  private void assertObjectRequest(ObjectRequest objectRequest, Origin origin) {
     var scalarFields = objectRequest.getScalarFields();
     assertThat(scalarFields, hasSize(1));
     var scalarField = scalarFields.get(0);
-    assertThat(scalarField.getName(), is(fieldName));
+    assertThat(scalarField.getName(), is("name"));
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
 

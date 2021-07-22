@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-import static org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration.createNestedObjectFieldConfiguration;
-import static org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration.createObjectFieldConfiguration;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +11,9 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -123,7 +123,10 @@ public class PostgresObjectRequest extends ObjectRequest {
             fieldConfiguration))
         .findFirst()
         .orElseGet(() -> {
-          var newNestedObjectField = createNestedObjectFieldConfiguration(fieldConfiguration);
+          var newNestedObjectField = NestedObjectFieldConfiguration.builder()
+              .field(fieldConfiguration)
+              .build();
+
           nestedObjectFieldConfigurations.add(newNestedObjectField);
           return newNestedObjectField;
         });
@@ -138,5 +141,18 @@ public class PostgresObjectRequest extends ObjectRequest {
               .add(newObjectField);
           return newObjectField;
         });
+  }
+
+  private static ObjectFieldConfiguration createObjectFieldConfiguration(
+      TypeConfiguration<? extends FieldConfiguration> typeConfiguration,
+      AbstractFieldConfiguration fieldConfiguration) {
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(typeConfiguration)
+        .build();
+
+    return ObjectFieldConfiguration.builder()
+        .field(fieldConfiguration)
+        .objectRequest(objectRequest)
+        .build();
   }
 }
