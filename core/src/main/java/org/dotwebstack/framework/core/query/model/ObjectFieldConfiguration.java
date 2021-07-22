@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.core.query.model;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
@@ -13,8 +16,15 @@ public class ObjectFieldConfiguration {
   private final ObjectRequest objectRequest;
 
   public boolean hasNestedFilteringOrigin() {
-    boolean hasNestedFilteringOrigin = objectRequest.getScalarFields()
+    List<ScalarField> scalarFields = objectRequest.getScalarFields();
+
+    List<ScalarField> nestedScalarFields = objectRequest.getNestedObjectFields()
         .stream()
+        .flatMap(nestedObjectFieldConfiguration -> nestedObjectFieldConfiguration.getScalarFields()
+            .stream())
+        .collect(Collectors.toList());
+
+    boolean hasNestedFilteringOrigin = Stream.concat(scalarFields.stream(), nestedScalarFields.stream())
         .flatMap(scalarField -> scalarField.getOrigins()
             .stream())
         .anyMatch(Filtering.class::isInstance);

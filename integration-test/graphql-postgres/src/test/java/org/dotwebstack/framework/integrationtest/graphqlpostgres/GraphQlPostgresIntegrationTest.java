@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.IsIterableContaining.hasItems;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1377,6 +1378,20 @@ class GraphQlPostgresIntegrationTest {
                     Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6", "ingredients",
                         List.of(Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002", "name",
                             "Water")))))));
+  }
+
+  @Test
+  void getRequest_returnsBeers_forQueryWithBreweryNestedFieldFilter() {
+    String query = "{\n" + "  beers(filter: {breweryHistoryAge: {eq: 1988}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    Assert.assertThat(data, hasEntry(equalTo("beers"), hasItems(hasEntry(equalTo("name"), equalTo("Beer 1")),
+        hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("name"), equalTo("Beer 4")))));
   }
 
   private JsonNode executeGetRequestDefault(String query) {

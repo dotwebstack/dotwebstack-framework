@@ -43,9 +43,9 @@ class PostgresObjectRequestTest {
         .fieldConfiguration(beerNameFieldConfiguration)
         .build());
 
-    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+    postgresObjectRequest.addFields(filterCriteria);
 
-    assertObjectRequest(postgresObjectRequest, "name", Origin.requested());
+    assertObjectRequest(postgresObjectRequest, Origin.requested());
   }
 
   @Test
@@ -74,7 +74,7 @@ class PostgresObjectRequestTest {
 
     FilterCriteria filterCriteria = createEqualsFilterCriteria(fieldPath);
 
-    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+    postgresObjectRequest.addFields(filterCriteria);
 
     assertThat(postgresObjectRequest.getNestedObjectFields()
         .size(), is(1));
@@ -111,7 +111,7 @@ class PostgresObjectRequestTest {
 
     FilterCriteria filterCriteria = createEqualsFilterCriteria(fieldPath);
 
-    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+    postgresObjectRequest.addFields(filterCriteria);
 
     assertObjectFields(postgresObjectRequest, "brewery", "brewName", Origin.filtering(filterCriteria));
   }
@@ -144,7 +144,7 @@ class PostgresObjectRequestTest {
 
     FilterCriteria filterCriteria = createEqualsFilterCriteria(fieldPath);
 
-    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+    postgresObjectRequest.addFields(filterCriteria);
 
     assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.filtering(filterCriteria));
   }
@@ -167,9 +167,6 @@ class PostgresObjectRequestTest {
     postgresObjectRequest.getObjectFields()
         .add(breweryObjectField);
 
-    postgresObjectRequest.getObjectFieldsByFieldName()
-        .put("brewery", breweryObjectField);
-
     var fieldPath = FieldPath.builder()
         .fieldConfiguration(beerTypeConfiguration.getFields()
             .get("brewery"))
@@ -185,7 +182,7 @@ class PostgresObjectRequestTest {
 
     FilterCriteria filterCriteria = createEqualsFilterCriteria(fieldPath);
 
-    postgresObjectRequest.addFilterCriteria(List.of(filterCriteria));
+    postgresObjectRequest.addFields(filterCriteria);
 
     assertObjectFields(postgresObjectRequest, "brewery.address", "city", Origin.filtering(filterCriteria));
   }
@@ -205,11 +202,11 @@ class PostgresObjectRequestTest {
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
 
-  private void assertObjectRequest(ObjectRequest objectRequest, String fieldName, Origin origin) {
+  private void assertObjectRequest(ObjectRequest objectRequest, Origin origin) {
     var scalarFields = objectRequest.getScalarFields();
     assertThat(scalarFields, hasSize(1));
     var scalarField = scalarFields.get(0);
-    assertThat(scalarField.getName(), is(fieldName));
+    assertThat(scalarField.getName(), is("name"));
     assertThat(scalarField.getOrigins(), hasItem(origin));
   }
 

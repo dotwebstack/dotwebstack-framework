@@ -72,10 +72,14 @@ public class SelectQueryBuilder {
         objectRequest.getContextCriteria()).as(objectSelectContext.newTableAlias());
 
     var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
-    postgresObjectRequest.addFilterCriteria(collectionRequest.getFilterCriterias());
-    postgresObjectRequest.addSortCriteria(collectionRequest.getSortCriterias(),
-        objectSelectContext.getObjectQueryContext()
-            .getFieldPathAliasMap());
+
+    collectionRequest.getFilterCriterias()
+        .forEach(postgresObjectRequest::addFields);
+
+    collectionRequest.getSortCriterias()
+        .forEach(
+            sortCriteria -> postgresObjectRequest.addFields(sortCriteria, objectSelectContext.getObjectQueryContext()
+                .getFieldPathAliasMap()));
 
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
 
@@ -310,7 +314,6 @@ public class SelectQueryBuilder {
 
     objectRequest.getNestedObjectFields()
         .forEach(nestedObjectField -> {
-
           var nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
           addScalarFields((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
               nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);

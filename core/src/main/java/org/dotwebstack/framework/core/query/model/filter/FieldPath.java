@@ -16,6 +16,10 @@ public class FieldPath {
     return child == null;
   }
 
+  public boolean isNode() {
+    return !isLeaf();
+  }
+
   public FieldPath getLeaf() {
     if (isLeaf()) {
       return this;

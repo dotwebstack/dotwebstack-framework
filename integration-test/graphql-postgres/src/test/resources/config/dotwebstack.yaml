@@ -93,6 +93,8 @@ objectTypes:
         field: brewery.visitAddress.city
       breweryPostalAdressCity:
         field: brewery.postalAddress.city
+      breweryHistoryAge:
+        field: brewery.history.age
     sortableBy:
       name:
         - field: name
