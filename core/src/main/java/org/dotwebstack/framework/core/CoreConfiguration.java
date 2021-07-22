@@ -23,6 +23,7 @@ public class CoreConfiguration {
   public DotWebStackConfiguration dotWebStackConfiguration(
       @Value("${dotwebstack.config:dotwebstack.yaml}") String configFilename,
       List<DotWebStackConfigurationValidator> validators) {
+    LOG.info("The DotWebStackConfiguration used: {}", configFilename);
     var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
     var dotWebStackConfiguration = dotWebStackConfigurationReader.read(configFilename);
 

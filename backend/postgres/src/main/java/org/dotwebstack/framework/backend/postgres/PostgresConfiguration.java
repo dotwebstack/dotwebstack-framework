@@ -34,12 +34,6 @@ public class PostgresConfiguration {
     return DSL.using(SQLDialect.POSTGRES);
   }
 
-  // TODO: remove
-  private String buildPostgresqlUrl() {
-    return String.format("jdbc:postgresql://%s:%d/%s", postgresProperties.getHost(), postgresProperties.getPort(),
-        postgresProperties.getDatabase());
-  }
-
   @Bean
   public ConnectionFactory connectionFactory() {
     var configurationBuilder = PostgresqlConnectionConfiguration.builder()
