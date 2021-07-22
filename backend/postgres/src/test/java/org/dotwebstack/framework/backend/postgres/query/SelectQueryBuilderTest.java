@@ -113,19 +113,21 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildCollectionRequest_returnsQuery_withFilterCriteria() {
+    var typeName = "Brewery";
+
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
-    var typeName = "Brewery";
+    var filterCriteria = EqualsFilterCriteria.builder()
+        .fieldPath(FieldPath.builder()
+            .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
+                .getField())
+            .build())
+        .value("Brewery X")
+        .build();
 
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
-        .filterCriterias(List.of(EqualsFilterCriteria.builder()
-            .fieldPath(FieldPath.builder()
-                .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
-                    .getField())
-                .build())
-            .value("Brewery X")
-            .build()))
+        .filterCriterias(List.of(filterCriteria))
         .build();
 
     var result = selectQueryBuilder.build(collectionRequest);

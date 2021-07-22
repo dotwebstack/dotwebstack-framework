@@ -1,19 +1,19 @@
 package org.dotwebstack.framework.backend.postgres.query.model;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration.createNestedObjectFieldConfiguration;
+import static org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration.createObjectFieldConfiguration;
 
-import com.google.common.collect.Sets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -27,62 +27,33 @@ import org.dotwebstack.framework.core.query.model.origin.Origin;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectRequest extends ObjectRequest {
-  @Builder.Default
-  private final Map<String, ObjectFieldConfiguration> objectFieldsByFieldName = new HashMap<>();
 
-  public void addFilterCriteria(List<FilterCriteria> filterCriterias) {
-    filterCriterias.forEach(filterCriteria -> filterCriteria.getFieldPaths()
+  public void addFields(FilterCriteria criteria) {
+    var origin = Origin.filtering(criteria);
+
+    criteria.getFieldPaths()
         .stream()
-        .filter(fieldPath -> !fieldPath.isLeaf())
-        .forEach(fieldPath -> createObjectField(fieldPath, Origin.filtering(filterCriteria))));
+        .filter(FieldPath::isNode)
+        .forEach(fieldPath -> addFields(fieldPath, origin));
   }
 
-  public void addSortCriteria(List<SortCriteria> sortCriterias, Map<String, String> fieldPathAliasMap) {
-    sortCriterias.stream()
-        .filter(sortCriteria -> !sortCriteria.getFieldPath()
-            .isLeaf())
-        .forEach(sortCriteria -> createObjectField(sortCriteria.getFieldPath(),
-            Origin.sorting(sortCriteria, fieldPathAliasMap)));
+  public void addFields(SortCriteria criteria, Map<String, String> fieldPathAliasMap) {
+    var origin = Origin.sorting(criteria, fieldPathAliasMap);
+
+    Optional.of(criteria)
+        .map(SortCriteria::getFieldPath)
+        .filter(FieldPath::isNode)
+        .ifPresent(fieldPath -> addFields(fieldPath, origin));
   }
 
-  private void createObjectField(FieldPath fieldPath, Origin origin) {
+  private void addFields(FieldPath fieldPath, Origin origin) {
     var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
 
     if (fieldConfiguration.isNested()) {
-      if (fieldConfiguration.isList()) {
-        throw unsupportedOperationException("Nested object list is unsupported!");
-      }
-
-      NestedObjectFieldConfiguration nestedObjectField = nestedObjectFields.stream()
-          .filter(nof -> Objects.equals(nof.getField()
-              .getName(), fieldConfiguration.getName()))
-          .findFirst()
-          .orElseGet(() -> {
-            NestedObjectFieldConfiguration nofc = NestedObjectFieldConfiguration.builder()
-                .field(fieldConfiguration)
-                .build();
-
-            nestedObjectFields.add(nofc);
-
-            return nofc;
-          });
-
-      nestedObjectField.getScalarFields()
-          .add(ScalarField.builder()
-              .field(fieldPath.getChild()
-                  .getFieldConfiguration())
-              .origins(Sets.newHashSet(origin))
-              .build());
-
+      addNestedScalarField(this, fieldPath, origin);
     } else {
-      var objectField = Optional.ofNullable(objectFieldsByFieldName.get(fieldConfiguration.getName()))
-          .orElseGet(() -> {
-            var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
-            objectFieldsByFieldName.put(fieldConfiguration.getName(), newObjectField);
-            objectFields.add(newObjectField);
-            return newObjectField;
-          });
+      var objectField = getOrCreateObjectField(this, typeConfiguration, fieldConfiguration);
 
       if (!fieldPath.isLeaf()) {
         addObjectFields(fieldPath.getChild(), objectField, origin);
@@ -93,47 +64,79 @@ public class PostgresObjectRequest extends ObjectRequest {
   private void addObjectFields(FieldPath fieldPath, ObjectFieldConfiguration parentObjectFieldConfiguration,
       Origin origin) {
     var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
+
     if (fieldConfiguration.isObjectField()) {
       var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
-      var objectField = parentObjectFieldConfiguration.getObjectRequest()
-          .getObjectField(fieldConfiguration)
-          .orElseGet(() -> {
-            var newObjectField = createObjectFieldConfiguration(fieldConfiguration, typeConfiguration);
-            parentObjectFieldConfiguration.getObjectRequest()
-                .getObjectFields()
-                .add(newObjectField);
-            return newObjectField;
-          });
+      var objectField = getOrCreateObjectField(parentObjectFieldConfiguration.getObjectRequest(), typeConfiguration,
+          fieldConfiguration);
 
       if (!fieldPath.isLeaf()) {
         addObjectFields(fieldPath.getChild(), objectField, origin);
       }
-    } else if (fieldConfiguration.isScalarField()) {
-      var scalarField = parentObjectFieldConfiguration.getObjectRequest()
-          .getScalarField(fieldConfiguration)
-          .orElseGet(() -> {
-            var newScalarField = ScalarField.builder()
-                .field(fieldConfiguration)
-                .origins(Sets.newHashSet(Origin.requested()))
-                .build();
-            parentObjectFieldConfiguration.getObjectRequest()
-                .addScalarField(newScalarField);
-            return newScalarField;
-          });
+    }
 
-      scalarField.addOrigin(origin);
+    if (fieldConfiguration.isNestedObjectField()) {
+      addNestedScalarField(parentObjectFieldConfiguration.getObjectRequest(), fieldPath, origin);
+    }
+
+    if (fieldConfiguration.isScalarField()) {
+      addScalarField(parentObjectFieldConfiguration.getObjectRequest()
+          .getScalarFields(), fieldConfiguration, origin);
     }
   }
 
-  private ObjectFieldConfiguration createObjectFieldConfiguration(PostgresFieldConfiguration fieldConfiguration,
-      PostgresTypeConfiguration typeConfiguration) {
-    var objectRequest = ObjectRequest.builder()
-        .typeConfiguration(typeConfiguration)
-        .build();
+  private void addNestedScalarField(ObjectRequest objectRequest, FieldPath fieldPath, Origin origin) {
+    var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
 
-    return ObjectFieldConfiguration.builder()
-        .field(fieldConfiguration)
-        .objectRequest(objectRequest)
-        .build();
+    if (fieldConfiguration.isList()) {
+      throw unsupportedOperationException("Nested object list is unsupported!");
+    }
+
+    var nestedObjectField = getOrCreateNestedObjectField(objectRequest.getNestedObjectFields(), fieldConfiguration);
+
+    var scalarFieldConfiguration = fieldPath.getChild()
+        .getFieldConfiguration();
+
+    addScalarField(nestedObjectField.getScalarFields(), scalarFieldConfiguration, origin);
+  }
+
+  private void addScalarField(List<ScalarField> scalarFields, FieldConfiguration fieldConfiguration, Origin origin) {
+    var scalarField = scalarFields.stream()
+        .filter(sf -> Objects.equals(sf.getField(), fieldConfiguration))
+        .findFirst()
+        .orElseGet(() -> {
+          var newScalarField = ScalarField.builder()
+              .field(fieldConfiguration)
+              .build();
+          scalarFields.add(newScalarField);
+          return newScalarField;
+        });
+
+    scalarField.addOrigin(origin);
+  }
+
+  private NestedObjectFieldConfiguration getOrCreateNestedObjectField(
+      List<NestedObjectFieldConfiguration> nestedObjectFieldConfigurations,
+      PostgresFieldConfiguration fieldConfiguration) {
+    return nestedObjectFieldConfigurations.stream()
+        .filter(nestedObjectFieldConfiguration -> Objects.equals(nestedObjectFieldConfiguration.getField(),
+            fieldConfiguration))
+        .findFirst()
+        .orElseGet(() -> {
+          var newNestedObjectField = createNestedObjectFieldConfiguration(fieldConfiguration);
+          nestedObjectFieldConfigurations.add(newNestedObjectField);
+          return newNestedObjectField;
+        });
+  }
+
+  private ObjectFieldConfiguration getOrCreateObjectField(ObjectRequest objectRequest,
+      PostgresTypeConfiguration typeConfiguration, PostgresFieldConfiguration fieldConfiguration) {
+    return objectRequest.getObjectField(fieldConfiguration)
+        .orElseGet(() -> {
+          var newObjectField = createObjectFieldConfiguration(typeConfiguration, fieldConfiguration);
+          objectRequest.getObjectFields()
+              .add(newObjectField);
+          return newObjectField;
+        });
   }
 }

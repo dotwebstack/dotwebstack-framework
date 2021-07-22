@@ -13,4 +13,11 @@ public class NestedObjectFieldConfiguration {
 
   @Builder.Default
   private final List<ScalarField> scalarFields = new ArrayList<>();
+
+  public static <F extends FieldConfiguration> NestedObjectFieldConfiguration createNestedObjectFieldConfiguration(
+      F fieldConfiguration) {
+    return NestedObjectFieldConfiguration.builder()
+        .field(fieldConfiguration)
+        .build();
+  }
 }

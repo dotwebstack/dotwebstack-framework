@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.integrationtest.graphqlpostgres.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
@@ -12,10 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
-import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.jooq.tools.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -177,7 +176,7 @@ class GraphQlPostgresWithContextIntegrationTest {
     try {
       return mapper.readTree(result);
     } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse string to json: %s", result));
+      throw illegalArgumentException(String.format("Failed to parse string to json: %s", result));
     }
   }
 
@@ -187,12 +186,7 @@ class GraphQlPostgresWithContextIntegrationTest {
       return mapper.readValue(json.get("data")
           .toString(), Map.class);
     } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse Json to Map: %s", json));
+      throw illegalArgumentException(String.format("Failed to parse Json to Map: %s", json));
     }
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private void assertThat(Object object, Matcher<?> matcher) {
-    MatcherAssert.assertThat(object, (Matcher) matcher);
   }
 }
