@@ -368,7 +368,15 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectTypeConfiguration))
         .collect(Collectors.toList());
 
+    createInputValueDefinitionForFilteredObject(subscriptionConfiguration.getType(), objectTypeConfiguration)
+        .ifPresent(inputValueDefinitions::add);
+
     addOptionalSortableByObject(subscriptionConfiguration, objectTypeConfiguration, inputValueDefinitions);
+
+    if (subscriptionConfiguration.isContext()) {
+      addOptionalContext(inputValueDefinitions);
+    }
+
     return newFieldDefinition().name(queryName)
         .type(createType(subscriptionConfiguration))
         .inputValueDefinitions(inputValueDefinitions)
@@ -392,7 +400,9 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addOptionalSortableByObject(queryConfiguration, objectTypeConfiguration, inputValueDefinitions);
 
-    addOptionalContext(dotWebStackConfiguration, inputValueDefinitions);
+    if (queryConfiguration.isContext()) {
+      addOptionalContext(inputValueDefinitions);
+    }
 
     return newFieldDefinition().name(queryName)
         .type(createTypeForQuery(queryConfiguration))
@@ -474,8 +484,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
-  private void addOptionalContext(DotWebStackConfiguration dotWebStackConfiguration,
-      List<InputValueDefinition> inputValueDefinitions) {
+  private void addOptionalContext(List<InputValueDefinition> inputValueDefinitions) {
     Optional.ofNullable(dotWebStackConfiguration.getContext())
         .ifPresent(context -> inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
             .type(newNonNullableType(CONTEXT_TYPE_NAME))

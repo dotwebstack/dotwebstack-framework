@@ -21,15 +21,18 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeReference;
 import graphql.schema.SelectedField;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.time.LocalDate;
@@ -45,6 +48,7 @@ import org.dotwebstack.framework.core.config.ContextFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
@@ -136,6 +140,17 @@ class RequestFactoryTest {
     selectedFields = new ArrayList<>();
     when(environment.getSelectionSet()).thenReturn(selectionSet);
     when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
+
+    lenient().when(executionStepInfo.getFieldDefinition())
+        .thenReturn(fieldDefinition);
+    lenient().when(executionStepInfo.getParent())
+        .thenReturn(executionStepInfo);
+    lenient().when(environment.getExecutionStepInfo())
+        .thenReturn(executionStepInfo);
+    lenient().when(fieldDefinition.getArguments())
+        .thenReturn(List.of());
   }
 
   @Test
@@ -269,6 +284,16 @@ class RequestFactoryTest {
     when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
 
     when(typeConfiguration.getFields()).thenReturn(fields);
+
+    GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
+    when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    GraphQLArgument contextArgument = GraphQLArgument.newArgument()
+        .name(ContextConstants.CONTEXT_ARGUMENT_NAME)
+        .type(new GraphQLTypeReference(ContextConstants.CONTEXT_TYPE_NAME))
+        .build();
+
+    when(fieldDefinition.getArguments()).thenReturn(List.of(contextArgument));
 
     var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 

@@ -13,4 +13,5 @@ public class SubscriptionConfiguration {
 
   private List<KeyConfiguration> keys = new ArrayList<>();
 
+  private boolean context = true;
 }

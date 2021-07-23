@@ -17,4 +17,5 @@ public class QueryConfiguration {
 
   private boolean list = false;
 
+  private boolean context = true;
 }

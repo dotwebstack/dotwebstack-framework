@@ -40,6 +40,7 @@ import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterCriteriaParserFactory;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
@@ -153,8 +154,14 @@ public class RequestFactory {
   private List<ContextCriteria> createContextCriteria(DataFetchingEnvironment environment) {
     ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
 
-    if (dotWebStackConfiguration.getContext() != null) {
-      Map<String, Object> resolvedArguments = getNestedMap(executionStepInfo.getArguments(), "context");
+    if (executionStepInfo.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .map(GraphQLArgument::getType)
+        .map(TypeHelper::getTypeName)
+        .anyMatch(ContextConstants.CONTEXT_TYPE_NAME::equals)) {
+      Map<String, Object> resolvedArguments =
+          getNestedMap(executionStepInfo.getArguments(), ContextConstants.CONTEXT_ARGUMENT_NAME);
 
       return Optional.of(dotWebStackConfiguration.getContext())
           .map(ContextConfiguration::getFields)
