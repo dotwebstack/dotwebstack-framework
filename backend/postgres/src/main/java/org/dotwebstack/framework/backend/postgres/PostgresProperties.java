@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import io.r2dbc.postgresql.client.SSLMode;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,5 +23,9 @@ public class PostgresProperties {
 
   private String database = "postgres";
 
+  private SSLMode sslMode = SSLMode.DISABLE;
+
   private Map<String, String> options;
+
+
 }
