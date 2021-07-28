@@ -65,7 +65,6 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -92,8 +91,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final ResponseSchemaContext responseSchemaContext;
 
-  private final ResponseContextValidator responseContextValidator;
-
   private final GraphQlService graphQL;
 
   private final List<ResponseMapper> responseMappers;
@@ -113,7 +110,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private final EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-      ResponseContextValidator responseContextValidator, GraphQlService graphQL, List<ResponseMapper> responseMappers,
+     GraphQlService graphQL, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
       EnvironmentProperties properties) {
@@ -125,7 +122,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.jsonResponseMapper = jsonResponseMapper;
     this.templateResponseMapper = templateResponseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
-    this.responseContextValidator = responseContextValidator;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.jexlHelper = jexlHelper;
     this.properties = properties;
@@ -140,28 +136,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   public void validateSchema() {
-    var field = responseSchemaContext.getGraphQlField();
     if (responseSchemaContext.getResponses()
         .stream()
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw unsupportedOperationException("No response in the 200 range found.");
     }
-
-    responseSchemaContext.getRequiredFields()
-        .forEach(requiredPath -> validateRequiredField(field, requiredPath, field.getName()));
-    validateParameters(field, responseSchemaContext.getParameters(),
-        getRequestBodyProperties(responseSchemaContext.getRequestBodyContext()), pathName);
-    var requestBodyContext = responseSchemaContext.getRequestBodyContext();
-    if (Objects.nonNull(requestBodyContext)) {
-      var requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
-          .validate(field, requestBody, pathName);
-    }
-    responseSchemaContext.getResponses()
-        .stream()
-        .filter(responseTemplate -> Objects.nonNull(responseTemplate.getResponseObject()))
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
 
   @SuppressWarnings("rawtypes")
@@ -180,7 +159,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
     var jexlContext =
-        getJexlContext(properties.getAllProperties(), inputParams, this.responseSchemaContext.getGraphQlField(), null);
+        getJexlContext(properties.getAllProperties(), inputParams, null);
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
@@ -227,7 +206,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
-  @SuppressWarnings({"rawtypes"})
+  @SuppressWarnings("unchecked")
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
@@ -252,7 +231,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (result.getErrors()
         .isEmpty()) {
 
-      if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
+      if (isQueryExecuted(result.getData()) && ((Map<String, Object>)result.getData()).isEmpty()) {
         throw notFoundException("Did not find data for your response.");
       }
 
@@ -343,7 +322,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     if (Objects.nonNull(template.getResponseObject())) {
       var responseWriteContext =
-          createNewResponseWriteContext(responseSchemaContext.getGraphQlField(), template.getResponseObject(), data,
+          createNewResponseWriteContext(template.getResponseObject(), data,
               inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
       return jsonResponseMapper.toResponse(responseWriteContext);
@@ -367,13 +346,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return !resultData.isEmpty();
   }
 
-  private boolean objectExists(Map<String, Object> resultData) {
-    return resultData.get(responseSchemaContext.getGraphQlField()
-        .getName()) != null;
-  }
-
   private URI getLocationHeaderUri(Map<String, Object> inputParams, Map<String, Object> resultData) {
-    var jexlContext = getJexlContext(properties.getAllProperties(), inputParams, null, resultData);
+    var jexlContext = getJexlContext(properties.getAllProperties(), inputParams, resultData);
     Map<String, ResponseHeader> responseHeaders = responseSchemaContext.getResponses()
         .stream()
         .map(ResponseTemplate::getResponseHeaders)

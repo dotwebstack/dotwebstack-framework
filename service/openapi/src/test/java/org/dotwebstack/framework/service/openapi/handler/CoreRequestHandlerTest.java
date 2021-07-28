@@ -54,7 +54,6 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -89,9 +88,6 @@ class CoreRequestHandlerTest {
 
   @Mock
   private ResponseSchemaContext responseSchemaContext;
-
-  @Mock
-  private ResponseContextValidator responseContextValidator;
 
   @Mock
   private GraphQlService graphQl;
@@ -140,10 +136,7 @@ class CoreRequestHandlerTest {
 
     when(this.responseSchemaContext.getParameters()).thenReturn(operation.getParameters());
 
-    when(this.responseSchemaContext.getGraphQlField())
-        .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
-    coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
-        graphQl, List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
+    coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, graphQl, List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
         requestBodyHandlerRouter, jexlHelper, environmentProperties));
 
     ResponseTemplate responseTemplate =

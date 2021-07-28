@@ -35,23 +35,14 @@ public class JexlHelper {
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams) {
-    return getJexlContext(envParams, argParams, null, null);
+    return getJexlContext(envParams, argParams,  null);
   }
 
-  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
-      GraphQlField graphQlField, Map<String, Object> resultData) {
+  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams, Map<String, Object> resultData) {
     JexlContext jexlContext = new MapContext();
 
     if (envParams != null) {
       envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
-    }
-
-    if (graphQlField != null) {
-      graphQlField.getArguments()
-          .stream()
-          .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
-          .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-              GraphQlValueHelper.getValue(argument.getType(), argument.getDefaultValue())));
     }
 
     if (resultData != null) {

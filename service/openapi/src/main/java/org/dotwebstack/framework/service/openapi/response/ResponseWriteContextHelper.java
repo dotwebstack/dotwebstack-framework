@@ -47,7 +47,7 @@ public class ResponseWriteContextHelper {
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
     }
 
-    return createNewResponseWriteContext(parentContext.getGraphQlField(), child, data, parentContext.getParameters(),
+    return createNewResponseWriteContext(child, data, parentContext.getParameters(),
         dataStack, parentContext.getUri());
   }
 
@@ -56,7 +56,7 @@ public class ResponseWriteContextHelper {
         .getSummary()
         .getItems()
         .get(0);
-    return createNewResponseWriteContext(parentContext.getGraphQlField(), childSchema, parentContext.getData(),
+    return createNewResponseWriteContext(childSchema, parentContext.getData(),
         parentContext.getParameters(), parentContext.getDataStack(), parentContext.getUri());
   }
 
@@ -89,7 +89,7 @@ public class ResponseWriteContextHelper {
             .peek()
             .getData()).get(childSchema.getIdentifier());
         dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
-        return createNewResponseWriteContext(parentContext.getGraphQlField(), childSchema, data,
+        return createNewResponseWriteContext(childSchema, data,
             parentContext.getParameters(), dataStack, parentContext.getUri());
       }
 
@@ -98,7 +98,7 @@ public class ResponseWriteContextHelper {
       }
     }
 
-    return createNewResponseWriteContext(parentContext.getGraphQlField(), childSchema, data,
+    return createNewResponseWriteContext(childSchema, data,
         parentContext.getParameters(), dataStack, parentContext.getUri());
   }
 
@@ -107,22 +107,21 @@ public class ResponseWriteContextHelper {
     Object data = parentContext.getData();
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
 
-    return createNewResponseWriteContext(parentContext.getGraphQlField(), composedSchema, data,
+    return createNewResponseWriteContext(composedSchema, data,
         parentContext.getParameters(), dataStack, parentContext.getUri());
   }
 
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
-    return createNewResponseWriteContext(parentContext.getGraphQlField(), parentContext.getResponseObject(), childData,
+    return createNewResponseWriteContext(parentContext.getResponseObject(), childData,
         parentContext.getParameters(), dataStack, parentContext.getUri());
   }
 
-  public static ResponseWriteContext createNewResponseWriteContext(@NonNull GraphQlField graphQlField,
+  public static ResponseWriteContext createNewResponseWriteContext(
       @NonNull ResponseObject schema, Object data, Map<String, Object> parameters,
       @NonNull Deque<FieldContext> dataStack, URI uri) {
     return ResponseWriteContext.builder()
-        .graphQlField(graphQlField)
         .responseObject(schema)
         .data(data)
         .parameters(parameters)

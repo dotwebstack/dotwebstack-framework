@@ -203,7 +203,7 @@ class JexlHelperTest {
             .build()))
         .build();
 
-    JexlContext context = JexlHelper.getJexlContext(null, null, graphQlField, null);
+    JexlContext context = JexlHelper.getJexlContext(null, null, null);
 
     assertEquals("1", context.get("args.value"));
   }

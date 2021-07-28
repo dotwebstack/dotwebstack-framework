@@ -41,9 +41,9 @@ public class SchemaSummary {
 
   private final Map<String, String> dwsExpr;
 
-  public boolean hasIncludeCondition() {
-    return getSchema() != null && getSchema().getExtensions() != null && getSchema().getExtensions()
-        .containsKey(OasConstants.X_DWS_INCLUDE);
+  public boolean hasExtension(String name){
+    return getSchema()!=null&& getSchema().getExtensions() != null && getSchema().getExtensions()
+        .containsKey(name);
   }
 
 }

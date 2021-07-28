@@ -2,51 +2,160 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathsForSuccessResponse;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
-import java.util.HashSet;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.response.ResponseContextHelper;
+import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseToQuery;
 
 public class GraphQlQueryBuilder {
 
   public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
-    if (responseSchemaContext.getGraphQlField() == null) {
+    String queryName = responseSchemaContext.getDwsQuery();
+
+    if(queryName == null || queryName.isEmpty()){
       return Optional.empty();
     }
 
-    Set<String> requiredPaths = getPathsForSuccessResponse(responseSchemaContext, inputParams);
+    ResponseTemplate okResponse = responseSchemaContext.getResponses()
+        .stream()
+        .filter(r -> r.getResponseCode() == 200)
+        .findFirst()
+        .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
-    var builder = new StringBuilder();
-    var joiner = new StringJoiner(",", "{", "}");
-    var argumentJoiner = new StringJoiner(",");
+    Set<String> paths = getPathsForSuccessResponse(responseSchemaContext, okResponse, inputParams);
 
-    Set<String> queriedPaths = new HashSet<>();
-    addToQuery(responseSchemaContext.getGraphQlField(), requiredPaths, queriedPaths, joiner, argumentJoiner,
-        inputParams, true, "");
-    validateRequiredPathsQueried(requiredPaths, queriedPaths);
-
-    builder.append("query Wrapper");
-    if (!argumentJoiner.toString()
-        .isEmpty()) {
-      builder.append("(");
-      builder.append(argumentJoiner);
-      builder.append(")");
+    List<Field> fields = ResponseToQuery.toFields(responseSchemaContext, okResponse, inputParams);
+    boolean isCollection = ResponseContextHelper.isCollection(okResponse.getResponseObject()); // TODO: does this work?
+    if (isCollection) {
+      return toCollectionQuery(okResponse, queryName, fields);
+    } else {
+      return toResourceQuery(okResponse, queryName, fields);
     }
-    builder.append(joiner.toString());
-    return Optional.of(builder.toString());
   }
+
+  private Optional<String> toCollectionQuery(ResponseTemplate responseTemplate, String queryName, List<Field> fields) {
+    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
+
+    Field collectionField = new Field(queryName, null, null);
+    Field nodesField = new Field("nodes", null, null);
+    nodesField.setChildren(fields);
+
+    collectionField.setChildren(List.of(nodesField));
+    builder.field(collectionField);
+
+    return Optional.of(builder.build()
+        .toString());
+  }
+
+  private Optional<String> toResourceQuery(ResponseTemplate responseTemplate, String queryName, List<Field> nodes) {
+    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
+    Field root = new Field();
+    root.setName(queryName);
+    builder.field(root);
+    builder.queryName("wrapper");
+    return Optional.of(builder.build()
+        .toString());
+
+  }
+
+  private void addFilters(Field root, List<Parameter> parameters, Map<String, Object> inputParams) {
+    List<Parameter> filterParams = parameters.stream()
+        .filter(p -> p.getExtensions()
+            .containsKey("x-dws-filter"))
+        .collect(Collectors.toList());
+    filterParams.forEach(fp -> {
+      Object value = inputParams.get(fp.getName());
+      String filterPath = (String) fp.getExtensions()
+          .get("x-dws-filter");
+      String[] path = filterPath.split("\\.");
+      Field targetField = root;
+      for (int i = 1; i < path.length - 1; i++) {
+        int idx = i;
+        targetField = targetField.getChildren()
+            .stream()
+            .filter(c -> c.getName()
+                .equals(path[idx]))
+            .findFirst()
+            .orElseThrow();
+      }
+      targetField.setArguments(Map.of(path[path.length - 1], value));
+    });
+  }
+
+  public static Field toField(@NonNull ResponseTemplate responseTemplate, Set<String> paths) {
+    ResponseObject responseObject = responseTemplate.getResponseObject();
+    return toField(responseObject, paths, "").get(0);
+  }
+
+  private static List<Field> toField(ResponseObject responseObject, Set<String> paths, String currentPath) {
+    if (responseObject.getSummary().hasExtension(X_DWS_ENVELOPE)){
+      return envelopeToField(responseObject, paths, currentPath);
+    } else if ("array".equals(responseObject.getSummary()
+        .getSchema()
+        .getType())) {
+      return arrayToField(responseObject, paths, currentPath);
+    } else {
+      return nonEnvelopeToField(responseObject, paths, currentPath);
+    }
+  }
+
+  private static List<Field> arrayToField(ResponseObject responseObject, Set<String> paths, String currentPath) {
+    ResponseObject item = responseObject.getSummary()
+        .getItems()
+        .get(0);
+    return toField(item, paths, "");
+  }
+
+  private static List<Field> nonEnvelopeToField(ResponseObject responseObject, Set<String> paths, String currentPath) {
+    String identifier = responseObject.getIdentifier();
+    String newPath = currentPath + "." + identifier;
+    Field result = Field.builder()
+        .name(identifier)
+        .build();
+    result.setChildren(responseObject.getSummary()
+        .getChildren()
+        .stream()
+        .filter(mapToQuery())
+        .flatMap(child -> toField(child, paths, newPath).stream())
+        .collect(Collectors.toList()));
+    return List.of(result);
+  }
+
+  private static List<Field> envelopeToField(ResponseObject responseObject, Set<String> paths, String currentPath) {
+    return responseObject.getSummary()
+        .getChildren()
+        .stream()
+        .filter(mapToQuery())
+        .flatMap(child -> toField(child, paths, currentPath).stream())
+        .collect(Collectors.toList());
+  }
+
+  private static Predicate<ResponseObject> mapToQuery() {
+    return c -> c.getSummary()
+        .isRequired()
+        && c.getSummary()
+            .getDwsExpr() == null;
+  }
+
 
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
     /*

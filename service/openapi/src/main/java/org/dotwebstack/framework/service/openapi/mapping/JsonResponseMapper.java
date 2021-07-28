@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
@@ -135,13 +136,13 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private boolean isObjectIncluded(Object objectResult, SchemaSummary schemaSummary) {
-    if (schemaSummary.hasIncludeCondition() && objectResult instanceof Map) {
+    if (schemaSummary.hasExtension(X_DWS_INCLUDE) && objectResult instanceof Map) {
       JexlContext jexlContext = new MapContext();
       ((Map<String, Object>) objectResult).forEach(jexlContext::set);
 
       return jexlHelper.evaluateScript(schemaSummary.getSchema()
           .getExtensions()
-          .get(OasConstants.X_DWS_INCLUDE)
+          .get(X_DWS_INCLUDE)
           .toString(), jexlContext, Boolean.class)
           .orElse(true);
     }
@@ -170,7 +171,7 @@ public class JsonResponseMapper {
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
     if (summary.isRequired() || summary.isTransient() || isExpanded(writeContext.getParameters(), removeRoot(newPath))
-        || summary.hasIncludeCondition()) {
+        || summary.hasExtension(X_DWS_INCLUDE)) {
       if (summary.isTransient()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
@@ -427,7 +428,7 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Optional<String> evaluateJexl(ResponseWriteContext writeContext) {
-    var context = JexlHelper.getJexlContext(null, writeContext.getParameters(), writeContext.getGraphQlField(), null);
+    var context = JexlHelper.getJexlContext(null, writeContext.getParameters(), null);
 
     // add object data to context
     writeContext.getParameters()

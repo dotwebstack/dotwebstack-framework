@@ -16,7 +16,6 @@ import org.apache.commons.io.FileUtils;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
-import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 
 public class TestResources {
 
@@ -48,14 +47,6 @@ public class TestResources {
   public static TypeDefinitionRegistry typeDefinitionRegistry(String regex, String replacement) {
     String schemaString = GRAPH_QL_STRING.replaceAll(regex, replacement);
     return new SchemaParser().parse(schemaString);
-  }
-
-  public static QueryFieldHelper queryFieldHelper(TypeDefinitionRegistry registry) {
-    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(registry);
-    return QueryFieldHelper.builder()
-        .typeDefinitionRegistry(registry)
-        .graphQlFieldBuilder(builder)
-        .build();
   }
 
   public static GraphQlField getGraphQlField(TypeDefinitionRegistry typeDefinitionRegistry, String name) {

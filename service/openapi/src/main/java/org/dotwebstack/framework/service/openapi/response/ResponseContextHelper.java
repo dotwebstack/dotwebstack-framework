@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
 import java.util.Collections;
@@ -9,61 +9,53 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class ResponseContextHelper {
 
-  private ResponseContextHelper() {}
-
-  public static Set<String> getPathsForSuccessResponse(@NonNull ResponseSchemaContext responseSchemaContext,
-      @NonNull Map<String, Object> inputParams) {
-    Optional<ResponseTemplate> successResponse = responseSchemaContext.getResponses()
-        .stream()
-        .filter(template -> template.isApplicable(200, 299) || template.isApplicable(300, 303))
-        .findFirst();
-
-    if (successResponse.isPresent()) {
-      var responseTemplate = successResponse.get();
-      Set<String> requiredFields =
-          getResponseObject(responseSchemaContext.getGraphQlField(), inputParams, responseTemplate);
-      requiredFields.addAll(responseSchemaContext.getRequiredFields());
-      return requiredFields;
-    } else {
-      throw invalidConfigurationException("No success response found for ResponseSchemaContext!");
-    }
+  private ResponseContextHelper() {
   }
 
-  private static Set<String> getResponseObject(GraphQlField graphQlField, Map<String, Object> inputParams,
-      ResponseTemplate responseTemplate) {
+  // TODO: create query model at once
+  public static Set<String> getPathsForSuccessResponse(@NonNull ResponseSchemaContext responseSchemaContext,
+                                                       @NonNull ResponseTemplate template, @NonNull Map<String,
+      Object> inputParams) {
+    Set<String> requiredFields = getResponseObject(inputParams, template);
+    requiredFields.addAll(responseSchemaContext.getRequiredFields());
+    return requiredFields;
+  }
+
+  private static Set<String> getResponseObject(Map<String, Object> inputParams,
+                                               ResponseTemplate responseTemplate) {
     var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
       return Collections.emptySet();
     }
 
-    return new HashSet<>(getRequiredResponseObject("", responseObject, graphQlField, inputParams).keySet());
+    return new HashSet<>(getRequiredResponseObject("", responseObject, inputParams).keySet());
   }
 
   static Map<String, SchemaSummary> getRequiredResponseObject(String prefix, ResponseObject responseObject,
-      GraphQlField graphQlField, Map<String, Object> inputParams) {
+                                                              Map<String, Object> inputParams) {
     Map<String, SchemaSummary> responseObjects = new HashMap<>();
     var joiner = getStringJoiner(prefix);
     SchemaSummary summary = responseObject.getSummary();
     boolean isExpanded = isExpanded(inputParams, getPathString(prefix, responseObject));
     addPrefixToPath(summary, responseObject, joiner, responseObjects, isExpanded);
     if (summary.isRequired() || summary.isTransient() || isExpanded) {
-      handleSubSchemas(graphQlField, inputParams, responseObjects, joiner, responseObject);
+      handleSubSchemas(inputParams, responseObjects, joiner, responseObject);
     }
     return responseObjects;
   }
 
   private static void addPrefixToPath(SchemaSummary summary, ResponseObject responseObject, StringJoiner joiner,
-      Map<String, SchemaSummary> responseObjects, boolean isExpanded) {
+                                      Map<String, SchemaSummary> responseObjects, boolean isExpanded) {
     /*
      * Based on the required fields from the OAS resposne a GraphQL query is constructed. Some fields
      * however do only exist in OAS and not in GraphQL. To deal with this properly, the following rules
@@ -102,7 +94,7 @@ public class ResponseContextHelper {
       if (!parent.getSummary()
           .isTransient()
           && !Objects.equals(OasConstants.ARRAY_TYPE, parent.getSummary()
-              .getType())) {
+          .getType())) {
         return false;
       }
       parent = parent.getParent();
@@ -120,37 +112,35 @@ public class ResponseContextHelper {
         .orElse(graphQlField);
   }
 
-  private static void handleSubSchemas(GraphQlField graphQlField, Map<String, Object> inputParams,
-      Map<String, SchemaSummary> responseObjects, StringJoiner joiner, ResponseObject responseObject) {
+  private static void handleSubSchemas(Map<String, Object> inputParams,
+                                       Map<String, SchemaSummary> responseObjects, StringJoiner joiner,
+                                       ResponseObject responseObject) {
 
-    GraphQlField subGraphQlField;
     var prefix = joiner.toString();
     List<ResponseObject> subSchemas;
 
     SchemaSummary summary = responseObject.getSummary();
     if (!summary.getChildren()
         .isEmpty()) {
-      subGraphQlField = getChildFieldByName(responseObject, graphQlField);
       subSchemas = summary.getChildren();
     } else if (!summary.getComposedOf()
         .isEmpty()) {
-      subGraphQlField = getChildFieldByName(responseObject, graphQlField);
       subSchemas = summary.getComposedOf();
     } else if (!summary.getItems()
         .isEmpty()) {
-      subGraphQlField = graphQlField;
       subSchemas = summary.getItems();
     } else {
       return;
     }
 
-    extractResponseObjects(prefix, subSchemas, subGraphQlField, inputParams, responseObjects);
+    extractResponseObjects(prefix, subSchemas, inputParams, responseObjects);
   }
 
-  private static void extractResponseObjects(String prefix, List<ResponseObject> children, GraphQlField childField,
-      Map<String, Object> inputParams, Map<String, SchemaSummary> responseObjects) {
+  private static void extractResponseObjects(String prefix, List<ResponseObject> children,
+                                             Map<String, Object> inputParams,
+                                             Map<String, SchemaSummary> responseObjects) {
     children.stream()
-        .flatMap(child -> getRequiredResponseObject(prefix, child, childField, inputParams).entrySet()
+        .flatMap(child -> getRequiredResponseObject(prefix, child, inputParams).entrySet()
             .stream())
         .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
   }
@@ -183,5 +173,16 @@ public class ResponseContextHelper {
           .anyMatch(path::equals);
     }
     return false;
+  }
+
+  public static boolean isCollection(ResponseObject responseObject) {
+    if (responseObject.getSummary().hasExtension(X_DWS_ENVELOPE)) {
+      return isCollection(responseObject.getSummary()
+          .getChildren()
+          .get(0));
+    } else {
+      return responseObject.getSummary()
+          .getItems() != null;
+    }
   }
 }

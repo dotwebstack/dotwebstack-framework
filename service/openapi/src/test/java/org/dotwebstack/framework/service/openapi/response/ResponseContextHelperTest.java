@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.junit.jupiter.api.Test;
 
@@ -33,13 +31,13 @@ class ResponseContextHelperTest {
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
     ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
-        .graphQlField(graphQlField)
         .responses(responses)
         .build();
     Map<String, Object> inputParams = Collections.emptyMap();
 
     // Act
-    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
+    Set<String> paths =
+        ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, responseTemplate, inputParams);
 
     // Assert
     assertTrue(paths.isEmpty());
@@ -56,34 +54,16 @@ class ResponseContextHelperTest {
     GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
 
     ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
-        .graphQlField(graphQlField)
         .responses(responses)
         .build();
     Map<String, Object> inputParams = Collections.emptyMap();
 
     // Act
-    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams);
+    Set<String> paths =
+        ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, responseTemplate, inputParams);
 
     // Assert
     assertTrue(paths.isEmpty());
-  }
-
-  @Test
-  void validate_throwsInvalidConfigurationException_withNoResponseTemplate() {
-    // Arrange
-    List<ResponseTemplate> responses = Collections.emptyList();
-
-    GraphQlField graphQlField = buildGraphQlField("key", Collections.emptyList());
-
-    ResponseSchemaContext responseSchemaContext = ResponseSchemaContext.builder()
-        .graphQlField(graphQlField)
-        .responses(responses)
-        .build();
-    Map<String, Object> inputParams = ImmutableMap.of("key", "value");
-
-    // Act / Assert
-    assertThrows(InvalidConfigurationException.class,
-        () -> ResponseContextHelper.getPathsForSuccessResponse(responseSchemaContext, inputParams));
   }
 
   @Test
@@ -94,7 +74,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertTrue(responseObject.entrySet()
@@ -109,7 +89,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, graphQlField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertTrue(responseObject.entrySet()
@@ -124,11 +104,9 @@ class ResponseContextHelperTest {
     root.getSummary()
         .setChildren(List.of(child));
 
-    GraphQlField rootField = buildGraphQlField("root", List.of("child"));
-
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
@@ -161,13 +139,12 @@ class ResponseContextHelperTest {
         .build();
 
     ResponseSchemaContext context = ResponseSchemaContext.builder()
-        .graphQlField(rootField)
         .responses(List.of(template))
         .requiredFields(List.of("child.grandchild"))
         .build();
 
     // Act
-    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, template, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child", "child.grandchild"), is(equalTo(paths)));
@@ -200,13 +177,12 @@ class ResponseContextHelperTest {
         .build();
 
     ResponseSchemaContext context = ResponseSchemaContext.builder()
-        .graphQlField(rootField)
         .responses(List.of(template))
         .build();
 
     // Act
-    Set<String> paths =
-        ResponseContextHelper.getPathsForSuccessResponse(context, Map.of(X_DWS_EXPANDED_PARAMS, List.of("child")));
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, template,
+        Map.of(X_DWS_EXPANDED_PARAMS, List.of("child")));
 
     // Assert
     assertThat(Set.of("child", "child.grandchild"), is(equalTo(paths)));
@@ -261,12 +237,11 @@ class ResponseContextHelperTest {
         .build();
 
     ResponseSchemaContext context = ResponseSchemaContext.builder()
-        .graphQlField(rootField)
         .responses(List.of(template))
         .build();
 
     // Act
-    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, Collections.emptyMap());
+    Set<String> paths = ResponseContextHelper.getPathsForSuccessResponse(context, template, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("identifier", "beers", "ownerName", "beers.identifier"), is(equalTo(paths)));
@@ -284,7 +259,7 @@ class ResponseContextHelperTest {
 
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
@@ -302,11 +277,9 @@ class ResponseContextHelperTest {
     child.getSummary()
         .setChildren(List.of(grandchild));
 
-    GraphQlField rootField = buildGraphQlField("root", List.of("grandchild"));
-
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child", "child.grandchild"), is(equalTo(responseObject.keySet())));
@@ -322,11 +295,9 @@ class ResponseContextHelperTest {
     root.getSummary()
         .setComposedOf(List.of(child));
 
-    GraphQlField rootField = buildGraphQlField("root", List.of("child"));
-
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));
@@ -347,19 +318,9 @@ class ResponseContextHelperTest {
     child.getSummary()
         .setChildren(List.of(identifier));
 
-    GraphQlField rootField = GraphQlField.builder()
-        .name("root")
-        .fields(List.of(GraphQlField.builder()
-            .name("children")
-            .fields(List.of(GraphQlField.builder()
-                .name("identifier")
-                .build()))
-            .build()))
-        .build();
-
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root,  Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("children", "children.identifier"), is(equalTo(responseObject.keySet())));
@@ -375,11 +336,9 @@ class ResponseContextHelperTest {
     root.getSummary()
         .setItems(List.of(child));
 
-    GraphQlField rootField = buildGraphQlField("root", List.of("child"));
-
     // Act
     Map<String, SchemaSummary> responseObject =
-        ResponseContextHelper.getRequiredResponseObject("", root, rootField, Collections.emptyMap());
+        ResponseContextHelper.getRequiredResponseObject("", root, Collections.emptyMap());
 
     // Assert
     assertThat(Set.of("child"), is(equalTo(responseObject.keySet())));

@@ -32,7 +32,6 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,9 +63,6 @@ class OpenApiConfigurationTest {
   private OpenApiConfiguration openApiConfiguration;
 
   @Mock
-  private ResponseContextValidator responseContextValidator;
-
-  @Mock
   private JsonResponseMapper jsonResponseMapper;
 
   @Mock
@@ -89,7 +85,7 @@ class OpenApiConfigurationTest {
 
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Collections.singletonList(templateResponseMapper), responseContextValidator, requestBodyHandlerRouter,
+        Collections.singletonList(templateResponseMapper), requestBodyHandlerRouter,
         getOpenApiProperties(), jexlEngine, environmentProperties);
 
     initOpenApiConfiguration(apiConfiguration);
@@ -109,7 +105,7 @@ class OpenApiConfigurationTest {
   void route_ThrowsException_InvalidOpenApiConfigurationException() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Collections.emptyList(), responseContextValidator, requestBodyHandlerRouter, getOpenApiProperties(), jexlEngine,
+        Collections.emptyList(), requestBodyHandlerRouter, getOpenApiProperties(), jexlEngine,
         environmentProperties);
 
     initOpenApiConfiguration(apiConfiguration);
@@ -128,7 +124,7 @@ class OpenApiConfigurationTest {
   void test_toOptionRouterFunction() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        Arrays.asList(templateResponseMapper, null), requestBodyHandlerRouter,
         getOpenApiProperties(), jexlEngine, environmentProperties);
 
     Optional<RouterFunction<ServerResponse>> response =
@@ -141,7 +137,7 @@ class OpenApiConfigurationTest {
   void test_toOptionRouterFunction_WithNullArgument() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        Arrays.asList(templateResponseMapper, null), requestBodyHandlerRouter,
         getOpenApiProperties(), jexlEngine, environmentProperties);
 
     Optional<RouterFunction<ServerResponse>> response = apiConfiguration.toOptionRouterFunction(null);
@@ -153,7 +149,7 @@ class OpenApiConfigurationTest {
   void route_ThrowsException_InvalidConfigurationException() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        Arrays.asList(templateResponseMapper, null), requestBodyHandlerRouter,
         getOpenApiProperties(), jexlEngine, environmentProperties);
 
     initOpenApiConfiguration(apiConfiguration);
@@ -169,7 +165,7 @@ class OpenApiConfigurationTest {
   void test_staticResourceRouter() {
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Arrays.asList(templateResponseMapper, null), responseContextValidator, requestBodyHandlerRouter,
+        Arrays.asList(templateResponseMapper, null), requestBodyHandlerRouter,
         getOpenApiProperties(), jexlEngine, environmentProperties);
 
     Optional<RouterFunction<ServerResponse>> result = apiConfiguration.staticResourceRouter();
@@ -236,17 +232,6 @@ class OpenApiConfigurationTest {
   }
 
   @Test
-  void route_throwsException_MissingQuery() {
-    openApi.getPaths()
-        .get("/query1")
-        .getGet()
-        .getExtensions()
-        .put(X_DWS_QUERY, "unknownQuery");
-
-    assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));
-  }
-
-  @Test
   void route_returnsApiDoc_OnBasePathByDefault() {
     when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
         .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
@@ -282,7 +267,7 @@ class OpenApiConfigurationTest {
 
     OpenApiConfiguration apiConfiguration = new OpenApiConfiguration(openApi, graphQL, this.registry, new ArrayList<>(),
         jsonResponseMapper, new ParamHandlerRouter(Collections.emptyList(), openApi), openApiStream,
-        Collections.singletonList(templateResponseMapper), responseContextValidator, requestBodyHandlerRouter,
+        Collections.singletonList(templateResponseMapper), requestBodyHandlerRouter,
         openApiProperties, jexlEngine, environmentProperties);
 
     initOpenApiConfiguration(apiConfiguration);
