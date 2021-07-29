@@ -21,8 +21,8 @@ public class DotWebStackConfiguration {
   @Valid
   private SettingsConfiguration settings;
 
-  @Valid
-  private List<Feature> features;
+  @NotNull
+  private List<Feature> features = List.of();
 
   @Valid
   private ContextConfiguration context;
@@ -69,6 +69,6 @@ public class DotWebStackConfiguration {
   }
 
   public boolean isFeatureEnabled(Feature feature) {
-    return features != null && features.contains(feature);
+    return features.contains(feature);
   }
 }

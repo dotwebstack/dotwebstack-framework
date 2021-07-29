@@ -530,7 +530,7 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> brewery = getNestedObject(data, BREWERY);
     assertThat(brewery.containsKey(BEER_AGG), is(true));
     Map<String, Object> beerAgg = getNestedObject(brewery, BEER_AGG);
-    assertThat(beerAgg.size(), is(1));
+    assertThat(beerAgg.size(), is(5));
     assertThat(beerAgg.get("totalCount"), is(0));
     assertThat(beerAgg.get("averageSold"), is(nullValue()));
     assertThat(beerAgg.get("maxSold"), is(nullValue()));
@@ -695,7 +695,7 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> postalAddress = getNestedObject(brewery, "postalAddress");
     assertThat(postalAddress.get("street"), is("5th Avenue"));
     assertThat(postalAddress.get("city"), is("New York"));
-    assertThat(brewery.containsKey("visitAddress"), is(false));
+    assertThat(brewery.get("visitAddress"), is(nullValue()));
     assertThat(brewery.containsKey(BEER_AGG), is(true));
     Map<String, Object> beerAgg = getNestedObject(brewery, BEER_AGG);
     assertThat(beerAgg.size(), is(2));
