@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
+import org.dotwebstack.framework.service.openapi.response.GraphQlBinding;
 
 public class DwsExtensionHelper {
 
@@ -104,6 +105,27 @@ public class DwsExtensionHelper {
       return Optional.of((String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD));
     }
     return Optional.of((String) dwsQueryName);
+  }
+
+  public static Optional<GraphQlBinding> getGraphQlBinding(@NonNull Operation operation) {
+    if (operation.getExtensions() == null || !operation.getExtensions()
+        .containsKey(X_DWS_QUERY)) {
+      return Optional.empty();
+    }
+    Object dwsQueryName = operation.getExtensions()
+        .get(X_DWS_QUERY);
+    GraphQlBinding.GraphQlBindingBuilder builder = GraphQlBinding.builder();
+    if (dwsQueryName instanceof Map) {
+      Map<String, Object> bindingMap = (Map<String, Object>) dwsQueryName;
+      builder.queryName(bindingMap.get(X_DWS_QUERY_FIELD).toString());
+      String selector = (String) bindingMap.get("selector");
+      builder.selector(selector);
+    }
+    else {
+      builder.queryName(dwsQueryName.toString());
+    }
+
+    return Optional.of(builder.build());
   }
 
   @SuppressWarnings("unchecked")

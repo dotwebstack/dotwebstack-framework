@@ -182,7 +182,9 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /beer/{identifier}:
     get:
-      x-dws-query: beer
+      x-dws-query:
+        field: beer
+        selector: identifier
       parameters:
         - name: identifier
           in: path

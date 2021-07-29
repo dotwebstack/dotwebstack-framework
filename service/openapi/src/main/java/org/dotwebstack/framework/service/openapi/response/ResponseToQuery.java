@@ -42,7 +42,8 @@ public class ResponseToQuery {
 
     SchemaSummary summary = responseObject.getSummary();
     boolean isExpanded = isExpanded(inputParams, getPathString(currentPath, responseObject));
-    if (summary.isRequired() || summary.isTransient() || isExpanded) {
+    boolean shouldAdd = summary.isRequired() || summary.isTransient() || isExpanded;
+    if (shouldAdd && (summary.getDwsExpr()==null || summary.getDwsExpr().isEmpty())) {
       Field response = new Field();
       response.setName(responseObject.getIdentifier());
       response.setChildren(toField(getPathString(currentPath, responseObject), inputParams, responseObject));
@@ -65,7 +66,7 @@ public class ResponseToQuery {
         .isEmpty()) {
       subSchemas = summary.getComposedOf();
     } else if (!summary.getItems()
-        .isEmpty()) {
+        .isEmpty() && summary.getItems().get(0).getSummary().getType().equals("object")) {
       subSchemas = summary.getItems();
     } else {
       return List.of();
@@ -77,7 +78,7 @@ public class ResponseToQuery {
   private static List<Field> extractResponseObjects(String path, List<ResponseObject> children,
                                                     Map<String, Object> inputParams) {
     return children.stream()
-        .map(child -> toField(path, child, inputParams)).collect(Collectors.toList());
+        .map(child -> toField(path, child, inputParams)).filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   public static String getPathString(String prefix, ResponseObject responseObject) {

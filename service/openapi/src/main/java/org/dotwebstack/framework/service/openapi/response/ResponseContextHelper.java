@@ -181,8 +181,7 @@ public class ResponseContextHelper {
           .getChildren()
           .get(0));
     } else {
-      return responseObject.getSummary()
-          .getItems() != null;
+      return responseObject.getSummary().getSchema().getType().equals("array");
     }
   }
 }

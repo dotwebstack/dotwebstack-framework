@@ -186,7 +186,7 @@ public class OpenApiConfiguration {
         .parameters(httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
                 .getParameters() : Collections.emptyList())
-        .dwsQuery(DwsExtensionHelper.getDwsQueryName(httpMethodOperation.getOperation()).orElse(null))
+        .graphQlBinding(DwsExtensionHelper.getGraphQlBinding(httpMethodOperation.getOperation()).orElse(null))
         .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
         .requestBodyContext(requestBodyContext)
         .build();

@@ -22,7 +22,7 @@ public class ResponseSchemaContext {
   @Builder.Default
   private final List<Parameter> parameters = new ArrayList<>();
 
-  private final String dwsQuery;
+  private final GraphQlBinding graphQlBinding;
 
   @Builder.Default
   private final Map<String, String> dwsParameters = new HashMap<>();

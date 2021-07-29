@@ -3,7 +3,6 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
-import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathsForSuccessResponse;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextHelper;
+import org.dotwebstack.framework.service.openapi.response.GraphQlBinding;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -29,7 +28,8 @@ public class GraphQlQueryBuilder {
   public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
-    String queryName = responseSchemaContext.getDwsQuery();
+    GraphQlBinding graphQlBinding = responseSchemaContext.getGraphQlBinding();
+    String queryName = graphQlBinding.getQueryName();
 
     if(queryName == null || queryName.isEmpty()){
       return Optional.empty();
@@ -41,15 +41,18 @@ public class GraphQlQueryBuilder {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
-    Set<String> paths = getPathsForSuccessResponse(responseSchemaContext, okResponse, inputParams);
-
     List<Field> fields = ResponseToQuery.toFields(responseSchemaContext, okResponse, inputParams);
-    boolean isCollection = ResponseContextHelper.isCollection(okResponse.getResponseObject()); // TODO: does this work?
-    if (isCollection) {
+    if (isCollection(graphQlBinding)) {
       return toCollectionQuery(okResponse, queryName, fields);
     } else {
-      return toResourceQuery(okResponse, queryName, fields);
+      String selectorName = graphQlBinding.getSelector();
+      String selectorValue = inputParams.get(selectorName).toString();
+      return toResourceQuery(queryName, fields, selectorName, selectorValue);
     }
+  }
+
+  protected boolean isCollection(GraphQlBinding binding) {
+    return binding.getSelector() == null;
   }
 
   private Optional<String> toCollectionQuery(ResponseTemplate responseTemplate, String queryName, List<Field> fields) {
@@ -66,12 +69,14 @@ public class GraphQlQueryBuilder {
         .toString());
   }
 
-  private Optional<String> toResourceQuery(ResponseTemplate responseTemplate, String queryName, List<Field> nodes) {
+  private Optional<String> toResourceQuery(String queryName, List<Field> nodes, String selectorName, String selectorValue) {
     ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
     Field root = new Field();
+    root.setChildren(nodes);
     root.setName(queryName);
+    root.setArguments(Map.of(selectorName, selectorValue));
     builder.field(root);
-    builder.queryName("wrapper");
+    builder.queryName("Wrapper");
     return Optional.of(builder.build()
         .toString());
 
