@@ -25,7 +25,7 @@
 
   <organization>
     <name>DotWebStack</name>
-    <url>http://dotwebstack.org</url>
+    <url>https://dotwebstack.org</url>
   </organization>
 
   <scm>
@@ -39,7 +39,7 @@
     <developer>
       <id>joostfarla</id>
       <name>Joost Farla</name>
-      <email>joost@apiwise.nl</email>
+      <email>joost@qonduct.io</email>
     </developer>
     <developer>
       <id>architolk</id>
@@ -51,20 +51,20 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.boot.version>2.4.3</spring.boot.version>
-    <rdf4j.version>3.5.1</rdf4j.version>
+    <spring.boot.version>2.5.3</spring.boot.version>
+    <rdf4j.version>3.7.1</rdf4j.version>
     <graphql.java.version>16.2</graphql.java.version>
-    <commons.jexl.version>3.1</commons.jexl.version>
+    <commons.jexl.version>3.2.1</commons.jexl.version>
     <commons.text.version>1.9</commons.text.version>
-    <commons.lang3.version>3.11</commons.lang3.version>
-    <pebble.version>3.1.4</pebble.version>
-    <swagger-parser.version>2.0.24</swagger-parser.version>
-    <lombok.version>1.18.18</lombok.version>
-    <guava.version>30.1-jre</guava.version>
+    <commons.lang3.version>3.12.0</commons.lang3.version>
+    <pebble.version>3.1.5</pebble.version>
+    <swagger-parser.version>2.0.27</swagger-parser.version>
+    <lombok.version>1.18.20</lombok.version>
+    <guava.version>30.1.1-jre</guava.version>
     <problem.spring.webflux.version>0.26.2</problem.spring.webflux.version>
-    <json-path.version>2.5.0</json-path.version>
-    <testcontainers.version>1.15.3</testcontainers.version>
-    <postgis-jdbc.version>2.5.0</postgis-jdbc.version>
+    <json-path.version>2.6.0</json-path.version>
+    <testcontainers.version>1.16.0</testcontainers.version>
+    <postgis-jdbc.version>2.5.1</postgis-jdbc.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
@@ -105,6 +105,13 @@
         <groupId>org.zalando</groupId>
         <artifactId>problem-spring-webflux</artifactId>
         <version>${problem.spring.webflux.version}</version>
+        <exclusions>
+          <exclusion>
+            <!-- Unused dependency, causing version conflict on org.apiguardian:apiguardian-api -->
+            <groupId>org.zalando</groupId>
+            <artifactId>faux-pas</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.graphql-java</groupId>
@@ -161,6 +168,13 @@
         <groupId>net.postgis</groupId>
         <artifactId>postgis-jdbc-jtsparser</artifactId>
         <version>${postgis-jdbc.version}</version>
+        <exclusions>
+          <exclusion>
+            <!-- com.google.guava:guava includes newer version (v3.8.0) -->
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -238,6 +252,8 @@
                   <requireMavenVersion>
                     <version>3.3.9</version>
                   </requireMavenVersion>
+                  <!-- Prevent transitive versioning conflicts -->
+                  <dependencyConvergence />
                 </rules>
               </configuration>
             </execution>
@@ -482,5 +498,4 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-
 </project>
