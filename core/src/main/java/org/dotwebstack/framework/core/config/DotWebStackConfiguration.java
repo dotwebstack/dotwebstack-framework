@@ -21,7 +21,6 @@ public class DotWebStackConfiguration {
   @Valid
   private SettingsConfiguration settings;
 
-  @Valid
   private List<Feature> features;
 
   @Valid
