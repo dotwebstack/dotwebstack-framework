@@ -25,8 +25,6 @@ public class TestResources {
 
   private static final String OPEN_API_STRING = readString(OPEN_API_FILE);
 
-  private static final String GRAPH_QL_STRING = readString(GRAPH_QL_FILE);
-
   private TestResources() {}
 
   public static OpenAPI openApi() {
@@ -37,16 +35,6 @@ public class TestResources {
   public static InputStream openApiStream() {
     return TestResources.class.getClassLoader()
         .getResourceAsStream(OPEN_API_FILE);
-  }
-
-  public static TypeDefinitionRegistry typeDefinitionRegistry() {
-    Reader reader = new StringReader(GRAPH_QL_STRING);
-    return new SchemaParser().parse(reader);
-  }
-
-  public static TypeDefinitionRegistry typeDefinitionRegistry(String regex, String replacement) {
-    String schemaString = GRAPH_QL_STRING.replaceAll(regex, replacement);
-    return new SchemaParser().parse(schemaString);
   }
 
   public static GraphQlField getGraphQlField(TypeDefinitionRegistry typeDefinitionRegistry, String name) {

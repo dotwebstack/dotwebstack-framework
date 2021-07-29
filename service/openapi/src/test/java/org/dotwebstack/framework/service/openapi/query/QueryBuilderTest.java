@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -12,47 +13,83 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import lombok.NonNull;
+import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
+import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
+import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
+import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpMethod;
+import reactor.netty.http.HttpOperations;
 
 @ExtendWith(MockitoExtension.class)
 class QueryBuilderTest {
 
-  private TypeDefinitionRegistry registry;
+  private static OpenAPI openApi;
 
-  @BeforeEach
-  public void setup() {
-    this.registry = loadTypeDefinitionRegistry();
+  @BeforeAll
+  static void init(){
+    openApi = TestResources.openApi();
   }
 
   @Test
-  void toQuery_returns_validQuery() {
-    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
+  void toQuery_returns_validQuery() throws IOException, URISyntaxException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
 
-    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of()).orElseThrow();
 
-    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-    StringJoiner argumentJoiner = new StringJoiner(",");
+    String expected = loadQuery("query1.txt");
+    assertEquals(expected, query);
+  }
 
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
-        new HashMap<>(), true, "");
 
-    assertEquals("{brewery{identifier}}", bodyJoiner.toString());
+  @Test
+  void toQuery_returns_validQueryWithArguments() throws IOException, URISyntaxException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query3/{query3_param1}", "query3");
+
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("query3_param1","v1")).orElseThrow();
+
+    String expected = loadQuery("query3.txt");
+    assertEquals(expected, query);
+  }
+
+  @Test
+  void toQuery_returns_validQueryWithExpandAndArguments() throws IOException, URISyntaxException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query3/{query3_param1}", "query3");
+
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("query3_param1","v1",X_DWS_EXPANDED_PARAMS,List.of("o2_prop2"))).orElseThrow();
+
+    String expected = loadQuery("query3_exp.txt");
+    assertEquals(expected, query);
   }
 
   @Test
@@ -81,63 +118,22 @@ class QueryBuilderTest {
         () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
-  @Test
-  void toQuery_returns_validQueryWithArguments() {
-    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
+  private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {
+    var responseTemplateBuilder = ResponseTemplateBuilder.builder()
+        .openApi(openApi)
+        .xdwsStringTypes(List.of())
+        .build();
+    var requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
 
-    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
+    Operation get = openApi.getPaths().get(path).getGet();
+    HttpMethodOperation httpOperation = HttpMethodOperation.builder()
+        .name(queryName).operation(get).httpMethod(HttpMethod.GET).build();
 
-    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
-
-    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-    StringJoiner argumentJoiner = new StringJoiner(",");
-
-    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), new HashSet<>(), bodyJoiner, argumentJoiner,
-        arguments, true, "");
-
-    assertEquals("$identifier: ID!", argumentJoiner.toString());
-    assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
+    return OpenApiConfiguration.buildResponseSchemaContext(httpOperation, responseTemplateBuilder, requestBodyContextBuilder);
   }
 
-  @Test
-  void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
-    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-    FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
-
-    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition, new HashMap<>());
-
-    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
-    Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
-        "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
-    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-    StringJoiner argumentJoiner = new StringJoiner(",");
-
-    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, new HashSet<>(), bodyJoiner, argumentJoiner,
-        arguments, true, "");
-
-    assertEquals("$identifier: ID!", argumentJoiner.toString());
-    assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
-        + "supplements{identifier,name}}}}", bodyJoiner.toString());
+  private String loadQuery(String name) throws IOException, URISyntaxException {
+    return IOUtils.toString(getClass().getClassLoader().getResourceAsStream("queries/"+name), StandardCharsets.UTF_8);
   }
 
-  private FieldDefinition getQueryFieldDefinition(String name) {
-    ObjectTypeDefinition query = (ObjectTypeDefinition) this.registry.getType("Query")
-        .orElseThrow(() -> invalidConfigurationException(""));
-    return query.getFieldDefinitions()
-        .stream()
-        .filter(fieldDefinition -> fieldDefinition.getName()
-            .equals(name))
-        .findFirst()
-        .orElseThrow(() -> invalidConfigurationException(""));
-  }
-
-  private TypeDefinitionRegistry loadTypeDefinitionRegistry() {
-    Reader reader = new InputStreamReader(Objects.requireNonNull(this.getClass()
-        .getClassLoader()
-        .getResourceAsStream("config/brewery.graphqls")));
-    return new SchemaParser().parse(reader);
-  }
 }

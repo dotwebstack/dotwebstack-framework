@@ -231,7 +231,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (result.getErrors()
         .isEmpty()) {
 
-      if (isQueryExecuted(result.getData()) && ((Map<String, Object>)result.getData()).isEmpty()) {
+      if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
         throw notFoundException("Did not find data for your response.");
       }
 
@@ -472,7 +472,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Optional<String> buildQueryString(Map<String, Object> inputParams) {
+  protected Optional<String> buildQueryString(Map<String, Object> inputParams) {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
 
@@ -506,6 +506,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .equals(DEFAULT_ACCEPT_HEADER_VALUE));
     }
     return false;
+  }
+
+  private boolean objectExists(Map<String, Object> resultData) {
+    return resultData.get(responseSchemaContext.getGraphQlBinding().getQueryName()) != null;
   }
 
 }

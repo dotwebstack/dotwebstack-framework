@@ -43,6 +43,8 @@ components:
       properties:
         o2_prop1:
           type: string
+        o2_prop2:
+          type: string
     Object3:
       type: object
       required:
@@ -153,7 +155,9 @@ paths:
                 $ref: '#/components/schemas/Object2'
   /query3/{query3_param1}:
     get:
-      x-dws-query: query3
+      x-dws-query:
+        field: query3
+        selector: query3_param1
       parameters:
         - name: query3_param1
           in: path
@@ -183,7 +187,11 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/Object2'
-
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: OK

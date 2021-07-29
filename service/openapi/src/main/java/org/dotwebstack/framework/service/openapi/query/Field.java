@@ -32,12 +32,7 @@ public class Field {
     }
     if (children != null && !children.isEmpty()) {
       sb.append(" {\n");
-      try {
-        children.forEach(c -> c.toString(sb, depth + 1));
-      }
-      catch(NullPointerException e){
-        System.out.println("glll");
-      }
+      children.forEach(c -> c.toString(sb, depth + 1));
       indent(sb, depth);
       sb.append("}");
     }
