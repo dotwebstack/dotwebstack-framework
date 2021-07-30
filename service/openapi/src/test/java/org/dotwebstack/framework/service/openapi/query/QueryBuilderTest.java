@@ -106,9 +106,9 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query14", "query1");
 
     var graphQlQueryBuilder = new GraphQlQueryBuilder();
+    Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
-        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, Map.of()));
-
+        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams));
   }
 
   private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {

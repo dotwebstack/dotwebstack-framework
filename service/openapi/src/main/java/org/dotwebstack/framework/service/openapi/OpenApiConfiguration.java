@@ -202,9 +202,9 @@ public class OpenApiConfiguration {
     validateTemplateResponseMapper(responseSchemaContext.getResponses());
     var templateResponseMapper = getTemplateResponseMapper();
 
-    var coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext,
-        graphQl, responseMappers, jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
-        requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    var coreRequestHandler =
+        new CoreRequestHandler(openApi, responseSchemaContext, graphQl, responseMappers, jsonResponseMapper,
+            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
     responseSchemaContext.getResponses()
         .stream()

@@ -102,18 +102,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
-  private final String pathName;
-
   private final JexlHelper jexlHelper;
 
   private final EnvironmentProperties properties;
 
-  public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-      GraphQlService graphQL, List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+  public CoreRequestHandler(OpenAPI openApi, ResponseSchemaContext responseSchemaContext, GraphQlService graphQL,
+      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
       TemplateResponseMapper templateResponseMapper, ParamHandlerRouter paramHandlerRouter,
       RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
     this.openApi = openApi;
-    this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMappers = responseMappers;

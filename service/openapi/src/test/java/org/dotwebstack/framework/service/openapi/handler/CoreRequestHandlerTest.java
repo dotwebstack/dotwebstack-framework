@@ -142,9 +142,9 @@ class CoreRequestHandlerTest {
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
 
-    coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, graphQl,
-        List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
-        requestBodyHandlerRouter, jexlHelper, environmentProperties));
+    coreRequestHandler =
+        spy(new CoreRequestHandler(openApi, responseSchemaContext, graphQl, List.of(responseMapper), jsonResponseMapper,
+            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
