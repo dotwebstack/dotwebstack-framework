@@ -3,23 +3,15 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.StringJoiner;
-
 import lombok.NonNull;
-import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class ResponseContextHelper {
 
-  private ResponseContextHelper() {
-  }
+  private ResponseContextHelper() {}
 
   public static String getPathString(String prefix, ResponseObject responseObject) {
     var expandJoiner = new StringJoiner(".");
@@ -52,12 +44,16 @@ public class ResponseContextHelper {
   }
 
   public static boolean isCollection(ResponseObject responseObject) {
-    if (responseObject.getSummary().hasExtension(X_DWS_ENVELOPE)) {
+    if (responseObject.getSummary()
+        .hasExtension(X_DWS_ENVELOPE)) {
       return isCollection(responseObject.getSummary()
           .getChildren()
           .get(0));
     } else {
-      return responseObject.getSummary().getSchema().getType().equals("array");
+      return responseObject.getSummary()
+          .getSchema()
+          .getType()
+          .equals("array");
     }
   }
 }

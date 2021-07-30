@@ -165,7 +165,6 @@ paths:
     get:
       x-dws-query:
         field: brewery
-        selector: identifier
       parameters:
         - name: identifier
           in: path
@@ -186,7 +185,6 @@ paths:
     get:
       x-dws-query:
         field: beer
-        selector: identifier
       parameters:
         - name: identifier
           in: path
@@ -215,7 +213,6 @@ paths:
     get:
       x-dws-query:
         field: beers_by_country_and_name
-        selector: country
         requiredFields:
           - name
       parameters:

@@ -7,7 +7,6 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 @Builder
 @Getter
@@ -41,8 +40,8 @@ public class SchemaSummary {
 
   private final Map<String, String> dwsExpr;
 
-  public boolean hasExtension(String name){
-    return getSchema()!=null&& getSchema().getExtensions() != null && getSchema().getExtensions()
+  public boolean hasExtension(String name) {
+    return getSchema() != null && getSchema().getExtensions() != null && getSchema().getExtensions()
         .containsKey(name);
   }
 

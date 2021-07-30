@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.service.openapi.response.GraphQlBinding;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 
@@ -19,10 +19,10 @@ public class GraphQlQueryBuilder {
   public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
-    GraphQlBinding graphQlBinding = responseSchemaContext.getGraphQlBinding();
-    String queryName = graphQlBinding.getQueryName();
+    DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
+    String queryName = dwsQuerySettings.getQueryName();
 
-    if(queryName == null || queryName.isEmpty()){
+    if (queryName == null || queryName.isEmpty()) {
       return Optional.empty();
     }
 
@@ -33,37 +33,15 @@ public class GraphQlQueryBuilder {
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
     List<Field> fields = OasToGraphQlHelper.toFields(okResponse, inputParams);
-    if (!isSingleResourceQuery(graphQlBinding)) {
-      return toCollectionQuery(okResponse, queryName, fields);
-    } else {
-      String selectorName = graphQlBinding.getSelector();
-      String selectorValue = inputParams.get(selectorName).toString();
-      return toSingleResourceQuery(queryName, fields, selectorName, selectorValue);
-    }
+    return toQuery(queryName, fields);
   }
 
-  protected boolean isSingleResourceQuery(GraphQlBinding binding) {
-    return binding.getSelector() != null;
-  }
-
-  private Optional<String> toCollectionQuery(ResponseTemplate responseTemplate, String queryName, List<Field> fields) {
-    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
-    Field collectionField = new Field(queryName, null, null);
-
-    collectionField.setChildren(fields);
-    builder.field(collectionField);
-    builder.queryName("Wrapper");
-
-    return Optional.of(builder.build()
-        .toString());
-  }
-
-  private Optional<String> toSingleResourceQuery(String queryName, List<Field> nodes, String selectorName, String selectorValue) {
-    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
+  private Optional<String> toQuery(String queryName, List<Field> nodes) {
     Field root = new Field();
     root.setChildren(nodes);
     root.setName(queryName);
-    root.setArguments(Map.of(selectorName, selectorValue));
+
+    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
     builder.field(root);
     builder.queryName("Wrapper");
     return Optional.of(builder.build()

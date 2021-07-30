@@ -2,15 +2,12 @@ package org.dotwebstack.framework.service.openapi;
 
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;

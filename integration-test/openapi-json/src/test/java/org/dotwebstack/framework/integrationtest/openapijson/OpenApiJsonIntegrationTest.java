@@ -45,6 +45,7 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beers.json");
   }
 
+  @Disabled("Disabled until resource selection is implemented")
   @Test
   void openApiRequest_ReturnsBeer_withDefaultResponse() throws IOException {
     // Arrange & Act
@@ -59,6 +60,7 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beer.json");
   }
 
+  @Disabled("Disabled until resource selection is implemented")
   @Test
   void openApiRequest_ReturnsBeer_withExpandedBrewery() throws IOException {
     // Arrange & Act
@@ -87,7 +89,7 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beers_brewery.json");
   }
 
-  @Disabled("requires filtering")
+  @Disabled("Disabled until filtering is implemented")
   @Test
   void openApiRequest_ReturnsBeers_byCountryAndName_withDefaultResponse() throws IOException {
     // Arrange & Act
@@ -102,6 +104,7 @@ class OpenApiJsonIntegrationTest {
     assertResult(result, "/results/beer_by_country_and_name.json");
   }
 
+  @Disabled("Disabled until resource selection is implemented")
   @Test
   void openApiRequest_ReturnsBrewery_withDefaultResponse() throws IOException {
     // Arrange & Act

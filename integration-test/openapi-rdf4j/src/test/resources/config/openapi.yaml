@@ -205,7 +205,8 @@ paths:
 #                x-dws-expr: args.page
   /brewery/{identifier}:
     get:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
       parameters:
         - name: expand
           x-dws-type: expand
@@ -229,7 +230,8 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /brewery_post:
     post:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
       parameters:
         - name: expand
           x-dws-type: expand

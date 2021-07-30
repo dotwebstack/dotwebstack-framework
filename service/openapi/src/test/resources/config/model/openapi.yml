@@ -157,7 +157,6 @@ paths:
     get:
       x-dws-query:
         field: query3
-        selector: query3_param1
       parameters:
         - name: query3_param1
           in: path

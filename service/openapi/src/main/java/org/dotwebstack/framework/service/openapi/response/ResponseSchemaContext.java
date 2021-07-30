@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import org.dotwebstack.framework.core.query.GraphQlField;
 
 @Getter
 @Builder
@@ -22,7 +21,7 @@ public class ResponseSchemaContext {
   @Builder.Default
   private final List<Parameter> parameters = new ArrayList<>();
 
-  private final GraphQlBinding graphQlBinding;
+  private final DwsQuerySettings dwsQuerySettings;
 
   @Builder.Default
   private final Map<String, String> dwsParameters = new HashMap<>();

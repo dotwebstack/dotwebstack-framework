@@ -8,14 +8,7 @@ import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.re
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphql.language.InputObjectTypeDefinition;
-import graphql.language.ListType;
-import graphql.language.Type;
-import graphql.language.TypeDefinition;
-import graphql.language.TypeName;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Collections;
@@ -24,13 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
-import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -46,7 +36,8 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private final ObjectMapper objectMapper;
 
-  public DefaultRequestBodyHandler(@NonNull OpenAPI openApi, @NonNull Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder) {
+  public DefaultRequestBodyHandler(@NonNull OpenAPI openApi,
+      @NonNull Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder) {
     this.openApi = openApi;
     this.objectMapper = jackson2ObjectMapperBuilder.build();
   }

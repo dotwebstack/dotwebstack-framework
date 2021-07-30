@@ -1,5 +1,5 @@
 query Wrapper{
- query3(query3_param1: "v1") {
+ query3 {
   o2_prop1
  }
 }

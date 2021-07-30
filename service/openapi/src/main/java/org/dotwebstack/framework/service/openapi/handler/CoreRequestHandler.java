@@ -14,7 +14,6 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
-import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequiredField;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
@@ -110,10 +109,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private final EnvironmentProperties properties;
 
   public CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
-     GraphQlService graphQL, List<ResponseMapper> responseMappers,
-      JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
-      EnvironmentProperties properties) {
+      GraphQlService graphQL, List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
+      TemplateResponseMapper templateResponseMapper, ParamHandlerRouter paramHandlerRouter,
+      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
     this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
@@ -158,8 +156,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   Map<String, String> createResponseHeaders(ResponseTemplate responseTemplate, Map<String, Object> inputParams) {
-    var jexlContext =
-        getJexlContext(properties.getAllProperties(), inputParams, null);
+    var jexlContext = getJexlContext(properties.getAllProperties(), inputParams, null);
 
     Map<String, ResponseHeader> responseHeaders = responseTemplate.getResponseHeaders();
 
@@ -321,9 +318,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     var uri = request.uri();
 
     if (Objects.nonNull(template.getResponseObject())) {
-      var responseWriteContext =
-          createNewResponseWriteContext(template.getResponseObject(), data,
-              inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
+      var responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), data, inputParams,
+          createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
       return jsonResponseMapper.toResponse(responseWriteContext);
 
@@ -509,7 +505,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private boolean objectExists(Map<String, Object> resultData) {
-    return resultData.get(responseSchemaContext.getGraphQlBinding().getQueryName()) != null;
+    return resultData.get(responseSchemaContext.getDwsQuerySettings()
+        .getQueryName()) != null;
   }
 
 }

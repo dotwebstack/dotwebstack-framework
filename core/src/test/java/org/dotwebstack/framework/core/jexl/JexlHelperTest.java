@@ -8,20 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
-import graphql.language.StringValue;
-import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.core.query.GraphQlArgument;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.junit.jupiter.api.Test;
 
 
@@ -189,23 +184,6 @@ class JexlHelperTest {
     assertEquals("1", context.get("args.defaultValue"));
     assertEquals("12", context.get("args.value"));
     assertEquals("12", context.get("args.both"));
-  }
-
-  @Test
-  void createJexlContext_createsContext_forGraphQlArgument() {
-    GraphQlField graphQlField = GraphQlField.builder()
-        .arguments(List.of(GraphQlArgument.builder()
-            .name("value")
-            .type(TypeName.newTypeName("String")
-                .build())
-            .defaultValue(StringValue.newStringValue("1")
-                .build())
-            .build()))
-        .build();
-
-    JexlContext context = JexlHelper.getJexlContext(null, null, null);
-
-    assertEquals("1", context.get("args.value"));
   }
 
   private GraphQLDirective getGraphQlDirective() {

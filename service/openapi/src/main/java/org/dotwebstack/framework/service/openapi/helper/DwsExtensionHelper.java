@@ -20,13 +20,14 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.GraphQlBinding;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 
 public class DwsExtensionHelper {
 
@@ -107,39 +108,28 @@ public class DwsExtensionHelper {
     return Optional.of((String) dwsQueryName);
   }
 
-  public static Optional<GraphQlBinding> getGraphQlBinding(@NonNull Operation operation) {
+  @SuppressWarnings({"unchecked"})
+  public static DwsQuerySettings getDwsQuerySettings(@NonNull Operation operation) {
+
+    DwsQuerySettings.DwsQuerySettingsBuilder builder = DwsQuerySettings.builder();
+    builder.requiredFields(Collections.emptyList());
     if (operation.getExtensions() == null || !operation.getExtensions()
         .containsKey(X_DWS_QUERY)) {
-      return Optional.empty();
+      return builder.build();
     }
     Object dwsQueryName = operation.getExtensions()
         .get(X_DWS_QUERY);
-    GraphQlBinding.GraphQlBindingBuilder builder = GraphQlBinding.builder();
+
     if (dwsQueryName instanceof Map) {
       Map<String, Object> bindingMap = (Map<String, Object>) dwsQueryName;
-      builder.queryName(bindingMap.get(X_DWS_QUERY_FIELD).toString());
-      String selector = (String) bindingMap.get("selector");
-      builder.selector(selector);
-    }
-    else {
+      builder.queryName(bindingMap.get(X_DWS_QUERY_FIELD)
+          .toString());
+      builder.requiredFields((List<String>) ((Map<?, ?>) dwsQueryName).get(X_DWS_QUERY_REQUIRED_FIELDS));
+    } else {
       builder.queryName(dwsQueryName.toString());
     }
 
-    return Optional.of(builder.build());
-  }
-
-  @SuppressWarnings("unchecked")
-  public static List<String> getDwsRequiredFields(@NonNull Operation operation) {
-    if (operation.getExtensions() == null) {
-      return emptyList();
-    }
-
-    Object dwsQuery = operation.getExtensions()
-        .get(X_DWS_QUERY);
-    if (dwsQuery instanceof Map) {
-      return (List<String>) ((Map) dwsQuery).get(X_DWS_QUERY_REQUIRED_FIELDS);
-    }
-    return emptyList();
+    return builder.build();
   }
 
   public static Map<String, String> getDwsQueryParameters(@NonNull Operation operation) {
@@ -152,9 +142,9 @@ public class DwsExtensionHelper {
         .get(X_DWS_QUERY);
     if (dwsQuery instanceof Map) {
       List<?> dwsParameters =
-          Objects.requireNonNullElse((List<?>) ((Map) dwsQuery).get(X_DWS_QUERY_PARAMETERS), emptyList());
-      dwsParameters.forEach(o -> result.put((String) ((Map) o).get(X_DWS_QUERY_PARAMETER_NAME),
-          (String) ((Map) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
+          Objects.requireNonNullElse((List<?>) ((Map<?, ?>) dwsQuery).get(X_DWS_QUERY_PARAMETERS), emptyList());
+      dwsParameters.forEach(o -> result.put((String) ((Map<?, ?>) o).get(X_DWS_QUERY_PARAMETER_NAME),
+          (String) ((Map<?, ?>) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
     }
     return result;
   }

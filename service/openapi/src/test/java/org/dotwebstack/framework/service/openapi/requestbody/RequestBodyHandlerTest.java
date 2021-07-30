@@ -7,23 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import graphql.language.ListType;
-import graphql.language.Type;
-import graphql.language.TypeName;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,8 +45,7 @@ class RequestBodyHandlerTest {
   @BeforeEach
   void setup() {
     this.openApi = TestResources.openApi();
-    this.requestBodyHandler =
-        new DefaultRequestBodyHandler(openApi, new Jackson2ObjectMapperBuilder());
+    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, new Jackson2ObjectMapperBuilder());
     this.requestBody = this.openApi.getPaths()
         .get("/query4")
         .getGet()

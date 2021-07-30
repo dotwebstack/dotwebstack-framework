@@ -32,6 +32,7 @@ import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -76,9 +77,8 @@ public class OpenApiConfiguration {
 
   public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      List<TemplateResponseMapper> templateResponseMappers,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
-      EnvironmentProperties environmentProperties) {
+      List<TemplateResponseMapper> templateResponseMappers, RequestBodyHandlerRouter requestBodyHandlerRouter,
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQlService;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -172,7 +172,8 @@ public class OpenApiConfiguration {
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
       RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
 
-    ResponseSchemaContext responseSchemaContext = buildResponseSchemaContext(httpMethodOperation, responseTemplateBuilder, requestBodyContextBuilder);
+    ResponseSchemaContext responseSchemaContext =
+        buildResponseSchemaContext(httpMethodOperation, responseTemplateBuilder, requestBodyContextBuilder);
 
     var requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
@@ -181,10 +182,11 @@ public class OpenApiConfiguration {
     var templateResponseMapper = getTemplateResponseMapper();
 
     var coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext,
-        graphQl, responseMappers, jsonResponseMapper, templateResponseMapper,
-        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+        graphQl, responseMappers, jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
+        requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
-    responseSchemaContext.getResponses().stream()
+    responseSchemaContext.getResponses()
+        .stream()
         .map(ResponseTemplate::getResponseCode)
         .map(HttpStatus::valueOf)
         .filter(httpStatus -> !httpStatus.is3xxRedirection())
@@ -194,20 +196,21 @@ public class OpenApiConfiguration {
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
   }
 
-  public static ResponseSchemaContext buildResponseSchemaContext(HttpMethodOperation httpMethodOperation, ResponseTemplateBuilder responseTemplateBuilder,
-                                                                 RequestBodyContextBuilder requestBodyContextBuilder) {
+  public static ResponseSchemaContext buildResponseSchemaContext(HttpMethodOperation httpMethodOperation,
+      ResponseTemplateBuilder responseTemplateBuilder, RequestBodyContextBuilder requestBodyContextBuilder) {
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
-    List<String> requiredFields = DwsExtensionHelper.getDwsRequiredFields(httpMethodOperation.getOperation());
     var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
         .getRequestBody());
 
-    return  ResponseSchemaContext.builder()
-        .requiredFields(Objects.nonNull(requiredFields) ? requiredFields : Collections.emptyList())
+    DwsQuerySettings dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(httpMethodOperation.getOperation());
+    return ResponseSchemaContext.builder()
+        .requiredFields(dwsQuerySettings.getRequiredFields() != null ? dwsQuerySettings.getRequiredFields()
+            : Collections.emptyList())
         .responses(responseTemplates)
         .parameters(httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
                 .getParameters() : Collections.emptyList())
-        .graphQlBinding(DwsExtensionHelper.getGraphQlBinding(httpMethodOperation.getOperation()).orElse(null))
+        .dwsQuerySettings(dwsQuerySettings)
         .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
         .requestBodyContext(requestBodyContext)
         .build();

@@ -58,6 +58,7 @@ class OpenApiRdf4jIntegrationTest {
     assertResult(result, "/results/breweries_withStaticFields.json");
   }
 
+  @Disabled("enable when resource selection is implemented")
   @Test
   void openApiRequest_ReturnsBrewery_withIdentifierFromPathParam() throws IOException {
     String result = webClient.get()
@@ -70,6 +71,7 @@ class OpenApiRdf4jIntegrationTest {
     assertResult(result, "/results/brewery_identifier.json");
   }
 
+  @Disabled("enable when resource selection is implemented")
   @Test
   void openApiRequest_ReturnsBrewery_withExpandedPostalCode() throws IOException {
     String result = webClient.get()
@@ -437,6 +439,7 @@ class OpenApiRdf4jIntegrationTest {
         .get(0));
   }
 
+  @Disabled("enable when resource selection is implemented")
   @Test
   void openApiRequest_returnsBrewery_forRequestWithBodyParams() throws IOException {
     String result = this.webClient.post()
