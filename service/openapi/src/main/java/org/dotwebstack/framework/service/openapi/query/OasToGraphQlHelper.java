@@ -9,7 +9,6 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseContext
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -38,10 +37,10 @@ public class OasToGraphQlHelper {
         .getSummary()
         .getChildren()
         .stream()
+        .filter(c -> shouldAdd(c, inputParams, ""))
         .map(OasToGraphQlHelper::findGraphqlObject)
         .flatMap(List::stream)
         .map(c -> toField("", c, inputParams))
-        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 
@@ -90,25 +89,24 @@ public class OasToGraphQlHelper {
 
   static Field toField(String currentPath, ResponseObject responseObject, Map<String, Object> inputParams) {
 
+    Field response = new Field();
+    response.setName(responseObject.getIdentifier());
+    List<Field> children = responseObject.getSummary()
+        .getChildren()
+        .stream()
+        .filter(c -> shouldAdd(c, inputParams, currentPath))
+        .map(OasToGraphQlHelper::findGraphqlObject)
+        .flatMap(List::stream)
+        .map(cc -> toField(getPathString(currentPath, responseObject), cc, inputParams))
+        .collect(Collectors.toList());
+    response.setChildren(children);
+    return response;
+  }
+
+  static boolean shouldAdd(ResponseObject responseObject, Map<String, Object> inputParams, String currentPath) {
     SchemaSummary summary = responseObject.getSummary();
     boolean isExpanded = isExpanded(inputParams, getPathString(currentPath, responseObject));
-    boolean shouldAdd = summary.isRequired() || summary.isTransient() || isExpanded;
-    if (shouldAdd) {
-      Field response = new Field();
-      response.setName(responseObject.getIdentifier());
-      List<Field> children = responseObject.getSummary()
-          .getChildren()
-          .stream()
-          .map(OasToGraphQlHelper::findGraphqlObject)
-          .flatMap(List::stream)
-          .map(cc -> toField(getPathString(currentPath, responseObject), cc, inputParams))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      response.setChildren(children);
-      return response;
-    } else {
-      return null;
-    }
+    return summary.isRequired() || summary.isTransient() || isExpanded;
   }
 
 }
