@@ -21,14 +21,6 @@ public class ResponseContextHelper {
     return expandJoiner.toString();
   }
 
-  private static StringJoiner getStringJoiner(String prefix) {
-    var joiner = new StringJoiner(".");
-    if (!prefix.isEmpty()) {
-      joiner.add(prefix);
-    }
-    return joiner;
-  }
-
   @SuppressWarnings("unchecked")
   public static boolean isExpanded(Map<String, Object> inputParams, @NonNull String path) {
     if (Objects.isNull(inputParams)) {

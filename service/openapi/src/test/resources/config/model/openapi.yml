@@ -405,3 +405,9 @@ paths:
               schema:
                 type: string
                 x-dws-expr: '`http://any/url`'
+  /query14:
+    get:
+      x-dws-query: query14
+      responses:
+        303:
+          description: "300 response"

@@ -72,6 +72,9 @@ class QueryBuilderTest {
     assertEquals(expected, query);
   }
 
+  // TODO add tests with schemas using composed, arrays, expressions, defaults, composed of with child
+  // composed, list under root object
+
   @Test
   void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
@@ -96,6 +99,16 @@ class QueryBuilderTest {
     var graphQlQueryBuilder = new GraphQlQueryBuilder();
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
+  }
+
+  @Test
+  void validate_throwsInvalidConfigurationException_withNoResponseTemplate() {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query14", "query1");
+
+    var graphQlQueryBuilder = new GraphQlQueryBuilder();
+    assertThrows(InvalidConfigurationException.class,
+        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, Map.of()));
+
   }
 
   private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {
