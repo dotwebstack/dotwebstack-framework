@@ -137,6 +137,27 @@ public class OpenApiConfiguration {
     return routerFunctions.build();
   }
 
+  public static ResponseSchemaContext buildResponseSchemaContext(@NonNull HttpMethodOperation httpMethodOperation,
+      @NonNull ResponseTemplateBuilder responseTemplateBuilder,
+      @NonNull RequestBodyContextBuilder requestBodyContextBuilder) {
+    List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
+    var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
+        .getRequestBody());
+
+    DwsQuerySettings dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(httpMethodOperation.getOperation());
+    return ResponseSchemaContext.builder()
+        .requiredFields(dwsQuerySettings.getRequiredFields() != null ? dwsQuerySettings.getRequiredFields()
+            : Collections.emptyList())
+        .responses(responseTemplates)
+        .parameters(httpMethodOperation.getOperation()
+            .getParameters() != null ? httpMethodOperation.getOperation()
+                .getParameters() : Collections.emptyList())
+        .dwsQuerySettings(dwsQuerySettings)
+        .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
+        .requestBodyContext(requestBodyContext)
+        .build();
+  }
+
   protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions, @NonNull InputStream openApiStream) {
     RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
         .and(RequestPredicates.path(openApiProperties.getApiDocPublicationPath()))
@@ -194,26 +215,6 @@ public class OpenApiConfiguration {
         .ifPresent(i -> coreRequestHandler.validateSchema());
 
     return RouterFunctions.route(requestPredicate, coreRequestHandler);
-  }
-
-  public static ResponseSchemaContext buildResponseSchemaContext(HttpMethodOperation httpMethodOperation,
-      ResponseTemplateBuilder responseTemplateBuilder, RequestBodyContextBuilder requestBodyContextBuilder) {
-    List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
-    var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
-        .getRequestBody());
-
-    DwsQuerySettings dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(httpMethodOperation.getOperation());
-    return ResponseSchemaContext.builder()
-        .requiredFields(dwsQuerySettings.getRequiredFields() != null ? dwsQuerySettings.getRequiredFields()
-            : Collections.emptyList())
-        .responses(responseTemplates)
-        .parameters(httpMethodOperation.getOperation()
-            .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList())
-        .dwsQuerySettings(dwsQuerySettings)
-        .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
-        .requestBodyContext(requestBodyContext)
-        .build();
   }
 
   private TemplateResponseMapper getTemplateResponseMapper() {

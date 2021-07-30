@@ -203,7 +203,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
-  @SuppressWarnings("unchecked")
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
@@ -242,7 +241,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .block();
       }
 
-      Object queryResultData = ((Map) result.getData()).values()
+      Object queryResultData = ((Map<?, ?>) result.getData()).values()
           .iterator()
           .next();
 

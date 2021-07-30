@@ -117,16 +117,16 @@ public class DwsExtensionHelper {
         .containsKey(X_DWS_QUERY)) {
       return builder.build();
     }
-    Object dwsQueryName = operation.getExtensions()
+    Object dwsQuery = operation.getExtensions()
         .get(X_DWS_QUERY);
 
-    if (dwsQueryName instanceof Map) {
-      Map<String, Object> bindingMap = (Map<String, Object>) dwsQueryName;
+    if (dwsQuery instanceof Map) {
+      Map<String, Object> bindingMap = (Map<String, Object>) dwsQuery;
       builder.queryName(bindingMap.get(X_DWS_QUERY_FIELD)
           .toString());
-      builder.requiredFields((List<String>) ((Map<?, ?>) dwsQueryName).get(X_DWS_QUERY_REQUIRED_FIELDS));
+      builder.requiredFields((List<String>) ((Map<?, ?>) dwsQuery).get(X_DWS_QUERY_REQUIRED_FIELDS));
     } else {
-      builder.queryName(dwsQueryName.toString());
+      builder.queryName(dwsQuery.toString());
     }
 
     return builder.build();

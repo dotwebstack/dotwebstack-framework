@@ -163,8 +163,7 @@ components:
 paths:
   /brewery/{identifier}:
     get:
-      x-dws-query:
-        field: brewery
+      x-dws-query: brewery
       parameters:
         - name: identifier
           in: path
@@ -183,8 +182,7 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /beer/{identifier}:
     get:
-      x-dws-query:
-        field: beer
+      x-dws-query: beer
       parameters:
         - name: identifier
           in: path

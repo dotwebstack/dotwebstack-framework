@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
@@ -20,7 +21,7 @@ public class OasToGraphQlHelper {
 
   private OasToGraphQlHelper() {}
 
-  public static List<Field> toFields(@NonNull ResponseTemplate responseTemplate,
+  public static List<Field> toQueryFields(@NonNull ResponseTemplate responseTemplate,
       @NonNull Map<String, Object> inputParams) {
     var responseObject = responseTemplate.getResponseObject();
 
@@ -62,14 +63,32 @@ public class OasToGraphQlHelper {
     } else if (!isEnvelope(responseObject)) {
       return List.of(responseObject);
     }
-    if (subSearch.size() > 0) {
-      return subSearch.stream()
-          .map(OasToGraphQlHelper::findGraphqlObject)
-          .flatMap(List::stream)
-          .collect(Collectors.toList());
-    } else {
-      return List.of();
-    }
+    return subSearch.stream()
+        .map(OasToGraphQlHelper::findGraphqlObject)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+  }
+
+  private static Field toField(String currentPath, ResponseObject responseObject, Map<String, Object> inputParams) {
+
+    Field result = new Field();
+    result.setName(responseObject.getIdentifier());
+    List<Field> children = responseObject.getSummary()
+        .getChildren()
+        .stream()
+        .filter(c -> shouldAdd(c, inputParams, currentPath))
+        .map(OasToGraphQlHelper::findGraphqlObject)
+        .flatMap(List::stream)
+        .map(cc -> toField(getPathString(currentPath, responseObject), cc, inputParams))
+        .collect(Collectors.toList());
+    result.setChildren(children);
+    return result;
+  }
+
+  private static boolean shouldAdd(ResponseObject responseObject, Map<String, Object> inputParams, String currentPath) {
+    SchemaSummary summary = responseObject.getSummary();
+    boolean isExpanded = isExpanded(inputParams, getPathString(currentPath, responseObject));
+    return summary.isRequired() || summary.isTransient() || isExpanded;
   }
 
   private static boolean isDefault(ResponseObject responseObject) {
@@ -85,28 +104,6 @@ public class OasToGraphQlHelper {
   private static boolean isEnvelope(ResponseObject responseObject) {
     return responseObject.getSummary()
         .hasExtension(X_DWS_ENVELOPE);
-  }
-
-  static Field toField(String currentPath, ResponseObject responseObject, Map<String, Object> inputParams) {
-
-    Field response = new Field();
-    response.setName(responseObject.getIdentifier());
-    List<Field> children = responseObject.getSummary()
-        .getChildren()
-        .stream()
-        .filter(c -> shouldAdd(c, inputParams, currentPath))
-        .map(OasToGraphQlHelper::findGraphqlObject)
-        .flatMap(List::stream)
-        .map(cc -> toField(getPathString(currentPath, responseObject), cc, inputParams))
-        .collect(Collectors.toList());
-    response.setChildren(children);
-    return response;
-  }
-
-  static boolean shouldAdd(ResponseObject responseObject, Map<String, Object> inputParams, String currentPath) {
-    SchemaSummary summary = responseObject.getSummary();
-    boolean isExpanded = isExpanded(inputParams, getPathString(currentPath, responseObject));
-    return summary.isRequired() || summary.isTransient() || isExpanded;
   }
 
 }

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.query;
+package org.dotwebstack.framework.service.openapi.query.model;
 
 import java.util.List;
 import java.util.Map;
@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Builder
 @Data
@@ -19,7 +20,7 @@ public class Field {
 
   private List<Field> children;
 
-  public void toString(StringBuilder sb, int depth) {
+  public void toString(@NonNull StringBuilder sb, int depth) {
     indent(sb, depth);
     sb.append(name);
     if (arguments != null && !arguments.isEmpty()) {

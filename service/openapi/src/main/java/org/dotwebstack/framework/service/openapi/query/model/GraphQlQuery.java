@@ -1,11 +1,11 @@
-package org.dotwebstack.framework.service.openapi.query;
+package org.dotwebstack.framework.service.openapi.query.model;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Builder
 @Data
-public class ResourceQuery {
+public class GraphQlQuery {
   private String queryName;
 
   private Field field;

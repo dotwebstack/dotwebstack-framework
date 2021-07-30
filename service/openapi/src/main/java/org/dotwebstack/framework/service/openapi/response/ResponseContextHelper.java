@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
 import java.util.List;
@@ -43,17 +42,4 @@ public class ResponseContextHelper {
     return false;
   }
 
-  public static boolean isCollection(ResponseObject responseObject) {
-    if (responseObject.getSummary()
-        .hasExtension(X_DWS_ENVELOPE)) {
-      return isCollection(responseObject.getSummary()
-          .getChildren()
-          .get(0));
-    } else {
-      return responseObject.getSummary()
-          .getSchema()
-          .getType()
-          .equals("array");
-    }
-  }
 }

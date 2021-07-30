@@ -2,7 +2,6 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
-import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.query.model.Field;
+import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -32,7 +33,7 @@ public class GraphQlQueryBuilder {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
-    List<Field> fields = OasToGraphQlHelper.toFields(okResponse, inputParams);
+    List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
     return toQuery(queryName, fields);
   }
 
@@ -41,36 +42,12 @@ public class GraphQlQueryBuilder {
     root.setChildren(nodes);
     root.setName(queryName);
 
-    ResourceQuery.ResourceQueryBuilder builder = ResourceQuery.builder();
+    GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
     builder.field(root);
     builder.queryName("Wrapper");
     return Optional.of(builder.build()
         .toString());
 
-  }
-
-  private void addFilters(Field root, List<Parameter> parameters, Map<String, Object> inputParams) {
-    List<Parameter> filterParams = parameters.stream()
-        .filter(p -> p.getExtensions()
-            .containsKey("x-dws-filter"))
-        .collect(Collectors.toList());
-    filterParams.forEach(fp -> {
-      Object value = inputParams.get(fp.getName());
-      String filterPath = (String) fp.getExtensions()
-          .get("x-dws-filter");
-      String[] path = filterPath.split("\\.");
-      Field targetField = root;
-      for (int i = 1; i < path.length - 1; i++) {
-        int idx = i;
-        targetField = targetField.getChildren()
-            .stream()
-            .filter(c -> c.getName()
-                .equals(path[idx]))
-            .findFirst()
-            .orElseThrow();
-      }
-      targetField.setArguments(Map.of(path[path.length - 1], value));
-    });
   }
 
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {

@@ -21,5 +21,4 @@ public class ResponseObject {
         .isEmpty();
   }
 
-
 }
