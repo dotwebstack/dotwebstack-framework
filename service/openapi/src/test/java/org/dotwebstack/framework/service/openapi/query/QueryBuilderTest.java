@@ -48,7 +48,6 @@ class QueryBuilderTest {
     assertEquals(expected, query);
   }
 
-
   @Test
   void toQuery_returns_validQueryWithArguments() throws IOException, URISyntaxException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query3/{query3_param1}", "query3");
@@ -82,8 +81,17 @@ class QueryBuilderTest {
     assertEquals(expected, query);
   }
 
-  // TODO add tests with schemas using arrays, expressions, defaults, composed of with child
-  // composed, list under root object
+  @Test
+  void toQuery_returns_validQueryWithNestedComposed() throws IOException, URISyntaxException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query15", "query3");
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
+        .orElseThrow();
+
+    String expected = loadQuery("query15.txt");
+    assertEquals(expected, query);
+  }
+
+  // TODO add tests with schemas using arrays, expressions, defaults, list under root object
 
   @Test
   void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {

@@ -37,9 +37,9 @@ public class GraphQlQueryBuilder {
     return toQuery(queryName, fields);
   }
 
-  private Optional<String> toQuery(String queryName, List<Field> nodes) {
+  private Optional<String> toQuery(String queryName, List<Field> fields) {
     Field root = new Field();
-    root.setChildren(nodes);
+    root.setChildren(fields);
     root.setName(queryName);
 
     GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();

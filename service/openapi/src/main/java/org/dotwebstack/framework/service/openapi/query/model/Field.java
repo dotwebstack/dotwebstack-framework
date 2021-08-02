@@ -20,7 +20,7 @@ public class Field {
 
   private List<Field> children;
 
-  public void toString(@NonNull StringBuilder sb, int depth) {
+  public void writeAsString(@NonNull StringBuilder sb, int depth) {
     indent(sb, depth);
     sb.append(name);
     if (arguments != null && !arguments.isEmpty()) {
@@ -32,7 +32,7 @@ public class Field {
     }
     if (children != null && !children.isEmpty()) {
       sb.append(" {\n");
-      children.forEach(c -> c.toString(sb, depth + 1));
+      children.forEach(c -> c.writeAsString(sb, depth + 1));
       indent(sb, depth);
       sb.append("}");
     }

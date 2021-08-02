@@ -15,7 +15,7 @@ public class GraphQlQuery {
     sb.append("query ")
         .append(queryName)
         .append("{\n");
-    field.toString(sb, 1);
+    field.writeAsString(sb, 1);
     sb.append("}");
     return sb.toString();
   }
