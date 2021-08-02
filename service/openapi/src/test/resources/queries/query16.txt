@@ -1,0 +1,5 @@
+query Wrapper{
+ query16 {
+  o15_prop1
+ }
+}

@@ -59,12 +59,9 @@ class QueryBuilderTest {
             Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), "query with expand arguments"),
         Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), "query with composed root object"),
         Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(),
-            "query with composed root object and nested composed object")
-
-    );
+            "query with composed root object and nested composed object"),
+        Arguments.arguments("/query16", "query16", loadQuery("query16.txt"), Map.of(), "query with array"));
   }
-
-  // TODO add tests with schemas using arrays, expressions, defaults, list under root object
 
   @Test
   void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {

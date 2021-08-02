@@ -123,6 +123,18 @@ components:
         o14_prop2:
           $ref: 'components/schemas/Object4'
 
+    Object15:
+      type: object
+      required:
+        - o15_prop1
+        - o15_prop2
+      properties:
+        o15_prop1:
+          type: string
+        o15_prop3:
+          type: array
+          items:
+            type: string
 
   headers:
     HeaderRef:
@@ -431,7 +443,7 @@ paths:
           description: "300 response"
   /query15:
     get:
-      x-dws-query: query14
+      x-dws-query: query15
       responses:
         200:
           description: OK
@@ -439,3 +451,13 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object13'
+  /query16:
+    get:
+      x-dws-query: query16
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object15'
