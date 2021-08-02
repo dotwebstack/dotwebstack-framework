@@ -72,7 +72,17 @@ class QueryBuilderTest {
     assertEquals(expected, query);
   }
 
-  // TODO add tests with schemas using composed, arrays, expressions, defaults, composed of with child
+  @Test
+  void toQuery_returns_validQueryWithComposed() throws IOException, URISyntaxException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query5", "query3");
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
+        .orElseThrow();
+
+    String expected = loadQuery("query5.txt");
+    assertEquals(expected, query);
+  }
+
+  // TODO add tests with schemas using arrays, expressions, defaults, composed of with child
   // composed, list under root object
 
   @Test

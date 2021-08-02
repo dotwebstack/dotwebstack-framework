@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
@@ -28,20 +29,50 @@ public class OasToGraphQlHelper {
     if (responseObject == null) {
       return Collections.emptyList();
     }
-    List<ResponseObject> root = findGraphqlObject(responseObject);
+    List<ResponseObject> root = findGraphqlRootObject(responseObject);
 
     if (root.size() != 1) {
       throw new InvalidConfigurationException(format("Expected 1 graphql rootobject for object %s but found %s",
           responseObject.getIdentifier(), root.size()));
     }
-    return root.get(0)
-        .getSummary()
-        .getChildren()
-        .stream()
-        .filter(c -> shouldAdd(c, inputParams, ""))
-        .map(OasToGraphQlHelper::findGraphqlObject)
+
+    ResponseObject rootResponseObject = root.get(0);
+    if (rootResponseObject.isComposedOf()) {
+      Stream<ResponseObject> composedChildren = getComposedObjectChildren(rootResponseObject);
+      return composedChildren.filter(c -> shouldAdd(c, inputParams, ""))
+          .map(OasToGraphQlHelper::findGraphqlObject)
+          .flatMap(List::stream)
+          .map(c -> toField("", c, inputParams))
+          .collect(Collectors.toList());
+    } else {
+      return rootResponseObject.getSummary()
+          .getChildren()
+          .stream()
+          .filter(c -> shouldAdd(c, inputParams, ""))
+          .map(OasToGraphQlHelper::findGraphqlObject)
+          .flatMap(List::stream)
+          .map(c -> toField("", c, inputParams))
+          .collect(Collectors.toList());
+    }
+  }
+
+  private static List<ResponseObject> findGraphqlRootObject(ResponseObject responseObject) {
+    SchemaSummary summary = responseObject.getSummary();
+    if (isExpression(responseObject) || isDefault(responseObject)) {
+      return List.of();
+    }
+    List<ResponseObject> subSearch = List.of();
+    if (isEnvelope(responseObject)) { // envelope
+      subSearch = summary.getChildren();
+    } else if (!summary.getItems()
+        .isEmpty()) { // list
+      subSearch = summary.getItems();
+    } else if (!isEnvelope(responseObject)) {
+      return List.of(responseObject);
+    }
+    return subSearch.stream()
+        .map(OasToGraphQlHelper::findGraphqlRootObject)
         .flatMap(List::stream)
-        .map(c -> toField("", c, inputParams))
         .collect(Collectors.toList());
   }
 
@@ -73,16 +104,31 @@ public class OasToGraphQlHelper {
 
     Field result = new Field();
     result.setName(responseObject.getIdentifier());
-    List<Field> children = responseObject.getSummary()
-        .getChildren()
-        .stream()
-        .filter(c -> shouldAdd(c, inputParams, currentPath))
+
+    Stream<ResponseObject> childResponseObjects;
+    if (responseObject.isComposedOf()) {
+      childResponseObjects = getComposedObjectChildren(responseObject);
+    } else {
+      childResponseObjects = responseObject.getSummary()
+          .getChildren()
+          .stream();
+    }
+    List<Field> children = childResponseObjects.filter(c -> shouldAdd(c, inputParams, currentPath))
         .map(OasToGraphQlHelper::findGraphqlObject)
         .flatMap(List::stream)
         .map(cc -> toField(getPathString(currentPath, responseObject), cc, inputParams))
         .collect(Collectors.toList());
     result.setChildren(children);
     return result;
+  }
+
+  private static Stream<ResponseObject> getComposedObjectChildren(ResponseObject responseObject) {
+    return responseObject.getSummary()
+        .getComposedOf()
+        .stream()
+        .map(r -> r.getSummary()
+            .getChildren())
+        .flatMap(List::stream);
   }
 
   private static boolean shouldAdd(ResponseObject responseObject, Map<String, Object> inputParams, String currentPath) {
