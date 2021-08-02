@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
@@ -24,6 +24,9 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilde
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 
@@ -37,58 +40,28 @@ class QueryBuilderTest {
     openApi = TestResources.openApi();
   }
 
-  @Test
-  void toQuery_returns_validQuery() throws IOException, URISyntaxException {
-    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
-
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
+  @ParameterizedTest(name = "{4}")
+  @MethodSource("queryBuilderArgs")
+  void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
+      Map<String, Object> inputParams, String displayName) {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams)
         .orElseThrow();
 
-    String expected = loadQuery("query1.txt");
-    assertEquals(expected, query);
+    assertEquals(expectedQuery, query);
   }
 
-  @Test
-  void toQuery_returns_validQueryWithArguments() throws IOException, URISyntaxException {
-    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query3/{query3_param1}", "query3");
+  private static Stream<Arguments> queryBuilderArgs() throws IOException {
+    return Stream.of(Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), "valid query"),
+        Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3.txt"), Map.of("query3_param1", "v1"),
+            "query with arguments"),
+        Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3_exp.txt"),
+            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), "query with expand arguments"),
+        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), "query with composed root object"),
+        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(),
+            "query with composed root object and nested composed object")
 
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("query3_param1", "v1"))
-        .orElseThrow();
-
-    String expected = loadQuery("query3.txt");
-    assertEquals(expected, query);
-  }
-
-  @Test
-  void toQuery_returns_validQueryWithExpandAndArguments() throws IOException, URISyntaxException {
-    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query3/{query3_param1}", "query3");
-
-    String query = new GraphQlQueryBuilder()
-        .toQuery(responseSchemaContext, Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")))
-        .orElseThrow();
-
-    String expected = loadQuery("query3_exp.txt");
-    assertEquals(expected, query);
-  }
-
-  @Test
-  void toQuery_returns_validQueryWithComposed() throws IOException, URISyntaxException {
-    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query5", "query3");
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
-        .orElseThrow();
-
-    String expected = loadQuery("query5.txt");
-    assertEquals(expected, query);
-  }
-
-  @Test
-  void toQuery_returns_validQueryWithNestedComposed() throws IOException, URISyntaxException {
-    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query15", "query3");
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
-        .orElseThrow();
-
-    String expected = loadQuery("query15.txt");
-    assertEquals(expected, query);
+    );
   }
 
   // TODO add tests with schemas using arrays, expressions, defaults, list under root object
@@ -149,8 +122,8 @@ class QueryBuilderTest {
         requestBodyContextBuilder);
   }
 
-  private String loadQuery(String name) throws IOException, URISyntaxException {
-    return IOUtils.toString(getClass().getClassLoader()
+  private static String loadQuery(String name) throws IOException {
+    return IOUtils.toString(QueryBuilderTest.class.getClassLoader()
         .getResourceAsStream("queries/" + name), StandardCharsets.UTF_8);
   }
 
