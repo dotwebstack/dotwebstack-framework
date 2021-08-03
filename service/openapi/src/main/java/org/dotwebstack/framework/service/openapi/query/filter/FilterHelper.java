@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 
 public class FilterHelper {
 
+  private FilterHelper(){}
 
   public static void addFilters(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
       @NonNull List<Parameter> parameters, @NonNull Map<String, Object> inputParams, MediaType mediaType) {
