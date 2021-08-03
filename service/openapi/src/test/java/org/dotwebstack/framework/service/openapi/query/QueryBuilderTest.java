@@ -7,14 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
@@ -31,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 
 @ExtendWith(MockitoExtension.class)
 class QueryBuilderTest {
@@ -42,30 +41,32 @@ class QueryBuilderTest {
     openApi = TestResources.openApi();
   }
 
-  @ParameterizedTest(name = "{4}")
+  @ParameterizedTest(name = "{5}")
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
-                                         Map<String, Object> inputParams, String displayName) {
+      Map<String, Object> inputParams, MediaType mediaType, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams)
+    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams, mediaType)
         .orElseThrow();
 
     assertEquals(expectedQuery, query);
   }
 
   private static Stream<Arguments> queryBuilderArgs() throws IOException {
-    return Stream.of(Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), "valid query"),
+    return Stream.of(Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, "valid query"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3.txt"), Map.of("query3_param1", "v1"),
-            "query with arguments"),
+            null, "query with arguments"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3_exp.txt"),
-            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), "query with expand arguments"),
-        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), "query with composed root object"),
-        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(),
+            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null,
+            "query with expand arguments"),
+        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), null,
+            "query with composed root object"),
+        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(), null,
             "query with composed root object and nested composed object"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), "query with " +
-            "array"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of("query16_param1"
-            , "id1"), "query with array"));
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null,
+            "query with " + "array"),
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_select.txt"),
+            Map.of("query16_param1", "id1"), null, "query with select parameter"));
   }
 
   @Test
@@ -101,7 +102,7 @@ class QueryBuilderTest {
     var graphQlQueryBuilder = new GraphQlQueryBuilder();
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
-        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams));
+        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams, null));
   }
 
   private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {

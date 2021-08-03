@@ -232,7 +232,7 @@ class CoreRequestHandlerTest {
     data.put("query6", "{\"key\" : \"value\" }");
 
     doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class));
+        .buildQueryString(any(Map.class), any(MediaType.class));
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
@@ -251,7 +251,7 @@ class CoreRequestHandlerTest {
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
     doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class));
+        .buildQueryString(any(Map.class), any(MediaType.class));
 
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
@@ -288,6 +288,7 @@ class CoreRequestHandlerTest {
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     HttpHeaders asHeaders = mock(HttpHeaders.class);
+    when(asHeaders.getContentType()).thenReturn(MediaType.APPLICATION_JSON);
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
 

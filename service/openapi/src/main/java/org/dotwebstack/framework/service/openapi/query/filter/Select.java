@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.query;
+package org.dotwebstack.framework.service.openapi.query.filter;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,8 +8,6 @@ import lombok.Data;
 public class Select {
 
   private String fieldPath;
-
-  private String name;
 
   private Object value;
 

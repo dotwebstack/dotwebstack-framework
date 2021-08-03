@@ -216,6 +216,7 @@ paths:
               type: string
               enum: ['postalCode', 'beers', 'beers.ingredients']
         - name: identifier
+          x-dws-select: identifier
           in: path
           required: true
           schema:
@@ -248,6 +249,7 @@ paths:
                 - identifier
               properties:
                 identifier:
+                  x-dws-select: identifier
                   type: string
       responses:
         200:

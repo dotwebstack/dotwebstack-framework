@@ -205,7 +205,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
-    ExecutionResult result = buildQueryString(inputParams).map(query -> {
+    MediaType mediaType = request.headers()
+        .asHttpHeaders()
+        .getContentType();
+    ExecutionResult result = buildQueryString(inputParams, mediaType).map(query -> {
       if (LOG.isDebugEnabled()) {
         logInputRequest(request);
         LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
@@ -215,7 +218,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .query(query)
           .variables(inputParams)
           .build();
-
 
       return graphQL.execute(executionInput);
     })
@@ -464,8 +466,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  protected Optional<String> buildQueryString(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
+  protected Optional<String> buildQueryString(Map<String, Object> inputParams, MediaType mediaType) {
+    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams, mediaType);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,

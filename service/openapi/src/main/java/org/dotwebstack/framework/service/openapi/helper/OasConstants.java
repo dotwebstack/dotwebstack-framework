@@ -66,6 +66,8 @@ public class OasConstants {
 
   public static final String X_DWS_QUERY_PARAMETER_VALUEEXPR = "valueExpr";
 
+  public static final String X_DWS_SELECT = "x-dws-select";
+
   private OasConstants() {}
 
 }

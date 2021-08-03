@@ -1,16 +1,13 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addFilters;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import io.swagger.v3.oas.models.parameters.Parameter;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
@@ -18,11 +15,12 @@ import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.springframework.http.MediaType;
 
 public class GraphQlQueryBuilder {
 
   public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
-                                  @NonNull Map<String, Object> inputParams) {
+      @NonNull Map<String, Object> inputParams, MediaType mediaType) {
 
     DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
     String queryName = dwsQuerySettings.getQueryName();
@@ -39,37 +37,10 @@ public class GraphQlQueryBuilder {
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
     Optional<GraphQlQuery> query = toQuery(queryName, fields);
-    query.ifPresent(q -> addFilters(q, responseSchemaContext.getParameters(), inputParams));
+    query.ifPresent(q -> addFilters(q, responseSchemaContext.getRequestBodyContext(),
+        responseSchemaContext.getParameters(), inputParams, mediaType));
 
     return query.map(GraphQlQuery::toString);
-  }
-
-  private Set<Select> getSelects(List<Parameter> parameters, Map<String, Object> inputParams){
-    return parameters.stream().map(p -> {
-      String name = p.getName();
-      if (p.getExtensions() != null) {
-        String select = (String) p.getExtensions().get("x-dws-select");
-        if (select != null && inputParams.get(name) != null) {
-            return new Select.SelectBuilder().fieldPath(select).value(inputParams.get(name)).build();
-        }
-      }
-      return null;
-    }).filter(Objects::nonNull).collect(Collectors.toSet());
-  }
-
-  private void addFilters(GraphQlQuery query, List<Parameter> parameters, Map<String, Object> inputParams) {
-    Set<Select> selects = getSelects(parameters, inputParams);
-
-    selects.forEach(select -> {
-          String[] path = select.getFieldPath().split("\\.");
-          Field field = query.getField();
-          for (int i = 0; i < path.length - 1; i++) {
-            int finalI = i;
-            field =
-                field.getChildren().stream().filter(f -> f.getName().equals(path[finalI])).findFirst().orElseThrow();
-          }
-          field.getArguments().put(path[path.length-1], select.getValue());
-    });
   }
 
   private Optional<GraphQlQuery> toQuery(String queryName, List<Field> fields) {

@@ -17,6 +17,7 @@ import lombok.NonNull;
 public class Field {
   private String name;
 
+  @Builder.Default
   private Map<String, Object> arguments = new HashMap<>();
 
   private List<Field> children;
