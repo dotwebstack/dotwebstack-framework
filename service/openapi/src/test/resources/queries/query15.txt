@@ -1,0 +1,10 @@
+query Wrapper{
+ query15 {
+  o2_prop1
+  o14_prop1
+  o14_prop2 {
+   o3_prop2
+   o3_prop1
+  }
+ }
+}

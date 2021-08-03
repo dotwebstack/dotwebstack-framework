@@ -16,8 +16,6 @@ import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.helpers.GraphQlValueHelper;
-import org.dotwebstack.framework.core.query.GraphQlField;
 
 @Slf4j
 public class JexlHelper {
@@ -35,23 +33,15 @@ public class JexlHelper {
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams) {
-    return getJexlContext(envParams, argParams, null, null);
+    return getJexlContext(envParams, argParams, null);
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
-      GraphQlField graphQlField, Map<String, Object> resultData) {
+      Map<String, Object> resultData) {
     JexlContext jexlContext = new MapContext();
 
     if (envParams != null) {
       envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
-    }
-
-    if (graphQlField != null) {
-      graphQlField.getArguments()
-          .stream()
-          .filter(argument -> Objects.nonNull(argument.getDefaultValue()))
-          .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-              GraphQlValueHelper.getValue(argument.getType(), argument.getDefaultValue())));
     }
 
     if (resultData != null) {

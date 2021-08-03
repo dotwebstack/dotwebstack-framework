@@ -1,0 +1,6 @@
+query Wrapper{
+ query3 {
+  o2_prop1
+  o2_prop2
+ }
+}

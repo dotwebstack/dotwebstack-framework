@@ -4,7 +4,7 @@ import static graphql.Assert.assertTrue;
 import static java.util.Collections.emptyMap;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsRequiredFields;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQuerySettings;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.Test;
-
 
 
 class DwsExtensionHelperTest {
@@ -106,7 +105,7 @@ class DwsExtensionHelperTest {
         .get("/query8")
         .getGet();
 
-    assertEquals(List.of(), getDwsRequiredFields(operation));
+    assertEquals(List.of(), getDwsQuerySettings(operation).getRequiredFields());
   }
 
   @Test
@@ -116,7 +115,7 @@ class DwsExtensionHelperTest {
         .get("/query9")
         .getGet();
 
-    assertEquals(List.of("field1"), getDwsRequiredFields(operation));
+    assertEquals(List.of("field1"), getDwsQuerySettings(operation).getRequiredFields());
   }
 
   @Test
@@ -126,7 +125,7 @@ class DwsExtensionHelperTest {
         .get("/query10")
         .getGet();
 
-    assertEquals(List.of(), getDwsRequiredFields(operation));
+    assertEquals(List.of(), getDwsQuerySettings(operation).getRequiredFields());
   }
 
   @Test

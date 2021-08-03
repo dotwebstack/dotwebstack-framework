@@ -43,6 +43,8 @@ components:
       properties:
         o2_prop1:
           type: string
+        o2_prop2:
+          type: string
     Object3:
       type: object
       required:
@@ -104,6 +106,36 @@ components:
           items:
             type: string
 
+    Object13:
+      type: object
+      allOf:
+        - $ref: 'components/schemas/Object2'
+        - $ref: 'components/schemas/Object14'
+
+    Object14:
+      type: object
+      required:
+        - o14_prop1
+        - o14_prop2
+      properties:
+        o14_prop1:
+          type: string
+        o14_prop2:
+          $ref: 'components/schemas/Object4'
+
+    Object15:
+      type: object
+      required:
+        - o15_prop1
+        - o15_prop2
+      properties:
+        o15_prop1:
+          type: string
+        o15_prop3:
+          type: array
+          items:
+            type: string
+
   headers:
     HeaderRef:
       schema:
@@ -153,7 +185,8 @@ paths:
                 $ref: '#/components/schemas/Object2'
   /query3/{query3_param1}:
     get:
-      x-dws-query: query3
+      x-dws-query:
+        field: query3
       parameters:
         - name: query3_param1
           in: path
@@ -183,7 +216,11 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/Object2'
-
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: OK
@@ -398,3 +435,29 @@ paths:
               schema:
                 type: string
                 x-dws-expr: '`http://any/url`'
+  /query14:
+    get:
+      x-dws-query: query14
+      responses:
+        303:
+          description: "300 response"
+  /query15:
+    get:
+      x-dws-query: query15
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object13'
+  /query16:
+    get:
+      x-dws-query: query16
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object15'

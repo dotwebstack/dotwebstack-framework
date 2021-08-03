@@ -7,23 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import graphql.language.ListType;
-import graphql.language.Type;
-import graphql.language.TypeName;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,10 +36,6 @@ class RequestBodyHandlerTest {
 
   private OpenAPI openApi;
 
-  private TypeDefinitionRegistry typeDefinitionRegistry;
-
-  private GraphQlField graphQlField;
-
   private DefaultRequestBodyHandler requestBodyHandler;
 
   private RequestBody requestBody;
@@ -57,73 +45,12 @@ class RequestBodyHandlerTest {
   @BeforeEach
   void setup() {
     this.openApi = TestResources.openApi();
-    this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry();
-    this.requestBodyHandler =
-        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
-    this.graphQlField = TestResources.getGraphQlField(this.typeDefinitionRegistry, "query4");
+    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, new Jackson2ObjectMapperBuilder());
     this.requestBody = this.openApi.getPaths()
         .get("/query4")
         .getGet()
         .getRequestBody();
     this.requestBodyContext = new RequestBodyContext(this.requestBody);
-  }
-
-  @Test
-  void validate_succeeds_forValidSchema() {
-    this.requestBodyHandler.validate(graphQlField, requestBody, "/query4");
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @Test
-  void validate_throwsException_forPropertyNotFoundInGraphQlQuery() {
-    Map<String, Schema> properties = this.openApi.getPaths()
-        .get("/query4")
-        .getGet()
-        .getRequestBody()
-        .getContent()
-        .get("application" + "/json")
-        .getSchema()
-        .getProperties();
-    Schema schema = properties.remove("object3");
-    properties.put("object2", schema);
-
-    RequestBody requestBody = this.openApi.getPaths()
-        .get("/query4")
-        .getGet()
-        .getRequestBody();
-
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
-  }
-
-  @Test
-  void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
-    this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3: String");
-    this.requestBodyHandler =
-        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
-
-    RequestBody requestBody = this.openApi.getPaths()
-        .get("/query4")
-        .getGet()
-        .getRequestBody();
-
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
-  }
-
-  @Test
-  void validate_throwsException_forGraphQlTypeMismatch() {
-    this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1: Boolean");
-    this.requestBodyHandler =
-        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
-
-    RequestBody requestBody = this.openApi.getPaths()
-        .get("/query4")
-        .getGet()
-        .getRequestBody();
-
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validate(graphQlField, requestBody, "/query4"));
   }
 
   @Test
@@ -187,17 +114,6 @@ class RequestBodyHandlerTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void validateRequestBody_throwsException_forExtensionsInSchema() {
-    this.requestBody.getContent()
-        .get(MediaType.APPLICATION_JSON.toString())
-        .getSchema()
-        .setExtensions(Map.of("an extension", "an extension"));
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validate(this.graphQlField, this.requestBody, "/query4"));
-  }
-
-  @Test
   void supports_returnsTrue_forJson() {
     assertTrue(this.requestBodyHandler.supports(this.requestBody));
   }
@@ -207,30 +123,6 @@ class RequestBodyHandlerTest {
     this.requestBody.getContent()
         .remove(MediaType.APPLICATION_JSON.toString());
     assertFalse(this.requestBodyHandler.supports(this.requestBody));
-  }
-
-  @Test
-  void validatePropertyType_succeeds_forOasObject() {
-    this.requestBodyHandler.validatePropertyType("p", OasConstants.OBJECT_TYPE, new TypeName("test"));
-  }
-
-  @Test
-  void validatePropertyType_throwsException_forOasObject() {
-    Type<?> graphQlType = new ListType(new TypeName("test"));
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.OBJECT_TYPE, graphQlType));
-  }
-
-  @Test
-  void validatePropertyType_succeeds_forOasArray() {
-    this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, new ListType(new TypeName("test")));
-  }
-
-  @Test
-  void validatePropertyType_throwsException_forOasArray() {
-    Type<?> graphQlType = new TypeName("test");
-    assertThrows(InvalidConfigurationException.class,
-        () -> this.requestBodyHandler.validatePropertyType("p", OasConstants.ARRAY_TYPE, graphQlType));
   }
 
   private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {

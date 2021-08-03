@@ -2,21 +2,17 @@ package org.dotwebstack.framework.service.openapi;
 
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
-import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 
 public class TestResources {
 
@@ -25,8 +21,6 @@ public class TestResources {
   private static final String GRAPH_QL_FILE = "config/schema.graphqls";
 
   private static final String OPEN_API_STRING = readString(OPEN_API_FILE);
-
-  private static final String GRAPH_QL_STRING = readString(GRAPH_QL_FILE);
 
   private TestResources() {}
 
@@ -38,24 +32,6 @@ public class TestResources {
   public static InputStream openApiStream() {
     return TestResources.class.getClassLoader()
         .getResourceAsStream(OPEN_API_FILE);
-  }
-
-  public static TypeDefinitionRegistry typeDefinitionRegistry() {
-    Reader reader = new StringReader(GRAPH_QL_STRING);
-    return new SchemaParser().parse(reader);
-  }
-
-  public static TypeDefinitionRegistry typeDefinitionRegistry(String regex, String replacement) {
-    String schemaString = GRAPH_QL_STRING.replaceAll(regex, replacement);
-    return new SchemaParser().parse(schemaString);
-  }
-
-  public static QueryFieldHelper queryFieldHelper(TypeDefinitionRegistry registry) {
-    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(registry);
-    return QueryFieldHelper.builder()
-        .typeDefinitionRegistry(registry)
-        .graphQlFieldBuilder(builder)
-        .build();
   }
 
   public static GraphQlField getGraphQlField(TypeDefinitionRegistry typeDefinitionRegistry, String name) {

@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
-import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
@@ -24,20 +23,17 @@ import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
-import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.handler.CoreRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OptionsRequestHandler;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
-import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -71,35 +67,24 @@ public class OpenApiConfiguration {
 
   private final ParamHandlerRouter paramHandlerRouter;
 
-  private final ResponseContextValidator responseContextValidator;
-
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   private final JexlHelper jexlHelper;
-
-  private final QueryFieldHelper queryFieldHelper;
 
   private final OpenApiProperties openApiProperties;
 
   private final EnvironmentProperties environmentProperties;
 
-  public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService,
-      TypeDefinitionRegistry typeDefinitionRegistry, List<ResponseMapper> responseMappers,
+  public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
-      List<TemplateResponseMapper> templateResponseMappers, ResponseContextValidator responseContextValidator,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, OpenApiProperties openApiProperties, JexlEngine jexlEngine,
-      EnvironmentProperties environmentProperties) {
+      List<TemplateResponseMapper> templateResponseMappers, RequestBodyHandlerRouter requestBodyHandlerRouter,
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
     this.openApi = openApi;
     this.graphQl = graphQlService;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;
     this.templateResponseMappers = templateResponseMappers;
-    this.responseContextValidator = responseContextValidator;
-    this.queryFieldHelper = QueryFieldHelper.builder()
-        .typeDefinitionRegistry(typeDefinitionRegistry)
-        .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
-        .build();
     this.openApiStream = openApiStream;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.openApiProperties = openApiProperties;
@@ -152,6 +137,27 @@ public class OpenApiConfiguration {
     return routerFunctions.build();
   }
 
+  public static ResponseSchemaContext buildResponseSchemaContext(@NonNull HttpMethodOperation httpMethodOperation,
+      @NonNull ResponseTemplateBuilder responseTemplateBuilder,
+      @NonNull RequestBodyContextBuilder requestBodyContextBuilder) {
+    List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
+    var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
+        .getRequestBody());
+
+    DwsQuerySettings dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(httpMethodOperation.getOperation());
+    return ResponseSchemaContext.builder()
+        .requiredFields(dwsQuerySettings.getRequiredFields() != null ? dwsQuerySettings.getRequiredFields()
+            : Collections.emptyList())
+        .responses(responseTemplates)
+        .parameters(httpMethodOperation.getOperation()
+            .getParameters() != null ? httpMethodOperation.getOperation()
+                .getParameters() : Collections.emptyList())
+        .dwsQuerySettings(dwsQuerySettings)
+        .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
+        .requestBodyContext(requestBodyContext)
+        .build();
+  }
+
   protected void addOpenApiSpecEndpoints(RouterFunctions.Builder routerFunctions, @NonNull InputStream openApiStream) {
     RequestPredicate getPredicate = RequestPredicates.method(HttpMethod.GET)
         .and(RequestPredicates.path(openApiProperties.getApiDocPublicationPath()))
@@ -186,36 +192,22 @@ public class OpenApiConfiguration {
 
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
       RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
-    var requestBodyContext = requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
-        .getRequestBody());
 
-    List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
-
-    Optional<GraphQlField> graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
-    List<String> requiredFields = DwsExtensionHelper.getDwsRequiredFields(httpMethodOperation.getOperation());
-
-    var responseSchemaContext = ResponseSchemaContext.builder()
-        .graphQlField(graphQlField.orElse(null))
-        .requiredFields(Objects.nonNull(requiredFields) ? requiredFields : Collections.emptyList())
-        .responses(responseTemplates)
-        .parameters(httpMethodOperation.getOperation()
-            .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList())
-        .dwsParameters(DwsExtensionHelper.getDwsQueryParameters(httpMethodOperation.getOperation()))
-        .requestBodyContext(requestBodyContext)
-        .build();
+    ResponseSchemaContext responseSchemaContext =
+        buildResponseSchemaContext(httpMethodOperation, responseTemplateBuilder, requestBodyContextBuilder);
 
     var requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));
 
-    validateTemplateResponseMapper(responseTemplates);
+    validateTemplateResponseMapper(responseSchemaContext.getResponses());
     var templateResponseMapper = getTemplateResponseMapper();
 
-    var coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext,
-        responseContextValidator, graphQl, responseMappers, jsonResponseMapper, templateResponseMapper,
-        paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    var coreRequestHandler =
+        new CoreRequestHandler(openApi, responseSchemaContext, graphQl, responseMappers, jsonResponseMapper,
+            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
 
-    responseTemplates.stream()
+    responseSchemaContext.getResponses()
+        .stream()
         .map(ResponseTemplate::getResponseCode)
         .map(HttpStatus::valueOf)
         .filter(httpStatus -> !httpStatus.is3xxRedirection())

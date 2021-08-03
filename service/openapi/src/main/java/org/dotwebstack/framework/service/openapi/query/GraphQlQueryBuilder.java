@@ -1,51 +1,53 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
-import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathsForSuccessResponse;
-import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.query.model.Field;
+import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 
 public class GraphQlQueryBuilder {
 
   public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
-    if (responseSchemaContext.getGraphQlField() == null) {
+    DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
+    String queryName = dwsQuerySettings.getQueryName();
+
+    if (queryName == null || queryName.isEmpty()) {
       return Optional.empty();
     }
 
-    Set<String> requiredPaths = getPathsForSuccessResponse(responseSchemaContext, inputParams);
+    ResponseTemplate okResponse = responseSchemaContext.getResponses()
+        .stream()
+        .filter(r -> r.getResponseCode() == 200)
+        .findFirst()
+        .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
-    var builder = new StringBuilder();
-    var joiner = new StringJoiner(",", "{", "}");
-    var argumentJoiner = new StringJoiner(",");
+    List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
+    return toQuery(queryName, fields);
+  }
 
-    Set<String> queriedPaths = new HashSet<>();
-    addToQuery(responseSchemaContext.getGraphQlField(), requiredPaths, queriedPaths, joiner, argumentJoiner,
-        inputParams, true, "");
-    validateRequiredPathsQueried(requiredPaths, queriedPaths);
+  private Optional<String> toQuery(String queryName, List<Field> fields) {
+    Field root = new Field();
+    root.setChildren(fields);
+    root.setName(queryName);
 
-    builder.append("query Wrapper");
-    if (!argumentJoiner.toString()
-        .isEmpty()) {
-      builder.append("(");
-      builder.append(argumentJoiner);
-      builder.append(")");
-    }
-    builder.append(joiner.toString());
-    return Optional.of(builder.toString());
+    GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
+    builder.field(root);
+    builder.queryName("Wrapper");
+    return Optional.of(builder.build()
+        .toString());
+
   }
 
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
@@ -65,48 +67,4 @@ public class GraphQlQueryBuilder {
     }
   }
 
-  protected void addToQuery(GraphQlField field, Set<String> requiredPaths, Set<String> queriedPaths,
-      StringJoiner joiner, StringJoiner headerArgumentJoiner, Map<String, Object> inputParams, boolean isTopLevel,
-      String path) {
-    var argumentJoiner = new StringJoiner(",", "(", ")");
-    argumentJoiner.setEmptyValue("");
-    if (!field.getArguments()
-        .isEmpty() && isTopLevel) {
-      field.getArguments()
-          .stream()
-          .filter(graphQlArgument -> inputParams.containsKey(graphQlArgument.getName()))
-          .forEach(graphQlArgument -> {
-            argumentJoiner.add(graphQlArgument.getName() + ": $" + graphQlArgument.getName());
-            headerArgumentJoiner.add("$" + graphQlArgument.getName() + ": " + getTypeString(graphQlArgument.getType()));
-          });
-    }
-
-    if ((isTopLevel || requiredPaths.contains(path) || isGraphQlIdentifier(field.getType())
-        || isExpanded(inputParams, path))) {
-      if (!field.getFields()
-          .isEmpty()) {
-        var childJoiner = new StringJoiner(",", "{", "}");
-        field.getFields()
-            .forEach(childField -> {
-              String childPath = (path.isEmpty() ? "" : path + ".") + childField.getName();
-              addToQuery(childField, requiredPaths, queriedPaths, childJoiner, headerArgumentJoiner, inputParams, false,
-                  childPath);
-            });
-        if (!Objects.equals("{}", childJoiner.toString())) {
-          queriedPaths.add(path);
-          joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
-        }
-      } else {
-        queriedPaths.add(path);
-        joiner.add(field.getName() + argumentJoiner.toString());
-      }
-    }
-  }
-
-  private boolean isGraphQlIdentifier(String type) {
-    return type.replace("!", "")
-        .replace("\\[", "")
-        .replace("]", "")
-        .matches("^ID$");
-  }
 }

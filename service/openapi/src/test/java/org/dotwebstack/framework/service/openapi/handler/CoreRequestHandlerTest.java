@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -53,8 +54,8 @@ import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
+import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -89,9 +90,6 @@ class CoreRequestHandlerTest {
 
   @Mock
   private ResponseSchemaContext responseSchemaContext;
-
-  @Mock
-  private ResponseContextValidator responseContextValidator;
 
   @Mock
   private GraphQlService graphQl;
@@ -139,12 +137,14 @@ class CoreRequestHandlerTest {
         .set$ref("#/components/schemas/Object4");
 
     when(this.responseSchemaContext.getParameters()).thenReturn(operation.getParameters());
+    DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
+        .queryName("query6")
+        .build();
+    when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
 
-    when(this.responseSchemaContext.getGraphQlField())
-        .thenReturn(TestResources.getGraphQlField(TestResources.typeDefinitionRegistry(), "query6"));
-    coreRequestHandler = spy(new CoreRequestHandler(openApi, "/query6", responseSchemaContext, responseContextValidator,
-        graphQl, List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
-        requestBodyHandlerRouter, jexlHelper, environmentProperties));
+    coreRequestHandler =
+        spy(new CoreRequestHandler(openApi, responseSchemaContext, graphQl, List.of(responseMapper), jsonResponseMapper,
+            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
@@ -216,34 +216,42 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
 
+    DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
+        .build();
+    when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
     ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
 
     assertTrue(serverResponse.statusCode()
         .is3xxRedirection());
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void getParameterValidationExceptionTest() throws URISyntaxException {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
+    doReturn(Optional.of("")).when(coreRequestHandler)
+        .buildQueryString(any(Map.class));
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
-
-    ExceptionWhileDataFetching graphQlError = mock(ExceptionWhileDataFetching.class);
-    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(ExecutionResultImpl.newExecutionResult()
-        .addError(graphQlError)
-        .build());
+    ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
 
     assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void shouldThrowNotFoundExceptionTest() throws URISyntaxException {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", null);
 
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
+    DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
+        .build();
+    when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
+    doReturn(Optional.of("")).when(coreRequestHandler)
+        .buildQueryString(any(Map.class));
 
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
@@ -476,6 +484,14 @@ class CoreRequestHandlerTest {
     when(request.headers()).thenReturn(headers);
     when(request.queryParams()).thenReturn(queryParams);
     return request;
+  }
+
+  private ExceptionWhileDataFetching mockError() {
+    ExceptionWhileDataFetching graphQlError = mock(ExceptionWhileDataFetching.class);
+    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(ExecutionResultImpl.newExecutionResult()
+        .addError(graphQlError)
+        .build());
+    return graphQlError;
   }
 
   private List<ResponseTemplate> getResponseTemplates() {
