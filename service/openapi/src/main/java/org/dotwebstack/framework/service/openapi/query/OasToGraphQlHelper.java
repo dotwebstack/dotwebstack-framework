@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
-import static java.lang.String.format;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -32,8 +31,8 @@ public class OasToGraphQlHelper {
     List<ResponseObject> root = findGraphqlObject(responseObject);
 
     if (root.size() != 1) {
-      throw new InvalidConfigurationException(format("Expected 1 graphql rootobject for object %s but found %s",
-          responseObject.getIdentifier(), root.size()));
+      throw invalidConfigurationException("Expected 1 graphql rootobject for object {} but found {}",
+          responseObject.getIdentifier(), root.size());
     }
 
     ResponseObject rootResponseObject = root.get(0);
