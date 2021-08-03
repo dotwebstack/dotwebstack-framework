@@ -167,6 +167,7 @@ paths:
               type: object
               properties:
                 argument1:
+                  x-dws-select: id
                   type: string
       responses:
         200:

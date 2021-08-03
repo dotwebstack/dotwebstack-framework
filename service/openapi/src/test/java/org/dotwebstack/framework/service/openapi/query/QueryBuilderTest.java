@@ -129,20 +129,41 @@ class QueryBuilderTest {
     assertTrue(query.isEmpty());
   }
 
+  @Test
+  void toQuery_addSelect_forPost() throws IOException {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
+    String query =
+        new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"), MediaType.APPLICATION_JSON)
+            .orElseThrow();
+
+    assertEquals(loadQuery("query1_body_param.txt"), query);
+  }
+
   private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {
+    return getResponseSchemaContext(path, queryName, HttpMethod.GET);
+  }
+
+  private ResponseSchemaContext getResponseSchemaContext(String path, String queryName, HttpMethod method) {
     var responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
         .xdwsStringTypes(List.of())
         .build();
     var requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
 
-    Operation get = openApi.getPaths()
-        .get(path)
-        .getGet();
+    Operation operation;
+    if (method == HttpMethod.POST) {
+      operation = openApi.getPaths()
+          .get(path)
+          .getPost();
+    } else {
+      operation = openApi.getPaths()
+          .get(path)
+          .getGet();
+    }
     HttpMethodOperation httpOperation = HttpMethodOperation.builder()
         .name(queryName)
-        .operation(get)
-        .httpMethod(HttpMethod.GET)
+        .operation(operation)
+        .httpMethod(method)
         .build();
 
     return OpenApiConfiguration.buildResponseSchemaContext(httpOperation, responseTemplateBuilder,
