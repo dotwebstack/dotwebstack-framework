@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
@@ -105,6 +107,26 @@ class QueryBuilderTest {
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams, null));
+  }
+
+  @Test
+  void toQuery_returnsEmptyOptional_forNullQueryName() {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
+    responseSchemaContext.getDwsQuerySettings()
+        .setQueryName(null);
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null);
+
+    assertTrue(query.isEmpty());
+  }
+
+  @Test
+  void toQuery_returnsEmptyOptional_forEmptyQueryName() {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
+    responseSchemaContext.getDwsQuerySettings()
+        .setQueryName("");
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null);
+
+    assertTrue(query.isEmpty());
   }
 
   private ResponseSchemaContext getResponseSchemaContext(String path, String queryName) {

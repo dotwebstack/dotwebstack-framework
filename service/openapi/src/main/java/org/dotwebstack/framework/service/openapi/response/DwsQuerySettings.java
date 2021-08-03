@@ -2,14 +2,14 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import java.util.List;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
 
-@Getter
+@Data
 @Builder
 public class DwsQuerySettings {
-  private final String queryName;
+  private String queryName;
 
-  private final List<String> requiredFields;
+  private List<String> requiredFields;
 
 }
