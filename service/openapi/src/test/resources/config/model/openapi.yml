@@ -451,9 +451,15 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object13'
-  /query16:
+  /query16/{query16_param1}:
     get:
       x-dws-query: query16
+      parameters:
+        - name: query16_param1
+          in: path
+          x-dws-select: id
+          schema:
+            type: string
       responses:
         200:
           description: OK

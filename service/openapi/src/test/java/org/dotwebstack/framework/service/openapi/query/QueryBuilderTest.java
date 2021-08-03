@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
@@ -43,7 +45,7 @@ class QueryBuilderTest {
   @ParameterizedTest(name = "{4}")
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
-      Map<String, Object> inputParams, String displayName) {
+                                         Map<String, Object> inputParams, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams)
         .orElseThrow();
@@ -60,7 +62,10 @@ class QueryBuilderTest {
         Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), "query with composed root object"),
         Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(),
             "query with composed root object and nested composed object"),
-        Arguments.arguments("/query16", "query16", loadQuery("query16.txt"), Map.of(), "query with array"));
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), "query with " +
+            "array"),
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of("query16_param1"
+            , "id1"), "query with array"));
   }
 
   @Test

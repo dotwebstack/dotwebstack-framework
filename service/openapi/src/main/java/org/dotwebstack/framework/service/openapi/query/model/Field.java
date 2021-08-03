@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query.model;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -16,7 +17,7 @@ import lombok.NonNull;
 public class Field {
   private String name;
 
-  private Map<String, Object> arguments;
+  private Map<String, Object> arguments = new HashMap<>();
 
   private List<Field> children;
 
