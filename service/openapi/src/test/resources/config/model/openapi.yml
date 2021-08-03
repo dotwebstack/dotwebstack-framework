@@ -128,13 +128,16 @@ components:
       required:
         - o15_prop1
         - o15_prop2
+        - o15_prop3
       properties:
         o15_prop1:
           type: string
-        o15_prop3:
+        o15_prop2:
           type: array
           items:
             type: string
+        o15_prop3:
+          $ref: 'components/schemas/Object3'
 
   headers:
     HeaderRef:
@@ -458,6 +461,11 @@ paths:
         - name: query16_param1
           in: path
           x-dws-select: id
+          schema:
+            type: string
+        - name: query16_param2
+          in: path
+          x-dws-select: o15_prop3.id
           schema:
             type: string
       responses:

@@ -66,7 +66,9 @@ class QueryBuilderTest {
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null,
             "query with " + "array"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_select.txt"),
-            Map.of("query16_param1", "id1"), null, "query with select parameter"));
+            Map.of("query16_param1", "id1"), null, "query with select parameter"),
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_select.txt"),
+            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, "query with nested select parameter"));
   }
 
   @Test

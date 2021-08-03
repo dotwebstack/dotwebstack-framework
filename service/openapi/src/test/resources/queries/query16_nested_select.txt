@@ -2,7 +2,7 @@ query Wrapper{
  query16(id: "id1") {
   o15_prop1
   o15_prop2
-  o15_prop3 {
+  o15_prop3(id: "id2") {
    o3_prop2
   }
  }
