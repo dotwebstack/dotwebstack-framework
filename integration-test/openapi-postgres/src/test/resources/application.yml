@@ -1,0 +1,6 @@
+logging:
+  level:
+    root: INFO
+    org.dotwebstack: DEBUG
+
+spring.main.banner-mode: 'off'

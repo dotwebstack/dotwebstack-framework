@@ -54,8 +54,10 @@ public class FilterHelper {
 
   protected static Field resolveFilterField(GraphQlQuery query, String[] path) {
     Field field = query.getField();
+    if (path == null) {
+      return field;
+    }
     for (int i = 0; i < path.length; i++) {
-      // TODO: throw error if not found
       int finalI = i;
       field = field.getChildren()
           .stream()
