@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
@@ -220,6 +221,11 @@ class SelectQueryBuilderTest {
 
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
+    var fieldConfiguration = mock(PostgresFieldConfiguration.class);
+
+    when(fieldConfiguration.getColumn()).thenReturn("nameColumn");
+    when(typeConfiguration.getField("name")).thenReturn(Optional.of(fieldConfiguration));
+
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
         .scalarFields(scalarFields)
@@ -234,7 +240,7 @@ class SelectQueryBuilderTest {
         .toString(),
         equalTo("select\n" + "  \"t3\".*,\n" + "  x2\n" + "from (values ('Beer 1')) as \"t2\" (\"x2\")\n"
             + "  left outer join lateral (\n" + "    select \"t1\".\"nameColumn\" as \"x1\"\n"
-            + "    from \"BreweryTable\" as \"t1\"\n" + "    where \"t1\".\"name\" = \"t2\".\"x2\"\n"
+            + "    from \"BreweryTable\" as \"t1\"\n" + "    where \"t1\".\"nameColumn\" = \"t2\".\"x2\"\n"
             + "  ) as \"t3\"\n" + "    on 1 = 1"));
   }
 
