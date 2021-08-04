@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
@@ -105,7 +104,7 @@ public class SelectQueryBuilder {
     }
 
     if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {
-      selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectRequest.getKeyCriteria());
+      selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectRequest);
     }
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
@@ -137,7 +136,7 @@ public class SelectQueryBuilder {
         objectSelectContext.isUseNullMapWhenNotFound());
 
     if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {
-      query = addKeyCriterias(query, objectSelectContext, fromTable, objectRequest.getKeyCriteria());
+      query = addKeyCriterias(query, objectSelectContext, fromTable, objectRequest);
     }
 
     return SelectQueryBuilderResult.builder()
@@ -556,22 +555,28 @@ public class SelectQueryBuilder {
   }
 
   private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
-      Table<?> fieldTable, List<KeyCriteria> keyCriterias) {
+      Table<?> fieldTable, ObjectRequest objectRequest) {
+
+    PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
 
     // create value rows array
-    var valuesTableRows = keyCriterias.stream()
+    var valuesTableRows = objectRequest.getKeyCriteria()
+        .stream()
         .map(keyCriteria -> DSL.row(keyCriteria.getValues()
             .values()))
         .toArray(RowN[]::new);
 
     // create key column names map
-    var keyColumnNames = keyCriterias.stream()
+    var keyCriteria = objectRequest.getKeyCriteria()
+        .stream()
         .findAny()
-        .orElseThrow()
-        .getValues()
+        .orElseThrow();
+
+    var keyColumnNames = keyCriteria.getValues()
         .keySet()
         .stream()
-        .collect(Collectors.toMap(Function.identity(), keyColumnName -> objectSelectContext.newSelectAlias()));
+        .collect(Collectors.toMap(name -> getColumnForKeyCriteria(typeConfiguration, keyCriteria, name),
+            name -> objectSelectContext.newSelectAlias()));
 
     objectSelectContext.setKeyColumnNames(keyColumnNames);
 
@@ -602,6 +607,20 @@ public class SelectQueryBuilder {
         .collect(Collectors.toList()));
 
     return query;
+  }
+
+  private String getColumnForKeyCriteria(PostgresTypeConfiguration typeConfiguration, KeyCriteria keyCriteria,
+      String name) {
+    // name equals column name
+    if (keyCriteria instanceof PostgresKeyCriteria) {
+      return name;
+    }
+
+    // name equals field name
+    return typeConfiguration.getField(name)
+        .filter(fieldConfiguration -> Objects.nonNull(fieldConfiguration.getColumn()))
+        .map(PostgresFieldConfiguration::getColumn)
+        .orElseThrow();
   }
 
   private Table<?> createTable(String name, List<ContextCriteria> contextCriterias) {
