@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.test.TestApplication;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +52,8 @@ class OpenapiPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
   }
 
-  @Disabled("Disabled until filtering is implemented")
   @Test
-  void openApiRequest_ReturnsBeers_byCountryAndName_withDefaultResponse() throws IOException {
+  void brewries_returnsExpectedResult() throws IOException {
     // Arrange & Act
     String result = client.get()
         .uri("/breweries")
@@ -66,6 +64,20 @@ class OpenapiPostgresIntegrationTest {
 
     // Assert
     assertResult(result, "breweries.json");
+  }
+
+  @Test
+  void brewries_returnsExpectedResult_withSelect() throws IOException {
+    // Arrange & Act
+    String result = client.get()
+        .uri("/breweries?name=Brewery Z")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "breweries_filtered.json");
   }
 
   private void assertResult(String result, String jsonResult) throws IOException {
