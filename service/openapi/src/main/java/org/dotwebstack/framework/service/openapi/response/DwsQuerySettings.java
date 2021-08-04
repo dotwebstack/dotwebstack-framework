@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,11 @@ import lombok.Data;
 public class DwsQuerySettings {
   private String queryName;
 
-  private List<String> requiredFields;
+  @Builder.Default
+  private List<String> requiredFields = new ArrayList<>();
+
+  @Builder.Default
+  private List<QueryFilter> filters = new ArrayList<>();
+
 
 }

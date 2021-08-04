@@ -68,6 +68,12 @@ public class OasConstants {
 
   public static final String X_DWS_SELECT = "x-dws-select";
 
+  public static final String X_DWS_FILTER = "x-dws-filter";
+
+  public static final String X_DWS_FILTER_NAME = "mame";
+
+  public static final String X_DWS_FILTER_OPERATOR = "operator";
+
   private OasConstants() {}
 
 }

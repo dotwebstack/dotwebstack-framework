@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addFilters;
+import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addSelections;
 
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,10 @@ public class GraphQlQueryBuilder {
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
     Optional<GraphQlQuery> query = toQuery(queryName, fields);
-    query.ifPresent(q -> addFilters(q, responseSchemaContext.getRequestBodyContext(),
+    query.ifPresent(q -> addSelections(q, responseSchemaContext.getRequestBodyContext(),
         responseSchemaContext.getParameters(), inputParams, mediaType));
+    query.ifPresent(q -> addFilters(q, responseSchemaContext.getDwsQuerySettings()
+        .getFilters(), inputParams));
 
     return query.map(GraphQlQuery::toString);
   }

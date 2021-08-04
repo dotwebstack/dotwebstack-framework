@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
+import org.dotwebstack.framework.service.openapi.response.QueryFilter;
+import org.dotwebstack.framework.service.openapi.response.QueryFilterClause;
+import org.dotwebstack.framework.service.openapi.response.QueryFilterParam;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 
@@ -20,7 +23,7 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static void addFilters(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
+  public static void addSelections(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
       @NonNull List<Parameter> parameters, @NonNull Map<String, Object> inputParams, MediaType mediaType) {
     Set<Select> selects = getParamSelects(parameters, inputParams);
     selects.addAll(getRequestBodySelects(requestBodyContext, inputParams, mediaType));
@@ -28,19 +31,88 @@ public class FilterHelper {
     selects.forEach(select -> {
       String[] path = select.getFieldPath()
           .split("\\.");
-      Field field = query.getField();
-      for (int i = 0; i < path.length - 1; i++) {
-        int finalI = i;
-        field = field.getChildren()
-            .stream()
-            .filter(f -> f.getName()
-                .equals(path[finalI]))
-            .findFirst()
-            .orElseThrow();
-      }
+      Field field = resolveField(query, path);
       field.getArguments()
           .put(path[path.length - 1], select.getValue());
     });
+  }
+
+  protected static Field resolveField(GraphQlQuery query, String[] path) {
+    Field field = query.getField();
+    for (int i = 0; i < path.length - 1; i++) {
+      // TODO: throw error if not found
+      int finalI = i;
+      field = field.getChildren()
+          .stream()
+          .filter(f -> f.getName()
+              .equals(path[finalI]))
+          .findFirst()
+          .orElseThrow();
+    }
+    return field;
+  }
+
+  protected static Field resolveFilterField(GraphQlQuery query, String[] path) {
+    Field field = query.getField();
+    for (int i = 0; i < path.length; i++) {
+      // TODO: throw error if not found
+      int finalI = i;
+      field = field.getChildren()
+          .stream()
+          .filter(f -> f.getName()
+              .equals(path[finalI]))
+          .findFirst()
+          .orElseThrow();
+    }
+    return field;
+  }
+
+  public static void addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
+      @NonNull Map<String, Object> inputParams) {
+    filters.forEach(filter -> {
+      Filter.FilterBuilder builder = Filter.builder();
+      String[] fieldPath = filter.getField();
+      List<FilterClause> clauses = filter.getClauses()
+          .stream()
+          .map(fc -> toFilterClause(fc, inputParams))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+      if (!clauses.isEmpty()) {
+        builder.filterClauses(clauses);
+        Field field = resolveFilterField(query, fieldPath);
+        // TODO: check that no other filters are present
+        field.setFilter(builder.build());
+      }
+    });
+
+  }
+
+  private static FilterClause toFilterClause(QueryFilterClause clause, Map<String, Object> inputParams) {
+    FilterClause.FilterClauseBuilder builder = FilterClause.builder();
+
+    builder.operator(clause.getOperator());
+    QueryFilterParam param = clause.getFilterParam();
+    if (param != null) {
+      builder.field(clause.getField());
+      Object value = inputParams.get(param.getParamName());
+      if (value == null) {
+        return null;
+      }
+      builder.value(value);
+    } else {
+      List<FilterClause> subClauses = clause.getClauses()
+          .stream()
+          .map(fc -> toFilterClause(fc, inputParams))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+      if (subClauses.isEmpty()) {
+        return null;
+      }
+      builder.clauses(subClauses);
+    }
+
+    return builder.build();
+
   }
 
   @SuppressWarnings("rawtypes")
@@ -96,6 +168,8 @@ public class FilterHelper {
           return null;
         })
         .filter(Objects::nonNull)
+        .filter(s -> s.getValue() != null)
         .collect(Collectors.toSet());
   }
+
 }

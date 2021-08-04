@@ -3,12 +3,13 @@ package org.dotwebstack.framework.service.openapi.query.model;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.dotwebstack.framework.service.openapi.query.filter.Filter;
+import org.dotwebstack.framework.service.openapi.query.filter.ValueWriter;
 
 @Builder
 @Data
@@ -20,16 +21,27 @@ public class Field {
   @Builder.Default
   private Map<String, Object> arguments = new HashMap<>();
 
+  private Filter filter;
+
   private List<Field> children;
 
   public void writeAsString(@NonNull StringBuilder sb, int depth) {
     indent(sb, depth);
     sb.append(name);
     if (arguments != null && !arguments.isEmpty()) {
-      StringJoiner stringJoiner = new StringJoiner(sb);
       sb.append("(");
-      arguments.forEach((key, value) -> stringJoiner.add(key + ": \"" + value.toString() + "\""));
-      sb.append(stringJoiner);
+      String prefix = "";
+      for (Map.Entry<String, Object> e : arguments.entrySet()) {
+        sb.append(prefix);
+        sb.append(e.getKey())
+            .append(": ");
+        ValueWriter.write(e.getValue(), sb);
+        prefix = ", ";
+      }
+      sb.append(")");
+    } else if (filter != null) {
+      sb.append("(");
+      filter.writeAsString(sb);
       sb.append(")");
     }
     if (children != null && !children.isEmpty()) {
