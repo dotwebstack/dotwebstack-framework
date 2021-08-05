@@ -12,13 +12,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
-import org.dotwebstack.framework.service.openapi.query.model.FilterFieldClause;
-import org.dotwebstack.framework.service.openapi.query.model.FilterOperatorClause;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.dwssettings.FieldClause;
-import org.dotwebstack.framework.service.openapi.response.dwssettings.OperatorClause;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
 import org.springframework.http.MediaType;
 
@@ -77,49 +73,34 @@ public class FilterHelper {
     filters.forEach(filter -> {
       GraphQlFilter.GraphQlFilterBuilder builder = GraphQlFilter.builder();
       String[] fieldPath = filter.getFieldPath();
-      List<FilterFieldClause> clauses = filter.getClauses()
-          .stream()
-          .map(fc -> toFilterFieldClause(fc, inputParams))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      if (!clauses.isEmpty()) {
-        builder.fieldClauses(clauses);
-        Field field = resolveFilterField(query, fieldPath);
-        // TODO: check that no other filters are present
-        field.setFilter(builder.build());
-      }
+      Map<?, ?> fieldFilters = filter.getFieldFilters();
+      fieldFilters = resolveVariables(fieldFilters, inputParams);
+
+      builder.content(fieldFilters);
+      Field field = resolveFilterField(query, fieldPath);
+      field.setFilter(builder.build());
     });
 
   }
 
-  private static FilterFieldClause toFilterFieldClause(FieldClause clause, Map<String, Object> inputParams) {
+  private static Map<?, ?> resolveVariables(Map<?, ?> tree, Map<String, Object> inputParams) {
 
+    return tree.entrySet()
+        .stream()
+        .map(e -> {
+          Object value = e.getValue();
+          if (value instanceof String && ((String) value).startsWith("$")) {
+            String[] split = ((String) value).split("\\.");
+            String name = split[1];
+            value = inputParams.get(name);
+          } else if (value instanceof Map) {
+            value = resolveVariables((Map<?, ?>) value, inputParams);
+          }
 
-    List<OperatorClause> operatorClauses = clause.getClauses();
-    List<FilterOperatorClause> filterOperatorClauses = operatorClauses.stream()
-        .map(oc -> toFilterOperatorClause(oc, inputParams))
+          return value!=null? Map.entry(e.getKey(), value):null;
+        })
         .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-    if (!filterOperatorClauses.isEmpty()) {
-      FilterFieldClause.FilterFieldClauseBuilder builder = FilterFieldClause.builder();
-      builder.fieldName(clause.getFieldName());
-      builder.negate(clause.isNegate());
-      builder.clauses(filterOperatorClauses);
-      return builder.build();
-    }
-    return null;
-  }
-
-  private static FilterOperatorClause toFilterOperatorClause(OperatorClause operatorClause,
-      Map<String, Object> inputParams) {
-    String paramName = operatorClause.getParameterName();
-    if (inputParams.get(paramName) != null) {
-      return FilterOperatorClause.builder()
-          .operator(operatorClause.getOperator())
-          .value(inputParams.get(paramName))
-          .build();
-    }
-    return null;
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @SuppressWarnings("rawtypes")

@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query.model;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.dotwebstack.framework.service.openapi.query.filter.ValueWriter.write;
+
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,17 +11,10 @@ import lombok.Data;
 @Builder
 public class GraphQlFilter {
 
-  @Builder.Default
-  private List<FilterFieldClause> fieldClauses = new ArrayList<>();
+  private Map<?, ?> content;
 
   public void writeAsString(StringBuilder sb) {
-    sb.append("filter: {");
-    String prefix = "";
-    for (FilterFieldClause clause : fieldClauses) {
-      sb.append(prefix);
-      clause.writeAsString(sb);
-      prefix = ", ";
-    }
-    sb.append("}");
+    sb.append("filter: ");
+    write(content, sb);
   }
 }

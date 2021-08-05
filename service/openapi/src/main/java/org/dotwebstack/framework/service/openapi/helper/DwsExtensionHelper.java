@@ -128,7 +128,7 @@ public class DwsExtensionHelper {
         .map(e -> toFieldClause(e.getKey(), (Map<String, ?>) e.getValue()))
         .collect(Collectors.toList());
 
-    return builder.clauses(clauses)
+    return builder.fieldFilters(fieldMap)
         .build();
   }
 

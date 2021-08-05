@@ -1,13 +1,26 @@
 package org.dotwebstack.framework.service.openapi.query.filter;
 
 import java.util.List;
+import java.util.Map;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
 public class ValueWriter {
   private ValueWriter() {}
 
   public static void write(Object value, StringBuilder sb) {
-    if (value instanceof String) {
+    if (value instanceof Map) {
+      sb.append("{");
+      String prefix = "";
+      for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
+        sb.append(prefix);
+        sb.append(entry.getKey()
+            .toString())
+            .append(": ");
+        write(entry.getValue(), sb);
+        prefix = ", ";
+      }
+      sb.append("}");
+    } else if (value instanceof String) {
       sb.append("\"");
       sb.append((String) value);
       sb.append("\"");

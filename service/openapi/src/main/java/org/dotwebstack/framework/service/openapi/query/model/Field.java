@@ -20,7 +20,7 @@ public class Field {
   @Builder.Default
   private Map<String, Object> arguments = new HashMap<>();
 
-  private GraphQlFilter filter; // TODO make string
+  private GraphQlFilter filter; // TODO serialize separately and pass as variable, use reference name here
 
   private List<Field> children;
 

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response.dwssettings;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +11,6 @@ public class QueryFilter {
 
   private String type;
 
-  @Builder.Default
-  private List<FieldClause> clauses = new ArrayList<>();
+  private Map<?, ?> fieldFilters;
+
 }

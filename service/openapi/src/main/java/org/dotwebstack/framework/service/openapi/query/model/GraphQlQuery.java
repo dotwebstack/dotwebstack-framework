@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.query.model;
 import lombok.Builder;
 import lombok.Data;
 
+
 @Builder
 @Data
 public class GraphQlQuery {

@@ -15,10 +15,8 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
@@ -52,7 +50,6 @@ import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
@@ -180,24 +177,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Map<String, String> dwsExprMap = header.getDwsExpressionMap();
     return this.jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
         dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), jexlContext, String.class);
-  }
-
-  @SuppressWarnings("rawtypes")
-  private void validateParameters(GraphQlField field, List<Parameter> parameters,
-      Map<String, Schema> requestBodyProperties, String pathName) {
-    if (parameters.stream()
-        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
-            .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
-                parameter.getExtensions()
-                    .get(X_DWS_TYPE)))
-        .count() > 1) {
-      throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
-    }
-    parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
-        .validate(field, parameter, pathName));
-    field.getArguments()
-        .forEach(
-            argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
   }
 
   ServerResponse getResponse(ServerRequest request, String requestId)
