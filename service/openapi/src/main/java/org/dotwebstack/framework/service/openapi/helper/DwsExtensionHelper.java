@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +29,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
-import org.dotwebstack.framework.service.openapi.response.QueryFilter;
-import org.dotwebstack.framework.service.openapi.response.QueryFilterClause;
-import org.dotwebstack.framework.service.openapi.response.QueryFilterParam;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.FieldClause;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.OperatorClause;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
 
 public class DwsExtensionHelper {
 
@@ -114,47 +115,52 @@ public class DwsExtensionHelper {
   }
 
   @SuppressWarnings("unchecked")
-  private static QueryFilter toQueryFilter(Map<?, ?> map) {
+  private static QueryFilter toQueryFilter(String key, Map<?, ?> filterSettings) {
     QueryFilter.QueryFilterBuilder builder = QueryFilter.builder();
-    String fieldPath = (String) map.get("field");
-    if (fieldPath != null) {
-      String[] field = fieldPath.split("\\.");
-      builder.field(field);
-    }
-    List<Map<?, ?>> clausesList = (List<Map<?, ?>>) map.get("clauses");
-    List<QueryFilterClause> clauses = clausesList.stream()
-        .map(DwsExtensionHelper::toClause)
+    String[] field = key.split("\\.");
+    builder.fieldPath(field);
+    String type = (String) filterSettings.get("type");
+    builder.type(type);
+
+    Map<String, ?> fieldMap = (Map<String, ?>) filterSettings.get("fields");
+    List<FieldClause> clauses = fieldMap.entrySet()
+        .stream()
+        .map(e -> toFieldClause(e.getKey(), (Map<String, ?>) e.getValue()))
         .collect(Collectors.toList());
 
     return builder.clauses(clauses)
         .build();
   }
 
-  @SuppressWarnings("unchecked")
-  private static QueryFilterClause toClause(Map<?, ?> map) {
-    String operator = (String) map.get("operator");
-    Map<?, ?> parameterMap = (Map<?, ?>) map.get("parameter");
-    List<Map<?, ?>> clausesList = (List<Map<?, ?>>) map.get("clauses");
-    String field = (String) map.get("field");
-
-    QueryFilterClause.QueryFilterClauseBuilder builder = QueryFilterClause.builder();
-    builder.operator(operator);
-    builder.field(field);
-
-    if (parameterMap != null) {
-      String paramName = (String) parameterMap.get("name");
-      String paramType = (String) parameterMap.get("type");
-      builder.filterParam(QueryFilterParam.builder()
-          .paramName(paramName)
-          .paramType(paramType)
-          .build());
-    } else if (clausesList != null) {
-      List<QueryFilterClause> clauses = clausesList.stream()
-          .map(DwsExtensionHelper::toClause)
-          .collect(Collectors.toList());;
-      builder.clauses(clauses);
-    }
-    return builder.build();
+  private static FieldClause toFieldClause(String name, Map<String, ?> fieldMap) {
+    FieldClause.FieldClauseBuilder builder = FieldClause.builder();
+    builder.fieldName(name);
+    List<OperatorClause> operatorClauses = new ArrayList<>();
+    fieldMap.forEach((key, value) -> {
+      switch (key) {
+        case "negate":
+          builder.negate((boolean) value);
+          break;
+        case "lte":
+        case "lt":
+        case "gte":
+        case "gt":
+        case "eq":
+        case "in":
+          String param = (String) value;
+          String[] split = param.split("\\.");
+          operatorClauses.add(OperatorClause.builder()
+              .operator(key)
+              .parameterType(split[0].replace("$", ""))
+              .parameterName(split[1])
+              .build());
+          break;
+        default:
+          break;
+      }
+    });
+    return builder.clauses(operatorClauses)
+        .build();
   }
 
   @SuppressWarnings({"unchecked"})
@@ -175,11 +181,13 @@ public class DwsExtensionHelper {
           .toString());
       Map<?, ?> settingsMap = (Map<?, ?>) dwsQuery;
       builder.requiredFields((List<String>) settingsMap.get(X_DWS_QUERY_REQUIRED_FIELDS));
-      List<Map<?, ?>> filters = (List<Map<?, ?>>) settingsMap.get("filters");
+      Map<String, ?> filters = (Map<String, ?>) settingsMap.get("filters");
       if (filters != null) {
-        builder.filters(filters.stream()
-            .map(DwsExtensionHelper::toQueryFilter)
-            .collect(Collectors.toList()));
+        List<QueryFilter> queryFilters = filters.entrySet()
+            .stream()
+            .map(e -> toQueryFilter(e.getKey(), (Map<?, ?>) e.getValue()))
+            .collect(Collectors.toList());
+        builder.filters(queryFilters);
       }
     } else {
       builder.queryName(dwsQuery.toString());

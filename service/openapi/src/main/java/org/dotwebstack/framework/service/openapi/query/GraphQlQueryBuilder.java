@@ -13,9 +13,9 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
-import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
 import org.springframework.http.MediaType;
 
 public class GraphQlQueryBuilder {

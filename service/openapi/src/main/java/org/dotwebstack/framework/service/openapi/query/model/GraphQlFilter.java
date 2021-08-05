@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.query.filter;
+package org.dotwebstack.framework.service.openapi.query.model;
 
 
 import java.util.ArrayList;
@@ -8,15 +8,15 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Filter {
+public class GraphQlFilter {
 
   @Builder.Default
-  private List<FilterClause> filterClauses = new ArrayList<>();
+  private List<FilterFieldClause> fieldClauses = new ArrayList<>();
 
   public void writeAsString(StringBuilder sb) {
     sb.append("filter: {");
     String prefix = "";
-    for (FilterClause clause : filterClauses) {
+    for (FilterFieldClause clause : fieldClauses) {
       sb.append(prefix);
       clause.writeAsString(sb);
       prefix = ", ";

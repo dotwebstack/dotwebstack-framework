@@ -12,11 +12,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
+import org.dotwebstack.framework.service.openapi.query.model.FilterFieldClause;
+import org.dotwebstack.framework.service.openapi.query.model.FilterOperatorClause;
+import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
-import org.dotwebstack.framework.service.openapi.response.QueryFilter;
-import org.dotwebstack.framework.service.openapi.response.QueryFilterClause;
-import org.dotwebstack.framework.service.openapi.response.QueryFilterParam;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.FieldClause;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.OperatorClause;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
 import org.springframework.http.MediaType;
 
 public class FilterHelper {
@@ -54,10 +57,10 @@ public class FilterHelper {
 
   protected static Field resolveFilterField(GraphQlQuery query, String[] path) {
     Field field = query.getField();
-    if (path == null) {
+    if (path.length == 1) {
       return field;
     }
-    for (int i = 0; i < path.length; i++) {
+    for (int i = 1; i < path.length; i++) {
       int finalI = i;
       field = field.getChildren()
           .stream()
@@ -72,15 +75,15 @@ public class FilterHelper {
   public static void addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
       @NonNull Map<String, Object> inputParams) {
     filters.forEach(filter -> {
-      Filter.FilterBuilder builder = Filter.builder();
-      String[] fieldPath = filter.getField();
-      List<FilterClause> clauses = filter.getClauses()
+      GraphQlFilter.GraphQlFilterBuilder builder = GraphQlFilter.builder();
+      String[] fieldPath = filter.getFieldPath();
+      List<FilterFieldClause> clauses = filter.getClauses()
           .stream()
-          .map(fc -> toFilterClause(fc, inputParams))
+          .map(fc -> toFilterFieldClause(fc, inputParams))
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
       if (!clauses.isEmpty()) {
-        builder.filterClauses(clauses);
+        builder.fieldClauses(clauses);
         Field field = resolveFilterField(query, fieldPath);
         // TODO: check that no other filters are present
         field.setFilter(builder.build());
@@ -89,32 +92,34 @@ public class FilterHelper {
 
   }
 
-  private static FilterClause toFilterClause(QueryFilterClause clause, Map<String, Object> inputParams) {
-    FilterClause.FilterClauseBuilder builder = FilterClause.builder();
+  private static FilterFieldClause toFilterFieldClause(FieldClause clause, Map<String, Object> inputParams) {
 
-    builder.operator(clause.getOperator());
-    QueryFilterParam param = clause.getFilterParam();
-    if (param != null) {
-      builder.field(clause.getField());
-      Object value = inputParams.get(param.getParamName());
-      if (value == null) {
-        return null;
-      }
-      builder.value(value);
-    } else {
-      List<FilterClause> subClauses = clause.getClauses()
-          .stream()
-          .map(fc -> toFilterClause(fc, inputParams))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      if (subClauses.isEmpty()) {
-        return null;
-      }
-      builder.clauses(subClauses);
+
+    List<OperatorClause> operatorClauses = clause.getClauses();
+    List<FilterOperatorClause> filterOperatorClauses = operatorClauses.stream()
+        .map(oc -> toFilterOperatorClause(oc, inputParams))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+    if (!filterOperatorClauses.isEmpty()) {
+      FilterFieldClause.FilterFieldClauseBuilder builder = FilterFieldClause.builder();
+      builder.fieldName(clause.getFieldName());
+      builder.negate(clause.isNegate());
+      builder.clauses(filterOperatorClauses);
+      return builder.build();
     }
+    return null;
+  }
 
-    return builder.build();
-
+  private static FilterOperatorClause toFilterOperatorClause(OperatorClause operatorClause,
+      Map<String, Object> inputParams) {
+    String paramName = operatorClause.getParameterName();
+    if (inputParams.get(paramName) != null) {
+      return FilterOperatorClause.builder()
+          .operator(operatorClause.getOperator())
+          .value(inputParams.get(paramName))
+          .build();
+    }
+    return null;
   }
 
   @SuppressWarnings("rawtypes")

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.response;
+package org.dotwebstack.framework.service.openapi.response.dwssettings;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.query.filter.Filter;
 import org.dotwebstack.framework.service.openapi.query.filter.ValueWriter;
 
 @Builder
@@ -21,7 +20,7 @@ public class Field {
   @Builder.Default
   private Map<String, Object> arguments = new HashMap<>();
 
-  private Filter filter;
+  private GraphQlFilter filter; // TODO make string
 
   private List<Field> children;
 

@@ -124,12 +124,11 @@ paths:
       x-dws-query:
         field: breweries
         filters:
-          - clauses:
-              - operator: in
-                field: name
-                parameter:
-                  type: path
-                  name: name
+          breweries:
+            type: BreweryFilter
+            fields:
+              name:
+                in: $query.name
       parameters:
         - name: expand
           x-dws-type: expand
