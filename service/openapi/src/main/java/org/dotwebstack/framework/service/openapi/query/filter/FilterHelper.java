@@ -97,7 +97,7 @@ public class FilterHelper {
             value = resolveVariables((Map<?, ?>) value, inputParams);
           }
 
-          return value!=null? Map.entry(e.getKey(), value):null;
+          return value != null ? Map.entry(e.getKey(), value) : null;
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
