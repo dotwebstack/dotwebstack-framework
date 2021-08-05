@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
@@ -34,7 +35,10 @@ public class AggregateHelper {
       return false;
     }
 
-    GraphQLObjectType objectType = selectedField.getObjectType();
+    GraphQLObjectType objectType = selectedField.getObjectTypes()
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> illegalStateException("No object type found for selected field."));
 
     return AggregateConstants.AGGREGATE_TYPE.equals(TypeHelper.getTypeName(objectType));
   }

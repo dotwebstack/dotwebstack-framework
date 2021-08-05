@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_MAX_VALUE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetcher;
@@ -49,11 +50,12 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
     return getArgumentValue(environment, offsetArgument);
   }
 
-  private int getArgumentValue(DataFetchingEnvironment environment, GraphQLArgument graphQlArgument) {
-    return (int) Optional.of(graphQlArgument)
-        .map(argument -> environment.getArguments()
-            .get(argument.getName()))
-        .orElse(graphQlArgument.getDefaultValue());
+  private int getArgumentValue(DataFetchingEnvironment environment, GraphQLArgument argument) {
+    return (int) Optional.ofNullable(environment.getArguments()
+        .get(argument.getName()))
+        .or(() -> Optional.ofNullable(argument.getArgumentDefaultValue()
+            .getValue()))
+        .orElseThrow(() -> illegalStateException("No argument value found for {}.", argument.getName()));
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {

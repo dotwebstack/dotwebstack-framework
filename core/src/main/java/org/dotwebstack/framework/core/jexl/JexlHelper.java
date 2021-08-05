@@ -73,10 +73,19 @@ public class JexlHelper {
 
     if (Objects.nonNull(graphQlField)) {
       graphQlField.getArguments()
-          .stream()
-          .filter(argument -> argument.getValue() != null || argument.getDefaultValue() != null)
-          .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-              argument.getValue() != null ? argument.getValue() : argument.getDefaultValue()));
+          .forEach(argument -> {
+            var argName = ARGUMENT_PREFIX + argument.getName();
+
+            if (argument.getArgumentValue()
+                .isSet()) {
+              jexlContext.set(argName, argument.getArgumentValue()
+                  .getValue());
+            } else if (argument.getArgumentDefaultValue()
+                .isSet()) {
+              jexlContext.set(argName, argument.getArgumentDefaultValue()
+                  .getValue());
+            }
+          });
     }
 
     return jexlContext;

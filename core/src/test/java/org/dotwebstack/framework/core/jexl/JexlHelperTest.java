@@ -56,7 +56,7 @@ class JexlHelperTest {
     final Optional<String> evaluated =
         this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg2", context, String.class);
 
-    assertThat("expected empty optional", !evaluated.isPresent());
+    assertThat("expected empty optional", evaluated.isEmpty());
   }
 
   @Test
@@ -100,7 +100,7 @@ class JexlHelperTest {
     final Optional<String> evaluated =
         this.jexlHelper.evaluateScript("var result = `${key1}`; return null;", context, String.class);
 
-    assertThat("expected empty optional", !evaluated.isPresent());
+    assertThat("expected empty optional", evaluated.isEmpty());
   }
 
   @Test
@@ -169,18 +169,18 @@ class JexlHelperTest {
         .argument(GraphQLArgument.newArgument()
             .name("defaultValue")
             .type(Scalars.GraphQLString)
-            .defaultValue("1")
+            .defaultValueProgrammatic("1")
             .build())
         .argument(GraphQLArgument.newArgument()
             .name("value")
             .type(Scalars.GraphQLString)
-            .value("12")
+            .valueProgrammatic("12")
             .build())
         .argument(GraphQLArgument.newArgument()
             .name("both")
             .type(Scalars.GraphQLString)
-            .defaultValue("1")
-            .value("12")
+            .defaultValueProgrammatic("1")
+            .valueProgrammatic("12")
             .build())
         .build();
 
@@ -214,7 +214,7 @@ class JexlHelperTest {
         .argument(GraphQLArgument.newArgument()
             .name("directiveArg1")
             .type(Scalars.GraphQLString)
-            .value("directiveValue1"))
+            .valueProgrammatic("directiveValue1"))
         .build();
   }
 }

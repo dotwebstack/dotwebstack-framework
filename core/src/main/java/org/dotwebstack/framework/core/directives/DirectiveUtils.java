@@ -17,7 +17,8 @@ public final class DirectiveUtils {
       return null;
     }
 
-    final Object argValue = argument.getValue();
+    final Object argValue = argument.getArgumentValue()
+        .getValue();
 
     if (argValue == null) {
       return null;

@@ -22,7 +22,7 @@ class DirectiveUtilsTest {
         .argument(GraphQLArgument.newArgument()
             .name("foo")
             .type(Scalars.GraphQLString)
-            .value("bar"))
+            .valueProgrammatic("bar"))
         .build();
 
     // Act
@@ -71,7 +71,7 @@ class DirectiveUtilsTest {
         .argument(GraphQLArgument.newArgument()
             .name("foo")
             .type(Scalars.GraphQLBoolean)
-            .value(true))
+            .valueProgrammatic(true))
         .build();
 
     // Act / Assert
