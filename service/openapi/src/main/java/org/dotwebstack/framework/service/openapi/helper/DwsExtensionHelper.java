@@ -20,7 +20,6 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +29,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
-import org.dotwebstack.framework.service.openapi.response.dwssettings.FieldClause;
-import org.dotwebstack.framework.service.openapi.response.dwssettings.OperatorClause;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
 
 public class DwsExtensionHelper {
@@ -123,43 +120,8 @@ public class DwsExtensionHelper {
     builder.type(type);
 
     Map<String, ?> fieldMap = (Map<String, ?>) filterSettings.get("fields");
-    List<FieldClause> clauses = fieldMap.entrySet()
-        .stream()
-        .map(e -> toFieldClause(e.getKey(), (Map<String, ?>) e.getValue()))
-        .collect(Collectors.toList());
 
     return builder.fieldFilters(fieldMap)
-        .build();
-  }
-
-  private static FieldClause toFieldClause(String name, Map<String, ?> fieldMap) {
-    FieldClause.FieldClauseBuilder builder = FieldClause.builder();
-    builder.fieldName(name);
-    List<OperatorClause> operatorClauses = new ArrayList<>();
-    fieldMap.forEach((key, value) -> {
-      switch (key) {
-        case "negate":
-          builder.negate((boolean) value);
-          break;
-        case "lte":
-        case "lt":
-        case "gte":
-        case "gt":
-        case "eq":
-        case "in":
-          String param = (String) value;
-          String[] split = param.split("\\.");
-          operatorClauses.add(OperatorClause.builder()
-              .operator(key)
-              .parameterType(split[0].replace("$", ""))
-              .parameterName(split[1])
-              .build());
-          break;
-        default:
-          break;
-      }
-    });
-    return builder.clauses(operatorClauses)
         .build();
   }
 
