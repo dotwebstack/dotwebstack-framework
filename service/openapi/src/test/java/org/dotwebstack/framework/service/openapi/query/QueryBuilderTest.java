@@ -49,6 +49,7 @@ class QueryBuilderTest {
       Map<String, Object> inputParams, MediaType mediaType, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams, mediaType)
+        .map(QueryInput::getQuery)
         .orElseThrow();
 
     assertEquals(expectedQuery, query);
@@ -114,7 +115,8 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null);
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null)
+        .map(QueryInput::getQuery);;
 
     assertTrue(query.isEmpty());
   }
@@ -124,7 +126,8 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null);
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null)
+        .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
   }
@@ -134,6 +137,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
     String query =
         new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"), MediaType.APPLICATION_JSON)
+            .map(QueryInput::getQuery)
             .orElseThrow();
 
     assertEquals(loadQuery("query1_body_param.txt"), query);

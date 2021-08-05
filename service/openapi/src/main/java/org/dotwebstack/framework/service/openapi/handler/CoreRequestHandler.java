@@ -59,6 +59,7 @@ import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.query.QueryInput;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
@@ -187,7 +188,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     MediaType mediaType = request.headers()
         .asHttpHeaders()
         .getContentType();
-    ExecutionResult result = buildQueryString(inputParams, mediaType).map(query -> {
+    ExecutionResult result = getQueryInput(inputParams, mediaType).map(input -> {
+      String query = input.getQuery();
       if (LOG.isDebugEnabled()) {
         logInputRequest(request);
         LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
@@ -195,7 +197,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       var executionInput = ExecutionInput.newExecutionInput()
           .query(query)
-          .variables(inputParams)
+          .variables(input.getVariables())
           .build();
 
       return graphQL.execute(executionInput);
@@ -445,7 +447,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  protected Optional<String> buildQueryString(Map<String, Object> inputParams, MediaType mediaType) {
+  protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams, MediaType mediaType) {
     return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams, mediaType);
   }
 

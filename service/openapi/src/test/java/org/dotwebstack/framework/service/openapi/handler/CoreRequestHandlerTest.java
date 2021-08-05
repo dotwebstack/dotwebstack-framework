@@ -52,6 +52,7 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.QueryInput;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
@@ -231,8 +232,11 @@ class CoreRequestHandlerTest {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
-    doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class), any(MediaType.class));
+    doReturn(Optional.of(QueryInput.builder()
+        .variables(Map.of())
+        .query("")
+        .build())).when(coreRequestHandler)
+            .getQueryInput(any(Map.class), any(MediaType.class));
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
@@ -250,8 +254,11 @@ class CoreRequestHandlerTest {
     DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
-    doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class), any(MediaType.class));
+    doReturn(Optional.of(QueryInput.builder()
+        .variables(Map.of())
+        .query("")
+        .build())).when(coreRequestHandler)
+            .getQueryInput(any(Map.class), any(MediaType.class));
 
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }

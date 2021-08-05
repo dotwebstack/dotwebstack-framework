@@ -20,7 +20,7 @@ import org.springframework.http.MediaType;
 
 public class GraphQlQueryBuilder {
 
-  public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
+  public Optional<QueryInput> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams, MediaType mediaType) {
 
     DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
@@ -43,7 +43,12 @@ public class GraphQlQueryBuilder {
     query.ifPresent(q -> addFilters(q, responseSchemaContext.getDwsQuerySettings()
         .getFilters(), inputParams));
 
-    return query.map(GraphQlQuery::toString);
+    Map<String, Object> variables = inputParams; // TODO: get params
+    return query.map(q -> QueryInput.builder()
+        .query(q.toString())
+        .variables(variables)
+        .build());
+
   }
 
   private Optional<GraphQlQuery> toQuery(String queryName, List<Field> fields) {
