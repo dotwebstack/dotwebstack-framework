@@ -7,19 +7,18 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
@@ -161,49 +160,36 @@ public class SelectQueryBuilder {
     // check if any non-key-fields need to be added in order to support join
     addReferenceColumns(objectRequest, objectSelectContext, query, fromTable);
 
-    // add inner join if this subselect with jointable
-    addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), query, objectSelectContext,
-        fromTable, objectRequest.getContextCriteria());
     return query;
   }
 
-  private void addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
-      ObjectSelectContext objectSelectContext, Table<?> table, List<ContextCriteria> contextCriterias) {
-    if (!objectSelectContext.getJoinCriteria()
-        .isEmpty()) {
-      var joinCriteria = objectSelectContext.getJoinCriteria();
-      var postgresKeyCriteria = joinCriteria.get(0);
-      var joinTable = postgresKeyCriteria.getJoinTable();
-      var aliasedJoinTable =
-          findTable(joinTable.getName(), contextCriterias).asTable(objectSelectContext.newTableAlias());
+  private Table<?> addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
+      ObjectSelectContext objectSelectContext, Table<?> table, ObjectRequest objectRequest) {
 
-      var joinCondition = createJoinTableJoinCondition(joinTable.getInverseJoinColumns(), typeConfiguration.getFields(),
-          aliasedJoinTable, table);
+    Optional<JoinTable> joinTable = objectRequest.getKeyCriteria()
+        .stream()
+        .filter(PostgresKeyCriteria.class::isInstance)
+        .map(PostgresKeyCriteria.class::cast)
+        .findFirst()
+        .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
+        .map(PostgresKeyCriteria::getJoinTable);
+
+
+    if (joinTable.isPresent()) {
+      var joinTable2 = joinTable.get();
+
+      var aliasedJoinTable = findTable(joinTable2.getName(), objectRequest.getContextCriteria())
+          .asTable(objectSelectContext.newTableAlias());
+
+      var joinCondition = createJoinTableJoinCondition(joinTable2.getInverseJoinColumns(),
+          typeConfiguration.getFields(), aliasedJoinTable, table);
 
       query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
 
-      // create where condition
-      addJoinTableWhereCondition(query, objectSelectContext, joinCriteria, aliasedJoinTable);
+      return aliasedJoinTable;
     }
-  }
 
-  private void addJoinTableWhereCondition(SelectQuery<?> query, ObjectSelectContext objectSelectContext,
-      List<PostgresKeyCriteria> joinCriteria, Table<?> aliasedJoinTable) {
-    var keyColumnNames = new HashMap<String, String>();
-    var valuesPerKeyIdentifier = getKeyValuesPerKeyIdentifier(joinCriteria);
-    valuesPerKeyIdentifier.forEach((keyColumnName, value) -> {
-      var keyColumnAlias = objectSelectContext.newSelectAlias();
-      var keyColumn = field(aliasedJoinTable, keyColumnName).as(keyColumnAlias);
-
-      query.addSelect(keyColumn);
-      // add IN condition
-      var inCondition = createJoinTableInCondition(aliasedJoinTable, keyColumnName, value);
-      query.addConditions(inCondition);
-      keyColumnNames.put(keyColumnName, keyColumnAlias);
-    });
-
-    // add setKeyColumnNames
-    objectSelectContext.setKeyColumnNames(keyColumnNames);
+    return null;
   }
 
   private Condition createJoinTableJoinCondition(List<JoinColumn> joinColumns,
@@ -220,27 +206,6 @@ public class SelectQueryBuilder {
               .eq(rightColumn);
         })
         .reduce(DSL.noCondition(), Condition::and);
-  }
-
-  private Condition createJoinTableInCondition(Table<?> joinTable, String keyColumnName, List<Object> values) {
-    var leftColumn = DSL.field(DSL.name(joinTable.getName(), keyColumnName));
-    return Objects.requireNonNull(leftColumn)
-        .in(values);
-  }
-
-  private Map<String, List<Object>> getKeyValuesPerKeyIdentifier(List<PostgresKeyCriteria> joinCriteria) {
-    var keyValuesPerKeyIdentifier = new HashMap<String, List<Object>>();
-    joinCriteria.forEach(criteria -> criteria.getValues()
-        .forEach((key, value) -> {
-          if (keyValuesPerKeyIdentifier.containsKey(key)) {
-            var values = keyValuesPerKeyIdentifier.get(key);
-            values.add(value);
-            keyValuesPerKeyIdentifier.put(key, values);
-          } else {
-            keyValuesPerKeyIdentifier.put(key, new ArrayList<>(Collections.singletonList(value)));
-          }
-        }));
-    return keyValuesPerKeyIdentifier;
   }
 
   private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<ScalarField> scalarFields,
@@ -559,6 +524,11 @@ public class SelectQueryBuilder {
 
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
 
+    Table<?> joinTable = addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
+        subSelectQuery, objectSelectContext, fieldTable, objectRequest);
+
+    final Table<?> referencedTable = joinTable != null ? joinTable : fieldTable;
+
     // create value rows array
     var valuesTableRows = objectRequest.getKeyCriteria()
         .stream()
@@ -588,7 +558,7 @@ public class SelectQueryBuilder {
     // create joinCondition from subselect keycriteria values
     var joinCondition = keyColumnNames.entrySet()
         .stream()
-        .map(entry -> field(fieldTable, entry.getKey()).eq(field(valuesTable, entry.getValue())))
+        .map(entry -> field(referencedTable, entry.getKey()).eq(field(valuesTable, entry.getValue())))
         .reduce(DSL.noCondition(), Condition::and);
 
     subSelectQuery.addConditions(joinCondition);

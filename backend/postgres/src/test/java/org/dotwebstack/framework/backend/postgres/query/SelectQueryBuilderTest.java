@@ -303,22 +303,25 @@ class SelectQueryBuilderTest {
     fieldConfiguration.setJoinTable(joinTable);
 
     var keyCriteria = PostgresKeyCriteria.builder()
-        .values(Map.of())
+        .values(Map.of("ingredient_identifier", "id-123"))
         .joinTable(joinTable)
         .build();
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
+        .keyCriteria(List.of(keyCriteria))
         .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_ingredient"))))
         .build();
 
-    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(List.of(keyCriteria), true));
+    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(true));
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n" + "from \"IngredientTable\" as \"t1\"\n"
-            + "  join \"BeerIngredientTable\" as \"t2\"\n"
-            + "    on \"t2\".\"ingredient_identifier\" = \"t1\".\"identifier_ingredientColumn\""));
+        equalTo("select\n" + "  \"t4\".*,\n" + "  x2\n" + "from (values ('id-123')) as \"t3\" (\"x2\")\n"
+            + "  left outer join lateral (\n" + "    select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n"
+            + "    from \"IngredientTable\" as \"t1\"\n" + "      join \"BeerIngredientTable\" as \"t2\"\n"
+            + "        on \"t2\".\"ingredient_identifier\" = \"t1\".\"identifier_ingredientColumn\"\n"
+            + "    where \"t2\".\"ingredient_identifier\" = \"t3\".\"x2\"\n" + "  ) as \"t4\"\n" + "    on 1 = 1"));
   }
 
   @Test

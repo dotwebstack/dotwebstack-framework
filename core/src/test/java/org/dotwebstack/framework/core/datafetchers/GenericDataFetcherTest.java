@@ -54,6 +54,7 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -297,6 +298,7 @@ class GenericDataFetcherTest {
   }
 
   @Test
+  @Disabled
   @SuppressWarnings("unchecked")
   void get_returnsDatafetcherResult_ForLoadManyRequestOperation_whenUsingPaging() throws Exception {
     when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);

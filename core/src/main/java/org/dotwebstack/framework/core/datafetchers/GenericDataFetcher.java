@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -148,24 +147,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
     var keyCondition = context.getKeyCondition(fieldName, typeConfiguration, source);
 
-    var unwrappedType = environment.getExecutionStepInfo()
-        .getUnwrappedNonNullType();
+    // Create separate dataloader for every unique path, since evert path can have different arguments
+    // or selection
+    var dataLoaderKey = String.join("/", executionStepInfo.getPath()
+        .getKeysOnly());
 
-    if (GraphQLTypeUtil.isList(unwrappedType) && dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)) {
-      var collectionRequest = requestFactory.createCollectionRequest(typeConfiguration, environment);
-      var dataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
-      return mapLoadMany(typeConfiguration, dataLoader.loadManyRequest(keyCondition, collectionRequest)).collectList()
-          .toFuture();
-    } else {
-      // Create separate dataloader for every unique path, since evert path can have different arguments
-      // or selection
-      var dataLoaderKey = String.join("/", executionStepInfo.getPath()
-          .getKeysOnly());
-      // Retrieve dataloader instance for key, or create new instance when it does not exist yet
-      DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
-          .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
-      return dataLoader.load(keyCondition);
-    }
+    // Retrieve dataloader instance for key, or create new instance when it does not exist yet
+    DataLoader<Object, List<DataFetcherResult<Map<String, Object>>>> dataLoader = environment.getDataLoaderRegistry()
+        .computeIfAbsent(dataLoaderKey, key -> this.createDataLoader(environment, typeConfiguration));
+
+    return dataLoader.load(keyCondition);
   }
 
   private DataFetcherResult<Object> createDataFetcherResult(TypeConfiguration<?> typeConfiguration, Object data) {
