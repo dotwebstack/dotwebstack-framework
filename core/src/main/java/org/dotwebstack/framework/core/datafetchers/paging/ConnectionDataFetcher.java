@@ -52,8 +52,8 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   private int getArgumentValue(DataFetchingEnvironment environment, GraphQLArgument graphQlArgument) {
     return (int) Optional.of(graphQlArgument)
-        .flatMap(argument -> Optional.ofNullable(environment.getArguments()
-            .get(argument.getName())))
+        .map(argument -> environment.getArguments()
+            .get(argument.getName()))
         .or(() -> Optional.ofNullable(graphQlArgument.getArgumentDefaultValue()
             .getValue()))
         .orElseThrow(() -> illegalStateException("No argument value found for {}.", graphQlArgument.getName()));
