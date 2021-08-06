@@ -28,4 +28,13 @@ class ValidSortAndFilterFieldsTest {
             "brewery.postalAddress.street", "brewery.postalAddress.city", "beer.identifier", "beer.name",
             "address.identifier", "address.street", "address.city"));
   }
+
+  @Test
+  void get_returnsNothing_whenMaxDepthIsExceeded() {
+    var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-sort-filter-fields.yaml");
+
+    List<String> result = ValidSortAndFilterFields.get(dotWebStackConfiguration, 11);
+
+    assertThat(result.size(), is(0));
+  }
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.config;
 
+import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
@@ -9,7 +10,7 @@ import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 @EqualsAndHashCode(callSuper = true)
 public class FieldConfigurationImpl extends AbstractFieldConfiguration {
 
-  private boolean scalarField = false;
+  private static final List<String> SCALAR_TYPES = List.of("String", "ID", "Int", "Float", "Geometry");
 
   private boolean objectField = false;
 
@@ -29,7 +30,7 @@ public class FieldConfigurationImpl extends AbstractFieldConfiguration {
 
   @Override
   public boolean isScalarField() {
-    return scalarField;
+    return SCALAR_TYPES.contains(getType());
   }
 
   @Override
