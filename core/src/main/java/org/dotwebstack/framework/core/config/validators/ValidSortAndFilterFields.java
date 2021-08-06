@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
