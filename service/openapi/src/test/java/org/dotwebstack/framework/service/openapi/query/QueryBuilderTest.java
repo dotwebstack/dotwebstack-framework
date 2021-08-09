@@ -85,7 +85,9 @@ class QueryBuilderTest {
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_key.txt"),
             Map.of("query16_param1", "id1", "query16_param2", "id2"), null, null, "query with nested key parameter"),
         Arguments.arguments("/query4", "query4", loadQuery("query4.txt"), Map.of("o3_prop1", "val1"), null,
-            loadVariables("query4.txt"), "query with filter"));
+            loadVariables("query4.txt"), "query with filter"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4_no_filter.txt"), Map.of(), null, null,
+            "query filter not added for missing param value"));
   }
 
   @Test

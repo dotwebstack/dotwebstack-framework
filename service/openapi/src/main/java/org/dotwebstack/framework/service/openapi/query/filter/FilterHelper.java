@@ -75,16 +75,18 @@ public class FilterHelper {
       Map<?, ?> fieldFilters = filter.getFieldFilters();
       fieldFilters = resolveVariables(fieldFilters, inputParams);
 
-      builder.content(fieldFilters);
+      if (fieldFilters != null) {
+        builder.content(fieldFilters);
 
-      String filterId = "filter" + i;
-      result.put(filterId, fieldFilters);
-      query.getVariables()
-          .put(filterId, filter.getType());
+        String filterId = "filter" + i;
+        result.put(filterId, fieldFilters);
+        query.getVariables()
+            .put(filterId, filter.getType());
 
-      String[] fieldPath = filter.getFieldPath();
-      Field field = resolveFilterField(query, fieldPath);
-      field.setFilterId(filterId);
+        String[] fieldPath = filter.getFieldPath();
+        Field field = resolveFilterField(query, fieldPath);
+        field.setFilterId(filterId);
+      }
     }
 
     return result;
@@ -96,7 +98,7 @@ public class FilterHelper {
       return Collections.emptyMap();
     }
 
-    return tree.entrySet()
+    Map<?, ?> result = tree.entrySet()
         .stream()
         .map(e -> {
           Object value = e.getValue();
@@ -112,6 +114,11 @@ public class FilterHelper {
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return result.isEmpty() ? null : result;
+  }
+
+  private static boolean nullOrEmptyMap(Object value) {
+    return value == null || value instanceof Map && ((Map<?, ?>) value).isEmpty();
   }
 
   private static Set<Key> getKeys(@NonNull Map<String, String> keyMap, @NonNull Map<String, Object> inputParams) {
