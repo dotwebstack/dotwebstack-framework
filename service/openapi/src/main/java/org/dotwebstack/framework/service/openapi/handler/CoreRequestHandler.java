@@ -185,10 +185,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
-    MediaType mediaType = request.headers()
-        .asHttpHeaders()
-        .getContentType();
-    ExecutionResult result = getQueryInput(inputParams, mediaType).map(input -> {
+    ExecutionResult result = getQueryInput(inputParams).map(input -> {
       String query = input.getQuery();
       if (LOG.isDebugEnabled()) {
         logInputRequest(request);
@@ -447,8 +444,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams, MediaType mediaType) {
-    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams, mediaType);
+  protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
+    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,

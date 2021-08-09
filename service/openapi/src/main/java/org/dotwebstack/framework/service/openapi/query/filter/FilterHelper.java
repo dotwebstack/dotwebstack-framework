@@ -12,16 +12,14 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
-import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
-import org.springframework.http.MediaType;
 
 public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static void addKeys(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
-      Map<String, String> keyMap, @NonNull Map<String, Object> inputParams, MediaType mediaType) {
+  public static void addKeys(@NonNull GraphQlQuery query, Map<String, String> keyMap,
+      @NonNull Map<String, Object> inputParams) {
     Set<Key> keys = getKeys(keyMap, inputParams);
 
     keys.forEach(key -> {
@@ -31,6 +29,33 @@ public class FilterHelper {
       field.getArguments()
           .put(path[path.length - 1], key.getValue());
     });
+  }
+
+  public static Map<String, Object> addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
+      @NonNull Map<String, Object> inputParams) {
+    Map<String, Object> result = new HashMap<>();
+    for (int i = 0; i < filters.size(); i++) {
+      QueryFilter filter = filters.get(i);
+      GraphQlFilter.GraphQlFilterBuilder builder = GraphQlFilter.builder();
+      Map<?, ?> fieldFilters = filter.getFieldFilters();
+      fieldFilters = resolveVariables(fieldFilters, inputParams);
+
+      if (fieldFilters != null) {
+        builder.content(fieldFilters);
+
+        String filterId = "filter" + i;
+        result.put(filterId, fieldFilters);
+        query.getVariables()
+            .put(filterId, filter.getType());
+
+        String[] fieldPath = filter.getFieldPath();
+        Field field = resolveFilterField(query, fieldPath);
+        field.setFilterId(filterId);
+      }
+    }
+
+    return result;
+
   }
 
   protected static Field resolveField(GraphQlQuery query, String[] path) {
@@ -66,33 +91,6 @@ public class FilterHelper {
     return field;
   }
 
-  public static Map<String, Object> addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
-      @NonNull Map<String, Object> inputParams) {
-    Map<String, Object> result = new HashMap<>();
-    for (int i = 0; i < filters.size(); i++) {
-      QueryFilter filter = filters.get(i);
-      GraphQlFilter.GraphQlFilterBuilder builder = GraphQlFilter.builder();
-      Map<?, ?> fieldFilters = filter.getFieldFilters();
-      fieldFilters = resolveVariables(fieldFilters, inputParams);
-
-      if (fieldFilters != null) {
-        builder.content(fieldFilters);
-
-        String filterId = "filter" + i;
-        result.put(filterId, fieldFilters);
-        query.getVariables()
-            .put(filterId, filter.getType());
-
-        String[] fieldPath = filter.getFieldPath();
-        Field field = resolveFilterField(query, fieldPath);
-        field.setFilterId(filterId);
-      }
-    }
-
-    return result;
-
-  }
-
   private static Map<?, ?> resolveVariables(Map<?, ?> tree, Map<String, Object> inputParams) {
     if (tree == null) {
       return Collections.emptyMap();
@@ -115,10 +113,6 @@ public class FilterHelper {
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return result.isEmpty() ? null : result;
-  }
-
-  private static boolean nullOrEmptyMap(Object value) {
-    return value == null || value instanceof Map && ((Map<?, ?>) value).isEmpty();
   }
 
   private static Set<Key> getKeys(@NonNull Map<String, String> keyMap, @NonNull Map<String, Object> inputParams) {

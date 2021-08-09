@@ -16,12 +16,11 @@ import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
-import org.springframework.http.MediaType;
 
 public class GraphQlQueryBuilder {
 
   public Optional<QueryInput> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
-      @NonNull Map<String, Object> inputParams, MediaType mediaType) {
+      @NonNull Map<String, Object> inputParams) {
 
     DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
     String queryName = dwsQuerySettings.getQueryName();
@@ -38,8 +37,7 @@ public class GraphQlQueryBuilder {
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
     Optional<GraphQlQuery> query = toQuery(queryName, fields);
-    query.ifPresent(q -> addKeys(q, responseSchemaContext.getRequestBodyContext(), dwsQuerySettings.getKeys(),
-        inputParams, mediaType));
+    query.ifPresent(q -> addKeys(q, dwsQuerySettings.getKeys(), inputParams));
     Map<String, Object> variables;
     variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
         .getFilters(), inputParams))

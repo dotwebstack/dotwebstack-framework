@@ -236,7 +236,7 @@ class CoreRequestHandlerTest {
         .variables(Map.of())
         .query("")
         .build())).when(coreRequestHandler)
-            .getQueryInput(any(Map.class), any(MediaType.class));
+            .getQueryInput(any(Map.class));
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
@@ -258,7 +258,7 @@ class CoreRequestHandlerTest {
         .variables(Map.of())
         .query("")
         .build())).when(coreRequestHandler)
-            .getQueryInput(any(Map.class), any(MediaType.class));
+            .getQueryInput(any(Map.class));
 
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }

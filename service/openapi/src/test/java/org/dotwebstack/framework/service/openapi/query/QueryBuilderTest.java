@@ -44,12 +44,12 @@ class QueryBuilderTest {
     openApi = TestResources.openApi();
   }
 
-  @ParameterizedTest(name = "{6}")
+  @ParameterizedTest(name = "{5}")
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
-      Map<String, Object> inputParams, MediaType mediaType, String varString, String displayName) {
+      Map<String, Object> inputParams,String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams, mediaType);
+    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -68,25 +68,25 @@ class QueryBuilderTest {
 
   private static Stream<Arguments> queryBuilderArgs() throws IOException {
     return Stream.of(
-        Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, null, "valid " + "query"),
+        Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(),  null, "valid " + "query"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3.txt"), Map.of("query3_param1", "v1"),
             null, null, "query with arguments"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3_exp.txt"),
-            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null, null,
+            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null,
             "query with expand arguments"),
-        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), null, null,
+        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), null,
             "query with composed root object"),
-        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(), null, null,
+        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(), null,
             "query with composed root object and nested composed object"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null, null,
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null,
             "query with " + "array"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_key.txt"),
-            Map.of("query16_param1", 1), null, null, "query with key parameter"),
+            Map.of("query16_param1", 1), null,  "query with key parameter"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_key.txt"),
-            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, null, "query with nested key parameter"),
-        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"), Map.of("o3_prop1", "val1"), null,
+            Map.of("query16_param1", "id1", "query16_param2", "id2"), null,  "query with nested key parameter"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"), Map.of("o3_prop1", "val1"),
             loadVariables("query4.txt"), "query with filter"),
-        Arguments.arguments("/query4", "query4", loadQuery("query4_no_filter.txt"), Map.of(), null, null,
+        Arguments.arguments("/query4", "query4", loadQuery("query4_no_filter.txt"), Map.of(), null,
             "query filter not added for missing param value"));
   }
 
@@ -123,7 +123,7 @@ class QueryBuilderTest {
     var graphQlQueryBuilder = new GraphQlQueryBuilder();
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
-        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams, null));
+        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams));
   }
 
   @Test
@@ -131,7 +131,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null)
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);;
 
     assertTrue(query.isEmpty());
@@ -142,7 +142,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of(), null)
+    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -152,7 +152,7 @@ class QueryBuilderTest {
   void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
     String query =
-        new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"), MediaType.APPLICATION_JSON)
+        new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"))
             .map(QueryInput::getQuery)
             .orElseThrow();
 
