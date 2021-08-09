@@ -91,7 +91,7 @@ class OpenapiPostgresIntegrationTest {
         .getResponseBody();
 
     // Assert
-    assertResult(result, "breweries_X.json");
+    assertResult(result, "brewery_X.json");
   }
 
   private void assertResult(String result, String jsonResult) throws IOException {
