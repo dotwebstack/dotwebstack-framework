@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
@@ -163,33 +162,27 @@ public class SelectQueryBuilder {
     return query;
   }
 
-  private Table<?> addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
+  private Optional<Table<?>> addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
       ObjectSelectContext objectSelectContext, Table<?> table, ObjectRequest objectRequest) {
 
-    Optional<JoinTable> joinTable = objectRequest.getKeyCriteria()
+    return objectRequest.getKeyCriteria()
         .stream()
         .filter(PostgresKeyCriteria.class::isInstance)
         .map(PostgresKeyCriteria.class::cast)
         .findFirst()
         .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
-        .map(PostgresKeyCriteria::getJoinTable);
+        .map(PostgresKeyCriteria::getJoinTable)
+        .map(joinTable -> {
+          var aliasedJoinTable = findTable(joinTable.getName(), objectRequest.getContextCriteria())
+              .asTable(objectSelectContext.newTableAlias());
 
+          var joinCondition = createJoinTableJoinCondition(joinTable.getInverseJoinColumns(),
+              typeConfiguration.getFields(), aliasedJoinTable, table);
 
-    if (joinTable.isPresent()) {
-      var joinTable2 = joinTable.get();
+          query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
 
-      var aliasedJoinTable = findTable(joinTable2.getName(), objectRequest.getContextCriteria())
-          .asTable(objectSelectContext.newTableAlias());
-
-      var joinCondition = createJoinTableJoinCondition(joinTable2.getInverseJoinColumns(),
-          typeConfiguration.getFields(), aliasedJoinTable, table);
-
-      query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
-
-      return aliasedJoinTable;
-    }
-
-    return null;
+          return aliasedJoinTable;
+        });
   }
 
   private Condition createJoinTableJoinCondition(List<JoinColumn> joinColumns,
@@ -524,10 +517,10 @@ public class SelectQueryBuilder {
 
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
 
-    Table<?> joinTable = addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
+    Optional<Table<?>> joinTable = addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
         subSelectQuery, objectSelectContext, fieldTable, objectRequest);
 
-    final Table<?> referencedTable = joinTable != null ? joinTable : fieldTable;
+    final Table<?> referencedTable = joinTable.orElse(fieldTable);
 
     // create value rows array
     var valuesTableRows = objectRequest.getKeyCriteria()
