@@ -20,6 +20,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.query.filter.ValueWriter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -43,35 +44,48 @@ class QueryBuilderTest {
     openApi = TestResources.openApi();
   }
 
-  @ParameterizedTest(name = "{5}")
+  @ParameterizedTest(name = "{6}")
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
-      Map<String, Object> inputParams, MediaType mediaType, String displayName) {
+      Map<String, Object> inputParams, MediaType mediaType, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams, mediaType)
-        .map(QueryInput::getQuery)
+    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams, mediaType);
+    String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
     assertEquals(expectedQuery, query);
+    if (varString != null) {
+      assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
+    }
+  }
+
+  private String getVariablesString(QueryInput queryInput) {
+    Map<?, ?> variables = queryInput.getVariables();
+    StringBuilder sb = new StringBuilder();
+    ValueWriter.write(variables, sb);
+    return sb.toString();
   }
 
   private static Stream<Arguments> queryBuilderArgs() throws IOException {
-    return Stream.of(Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, "valid query"),
+    return Stream.of(
+        Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, null, "valid " + "query"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3.txt"), Map.of("query3_param1", "v1"),
-            null, "query with arguments"),
+            null, null, "query with arguments"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3_exp.txt"),
-            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null,
+            Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null, null,
             "query with expand arguments"),
-        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), null,
+        Arguments.arguments("/query5", "query5", loadQuery("query5.txt"), Map.of(), null, null,
             "query with composed root object"),
-        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(), null,
+        Arguments.arguments("/query15", "query5", loadQuery("query15.txt"), Map.of(), null, null,
             "query with composed root object and nested composed object"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null,
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null, null,
             "query with " + "array"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_key.txt"),
-            Map.of("query16_param1", "id1"), null, "query with key parameter"),
+            Map.of("query16_param1", "id1"), null, null, "query with key parameter"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_key.txt"),
-            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, "query with nested key parameter"));
+            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, null, "query with nested key parameter"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"), Map.of("o3_prop1", "val1"), null,
+            loadVariables("query4.txt"), "query with filter"));
   }
 
   @Test
@@ -177,6 +191,11 @@ class QueryBuilderTest {
   private static String loadQuery(String name) throws IOException {
     return IOUtils.toString(QueryBuilderTest.class.getClassLoader()
         .getResourceAsStream("queries/" + name), StandardCharsets.UTF_8);
+  }
+
+  private static String loadVariables(String name) throws IOException {
+    return IOUtils.toString(QueryBuilderTest.class.getClassLoader()
+        .getResourceAsStream("variables/" + name), StandardCharsets.UTF_8);
   }
 
 }

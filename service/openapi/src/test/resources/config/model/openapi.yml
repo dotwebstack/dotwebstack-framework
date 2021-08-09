@@ -293,7 +293,15 @@ paths:
                     x-dws-expr: "`foo`"
   /query4:
     get:
-      x-dws-query: query4
+      x-dws-query:
+        field: query4
+        filters:
+          o2_prop1:
+            type: PropFilter
+            fields:
+              name:
+                not:
+                  in: $body.o3_prop1
       requestBody:
         required: true
         content:

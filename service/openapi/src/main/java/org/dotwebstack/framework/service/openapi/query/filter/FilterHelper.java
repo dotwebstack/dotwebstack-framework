@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query.filter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
@@ -34,14 +36,15 @@ public class FilterHelper {
   protected static Field resolveField(GraphQlQuery query, String[] path) {
     Field field = query.getField();
     for (int i = 0; i < path.length - 1; i++) {
-      // TODO: throw error if not found
       int finalI = i;
+      Field finalField = field;
       field = field.getChildren()
           .stream()
           .filter(f -> f.getName()
               .equals(path[finalI]))
           .findFirst()
-          .orElseThrow();
+          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not resolve path {} for field {}",
+              path, finalField.getName()));
     }
     return field;
   }
@@ -89,6 +92,9 @@ public class FilterHelper {
   }
 
   private static Map<?, ?> resolveVariables(Map<?, ?> tree, Map<String, Object> inputParams) {
+    if (tree == null) {
+      return Collections.emptyMap();
+    }
 
     return tree.entrySet()
         .stream()
