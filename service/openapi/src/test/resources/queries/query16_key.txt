@@ -1,5 +1,5 @@
 query Query{
- query16(id: "id1") {
+ query16(id: 1) {
   o15_prop1
   o15_prop2
   o15_prop3 {

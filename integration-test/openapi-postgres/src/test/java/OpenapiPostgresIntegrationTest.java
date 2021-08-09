@@ -67,7 +67,7 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
-  void brewries_returnsExpectedResult_withSelect() throws IOException {
+  void brewries_returnsExpectedResult_withFilter() throws IOException {
     // Arrange & Act
     String result = client.get()
         .uri("/breweries?name=Brewery Z")
@@ -78,6 +78,20 @@ class OpenapiPostgresIntegrationTest {
 
     // Assert
     assertResult(result, "breweries_filtered.json");
+  }
+
+  @Test
+  void brewries_returnsExpectedResult_withKey() throws IOException {
+    // Arrange & Act
+    String result = client.get()
+        .uri("/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    // Assert
+    assertResult(result, "breweries_X.json");
   }
 
   private void assertResult(String result, String jsonResult) throws IOException {

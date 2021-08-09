@@ -476,7 +476,7 @@ paths:
         - name: query16_param1
           in: path
           schema:
-            type: string
+            type: integer
         - name: query16_param2
           in: path
           schema:
