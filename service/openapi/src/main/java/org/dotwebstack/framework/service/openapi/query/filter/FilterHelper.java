@@ -18,16 +18,16 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static void addSelections(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
+  public static void addKeys(@NonNull GraphQlQuery query, RequestBodyContext requestBodyContext,
       Map<String, String> keyMap, @NonNull Map<String, Object> inputParams, MediaType mediaType) {
-    Set<NodeKey> nodeKeys = getNodeKeys(keyMap, inputParams);
+    Set<Key> keys = getKeys(keyMap, inputParams);
 
-    nodeKeys.forEach(nodeKey -> {
-      String[] path = nodeKey.getFieldPath()
+    keys.forEach(key -> {
+      String[] path = key.getFieldPath()
           .split("\\.");
       Field field = resolveField(query, path);
       field.getArguments()
-          .put(path[path.length - 1], nodeKey.getValue());
+          .put(path[path.length - 1], key.getValue());
     });
   }
 
@@ -108,8 +108,7 @@ public class FilterHelper {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private static Set<NodeKey> getNodeKeys(@NonNull Map<String, String> keyMap,
-      @NonNull Map<String, Object> inputParams) {
+  private static Set<Key> getKeys(@NonNull Map<String, String> keyMap, @NonNull Map<String, Object> inputParams) {
     return keyMap.entrySet()
         .stream()
         .map(e -> {
@@ -118,7 +117,7 @@ public class FilterHelper {
           String[] parts = paramName.split("\\.");
           Object paramValue = inputParams.get(parts[1]);
           if (paramValue != null) {
-            return NodeKey.builder()
+            return Key.builder()
                 .fieldPath(path)
                 .value(paramValue)
                 .build();

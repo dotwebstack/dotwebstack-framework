@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class NodeKey {
+public class Key {
 
   private String fieldPath;
 

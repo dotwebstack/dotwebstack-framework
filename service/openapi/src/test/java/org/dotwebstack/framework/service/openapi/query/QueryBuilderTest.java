@@ -68,10 +68,10 @@ class QueryBuilderTest {
             "query with composed root object and nested composed object"),
         Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16.txt"), Map.of(), null,
             "query with " + "array"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_select.txt"),
-            Map.of("query16_param1", "id1"), null, "query with select parameter"),
-        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_select.txt"),
-            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, "query with nested select parameter"));
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_key.txt"),
+            Map.of("query16_param1", "id1"), null, "query with key parameter"),
+        Arguments.arguments("/query16/{query16_param1}", "query16", loadQuery("query16_nested_key.txt"),
+            Map.of("query16_param1", "id1", "query16_param2", "id2"), null, "query with nested key parameter"));
   }
 
   @Test
@@ -133,7 +133,7 @@ class QueryBuilderTest {
   }
 
   @Test
-  void toQuery_addSelect_forPost() throws IOException {
+  void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
     String query =
         new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"), MediaType.APPLICATION_JSON)
