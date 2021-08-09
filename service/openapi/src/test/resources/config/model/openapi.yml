@@ -159,7 +159,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Object1'
     post:
-      x-dws-query: query1
+      x-dws-query:
+        field: query1
+        keys:
+          id: $body.argument1
       requestBody:
         content:
           application/json:
@@ -167,7 +170,6 @@ paths:
               type: object
               properties:
                 argument1:
-                  x-dws-select: id
                   type: string
       responses:
         200:
@@ -457,16 +459,18 @@ paths:
                 $ref: '#/components/schemas/Object13'
   /query16/{query16_param1}:
     get:
-      x-dws-query: query16
+      x-dws-query:
+        field: query16
+        keys:
+          id: $path.query16_param1
+          o15_prop3.id: $path.query16_param2
       parameters:
         - name: query16_param1
           in: path
-          x-dws-select: id
           schema:
             type: string
         - name: query16_param2
           in: path
-          x-dws-select: o15_prop3.id
           schema:
             type: string
       responses:

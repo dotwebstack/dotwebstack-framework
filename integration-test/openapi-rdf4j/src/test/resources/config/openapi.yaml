@@ -205,7 +205,10 @@ paths:
 #                x-dws-expr: args.page
   /brewery/{identifier}:
     get:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
+        keys:
+          identifier: $path.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -216,7 +219,6 @@ paths:
               type: string
               enum: ['postalCode', 'beers', 'beers.ingredients']
         - name: identifier
-          x-dws-select: identifier
           in: path
           required: true
           schema:
@@ -230,7 +232,10 @@ paths:
                 $ref: '#/components/schemas/Brewery'
   /brewery_post:
     post:
-      x-dws-query: brewery
+      x-dws-query:
+        field: brewery
+        keys:
+          identifier: $body.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -249,7 +254,6 @@ paths:
                 - identifier
               properties:
                 identifier:
-                  x-dws-select: identifier
                   type: string
       responses:
         200:

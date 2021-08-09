@@ -38,8 +38,8 @@ public class GraphQlQueryBuilder {
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
     Optional<GraphQlQuery> query = toQuery(queryName, fields);
-    query.ifPresent(q -> addSelections(q, responseSchemaContext.getRequestBodyContext(),
-        responseSchemaContext.getParameters(), inputParams, mediaType));
+    query.ifPresent(q -> addSelections(q, responseSchemaContext.getRequestBodyContext(), dwsQuerySettings.getKeys(),
+        inputParams, mediaType));
     Map<String, Object> variables;
     variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
         .getFilters(), inputParams))

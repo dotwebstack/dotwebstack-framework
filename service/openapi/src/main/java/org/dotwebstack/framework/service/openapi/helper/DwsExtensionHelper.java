@@ -151,6 +151,10 @@ public class DwsExtensionHelper {
             .collect(Collectors.toList());
         builder.filters(queryFilters);
       }
+      Map<String, String> keys = (Map<String, String>) settingsMap.get("keys");
+      if (keys != null) {
+        builder.keys(keys);
+      }
     } else {
       builder.queryName(dwsQuery.toString());
     }
