@@ -40,10 +40,13 @@ public class GraphQlQueryBuilder {
     Optional<GraphQlQuery> query = toQuery(queryName, fields);
     query.ifPresent(q -> addSelections(q, responseSchemaContext.getRequestBodyContext(),
         responseSchemaContext.getParameters(), inputParams, mediaType));
+    Map<String, Object> variables;
+    variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
+        .getFilters(), inputParams))
+        .orElseGet(Map::of);
     query.ifPresent(q -> addFilters(q, responseSchemaContext.getDwsQuerySettings()
         .getFilters(), inputParams));
 
-    Map<String, Object> variables = inputParams; // TODO: get params
     return query.map(q -> QueryInput.builder()
         .query(q.toString())
         .variables(variables)
@@ -58,7 +61,7 @@ public class GraphQlQueryBuilder {
 
     GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
     builder.field(root);
-    builder.queryName("Wrapper");
+    builder.queryName("Query");
     return Optional.of(builder.build());
 
   }

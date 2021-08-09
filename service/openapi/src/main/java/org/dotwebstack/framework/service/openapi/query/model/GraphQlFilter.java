@@ -13,8 +13,10 @@ public class GraphQlFilter {
 
   private Map<?, ?> content;
 
-  public void writeAsString(StringBuilder sb) {
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
     sb.append("filter: ");
     write(content, sb);
+    return sb.toString();
   }
 }

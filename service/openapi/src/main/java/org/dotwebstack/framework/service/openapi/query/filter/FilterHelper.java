@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,18 +69,28 @@ public class FilterHelper {
     return field;
   }
 
-  public static void addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
+  public static Map<String, Object> addFilters(@NonNull GraphQlQuery query, @NonNull List<QueryFilter> filters,
       @NonNull Map<String, Object> inputParams) {
-    filters.forEach(filter -> {
+    Map<String, Object> result = new HashMap<>();
+    for (int i = 0; i < filters.size(); i++) {
+      QueryFilter filter = filters.get(i);
       GraphQlFilter.GraphQlFilterBuilder builder = GraphQlFilter.builder();
-      String[] fieldPath = filter.getFieldPath();
       Map<?, ?> fieldFilters = filter.getFieldFilters();
       fieldFilters = resolveVariables(fieldFilters, inputParams);
 
       builder.content(fieldFilters);
+
+      String filterId = "filter" + i;
+      result.put(filterId, fieldFilters);
+      query.getVariables()
+          .put(filterId, filter.getType());
+
+      String[] fieldPath = filter.getFieldPath();
       Field field = resolveFilterField(query, fieldPath);
-      field.setFilter(builder.build());
-    });
+      field.setFilterId(filterId);
+    }
+
+    return result;
 
   }
 

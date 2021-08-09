@@ -1,4 +1,4 @@
-query Wrapper{
+query Query{
  query16(id: "id1") {
   o15_prop1
   o15_prop2

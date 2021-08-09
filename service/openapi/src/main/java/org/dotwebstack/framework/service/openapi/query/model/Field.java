@@ -20,7 +20,7 @@ public class Field {
   @Builder.Default
   private Map<String, Object> arguments = new HashMap<>();
 
-  private GraphQlFilter filter; // TODO serialize separately and pass as variable, use reference name here
+  private String filterId;
 
   private List<Field> children;
 
@@ -38,9 +38,11 @@ public class Field {
         prefix = ", ";
       }
       sb.append(")");
-    } else if (filter != null) {
+    } else if (filterId != null) {
       sb.append("(");
-      filter.writeAsString(sb);
+      sb.append("filter: ")
+          .append("$")
+          .append(filterId);
       sb.append(")");
     }
     if (children != null && !children.isEmpty()) {
