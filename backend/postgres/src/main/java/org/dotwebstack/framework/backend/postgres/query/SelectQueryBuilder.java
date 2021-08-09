@@ -21,6 +21,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -53,9 +54,13 @@ public class SelectQueryBuilder {
 
   private final AggregateFieldFactory aggregateFieldFactory;
 
-  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory) {
+  private final DotWebStackConfiguration dotWebStackConfiguration;
+
+  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory,
+      DotWebStackConfiguration dotWebStackConfiguration) {
     this.dslContext = dslContext;
     this.aggregateFieldFactory = aggregateFieldFactory;
+    this.dotWebStackConfiguration = dotWebStackConfiguration;
   }
 
   public SelectQueryBuilderResult build(CollectionRequest collectionRequest) {
@@ -486,6 +491,17 @@ public class SelectQueryBuilder {
           ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
           leftSideTable, fieldAliasMap);
       return List.of(condition);
+    }
+
+    if (leftSideConfiguration.getMappedBy() != null) {
+      PostgresTypeConfiguration otherSideTypeConfiguration =
+          (PostgresTypeConfiguration) dotWebStackConfiguration.getObjectTypes()
+              .get(leftSideConfiguration.getType());;
+      PostgresFieldConfiguration otherSideFieldConfiguration =
+          otherSideTypeConfiguration.getField(leftSideConfiguration.getMappedBy())
+              .orElseThrow();
+
+      return createJoinConditions(otherSideFieldConfiguration, rightSideTable, leftSideTable, fieldAliasMap);
     }
 
     return List.of();

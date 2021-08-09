@@ -16,6 +16,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
@@ -41,6 +42,7 @@ import org.jooq.impl.DefaultDSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,10 +55,13 @@ class SelectQueryBuilderTest {
 
   private SelectQueryBuilder selectQueryBuilder;
 
+  @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory());
+    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory(), dotWebStackConfiguration);
   }
 
   @Test
@@ -90,8 +95,6 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildCollectionRequest_returnsQuery_withPagingCriteria() {
-    // when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
