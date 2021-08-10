@@ -16,6 +16,7 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
@@ -41,6 +42,7 @@ import org.jooq.impl.DefaultDSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,10 +55,13 @@ class SelectQueryBuilderTest {
 
   private SelectQueryBuilder selectQueryBuilder;
 
+  @Mock
+  private DotWebStackConfiguration dotWebStackConfiguration;
+
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory());
+    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory(), dotWebStackConfiguration);
   }
 
   @Test
@@ -90,8 +95,6 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildCollectionRequest_returnsQuery_withPagingCriteria() {
-    // when(meta.getTables("BreweryTable")).thenReturn(List.of(new BreweryTable()));
-
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
     var typeName = "Brewery";
@@ -283,6 +286,63 @@ class SelectQueryBuilderTest {
   }
 
   @Test
+  void buildObjectRequest_returnsQuery_forObjectFieldsWithMappedByJoinColumn() {
+    var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    beerIdentifierFieldConfiguration.setColumn("identifier_beer");
+
+    var mappedByFieldConfiguration = new PostgresFieldConfiguration();
+    mappedByFieldConfiguration.setType("Beer");
+    mappedByFieldConfiguration.setMappedBy("brewery");
+
+    var beerTypeConfiguration = new PostgresTypeConfiguration();
+
+    mappedByFieldConfiguration.setTypeConfiguration(beerTypeConfiguration);
+
+    beerTypeConfiguration.setKeys(List.of());
+    beerTypeConfiguration.setTable("Beer" + TABLE_POSTFIX);
+
+    var breweryTypeConfiguration = mockTypeConfiguration("brewery");
+
+    var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    breweryIdentifierFieldConfiguration.setColumn("identifier_brewery");
+
+    when(breweryTypeConfiguration.getFields()).thenReturn(
+        Map.of("brewery", mappedByFieldConfiguration, "identifier_brewery", breweryIdentifierFieldConfiguration));
+
+    var joinColumn = createJoinColumn("brewery", "identifier_brewery");
+    var breweryFieldConfiguration = createPostgresFieldConfiguration(breweryTypeConfiguration, List.of(joinColumn));
+
+    beerTypeConfiguration
+        .setFields(Map.of("identifier_beer", beerIdentifierFieldConfiguration, "brewery", breweryFieldConfiguration));
+
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beer", beerTypeConfiguration));
+
+    var nestedObjectField = ObjectFieldConfiguration.builder()
+        .field(mappedByFieldConfiguration)
+        .objectRequest(ObjectRequest.builder()
+            .typeConfiguration(beerTypeConfiguration)
+            .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_beer"))))
+            .build())
+        .build();
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(breweryTypeConfiguration)
+        .objectFields(List.of(nestedObjectField))
+        .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("name"))))
+        .build();
+
+    SelectQueryBuilderResult result = selectQueryBuilder.build(objectRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
+            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select \"t2\".\"identifier_beerColumn\" as \"x2\"\n" + "    from \"BeerTable\" as \"t2\"\n"
+            + "    where \"t2\".\"brewery\" = \"t1\".\"identifier_brewery\"\n" + "    limit 1\n" + "  ) as \"t3\"\n"
+            + "    on 1 = 1"));
+  }
+
+  @Test
   void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinTable() {
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
@@ -303,22 +363,25 @@ class SelectQueryBuilderTest {
     fieldConfiguration.setJoinTable(joinTable);
 
     var keyCriteria = PostgresKeyCriteria.builder()
-        .values(Map.of())
+        .values(Map.of("ingredient_identifier", "id-123"))
         .joinTable(joinTable)
         .build();
 
     var objectRequest = ObjectRequest.builder()
         .typeConfiguration(typeConfiguration)
+        .keyCriteria(List.of(keyCriteria))
         .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_ingredient"))))
         .build();
 
-    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(List.of(keyCriteria), true));
+    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(true));
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n" + "from \"IngredientTable\" as \"t1\"\n"
-            + "  join \"BeerIngredientTable\" as \"t2\"\n"
-            + "    on \"t2\".\"ingredient_identifier\" = \"t1\".\"identifier_ingredientColumn\""));
+        equalTo("select\n" + "  \"t4\".*,\n" + "  x2\n" + "from (values ('id-123')) as \"t3\" (\"x2\")\n"
+            + "  left outer join lateral (\n" + "    select \"t1\".\"identifier_ingredientColumn\" as \"x1\"\n"
+            + "    from \"IngredientTable\" as \"t1\"\n" + "      join \"BeerIngredientTable\" as \"t2\"\n"
+            + "        on \"t2\".\"ingredient_identifier\" = \"t1\".\"identifier_ingredientColumn\"\n"
+            + "    where \"t2\".\"ingredient_identifier\" = \"t3\".\"x2\"\n" + "  ) as \"t4\"\n" + "    on 1 = 1"));
   }
 
   @Test

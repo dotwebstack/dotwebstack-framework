@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -19,8 +17,6 @@ public class ObjectSelectContext {
 
   private boolean useNullMapWhenNotFound = false;
 
-  private List<PostgresKeyCriteria> joinCriteria = new ArrayList<>();
-
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
   private Map<String, String> keyColumnNames = new HashMap<>();
@@ -33,9 +29,8 @@ public class ObjectSelectContext {
     this.objectQueryContext = objectQueryContext;
   }
 
-  public ObjectSelectContext(List<PostgresKeyCriteria> joinCriteria, boolean useNullMapWhenNotFound) {
+  public ObjectSelectContext(boolean useNullMapWhenNotFound) {
     this(new ObjectQueryContext());
-    this.joinCriteria = joinCriteria;
     this.useNullMapWhenNotFound = useNullMapWhenNotFound;
   }
 

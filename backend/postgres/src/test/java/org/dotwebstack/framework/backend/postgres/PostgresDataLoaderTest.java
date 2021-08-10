@@ -278,6 +278,7 @@ class PostgresDataLoaderTest {
 
     when(selectQueryBuilder.build(any(CollectionRequest.class), any(ObjectSelectContext.class)))
         .thenReturn(selectQueryBuilderResult);
+
     CollectionRequest objectRequest = CollectionRequest.builder()
         .objectRequest(ObjectRequest.builder()
             .keyCriteria(new ArrayList<>())

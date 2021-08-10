@@ -44,10 +44,8 @@ import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
-import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.query.RequestFactory;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -294,51 +292,6 @@ class GenericDataFetcherTest {
     dataLoader.dispatch();
 
     assertBatchLoadManyDataloaderResult(futureWithBeer, futureWithoutBeer);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  void get_returnsDatafetcherResult_ForLoadManyRequestOperation_whenUsingPaging() throws Exception {
-    when(dotWebStackConfiguration.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
-
-    var keyConditionWithBeer = TestKeyCondition.builder()
-        .valueMap(Map.of("brewery", "id-brewery-1"))
-        .build();
-
-    var outputType = GraphQLList.list(createBeersType());
-
-    Flux<Map<String, Object>> loadManyRequestResult = Flux.fromIterable(List.of(Map.of("id", "id-1")));
-
-    var parentLocalContext = LocalDataFetcherContext.builder()
-        .keyConditionFn((s, stringObjectMap) -> keyConditionWithBeer)
-        .build();
-
-    PagingDataFetcherContext pagingDataFetcherContext = PagingDataFetcherContext.builder()
-        .parentLocalContext(parentLocalContext)
-        .first(10)
-        .offset(0)
-        .parentSource(Map.of("name", "Brewery X", "identifier_brewery", "id-brewery-1"))
-        .build();
-
-    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY, Map.of(), pagingDataFetcherContext);
-
-    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
-    when(backendDataLoader.loadManyRequest(eq(keyConditionWithBeer), any())).thenReturn(loadManyRequestResult);
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
-
-    when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
-    ExecutionStepInfo parentExecutionStepInfo = mock(ExecutionStepInfo.class);
-    when(parentExecutionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
-    when(executionStepInfo.getParent()).thenReturn(parentExecutionStepInfo);
-
-    final Future<?> futureWithBeer = (Future<?>) genericDataFetcher.get(dataFetchingEnvironment);
-
-    List<DataFetcherResult<Map<String, Object>>> futureWithBeerResult =
-        (List<DataFetcherResult<Map<String, Object>>>) futureWithBeer.get();
-    assertThat(futureWithBeerResult.size(), is(1));
-    assertThat(futureWithBeerResult.get(0)
-        .getData()
-        .get("id"), is("id-1"));
   }
 
   @Test

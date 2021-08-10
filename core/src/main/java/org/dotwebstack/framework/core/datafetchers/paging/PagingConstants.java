@@ -10,8 +10,6 @@ public final class PagingConstants {
 
   public static final int OFFSET_MAX_VALUE = 10000;
 
-  public static final String TYPE_SUFFIX_NAME = "Connection";
-
   public static final String NODES_FIELD_NAME = "nodes";
 
   public static final String OFFSET_FIELD_NAME = "offset";
