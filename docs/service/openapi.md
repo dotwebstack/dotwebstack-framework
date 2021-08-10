@@ -165,6 +165,58 @@ However, when you add the
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by
 default with one or more values and to restrict which values can be expanded.
 
+## Keys and filters
+OpenApi queries may have vendor extensions under `x-dws-query` to configure key and filter information for the GraphqQL backend.
+Keys and filters specify their value by referencings input parameters with `$<type>.<parametername>` where `type` may be:
+* `path`
+* `body`
+* `header`
+* `query`
+For instance, `$path.name` refers to the `name` parameter that occurs in the path.
+
+### Keys
+Keys are configured with an optional map`x-dws-query.keys`, specifying the graphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the graphQl query.
+The following will add an `identifier` field to the graphQL query and populate it with the `identifier` path variable if provided:
+```yaml
+    x-dws-query:
+      field: brewery
+      keys:
+        identifier: $path.identifier
+```
+The key supportes the `.` notation for nested nodes.
+
+### Filters
+Filters are configured with an optional map`x-dws-query.filters`. The map contains a filter configuration per graphQL query field.
+```yaml
+    x-dws-query:
+      field: breweries
+      filters:
+        <fieldPath1>: <filterConfig>
+        <fieldPath2>: <filterConfig>
+```
+A `fieldPath` key supports the `.` notation for nested filters and map to a `<filterConfig>` with the following structure:
+```yaml
+    type: <graphQLFilterType>
+    fields:
+      <field1>: <fieldFilter>
+      <field2>: <fieldFilter>
+```
+Each `field` maps to a `fieldFilter` map that supports any filter structure as described in [filtering](../core/filtering.md).
+Like keys, filters are only added if the corresponding input parameter is provided.
+
+The following describes a `BreweryFilter` type filter on the `breweries` node on the `name` field.
+```yaml
+    x-dws-query:
+      field: breweries
+      filters:
+        breweries:
+          type: BreweryFilter
+          fields:
+            name:
+              in: $query.name
+```
+With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
+
 ## Required fields
 
 In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension
