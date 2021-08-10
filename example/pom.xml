@@ -17,6 +17,7 @@
     <module>example-postgres</module>
     <module>example-graphql-proxy</module>
     <module>example-rdf4j</module>
+    <module>example-openapi-proxy</module>
   </modules>
 
 </project>

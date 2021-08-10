@@ -1,0 +1,14 @@
+logging:
+  level:
+    org.dotwebstack: DEBUG
+    io.netty: DEBUG
+    reactor.netty: DEBUG
+
+server:
+  port: 8081
+
+dotwebstack:
+  graphql:
+    proxies:
+      localhostProxy:
+        uri: "http://localhost:8080/"

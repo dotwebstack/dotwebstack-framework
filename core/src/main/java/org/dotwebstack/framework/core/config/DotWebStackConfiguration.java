@@ -27,7 +27,6 @@ public class DotWebStackConfiguration {
   @Valid
   private ContextConfiguration context;
 
-  @NotNull
   @Valid
   private Map<String, AbstractTypeConfiguration<?>> objectTypes;
 
