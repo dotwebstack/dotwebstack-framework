@@ -1,11 +1,11 @@
-package org.dotwebstack.framework.service.openapi.query.filter;
+package org.dotwebstack.framework.service.openapi.query;
 
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
-public class ValueWriter {
-  private ValueWriter() {}
+public class GraphQlValueWriter {
+  private GraphQlValueWriter() {}
 
   public static void write(Object value, StringBuilder sb) {
     if (value instanceof Map) {

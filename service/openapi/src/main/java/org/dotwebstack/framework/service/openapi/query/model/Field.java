@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.query.filter.ValueWriter;
+import org.dotwebstack.framework.service.openapi.query.GraphQlValueWriter;
 
 @Builder
 @Data
@@ -34,7 +34,7 @@ public class Field {
         sb.append(prefix);
         sb.append(e.getKey())
             .append(": ");
-        ValueWriter.write(e.getValue(), sb);
+        GraphQlValueWriter.write(e.getValue(), sb);
         prefix = ", ";
       }
       sb.append(")");

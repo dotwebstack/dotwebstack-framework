@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query.model;
 
 
-import static org.dotwebstack.framework.service.openapi.query.filter.ValueWriter.write;
+import static org.dotwebstack.framework.service.openapi.query.GraphQlValueWriter.write;
 
 import java.util.Map;
 import lombok.Builder;

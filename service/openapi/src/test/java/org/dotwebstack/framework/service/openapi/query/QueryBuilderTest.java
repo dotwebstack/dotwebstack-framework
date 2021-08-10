@@ -20,7 +20,6 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
-import org.dotwebstack.framework.service.openapi.query.filter.ValueWriter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -61,7 +60,7 @@ class QueryBuilderTest {
   private String getVariablesString(QueryInput queryInput) {
     Map<?, ?> variables = queryInput.getVariables();
     StringBuilder sb = new StringBuilder();
-    ValueWriter.write(variables, sb);
+    GraphQlValueWriter.write(variables, sb);
     return sb.toString();
   }
 
