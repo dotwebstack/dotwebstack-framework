@@ -74,7 +74,7 @@ public class GraphQlProxyService implements GraphQlService {
   }
 
   protected String createBody(ExecutionInput executionInput) {
-    Map<String, Object> body = Map.of("query", executionInput.getQuery(), "operationName", "Query");
+    Map<String, Object> body = Map.of("query", executionInput.getQuery(), "operationName", "Query", "variables", executionInput.getVariables());
     try {
       return objectMapper.writeValueAsString(body);
     } catch (JsonProcessingException e) {

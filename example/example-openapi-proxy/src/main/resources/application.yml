@@ -1,8 +1,6 @@
 logging:
   level:
     org.dotwebstack: DEBUG
-    io.netty: DEBUG
-    reactor.netty: DEBUG
 
 server:
   port: 8081
