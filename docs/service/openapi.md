@@ -167,7 +167,7 @@ default with one or more values and to restrict which values can be expanded.
 
 ## Keys and filters
 OpenApi queries may have vendor extensions under `x-dws-query` to configure key and filter information for the GraphqQL backend.
-Keys and filters specify their value by referencings input parameters with `$<type>.<parametername>` where `type` may be:
+Keys and filters specify their value by referencing input parameters with `$<type>.<parametername>` where `type` may be:
 * `path`
 * `body`
 * `header`
@@ -175,8 +175,8 @@ Keys and filters specify their value by referencings input parameters with `$<ty
 For instance, `$path.name` refers to the `name` parameter that occurs in the path.
 
 ### Keys
-Keys are configured with an optional map`x-dws-query.keys`, specifying the graphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the graphQl query.
-The following will add an `identifier` field to the graphQL query and populate it with the `identifier` path variable if provided:
+Keys are configured with an optional map `x-dws-query.keys`, specifying the graphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the graphQl query.
+The following will add an `identifier` key field to the graphQL query and populate it with the `identifier` path variable if provided:
 ```yaml
     x-dws-query:
       field: brewery
@@ -186,7 +186,7 @@ The following will add an `identifier` field to the graphQL query and populate i
 The key supportes the `.` notation for nested nodes.
 
 ### Filters
-Filters are configured with an optional map`x-dws-query.filters`. The map contains a filter configuration per graphQL query field.
+Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per graphQL query field.
 ```yaml
     x-dws-query:
       field: breweries
@@ -204,7 +204,7 @@ A `fieldPath` key supports the `.` notation for nested filters and map to a `<fi
 Each `field` maps to a `fieldFilter` map that supports any filter structure as described in [filtering](../core/filtering.md).
 Like keys, filters are only added if the corresponding input parameter is provided.
 
-The following describes a `BreweryFilter` type filter on the `breweries` node on the `name` field.
+The following describes a `BreweryFilter` type filter on the `breweries` node on the `name` field:
 ```yaml
     x-dws-query:
       field: breweries
