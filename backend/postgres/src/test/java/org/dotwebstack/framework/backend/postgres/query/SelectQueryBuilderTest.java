@@ -286,6 +286,63 @@ class SelectQueryBuilderTest {
   }
 
   @Test
+  void buildObjectRequest_returnsQuery_forObjectFieldsWithMappedByJoinColumn() {
+    var beerIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    beerIdentifierFieldConfiguration.setColumn("identifier_beer");
+
+    var mappedByFieldConfiguration = new PostgresFieldConfiguration();
+    mappedByFieldConfiguration.setType("Beer");
+    mappedByFieldConfiguration.setMappedBy("brewery");
+
+    var beerTypeConfiguration = new PostgresTypeConfiguration();
+
+    mappedByFieldConfiguration.setTypeConfiguration(beerTypeConfiguration);
+
+    beerTypeConfiguration.setKeys(List.of());
+    beerTypeConfiguration.setTable("Beer" + TABLE_POSTFIX);
+
+    var breweryTypeConfiguration = mockTypeConfiguration("brewery");
+
+    var breweryIdentifierFieldConfiguration = new PostgresFieldConfiguration();
+    breweryIdentifierFieldConfiguration.setColumn("identifier_brewery");
+
+    when(breweryTypeConfiguration.getFields()).thenReturn(
+        Map.of("brewery", mappedByFieldConfiguration, "identifier_brewery", breweryIdentifierFieldConfiguration));
+
+    var joinColumn = createJoinColumn("brewery", "identifier_brewery");
+    var breweryFieldConfiguration = createPostgresFieldConfiguration(breweryTypeConfiguration, List.of(joinColumn));
+
+    beerTypeConfiguration
+        .setFields(Map.of("identifier_beer", beerIdentifierFieldConfiguration, "brewery", breweryFieldConfiguration));
+
+    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beer", beerTypeConfiguration));
+
+    var nestedObjectField = ObjectFieldConfiguration.builder()
+        .field(mappedByFieldConfiguration)
+        .objectRequest(ObjectRequest.builder()
+            .typeConfiguration(beerTypeConfiguration)
+            .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_beer"))))
+            .build())
+        .build();
+
+    var objectRequest = ObjectRequest.builder()
+        .typeConfiguration(breweryTypeConfiguration)
+        .objectFields(List.of(nestedObjectField))
+        .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("name"))))
+        .build();
+
+    SelectQueryBuilderResult result = selectQueryBuilder.build(objectRequest);
+
+    assertThat(result.getQuery()
+        .toString(),
+        equalTo("select\n" + "  \"t1\".\"nameColumn\" as \"x1\",\n" + "  \"t3\".*\n"
+            + "from \"breweryTable\" as \"t1\"\n" + "  left outer join lateral (\n"
+            + "    select \"t2\".\"identifier_beerColumn\" as \"x2\"\n" + "    from \"BeerTable\" as \"t2\"\n"
+            + "    where \"t2\".\"brewery\" = \"t1\".\"identifier_brewery\"\n" + "    limit 1\n" + "  ) as \"t3\"\n"
+            + "    on 1 = 1"));
+  }
+
+  @Test
   void buildObjectRequest_returnsQuery_forObjectFieldsWithJoinTable() {
     var ingredientIdentifierFieldConfiguration = new PostgresFieldConfiguration();
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");

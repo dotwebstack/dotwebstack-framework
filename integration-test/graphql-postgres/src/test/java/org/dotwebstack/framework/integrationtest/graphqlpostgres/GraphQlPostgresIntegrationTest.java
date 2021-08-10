@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsIn;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.collection.IsMapWithSize;
 import org.jooq.tools.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -286,6 +288,27 @@ class GraphQlPostgresIntegrationTest {
         .map(map -> map.get(NAME))
         .map(Objects::toString)
         .collect(Collectors.toList()), equalTo(List.of("Beer 1", "Beer 2", "Beer 4")));
+  }
+
+  @Test
+  void getRequest_returnsBreweries_forSingleMappedByJoinColumn() {
+    String query = "{breweries{name status beer{name}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+
+    Assert.assertThat(data,
+        hasEntry(equalTo("breweries"),
+            IsIterableContainingInOrder.contains(hasEntry(equalTo("beer"), IsMapWithSize.aMapWithSize(1)),
+                hasEntry(equalTo("beer"), IsMapWithSize.aMapWithSize(1)),
+                hasEntry(equalTo("beer"), IsMapWithSize.aMapWithSize(1)),
+                hasEntry(equalTo("beer"), CoreMatchers.nullValue()))));
+
   }
 
   @Test

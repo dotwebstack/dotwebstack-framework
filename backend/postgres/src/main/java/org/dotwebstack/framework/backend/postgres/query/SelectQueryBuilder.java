@@ -496,7 +496,7 @@ public class SelectQueryBuilder {
     if (leftSideConfiguration.getMappedBy() != null) {
       PostgresTypeConfiguration otherSideTypeConfiguration =
           (PostgresTypeConfiguration) dotWebStackConfiguration.getObjectTypes()
-              .get(leftSideConfiguration.getType());;
+              .get(leftSideConfiguration.getType());
       PostgresFieldConfiguration otherSideFieldConfiguration =
           otherSideTypeConfiguration.getField(leftSideConfiguration.getMappedBy())
               .orElseThrow();

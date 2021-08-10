@@ -162,6 +162,10 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
+      beer:
+        type: Beer
+        nullable: true
+        mappedBy: brewery
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
