@@ -64,9 +64,15 @@ public class JexlHelper {
     if (Objects.nonNull(graphQlField)) {
       graphQlField.getArguments()
           .stream()
-          .filter(argument -> argument.getValue() != null || argument.getDefaultValue() != null)
-          .forEach(argument -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(),
-              argument.getValue() != null ? argument.getValue() : argument.getDefaultValue()));
+          .filter(argument -> argument.getArgumentValue()
+              .isSet()
+              || argument.getArgumentDefaultValue()
+                  .isSet())
+          .forEach(argument -> Optional.ofNullable(argument.getArgumentValue()
+              .getValue())
+              .or(() -> Optional.ofNullable(argument.getArgumentDefaultValue()
+                  .getValue()))
+              .ifPresent(argValue -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(), argValue)));
     }
 
     return jexlContext;

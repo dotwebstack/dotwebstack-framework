@@ -1,5 +1,7 @@
 logging:
-  level.org.dotwebstack: DEBUG
+  level:
+    root: INFO
+    org.dotwebstack: DEBUG
 
 dotwebstack:
   base_url: https://github.com/dotwebstack/api/v1

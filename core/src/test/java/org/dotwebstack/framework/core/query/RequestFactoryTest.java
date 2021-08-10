@@ -661,7 +661,7 @@ class RequestFactoryTest {
 
     when(fieldDefinition.getType()).thenReturn(type);
 
-    when(selectedField.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
 
     return selectedField;
   }

@@ -36,12 +36,12 @@ class ConnectionDataFetcherTest {
 
     when(fieldDefinition.getArgument(FIRST_ARGUMENT_NAME)).thenReturn(newArgument().name(FIRST_ARGUMENT_NAME)
         .type(Scalars.GraphQLInt)
-        .defaultValue(1)
+        .defaultValueProgrammatic(10)
         .build());
 
     when(fieldDefinition.getArgument(OFFSET_ARGUMENT_NAME)).thenReturn(newArgument().name(OFFSET_ARGUMENT_NAME)
         .type(Scalars.GraphQLInt)
-        .defaultValue(10)
+        .defaultValueProgrammatic(0)
         .build());
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -74,10 +74,10 @@ class ConnectionDataFetcherTest {
 
     var dataFetcherResult = (DataFetcherResult<?>) result;
 
-    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 10)));
+    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 0)));
     assertThat(dataFetcherResult.getLocalContext(), equalTo(PagingDataFetcherContext.builder()
-        .first(1)
-        .offset(10)
+        .first(10)
+        .offset(0)
         .build()));
   }
 

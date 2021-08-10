@@ -397,7 +397,10 @@ public class RequestFactory {
   private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
-        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinition()
+        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinitions()
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> illegalStateException("No field definition found for selected field."))
             .getType()))
         .collect(Collectors.toList());
   }

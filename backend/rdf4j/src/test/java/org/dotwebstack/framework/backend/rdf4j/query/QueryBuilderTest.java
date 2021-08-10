@@ -171,8 +171,8 @@ class QueryBuilderTest {
   private SelectedField mockSelectedField(String name, GraphQLFieldDefinition fieldDefinition) {
     SelectedField selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn(name);
-    lenient().when(selectedField.getFieldDefinition())
-        .thenReturn(fieldDefinition);
+    lenient().when(selectedField.getFieldDefinitions())
+        .thenReturn(List.of(fieldDefinition));
     lenient().when(selectedField.getFullyQualifiedName())
         .thenReturn(name);
     return selectedField;

@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryUtil.addBinding;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLTypeUtil;
@@ -151,7 +152,10 @@ public class QueryBuilder {
         .stream()
         .map(KeyConfiguration::getField),
         selectedFields.stream()
-            .filter(selectedField -> !GraphQLTypeUtil.isList(selectedField.getFieldDefinition()
+            .filter(selectedField -> !GraphQLTypeUtil.isList(selectedField.getFieldDefinitions()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> illegalStateException("No field definition found for selected field."))
                 .getType()))
             .map(SelectedField::getName)),
         keyFieldNames.keySet()
