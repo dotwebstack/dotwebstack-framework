@@ -26,7 +26,10 @@ class GraphQlValueWriterTest {
 
   @Test
   void write_throwsException_forUnsupportedClass() {
-    assertThrows(IllegalArgumentException.class, () -> GraphQlValueWriter.write(new Object(), new StringBuilder()));
+    Object value = new Object();
+    StringBuilder sb = new StringBuilder();
+
+    assertThrows(IllegalArgumentException.class, () -> GraphQlValueWriter.write(value, sb));
   }
 
   private static Stream<Arguments> valueWriterArguments() {
