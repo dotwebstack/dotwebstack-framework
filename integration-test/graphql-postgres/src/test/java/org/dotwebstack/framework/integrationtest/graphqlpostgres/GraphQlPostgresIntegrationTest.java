@@ -308,7 +308,6 @@ class GraphQlPostgresIntegrationTest {
                 hasEntry(equalTo("beer"), IsMapWithSize.aMapWithSize(1)),
                 hasEntry(equalTo("beer"), IsMapWithSize.aMapWithSize(1)),
                 hasEntry(equalTo("beer"), CoreMatchers.nullValue()))));
-
   }
 
   @Test
