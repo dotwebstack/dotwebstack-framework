@@ -97,7 +97,6 @@ public class DwsExtensionHelper {
     return true;
   }
 
-  @SuppressWarnings("rawtypes")
   public static Optional<String> getDwsQueryName(@NonNull Operation operation) {
     if (operation.getExtensions() == null || !operation.getExtensions()
         .containsKey(X_DWS_QUERY)) {
@@ -106,7 +105,7 @@ public class DwsExtensionHelper {
     Object dwsQueryName = operation.getExtensions()
         .get(X_DWS_QUERY);
     if (dwsQueryName instanceof Map) {
-      return Optional.of((String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD));
+      return Optional.of((String) ((Map<?, ?>) dwsQueryName).get(X_DWS_QUERY_FIELD));
     }
     return Optional.of((String) dwsQueryName);
   }
@@ -125,7 +124,7 @@ public class DwsExtensionHelper {
         .build();
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings("unchecked")
   public static DwsQuerySettings getDwsQuerySettings(@NonNull Operation operation) {
 
     DwsQuerySettings.DwsQuerySettingsBuilder builder = DwsQuerySettings.builder();

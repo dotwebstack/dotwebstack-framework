@@ -54,7 +54,6 @@ class OpenapiPostgresIntegrationTest {
 
   @Test
   void brewries_returnsExpectedResult() throws IOException {
-    // Arrange & Act
     String result = client.get()
         .uri("/breweries")
         .exchange()
@@ -62,13 +61,11 @@ class OpenapiPostgresIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "breweries.json");
   }
 
   @Test
   void brewries_returnsExpectedResult_withFilter() throws IOException {
-    // Arrange & Act
     String result = client.get()
         .uri("/breweries?name=Brewery Z")
         .exchange()
@@ -76,13 +73,11 @@ class OpenapiPostgresIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "breweries_filtered.json");
   }
 
   @Test
   void brewries_returnsExpectedResult_withKey() throws IOException {
-    // Arrange & Act
     String result = client.get()
         .uri("/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b")
         .exchange()
@@ -90,7 +85,6 @@ class OpenapiPostgresIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     assertResult(result, "brewery_X.json");
   }
 
@@ -98,7 +92,6 @@ class OpenapiPostgresIntegrationTest {
     JsonNode expectedObj = mapper.readTree(getClass().getResourceAsStream("/results/" + jsonResult));
     JsonNode actualObj = mapper.readTree(result);
 
-    // Assert
     assertEquals(expectedObj, actualObj);
   }
 

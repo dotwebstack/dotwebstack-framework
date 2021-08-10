@@ -42,8 +42,7 @@ public class GraphQlQueryBuilder {
     variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
         .getFilters(), inputParams))
         .orElseGet(Map::of);
-    query.ifPresent(q -> addFilters(q, responseSchemaContext.getDwsQuerySettings()
-        .getFilters(), inputParams));
+    query.ifPresent(q -> addFilters(q, dwsQuerySettings.getFilters(), inputParams));
 
     return query.map(q -> QueryInput.builder()
         .query(q.toString())

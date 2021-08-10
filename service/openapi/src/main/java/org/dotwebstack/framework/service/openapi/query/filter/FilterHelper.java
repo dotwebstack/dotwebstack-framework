@@ -18,7 +18,7 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
-  public static void addKeys(@NonNull GraphQlQuery query, Map<String, String> keyMap,
+  public static void addKeys(@NonNull GraphQlQuery query, @NonNull Map<String, String> keyMap,
       @NonNull Map<String, Object> inputParams) {
     Set<Key> keys = getKeys(keyMap, inputParams);
 
@@ -55,7 +55,6 @@ public class FilterHelper {
     }
 
     return result;
-
   }
 
   protected static Field resolveField(GraphQlQuery query, String[] path) {
@@ -115,7 +114,7 @@ public class FilterHelper {
     return result.isEmpty() ? null : result;
   }
 
-  private static Set<Key> getKeys(@NonNull Map<String, String> keyMap, @NonNull Map<String, Object> inputParams) {
+  private static Set<Key> getKeys(Map<String, String> keyMap, Map<String, Object> inputParams) {
     return keyMap.entrySet()
         .stream()
         .map(e -> {
@@ -123,13 +122,11 @@ public class FilterHelper {
           String paramName = e.getValue();
           String[] parts = paramName.split("\\.");
           Object paramValue = inputParams.get(parts[1]);
-          if (paramValue != null) {
-            return Key.builder()
-                .fieldPath(path)
-                .value(paramValue)
-                .build();
-          }
-          return null;
+
+          return paramValue != null ? Key.builder()
+              .fieldPath(path)
+              .value(paramValue)
+              .build() : null;
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());

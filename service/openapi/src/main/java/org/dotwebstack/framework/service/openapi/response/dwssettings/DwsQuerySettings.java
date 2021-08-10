@@ -7,7 +7,6 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder
 public class DwsQuerySettings {
@@ -21,6 +20,5 @@ public class DwsQuerySettings {
 
   @Builder.Default
   private Map<String, String> keys = new HashMap<>();
-
 
 }
