@@ -47,7 +47,7 @@ class QueryBuilderTest {
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQuery(responseSchemaContext, inputParams);
+    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -121,7 +121,7 @@ class QueryBuilderTest {
     var graphQlQueryBuilder = new GraphQlQueryBuilder();
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
-        () -> graphQlQueryBuilder.toQuery(responseSchemaContext, inputParams));
+        () -> graphQlQueryBuilder.toQueryInput(responseSchemaContext, inputParams));
   }
 
   @Test
@@ -129,7 +129,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -140,7 +140,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -149,7 +149,7 @@ class QueryBuilderTest {
   @Test
   void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
-    String query = new GraphQlQueryBuilder().toQuery(responseSchemaContext, Map.of("argument1", "id1"))
+    String query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
         .map(QueryInput::getQuery)
         .orElseThrow();
 

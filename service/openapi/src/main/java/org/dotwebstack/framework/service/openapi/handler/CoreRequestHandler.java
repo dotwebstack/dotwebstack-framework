@@ -445,7 +445,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
+    return new GraphQlQueryBuilder().toQueryInput(this.responseSchemaContext, inputParams);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,

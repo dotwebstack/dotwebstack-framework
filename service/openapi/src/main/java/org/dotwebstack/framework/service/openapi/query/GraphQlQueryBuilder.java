@@ -19,7 +19,7 @@ import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySe
 
 public class GraphQlQueryBuilder {
 
-  public Optional<QueryInput> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
+  public Optional<QueryInput> toQueryInput(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
     DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
@@ -36,7 +36,7 @@ public class GraphQlQueryBuilder {
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
-    Optional<GraphQlQuery> query = toQuery(queryName, fields);
+    Optional<GraphQlQuery> query = toQueryInput(queryName, fields);
     query.ifPresent(q -> addKeys(q, dwsQuerySettings.getKeys(), inputParams));
     Map<String, Object> variables;
     variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
@@ -51,7 +51,7 @@ public class GraphQlQueryBuilder {
 
   }
 
-  private Optional<GraphQlQuery> toQuery(String queryName, List<Field> fields) {
+  private Optional<GraphQlQuery> toQueryInput(String queryName, List<Field> fields) {
     Field root = new Field();
     root.setChildren(fields);
     root.setName(queryName);
