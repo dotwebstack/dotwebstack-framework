@@ -26,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
 
 public class DwsExtensionHelper {
 
@@ -103,12 +105,26 @@ public class DwsExtensionHelper {
     Object dwsQueryName = operation.getExtensions()
         .get(X_DWS_QUERY);
     if (dwsQueryName instanceof Map) {
-      return Optional.of((String) ((Map) dwsQueryName).get(X_DWS_QUERY_FIELD));
+      return Optional.of((String) ((Map<?, ?>) dwsQueryName).get(X_DWS_QUERY_FIELD));
     }
     return Optional.of((String) dwsQueryName);
   }
 
-  @SuppressWarnings({"unchecked"})
+  @SuppressWarnings("unchecked")
+  private static QueryFilter toQueryFilter(String key, Map<?, ?> filterSettings) {
+    QueryFilter.QueryFilterBuilder builder = QueryFilter.builder();
+    String[] field = key.split("\\.");
+    builder.fieldPath(field);
+    String type = (String) filterSettings.get("type");
+    builder.type(type);
+
+    Map<String, ?> fieldMap = (Map<String, ?>) filterSettings.get("fields");
+
+    return builder.fieldFilters(fieldMap)
+        .build();
+  }
+
+  @SuppressWarnings("unchecked")
   public static DwsQuerySettings getDwsQuerySettings(@NonNull Operation operation) {
 
     DwsQuerySettings.DwsQuerySettingsBuilder builder = DwsQuerySettings.builder();
@@ -124,7 +140,20 @@ public class DwsExtensionHelper {
       Map<String, Object> bindingMap = (Map<String, Object>) dwsQuery;
       builder.queryName(bindingMap.get(X_DWS_QUERY_FIELD)
           .toString());
-      builder.requiredFields((List<String>) ((Map<?, ?>) dwsQuery).get(X_DWS_QUERY_REQUIRED_FIELDS));
+      Map<?, ?> settingsMap = (Map<?, ?>) dwsQuery;
+      builder.requiredFields((List<String>) settingsMap.get(X_DWS_QUERY_REQUIRED_FIELDS));
+      Map<String, ?> filters = (Map<String, ?>) settingsMap.get("filters");
+      if (filters != null) {
+        List<QueryFilter> queryFilters = filters.entrySet()
+            .stream()
+            .map(e -> toQueryFilter(e.getKey(), (Map<?, ?>) e.getValue()))
+            .collect(Collectors.toList());
+        builder.filters(queryFilters);
+      }
+      Map<String, String> keys = (Map<String, String>) settingsMap.get("keys");
+      if (keys != null) {
+        builder.keys(keys);
+      }
     } else {
       builder.queryName(dwsQuery.toString());
     }

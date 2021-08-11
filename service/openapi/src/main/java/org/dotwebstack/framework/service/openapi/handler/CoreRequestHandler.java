@@ -15,10 +15,8 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateRequestBodyNonexistent;
 import static org.dotwebstack.framework.service.openapi.helper.GraphQlFormatHelper.formatQuery;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
@@ -52,7 +50,6 @@ import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
@@ -62,6 +59,7 @@ import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.query.QueryInput;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
@@ -182,30 +180,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), jexlContext, String.class);
   }
 
-  @SuppressWarnings("rawtypes")
-  private void validateParameters(GraphQlField field, List<Parameter> parameters,
-      Map<String, Schema> requestBodyProperties, String pathName) {
-    if (parameters.stream()
-        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
-            .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
-                parameter.getExtensions()
-                    .get(X_DWS_TYPE)))
-        .count() > 1) {
-      throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
-    }
-    parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
-        .validate(field, parameter, pathName));
-    field.getArguments()
-        .forEach(
-            argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName, requestBodyProperties));
-  }
-
   ServerResponse getResponse(ServerRequest request, String requestId)
       throws GraphQlErrorException, BadRequestException {
     MDC.put(MDC_REQUEST_ID, requestId);
     Map<String, Object> inputParams = resolveParameters(request);
 
-    ExecutionResult result = buildQueryString(inputParams).map(query -> {
+    ExecutionResult result = getQueryInput(inputParams).map(input -> {
+      String query = input.getQuery();
       if (LOG.isDebugEnabled()) {
         logInputRequest(request);
         LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
@@ -213,9 +194,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
       var executionInput = ExecutionInput.newExecutionInput()
           .query(query)
-          .variables(inputParams)
+          .variables(input.getVariables())
           .build();
-
 
       return graphQL.execute(executionInput);
     })
@@ -464,8 +444,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  protected Optional<String> buildQueryString(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
+  protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
+    return new GraphQlQueryBuilder().toQueryInput(this.responseSchemaContext, inputParams);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,

@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addFilters;
+import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addKeys;
 
 import java.util.List;
 import java.util.Map;
@@ -11,13 +13,13 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
-import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
 
 public class GraphQlQueryBuilder {
 
-  public Optional<String> toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
+  public Optional<QueryInput> toQueryInput(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
 
     DwsQuerySettings dwsQuerySettings = responseSchemaContext.getDwsQuerySettings();
@@ -34,19 +36,30 @@ public class GraphQlQueryBuilder {
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
     List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
-    return toQuery(queryName, fields);
+    Optional<GraphQlQuery> query = toQueryInput(queryName, fields);
+    query.ifPresent(q -> addKeys(q, dwsQuerySettings.getKeys(), inputParams));
+    Map<String, Object> variables;
+    variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
+        .getFilters(), inputParams))
+        .orElseGet(Map::of);
+    query.ifPresent(q -> addFilters(q, dwsQuerySettings.getFilters(), inputParams));
+
+    return query.map(q -> QueryInput.builder()
+        .query(q.toString())
+        .variables(variables)
+        .build());
+
   }
 
-  private Optional<String> toQuery(String queryName, List<Field> fields) {
+  private Optional<GraphQlQuery> toQueryInput(String queryName, List<Field> fields) {
     Field root = new Field();
     root.setChildren(fields);
     root.setName(queryName);
 
     GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
     builder.field(root);
-    builder.queryName("Wrapper");
-    return Optional.of(builder.build()
-        .toString());
+    builder.queryName("Query");
+    return Optional.of(builder.build());
 
   }
 

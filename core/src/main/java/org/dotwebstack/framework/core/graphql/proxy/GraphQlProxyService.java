@@ -45,8 +45,8 @@ public class GraphQlProxyService implements GraphQlService {
   public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
     LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
     String body = createBody(executionInput);
-    ByteBuf byteBuffer = executePost(body).block();
-    return readBody(byteBuffer);
+    return executePost(body).map(this::readBody)
+        .block();
   }
 
   @Override
@@ -74,7 +74,8 @@ public class GraphQlProxyService implements GraphQlService {
   }
 
   protected String createBody(ExecutionInput executionInput) {
-    Map<String, Object> body = Map.of("query", executionInput.getQuery(), "operationName", "test");
+    Map<String, Object> body = Map.of("query", executionInput.getQuery(), "operationName", "Query", "variables",
+        executionInput.getVariables());
     try {
       return objectMapper.writeValueAsString(body);
     } catch (JsonProcessingException e) {

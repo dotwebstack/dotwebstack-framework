@@ -1,0 +1,5 @@
+query Query{
+ query4 {
+  o2_prop1
+ }
+}

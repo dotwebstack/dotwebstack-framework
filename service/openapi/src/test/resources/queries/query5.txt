@@ -1,4 +1,4 @@
-query Wrapper{
+query Query{
  query5 {
   o3_prop2
   o3_prop1

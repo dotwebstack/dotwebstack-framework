@@ -52,9 +52,9 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.QueryInput;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
-import org.dotwebstack.framework.service.openapi.response.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -63,6 +63,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilderTest;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -231,8 +232,11 @@ class CoreRequestHandlerTest {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
-    doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class));
+    doReturn(Optional.of(QueryInput.builder()
+        .variables(Map.of())
+        .query("")
+        .build())).when(coreRequestHandler)
+            .getQueryInput(any(Map.class));
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
@@ -250,8 +254,11 @@ class CoreRequestHandlerTest {
     DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
-    doReturn(Optional.of("")).when(coreRequestHandler)
-        .buildQueryString(any(Map.class));
+    doReturn(Optional.of(QueryInput.builder()
+        .variables(Map.of())
+        .query("")
+        .build())).when(coreRequestHandler)
+            .getQueryInput(any(Map.class));
 
     assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
@@ -288,6 +295,7 @@ class CoreRequestHandlerTest {
 
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     HttpHeaders asHeaders = mock(HttpHeaders.class);
+    when(asHeaders.getContentType()).thenReturn(MediaType.APPLICATION_JSON);
     when(headers.asHttpHeaders()).thenReturn(asHeaders);
     when(request.headers()).thenReturn(headers);
 
