@@ -85,7 +85,7 @@ components:
           type: string
         link:
           type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier_brewery}`'
         countries:
           type: array
           x-dws-default: ['Netherlands','Belgium']
