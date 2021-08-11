@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.service.openapi.query.filter;
 
+import static org.dotwebstack.framework.service.openapi.query.FieldHelper.resolveField;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -8,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
@@ -25,7 +27,8 @@ public class FilterHelper {
     keys.forEach(key -> {
       String[] path = key.getFieldPath()
           .split("\\.");
-      Field field = resolveField(query, path);
+      String[] fieldPath = path.length <= 1 ? new String[] {} : Arrays.copyOfRange(path, 0, path.length - 1);
+      Field field = resolveField(query, fieldPath);
       field.getArguments()
           .put(path[path.length - 1], key.getValue());
     });
@@ -48,46 +51,14 @@ public class FilterHelper {
         query.getVariables()
             .put(filterId, filter.getType());
 
-        String[] fieldPath = filter.getFieldPath();
-        Field field = resolveFilterField(query, fieldPath);
+        String[] path = filter.getFieldPath();
+        String[] fieldPath = path.length <= 1 ? new String[] {} : Arrays.copyOfRange(path, 0, path.length - 1);
+        Field field = resolveField(query, fieldPath);
         field.setFilterId(filterId);
       }
     }
 
     return result;
-  }
-
-  protected static Field resolveField(GraphQlQuery query, String[] path) {
-    Field field = query.getField();
-    for (int i = 0; i < path.length - 1; i++) {
-      int finalI = i;
-      Field finalField = field;
-      field = field.getChildren()
-          .stream()
-          .filter(f -> f.getName()
-              .equals(path[finalI]))
-          .findFirst()
-          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not resolve path {} for field {}",
-              path, finalField.getName()));
-    }
-    return field;
-  }
-
-  protected static Field resolveFilterField(GraphQlQuery query, String[] path) {
-    Field field = query.getField();
-    if (path.length == 1) {
-      return field;
-    }
-    for (int i = 1; i < path.length; i++) {
-      int finalI = i;
-      field = field.getChildren()
-          .stream()
-          .filter(f -> f.getName()
-              .equals(path[finalI]))
-          .findFirst()
-          .orElseThrow();
-    }
-    return field;
   }
 
   private static Map<?, ?> resolveVariables(Map<?, ?> tree, Map<String, Object> inputParams) {

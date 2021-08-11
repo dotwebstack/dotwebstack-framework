@@ -1,0 +1,13 @@
+query Query{
+ query17 {
+  o15_prop1
+  o15_prop2
+  o15_prop3 {
+   nodes {
+    o3_prop2 {
+     nodes
+    }
+   }
+  }
+ }
+}

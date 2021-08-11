@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
+import static org.dotwebstack.framework.service.openapi.query.FieldHelper.resolveField;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
@@ -16,13 +17,14 @@ import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryPaging;
 
 public class OasToGraphQlHelper {
 
   private OasToGraphQlHelper() {}
 
   public static List<Field> toQueryFields(@NonNull ResponseTemplate responseTemplate,
-      @NonNull Map<String, Object> inputParams) {
+      @NonNull Map<String, Object> inputParams, List<QueryPaging> pagings) {
     var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
@@ -36,8 +38,26 @@ public class OasToGraphQlHelper {
     }
 
     ResponseObject rootResponseObject = root.get(0);
-    return getChildFields("", rootResponseObject, inputParams);
+    List<Field> result = getChildFields("", rootResponseObject, inputParams);
+    addPaging(result, pagings);
 
+    return result;
+  }
+
+  private static void addPaging(List<Field> fields, List<QueryPaging> pagings) {
+    pagings.stream()
+        .map(paging -> {
+          String[] path = paging.getPath();
+          return resolveField(fields, path);
+        })
+        .forEach(f -> {
+          Field nodeField = Field.builder()
+              .name("nodes")
+              .nodeField(true)
+              .build();
+          nodeField.setChildren(f.getChildren());
+          f.setChildren(List.of(nodeField));
+        });
   }
 
   private static List<ResponseObject> findGraphqlObject(ResponseObject responseObject) {

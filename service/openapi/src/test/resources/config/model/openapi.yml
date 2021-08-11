@@ -488,3 +488,38 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object15'
+  /query17:
+    get:
+      x-dws-query:
+        field: query17
+        paging:
+          o15_prop3:
+            first: $query.pageSize
+            offset: $query.page
+          o15_prop3.o3_prop2:
+            first: $query.pageSize2
+            offset: $query.page2
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize2
+          in: query
+          schema:
+            type: integer
+        - name: page2
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object15'

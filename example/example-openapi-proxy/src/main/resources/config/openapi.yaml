@@ -29,6 +29,9 @@ components:
           x-dws-default: 'Beer'
     BreweryCollection:
       type: object
+      x-dws-paging:
+        first: <param>
+        offset: <param>
       x-dws-envelope: true
       required:
         - _embedded

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addFilters;
 import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addKeys;
+import static org.dotwebstack.framework.service.openapi.query.paging.PagingHelper.addPaging;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class GraphQlQueryBuilder {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
 
-    List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams);
+    List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams, dwsQuerySettings.getPagings());
     Optional<GraphQlQuery> query = toQueryInput(queryName, fields);
     query.ifPresent(q -> addKeys(q, dwsQuerySettings.getKeys(), inputParams));
     Map<String, Object> variables;
@@ -43,6 +44,7 @@ public class GraphQlQueryBuilder {
         .getFilters(), inputParams))
         .orElseGet(Map::of);
     query.ifPresent(q -> addFilters(q, dwsQuerySettings.getFilters(), inputParams));
+    query.ifPresent(q -> addPaging(q, dwsQuerySettings.getPagings(), inputParams));
 
     return query.map(q -> QueryInput.builder()
         .query(q.toString())
