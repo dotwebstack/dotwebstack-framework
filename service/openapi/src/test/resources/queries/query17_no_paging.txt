@@ -1,16 +1,12 @@
 query Query{
  query17 {
-  nodes {
-   o18_prop1 {
-    nodes {
-     o15_prop1
-     o15_prop2
-     o15_prop3 {
-      o3_prop2
-     }
-    }
+  o18_prop1 {
+   o15_prop1
+   o15_prop2
+   o15_prop3 {
+    o3_prop2
    }
-   o18_prop2
   }
+  o18_prop2
  }
 }
