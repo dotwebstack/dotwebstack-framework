@@ -29,9 +29,6 @@ components:
           x-dws-default: 'Beer'
     BreweryCollection:
       type: object
-      x-dws-paging:
-        first: <param>
-        offset: <param>
       x-dws-envelope: true
       required:
         - _embedded
@@ -115,7 +112,10 @@ paths:
   /breweries:
     get:
       x-dws-query:
-        field: breweries
+        field: breweryCollection
+        paging:
+          first: $query.pageSize
+          offset: $query.page
         filters:
           breweries:
             type: BreweryFilter
@@ -159,15 +159,15 @@ paths:
 #            items:
 #              type: string
 #              enum: ['-address.subject', '-beers.name', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
-#        - name: page
-#          in: query
-#          required: false
-#          schema:
-#            type: string
-#        - name: pageSize
-#          in: query
-#          schema:
-#            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: string
 #        - name: withAddressSubject
 #          in: query
 #          schema:

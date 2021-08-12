@@ -155,21 +155,12 @@ public class DwsExtensionHelper {
       if (keys != null) {
         builder.keys(keys);
       }
-      Map<String, Object> paging = (Map<String, Object>) settingsMap.get("paging");
+      Map<String, String> paging = (Map<String, String>) settingsMap.get("paging");
       if (paging != null) {
-        builder.pagings(paging.entrySet()
-            .stream()
-            .map(e -> {
-              String[] path = e.getKey()
-                  .split("\\.");
-              Map<String, String> valueMap = (Map<String, String>) e.getValue();
-              return QueryPaging.builder()
-                  .path(path)
-                  .firstParam(valueMap.get("first"))
-                  .offsetParam(valueMap.get("offset"))
-                  .build();
-            })
-            .collect(Collectors.toList()));
+        builder.paging(QueryPaging.builder()
+            .firstParam(paging.get("first"))
+            .offsetParam(paging.get("offset"))
+            .build());
       }
     } else {
       builder.queryName(dwsQuery.toString());

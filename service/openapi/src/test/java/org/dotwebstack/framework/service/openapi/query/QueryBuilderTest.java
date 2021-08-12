@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -17,6 +18,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
@@ -29,6 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 
@@ -36,6 +40,9 @@ import org.springframework.http.HttpMethod;
 class QueryBuilderTest {
 
   private static OpenAPI openApi;
+
+  @Mock
+  private DotWebStackConfiguration config;
 
   @BeforeAll
   static void init() {
@@ -46,8 +53,25 @@ class QueryBuilderTest {
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
+    when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    Optional<QueryInput> queryInput = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, inputParams);
+    Optional<QueryInput> queryInput = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, inputParams);
+    String query = queryInput.map(QueryInput::getQuery)
+        .orElseThrow();
+
+    assertEquals(expectedQuery, query);
+    if (varString != null) {
+      assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
+    }
+  }
+
+  @ParameterizedTest(name = "{5}")
+  @MethodSource("queryBuilderArgsNoPaging")
+  void queryBuilder_returnsExpectedQueryWithoutPaging(String path, String queryName, String expectedQuery,
+      Map<String, Object> inputParams, String varString, String displayName) {
+    ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
+    when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(false);
+    Optional<QueryInput> queryInput = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -93,12 +117,17 @@ class QueryBuilderTest {
             "query with paging with offset/first input"));
   }
 
+  private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {
+    return Stream.of(Arguments.arguments("/query17", "query17", loadQuery("query17_no_paging.txt"), Map.of(), null,
+        "query with paging without offset/first input"));
+  }
+
   @Test
   void validateRequiredPathsQueried_doesNotReturnError_whenRequiredAndQueriedPathsMatch() {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
-    assertDoesNotThrow(() -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+    assertDoesNotThrow(() -> new GraphQlQueryBuilder(config).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -106,7 +135,7 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
-    assertDoesNotThrow(() -> new GraphQlQueryBuilder().validateRequiredPathsQueried(requiredPaths, queriedPaths));
+    assertDoesNotThrow(() -> new GraphQlQueryBuilder(config).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -114,7 +143,7 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder();
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(config);
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
@@ -123,7 +152,7 @@ class QueryBuilderTest {
   void validate_throwsInvalidConfigurationException_withNoResponseTemplate() {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query14", "query1");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder();
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(config);
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.toQueryInput(responseSchemaContext, inputParams));
@@ -134,7 +163,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -145,7 +174,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -154,7 +183,7 @@ class QueryBuilderTest {
   @Test
   void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
-    String query = new GraphQlQueryBuilder().toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
+    String query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
         .map(QueryInput::getQuery)
         .orElseThrow();
 

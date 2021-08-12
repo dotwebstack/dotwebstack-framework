@@ -12,13 +12,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GraphQlQueryBuilder {
+
+  private final boolean pagingEnabled;
+
+  public GraphQlQueryBuilder(@NonNull DotWebStackConfiguration dwsConfig) {
+    this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
+  }
 
   public Optional<QueryInput> toQueryInput(@NonNull ResponseSchemaContext responseSchemaContext,
       @NonNull Map<String, Object> inputParams) {
@@ -30,39 +40,41 @@ public class GraphQlQueryBuilder {
       return Optional.empty();
     }
 
-    ResponseTemplate okResponse = responseSchemaContext.getResponses()
+    ResponseTemplate okResponse = getOkResponse(responseSchemaContext);
+
+    Optional<Field> rootField = OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, this.pagingEnabled);
+    if (rootField.isEmpty()) {
+      return Optional.empty();
+    }
+    GraphQlQuery query = toQueryInput(rootField.get());
+
+    addKeys(query, dwsQuerySettings.getKeys(), inputParams);
+    Map<String, Object> variables;
+    variables = addFilters(query, responseSchemaContext.getDwsQuerySettings()
+        .getFilters(), inputParams);
+    addFilters(query, dwsQuerySettings.getFilters(), inputParams);
+    addPaging(query, dwsQuerySettings.getPaging(), inputParams);
+
+    return Optional.of(QueryInput.builder()
+        .query(query.toString())
+        .variables(variables)
+        .build());
+  }
+
+  private GraphQlQuery toQueryInput(Field rootField) {
+    GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
+    builder.field(rootField);
+    builder.queryName("Query");
+    return builder.build();
+
+  }
+
+  private ResponseTemplate getOkResponse(ResponseSchemaContext responseSchemaContext) {
+    return responseSchemaContext.getResponses()
         .stream()
         .filter(r -> r.getResponseCode() == 200)
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
-
-    List<Field> fields = OasToGraphQlHelper.toQueryFields(okResponse, inputParams, dwsQuerySettings.getPagings());
-    Optional<GraphQlQuery> query = toQueryInput(queryName, fields);
-    query.ifPresent(q -> addKeys(q, dwsQuerySettings.getKeys(), inputParams));
-    Map<String, Object> variables;
-    variables = query.map(graphQlQuery -> addFilters(graphQlQuery, responseSchemaContext.getDwsQuerySettings()
-        .getFilters(), inputParams))
-        .orElseGet(Map::of);
-    query.ifPresent(q -> addFilters(q, dwsQuerySettings.getFilters(), inputParams));
-    query.ifPresent(q -> addPaging(q, dwsQuerySettings.getPagings(), inputParams));
-
-    return query.map(q -> QueryInput.builder()
-        .query(q.toString())
-        .variables(variables)
-        .build());
-
-  }
-
-  private Optional<GraphQlQuery> toQueryInput(String queryName, List<Field> fields) {
-    Field root = new Field();
-    root.setChildren(fields);
-    root.setName(queryName);
-
-    GraphQlQuery.GraphQlQueryBuilder builder = GraphQlQuery.builder();
-    builder.field(root);
-    builder.queryName("Query");
-    return Optional.of(builder.build());
-
   }
 
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {

@@ -3,32 +3,31 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
-import static org.dotwebstack.framework.service.openapi.query.FieldHelper.resolveField;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
+import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
-import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryPaging;
 
 public class OasToGraphQlHelper {
 
   private OasToGraphQlHelper() {}
 
-  public static List<Field> toQueryFields(@NonNull ResponseTemplate responseTemplate,
-      @NonNull Map<String, Object> inputParams, List<QueryPaging> pagings) {
+  public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
+      @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
     var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
-      return Collections.emptyList();
+      return Optional.empty();
     }
     List<ResponseObject> root = findGraphqlObject(responseObject);
 
@@ -38,26 +37,33 @@ public class OasToGraphQlHelper {
     }
 
     ResponseObject rootResponseObject = root.get(0);
-    List<Field> result = getChildFields("", rootResponseObject, inputParams);
-    addPaging(result, pagings);
+    Field rootField = new Field();
+    rootField.setChildren(getChildFields("", rootResponseObject, inputParams));
+    rootField.setName(queryName);
+    rootField.setCollectionNode(rootResponseObject.isArray() && !rootResponseObject.isScalar());
 
-    return result;
+    if (pagingEnabled) {
+      addPagingNodes(rootField);
+    }
+
+    return Optional.of(rootField);
   }
 
-  private static void addPaging(List<Field> fields, List<QueryPaging> pagings) {
-    pagings.stream()
-        .map(paging -> {
-          String[] path = paging.getPath();
-          return resolveField(fields, path);
-        })
-        .forEach(f -> {
-          Field nodeField = Field.builder()
-              .name("nodes")
-              .nodeField(true)
-              .build();
-          nodeField.setChildren(f.getChildren());
-          f.setChildren(List.of(nodeField));
-        });
+  public static void addPagingNodes(GraphQlQuery query) {
+    addPagingNodes(query.getField());
+  }
+
+  private static void addPagingNodes(Field field) {
+    if (field.isCollectionNode()) {
+      field.getChildren()
+          .forEach(OasToGraphQlHelper::addPagingNodes);
+      Field nodeField = Field.builder()
+          .name("nodes")
+          .nodeField(true)
+          .build();
+      nodeField.setChildren(field.getChildren());
+      field.setChildren(List.of(nodeField));
+    }
   }
 
   private static List<ResponseObject> findGraphqlObject(ResponseObject responseObject) {
@@ -85,6 +91,7 @@ public class OasToGraphQlHelper {
     Field result = new Field();
     result.setName(responseObject.getIdentifier());
     result.setChildren(getChildFields(currentPath, responseObject, inputParams));
+    result.setCollectionNode(responseObject.isArray() && !responseObject.isScalar());
 
     return result;
   }

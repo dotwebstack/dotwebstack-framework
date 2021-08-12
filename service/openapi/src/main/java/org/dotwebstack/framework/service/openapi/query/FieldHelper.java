@@ -8,6 +8,7 @@ import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 
 public class FieldHelper {
 
+  private FieldHelper() {}
 
   public static Field resolveField(@NonNull GraphQlQuery query, @NonNull String[] path) {
     Field field = query.getField();
