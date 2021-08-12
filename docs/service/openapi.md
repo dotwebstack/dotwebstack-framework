@@ -217,6 +217,24 @@ The following describes a `BreweryFilter` type filter on the `breweries` node on
 ```
 With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
 
+## Paging
+The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
+```yaml
+features:
+  - paging
+```
+When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
+```
+  x-dws-query:
+    field: breweries
+    paging:
+      first: $query.pageSize
+      offset: $query.page
+```
+The entries `first` and `offset` map to parameters whose value will be used to populate the graphpQL [paging settings](../core/paging.md).
+
+If paging is disabled, the generated graphQL query will not contain the `nodes` wrapper field for paged collections.
+
 ## Required fields
 
 In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension
