@@ -89,10 +89,9 @@ class QueryBuilderTest {
   }
 
   private static Stream<Arguments> queryBuilderArgs() throws IOException {
-    return Stream.of(
-        Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, "valid " + "query"),
+    return Stream.of(Arguments.arguments("/query1", "query1", loadQuery("query1.txt"), Map.of(), null, "valid query"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3.txt"), Map.of("query3_param1", "v1"),
-            null, null, "query with arguments"),
+            null, "query with arguments"),
         Arguments.arguments("/query3/{query3_param1}", "query3", loadQuery("query3_exp.txt"),
             Map.of("query3_param1", "v1", X_DWS_EXPANDED_PARAMS, List.of("o2_prop2")), null,
             "query with expand arguments"),

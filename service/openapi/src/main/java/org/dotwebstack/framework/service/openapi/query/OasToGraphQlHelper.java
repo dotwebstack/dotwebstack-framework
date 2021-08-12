@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
-import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
@@ -49,14 +48,10 @@ public class OasToGraphQlHelper {
     return Optional.of(rootField);
   }
 
-  public static void addPagingNodes(GraphQlQuery query) {
-    addPagingNodes(query.getField());
-  }
-
   private static void addPagingNodes(Field field) {
+    field.getChildren()
+        .forEach(OasToGraphQlHelper::addPagingNodes);
     if (field.isCollectionNode()) {
-      field.getChildren()
-          .forEach(OasToGraphQlHelper::addPagingNodes);
       Field nodeField = Field.builder()
           .name("nodes")
           .nodeField(true)

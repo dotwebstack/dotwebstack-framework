@@ -8,31 +8,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
+  public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext,
+      boolean pagingEnabled) {
     return parentContext.getResponseObject()
         .getSummary()
         .getChildren()
         .stream()
-        .map(child -> unwrapSubSchema(parentContext, child))
+        .map(child -> unwrapSubSchema(parentContext, child, pagingEnabled))
         .collect(Collectors.toList());
   }
 
-  public static List<ResponseWriteContext> unwrapComposedSchema(@NonNull ResponseWriteContext parentContext) {
+  public static List<ResponseWriteContext> unwrapComposedSchema(@NonNull ResponseWriteContext parentContext,
+      boolean pagingEnabled) {
     return parentContext.getResponseObject()
         .getSummary()
         .getComposedOf()
         .stream()
-        .map(composed -> unwrapSubSchema(parentContext, composed))
+        .map(composed -> unwrapSubSchema(parentContext, composed, pagingEnabled))
         .collect(Collectors.toList());
   }
 
-  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, ResponseObject child) {
-    Object data = parentContext.getData();
+  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, ResponseObject child,
+      boolean pagingEnabled) {
+    Object data = resolveData(parentContext.getData(), child, pagingEnabled);
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
     if (parentContext.getResponseObject()
@@ -42,7 +46,7 @@ public class ResponseWriteContextHelper {
         && !child.getSummary()
             .isTransient()
         && data instanceof Map) {
-      data = ((Map) data).get(child.getIdentifier());
+      data = ((Map<?, ?>) data).get(child.getIdentifier());
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
     }
 
@@ -126,4 +130,15 @@ public class ResponseWriteContextHelper {
         .uri(uri)
         .build();
   }
+
+  @SuppressWarnings("unchecked")
+  public static Object resolveData(Object data, ResponseObject responseObject, boolean pagingEnabled) {
+    if (pagingEnabled && data instanceof Map && OasConstants.ARRAY_TYPE.equals(responseObject.getSummary()
+        .getType())) {
+      Map<String, ?> dataMap = (Map<String, ?>) data;
+      return dataMap.containsKey("nodes") ? dataMap.get("nodes") : dataMap;
+    }
+    return data;
+  }
+
 }
