@@ -67,7 +67,7 @@ class QueryBuilderTest {
 
   @ParameterizedTest(name = "{5}")
   @MethodSource("queryBuilderArgsNoPaging")
-  void queryBuilder_returnsExpectedQueryWithoutPaging(String path, String queryName, String expectedQuery,
+  void queryBuilder_returnsExpectedQuery_forNoPagingConfig(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(false);

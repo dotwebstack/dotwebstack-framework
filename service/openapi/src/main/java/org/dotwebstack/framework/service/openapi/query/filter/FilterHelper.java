@@ -2,7 +2,6 @@ package org.dotwebstack.framework.service.openapi.query.filter;
 
 import static org.dotwebstack.framework.service.openapi.query.FieldHelper.resolveField;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +26,7 @@ public class FilterHelper {
     keys.forEach(key -> {
       String[] path = key.getFieldPath()
           .split("\\.");
-      String[] fieldPath = path.length <= 1 ? new String[] {} : Arrays.copyOfRange(path, 0, path.length - 1);
-      Field field = resolveField(query, fieldPath);
+      Field field = resolveField(query, path);
       field.getArguments()
           .put(path[path.length - 1], key.getValue());
     });
@@ -52,8 +50,7 @@ public class FilterHelper {
             .put(filterId, filter.getType());
 
         String[] path = filter.getFieldPath();
-        String[] fieldPath = path.length <= 1 ? new String[] {} : Arrays.copyOfRange(path, 0, path.length - 1);
-        Field field = resolveField(query, fieldPath);
+        Field field = resolveField(query, path);
         field.setFilterId(filterId);
       }
     }

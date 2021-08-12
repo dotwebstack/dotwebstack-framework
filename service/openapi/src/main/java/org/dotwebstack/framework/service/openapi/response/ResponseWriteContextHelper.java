@@ -36,7 +36,7 @@ public class ResponseWriteContextHelper {
 
   private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, ResponseObject child,
       boolean pagingEnabled) {
-    Object data = resolveData(parentContext.getData(), child, pagingEnabled);
+    Object data = unpackCollectionDAta(parentContext.getData(), child, pagingEnabled);
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
     if (parentContext.getResponseObject()
@@ -132,7 +132,7 @@ public class ResponseWriteContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object resolveData(Object data, ResponseObject responseObject, boolean pagingEnabled) {
+  public static Object unpackCollectionDAta(Object data, ResponseObject responseObject, boolean pagingEnabled) {
     if (pagingEnabled && data instanceof Map && OasConstants.ARRAY_TYPE.equals(responseObject.getSummary()
         .getType())) {
       Map<String, ?> dataMap = (Map<String, ?>) data;

@@ -12,25 +12,25 @@ public class FieldHelper {
 
   public static Field resolveField(@NonNull GraphQlQuery query, @NonNull String[] path) {
     Field field = query.getField();
-    if (path.length == 0) {
+    if (path.length <= 1) {
       return field;
     }
     List<Field> search = skipNodeFields(field.getChildren());
     return resolveField(search, path);
   }
 
-  protected static Field resolveField(@NonNull List<Field> search, @NonNull String[] path) {
+  protected static Field resolveField(@NonNull List<Field> fields, @NonNull String[] path) {
     Field result = null;
-    for (int i = 0; i < path.length; i++) {
+    for (int i = 0; i < path.length - 1; i++) {
       int finalI = i;
       Field finalResult = result;
-      result = search.stream()
+      result = fields.stream()
           .filter(f -> f.getName()
               .equals(path[finalI]))
           .findFirst()
           .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not resolve path {} for field {}",
               path, finalResult != null ? finalResult.getName() : "root"));
-      search = skipNodeFields(result.getChildren());
+      fields = skipNodeFields(result.getChildren());
     }
     return result;
   }
@@ -42,6 +42,6 @@ public class FieldHelper {
           .getChildren());
     }
     return fields;
-
   }
+
 }

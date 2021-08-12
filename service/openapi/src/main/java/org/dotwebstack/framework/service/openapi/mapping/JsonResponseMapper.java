@@ -15,7 +15,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseContext
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.resolveData;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unpackCollectionDAta;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapComposedSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
@@ -246,7 +246,7 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    Object data = resolveData(parentContext.getData(), parentContext.getResponseObject(), pagingEnabled);
+    Object data = unpackCollectionDAta(parentContext.getData(), parentContext.getResponseObject(), pagingEnabled);
     if (Objects.isNull(data)) {
       return mapDefaultArrayToResponse(parentContext.getResponseObject());
     } else if (data instanceof List) {

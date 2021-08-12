@@ -231,8 +231,7 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
       first: $query.pageSize
       offset: $query.page
 ```
-The entries `first` and `offset` map to parameters whose value will be used to populate the graphpQL [paging settings](../core/paging.md).
-
+The entries `first` and `offset` map to parameters which will be used to populate the graphpQL [paging settings](../core/paging.md).
 If paging is disabled, the generated graphQL query will not contain the `nodes` wrapper field for paged collections.
 
 ## Required fields
