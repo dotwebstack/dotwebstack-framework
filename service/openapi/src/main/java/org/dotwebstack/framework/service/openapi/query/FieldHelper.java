@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import java.util.List;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 
@@ -28,8 +29,8 @@ public class FieldHelper {
           .filter(f -> f.getName()
               .equals(path[finalI]))
           .findFirst()
-          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not resolve path {} for field {}",
-              path, finalResult != null ? finalResult.getName() : "root"));
+          .orElseThrow(() -> invalidConfigurationException("Could not resolve path {} for field {}", path,
+              finalResult != null ? finalResult.getName() : "root"));
       fields = skipNodeFields(result.getChildren());
     }
     return result;

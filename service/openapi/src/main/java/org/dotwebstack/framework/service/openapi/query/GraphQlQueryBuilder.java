@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
@@ -74,7 +73,7 @@ public class GraphQlQueryBuilder {
         .stream()
         .filter(r -> r.getResponseCode() == 200)
         .findFirst()
-        .orElseThrow(() -> new InvalidConfigurationException("No OK response found"));
+        .orElseThrow(() -> invalidConfigurationException("No OK response found"));
   }
 
   protected void validateRequiredPathsQueried(Set<String> requiredPaths, Set<String> queriedPaths) {
