@@ -104,10 +104,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final EnvironmentProperties properties;
 
+  private final GraphQlQueryBuilder graphQlQueryBuilder;
+
   public CoreRequestHandler(OpenAPI openApi, ResponseSchemaContext responseSchemaContext, GraphQlService graphQL,
       List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
       TemplateResponseMapper templateResponseMapper, ParamHandlerRouter paramHandlerRouter,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties) {
+      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties,
+      GraphQlQueryBuilder queryBuilder) {
     this.openApi = openApi;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
@@ -118,6 +121,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.jexlHelper = jexlHelper;
     this.properties = properties;
+    this.graphQlQueryBuilder = queryBuilder;
   }
 
   @Override
@@ -445,7 +449,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQueryInput(this.responseSchemaContext, inputParams);
+    return this.graphQlQueryBuilder.toQueryInput(this.responseSchemaContext, inputParams);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,

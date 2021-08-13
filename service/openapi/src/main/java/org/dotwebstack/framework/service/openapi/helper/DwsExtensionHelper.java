@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilter;
+import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryPaging;
 
 public class DwsExtensionHelper {
 
@@ -153,6 +154,13 @@ public class DwsExtensionHelper {
       Map<String, String> keys = (Map<String, String>) settingsMap.get("keys");
       if (keys != null) {
         builder.keys(keys);
+      }
+      Map<String, String> paging = (Map<String, String>) settingsMap.get("paging");
+      if (paging != null) {
+        builder.paging(QueryPaging.builder()
+            .firstParam(paging.get("first"))
+            .offsetParam(paging.get("offset"))
+            .build());
       }
     } else {
       builder.queryName(dwsQuery.toString());

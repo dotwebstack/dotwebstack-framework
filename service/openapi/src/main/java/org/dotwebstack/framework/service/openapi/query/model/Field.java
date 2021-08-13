@@ -24,6 +24,11 @@ public class Field {
 
   private List<Field> children;
 
+  @Builder.Default
+  private boolean nodeField = false;
+
+  private boolean collectionNode;
+
   public void writeAsString(@NonNull StringBuilder sb, int depth) {
     indent(sb, depth);
     sb.append(name);

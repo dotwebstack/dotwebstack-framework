@@ -21,4 +21,8 @@ public class DwsQuerySettings {
   @Builder.Default
   private Map<String, String> keys = new HashMap<>();
 
+  private QueryPaging paging;
+
+  private boolean pagingEnabled;
+
 }

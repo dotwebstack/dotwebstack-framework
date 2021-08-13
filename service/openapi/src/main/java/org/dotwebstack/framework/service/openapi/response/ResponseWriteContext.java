@@ -7,13 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
-import org.dotwebstack.framework.core.query.GraphQlField;
 
 @Builder
 @Getter
 public class ResponseWriteContext {
-
-  GraphQlField graphQlField;
 
   ResponseObject responseObject;
 

@@ -2,7 +2,9 @@ query Query{
  query1 {
   o1_prop2
   o1_array1 {
-   o2_prop1
+   nodes {
+    o2_prop1
+   }
   }
   o1_object1 {
    o2_prop1

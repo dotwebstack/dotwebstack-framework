@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.service.openapi.response.ResponseContext
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unpackCollectionDAta;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapComposedSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
@@ -32,6 +33,8 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -56,12 +59,15 @@ public class JsonResponseMapper {
 
   private final TypeConverterRouter typeConverterRouter;
 
+  private final boolean pagingEnabled;
+
   public JsonResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
-      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter) {
+      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter, DotWebStackConfiguration dwsConfig) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.properties = properties;
     this.typeConverterRouter = typeConverterRouter;
+    this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
   }
 
   public String toResponse(@NonNull Object input) {
@@ -209,9 +215,9 @@ public class JsonResponseMapper {
     }
     List<ResponseWriteContext> children;
     if (parentContext.isComposedOf()) {
-      children = unwrapComposedSchema(parentContext);
+      children = unwrapComposedSchema(parentContext, pagingEnabled);
     } else {
-      children = unwrapChildSchema(parentContext);
+      children = unwrapChildSchema(parentContext, pagingEnabled);
     }
 
     /*
@@ -240,10 +246,11 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    if (Objects.isNull(parentContext.getData())) {
+    Object data = unpackCollectionDAta(parentContext.getData(), parentContext.getResponseObject(), pagingEnabled);
+    if (Objects.isNull(data)) {
       return mapDefaultArrayToResponse(parentContext.getResponseObject());
-    } else if (parentContext.getData() instanceof List) {
-      return ((List<Object>) parentContext.getData()).stream()
+    } else if (data instanceof List) {
+      return ((List<Object>) data).stream()
           .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData), path))
           .collect(Collectors.toList());
     }
@@ -355,11 +362,12 @@ public class JsonResponseMapper {
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
-    unwrapChildSchema(parentContext).forEach(child -> addDataToResponse(path, result, child.getResponseObject()
-        .getIdentifier(), child));
+    unwrapChildSchema(parentContext, pagingEnabled)
+        .forEach(child -> addDataToResponse(path, result, child.getResponseObject()
+            .getIdentifier(), child));
 
     // for a composed envelope schema, we need to merge the underlying schema's into one result
-    unwrapComposedSchema(parentContext).forEach(child -> {
+    unwrapComposedSchema(parentContext, pagingEnabled).forEach(child -> {
       String identifier = child.getResponseObject()
           .getIdentifier();
       mergeComposedResponse(path, result, child, identifier);
@@ -395,9 +403,9 @@ public class JsonResponseMapper {
   private void validateRequiredProperties(ResponseWriteContext context, String path, Map<String, Object> data) {
     List<ResponseWriteContext> responseWriteContexts;
     if (context.isComposedOf()) {
-      responseWriteContexts = unwrapComposedSchema(context);
+      responseWriteContexts = unwrapComposedSchema(context, pagingEnabled);
     } else {
-      responseWriteContexts = unwrapChildSchema(context);
+      responseWriteContexts = unwrapChildSchema(context, pagingEnabled);
     }
     responseWriteContexts.forEach(writeContext -> {
       String childIdentifier = writeContext.getResponseObject()

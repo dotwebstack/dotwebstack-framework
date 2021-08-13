@@ -3,12 +3,14 @@ package org.dotwebstack.framework.service.openapi.response;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Builder
 @Getter
+@Setter
 public class FieldContext {
 
-  private final Object data;
+  private Object data;
 
-  private final Map<String, Object> input;
+  private Map<String, Object> input;
 }

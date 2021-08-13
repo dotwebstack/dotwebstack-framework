@@ -31,6 +31,7 @@ import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -75,10 +76,13 @@ public class OpenApiConfiguration {
 
   private final EnvironmentProperties environmentProperties;
 
+  private final GraphQlQueryBuilder graphQlQueryBuilder;
+
   public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties) {
+      OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties,
+      GraphQlQueryBuilder graphQlQueryBuilder) {
     this.openApi = openApi;
     this.graphQl = graphQlService;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -90,6 +94,7 @@ public class OpenApiConfiguration {
     this.openApiProperties = openApiProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
+    this.graphQlQueryBuilder = graphQlQueryBuilder;
   }
 
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
@@ -202,9 +207,9 @@ public class OpenApiConfiguration {
     validateTemplateResponseMapper(responseSchemaContext.getResponses());
     var templateResponseMapper = getTemplateResponseMapper();
 
-    var coreRequestHandler =
-        new CoreRequestHandler(openApi, responseSchemaContext, graphQl, responseMappers, jsonResponseMapper,
-            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties);
+    var coreRequestHandler = new CoreRequestHandler(openApi, responseSchemaContext, graphQl, responseMappers,
+        jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
+        environmentProperties, graphQlQueryBuilder);
 
     responseSchemaContext.getResponses()
         .stream()

@@ -6,9 +6,9 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -21,12 +21,12 @@ public class OasToGraphQlHelper {
 
   private OasToGraphQlHelper() {}
 
-  public static List<Field> toQueryFields(@NonNull ResponseTemplate responseTemplate,
-      @NonNull Map<String, Object> inputParams) {
+  public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
+      @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
     var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
-      return Collections.emptyList();
+      return Optional.empty();
     }
     List<ResponseObject> root = findGraphqlObject(responseObject);
 
@@ -36,8 +36,29 @@ public class OasToGraphQlHelper {
     }
 
     ResponseObject rootResponseObject = root.get(0);
-    return getChildFields("", rootResponseObject, inputParams);
+    Field rootField = new Field();
+    rootField.setChildren(getChildFields("", rootResponseObject, inputParams));
+    rootField.setName(queryName);
+    rootField.setCollectionNode(rootResponseObject.isArray() && !rootResponseObject.isScalar());
 
+    if (pagingEnabled) {
+      addPagingNodes(rootField);
+    }
+
+    return Optional.of(rootField);
+  }
+
+  private static void addPagingNodes(Field field) {
+    field.getChildren()
+        .forEach(OasToGraphQlHelper::addPagingNodes);
+    if (field.isCollectionNode()) {
+      Field nodeField = Field.builder()
+          .name("nodes")
+          .nodeField(true)
+          .build();
+      nodeField.setChildren(field.getChildren());
+      field.setChildren(List.of(nodeField));
+    }
   }
 
   private static List<ResponseObject> findGraphqlObject(ResponseObject responseObject) {
@@ -65,6 +86,7 @@ public class OasToGraphQlHelper {
     Field result = new Field();
     result.setName(responseObject.getIdentifier());
     result.setChildren(getChildFields(currentPath, responseObject, inputParams));
+    result.setCollectionNode(responseObject.isArray() && !responseObject.isScalar());
 
     return result;
   }

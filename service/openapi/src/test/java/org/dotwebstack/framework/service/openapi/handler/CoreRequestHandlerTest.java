@@ -38,6 +38,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -52,6 +54,7 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.query.QueryInput;
 import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
@@ -113,6 +116,8 @@ class CoreRequestHandlerTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
+  private GraphQlQueryBuilder queryBuilder;
+
   private final OpenAPI openApi = TestResources.openApi();
 
   private final ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
@@ -143,9 +148,13 @@ class CoreRequestHandlerTest {
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
 
-    coreRequestHandler =
-        spy(new CoreRequestHandler(openApi, responseSchemaContext, graphQl, List.of(responseMapper), jsonResponseMapper,
-            templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper, environmentProperties));
+    DotWebStackConfiguration dwsConfig = mock(DotWebStackConfiguration.class);
+    when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+    queryBuilder = new GraphQlQueryBuilder(dwsConfig);
+
+    coreRequestHandler = spy(new CoreRequestHandler(openApi, responseSchemaContext, graphQl, List.of(responseMapper),
+        jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
+        environmentProperties, queryBuilder));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
@@ -226,17 +235,12 @@ class CoreRequestHandlerTest {
         .is3xxRedirection());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void getParameterValidationExceptionTest() throws URISyntaxException {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
-    doReturn(Optional.of(QueryInput.builder()
-        .variables(Map.of())
-        .query("")
-        .build())).when(coreRequestHandler)
-            .getQueryInput(any(Map.class));
+    mockGetQueryInput();
     ServerRequest request = arrangeResponseTest(data, getRedirectResponseTemplate());
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
@@ -244,7 +248,6 @@ class CoreRequestHandlerTest {
     assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void shouldThrowNotFoundExceptionTest() throws URISyntaxException {
     Map<Object, Object> data = new HashMap<>();
@@ -254,13 +257,18 @@ class CoreRequestHandlerTest {
     DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
+    mockGetQueryInput();
+
+    assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void mockGetQueryInput() {
     doReturn(Optional.of(QueryInput.builder()
         .variables(Map.of())
         .query("")
         .build())).when(coreRequestHandler)
             .getQueryInput(any(Map.class));
-
-    assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
   }
 
   @Test
@@ -272,6 +280,7 @@ class CoreRequestHandlerTest {
     when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
     when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
     when(responseMapper.toResponse(any())).thenReturn(null);
+    mockGetQueryInput();
 
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
         .mediaType(mediaType)

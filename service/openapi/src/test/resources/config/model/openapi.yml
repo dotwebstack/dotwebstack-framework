@@ -139,6 +139,28 @@ components:
         o15_prop3:
           $ref: 'components/schemas/Object3'
 
+    Object17:
+      type: object
+      x-dws-envelope: true
+      properties:
+        objects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object18'
+
+    Object18:
+      type: object
+      required:
+        - o18_prop1
+        - o18_prop2
+      properties:
+        o18_prop1:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object15'
+        o18_prop2:
+          type: string
+
   headers:
     HeaderRef:
       schema:
@@ -488,3 +510,26 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object15'
+  /query17:
+    get:
+      x-dws-query:
+        field: query17
+        paging:
+          first: $query.pageSize
+          offset: $query.page
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object17'
