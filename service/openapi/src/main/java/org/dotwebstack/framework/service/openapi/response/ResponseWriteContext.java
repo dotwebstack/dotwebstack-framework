@@ -7,12 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 
 @Builder
 @Getter
 public class ResponseWriteContext {
 
-  ResponseObject responseObject;
+  String identifier;
+
+  OasField oasField;
 
   Object data;
 
@@ -25,20 +28,10 @@ public class ResponseWriteContext {
   URI uri;
 
   public boolean isSchemaRequiredNonNillable() {
-    return getResponseObject().getSummary()
-        .isRequired()
-        && !getResponseObject().getSummary()
-            .isNillable();
+    return oasField.isRequired() && !oasField.isNillable();
   }
 
   public boolean isSchemaRequiredNillable() {
-    return getResponseObject().getSummary()
-        .isRequired()
-        && getResponseObject().getSummary()
-            .isNillable();
-  }
-
-  public boolean isComposedOf() {
-    return getResponseObject().isComposedOf();
+    return oasField.isRequired() && oasField.isNillable();
   }
 }

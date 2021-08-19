@@ -33,6 +33,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasFieldBuilder;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -153,22 +155,15 @@ public class ResponseTemplateBuilder {
   }
 
   @SuppressWarnings("rawtypes")
-  private ResponseObject getResponseObject(OpenAPI openApi, String responseCode, MediaType content, String queryName) {
-    ResponseObject responseObject = null;
+  private OasField getResponseObject(OpenAPI openApi, String responseCode, MediaType content, String queryName) {
+    OasFieldBuilder builder = new OasFieldBuilder(openApi);
+    OasField responseObject = null;
     if (Objects.nonNull(content.getSchema())) {
       String ref = content.getSchema()
           .get$ref();
 
       Schema<?> schema = Objects.nonNull(ref) ? resolveSchema(openApi, content.getSchema()) : content.getSchema();
-      responseObject = createResponseObject(queryName, schema, ref, null, true, false);
-
-      Map<String, SchemaSummary> referenceMap = new HashMap<>();
-
-      if (Objects.nonNull(ref)) {
-        referenceMap.put(ref, responseObject.getSummary());
-      }
-
-      fillResponseObject(responseObject, openApi, referenceMap, new ArrayList<>(), responseCode);
+      responseObject = builder.build(schema);
     }
     return responseObject;
   }

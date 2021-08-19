@@ -22,6 +22,10 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -51,8 +55,7 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(MediaType.valueOf("application/hal+json"), okResponse.getMediaType());
     assertEquals(200, okResponse.getResponseCode());
-    assertEquals("object", okResponse.getResponseObject()
-        .getSummary()
+    assertEquals(OasType.OBJECT, okResponse.getResponseObject()
         .getType());
   }
 
@@ -82,7 +85,7 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(1, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
-    assertEquals(1, responseTemplate.getResponseObject()
+/*    assertEquals(1, responseTemplate.getResponseObject()
         .getSummary()
         .getChildren()
         .stream()
@@ -91,7 +94,7 @@ public class ResponseTemplateBuilderTest {
         .filter(wrapper -> "template_content".equals(wrapper.getSummary()
             .getDwsExpr()
             .get(X_DWS_EXPR_VALUE)))
-        .count());
+        .count());*/
   }
 
   @Test
@@ -114,10 +117,9 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(2, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
-    assertEquals(2, responseTemplate.getResponseObject()
-        .getSummary()
-        .getComposedOf()
-        .size());
+
+    assertEquals(OasType.OBJECT,responseTemplate.getResponseObject().getType());
+    assertEquals(2, ((OasObjectField)responseTemplate.getResponseObject()).getFields().size());
   }
 
   @Test
@@ -196,12 +198,7 @@ public class ResponseTemplateBuilderTest {
     assertEquals(1, responseTemplates.size());
     assertEquals("string", responseTemplates.get(0)
         .getResponseObject()
-        .getSummary()
-        .getType());
-    assertTrue(responseTemplates.get(0)
-        .getResponseObject()
-        .getSummary()
-        .getSchema() instanceof StringSchema);
+        .getDwsType());
   }
 
   @Test
@@ -292,27 +289,12 @@ public class ResponseTemplateBuilderTest {
 
     assertNotNull(templates);
     assertEquals(1, templates.size());
-    ResponseObject responseObject = templates.get(0)
+    OasObjectField oasfield = (OasObjectField) templates.get(0)
         .getResponseObject();
-    assertEquals("query12", responseObject.getIdentifier());
-    assertEquals(2, responseObject.getSummary()
-        .getChildren()
+    assertEquals(2, oasfield.getFields()
         .size());
-    ResponseObject prop2 = responseObject.getSummary()
-        .getChildren()
-        .get(1);
-    assertEquals("o12_prop2", prop2.getIdentifier());
-    assertEquals(OasConstants.ARRAY_TYPE, prop2.getSummary()
-        .getType());
-    assertTrue(prop2.getSummary()
-        .isTransient());
-    assertEquals(1, prop2.getSummary()
-        .getItems()
-        .size());
-    assertTrue(prop2.getSummary()
-        .getItems()
-        .get(0)
-        .getSummary()
-        .isTransient());
+    OasField prop2 = oasfield.getFields().get("o12_prop2");
+    assertEquals(OasType.ARRAY,prop2.getType());
+    assertTrue(prop2.isTransient());
   }
 }

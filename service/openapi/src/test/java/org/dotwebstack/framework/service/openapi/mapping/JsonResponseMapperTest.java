@@ -8,19 +8,16 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
+
 import java.net.URI;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -30,11 +27,13 @@ import org.dotwebstack.framework.service.openapi.conversion.LocalDateTypeConvert
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.conversion.ZonedDateTimeTypeConverter;
 import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
-import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
+import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasScalarExpressionField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasScalarField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,11 +43,13 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class JsonResponseMapperTest {
-  private static final ResponseObject REQUIRED_NILLABLE_STRING = getProperty("prop1", "string", true, true, null);
+  private static final Map<String, OasField> REQUIRED_NILLABLE_STRING = getScalarFieldMap("prop1", "string", true,
+      true, null);
 
-  private static final ResponseObject REQUIRED_NON_NILLABLE_STRING = getProperty("prop2", "string", true, false, null);
+  private static final Map<String, OasField> REQUIRED_NON_NILLABLE_STRING = getScalarFieldMap("prop2", "string", true
+      , false, null);
 
-  private static final ResponseObject DWS_TEMPLATE = getProperty("prop4", "string", true, false,
+  private static final Map<String, OasField> DWS_TEMPLATE = getScalarFieldMap("prop4", "string", true, false,
       "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}_${args._parent"
           + "._parent.arg1}_${data}`");
 
@@ -86,13 +87,15 @@ class JsonResponseMapperTest {
 
   @Test
   void map_returnsProperty_ForValidResponse() throws NotFoundException {
-    Object data = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value");
+    Object data = ImmutableMap.of(firstKey(REQUIRED_NILLABLE_STRING), "prop1value");
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
+    OasField field = getObjectField(REQUIRED_NILLABLE_STRING);
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING)))
-        .data(ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"))
+        .identifier("root")
+        .oasField(field)
+        .data(ImmutableMap.of(firstKey(REQUIRED_NILLABLE_STRING), "prop1value"))
         .dataStack(dataStack)
         .build();
 
@@ -101,19 +104,23 @@ class JsonResponseMapperTest {
     assertEquals("{\"prop1\":\"prop1value\"}", response);
   }
 
+
   @Test
   void map_returnsException_ForMissingRequiredProperty() {
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
+        .identifier("root")
+        .oasField(getObjectField(REQUIRED_NILLABLE_STRING))
         .build();
 
     assertThrows(NotFoundException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
+
   @Test
   void map_throwsException_ForMissingRequiredNonNillableProperty() {
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
+        .identifier("root")
+        .oasField(getObjectField(REQUIRED_NON_NILLABLE_STRING))
         .data(ImmutableMap.of("other key", "prop1value"))
         .build();
 
@@ -123,16 +130,16 @@ class JsonResponseMapperTest {
   @Test
   void map_returnsValue_forDwsTemplate() throws NotFoundException {
     when(properties.getAllProperties()).thenReturn(ImmutableMap.of("env_var_1", "v0"));
-    ResponseObject child2 = getObject("child2", ImmutableList.of(DWS_TEMPLATE));
-    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child1));
+    OasField child2 = getObjectField(DWS_TEMPLATE);
+    OasField child1 = getObjectField(merge(Map.of("child2", child2), REQUIRED_NON_NILLABLE_STRING));
+    OasField rootField = getObjectField(merge(Map.of("child1", child1), REQUIRED_NON_NILLABLE_STRING));
 
     Map<String, Object> child2Data =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3", DWS_TEMPLATE.getIdentifier(), "dummy");
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3", firstKey(DWS_TEMPLATE), "dummy");
     Map<String, Object> child1Data =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2", "child2", child2Data);
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
     Map<String, Object> rootData =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, ImmutableMap.of("arg1", "arg_v1")));
@@ -140,8 +147,8 @@ class JsonResponseMapperTest {
     URI uri = URI.create("http://dontcare.com:90210/bh?a=b");
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .oasField(rootField)
+        .identifier("root")
         .data(rootData)
         .dataStack(dataStack)
         .parameters(Collections.emptyMap())
@@ -151,18 +158,19 @@ class JsonResponseMapperTest {
     String response = jsonResponseMapper.toResponse(writeContext);
 
     String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1_dummy\"";
+    System.out.println(response);
     assertTrue(response.contains(expectedSubString), String
         .format("Expected sub string [%s] not found in " + "returned response [%s]", expectedSubString, response));
   }
 
   @Test
   void map_returnsValue_forResponseWithEnvelopeObjectValue() throws NotFoundException {
-    ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject embedded = getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(embedded));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField child2 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField embedded = getEnvelopeObjectField(Map.of("child2", child2));
+    OasField child1 = getObjectField(Map.of("_embedded", embedded));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
-    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     Map<String, Object> child1Data = ImmutableMap.of("child2", child2Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
@@ -170,8 +178,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -183,15 +191,15 @@ class JsonResponseMapperTest {
 
   @Test
   void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue() throws NotFoundException {
-    ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject embedded1 =
-        getObject("_embedded", "object", true, null, ImmutableList.of(child2), new ArrayList<>());
-    ResponseObject embedded2 =
-        getObject("_embedded", "object", true, null, ImmutableList.of(embedded1), new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(embedded2));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField child2 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField embedded1 =
+        getEnvelopeObjectField(Map.of("child2", child2));
+    OasField embedded2 =
+        getEnvelopeObjectField(Map.of("_embedded", embedded1));
+    OasField child1 = getObjectField(Map.of("_embedded", embedded2));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
-    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     Map<String, Object> child1Data = ImmutableMap.of("child2", child2Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
@@ -199,8 +207,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .oasField(rootField)
+        .identifier("root")
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -210,73 +218,17 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"_embedded\":{\"_embedded\":{\"child2\":{\"prop2\":\"v3\"}}}}}"));
   }
 
-  @Test
-  void map_returnsValue_forResponseWithComposedSchema() throws NotFoundException {
-    ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
-        Collections.emptyList());
-    ResponseObject child2 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING),
-        Collections.emptyList());
-    ResponseObject responseObject =
-        getObject("response", "object", false, null, null, ImmutableList.of(child1, child2));
-
-    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3",
-        REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2");
-
-    Deque<FieldContext> dataStack = new ArrayDeque<>();
-    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
-
-    ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
-        .data(rootData)
-        .dataStack(dataStack)
-        .build();
-
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    assertTrue(response.contains("\"prop1\":\"v3\""));
-    assertTrue(response.contains("\"prop2\":\"v2\""));
-  }
-
-  @Test
-  void map_returnsValue_forResponseWithComposedEnvelopeSchema() throws NotFoundException {
-    ResponseObject child1 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NILLABLE_STRING),
-        Collections.emptyList());
-    ResponseObject child2 = getObject("response", "object", false, null, ImmutableList.of(REQUIRED_NON_NILLABLE_STRING),
-        Collections.emptyList());
-    ResponseObject responseObject =
-        getObject("response", "object", true, null, Collections.emptyList(), ImmutableList.of(child1, child2));
-
-    Map<String, Object> rootData = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v3",
-        REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2");
-
-    Deque<FieldContext> dataStack = new ArrayDeque<>();
-    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
-
-    ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
-        .data(rootData)
-        .dataStack(dataStack)
-        .build();
-
-    String response = jsonResponseMapper.toResponse(writeContext);
-
-    assertTrue(response.contains("\"prop1\":\"v3\""));
-    assertTrue(response.contains("\"prop2\":\"v2\""));
-  }
 
   @Test
   void map_returnsValue_forResponseWithArray() throws NotFoundException {
-    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 =
-        getObject("array1", "array", false, ImmutableList.of(arrayObject1, arrayObject2), null, new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField arrayObject = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField array1 =
+        getArrayField(arrayObject);
+    OasField child1 = getObjectField(Map.of("array1", array1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
-    Map<String, Object> arrayObject1Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
-    Map<String, Object> arrayObject2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> arrayObject1Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
+    Map<String, Object> arrayObject2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     List<Object> array1Data = ImmutableList.of(arrayObject1Data, arrayObject2Data);
     Map<String, Object> child1Data = ImmutableMap.of("array1", array1Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -286,7 +238,7 @@ class JsonResponseMapperTest {
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -296,17 +248,17 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"array1\":[{\"prop2\":\"v3\"},{\"prop2\":\"v3\"}]}}"));
   }
 
+
   @Test
   void map_returnsValue_forResponseWithDefaultArrayForEnvelope() throws NotFoundException {
-    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 = getObject("array1", "array", true, false, true, null,
-        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema(List.of("defaultvalue")));
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField arrayObject1 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField array1 = getArrayField(arrayObject1);
+    array1.setDefaultValue(List.of("defaultValue"));
+    OasField child1 = getObjectField(Map.of("array1", array1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
-    Map<String, Object> arrayObject1Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
-    Map<String, Object> arrayObject2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> arrayObject1Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
+    Map<String, Object> arrayObject2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     List<Object> array1Data = ImmutableList.of(arrayObject1Data, arrayObject2Data);
     Map<String, Object> child1Data = ImmutableMap.of("array1", array1Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -315,25 +267,23 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
 
     String response = jsonResponseMapper.toResponse(writeContext);
 
-    assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
+    assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultValue\"]}}"));
   }
 
   @Test
   void map_returnsValue_forResponseWithDefaultScalarForEnvelope() throws NotFoundException {
-    StringSchema stringSchema = new StringSchema();
-    stringSchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, "defaultValue"));
-
-    ResponseObject prop1 = getProperty("prop1", "string", true, true, null, true, stringSchema);
-    ResponseObject child1 = getObject("child1", ImmutableList.of(prop1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField prop1 = getStringScalar();
+    prop1.setDefaultValue("defaultValue");
+    OasField child1 = getObjectField(Map.of("prop1", prop1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = ImmutableMap.of("prop2", "");
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -342,8 +292,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -353,14 +303,13 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"prop1\":\"defaultValue\"}}"));
   }
 
+
   @Test
   void map_returnsValue_forResponseWithDefaultScalarForEnvelopeTypeMismatch() throws NotFoundException {
-    StringSchema stringSchema = new StringSchema();
-    stringSchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, 1));
-
-    ResponseObject prop1 = getProperty("prop1", "string", true, true, null, true, stringSchema);
-    ResponseObject child1 = getObject("child1", ImmutableList.of(prop1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField prop1 = getStringScalar();
+    prop1.setDefaultValue(1L);
+    OasField child1 = getObjectField(Map.of("prop1", prop1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = ImmutableMap.of("prop2", "");
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -369,8 +318,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -378,14 +327,14 @@ class JsonResponseMapperTest {
     assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
+
   @Test
   void map_returnsValue_forResponseWithDefaultArray() throws NotFoundException {
-    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 = getObject("array1", "array", true, false, false, null,
-        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema(List.of("defaultvalue")));
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField arrayObject1 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField array1 = getArrayField(arrayObject1);
+    array1.setDefaultValue(List.of("defaultvalue"));
+    OasField child1 = getObjectField(Map.of("array1", array1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -395,8 +344,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -406,14 +354,14 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
   }
 
+
   @Test
   void map_returnsException_forResponseWithDefaultArrayWithInvalidType() throws NotFoundException {
-    ResponseObject arrayObject1 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject arrayObject2 = getObject("", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject array1 = getObject("array1", "array", true, false, false, null,
-        ImmutableList.of(arrayObject1, arrayObject2), new ArrayList<>(), getArraySchema("defaultvalue"));
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array1));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField arrayObject1 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField array1 = getArrayField(arrayObject1);
+    array1.setDefaultValue("defaultvalue");
+    OasField child1 = getObjectField(Map.of("array1", array1));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -423,8 +371,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -432,11 +380,15 @@ class JsonResponseMapperTest {
     assertThrows(MappingException.class, () -> jsonResponseMapper.toResponse(writeContext));
   }
 
+
   @Test
   void toResponse_returnsNoElement_forNonRequiredNonNillableEmptyArray() throws NotFoundException {
-    ResponseObject array = getObject("array1", "array", false, false, false, null, null, new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField array = getArrayField(firstValue(REQUIRED_NILLABLE_STRING));
+    array.setRequired(false);
+    array.setNillable(false);
+    OasField child1 = getObjectField(Map.of("array1", array));
+    child1.setNillable(true);
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -446,8 +398,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .parameters(Collections.emptyMap())
         .data(rootData)
         .dataStack(dataStack)
@@ -457,12 +409,16 @@ class JsonResponseMapperTest {
 
     assertTrue(response.contains("{\"child1\":null}"));
   }
+
 
   @Test
   void toResponse_returnsNoElement_forNonRequiredNullableNullArray() throws NotFoundException {
-    ResponseObject array = getObject("array1", "array", false, true, false, null, null, new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField array = getArrayField(firstValue(REQUIRED_NON_NILLABLE_STRING));
+    array.setRequired(false);
+    array.setNillable(true);
+    OasField child1 = getObjectField(Map.of("array1", array));
+    child1.setNillable(true);
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -473,7 +429,7 @@ class JsonResponseMapperTest {
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .parameters(Collections.emptyMap())
         .data(rootData)
         .dataStack(dataStack)
@@ -484,11 +440,14 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":null}"));
   }
 
+
   @Test
   void toResponse_returnsEmptyList_forRequiredNonNullableNullArray() throws NotFoundException {
-    ResponseObject array = getObject("array1", "array", true, false, false, null, null, new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField array = getArrayField(firstValue(REQUIRED_NON_NILLABLE_STRING));
+    array.setRequired(true);
+    array.setNillable(false);
+    OasField child1 = getObjectField(Map.of("array1", array));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -498,8 +457,7 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .oasField(rootField)
         .parameters(Collections.emptyMap())
         .data(rootData)
         .dataStack(dataStack)
@@ -510,11 +468,14 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"array1\":[]}}"));
   }
 
+
   @Test
   void toResponse_returnsNull_forRequiredNullableNullArray() throws NotFoundException {
-    ResponseObject array = getObject("array1", "array", true, true, false, null, null, new ArrayList<>());
-    ResponseObject child1 = getObject("child1", ImmutableList.of(array));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField array = getArrayField(firstValue(REQUIRED_NON_NILLABLE_STRING));
+    array.setRequired(true);
+    array.setNillable(true);
+    OasField child1 = getObjectField(Map.of("array1", array));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = new HashMap<>();
     child1Data.put("array1", null);
@@ -525,7 +486,7 @@ class JsonResponseMapperTest {
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .parameters(Collections.emptyMap())
         .data(rootData)
         .dataStack(dataStack)
@@ -536,58 +497,47 @@ class JsonResponseMapperTest {
     assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
   }
 
+
   @Test
   void toResponse_returnsDefaultValue_forInvalidScriptAndNullFallback() {
-    when(mockSchema.getDefault()).thenReturn("default");
+    OasField expressionScalar = getScalarField("string", "args.field1", null);
+    expressionScalar.setDefaultValue("default");
 
-    Object data = ImmutableMap.of("prop1", "prop1value");
+    Object data = ImmutableMap.of(firstKey(REQUIRED_NILLABLE_STRING), "prop1value");
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
-    Map<String, String> map = new HashMap<>();
-    map.put("value", "args.field1");
-    map.put("fallback", null);
-
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .uri(URI.create("http://dontcare.com:90210/bh?a=b"))
-
-        .responseObject(ResponseObject.builder()
-            .identifier("prop1")
-            .summary(SchemaSummary.builder()
-                .type("string")
-                .required(true)
-                .nillable(false)
-                .dwsExpr(map)
-                .schema(mockSchema)
-                .build())
-            .build())
-        .data(ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"))
+        .oasField(expressionScalar)
+        .data(ImmutableMap.of(firstKey(REQUIRED_NILLABLE_STRING), "prop1value"))
         .dataStack(dataStack)
         .build();
 
-    Object actual = jsonResponseMapper.mapScalarDataToResponse(writeContext);
+    Object actual = jsonResponseMapper.mapScalarDataToResponse(writeContext, "root");
 
     assertEquals("default", actual);
   }
 
+
   @Test
   void map_returnsValue_forResponseWithObject() throws NotFoundException {
-    ResponseObject child2 = getObject("child2", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child1));
+    OasField child2 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    OasField child1 = getObjectField(merge(Map.of("child2", child2), REQUIRED_NON_NILLABLE_STRING));
+    OasField rootField = getObjectField(merge(Map.of("child1", child1), REQUIRED_NON_NILLABLE_STRING));
 
-    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
+    Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     Map<String, Object> child1Data =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2", "child2", child2Data);
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
     Map<String, Object> rootData =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -596,6 +546,7 @@ class JsonResponseMapperTest {
 
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
   }
+
 
   @Test
   void map_returnsValue_withoutIncludedObject() {
@@ -606,6 +557,7 @@ class JsonResponseMapperTest {
     assertEquals("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\"}}", response);
   }
 
+
   @Test
   void map_returnsValue_withIncludedObject() {
     ResponseWriteContext writeContext = arrangeIncludeWriteContext("prop2 == `v3`");
@@ -615,37 +567,11 @@ class JsonResponseMapperTest {
     assertEquals("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}", response);
   }
 
-  private ResponseWriteContext arrangeIncludeWriteContext(String condition) {
-    ObjectSchema objectSchema = new ObjectSchema();
-    objectSchema.addExtension(OasConstants.X_DWS_INCLUDE, condition);
-
-    ResponseObject child2 = getObject("child2", "object", false, false, false, null,
-        ImmutableList.of(REQUIRED_NON_NILLABLE_STRING), new ArrayList<>(), objectSchema);
-    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child2));
-
-    ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, child1));
-
-    Map<String, Object> child2Data = ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v3");
-    Map<String, Object> child1Data =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v2", "child2", child2Data);
-    Map<String, Object> rootData =
-        ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
-
-    Deque<FieldContext> dataStack = new ArrayDeque<>();
-    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
-
-    return ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
-        .data(rootData)
-        .dataStack(dataStack)
-        .build();
-  }
-
   @Test
   void map_returnsNullObject_forEmptyObjectWithIdentifyingField() throws NotFoundException {
-    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField child1 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    child1.setNillable(true);
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = Collections.emptyMap();
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -654,8 +580,8 @@ class JsonResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-
-        .responseObject(responseObject)
+        .identifier("root")
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -667,8 +593,8 @@ class JsonResponseMapperTest {
 
   @Test
   void map_returnsObjectWithNullFields_forEmptyObjectWithoutIdentifyingField() throws NotFoundException {
-    ResponseObject child1 = getObject("child1", ImmutableList.of(REQUIRED_NILLABLE_STRING));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField child1 = getObjectField(REQUIRED_NILLABLE_STRING);
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = Collections.emptyMap();
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
@@ -678,7 +604,7 @@ class JsonResponseMapperTest {
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -690,11 +616,11 @@ class JsonResponseMapperTest {
 
   @Test
   void map_throwsException_forMissingNonNillableRequiredField() throws NotFoundException {
-    ResponseObject child1 =
-        getObject("child1", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING, REQUIRED_NILLABLE_STRING));
-    ResponseObject responseObject = getObject("root", ImmutableList.of(child1));
+    OasField child1 =
+        getObjectField(merge(REQUIRED_NON_NILLABLE_STRING, REQUIRED_NILLABLE_STRING));
+    OasField rootField = getObjectField(Map.of("child1", child1));
 
-    Map<String, Object> child1Data = Map.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "v1");
+    Map<String, Object> child1Data = Map.of(firstKey(REQUIRED_NILLABLE_STRING), "v1");
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
@@ -702,7 +628,7 @@ class JsonResponseMapperTest {
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
 
-        .responseObject(responseObject)
+        .oasField(rootField)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -737,67 +663,86 @@ class JsonResponseMapperTest {
     assertEquals("", resultString);
   }
 
-  private static ArraySchema getArraySchema(Object defaultValue) {
-    ArraySchema arraySchema = new ArraySchema().type("string");
-    arraySchema.extensions(Map.of(OasConstants.X_DWS_DEFAULT, defaultValue));
-    return arraySchema;
-  }
+  private ResponseWriteContext arrangeIncludeWriteContext(String condition) {
 
-  private static ResponseObject getObject(String identifier, List<ResponseObject> children) {
-    return getObject(identifier, "object", true, false, null, children, new ArrayList<>());
-  }
+    OasField child2 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
+    child2.setRequired(false);
+    ((OasObjectField) child2).setIncludeExpression(condition);
+    OasField child1 = getObjectField(merge(Map.of("child2", child2), REQUIRED_NON_NILLABLE_STRING));
 
-  private static ResponseObject getObject(String identifier, String type, boolean required, boolean nullable,
-      boolean envelop, List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf) {
-    return getObject(identifier, type, required, nullable, envelop, items, children, composedOf, null);
-  }
+    OasField rootField = getObjectField(merge(Map.of("child1", child1), REQUIRED_NON_NILLABLE_STRING));
 
-  private static ResponseObject getObject(String identifier, String type, boolean required, boolean nullable,
-      boolean envelop, List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf,
-      Schema<?> schema) {
-    return ResponseObject.builder()
-        .identifier(identifier)
-        .summary(SchemaSummary.builder()
-            .type(type)
-            .required(required)
-            .nillable(nullable)
-            .children(children)
-            .items(items)
-            .composedOf(composedOf)
-            .isTransient(envelop)
-            .schema(schema)
-            .build())
+    Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
+    Map<String, Object> child1Data =
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
+    Map<String, Object> rootData =
+        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
+
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
+
+    return ResponseWriteContext.builder()
+        .identifier("root")
+        .oasField(rootField)
+        .data(rootData)
+        .dataStack(dataStack)
         .build();
   }
 
-  private static ResponseObject getObject(String identifier, String type, boolean envelop, List<ResponseObject> items,
-      List<ResponseObject> children, List<ResponseObject> composedOf) {
-    return getObject(identifier, type, true, envelop, items, children, composedOf);
+  private static OasField getObjectField(Map<String, OasField> children) {
+    return new OasObjectField(false, true, children, false, null);
   }
 
-  private static ResponseObject getObject(String identifier, String type, boolean required, boolean envelop,
-      List<ResponseObject> items, List<ResponseObject> children, List<ResponseObject> composedOf) {
-    return getObject(identifier, type, required, true, envelop, items, children, composedOf);
+  private static OasField getEnvelopeObjectField(Map<String, OasField> children) {
+    return new OasObjectField(false, true, children, true, null);
   }
 
-  private static ResponseObject getProperty(String identifier, String type, boolean required, boolean nillable,
-      String dwsTemplate) {
-    return getProperty(identifier, type, required, nillable, dwsTemplate, false, null);
+  private static OasField getArrayField(OasField content) {
+    return new OasArrayField(false, true, content);
   }
 
-  private static ResponseObject getProperty(String identifier, String type, boolean required, boolean nillable,
-      String dwsTemplate, boolean envelope, Schema<?> schema) {
-    return ResponseObject.builder()
-        .identifier(identifier)
-        .summary(SchemaSummary.builder()
-            .type(type)
-            .required(true)
-            .isTransient(envelope)
-            .required(required)
-            .nillable(nillable)
-            .dwsExpr(Objects.nonNull(dwsTemplate) ? Map.of("value", dwsTemplate) : null)
-            .schema(schema)
-            .build())
-        .build();
+  private static OasScalarField getStringScalar() {
+    return new OasScalarField(false, true, "string");
+  }
+
+  private static OasScalarExpressionField getScalarField(String type, String expression, String fallbackValue) {
+    return new OasScalarExpressionField(false, true, type, expression, fallbackValue);
+  }
+
+  private static OasField getObjectField(String type, boolean required, boolean nullable,
+                                         boolean envelop, List<OasField> items, List<OasField> children,
+                                         List<OasField> composedOf,
+                                         Schema<?> schema) {
+    return null;
+  }
+
+  private static Map<String, OasField> getScalarFieldMap(String identifier, String type, boolean required,
+                                                         boolean nillable,
+                                                         String dwsTemplate) {
+    return Map.of(identifier, getScalarFieldMap(type, required, nillable, dwsTemplate, false));
+  }
+
+  private static OasField getScalarFieldMap(String type, boolean required, boolean nillable,
+                                            String dwsTemplate, boolean envelope) {
+    if (dwsTemplate != null) {
+      return new OasScalarExpressionField(nillable, required, type, dwsTemplate, null);
+    } else {
+      return new OasScalarField(nillable, required, type);
+    }
+  }
+
+  private static Map<String, OasField> merge(Map<String, OasField> map1, Map<String, OasField> map2) {
+    var result = new HashMap<String, OasField>();
+    result.putAll(map1);
+    result.putAll(map2);
+    return result;
+  }
+
+  private String firstKey(Map<String, ?> map) {
+    return map.keySet().iterator().next();
+  }
+
+  private OasField firstValue(Map<?, OasField> map) {
+    return map.values().iterator().next();
   }
 }

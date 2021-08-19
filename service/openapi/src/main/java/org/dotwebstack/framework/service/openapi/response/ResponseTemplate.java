@@ -4,6 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 import org.springframework.http.MediaType;
 
 @Builder
@@ -15,7 +16,7 @@ public class ResponseTemplate {
 
   private MediaType mediaType;
 
-  private ResponseObject responseObject;
+  private OasField responseObject;
 
   private Map<String, ResponseHeader> responseHeaders;
 

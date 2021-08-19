@@ -535,9 +535,6 @@ class CoreRequestHandlerTest {
 
     responseTemplates.add(ResponseTemplate.builder()
         .mediaType(MediaType.APPLICATION_JSON)
-        .responseObject(ResponseObject.builder()
-            .summary(schemaSummaryBuilder())
-            .build())
         .responseCode(303)
         .responseHeaders(responseHeaders)
         .build());
@@ -547,19 +544,9 @@ class CoreRequestHandlerTest {
 
   private ResponseTemplate.ResponseTemplateBuilder getTypedResponseTemplateBuilder(MediaType mediaType) {
     return ResponseTemplate.builder()
-        .responseObject(ResponseObject.builder()
-            .summary(schemaSummaryBuilder())
-            .build())
         .responseCode(200)
         .responseHeaders(new HashMap<>())
         .mediaType(mediaType);
-  }
-
-  private SchemaSummary schemaSummaryBuilder() {
-    return SchemaSummary.builder()
-        .isTransient(false)
-        .required(false)
-        .build();
   }
 
 }
