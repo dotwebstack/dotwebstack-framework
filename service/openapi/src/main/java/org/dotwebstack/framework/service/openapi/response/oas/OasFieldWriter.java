@@ -62,7 +62,7 @@ public class OasFieldWriter {
             .stream()
             .map(OasField::getType)
             .collect(Collectors.toList()));
-
+        break;
       default:
         break;
     }

@@ -140,7 +140,7 @@ public class JsonResponseMapper {
   private Object mapDefaultArrayToResponse(OasArrayField field, String path) {
     Object defaultValue = field.getDefaultValue();
 
-    if (defaultValue != null && defaultValue instanceof List) {
+    if (defaultValue instanceof List) {
       return defaultValue;
     } else if (defaultValue != null) {
       throw mappingException("'{}' value for property '{}' not of type array!", OasConstants.X_DWS_DEFAULT, path);
@@ -389,7 +389,7 @@ public class JsonResponseMapper {
   }
 
   private String addToPath(String path, OasField oasField, String identifier, boolean canAddArray) {
-    if ((!oasField.isArray() || canAddArray) && (!oasField.isDwsTransient() || oasField.hasDefault())) {
+    if ((!oasField.isArray() || canAddArray) && (!oasField.isTransient() || oasField.hasDefault())) {
       return getPathString(path, identifier);
     }
     return path;

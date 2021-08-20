@@ -2,8 +2,10 @@ package org.dotwebstack.framework.service.openapi.response.oas;
 
 import java.util.Map;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 public class OasObjectField extends OasField {

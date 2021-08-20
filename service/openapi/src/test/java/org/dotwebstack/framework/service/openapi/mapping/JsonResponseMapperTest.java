@@ -700,11 +700,6 @@ class JsonResponseMapperTest {
     return new OasScalarExpressionField(false, true, type, expression, fallbackValue);
   }
 
-  private static OasField getObjectField(String type, boolean required, boolean nullable, boolean envelop,
-      List<OasField> items, List<OasField> children, List<OasField> composedOf, Schema<?> schema) {
-    return null;
-  }
-
   private static Map<String, OasField> getScalarFieldMap(String identifier, String type, boolean required,
       boolean nillable, String dwsTemplate) {
     return Map.of(identifier, getScalarFieldMap(type, required, nillable, dwsTemplate, false));

@@ -84,7 +84,8 @@ public class OasFieldBuilder {
     if (expression == null) {
       return new OasScalarField(nillable, required, schema.getType());
     } else {
-      return new OasScalarExpressionField(nillable, required, schema.getType(), expression, fallbackValue);
+      // scalar fields with an expression are always required, set required to true
+      return new OasScalarExpressionField(nillable, true, schema.getType(), expression, fallbackValue);
     }
   }
 
@@ -125,7 +126,7 @@ public class OasFieldBuilder {
     String includeExpression = getExtension(schema, X_DWS_INCLUDE, String.class);
     OasObjectField objectField = new OasObjectField(nillable, required, null, isEnvelope, includeExpression);
     if (isAllOf(schema)) {
-      List<Schema> schemas = ((ComposedSchema) schema).getAllOf()
+      List<Schema<?>> schemas = ((ComposedSchema) schema).getAllOf()
           .stream()
           .map(s -> resolveSchema(openApi, s))
           .collect(Collectors.toList());
@@ -173,8 +174,9 @@ public class OasFieldBuilder {
       } else if (value.getClass()
           .isAssignableFrom(clazz)) {
         return (T) value;
-      } else
+      } else {
         throw invalidConfigurationException("Cannot cast class {} to {}.", value.getClass(), clazz);
+      }
     }
     return null;
   }
