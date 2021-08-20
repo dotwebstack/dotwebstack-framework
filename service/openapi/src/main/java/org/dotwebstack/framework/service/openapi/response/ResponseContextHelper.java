@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 
 public class ResponseContextHelper {
 

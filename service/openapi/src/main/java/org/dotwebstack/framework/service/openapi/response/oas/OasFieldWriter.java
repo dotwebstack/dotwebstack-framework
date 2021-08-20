@@ -17,7 +17,9 @@ public class OasFieldWriter {
   }
 
   private static void toString(OasField field, StringBuilder sb, int indent, List<OasField> stack) {
-    if(stack.stream().filter(s->s.equals(field)).count()>=2){
+    if (stack.stream()
+        .filter(s -> s.equals(field))
+        .count() >= 2) {
       return;
     }
 
@@ -31,13 +33,15 @@ public class OasFieldWriter {
         OasObjectField of = (OasObjectField) field;
         String prefix = "";
         sb.append("{\n");
-        for(Map.Entry<String, OasField> e: of.getFields().entrySet()){
+        for (Map.Entry<String, OasField> e : of.getFields()
+            .entrySet()) {
           sb.append(prefix);
-          indent(sb, indent+2);
+          indent(sb, indent + 2);
           sb.append(e.getKey());
           sb.append(": ");
-          toString(e.getValue(), sb, indent+2, addToStack(field, stack));
-          if(e.getValue().isRequired()){
+          toString(e.getValue(), sb, indent + 2, addToStack(field, stack));
+          if (e.getValue()
+              .isRequired()) {
             sb.append("!");
           }
           prefix = ",\n";
@@ -47,27 +51,31 @@ public class OasFieldWriter {
         sb.append("}");
         break;
       case SCALAR:
-        sb.append(((OasScalarField)field).getScalarType());
+        sb.append(((OasScalarField) field).getScalarType());
         break;
       case SCALAR_EXPRESSION:
-        sb.append(((OasScalarExpressionField)field).getScalarType());
+        sb.append(((OasScalarExpressionField) field).getScalarType());
         break;
       case ONE_OF:
         sb.append("[OneOf]");
-        sb.append(((OasOneOfField)field).getContent().stream().map(OasField::getType).collect(Collectors.toList()));
+        sb.append(((OasOneOfField) field).getContent()
+            .stream()
+            .map(OasField::getType)
+            .collect(Collectors.toList()));
 
       default:
         break;
     }
   }
 
-  private static  List<OasField> addToStack(OasField field, List<OasField> stack){
+  private static List<OasField> addToStack(OasField field, List<OasField> stack) {
     List<OasField> result = new ArrayList<>(stack);
     result.add(field);
     return result;
   }
+
   private static void indent(StringBuilder sb, int indent) {
-    IntStream.range(0, indent).forEach(i -> sb.append(' '));
+    IntStream.range(0, indent)
+        .forEach(i -> sb.append(' '));
   }
 }
-

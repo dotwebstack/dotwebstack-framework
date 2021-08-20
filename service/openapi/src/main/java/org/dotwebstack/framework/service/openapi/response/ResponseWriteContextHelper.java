@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
@@ -18,34 +17,38 @@ public class ResponseWriteContextHelper {
   private ResponseWriteContextHelper() {}
 
   public static List<ResponseWriteContext> createObjectContext(@NonNull ResponseWriteContext parentContext,
-                                                               boolean pagingEnabled) {
-    OasObjectField oasObjectField = (OasObjectField)parentContext.getOasField();
-    return oasObjectField.getFields().entrySet().stream().map(e->{
-      String identifier = e.getKey();
-      OasField child = e.getValue();
-      return unwrapSubSchema(parentContext,identifier, child, pagingEnabled);
-    }).collect(Collectors.toList());
+      boolean pagingEnabled) {
+    OasObjectField oasObjectField = (OasObjectField) parentContext.getOasField();
+    return oasObjectField.getFields()
+        .entrySet()
+        .stream()
+        .map(e -> {
+          String identifier = e.getKey();
+          OasField child = e.getValue();
+          return unwrapSubSchema(parentContext, identifier, child, pagingEnabled);
+        })
+        .collect(Collectors.toList());
   }
 
 
-  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, String childIdentifier, OasField child,
-      boolean pagingEnabled) {
+  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, String childIdentifier,
+      OasField child, boolean pagingEnabled) {
     Object data = unpackCollectionData(parentContext.getData(), child, pagingEnabled);
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-    if (!child.isTransient()
-        && data instanceof Map) {
+    if (!child.isTransient() && data instanceof Map) {
       data = ((Map<?, ?>) data).get(childIdentifier);
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
     }
 
-    return createNewResponseWriteContext(child,childIdentifier, data, parentContext.getParameters(), dataStack, parentContext.getUri());
+    return createNewResponseWriteContext(child, childIdentifier, data, parentContext.getParameters(), dataStack,
+        parentContext.getUri());
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
     OasArrayField arrayField = (OasArrayField) parentContext.getOasField();
-    return createNewResponseWriteContext(arrayField.getContent(),parentContext.getIdentifier(), parentContext.getData(), parentContext.getParameters(),
-        parentContext.getDataStack(), parentContext.getUri());
+    return createNewResponseWriteContext(arrayField.getContent(), parentContext.getIdentifier(),
+        parentContext.getData(), parentContext.getParameters(), parentContext.getDataStack(), parentContext.getUri());
   }
 
   public static Deque<FieldContext> createNewDataStack(@NonNull Deque<FieldContext> previousDataStack, Object newData,
@@ -76,7 +79,7 @@ public class ResponseWriteContextHelper {
             .peek()
             .getData()).get(identifier);
         dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
-        return createNewResponseWriteContext(oasField,identifier, data, parentContext.getParameters(), dataStack,
+        return createNewResponseWriteContext(oasField, identifier, data, parentContext.getParameters(), dataStack,
             parentContext.getUri());
       }
 
@@ -92,13 +95,14 @@ public class ResponseWriteContextHelper {
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
-    return createNewResponseWriteContext(parentContext.getOasField(), parentContext.getIdentifier(), childData, parentContext.getParameters(),
-        dataStack, parentContext.getUri());
+    return createNewResponseWriteContext(parentContext.getOasField(), parentContext.getIdentifier(), childData,
+        parentContext.getParameters(), dataStack, parentContext.getUri());
   }
 
 
-  public static ResponseWriteContext createNewResponseWriteContext(@NonNull OasField oasField, @NonNull String identifier, Object data,
-                                                                   Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack, URI uri) {
+  public static ResponseWriteContext createNewResponseWriteContext(@NonNull OasField oasField,
+      @NonNull String identifier, Object data, Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack,
+      URI uri) {
     return ResponseWriteContext.builder()
         .identifier(identifier)
         .oasField(oasField)

@@ -20,14 +20,19 @@ public class OasResponseBuilderTest {
   }
 
   @Test
-  void go(){
+  void go() {
     OasFieldBuilder builder = new OasFieldBuilder(this.openApi);
-    openApi.getComponents().getSchemas().entrySet().stream().limit(2).forEach(e->{
-      Schema<?> s = e.getValue();
-      System.out.println("OBJECT "+e.getKey());
-      OasField response = builder.build(s);
-      System.out.println(OasFieldWriter.toString(response));
-    });
+    openApi.getComponents()
+        .getSchemas()
+        .entrySet()
+        .stream()
+        .limit(2)
+        .forEach(e -> {
+          Schema<?> s = e.getValue();
+          System.out.println("OBJECT " + e.getKey());
+          OasField response = builder.build(s);
+          System.out.println(OasFieldWriter.toString(response));
+        });
 
 
   }

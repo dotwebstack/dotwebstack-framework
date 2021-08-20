@@ -5,22 +5,20 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createObjectContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unpackCollectionData;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createObjectContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -58,8 +56,7 @@ public class JsonResponseMapper {
   private final boolean pagingEnabled;
 
   public JsonResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
-                            EnvironmentProperties properties, TypeConverterRouter typeConverterRouter,
-                            DotWebStackConfiguration dwsConfig) {
+      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter, DotWebStackConfiguration dwsConfig) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.properties = properties;
@@ -100,8 +97,8 @@ public class JsonResponseMapper {
 
     switch (oasField.getType()) {
       case ARRAY:
-        if ((oasField.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, oasField,writeContext.getIdentifier(), true))))) {
+        if ((oasField.isRequired() || isExpanded(writeContext.getParameters(),
+            removeRoot(addToPath(newPath, oasField, writeContext.getIdentifier(), true))))) {
           if (oasField.hasDefault()) {
             return mapDefaultArrayToResponse((OasArrayField) oasField, path);
           }
@@ -143,12 +140,11 @@ public class JsonResponseMapper {
   private Object mapDefaultArrayToResponse(OasArrayField field, String path) {
     Object defaultValue = field.getDefaultValue();
 
-    if (defaultValue!=null && defaultValue instanceof List) {
+    if (defaultValue != null && defaultValue instanceof List) {
       return defaultValue;
-    } else if(defaultValue!=null) {
+    } else if (defaultValue != null) {
       throw mappingException("'{}' value for property '{}' not of type array!", OasConstants.X_DWS_DEFAULT, path);
-    }
-    else if(field.isNillable()){
+    } else if (field.isNillable()) {
       return null;
     }
     return List.of();
@@ -156,9 +152,8 @@ public class JsonResponseMapper {
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, OasObjectField oasField, String newPath) {
 
-    if (oasField.isRequired() || oasField.isDwsTransient() || isExpanded(writeContext.getParameters(),
-        removeRoot(newPath))
-        || oasField.getIncludeExpression() != null) {
+    if (oasField.isRequired() || oasField.isDwsTransient()
+        || isExpanded(writeContext.getParameters(), removeRoot(newPath)) || oasField.getIncludeExpression() != null) {
       if (oasField.isEnvelope()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
@@ -168,7 +163,7 @@ public class JsonResponseMapper {
   }
 
   private Map<String, Object> createResponseObject(Map<String, Object> result, ResponseWriteContext parentContext,
-                                                   String path) {
+      String path) {
     if (result.isEmpty()) {
       return null;
     }
@@ -239,7 +234,7 @@ public class JsonResponseMapper {
   }
 
   private void addDataToResponse(String path, Map<String, Object> response, String identifier,
-                                 ResponseWriteContext writeContext) {
+      ResponseWriteContext writeContext) {
     boolean isExpanded = isExpanded(writeContext.getParameters(), childPath(path, identifier));
     var object = mapObject(writeContext, mapDataToResponse(writeContext, path), isExpanded);
 
@@ -300,9 +295,7 @@ public class JsonResponseMapper {
       return defaultValue;
     }
 
-    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT,
-        path,
-        oasType);
+    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT, path, oasType);
 
   }
 
@@ -310,8 +303,7 @@ public class JsonResponseMapper {
     Map<String, Object> result = new HashMap<>();
 
     List<ResponseWriteContext> childContexts = createObjectContext(parentContext, pagingEnabled);
-    childContexts
-        .forEach(child -> addDataToResponse(path, result, child.getIdentifier(), child));
+    childContexts.forEach(child -> addDataToResponse(path, result, child.getIdentifier(), child));
 
     return createResponseObject(result, parentContext, path);
   }
@@ -332,11 +324,9 @@ public class JsonResponseMapper {
       boolean isExpanded = isExpanded(context.getParameters(), childPath(path, childIdentifier));
       if (isRequiredOrExpandedAndNullOrEmpty(writeContext, data.get(childIdentifier), isExpanded)
           && !writeContext.getOasField()
-          .isNillable()) {
-        throw mappingException(
-            "Could not map GraphQL response: Required and non-nillable "
-                + "property '{}' was not returned in GraphQL response.",
-            writeContext.getIdentifier());
+              .isNillable()) {
+        throw mappingException("Could not map GraphQL response: Required and non-nillable "
+            + "property '{}' was not returned in GraphQL response.", writeContext.getIdentifier());
       }
     });
   }
@@ -394,8 +384,8 @@ public class JsonResponseMapper {
         .forEach((key, value) -> context.set("env." + key, value));
 
     OasScalarExpressionField field = (OasScalarExpressionField) writeContext.getOasField();
-    return jexlHelper.evaluateScriptWithFallback(field.getExpression(),
-        field.getFallbackValue(), context, String.class);
+    return jexlHelper.evaluateScriptWithFallback(field.getExpression(), field.getFallbackValue(), context,
+        String.class);
   }
 
   private String addToPath(String path, OasField oasField, String identifier, boolean canAddArray) {

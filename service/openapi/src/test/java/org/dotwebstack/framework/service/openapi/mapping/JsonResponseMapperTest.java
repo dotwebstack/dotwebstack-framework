@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.Schema;
-
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -17,7 +16,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -43,11 +41,11 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class JsonResponseMapperTest {
-  private static final Map<String, OasField> REQUIRED_NILLABLE_STRING = getScalarFieldMap("prop1", "string", true,
-      true, null);
+  private static final Map<String, OasField> REQUIRED_NILLABLE_STRING =
+      getScalarFieldMap("prop1", "string", true, true, null);
 
-  private static final Map<String, OasField> REQUIRED_NON_NILLABLE_STRING = getScalarFieldMap("prop2", "string", true
-      , false, null);
+  private static final Map<String, OasField> REQUIRED_NON_NILLABLE_STRING =
+      getScalarFieldMap("prop2", "string", true, false, null);
 
   private static final Map<String, OasField> DWS_TEMPLATE = getScalarFieldMap("prop4", "string", true, false,
       "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}_${args._parent"
@@ -138,8 +136,7 @@ class JsonResponseMapperTest {
         ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3", firstKey(DWS_TEMPLATE), "dummy");
     Map<String, Object> child1Data =
         ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
-    Map<String, Object> rootData =
-        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
+    Map<String, Object> rootData = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, ImmutableMap.of("arg1", "arg_v1")));
@@ -192,10 +189,8 @@ class JsonResponseMapperTest {
   @Test
   void map_returnsValue_forResponseWithEmbeddedEnvelopeObjectValue() throws NotFoundException {
     OasField child2 = getObjectField(REQUIRED_NON_NILLABLE_STRING);
-    OasField embedded1 =
-        getEnvelopeObjectField(Map.of("child2", child2));
-    OasField embedded2 =
-        getEnvelopeObjectField(Map.of("_embedded", embedded1));
+    OasField embedded1 = getEnvelopeObjectField(Map.of("child2", child2));
+    OasField embedded2 = getEnvelopeObjectField(Map.of("_embedded", embedded1));
     OasField child1 = getObjectField(Map.of("_embedded", embedded2));
     OasField rootField = getObjectField(Map.of("child1", child1));
 
@@ -222,8 +217,7 @@ class JsonResponseMapperTest {
   @Test
   void map_returnsValue_forResponseWithArray() throws NotFoundException {
     OasField arrayObject = getObjectField(REQUIRED_NON_NILLABLE_STRING);
-    OasField array1 =
-        getArrayField(arrayObject);
+    OasField array1 = getArrayField(arrayObject);
     OasField child1 = getObjectField(Map.of("array1", array1));
     OasField rootField = getObjectField(Map.of("child1", child1));
 
@@ -529,8 +523,7 @@ class JsonResponseMapperTest {
     Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     Map<String, Object> child1Data =
         ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
-    Map<String, Object> rootData =
-        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
+    Map<String, Object> rootData = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
@@ -616,8 +609,7 @@ class JsonResponseMapperTest {
 
   @Test
   void map_throwsException_forMissingNonNillableRequiredField() throws NotFoundException {
-    OasField child1 =
-        getObjectField(merge(REQUIRED_NON_NILLABLE_STRING, REQUIRED_NILLABLE_STRING));
+    OasField child1 = getObjectField(merge(REQUIRED_NON_NILLABLE_STRING, REQUIRED_NILLABLE_STRING));
     OasField rootField = getObjectField(Map.of("child1", child1));
 
     Map<String, Object> child1Data = Map.of(firstKey(REQUIRED_NILLABLE_STRING), "v1");
@@ -675,8 +667,7 @@ class JsonResponseMapperTest {
     Map<String, Object> child2Data = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v3");
     Map<String, Object> child1Data =
         ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v2", "child2", child2Data);
-    Map<String, Object> rootData =
-        ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
+    Map<String, Object> rootData = ImmutableMap.of(firstKey(REQUIRED_NON_NILLABLE_STRING), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
@@ -709,21 +700,18 @@ class JsonResponseMapperTest {
     return new OasScalarExpressionField(false, true, type, expression, fallbackValue);
   }
 
-  private static OasField getObjectField(String type, boolean required, boolean nullable,
-                                         boolean envelop, List<OasField> items, List<OasField> children,
-                                         List<OasField> composedOf,
-                                         Schema<?> schema) {
+  private static OasField getObjectField(String type, boolean required, boolean nullable, boolean envelop,
+      List<OasField> items, List<OasField> children, List<OasField> composedOf, Schema<?> schema) {
     return null;
   }
 
   private static Map<String, OasField> getScalarFieldMap(String identifier, String type, boolean required,
-                                                         boolean nillable,
-                                                         String dwsTemplate) {
+      boolean nillable, String dwsTemplate) {
     return Map.of(identifier, getScalarFieldMap(type, required, nillable, dwsTemplate, false));
   }
 
-  private static OasField getScalarFieldMap(String type, boolean required, boolean nillable,
-                                            String dwsTemplate, boolean envelope) {
+  private static OasField getScalarFieldMap(String type, boolean required, boolean nillable, String dwsTemplate,
+      boolean envelope) {
     if (dwsTemplate != null) {
       return new OasScalarExpressionField(nillable, required, type, dwsTemplate, null);
     } else {
@@ -739,10 +727,14 @@ class JsonResponseMapperTest {
   }
 
   private String firstKey(Map<String, ?> map) {
-    return map.keySet().iterator().next();
+    return map.keySet()
+        .iterator()
+        .next();
   }
 
   private OasField firstValue(Map<?, OasField> map) {
-    return map.values().iterator().next();
+    return map.values()
+        .iterator()
+        .next();
   }
 }

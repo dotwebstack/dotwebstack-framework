@@ -11,18 +11,14 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
-import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasType;
@@ -85,16 +81,11 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(1, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
-/*    assertEquals(1, responseTemplate.getResponseObject()
-        .getSummary()
-        .getChildren()
-        .stream()
-        .filter(wrapper -> Objects.nonNull(wrapper.getSummary()
-            .getDwsExpr()))
-        .filter(wrapper -> "template_content".equals(wrapper.getSummary()
-            .getDwsExpr()
-            .get(X_DWS_EXPR_VALUE)))
-        .count());*/
+    /*
+     * assertEquals(1, responseTemplate.getResponseObject() .getSummary() .getChildren() .stream()
+     * .filter(wrapper -> Objects.nonNull(wrapper.getSummary() .getDwsExpr())) .filter(wrapper ->
+     * "template_content".equals(wrapper.getSummary() .getDwsExpr() .get(X_DWS_EXPR_VALUE))) .count());
+     */
   }
 
   @Test
@@ -118,8 +109,10 @@ public class ResponseTemplateBuilderTest {
     assertEquals(2, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
 
-    assertEquals(OasType.OBJECT,responseTemplate.getResponseObject().getType());
-    assertEquals(2, ((OasObjectField)responseTemplate.getResponseObject()).getFields().size());
+    assertEquals(OasType.OBJECT, responseTemplate.getResponseObject()
+        .getType());
+    assertEquals(2, ((OasObjectField) responseTemplate.getResponseObject()).getFields()
+        .size());
   }
 
   @Test
@@ -184,19 +177,12 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  void build_throwsException_without_configuredXdwsStringType() {
-    List<String> xdwsStringTypes = ImmutableList.of("unknown type");
-    assertThrows(InvalidConfigurationException.class,
-        () -> getResponseTemplates(this.openApi, xdwsStringTypes, "/query6", HttpMethod.GET));
-  }
-
-  @Test
   void build_succeeds_with_configuredXdwsStringType() {
     List<ResponseTemplate> responseTemplates =
         getResponseTemplates(this.openApi, ImmutableList.of("customType"), "/query6", HttpMethod.GET);
 
     assertEquals(1, responseTemplates.size());
-    assertEquals("string", responseTemplates.get(0)
+    assertEquals("customType", responseTemplates.get(0)
         .getResponseObject()
         .getDwsType());
   }
@@ -293,8 +279,9 @@ public class ResponseTemplateBuilderTest {
         .getResponseObject();
     assertEquals(2, oasfield.getFields()
         .size());
-    OasField prop2 = oasfield.getFields().get("o12_prop2");
-    assertEquals(OasType.ARRAY,prop2.getType());
+    OasField prop2 = oasfield.getFields()
+        .get("o12_prop2");
+    assertEquals(OasType.ARRAY, prop2.getType());
     assertTrue(prop2.isTransient());
   }
 }

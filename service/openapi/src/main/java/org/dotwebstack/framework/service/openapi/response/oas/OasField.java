@@ -1,13 +1,8 @@
 package org.dotwebstack.framework.service.openapi.response.oas;
 
-import io.swagger.v3.oas.models.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TRANSIENT;
 
 @NoArgsConstructor
 @Data

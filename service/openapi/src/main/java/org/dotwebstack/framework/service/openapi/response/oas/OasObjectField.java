@@ -1,11 +1,8 @@
 package org.dotwebstack.framework.service.openapi.response.oas;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
+import java.util.Map;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +14,8 @@ public class OasObjectField extends OasField {
 
   private String includeExpression;
 
-  public OasObjectField(boolean nillable, boolean required, Map<String, OasField> fields,
-                        boolean isEnvelope, String includeExpression) {
+  public OasObjectField(boolean nillable, boolean required, Map<String, OasField> fields, boolean isEnvelope,
+      String includeExpression) {
     super(OasType.OBJECT, nillable, required);
     this.fields = fields;
     this.isEnvelope = isEnvelope;

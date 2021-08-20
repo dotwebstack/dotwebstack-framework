@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
@@ -12,23 +10,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasField;
-import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 
 public class OasToGraphQlHelper {
 
-  private OasToGraphQlHelper() {
-  }
+  private OasToGraphQlHelper() {}
 
   public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
-                                             @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
+      @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
     var responseObject = responseTemplate.getResponseObject();
 
     if (responseObject == null) {
@@ -44,7 +39,8 @@ public class OasToGraphQlHelper {
     Field rootField = new Field();
     rootField.setChildren(getChildFields("", rootResponseObject, inputParams));
     rootField.setName(queryName);
-    rootField.setCollectionNode(rootResponseObject.isArray() && !rootResponseObject.isScalar());
+    rootField.setCollectionNode(rootResponseObject.isArray() && !(((OasArrayField) rootResponseObject).getContent()
+        .isScalar()));
 
     if (pagingEnabled) {
       addPagingNodes(rootField);
@@ -67,18 +63,20 @@ public class OasToGraphQlHelper {
   }
 
   private static List<OasField> findGraphqlObject(OasField field) {
-    List<OasField> subSearch = List.of();
+    List<OasField> subSearch;
+    if (field.isDefault()) {
+      return List.of();
+    }
     switch (field.getType()) {
       case OBJECT:
         if (!((OasObjectField) field).isEnvelope()) {
           return List.of(field);
         } else {
-          subSearch = new ArrayList<>(((OasObjectField) field).getFields().values());
+          subSearch = new ArrayList<>(((OasObjectField) field).getFields()
+              .values());
         }
         break;
       case ARRAY:
-        subSearch = List.of(((OasArrayField) field).getContent());
-        break;
       case SCALAR:
         return List.of(field);
       case SCALAR_EXPRESSION:
@@ -94,60 +92,42 @@ public class OasToGraphQlHelper {
   }
 
   private static Field toField(String currentPath, String identifier, OasField responseObject,
-                               Map<String, Object> inputParams) {
+      Map<String, Object> inputParams) {
     Field result = new Field();
     result.setName(identifier);
     result.setChildren(getChildFields(currentPath, responseObject, inputParams));
-    result.setCollectionNode(responseObject.isArray() && !responseObject.isScalar());
+    result.setCollectionNode(responseObject.isArray() && !(((OasArrayField) responseObject).getContent()
+        .isScalar()));
 
     return result;
   }
 
-  private static List<Field> getChildFields(String currentPath, OasField field,
-                                            Map<String, Object> inputParams) {
-    if (field.getType() == OasType.OBJECT) {
-      return ((OasObjectField) field).getFields().entrySet().stream().filter(e -> shouldAdd(e.getValue(), e.getKey(),
-          inputParams, currentPath))
-          .flatMap(e -> {
-            String identifier = e.getKey();
-            OasField childField = e.getValue();
-            List<OasField> fields = findGraphqlObject(childField);
-            return fields.stream().map(cc -> toField(getPathString(currentPath, identifier), identifier, cc,
-                inputParams));
-          }).collect(Collectors.toList());
+  private static List<Field> getChildFields(String currentPath, OasField field, Map<String, Object> inputParams) {
+    if (field.getType() == OasType.ARRAY) {
+      return getChildFields(currentPath, ((OasArrayField) field).getContent(), inputParams);
+    } else if (field.getType() == OasType.OBJECT) {
+
+      Stream<Map.Entry<String, OasField>> filteredChildren = ((OasObjectField) field).getFields()
+          .entrySet()
+          .stream()
+          .filter(e -> shouldAdd(e.getValue(), e.getKey(), inputParams, currentPath));
+      return filteredChildren.flatMap(e -> {
+        String identifier = e.getKey();
+        OasField childField = e.getValue();
+        List<OasField> fields = findGraphqlObject(childField);
+        return fields.stream()
+            .map(cc -> toField(getPathString(currentPath, identifier), identifier, cc, inputParams));
+      })
+          .collect(Collectors.toList());
     }
     return List.of();
 
   }
 
-  private static Stream<ResponseObject> getComposedObjectChildren(ResponseObject responseObject) {
-    return responseObject.getSummary()
-        .getComposedOf()
-        .stream()
-        .map(r -> r.getSummary()
-            .getChildren())
-        .flatMap(List::stream);
-  }
-
   private static boolean shouldAdd(OasField field, String identifier, Map<String, Object> inputParams,
-                                   String currentPath) {
+      String currentPath) {
     boolean isExpanded = isExpanded(inputParams, getPathString(currentPath, identifier));
     return field.isRequired() || isExpanded;
-  }
-
-  private static boolean isDefault(ResponseObject responseObject) {
-    return responseObject.getSummary()
-        .hasExtension(X_DWS_DEFAULT);
-  }
-
-  private static boolean isExpression(ResponseObject responseObject) {
-    return responseObject.getSummary()
-        .getDwsExpr() != null;
-  }
-
-  private static boolean isEnvelope(ResponseObject responseObject) {
-    return responseObject.getSummary()
-        .hasExtension(X_DWS_ENVELOPE);
   }
 
 }

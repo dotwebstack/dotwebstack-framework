@@ -60,13 +60,13 @@ import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyH
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilderTest;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
-import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -545,8 +545,13 @@ class CoreRequestHandlerTest {
   private ResponseTemplate.ResponseTemplateBuilder getTypedResponseTemplateBuilder(MediaType mediaType) {
     return ResponseTemplate.builder()
         .responseCode(200)
+        .responseObject(buildOasField())
         .responseHeaders(new HashMap<>())
         .mediaType(mediaType);
+  }
+
+  private OasField buildOasField() {
+    return new OasObjectField(false, true, Map.of(), false, null);
   }
 
 }

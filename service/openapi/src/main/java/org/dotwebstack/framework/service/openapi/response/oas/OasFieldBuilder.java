@@ -1,18 +1,5 @@
 package org.dotwebstack.framework.service.openapi.response.oas;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
-import io.swagger.v3.oas.models.media.Schema;
-
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
@@ -24,11 +11,22 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 public class OasFieldBuilder {
 
   private final OpenAPI openApi;
 
-  private Map<Schema<?>, OasField> resolvedMap;
+  private Map<String, OasField> resolvedMap;
 
   public OasFieldBuilder(OpenAPI openApi) {
     this.openApi = openApi;
@@ -36,13 +34,14 @@ public class OasFieldBuilder {
   }
 
   public OasField build(Schema<?> responseSchema) {
-   return toField(responseSchema, true);
+    return toField(responseSchema, true);
   }
 
   private OasField toField(Schema<?> schema, boolean required) {
     Schema<?> resolved = resolveSchema(openApi, schema);
-    if (resolvedMap.containsKey(resolved)) {
-      return resolvedMap.get(resolved);
+    String schemaKey = getSchemaKey(resolved, required);
+    if (resolvedMap.containsKey(schemaKey)) {
+      return resolvedMap.get(schemaKey);
     }
     OasField result = null;
     if (isOneOf(resolved)) {
@@ -55,19 +54,26 @@ public class OasFieldBuilder {
       result = toScalarField(resolved, required);
     }
     if (result != null) {
-      resolvedMap.put(resolved, result);
+      resolvedMap.put(schemaKey, result);
       Boolean extension = getExtension(resolved, X_DWS_TRANSIENT, Boolean.class);
-      result.setDwsTransient(extension!=null?extension:false);
+      result.setDwsTransient(extension != null ? extension : false);
       result.setDefaultValue(getExtension(resolved, X_DWS_DEFAULT));
-      result.setDwsType(getExtension(resolved,X_DWS_TYPE, String.class));
+      result.setDwsType(getExtension(resolved, X_DWS_TYPE, String.class));
     }
     return result;
   }
 
+  private String getSchemaKey(Schema<?> resolved, boolean required) {
+    return resolved.hashCode() + "_" + required;
+  }
+
   private OasOneOfField toOneOfField(Schema<?> schema, boolean required) {
     boolean nillable = isNillable(schema);
-    List<OasField> content = ((ComposedSchema) schema).getOneOf().stream().map(s -> resolveSchema(openApi,
-        s)).map(s -> toField(s, required)).collect(Collectors.toList());
+    List<OasField> content = ((ComposedSchema) schema).getOneOf()
+        .stream()
+        .map(s -> resolveSchema(openApi, s))
+        .map(s -> toField(s, required))
+        .collect(Collectors.toList());
     return new OasOneOfField(nillable, required, content);
   }
 
@@ -85,32 +91,30 @@ public class OasFieldBuilder {
   @SuppressWarnings("unchecked")
   private String getExpression(Schema<?> schema) {
     Object value = getExtension(schema, X_DWS_EXPR);
-    if(value == null){
+    if (value == null) {
       return null;
-    }
-    else if(value instanceof String){
+    } else if (value instanceof String) {
       return (String) value;
     }
-    return ((Map<String, String>)value).get(X_DWS_EXPR_VALUE);
+    return ((Map<String, String>) value).get(X_DWS_EXPR_VALUE);
   }
 
   @SuppressWarnings("unchecked")
   private String getFallback(Schema<?> schema) {
     Object value = getExtension(schema, X_DWS_EXPR);
-    if(value == null || value instanceof String){
-     return null;
+    if (value == null || value instanceof String) {
+      return null;
     }
-    return ((Map<String, String>)value).get(X_DWS_EXPR_FALLBACK_VALUE);
+    return ((Map<String, String>) value).get(X_DWS_EXPR_FALLBACK_VALUE);
   }
 
 
   private OasField toArray(Schema<?> schema, boolean required) {
-    if(schema instanceof  ArraySchema) {
+    if (schema instanceof ArraySchema) {
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       OasField content = toField(itemSchema, required);
       return new OasArrayField(false, required, content);
-    }
-    else {
+    } else {
       return new OasArrayField(false, required, null);
     }
   }
@@ -121,48 +125,56 @@ public class OasFieldBuilder {
     String includeExpression = getExtension(schema, X_DWS_INCLUDE, String.class);
     OasObjectField objectField = new OasObjectField(nillable, required, null, isEnvelope, includeExpression);
     if (isAllOf(schema)) {
-      List<Schema> schemas =
-          ((ComposedSchema) schema).getAllOf().stream().map(s -> resolveSchema(openApi, s)).collect(Collectors.toList());
-      Map<String, OasField> fields = new HashMap<>();
-      schemas.stream().map(s -> toObjectField(s, required).getFields()).forEach(fields::putAll);
+      List<Schema> schemas = ((ComposedSchema) schema).getAllOf()
+          .stream()
+          .map(s -> resolveSchema(openApi, s))
+          .collect(Collectors.toList());
+      Map<String, OasField> fields = new TreeMap<>();
+      schemas.stream()
+          .map(s -> toObjectField(s, required).getFields())
+          .forEach(fields::putAll);
       objectField.setFields(fields);
     } else {
-      resolvedMap.put(schema, objectField);
-      Map<String, OasField> fields = new HashMap<>();
-      if(schema.getProperties() == null){
-          throw invalidConfigurationException("object schema does not have any properties", schema);
+      resolvedMap.put(getSchemaKey(schema, required), objectField);
+      Map<String, OasField> fields = new TreeMap<>();
+      if (schema.getProperties() == null) {
+        throw invalidConfigurationException("object schema does not have any properties", schema);
       }
-      schema.getProperties().forEach((key, value) -> {
-        boolean propertyRequired = schema.getRequired() != null && schema.getRequired().contains(key);
-        OasField field = toField(value, propertyRequired);
-        if (field != null) {
-          fields.put(key, field);
-        }
-      });
+      schema.getProperties()
+          .forEach((key, value) -> {
+            boolean propertyRequired = schema.getRequired() != null && schema.getRequired()
+                .contains(key);
+            OasField field = toField(value, propertyRequired);
+            if (field != null) {
+              fields.put(key, field);
+            }
+          });
       objectField.setFields(fields);
     }
     return objectField;
   }
 
   @SuppressWarnings("unchecked")
-  private Object getExtension(Schema<?> schema, String key){
-    if(schema.getExtensions()!=null){
-      return schema.getExtensions().get(key);
+  private Object getExtension(Schema<?> schema, String key) {
+    if (schema.getExtensions() != null) {
+      return schema.getExtensions()
+          .get(key);
     }
     return null;
   }
 
   @SuppressWarnings("unchecked")
-  private <T> T getExtension(Schema<?> schema, String key, Class<T> clazz){
-    if(schema.getExtensions()!=null){
-      Object value = schema.getExtensions().get(key);
-      if(value==null){
+  private <T> T getExtension(Schema<?> schema, String key, Class<T> clazz) {
+    if (schema.getExtensions() != null) {
+      Object value = schema.getExtensions()
+          .get(key);
+      if (value == null) {
         return null;
-      }
-      else if(value.getClass().isAssignableFrom(clazz)){
+      } else if (value.getClass()
+          .isAssignableFrom(clazz)) {
         return (T) value;
-      }
-      else throw invalidConfigurationException("Cannot cast class {} to {}.", value.getClass(), clazz);
+      } else
+        throw invalidConfigurationException("Cannot cast class {} to {}.", value.getClass(), clazz);
     }
     return null;
   }
@@ -172,19 +184,23 @@ public class OasFieldBuilder {
   }
 
   private boolean isArray(Schema<?> schema) {
-    return schema.getType().equals("array");
+    return schema.getType()
+        .equals("array");
   }
 
   private boolean isObject(Schema<?> schema) {
-    return  schema.getType().equals("object");
+    return schema.getType()
+        .equals("object");
   }
 
   private boolean isEnvelopObject(Schema<?> schema) {
-    return isObject(schema) && schema.getExtensions() != null && schema.getExtensions().containsKey(X_DWS_ENVELOPE);
+    return isObject(schema) && schema.getExtensions() != null && schema.getExtensions()
+        .containsKey(X_DWS_ENVELOPE);
   }
 
   private boolean isScalar(Schema<?> schema) {
-    return getExtension(schema, X_DWS_TYPE, String.class)!=null || Set.of("string", "number", "boolean", "integer").contains(schema.getType());
+    return getExtension(schema, X_DWS_TYPE, String.class) != null || Set.of("string", "number", "boolean", "integer")
+        .contains(schema.getType());
   }
 
   private boolean isAllOf(Schema<?> schema) {
