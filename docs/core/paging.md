@@ -1,4 +1,4 @@
-# Core: `paging`
+# Core: Paging
 
 It is possible to make use of paging while quering an list of (nested) objectTypes. 
 

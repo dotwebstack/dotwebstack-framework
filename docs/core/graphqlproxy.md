@@ -1,4 +1,4 @@
-# Core: `GraphQl proxy`
+# Core: GraphQL Proxy
 
 By default, the core is configured to initialize and make use of a local GraphQL service layer connected to a backend.
 It is also possible to configure DWS to connect to a remote GraphQL HTTP web service, which will forward GraphQL queries to the proxy service over HTTP.

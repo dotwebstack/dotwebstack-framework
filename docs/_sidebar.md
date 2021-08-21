@@ -8,7 +8,7 @@
   - [Filtering](core/filtering.md)
   - [Sorting](core/sorting.md)
   - [Paging](core/paging.md)
-  - [GraphQl proxy](core/graphqlproxy.md)
+  - [GraphQL Proxy](core/graphqlproxy.md)
   
 - Backend modules
 

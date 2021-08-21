@@ -1,4 +1,4 @@
-# Core: `sorting`
+# Core: Sorting
 
 It is possible to make use of sorting while quering an list of (nested) objectTypes. 
 

@@ -1,4 +1,4 @@
-# Core: `filtering`
+# Core: Filtering
 
 It is possible to make use of filters while quering a list of (nested) objects. 
 
