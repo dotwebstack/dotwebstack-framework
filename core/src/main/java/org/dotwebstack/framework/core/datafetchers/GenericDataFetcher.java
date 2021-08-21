@@ -2,7 +2,7 @@ package org.dotwebstack.framework.core.datafetchers;
 
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static java.util.Optional.ofNullable;
-import static org.dataloader.DataLoader.newMappedDataLoader;
+import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
 import graphql.execution.DataFetcherResult;
