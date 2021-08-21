@@ -6,7 +6,7 @@ It is possible to make use of sorting while quering an list of (nested) objectTy
 
 The following snippet from an `dotwebstack.yaml` file shows the `sortableBy` configuration properties. 
 
-Define a name for sorting which will be used in the graphql `<objectType>Order` enum type. Under each `sortableBy` property you can  
+Define a name for sorting which will be used in the GraphQL `<objectType>Order` enum type. Under each `sortableBy` property you can  
 define one or more (nested) fields to sort on.
 
 By default the first entry of the `sortableBy` is used for sorting. 

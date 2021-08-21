@@ -1,27 +1,20 @@
 # Core: `filtering`
 
-It is possible to make use of filters while quering an list of (nested) objectTypes. 
+It is possible to make use of filters while quering a list of (nested) objects. 
 
 The following types are currently supported:
-
-An `String` field can be filtered with the operators: `eq`, `in` and `not`.
-
-An `Int` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
-
-An `Float` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
-
-An `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
-
-An `DateTime` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
-
-An `Boolean` field can be filtered with `true` or `false`.
+- A `String` field can be filtered with the operators: `eq`, `in` and `not`.
+- An `Int` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
+- A `Float` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
+- A `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
+- A `DateTime` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
+- A `Boolean` field can be filtered with `true` or `false`.
 
 ## Setup
 
 The following snippet from an `dotwebstack.yaml` file shows the `filters` configuration properties. 
 
-The `field`and `default`properties within the `filters` configuration property are both optional. When the `field` property isn't supplied the `filter` name needs to correspond with an existing field.
-
+The `field` and `default` properties within the `filters` configuration property are both optional. When the `field` property isn't supplied, the `filter` name needs to correspond with an existing field.
 
 ```yaml
 queries:
@@ -82,7 +75,6 @@ query {
 
 The `in` filter operator can be applied with the following query:
 
-
 ```graphql
 query {
     beers(filter: { name: {in: ["Beer 1","Beer 2"]} }) {
@@ -96,7 +88,6 @@ query {
 
 The `lt` filter operator can be applied with the following query:
 
-
 ```graphql
 query {
     beers(filter: { soldPerYear: {lt: 300} }) {
@@ -109,7 +100,6 @@ query {
 ### LowerThenEquals filter
 
 The `lte` filter operator can be applied with the following query:
-
 
 ```graphql
 query {
@@ -137,7 +127,6 @@ query {
 
 The `gte` filter operator can be applied with the following query:
 
-
 ```graphql
 query {
     beers(filter: { soldPerYear: {gte: 300} }) {
@@ -151,7 +140,6 @@ query {
 
 The `not` filter operator can be applied with the following query:
 
-
 ```graphql
 query {
     beers(filter: { not: {soldPerYear: {gt: 300, lt: 500} } }) {
@@ -163,8 +151,7 @@ query {
 
 ### Boolean Filter
 
-An `boolean` filter can be applied with the following query:
-
+The `boolean` filter can be applied with the following query:
 
 ```graphql
 query {
@@ -177,7 +164,7 @@ query {
 
 ### Nested filter
 
-An filter can also be applied on a nested list of objects.
+The filter can also be applied on a nested list of objects.
 
 ```graphql
 query {
@@ -191,4 +178,3 @@ query {
     }
 }
 ```
-

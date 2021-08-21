@@ -4,7 +4,7 @@ It is possible to make use of paging while quering an list of (nested) objectTyp
 
 ## Setup
 
-The paging functionality can be activated by the `paging` feature toggle. Once activated DotWebStack will generate an `Connection` graphQL object for each list return type to support pagination.
+The paging functionality can be activated by the `paging` feature toggle. Once activated DotWebStack will generate an `Connection` GraphQL object for each list return type to support pagination.
 
 ```yaml
 features:

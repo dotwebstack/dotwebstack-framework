@@ -106,7 +106,7 @@ input GeometryInput {
 }
 ```
 
-Example graphql query which filters on a `Geometry` field with the `contains` filter operation:
+Example GraphQL query which filters on a `Geometry` field with the `contains` filter operation:
 
 ```graphql
 query {

@@ -147,7 +147,6 @@ objectTypes:
       history:
         type: History
 
-
   Ingredient:
     backend: postgres
     table: dbeerpedia.ingredients

@@ -175,8 +175,8 @@ Keys and filters specify their value by referencing input parameters with `$<typ
 For instance, `$path.name` refers to the `name` parameter that occurs in the path.
 
 ### Keys
-Keys are configured with an optional map `x-dws-query.keys`, specifying the graphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the graphQl query.
-The following will add an `identifier` key field to the graphQL query and populate it with the `identifier` path variable if provided:
+Keys are configured with an optional map `x-dws-query.keys`, specifying the GraphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the GraphQL query.
+The following will add an `identifier` key field to the GraphQL query and populate it with the `identifier` path variable if provided:
 ```yaml
     x-dws-query:
       field: brewery
@@ -186,7 +186,7 @@ The following will add an `identifier` key field to the graphQL query and popula
 The key supportes the `.` notation for nested nodes.
 
 ### Filters
-Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per graphQL query field.
+Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL query field.
 ```yaml
     x-dws-query:
       field: breweries
@@ -196,7 +196,7 @@ Filters are configured with an optional map `x-dws-query.filters`. The map conta
 ```
 A `fieldPath` key supports the `.` notation for nested filters and map to a `<filterConfig>` with the following structure:
 ```yaml
-    type: <graphQLFilterType>
+    type: <GraphQLFilterType>
     fields:
       <field1>: <fieldFilter>
       <field2>: <fieldFilter>
@@ -232,7 +232,7 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
       offset: $query.page
 ```
 The entries `first` and `offset` map to parameters which will be used to populate the graphpQL [paging settings](../core/paging.md).
-If paging is disabled, the generated graphQL query will not contain the `nodes` wrapper field for paged collections.
+If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
 ## Required fields
 
