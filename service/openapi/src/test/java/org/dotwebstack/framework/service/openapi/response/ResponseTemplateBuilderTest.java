@@ -21,6 +21,7 @@ import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasScalarExpressionField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,11 +82,19 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(1, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
-    /*
-     * assertEquals(1, responseTemplate.getResponseObject() .getSummary() .getChildren() .stream()
-     * .filter(wrapper -> Objects.nonNull(wrapper.getSummary() .getDwsExpr())) .filter(wrapper ->
-     * "template_content".equals(wrapper.getSummary() .getDwsExpr() .get(X_DWS_EXPR_VALUE))) .count());
-     */
+
+    responseTemplate.getResponseField();
+
+    assertNotNull(responseTemplate.getResponseField());
+    assertEquals(1, ((OasObjectField) responseTemplate.getResponseField()).getFields()
+        .values()
+        .stream()
+        .filter(f -> f instanceof OasScalarExpressionField)
+        .map(f -> (OasScalarExpressionField) f)
+        .filter(s -> s.getExpression()
+            .equals("template_content"))
+        .count());
+
   }
 
   @Test
