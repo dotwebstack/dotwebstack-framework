@@ -40,11 +40,6 @@ public class ResponseTemplateBuilder {
 
   private final List<String> xdwsStringTypes;
 
-  private static boolean isRequired(Schema<?> schema, String property) {
-    return schema == null || (Objects.nonNull(schema.getRequired()) && schema.getRequired()
-        .contains(property));
-  }
-
   public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
 
     return httpMethodOperation.getOperation()
@@ -75,12 +70,12 @@ public class ResponseTemplateBuilder {
 
     return content.entrySet()
         .stream()
-        .map(mapToResponseTemplate(openApi, responseCode, queryName, responseTemplateBuilder))
+        .map(mapToResponseTemplate(openApi, responseTemplateBuilder))
         .collect(Collectors.toList());
   }
 
   private Function<Map.Entry<String, MediaType>, ResponseTemplate> mapToResponseTemplate(OpenAPI openApi,
-      String responseCode, String queryName, ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder) {
+      ResponseTemplate.ResponseTemplateBuilder responseTemplateBuilder) {
     return entry -> {
       var mediaType = entry.getValue();
 

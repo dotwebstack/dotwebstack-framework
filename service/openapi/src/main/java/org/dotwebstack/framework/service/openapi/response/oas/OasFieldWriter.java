@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class OasFieldWriter {
+  private OasFieldWriter() {}
 
   public static String toString(OasField field) {
     StringBuilder sb = new StringBuilder();

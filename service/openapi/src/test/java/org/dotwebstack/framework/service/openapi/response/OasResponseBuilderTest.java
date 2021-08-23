@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.response.oas.OasFieldBuilder;
@@ -7,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-public class OasResponseBuilderTest {
+class OasResponseBuilderTest {
 
   private OpenAPI openApi;
 
@@ -19,9 +21,12 @@ public class OasResponseBuilderTest {
   @Test
   void build_succeeds() {
     OasFieldBuilder builder = new OasFieldBuilder(this.openApi);
-    openApi.getComponents()
-        .getSchemas()
-        .forEach((key, value) -> builder.build(value));
+
+    assertDoesNotThrow(() -> {
+      openApi.getComponents()
+          .getSchemas()
+          .forEach((key, value) -> builder.build(value));
+    });
   }
 
 }

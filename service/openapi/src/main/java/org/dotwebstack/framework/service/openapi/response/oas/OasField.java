@@ -21,7 +21,7 @@ public abstract class OasField {
 
   private String dwsType;
 
-  public OasField(OasType type, boolean nillable, boolean required) {
+  protected OasField(OasType type, boolean nillable, boolean required) {
     this.type = type;
     this.nillable = nillable;
     this.required = required;

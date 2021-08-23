@@ -56,7 +56,9 @@ public class OasFieldBuilder {
     if (result != null) {
       resolvedMap.put(schemaKey, result);
       Boolean extension = getExtension(resolved, X_DWS_TRANSIENT, Boolean.class);
-      result.setDwsTransient(extension != null ? extension : false);
+      if (extension != null) {
+        result.setDwsTransient(extension);
+      }
       result.setDefaultValue(getExtension(resolved, X_DWS_DEFAULT));
       result.setDwsType(getExtension(resolved, X_DWS_TYPE, String.class));
     }
