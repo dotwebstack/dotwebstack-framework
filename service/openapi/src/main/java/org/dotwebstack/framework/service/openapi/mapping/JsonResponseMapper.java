@@ -167,8 +167,7 @@ public class JsonResponseMapper {
     if (result.isEmpty()) {
       return null;
     }
-    List<ResponseWriteContext> children;
-    children = createObjectContext(parentContext, pagingEnabled);
+    List<ResponseWriteContext> children = createObjectContext(parentContext, pagingEnabled);
 
     /*
      * Objects with an identifying field that have no data are considered null. An identifying field is
