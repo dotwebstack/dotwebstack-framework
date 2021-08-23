@@ -12,12 +12,12 @@ public class ResponseContextHelper {
 
   private ResponseContextHelper() {}
 
-  public static String getPathString(String prefix, ResponseObject responseObject) {
+  public static String getPathString(String prefix, String identifier) {
     var expandJoiner = new StringJoiner(".");
     if (!prefix.isBlank()) {
       expandJoiner.add(prefix);
     }
-    expandJoiner.add(responseObject.getIdentifier());
+    expandJoiner.add(identifier);
     return expandJoiner.toString();
   }
 

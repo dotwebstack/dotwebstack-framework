@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
-import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
 
 class ResponseMapperHelper {
 
@@ -12,16 +12,13 @@ class ResponseMapperHelper {
 
   static boolean isRequiredOrExpandedAndNullOrEmpty(@NonNull ResponseWriteContext writeContext, Object object,
       boolean expanded) {
-    return (writeContext.getResponseObject()
-        .getSummary()
-        .isRequired() || expanded) && ((Objects.isNull(object))
-            || isEmptyList(writeContext.getResponseObject()
-                .getSummary(), object));
+    return (writeContext.getOasField()
+        .isRequired() || expanded) && ((Objects.isNull(object)) || isEmptyList(writeContext.getOasField(), object));
   }
 
-  private static boolean isEmptyList(SchemaSummary summary, Object object) {
-    if (summary.isNillable() && object instanceof List) {
-      return ((List) object).isEmpty();
+  private static boolean isEmptyList(OasField oasField, Object object) {
+    if (oasField.isNillable() && object instanceof List) {
+      return ((List<?>) object).isEmpty();
     }
     return false;
   }

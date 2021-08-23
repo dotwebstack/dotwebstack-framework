@@ -7,7 +7,7 @@ import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SchemaSummaryContextValidatorTest {
+class TypeValidatorTest {
 
   private TypeValidator typeValidator;
 

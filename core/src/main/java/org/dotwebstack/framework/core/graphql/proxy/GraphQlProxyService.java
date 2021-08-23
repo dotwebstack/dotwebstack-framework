@@ -43,7 +43,7 @@ public class GraphQlProxyService implements GraphQlService {
 
   @Override
   public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
-    LOG.debug("Executing graphql query using remote proxy with query {}", executionInput.getQuery());
+    LOG.debug("Executing graphql query using remote proxy with query \n{}", executionInput.getQuery());
     String body = createBody(executionInput);
     return executePost(body).map(this::readBody)
         .block();

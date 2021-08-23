@@ -8,58 +8,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
 
 public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext,
+  public static List<ResponseWriteContext> createObjectContext(@NonNull ResponseWriteContext parentContext,
       boolean pagingEnabled) {
-    return parentContext.getResponseObject()
-        .getSummary()
-        .getChildren()
+    OasObjectField oasObjectField = (OasObjectField) parentContext.getOasField();
+    return oasObjectField.getFields()
+        .entrySet()
         .stream()
-        .map(child -> unwrapSubSchema(parentContext, child, pagingEnabled))
+        .map(e -> {
+          String identifier = e.getKey();
+          OasField child = e.getValue();
+          return unwrapSubSchema(parentContext, identifier, child, pagingEnabled);
+        })
         .collect(Collectors.toList());
   }
 
-  public static List<ResponseWriteContext> unwrapComposedSchema(@NonNull ResponseWriteContext parentContext,
-      boolean pagingEnabled) {
-    return parentContext.getResponseObject()
-        .getSummary()
-        .getComposedOf()
-        .stream()
-        .map(composed -> unwrapSubSchema(parentContext, composed, pagingEnabled))
-        .collect(Collectors.toList());
-  }
 
-  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, ResponseObject child,
-      boolean pagingEnabled) {
-    Object data = unpackCollectionDAta(parentContext.getData(), child, pagingEnabled);
+  private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, String childIdentifier,
+      OasField child, boolean pagingEnabled) {
+    Object data = unpackCollectionData(parentContext.getData(), child, pagingEnabled);
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-    if (parentContext.getResponseObject()
-        .getSummary()
-        .getComposedOf()
-        .isEmpty()
-        && !child.getSummary()
-            .isTransient()
-        && data instanceof Map) {
-      data = ((Map<?, ?>) data).get(child.getIdentifier());
+    if (!child.isTransient() && data instanceof Map) {
+      data = ((Map<?, ?>) data).get(childIdentifier);
       dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
     }
 
-    return createNewResponseWriteContext(child, data, parentContext.getParameters(), dataStack, parentContext.getUri());
+    return createNewResponseWriteContext(child, childIdentifier, data, parentContext.getParameters(), dataStack,
+        parentContext.getUri());
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
-    ResponseObject childSchema = parentContext.getResponseObject()
-        .getSummary()
-        .getItems()
-        .get(0);
-    return createNewResponseWriteContext(childSchema, parentContext.getData(), parentContext.getParameters(),
-        parentContext.getDataStack(), parentContext.getUri());
+    OasArrayField arrayField = (OasArrayField) parentContext.getOasField();
+    return createNewResponseWriteContext(arrayField.getContent(), parentContext.getIdentifier(),
+        parentContext.getData(), parentContext.getParameters(), parentContext.getDataStack(), parentContext.getUri());
   }
 
   public static Deque<FieldContext> createNewDataStack(@NonNull Deque<FieldContext> previousDataStack, Object newData,
@@ -79,51 +68,44 @@ public class ResponseWriteContextHelper {
   }
 
   public static ResponseWriteContext createResponseWriteContextFromChildSchema(
-      @NonNull ResponseWriteContext parentContext, @NonNull ResponseObject childSchema) {
+      @NonNull ResponseWriteContext parentContext, @NonNull String identifier, @NonNull OasField oasField) {
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
     Object data = parentContext.getData();
 
-    if (!childSchema.getSummary()
-        .isTransient()) {
+    if (!oasField.isTransient()) {
       if (!parentContext.getDataStack()
           .isEmpty()) {
         data = ((Map) parentContext.getDataStack()
             .peek()
-            .getData()).get(childSchema.getIdentifier());
+            .getData()).get(identifier);
         dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
-        return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack,
+        return createNewResponseWriteContext(oasField, identifier, data, parentContext.getParameters(), dataStack,
             parentContext.getUri());
       }
 
       if (data instanceof Map) {
-        data = ((Map) data).get(childSchema.getIdentifier());
+        data = ((Map) data).get(identifier);
       }
     }
 
-    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack,
-        parentContext.getUri());
-  }
-
-  public static ResponseWriteContext copyResponseContext(@NonNull ResponseWriteContext parentContext,
-      ResponseObject composedSchema) {
-    Object data = parentContext.getData();
-    Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
-
-    return createNewResponseWriteContext(composedSchema, data, parentContext.getParameters(), dataStack,
+    return createNewResponseWriteContext(oasField, identifier, data, parentContext.getParameters(), dataStack,
         parentContext.getUri());
   }
 
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
     Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
-    return createNewResponseWriteContext(parentContext.getResponseObject(), childData, parentContext.getParameters(),
-        dataStack, parentContext.getUri());
+    return createNewResponseWriteContext(parentContext.getOasField(), parentContext.getIdentifier(), childData,
+        parentContext.getParameters(), dataStack, parentContext.getUri());
   }
 
-  public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
-      Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack, URI uri) {
+
+  public static ResponseWriteContext createNewResponseWriteContext(@NonNull OasField oasField,
+      @NonNull String identifier, Object data, Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack,
+      URI uri) {
     return ResponseWriteContext.builder()
-        .responseObject(schema)
+        .identifier(identifier)
+        .oasField(oasField)
         .data(data)
         .parameters(parameters)
         .dataStack(dataStack)
@@ -132,9 +114,8 @@ public class ResponseWriteContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object unpackCollectionDAta(Object data, ResponseObject responseObject, boolean pagingEnabled) {
-    if (pagingEnabled && data instanceof Map && OasConstants.ARRAY_TYPE.equals(responseObject.getSummary()
-        .getType())) {
+  public static Object unpackCollectionData(Object data, OasField field, boolean pagingEnabled) {
+    if (pagingEnabled && data instanceof Map && field.isArray()) {
       Map<String, ?> dataMap = (Map<String, ?>) data;
       return dataMap.containsKey("nodes") ? dataMap.get("nodes") : dataMap;
     }

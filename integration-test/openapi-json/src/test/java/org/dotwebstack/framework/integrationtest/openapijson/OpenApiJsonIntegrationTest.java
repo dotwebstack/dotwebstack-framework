@@ -21,7 +21,7 @@ import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @ExtendWith(SpringExtension.class)
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "36000000")
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApiJsonIntegrationTest {
 

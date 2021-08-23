@@ -2,27 +2,17 @@ package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.copyResponseContext;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createObjectContext;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unpackCollectionDAta;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapComposedSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unpackCollectionData;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.models.media.Schema;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +29,13 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
-import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
+import org.dotwebstack.framework.service.openapi.response.oas.OasArrayField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasScalarExpressionField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasScalarField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
@@ -97,115 +91,75 @@ public class JsonResponseMapper {
   }
 
   private Object mapDataToResponse(@NonNull ResponseWriteContext writeContext, String path) {
-    var responseObject = writeContext.getResponseObject();
-    SchemaSummary summary = responseObject.getSummary();
+    var oasField = writeContext.getOasField();
 
-    String newPath = addToPath(path, responseObject, false);
+    String newPath = addToPath(path, writeContext.getOasField(), writeContext.getIdentifier(), false);
 
-    switch (summary.getType()) {
-      case ARRAY_TYPE:
-        if ((summary.isRequired()
-            || isExpanded(writeContext.getParameters(), removeRoot(addToPath(newPath, responseObject, true))))) {
-
-          if (isDefaultValue(summary)) {
-            return mapDefaultArrayToResponse(responseObject);
+    switch (oasField.getType()) {
+      case ARRAY:
+        if ((oasField.isRequired() || isExpanded(writeContext.getParameters(),
+            removeRoot(addToPath(newPath, oasField, writeContext.getIdentifier(), true))))) {
+          if (oasField.hasDefault()) {
+            return mapDefaultArrayToResponse((OasArrayField) oasField, path);
           }
-
           return mapArrayDataToResponse(writeContext, newPath);
         }
-
         return null;
-      case OBJECT_TYPE:
-        var object = processObject(writeContext, summary, newPath);
-
-        /*
-         * After the object is mapped, we check if it was a composed schema. If that is the case one layer
-         * is unwrapped in the response. This layer only exist in the schema, not in the response.
-         */
-        if (object != null && !writeContext.getResponseObject()
-            .getSummary()
-            .getComposedOf()
-            .isEmpty()) {
-          object = ((Map) object).get(((Map) object).keySet()
-              .iterator()
-              .next());
+      case OBJECT:
+        var object = processObject(writeContext, (OasObjectField) oasField, newPath);
+        return isObjectIncluded(object, (OasObjectField) oasField) ? object : null;
+      case SCALAR:
+        if (oasField.isRequired() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+          return mapScalarDataToResponse(writeContext, newPath);
         }
-        return isObjectIncluded(object, responseObject.getSummary()) ? object : null;
+        break;
+      case SCALAR_EXPRESSION:
+        if (oasField.isRequired() || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
+          return mapScalarDataExpressionToResponse(writeContext, newPath);
+        }
+        break;
       default:
-        if (summary.isRequired() || Objects.nonNull(summary.getDwsExpr())
-            || isExpanded(writeContext.getParameters(), removeRoot(newPath))) {
-          return mapScalarDataToResponse(writeContext);
-        }
-        return null;
+        break;
     }
+    return null;
   }
 
   @SuppressWarnings("unchecked")
-  private boolean isObjectIncluded(Object objectResult, SchemaSummary schemaSummary) {
-    if (schemaSummary.hasExtension(X_DWS_INCLUDE) && objectResult instanceof Map) {
+  private boolean isObjectIncluded(Object objectResult, OasObjectField oasField) {
+    if (oasField.getIncludeExpression() != null && objectResult instanceof Map) {
       JexlContext jexlContext = new MapContext();
       ((Map<String, Object>) objectResult).forEach(jexlContext::set);
 
-      return jexlHelper.evaluateScript(schemaSummary.getSchema()
-          .getExtensions()
-          .get(X_DWS_INCLUDE)
-          .toString(), jexlContext, Boolean.class)
+      return jexlHelper.evaluateScript(oasField.getIncludeExpression(), jexlContext, Boolean.class)
           .orElse(true);
     }
 
     return true;
   }
 
-  private Object mapDefaultArrayToResponse(ResponseObject responseObject) {
-    Object defaultValue;
-    SchemaSummary summary = responseObject.getSummary();
-    if (summary.getSchema() != null
-        && (defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT)) != null) {
-      if (defaultValue instanceof List) {
-        return defaultValue;
-      }
+  private Object mapDefaultArrayToResponse(OasArrayField field, String path) {
+    Object defaultValue = field.getDefaultValue();
 
-      throw mappingException("'{}' value for property '{}' not of type array!", OasConstants.X_DWS_DEFAULT,
-          responseObject.getIdentifier());
-    }
-
-    if (summary.isNillable()) {
+    if (defaultValue instanceof List) {
+      return defaultValue;
+    } else if (defaultValue != null) {
+      throw mappingException("'{}' value for property '{}' not of type array!", OasConstants.X_DWS_DEFAULT, path);
+    } else if (field.isNillable()) {
       return null;
     }
     return List.of();
   }
 
-  private Object processObject(@NonNull ResponseWriteContext writeContext, SchemaSummary summary, String newPath) {
-    if (summary.isRequired() || summary.isTransient() || isExpanded(writeContext.getParameters(), removeRoot(newPath))
-        || summary.hasExtension(X_DWS_INCLUDE)) {
-      if (summary.isTransient()) {
+  private Object processObject(@NonNull ResponseWriteContext writeContext, OasObjectField oasField, String newPath) {
+
+    if (oasField.isRequired() || oasField.isDwsTransient()
+        || isExpanded(writeContext.getParameters(), removeRoot(newPath)) || oasField.getIncludeExpression() != null) {
+      if (oasField.isEnvelope()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
-      }
-      if (writeContext.isComposedOf()) {
-        return mapComposedDataToResponse(writeContext, newPath);
       }
       return mapObjectDataToResponse(writeContext, newPath);
     }
     return null;
-  }
-
-  @SuppressWarnings("unchecked")
-  private Object mapComposedDataToResponse(ResponseWriteContext parentContext, String path) {
-    if (Objects.isNull(parentContext.getData())) {
-      return null;
-    }
-
-    Map<String, Object> result = new HashMap<>();
-    parentContext.getResponseObject()
-        .getSummary()
-        .getComposedOf()
-        .forEach(composedSchema -> {
-          ResponseWriteContext writeContext = copyResponseContext(parentContext, composedSchema);
-          mergeComposedResponse(path, result, writeContext, writeContext.getResponseObject()
-              .getIdentifier());
-        });
-
-    return createResponseObject(result, parentContext, path);
   }
 
   private Map<String, Object> createResponseObject(Map<String, Object> result, ResponseWriteContext parentContext,
@@ -213,12 +167,7 @@ public class JsonResponseMapper {
     if (result.isEmpty()) {
       return null;
     }
-    List<ResponseWriteContext> children;
-    if (parentContext.isComposedOf()) {
-      children = unwrapComposedSchema(parentContext, pagingEnabled);
-    } else {
-      children = unwrapChildSchema(parentContext, pagingEnabled);
-    }
+    List<ResponseWriteContext> children = createObjectContext(parentContext, pagingEnabled);
 
     /*
      * Objects with an identifying field that have no data are considered null. An identifying field is
@@ -246,9 +195,9 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    Object data = unpackCollectionDAta(parentContext.getData(), parentContext.getResponseObject(), pagingEnabled);
+    Object data = unpackCollectionData(parentContext.getData(), parentContext.getOasField(), pagingEnabled);
     if (Objects.isNull(data)) {
-      return mapDefaultArrayToResponse(parentContext.getResponseObject());
+      return mapDefaultArrayToResponse((OasArrayField) parentContext.getOasField(), path);
     } else if (data instanceof List) {
       return ((List<Object>) data).stream()
           .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData), path))
@@ -262,26 +211,22 @@ public class JsonResponseMapper {
       return null;
     }
 
-    if (Objects.nonNull(parentContext.getResponseObject()
-        .getSummary()
+    if (Objects.nonNull(parentContext.getOasField()
         .getDwsType())) {
       return parentContext.getData();
     }
 
-    if (parentContext.getResponseObject()
-        .getSummary()
-        .getChildren()
+    OasObjectField oasObjectField = (OasObjectField) parentContext.getOasField();
+    if (oasObjectField.getFields()
         .isEmpty()) {
       return parentContext.getData();
     }
 
     Map<String, Object> result = new HashMap<>();
-    parentContext.getResponseObject()
-        .getSummary()
-        .getChildren()
-        .forEach(childSchema -> {
-          var writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
-          addDataToResponse(path, result, childSchema.getIdentifier(), writeContext);
+    oasObjectField.getFields()
+        .forEach((identifier, field) -> {
+          var writeContext = createResponseWriteContextFromChildSchema(parentContext, identifier, field);
+          addDataToResponse(path, result, identifier, writeContext);
         });
 
     return createResponseObject(result, parentContext, path);
@@ -302,94 +247,64 @@ public class JsonResponseMapper {
     return newPath.length() > 0 ? newPath + "." + identifier : identifier;
   }
 
-  Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
+  Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext, String path) {
 
-    SchemaSummary summary = writeContext.getResponseObject()
-        .getSummary();
+    OasField field = writeContext.getOasField();
 
-    if (isDefaultValue(summary)) {
-      return getScalarDefaultValue(writeContext, summary);
+    if (field.hasDefault()) {
+      return getScalarDefaultValue(field, path);
     }
+    return writeContext.getData();
+  }
 
-    if (Objects.isNull(writeContext.getResponseObject()
-        .getSummary()
-        .getDwsExpr())) {
-      return writeContext.getData();
+  Object mapScalarDataExpressionToResponse(@NonNull ResponseWriteContext writeContext, String path) {
+    OasScalarExpressionField field = (OasScalarExpressionField) writeContext.getOasField();
+
+    if (field.hasDefault()) {
+      return getScalarDefaultValue(field, path);
     }
 
     Optional<String> evaluated = evaluateJexl(writeContext);
     if (evaluated.isPresent()) {
       return evaluated.get();
-    }
-
-    if (Objects.nonNull(writeContext.getResponseObject()
-        .getSummary()
-        .getSchema()
-        .getDefault())) {
-      return writeContext.getResponseObject()
-          .getSummary()
-          .getSchema()
-          .getDefault();
+    } else if (field.getDefaultValue() != null) {
+      return field.getDefaultValue();
     }
 
     if (writeContext.isSchemaRequiredNonNillable()) {
       throw mappingException(String.format(
           "Could not create response: required and non-nillable property '%s' expression evaluation returned null.",
-          writeContext.getResponseObject()
-              .getIdentifier()));
+          path));
     }
 
     return null;
   }
 
-  private Object getScalarDefaultValue(@NonNull ResponseWriteContext writeContext, SchemaSummary summary) {
-    Object defaultValue = getDwsExtension(summary.getSchema(), OasConstants.X_DWS_DEFAULT);
+  private Object getScalarDefaultValue(OasField oasField, String path) {
+    Object defaultValue = oasField.getDefaultValue();
+    String oasType;
+    if (oasField.getType() == OasType.SCALAR) {
+      oasType = ((OasScalarField) oasField).getScalarType();
+    } else {
+      oasType = ((OasScalarExpressionField) oasField).getScalarType();
+    }
 
-    String oasType = summary.getSchema()
-        .getType();
     Class<?> typeClass = TYPE_CLASS_MAPPING.get(oasType);
     if (typeClass != null && typeClass.isAssignableFrom(defaultValue.getClass())) {
       return defaultValue;
     }
 
-    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT,
-        writeContext.getResponseObject()
-            .getIdentifier(),
-        summary.getSchema()
-            .getType());
+    throw mappingException("'{}' value for property '{}' not of type '{}'", OasConstants.X_DWS_DEFAULT, path, oasType);
 
   }
 
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
-    unwrapChildSchema(parentContext, pagingEnabled)
-        .forEach(child -> addDataToResponse(path, result, child.getResponseObject()
-            .getIdentifier(), child));
 
-    // for a composed envelope schema, we need to merge the underlying schema's into one result
-    unwrapComposedSchema(parentContext, pagingEnabled).forEach(child -> {
-      String identifier = child.getResponseObject()
-          .getIdentifier();
-      mergeComposedResponse(path, result, child, identifier);
-    });
+    List<ResponseWriteContext> childContexts = createObjectContext(parentContext, pagingEnabled);
+    childContexts.forEach(child -> addDataToResponse(path, result, child.getIdentifier(), child));
 
     return createResponseObject(result, parentContext, path);
-  }
-
-  @SuppressWarnings("unchecked")
-  private void mergeComposedResponse(String path, Map<String, Object> result, ResponseWriteContext child,
-      String identifier) {
-    /*
-     * allOf schemas are merged so that the parent object has the combined propertyset of the distinct
-     * composed schemas directly underneath.
-     */
-    Map<String, Object> childResponse = (Map<String, Object>) mapDataToResponse(child, path);
-
-    if ((result.containsKey(identifier))) {
-      ((Map<String, Object>) result.get(identifier)).putAll(childResponse);
-    } else {
-      addDataToResponse(path, result, identifier, child);
-    }
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
@@ -401,32 +316,22 @@ public class JsonResponseMapper {
   }
 
   private void validateRequiredProperties(ResponseWriteContext context, String path, Map<String, Object> data) {
-    List<ResponseWriteContext> responseWriteContexts;
-    if (context.isComposedOf()) {
-      responseWriteContexts = unwrapComposedSchema(context, pagingEnabled);
-    } else {
-      responseWriteContexts = unwrapChildSchema(context, pagingEnabled);
-    }
+    List<ResponseWriteContext> responseWriteContexts = createObjectContext(context, pagingEnabled);
+
     responseWriteContexts.forEach(writeContext -> {
-      String childIdentifier = writeContext.getResponseObject()
-          .getIdentifier();
+      String childIdentifier = writeContext.getIdentifier();
       boolean isExpanded = isExpanded(context.getParameters(), childPath(path, childIdentifier));
       if (isRequiredOrExpandedAndNullOrEmpty(writeContext, data.get(childIdentifier), isExpanded)
-          && !writeContext.getResponseObject()
-              .getSummary()
+          && !writeContext.getOasField()
               .isNillable()) {
-        throw mappingException(
-            "Could not map GraphQL response: Required and non-nillable "
-                + "property '{}' was not returned in GraphQL response.",
-            writeContext.getResponseObject()
-                .getIdentifier());
+        throw mappingException("Could not map GraphQL response: Required and non-nillable "
+            + "property '{}' was not returned in GraphQL response.", writeContext.getIdentifier());
       }
     });
   }
 
   private Object mapObject(ResponseWriteContext writeContext, Object object, boolean isExpanded) {
-    if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded) && writeContext.getResponseObject()
-        .getSummary()
+    if (isRequiredOrExpandedAndNullOrEmpty(writeContext, object, isExpanded) && writeContext.getOasField()
         .isNillable()) {
       return null;
     }
@@ -477,30 +382,15 @@ public class JsonResponseMapper {
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
 
-    Map<String, String> dwsExprMap = writeContext.getResponseObject()
-        .getSummary()
-        .getDwsExpr();
-    return jexlHelper.evaluateScriptWithFallback(dwsExprMap.get(X_DWS_EXPR_VALUE),
-        dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), context, String.class);
+    OasScalarExpressionField field = (OasScalarExpressionField) writeContext.getOasField();
+    return jexlHelper.evaluateScriptWithFallback(field.getExpression(), field.getFallbackValue(), context,
+        String.class);
   }
 
-  private String addToPath(String path, ResponseObject responseObject, boolean canAddArray) {
-    if ((!Objects.equals(ARRAY_TYPE, responseObject.getSummary()
-        .getType()) || canAddArray) && (!responseObject.getSummary()
-            .isTransient() || isDefaultValue(responseObject.getSummary()))) {
-      return getPathString(path, responseObject);
+  private String addToPath(String path, OasField oasField, String identifier, boolean canAddArray) {
+    if ((!oasField.isArray() || canAddArray) && (!oasField.isTransient() || oasField.hasDefault())) {
+      return getPathString(path, identifier);
     }
     return path;
-  }
-
-  private boolean isDefaultValue(@NonNull SchemaSummary schemaSummary) {
-    Schema<?> schema = schemaSummary.getSchema();
-
-    if (schema == null) {
-      return false;
-    }
-
-    return isTransient(schema) && getDwsExtension(schema, OasConstants.X_DWS_EXPR) == null
-        && getDwsExtension(schema, OasConstants.X_DWS_DEFAULT) != null;
   }
 }

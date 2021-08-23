@@ -60,13 +60,13 @@ import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyH
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseHeader;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilderTest;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
-import org.dotwebstack.framework.service.openapi.response.SchemaSummary;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -535,9 +535,6 @@ class CoreRequestHandlerTest {
 
     responseTemplates.add(ResponseTemplate.builder()
         .mediaType(MediaType.APPLICATION_JSON)
-        .responseObject(ResponseObject.builder()
-            .summary(schemaSummaryBuilder())
-            .build())
         .responseCode(303)
         .responseHeaders(responseHeaders)
         .build());
@@ -547,19 +544,14 @@ class CoreRequestHandlerTest {
 
   private ResponseTemplate.ResponseTemplateBuilder getTypedResponseTemplateBuilder(MediaType mediaType) {
     return ResponseTemplate.builder()
-        .responseObject(ResponseObject.builder()
-            .summary(schemaSummaryBuilder())
-            .build())
         .responseCode(200)
+        .responseField(buildOasField())
         .responseHeaders(new HashMap<>())
         .mediaType(mediaType);
   }
 
-  private SchemaSummary schemaSummaryBuilder() {
-    return SchemaSummary.builder()
-        .isTransient(false)
-        .required(false)
-        .build();
+  private OasField buildOasField() {
+    return new OasObjectField(false, true, Map.of(), false, null);
   }
 
 }
