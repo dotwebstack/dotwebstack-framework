@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response.oas;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.List;
