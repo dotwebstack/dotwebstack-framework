@@ -26,7 +26,7 @@ public class OasFieldBuilder {
 
   private final OpenAPI openApi;
 
-  private Map<String, OasField> resolvedMap;
+  private final Map<String, OasField> resolvedMap;
 
   public OasFieldBuilder(OpenAPI openApi) {
     this.openApi = openApi;

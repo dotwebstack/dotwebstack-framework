@@ -24,7 +24,7 @@ public class OasToGraphQlHelper {
 
   public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
       @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
-    var responseObject = responseTemplate.getResponseObject();
+    var responseObject = responseTemplate.getResponseField();
 
     if (responseObject == null) {
       return Optional.empty();

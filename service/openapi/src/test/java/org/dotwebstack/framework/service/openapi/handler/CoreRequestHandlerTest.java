@@ -545,7 +545,7 @@ class CoreRequestHandlerTest {
   private ResponseTemplate.ResponseTemplateBuilder getTypedResponseTemplateBuilder(MediaType mediaType) {
     return ResponseTemplate.builder()
         .responseCode(200)
-        .responseObject(buildOasField())
+        .responseField(buildOasField())
         .responseHeaders(new HashMap<>())
         .mediaType(mediaType);
   }

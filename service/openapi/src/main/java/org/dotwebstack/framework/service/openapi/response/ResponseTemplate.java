@@ -16,7 +16,7 @@ public class ResponseTemplate {
 
   private MediaType mediaType;
 
-  private OasField responseObject;
+  private OasField responseField;
 
   private Map<String, ResponseHeader> responseHeaders;
 

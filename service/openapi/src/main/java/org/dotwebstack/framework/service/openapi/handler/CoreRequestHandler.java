@@ -297,8 +297,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       ResponseTemplate template) {
     var uri = request.uri();
 
-    if (Objects.nonNull(template.getResponseObject())) {
-      var responseWriteContext = createNewResponseWriteContext(template.getResponseObject(), "root", data, inputParams,
+    if (Objects.nonNull(template.getResponseField())) {
+      var responseWriteContext = createNewResponseWriteContext(template.getResponseField(), "root", data, inputParams,
           createNewDataStack(new ArrayDeque<>(), data, inputParams), uri);
 
       return jsonResponseMapper.toResponse(responseWriteContext);

@@ -51,7 +51,7 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(MediaType.valueOf("application/hal+json"), okResponse.getMediaType());
     assertEquals(200, okResponse.getResponseCode());
-    assertEquals(OasType.OBJECT, okResponse.getResponseObject()
+    assertEquals(OasType.OBJECT, okResponse.getResponseField()
         .getType());
   }
 
@@ -109,9 +109,9 @@ public class ResponseTemplateBuilderTest {
     assertEquals(2, templates.size());
     ResponseTemplate responseTemplate = templates.get(0);
 
-    assertEquals(OasType.OBJECT, responseTemplate.getResponseObject()
+    assertEquals(OasType.OBJECT, responseTemplate.getResponseField()
         .getType());
-    assertEquals(2, ((OasObjectField) responseTemplate.getResponseObject()).getFields()
+    assertEquals(2, ((OasObjectField) responseTemplate.getResponseField()).getFields()
         .size());
   }
 
@@ -183,7 +183,7 @@ public class ResponseTemplateBuilderTest {
 
     assertEquals(1, responseTemplates.size());
     assertEquals("customType", responseTemplates.get(0)
-        .getResponseObject()
+        .getResponseField()
         .getDwsType());
   }
 
@@ -276,7 +276,7 @@ public class ResponseTemplateBuilderTest {
     assertNotNull(templates);
     assertEquals(1, templates.size());
     OasObjectField oasfield = (OasObjectField) templates.get(0)
-        .getResponseObject();
+        .getResponseField();
     assertEquals(2, oasfield.getFields()
         .size());
     OasField prop2 = oasfield.getFields()
