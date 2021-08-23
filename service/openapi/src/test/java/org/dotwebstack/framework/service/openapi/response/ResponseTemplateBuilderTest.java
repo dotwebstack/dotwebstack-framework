@@ -160,7 +160,6 @@ public class ResponseTemplateBuilderTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void build_throwsException_MissingExtensionsInHeaderSchema() {
     this.openApi.getPaths()
         .get("/query6")

@@ -157,7 +157,6 @@ public class OasFieldBuilder {
     return objectField;
   }
 
-  @SuppressWarnings("unchecked")
   private Object getExtension(Schema<?> schema, String key) {
     if (schema.getExtensions() != null) {
       return schema.getExtensions()
@@ -184,7 +183,10 @@ public class OasFieldBuilder {
   }
 
   private boolean isNillable(Schema<?> schema) {
-    return schema.getNullable() != null ? schema.getNullable() : false;
+    if (schema.getNullable() != null) {
+      return schema.getNullable();
+    }
+    return false;
   }
 
   private boolean isArray(Schema<?> schema) {

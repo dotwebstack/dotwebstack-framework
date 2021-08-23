@@ -140,7 +140,6 @@ public class ResponseTemplateBuilder {
     return result != null ? result : false;
   }
 
-  @SuppressWarnings("rawtypes")
   private OasField getResponseObject(OpenAPI openApi, MediaType content) {
     OasFieldBuilder builder = new OasFieldBuilder(openApi);
     OasField responseObject = null;
