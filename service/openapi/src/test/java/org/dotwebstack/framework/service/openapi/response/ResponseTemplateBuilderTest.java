@@ -159,6 +159,7 @@ public class ResponseTemplateBuilderTest {
         () -> getResponseTemplates(this.openApi, "/query6", HttpMethod.GET));
   }
 
+  @SuppressWarnings("rawtypes")
   @Test
   void build_throwsException_MissingExtensionsInHeaderSchema() {
     this.openApi.getPaths()
