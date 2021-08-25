@@ -107,6 +107,72 @@ components:
           type: string
         streetAddress:
           type: string
+    GeoBody:
+      type: object
+      description: Geo body
+      properties:
+        _geo:
+          $ref: '#/components/schemas/Geo'
+    Geo:
+      type: object
+      description: Geo body content
+      oneOf:
+        - $ref: '#/components/schemas/Intersects'
+        - $ref: '#/components/schemas/Contains'
+        - $ref: '#/components/schemas/Within'
+    Intersects:
+      type: object
+      description: >-
+        'overlapt' en 'raakt' vallen hieronder
+      properties:
+        intersects:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+    Contains:
+      type: object
+      description: Omsluit volledig
+      properties:
+        contains:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+    Within:
+      type: object
+      description: Valt volledig binnen
+      properties:
+        within:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+    GeoJSONGeometry:
+      x-dws-type: geometry
+      title: GeoJSONGeometry
+      type: object
+      discriminator:
+        propertyName: type
+      oneOf:
+        - $ref: '#/components/schemas/Point'
+        - $ref: '#/components/schemas/MultiPoint'
+        - $ref: '#/components/schemas/LineString'
+        - $ref: '#/components/schemas/MultiLineString'
+        - $ref: '#/components/schemas/Polygon'
+        - $ref: '#/components/schemas/MultiPolygon'
+      example:
+        type: Polygon
+        coordinates:
+          - - - 5.955381012
+              - 52.179015422
+            - - 5.955381012
+              - 52.183396603
+            - - 5.96179731
+              - 52.183396603
+            - - 5.96179731
+              - 52.179015422
+            - - 5.955381012
+              - 52.179015422
+  requestBodies:
+    GeoBody:
+      x-dws-type: geometry
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GeoBody'
 
 paths:
   /breweries:
@@ -118,10 +184,11 @@ paths:
           offset: $query.page
         filters:
           breweries:
-            type: BreweryFilter
+            type: GeoFilter
             fields:
-              name:
-                in: $query.name
+              geometry:
+                contains:
+                  fromGeoJson: $post._geo
       parameters:
         - name: expand
           x-dws-type: expand
@@ -203,6 +270,29 @@ paths:
 #              schema:
 #                type: integer
 #                x-dws-expr: args.page
+    post:
+      x-dws-query:
+        field: breweries
+        filters:
+          breweries:
+            type: BreweryFilter
+            fields:
+              geometry:
+                contains:
+                  fromGeoJSON: $body._geo.contains!
+                intersects:
+                  fromGeoJSON: $body._geo.intersects!
+                within:
+                  fromGeoJSON: $body._geo.within!
+      requestBody:
+        $ref: '#/components/requestBodies/GeoBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
   /brewery/{identifier}:
     get:
       x-dws-query:

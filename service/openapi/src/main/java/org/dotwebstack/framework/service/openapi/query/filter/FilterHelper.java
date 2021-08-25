@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query.filter;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.query.FieldHelper.resolveField;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,19 +69,45 @@ public class FilterHelper {
         .stream()
         .map(e -> {
           Object value = e.getValue();
+          boolean required = false;
           if (value instanceof String && ((String) value).startsWith("$")) {
             String[] split = ((String) value).split("\\.");
-            String name = split[1];
-            value = inputParams.get(name);
+            String name = split[split.length - 1];
+            if (name.endsWith("!")) {
+              required = true;
+            }
+            value = getObject(inputParams, Arrays.copyOfRange(split, 1, split.length));
           } else if (value instanceof Map) {
             value = resolveVariables((Map<?, ?>) value, inputParams);
           }
-
-          return value != null ? Map.entry(e.getKey(), value) : null;
+          if (required && value == null) {
+            return null;
+          } else {
+            return value != null ? Map.entry(e.getKey(), value) : null;
+          }
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     return result.isEmpty() ? null : result;
+  }
+
+  private static Object getObject(Map<String, ?> map, String[] path) {
+    Map<String, ?> search = map;
+    Object result = null;
+    for (int i = 0; i < path.length; i++) {
+      String pathEntry = path[i];
+      if (pathEntry.endsWith("!")) {
+        pathEntry = pathEntry.substring(0, pathEntry.length() - 1);
+      }
+      result = search.get(pathEntry);
+
+      if (result instanceof Map<?, ?> && i < path.length - 1) {
+        search = (Map<String, ?>) result;
+      } else if (result != null && i < path.length - 1) {
+        throw illegalStateException("path item {} from path {} does not point to a map", pathEntry, path);
+      }
+    }
+    return result;
   }
 
   private static Set<Key> getKeys(Map<String, String> keyMap, Map<String, Object> inputParams) {
