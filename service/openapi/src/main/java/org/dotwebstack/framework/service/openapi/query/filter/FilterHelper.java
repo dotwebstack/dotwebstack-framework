@@ -17,7 +17,9 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlFilter;
@@ -26,13 +28,17 @@ import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryFilte
 
 public class FilterHelper {
 
-  private JexlHelper jexlHelper;
+  private final JexlHelper jexlHelper;
+
+  private final JexlContext jexlContext;
 
   private final Map<String, Object> inputParams;
 
   public FilterHelper(@NonNull JexlEngine jexlEngine, @NonNull Map<String, Object> inputParams) {
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.inputParams = inputParams;
+    this.jexlContext = new MapContext();
+    initJexlContext();
   }
 
   public void addKeys(@NonNull GraphQlQuery query, @NonNull Map<String, String> keyMap) {
@@ -83,7 +89,7 @@ public class FilterHelper {
       Optional<VariableLeaf> variableLeafOptional = getVariableLeaf(value);
       if (variableLeafOptional.isPresent()) {
         VariableLeaf variableLeaf = variableLeafOptional.get();
-        Object resolvedValue = null;
+        Object resolvedValue;
         if (variableLeaf.isExpression) {
           resolvedValue = getExpressionValue(variableLeaf.getValue());
         } else {
@@ -96,7 +102,7 @@ public class FilterHelper {
           return null;
         }
       } else if (value instanceof Map) {
-        Map<?, ?> children = resolveVariables((Map) value);
+        Map<?, ?> children = resolveVariables((Map<?, ?>) value);
         if (children != null) {
           result.put(key, children);
         }
@@ -106,7 +112,8 @@ public class FilterHelper {
   }
 
   private Object getExpressionValue(String expression) {
-    return expression; // TODO evaluate
+    return this.jexlHelper.evaluateExpression(expression, jexlContext, Object.class)
+        .orElse(null);
   }
 
   private static Optional<VariableLeaf> getVariableLeaf(Object o) {
@@ -183,6 +190,14 @@ public class FilterHelper {
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
+  }
+
+  protected void initJexlContext() {
+    // until params are grouped by origin, make params available under each origin
+    jexlContext.set("$body", inputParams);
+    jexlContext.set("$query", inputParams);
+    jexlContext.set("$path", inputParams);
+    jexlContext.set("$header", inputParams);
   }
 
 }
