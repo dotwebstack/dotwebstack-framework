@@ -279,9 +279,11 @@ paths:
             fields:
               geometry:
                 contains:
-                  fromGeoJSON: $body._geo.contains!
+                  fromGeoJSON:
+                    x-dws-expr: "asJson($body._geo.contains)!"
                 intersects:
-                  fromGeoJSON: $body._geo.intersects!
+                  fromGeoJSON:
+                    x-dws-expr: "asJson($body._geo.intersects)!"
                 within:
                   fromGeoJSON: $body._geo.within!
       requestBody:
