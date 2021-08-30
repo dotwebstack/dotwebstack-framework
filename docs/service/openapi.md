@@ -217,6 +217,34 @@ The following describes a `BreweryFilter` type filter on the `breweries` node on
 ```
 With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
 
+#### Required values
+A path value may be annotated with a `!`, indicating that the value is required for the parent element in the path. The following configuration specifies that `$path.name` is required:
+```yaml
+    x-dws-query:
+      field: breweries
+      filters:
+        breweries:
+          type: BreweryFilter
+          fields:
+            name:
+              in: $query.name
+              eq: $path.name!
+```
+If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is provided.
+
+#### Expressions
+A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate the `name` field of the graphQL filter with the uppercase of the`$body.name` parameter.
+```yaml
+    x-dws-query:
+      field: breweries
+      filters:
+        breweries:
+          type: BreweryFilter
+          fields:
+            name:
+              x-dws-expr: '$body.name.toUpperCase()'
+```
+
 ## Paging
 The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
 ```yaml
