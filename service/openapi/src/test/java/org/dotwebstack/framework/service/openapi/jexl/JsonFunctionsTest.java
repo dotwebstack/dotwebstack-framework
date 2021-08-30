@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Test;
 class JsonFunctionsTest {
 
   @Test
-  public void toJson_returnsNull_forNullInput() {
+  void toJson_returnsNull_forNullInput() {
     assertNull(new JsonFunctions().asString(null));
   }
 
   @Test
-  public void toJson_returnsExpectedValue() {
+  void toJson_returnsExpectedValue() {
     Map<String, Object> input = new TreeMap<>();
     input.put("key1", List.of("v1", "v2"));
     input.put("key2", 2);
