@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -28,6 +29,7 @@ import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuil
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,12 +47,18 @@ class QueryBuilderTest {
   @Mock
   private DotWebStackConfiguration config;
 
-  @Mock
   private JexlEngine jexlEngine;
 
   @BeforeAll
   static void init() {
     openApi = TestResources.openApi();
+  }
+
+  @BeforeEach
+  void initMocks() {
+    this.jexlEngine = new JexlBuilder().silent(false)
+        .strict(true)
+        .create();
   }
 
   @ParameterizedTest(name = "{5}")
@@ -119,7 +127,13 @@ class QueryBuilderTest {
             "query with paging without offset/first input"),
         Arguments.arguments("/query17", "query17", loadQuery("query17_with_input.txt"),
             Map.of("pageSize", "10", "page", "2", "pageSize2", "20", "page2", "1"), null,
-            "query with paging with offset/first input"));
+            "query with paging with offset/first input"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
+            Map.of("o3_prop1", "val1", "o3_prop3", "val2"), loadVariables("query4.txt"),
+            "query with missing required path"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
+            Map.of("o3_prop1", "val1", "o3_prop3", "val2", "o3_prop2", "val3"), loadVariables("query4_expression.txt"),
+            "query with expression and required path"));
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {

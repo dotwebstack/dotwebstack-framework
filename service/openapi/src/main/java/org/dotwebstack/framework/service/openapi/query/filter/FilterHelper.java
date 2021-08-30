@@ -86,19 +86,11 @@ public class FilterHelper {
     for (Map.Entry<?, ?> entry : tree.entrySet()) {
       Object value = entry.getValue();
       Object key = entry.getKey();
-      Optional<VariableLeaf> variableLeafOptional = getVariableLeaf(value);
-      if (variableLeafOptional.isPresent()) {
-        VariableLeaf variableLeaf = variableLeafOptional.get();
-        Object resolvedValue;
-        if (variableLeaf.isExpression) {
-          resolvedValue = getExpressionValue(variableLeaf.getValue());
-        } else {
-          String[] split = ((String) value).split("\\.");
-          resolvedValue = getObject(inputParams, Arrays.copyOfRange(split, 1, split.length));
-        }
-        if (resolvedValue != null) {
-          result.put(key, resolvedValue);
-        } else if (variableLeaf.isRequired()) {
+      Optional<FilterLeaf> filterLeafOptional = getVariableLeaf(value);
+      if (filterLeafOptional.isPresent()) {
+        FilterLeaf filterLeaf = filterLeafOptional.get();
+        boolean resolved = resolveLeaf(result, value, key, filterLeaf);
+        if (!resolved && filterLeaf.isRequired()) {
           return null;
         }
       } else if (value instanceof Map) {
@@ -111,12 +103,26 @@ public class FilterHelper {
     return result.isEmpty() ? null : result;
   }
 
+  private boolean resolveLeaf(Map<Object, Object> result, Object value, Object key, FilterLeaf filterLeaf) {
+    Object resolvedValue;
+    if (filterLeaf.isExpression) {
+      resolvedValue = getExpressionValue(filterLeaf.getValue());
+    } else {
+      String[] split = ((String) value).split("\\.");
+      resolvedValue = getObject(inputParams, Arrays.copyOfRange(split, 1, split.length));
+    }
+    if (resolvedValue != null) {
+      result.put(key, resolvedValue);
+    }
+    return resolvedValue != null;
+  }
+
   private Object getExpressionValue(String expression) {
     return this.jexlHelper.evaluateExpression(expression, jexlContext, Object.class)
         .orElse(null);
   }
 
-  private static Optional<VariableLeaf> getVariableLeaf(Object o) {
+  private static Optional<FilterLeaf> getVariableLeaf(Object o) {
     String value = null;
     boolean required = false;
     boolean isExpression = false;
@@ -134,7 +140,7 @@ public class FilterHelper {
         required = true;
         value = value.substring(0, value.length() - 1);
       }
-      return Optional.of(VariableLeaf.builder()
+      return Optional.of(FilterLeaf.builder()
           .value(value)
           .required(required)
           .isExpression(isExpression)
@@ -146,7 +152,7 @@ public class FilterHelper {
 
   @Data
   @Builder
-  private static class VariableLeaf {
+  private static class FilterLeaf {
     private String value;
 
     private boolean required;
@@ -155,7 +161,7 @@ public class FilterHelper {
   }
 
   @SuppressWarnings("unchecked")
-  private Object getObject(Map<String, ?> map, String[] path) {
+  private static Object getObject(Map<String, ?> map, String[] path) {
     Map<String, ?> search = map;
     Object result = null;
     for (int i = 0; i < path.length; i++) {
