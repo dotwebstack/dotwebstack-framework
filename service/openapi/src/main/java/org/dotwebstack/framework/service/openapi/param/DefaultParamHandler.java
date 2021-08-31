@@ -274,7 +274,7 @@ public class DefaultParamHandler implements ParamHandler {
       case OBJECT_TYPE:
         return deserializeObject(parameter, schema, paramValue);
       default:
-        return cast(paramValue, schema);
+        return cast((String) paramValue, schema);
     }
   }
 
@@ -370,7 +370,7 @@ public class DefaultParamHandler implements ParamHandler {
     return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
   }
 
-  private Object getHeaderParam(Parameter parameter, ServerRequest request) {
+  private String getHeaderParam(Parameter parameter, ServerRequest request) {
     List<String> result = request.headers()
         .header(parameter.getName());
     if (!result.isEmpty()) {

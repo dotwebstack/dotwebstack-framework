@@ -2,13 +2,17 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,15 +23,39 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ParamValueCasterTest {
 
-
   @ParameterizedTest
   @MethodSource("castScalarArguments")
-  void castValue(Object value, Schema<?> schema, Object expectedResult) {
+  void cast_returnsExpectedValue(String value, Schema<?> schema, Object expectedResult) {
     Object result = ParamValueCaster.cast(value, schema);
 
     assertThat(result, is(expectedResult));
   }
 
+  @Test
+  void castArray_returnsExpectedValue() {
+    List<Object> result = ParamValueCaster.castArray(new String[] {"1", "2", "3"}, mockSchema("integer", "int32"));
+
+    assertThat(result, is(List.of(1, 2, 3)));
+  }
+
+  @Test
+  void castList_returnsExpectedValue() {
+    List<Object> result = ParamValueCaster.castList(List.of("1", "2", "3"), mockSchema("integer", "int64"));
+
+    assertThat(result, is(List.of(1L, 2L, 3L)));
+  }
+
+  @Test
+  void cast_throwsException_forInvalidNumber() {
+    assertThrows(ParameterValidationException.class,
+        () -> ParamValueCaster.cast("string", mockSchema("integer", "int64")));
+  }
+
+  @Test
+  void cast_throwsException_forIllegalInput() {
+    assertThrows(IllegalArgumentException.class,
+        () -> ParamValueCaster.cast("string", mockSchema("integer", "notaformat")));
+  }
 
   private static Stream<Arguments> castScalarArguments() {
     return Stream.of(Arguments.of("string", mockSchema("string", null), "string"),

@@ -19,7 +19,7 @@ public class ParamValueCaster {
 
   private ParamValueCaster() {}
 
-  public static Object cast(Object value, @NonNull Schema<?> schema) {
+  public static Object cast(String value, @NonNull Schema<?> schema) {
     if (value == null) {
       return null;
     }
@@ -28,19 +28,19 @@ public class ParamValueCaster {
     }
     try {
       if (NUMBER_TYPE.equals(schema.getType()) && "float".equals(schema.getFormat())) {
-        return Float.parseFloat((String) value);
+        return Float.parseFloat(value);
       } else if (NUMBER_TYPE.equals(schema.getType()) && "double".equals(schema.getFormat())) {
-        return Double.parseDouble((String) value);
+        return Double.parseDouble(value);
       } else if (NUMBER_TYPE.equals(schema.getType()) && schema.getFormat() == null) {
-        return new BigDecimal((String) value);
+        return new BigDecimal(value);
       } else if ("integer".equals(schema.getType()) && "int64".equals(schema.getFormat())) {
-        return Long.parseLong((String) value);
+        return Long.parseLong(value);
       } else if ("integer".equals(schema.getType()) && "int32".equals(schema.getFormat())) {
-        return Integer.parseInt((String) value);
+        return Integer.parseInt(value);
       } else if ("integer".equals(schema.getType()) && schema.getFormat() == null) {
-        return new BigInteger((String) value);
+        return new BigInteger(value);
       } else if ("boolean".equals(schema.getType())) {
-        return Boolean.parseBoolean((String) value);
+        return Boolean.parseBoolean(value);
       } else {
         throw illegalArgumentException("Could not cast scalar value [{}] with schema type [{}] " + "and format {}",
             value, schema.getType(), schema.getFormat());
@@ -52,13 +52,13 @@ public class ParamValueCaster {
 
   }
 
-  public static ImmutableList<Object> castList(@NonNull List<?> list, @NonNull Schema<?> schema) {
+  public static ImmutableList<Object> castList(@NonNull List<String> list, @NonNull Schema<?> schema) {
     return list.stream()
         .map(i -> cast(i, schema))
         .collect(collectingAndThen(toList(), ImmutableList::copyOf));
   }
 
-  public static ImmutableList<Object> castArray(@NonNull Object[] array, @NonNull Schema<?> schema) {
+  public static ImmutableList<Object> castArray(@NonNull String[] array, @NonNull Schema<?> schema) {
     return castList(Arrays.asList(array), schema);
   }
 }
