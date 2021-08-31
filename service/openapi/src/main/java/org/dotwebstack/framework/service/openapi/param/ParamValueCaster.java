@@ -17,6 +17,8 @@ public class ParamValueCaster {
 
   public static final String NUMBER_TYPE = "number";
 
+  public static final String INTEGER_TYPE = "integer";
+
   private ParamValueCaster() {}
 
   public static Object cast(String value, @NonNull Schema<?> schema) {
@@ -27,23 +29,16 @@ public class ParamValueCaster {
       return value;
     }
     try {
-      if (NUMBER_TYPE.equals(schema.getType()) && "float".equals(schema.getFormat())) {
-        return Float.parseFloat(value);
-      } else if (NUMBER_TYPE.equals(schema.getType()) && "double".equals(schema.getFormat())) {
-        return Double.parseDouble(value);
-      } else if (NUMBER_TYPE.equals(schema.getType()) && schema.getFormat() == null) {
-        return new BigDecimal(value);
-      } else if ("integer".equals(schema.getType()) && "int64".equals(schema.getFormat())) {
-        return Long.parseLong(value);
-      } else if ("integer".equals(schema.getType()) && "int32".equals(schema.getFormat())) {
-        return Integer.parseInt(value);
-      } else if ("integer".equals(schema.getType()) && schema.getFormat() == null) {
-        return new BigInteger(value);
-      } else if ("boolean".equals(schema.getType())) {
-        return Boolean.parseBoolean(value);
-      } else {
-        throw illegalArgumentException("Could not cast scalar value [{}] with schema type [{}] " + "and format {}",
-            value, schema.getType(), schema.getFormat());
+      switch (schema.getType()) {
+        case NUMBER_TYPE:
+          return castNumber(value, schema.getFormat());
+        case INTEGER_TYPE:
+          return castInteger(value, schema.getFormat());
+        case "boolean":
+          return Boolean.parseBoolean(value);
+        default:
+          throw illegalArgumentException("Could not cast scalar value [{}] with schema type [{}] " + "and format [{}]",
+              value, schema.getType(), schema.getFormat());
       }
     } catch (NumberFormatException e) {
       throw parameterValidationException("Could not cast scalar value [{}] with schema type [{}] " + "and format {}",
@@ -60,5 +55,29 @@ public class ParamValueCaster {
 
   public static ImmutableList<Object> castArray(@NonNull String[] array, @NonNull Schema<?> schema) {
     return castList(Arrays.asList(array), schema);
+  }
+
+  private static Object castNumber(String value, String format) {
+    if ("float".equals(format)) {
+      return Float.parseFloat(value);
+    } else if ("double".equals(format)) {
+      return Double.parseDouble(value);
+    } else if (format == null) {
+      return new BigDecimal(value);
+    } else {
+      throw illegalArgumentException("Unsupported format [{}] for number type", format);
+    }
+  }
+
+  private static Object castInteger(String value, String format) {
+    if ("int64".equals(format)) {
+      return Long.parseLong(value);
+    } else if ("int32".equals(format)) {
+      return Integer.parseInt(value);
+    } else if (format == null) {
+      return new BigInteger(value);
+    } else {
+      throw illegalArgumentException("Unsupported format [{}] for integer type", format);
+    }
   }
 }

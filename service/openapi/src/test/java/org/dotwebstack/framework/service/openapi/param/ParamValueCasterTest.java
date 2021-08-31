@@ -47,14 +47,14 @@ class ParamValueCasterTest {
 
   @Test
   void cast_throwsException_forInvalidNumber() {
-    assertThrows(ParameterValidationException.class,
-        () -> ParamValueCaster.cast("string", mockSchema("integer", "int64")));
+    Schema<?> schema = mockSchema("integer", "int64");
+    assertThrows(ParameterValidationException.class, () -> ParamValueCaster.cast("string", schema));
   }
 
   @Test
   void cast_throwsException_forIllegalInput() {
-    assertThrows(IllegalArgumentException.class,
-        () -> ParamValueCaster.cast("string", mockSchema("integer", "notaformat")));
+    Schema<?> schema = mockSchema("integer", "notaformat");
+    assertThrows(IllegalArgumentException.class, () -> ParamValueCaster.cast("string", schema));
   }
 
   private static Stream<Arguments> castScalarArguments() {
