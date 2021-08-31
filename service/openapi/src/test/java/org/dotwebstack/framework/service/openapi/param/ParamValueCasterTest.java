@@ -52,13 +52,20 @@ class ParamValueCasterTest {
   }
 
   @Test
-  void cast_throwsException_forIllegalInput() {
+  void cast_throwsException_forIllegalFormat() {
     Schema<?> schema = mockSchema("integer", "notaformat");
     assertThrows(IllegalArgumentException.class, () -> ParamValueCaster.cast("string", schema));
   }
 
+  @Test
+  void cast_throwsException_forIllegalType() {
+    Schema<?> schema = mockSchema("notatype", null);
+    assertThrows(IllegalArgumentException.class, () -> ParamValueCaster.cast("string", schema));
+  }
+
   private static Stream<Arguments> castScalarArguments() {
-    return Stream.of(Arguments.of("string", mockSchema("string", null), "string"),
+    return Stream.of(Arguments.of(null, mockSchema("string", null), null),
+        Arguments.of("string", mockSchema("string", null), "string"),
         Arguments.of("1.4", mockSchema("number", "float"), 1.4f),
         Arguments.of("1.4", mockSchema("number", "double"), 1.4d),
         Arguments.of("1.4", mockSchema("number", null), new BigDecimal("1.4")),
