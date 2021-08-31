@@ -249,7 +249,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_forTypeInteger() {
-    mockParameterHeader("test_integer", "42", TYPE_INTEGER, null, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_integer", "42", TYPE_INTEGER, null, "int32", false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 

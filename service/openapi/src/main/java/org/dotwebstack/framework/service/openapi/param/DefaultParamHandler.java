@@ -83,7 +83,6 @@ public class DefaultParamHandler implements ParamHandler {
     if (Objects.nonNull(paramValue)) {
       Object convertedValue = deserialize(parameter, paramValue);
       validateValues(convertedValue, parameter);
-      // convertedValue = castValue(convertedValue, parameter);
       return Optional.of(convertedValue);
     } else {
       Optional<Object> defaultValue = getDefault(parameter);

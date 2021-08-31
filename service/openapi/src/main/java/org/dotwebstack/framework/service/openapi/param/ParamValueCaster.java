@@ -8,13 +8,18 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import lombok.NonNull;
 
 public class ParamValueCaster {
 
+  public static final String NUMBER_TYPE = "number";
 
-  public static Object cast(Object value, Schema<?> schema) {
+  private ParamValueCaster() {}
+
+  public static Object cast(Object value, @NonNull Schema<?> schema) {
     if (value == null) {
       return null;
     }
@@ -22,17 +27,18 @@ public class ParamValueCaster {
       return value;
     }
     try {
-      if ("number".equals(schema.getType()) && "float".equals(schema.getType())) {
+      if (NUMBER_TYPE.equals(schema.getType()) && "float".equals(schema.getFormat())) {
         return Float.parseFloat((String) value);
-      } else if ("number".equals(schema.getType()) && "double".equals(schema.getType())) {
+      } else if (NUMBER_TYPE.equals(schema.getType()) && "double".equals(schema.getFormat())) {
         return Double.parseDouble((String) value);
-      } else if ("number".equals(schema.getType()) && "int64".equals(schema.getType())) {
-        return Long.parseLong((String) value);
-      } else if ("integer".equals(schema.getType())
-          || ("number".equals(schema.getType()) && "int32".equals(schema.getType()))) {
-        return Integer.parseInt((String) value);
-      } else if ("number".equals(schema.getType())) {
+      } else if (NUMBER_TYPE.equals(schema.getType()) && schema.getFormat() == null) {
         return new BigDecimal((String) value);
+      } else if ("integer".equals(schema.getType()) && "int64".equals(schema.getFormat())) {
+        return Long.parseLong((String) value);
+      } else if ("integer".equals(schema.getType()) && "int32".equals(schema.getFormat())) {
+        return Integer.parseInt((String) value);
+      } else if ("integer".equals(schema.getType()) && schema.getFormat() == null) {
+        return new BigInteger((String) value);
       } else if ("boolean".equals(schema.getType())) {
         return Boolean.parseBoolean((String) value);
       } else {
@@ -46,13 +52,13 @@ public class ParamValueCaster {
 
   }
 
-  public static ImmutableList<?> castList(List<?> list, Schema<?> schema) {
+  public static ImmutableList<Object> castList(@NonNull List<?> list, @NonNull Schema<?> schema) {
     return list.stream()
         .map(i -> cast(i, schema))
         .collect(collectingAndThen(toList(), ImmutableList::copyOf));
   }
 
-  public static ImmutableList<?> castArray(Object[] array, Schema<?> schema) {
+  public static ImmutableList<Object> castArray(@NonNull Object[] array, @NonNull Schema<?> schema) {
     return castList(Arrays.asList(array), schema);
   }
 }
