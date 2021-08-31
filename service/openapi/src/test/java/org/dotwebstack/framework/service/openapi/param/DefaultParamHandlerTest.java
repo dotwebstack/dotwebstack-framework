@@ -20,8 +20,11 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -75,7 +78,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromPathParam() throws ParameterValidationException {
-    mockParameterPath("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v1", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -84,7 +87,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParam() throws ParameterValidationException {
-    mockParameterQuery("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterQuery("test", "v1", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -93,7 +96,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryHeader() throws ParameterValidationException {
-    mockParameterHeader("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test", "v1", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -102,7 +105,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromPathParamArraySimple() throws ParameterValidationException {
-    mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -111,7 +114,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromPathParamArrayForm() throws ParameterValidationException {
-    mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
+    mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.FORM);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -120,7 +123,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromPathParamArraySpaceDelim() throws ParameterValidationException {
-    mockParameterPath("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
+    mockParameterPath("test", "v1 v2 v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -129,7 +132,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromPathParamArrayPipeDelim() throws ParameterValidationException {
-    mockParameterPath("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockParameterPath("test", "v1|v2|v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -138,7 +141,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryhParamArraySimple() throws ParameterValidationException {
-    mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -147,7 +150,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParamArrayForm() throws ParameterValidationException {
-    mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
+    mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.FORM);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -156,7 +159,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParamArraySpaceDelim() throws ParameterValidationException {
-    mockParameterQuery("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
+    mockParameterQuery("test", "v1 v2 v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -165,7 +168,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParamArrayPipeDelim() throws ParameterValidationException {
-    mockParameterQuery("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockParameterQuery("test", "v1|v2|v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -174,7 +177,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromHeaderParamArraySimple() throws ParameterValidationException {
-    mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -183,7 +186,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromHeaderParamArrayForm() throws ParameterValidationException {
-    mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
+    mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.FORM);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -192,7 +195,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromHeaderParamArraySpaceDelim() throws ParameterValidationException {
-    mockParameterHeader("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
+    mockParameterHeader("test", "v1 v2 v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -201,7 +204,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromHeaderParamArrayPipeDelim() throws ParameterValidationException {
-    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -210,7 +213,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_forArrayEnumCheck() throws ParameterValidationException {
-    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.PIPEDELIMITED);
     mockArrayEnum(asList("v1", "v2", "v3", "v4"));
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
@@ -220,7 +223,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_forArrayEnumCheck() {
-    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, TYPE_STRING, false, Parameter.StyleEnum.PIPEDELIMITED);
     mockArrayEnum(asList("v1", "v2"));
 
     assertThrows(ParameterValidationException.class,
@@ -229,7 +232,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_forTypeValidationDateCheck() {
-    mockParameterHeader("test_date", "2019-03-99", TYPE_STRING, FORMAT_DATE, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_date", "2019-03-99", TYPE_STRING, null, FORMAT_DATE, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -237,7 +240,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_forTypeValidationDateTimeCheck() {
-    mockParameterHeader("test_date-time", "2016-03-99T00:00:00+01:00", TYPE_STRING, FORMAT_DATETIME, false,
+    mockParameterHeader("test_date-time", "2016-03-99T00:00:00+01:00", TYPE_STRING, null, FORMAT_DATETIME, false,
         Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class,
@@ -246,16 +249,16 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_forTypeInteger() {
-    mockParameterHeader("test_integer", "42", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_integer", "42", TYPE_INTEGER, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    assertEquals("42", result.get());
+    assertEquals(42, result.get());
   }
 
   @Test
   void getValue_throwsException_forTypeValidationInteger_double() {
-    mockParameterHeader("test_integer", "4.2", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_integer", "4.2", TYPE_INTEGER, null, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -263,7 +266,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_forTypeValidationInteger_string() {
-    mockParameterQuery("test_integer", "string", TYPE_INTEGER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterQuery("test_integer", "string", TYPE_INTEGER, null, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -271,25 +274,25 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_forTypeNumber_long() {
-    mockParameterHeader("test_number", "2147483648", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_number", "2147483648", TYPE_NUMBER, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    assertEquals("2147483648", result.get());
+    assertEquals(new BigDecimal("2147483648"), result.get());
   }
 
   @Test
   void getValue_returnsValue_forTypeNumber_double() {
-    mockParameterHeader("test_number", "4.2", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterHeader("test_number", "4.2", TYPE_NUMBER, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
-    assertEquals("4.2", result.get());
+    assertEquals(new BigDecimal("4.2"), result.get());
   }
 
   @Test
   void getValue_throwsException_forTypeValidationNumber_string() {
-    mockParameterPath("test_number", "string", TYPE_NUMBER, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test_number", "string", TYPE_NUMBER, null, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -297,7 +300,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_withArraytUnsupportedStyle() {
-    mockParameterQuery("test", "v1,v2", TYPE_ARRAY, true, Parameter.StyleEnum.LABEL);
+    mockParameterQuery("test", "v1,v2", TYPE_ARRAY, TYPE_STRING, true, Parameter.StyleEnum.LABEL);
 
     assertThrows(UnsupportedOperationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -305,7 +308,8 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParamObjectSimple() throws ParameterValidationException {
-    mockParameterPath("test", "k1,v1,k2,v2", TYPE_OBJECT, false, Parameter.StyleEnum.SIMPLE);
+    mockObjectParameterPath("test", "k1,v1,k2,v2", Map.of("k1", "string", "k2", "string"), false,
+        Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -314,7 +318,8 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsValue_fromQueryParamObjectSimpleExplode() throws ParameterValidationException {
-    mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.SIMPLE);
+    mockObjectParameterPath("test", "k1=v1,k2=v2", Map.of("k1", "string", "k2", "string"), true,
+        Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
@@ -323,7 +328,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException {
-    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getSchema()
         .getDefault()).thenReturn("default1");
@@ -335,7 +340,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsError_whenDefaultValueIsNotSet() {
-    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getRequired()).thenReturn(true);
 
@@ -345,7 +350,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsError_whenDefaultDoesNotMatchEnum() {
-    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getDefault()).thenReturn("default1");
@@ -358,7 +363,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsException_withObjectUnsupportedStyle() {
-    mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.FORM);
+    mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, TYPE_STRING, true, Parameter.StyleEnum.FORM);
 
     assertThrows(UnsupportedOperationException.class,
         () -> paramHandler.getValue(request, parameter, responseSchemaContext));
@@ -366,7 +371,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_throwsError_withNonMatchingPattern() {
-    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "v", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn("[A-Z]+");
     when(schema.getType()).thenReturn(TYPE_STRING);
@@ -377,7 +382,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returns_withMatchingPattern() {
-    mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "VBA", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn("[A-Z]+");
     when(schema.getType()).thenReturn(TYPE_STRING);
@@ -387,7 +392,7 @@ class DefaultParamHandlerTest {
 
   @Test
   void getValue_returns_withNullPattern() {
-    mockParameterPath("test", "VBA", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    mockParameterPath("test", "VBA", TYPE_STRING, null, false, Parameter.StyleEnum.SIMPLE);
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getPattern()).thenReturn(null);
     when(schema.getType()).thenReturn(TYPE_STRING);
@@ -448,31 +453,41 @@ class DefaultParamHandlerTest {
   }
 
 
-  private void mockParameterPath(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
+  private void mockParameterPath(String name, String value, String type, String subType, boolean explode,
+      Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_PATH_TYPE);
     when(request.pathVariable(name)).thenReturn(value);
-    mockParameter(name, type, null, explode, style);
+    mockParameter(name, type, subType, null, explode, style);
   }
 
-  private void mockParameterQuery(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
+  private void mockObjectParameterPath(String name, String value, Map<String, String> propertyTypes, boolean explode,
+      Parameter.StyleEnum style) {
+    when(parameter.getIn()).thenReturn(PARAM_PATH_TYPE);
+    when(request.pathVariable(name)).thenReturn(value);
+    mockObjectParameter(name, propertyTypes, null, explode, style);
+  }
+
+  private void mockParameterQuery(String name, String value, String type, String subType, boolean explode,
+      Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_QUERY_TYPE);
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add(name, value);
     when(request.queryParams()).thenReturn(map);
-    mockParameter(name, type, null, explode, style);
+    mockParameter(name, type, subType, null, explode, style);
   }
 
-  private void mockParameterHeader(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
-    mockParameterHeader(name, value, type, null, explode, style);
-  }
-
-  private void mockParameterHeader(String name, String value, String type, String format, boolean explode,
+  private void mockParameterHeader(String name, String value, String type, String subType, boolean explode,
       Parameter.StyleEnum style) {
+    mockParameterHeader(name, value, type, subType, null, explode, style);
+  }
+
+  private void mockParameterHeader(String name, String value, String type, String subType, String format,
+      boolean explode, Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_HEADER_TYPE);
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     when(headers.header(name)).thenReturn(asList(value));
     when(request.headers()).thenReturn(headers);
-    mockParameter(name, type, format, explode, style);
+    mockParameter(name, type, subType, format, explode, style);
   }
 
   @SuppressWarnings("rawtypes")
@@ -482,7 +497,8 @@ class DefaultParamHandlerTest {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void mockParameter(String name, String type, String format, boolean explode, Parameter.StyleEnum style) {
+  private void mockParameter(String name, String type, String subType, String format, boolean explode,
+      Parameter.StyleEnum style) {
     when(parameter.getName()).thenReturn(name);
     when(parameter.getExplode()).thenReturn(explode);
     when(parameter.getStyle()).thenReturn(style);
@@ -490,7 +506,7 @@ class DefaultParamHandlerTest {
     switch (type) {
       case ARRAY_TYPE:
         ArraySchema arraySchema = mock(ArraySchema.class);
-        Schema itemSchema = mock(StringSchema.class);
+        Schema itemSchema = mockScalarSchema(subType);
         when(itemSchema.getEnum()).thenReturn(null);
         when(arraySchema.getItems()).thenReturn(itemSchema);
 
@@ -500,12 +516,37 @@ class DefaultParamHandlerTest {
         schema = mock(ObjectSchema.class);
         break;
       default:
-        schema = mock(Schema.class);
+        schema = mockScalarSchema(type);
     }
     when(schema.getEnum()).thenReturn(null);
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getType()).thenReturn(type);
     when(schema.getFormat()).thenReturn(format);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private void mockObjectParameter(String name, Map<String, String> propertyTypes, String format, boolean explode,
+      Parameter.StyleEnum style) {
+    when(parameter.getName()).thenReturn(name);
+    when(parameter.getExplode()).thenReturn(explode);
+    when(parameter.getStyle()).thenReturn(style);
+    Schema schema = mock(Schema.class);
+    when(schema.getType()).thenReturn(OBJECT_TYPE);
+    Map<String, Schema> properties = propertyTypes.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> mockScalarSchema(e.getValue())));
+    when(schema.getProperties()).thenReturn(properties);
+
+    when(schema.getEnum()).thenReturn(null);
+
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getFormat()).thenReturn(format);
+  }
+
+  private Schema<?> mockScalarSchema(String type) {
+    Schema<?> result = mock(Schema.class);
+    when(result.getType()).thenReturn(type);
+    return result;
   }
 }
