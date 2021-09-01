@@ -1,0 +1,9 @@
+query Query{
+  query18(id: 1){
+    o18_prop1
+    o18_prop2
+    o18_prop3 {
+      o18_1_prop1
+    }
+  }
+}

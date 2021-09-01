@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -59,7 +61,7 @@ class QueryBuilderTest {
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
-    assertEquals(expectedQuery, query);
+    assertThat(query, equalToCompressingWhiteSpace(expectedQuery));
     if (varString != null) {
       assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
     }
@@ -75,7 +77,7 @@ class QueryBuilderTest {
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
-    assertEquals(expectedQuery, query);
+    assertThat(query, equalToCompressingWhiteSpace(expectedQuery));
     if (varString != null) {
       assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
     }
@@ -113,7 +115,11 @@ class QueryBuilderTest {
             "query with paging without offset/first input"),
         Arguments.arguments("/query17", "query17", loadQuery("query17_with_input.txt"),
             Map.of("pageSize", "10", "page", "2", "pageSize2", "20", "page2", "1"), null,
-            "query with paging with offset/first input"));
+            "query with paging with offset/first input"),
+        Arguments.arguments("/query18/{query18_param1}", "query18", loadQuery("query18_selectionSet.txt"),
+            Map.of("query18_param1", 1), null, "query with selectionSet"),
+        Arguments.arguments("/query19/{query19_param1}", "query19", loadQuery("query19_selectionSet_and_fields.txt"),
+            Map.of("query19_param1", 1), null, "query with selectionSet and fields"));
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {

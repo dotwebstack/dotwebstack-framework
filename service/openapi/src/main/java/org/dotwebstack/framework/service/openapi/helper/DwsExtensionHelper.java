@@ -38,6 +38,8 @@ public class DwsExtensionHelper {
 
   static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
 
+  static final String DWS_QUERY_SELECTION_SET = "selectionSet";
+
   private DwsExtensionHelper() {}
 
   public static String getDwsType(@NonNull Schema<?> schema) {
@@ -155,6 +157,12 @@ public class DwsExtensionHelper {
       if (keys != null) {
         builder.keys(keys);
       }
+
+      String selectionSet = (String) settingsMap.get(DWS_QUERY_SELECTION_SET);
+      if (selectionSet != null) {
+        builder.selectionSet(selectionSet);
+      }
+
       Map<String, String> paging = (Map<String, String>) settingsMap.get("paging");
       if (paging != null) {
         builder.paging(QueryPaging.builder()

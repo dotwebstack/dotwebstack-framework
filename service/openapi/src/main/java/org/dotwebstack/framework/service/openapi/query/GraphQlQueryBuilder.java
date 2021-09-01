@@ -39,14 +39,20 @@ public class GraphQlQueryBuilder {
       return Optional.empty();
     }
 
-    ResponseTemplate okResponse = getOkResponse(responseSchemaContext);
+    Optional<Field> rootField;
+    String selectionSet = dwsQuerySettings.getSelectionSet();
+    if (selectionSet != null) {
+      rootField = OasToGraphQlHelper.toQueryField(queryName, selectionSet);
+    } else {
+      ResponseTemplate okResponse = getOkResponse(responseSchemaContext);
+      rootField = OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, this.pagingEnabled);
+    }
 
-    Optional<Field> rootField = OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, this.pagingEnabled);
     if (rootField.isEmpty()) {
       return Optional.empty();
     }
-    GraphQlQuery query = toQueryInput(rootField.get());
 
+    GraphQlQuery query = toQueryInput(rootField.get());
     addKeys(query, dwsQuerySettings.getKeys(), inputParams);
     Map<String, Object> variables;
     variables = addFilters(query, responseSchemaContext.getDwsQuerySettings()
@@ -65,7 +71,6 @@ public class GraphQlQueryBuilder {
     builder.field(rootField);
     builder.queryName("Query");
     return builder.build();
-
   }
 
   private ResponseTemplate getOkResponse(ResponseSchemaContext responseSchemaContext) {

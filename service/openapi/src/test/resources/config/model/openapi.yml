@@ -161,6 +161,14 @@ components:
         o18_prop2:
           type: string
 
+    Object19:
+      type: object
+      required:
+        - o19_prop1
+      properties:
+        o19_prop4:
+          type: string
+
   headers:
     HeaderRef:
       schema:
@@ -533,3 +541,53 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object17'
+  /query18/{query18_param1}:
+    get:
+      x-dws-query:
+        field: query18
+        keys:
+          id: $path.query18_param1
+        selectionSet: |
+          {
+            o18_prop1
+            o18_prop2
+            o18_prop3 {
+              o18_1_prop1
+            }
+          }
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+  /query19/{query19_param1}:
+    get:
+      x-dws-query:
+        field: query19
+        keys:
+          id: $path.query19_param1
+        selectionSet: |
+          {
+            o19_prop1
+            o19_prop2
+            o19_prop3 {
+              o19_1_prop1
+            }
+          }
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object19'
+  /query20:
+    get:
+      x-dws-query:
+        field: query20
+        selectionSet: selectionSetTest
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}

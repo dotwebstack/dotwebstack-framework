@@ -22,6 +22,14 @@ public class OasToGraphQlHelper {
 
   private OasToGraphQlHelper() {}
 
+  public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull String selectionSet) {
+    Field rootField = new Field();
+    rootField.setName(queryName);
+    rootField.setSelectionSet(selectionSet);
+
+    return Optional.of(rootField);
+  }
+
   public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
       @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
     var responseObject = responseTemplate.getResponseField();

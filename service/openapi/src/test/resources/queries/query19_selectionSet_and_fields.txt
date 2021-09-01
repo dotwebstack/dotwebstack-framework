@@ -1,0 +1,9 @@
+query Query{
+  query19(id: 1){
+    o19_prop1
+    o19_prop2
+    o19_prop3 {
+      o19_1_prop1
+    }
+  }
+}
