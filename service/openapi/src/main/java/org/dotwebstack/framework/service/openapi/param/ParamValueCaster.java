@@ -37,14 +37,13 @@ public class ParamValueCaster {
         case "boolean":
           return Boolean.parseBoolean(value);
         default:
-          throw illegalArgumentException("Could not cast scalar value [{}] with schema type [{}] " + "and format [{}]",
+          throw illegalArgumentException("Could not cast scalar value [{}] with schema type [{}] and format [{}]",
               value, schema.getType(), schema.getFormat());
       }
     } catch (NumberFormatException e) {
-      throw parameterValidationException("Could not cast scalar value [{}] with schema type [{}] " + "and format {}",
-          value, schema.getType(), schema.getFormat(), e);
+      throw parameterValidationException("Could not cast scalar value [{}] with schema type [{}] and format {}", value,
+          schema.getType(), schema.getFormat(), e);
     }
-
   }
 
   public static ImmutableList<Object> castList(@NonNull List<String> list, @NonNull Schema<?> schema) {
