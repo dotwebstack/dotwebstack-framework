@@ -233,7 +233,7 @@ A path value may be annotated with a `!`, indicating that the value is required 
 If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is provided.
 
 #### Expressions
-A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate the `name` field of the graphQL filter with the uppercase of the`$body.name` parameter.
+A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
 ```yaml
     x-dws-query:
       field: breweries
@@ -242,7 +242,8 @@ A value may be resolved from an expression, using the `x-dws-expr` extension. Th
           type: BreweryFilter
           fields:
             name:
-              x-dws-expr: '$body.name.toUpperCase()'
+              in:
+                x-dws-expr: '$body.name.toUpperCase()'
 ```
 
 ## Paging
