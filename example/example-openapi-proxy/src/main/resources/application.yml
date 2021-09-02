@@ -10,3 +10,5 @@ dotwebstack:
     proxies:
       localhostProxy:
         uri: "http://localhost:8080/"
+  openapi:
+    oasGraphQlValidation: true
