@@ -9,9 +9,11 @@ import java.util.Optional;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
+import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
@@ -28,25 +30,25 @@ import org.dotwebstack.framework.core.query.model.origin.Origin;
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectRequest extends ObjectRequest {
 
-  public void addFields(FilterCriteria criteria) {
+  public void addFields(Map<String,PostgresTypeConfiguration> objectTypes, FilterCriteria criteria) {
     var origin = Origin.filtering(criteria);
 
     criteria.getFieldPaths()
         .stream()
         .filter(FieldPath::isNode)
-        .forEach(fieldPath -> addFields(fieldPath, origin));
+        .forEach(fieldPath -> addFields(objectTypes, fieldPath, origin));
   }
 
-  public void addFields(SortCriteria criteria, Map<String, String> fieldPathAliasMap) {
+  public void addFields(Map<String,PostgresTypeConfiguration> objectTypes, SortCriteria criteria, Map<String, String> fieldPathAliasMap) {
     var origin = Origin.sorting(criteria, fieldPathAliasMap);
 
     Optional.of(criteria)
         .map(SortCriteria::getFieldPath)
         .filter(FieldPath::isNode)
-        .ifPresent(fieldPath -> addFields(fieldPath, origin));
+        .ifPresent(fieldPath -> addFields(objectTypes, fieldPath, origin));
   }
 
-  private void addFields(FieldPath fieldPath, Origin origin) {
+  private void addFields(Map<String,PostgresTypeConfiguration> objectTypes, FieldPath fieldPath, Origin origin) {
     var fieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
     var typeConfiguration = (PostgresTypeConfiguration) fieldConfiguration.getTypeConfiguration();
 
@@ -83,6 +85,8 @@ public class PostgresObjectRequest extends ObjectRequest {
       addScalarField(parentObjectFieldConfiguration.getObjectRequest()
           .getScalarFields(), fieldConfiguration, origin);
     }
+
+
   }
 
   private void addNestedScalarField(ObjectRequest objectRequest, FieldPath fieldPath, Origin origin) {
@@ -134,6 +138,15 @@ public class PostgresObjectRequest extends ObjectRequest {
 
   private ObjectFieldConfiguration getOrCreateObjectField(ObjectRequest objectRequest,
       PostgresTypeConfiguration typeConfiguration, PostgresFieldConfiguration fieldConfiguration) {
+    if (fieldConfiguration.isList()) {
+      return objectRequest.getCollectionObjectField(fieldConfiguration)
+          .orElseGet(() -> {
+            var newObjectField = createObjectFieldConfiguration(typeConfiguration, fieldConfiguration);
+            objectRequest.getCollectionObjectFields().add(newObjectField);
+            return newObjectField;
+          });
+    }
+
     return objectRequest.getObjectField(fieldConfiguration)
         .orElseGet(() -> {
           var newObjectField = createObjectFieldConfiguration(typeConfiguration, fieldConfiguration);

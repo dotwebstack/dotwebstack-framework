@@ -4,9 +4,11 @@ import java.util.List;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @EqualsAndHashCode
 @Builder
+@ToString
 public class NotFilterCriteria implements FilterCriteria {
   @Getter
   private final FilterCriteria filterCriteria;

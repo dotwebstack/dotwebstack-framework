@@ -38,7 +38,6 @@ public final class ValidSortAndFilterFields {
 
     return fields.values()
         .stream()
-        .filter(field -> !field.isList())
         .filter(field -> !field.isAggregateField())
         .map(field -> getValidSortAndFilterField(objectTypes, parentFieldPath, field, depth))
         .flatMap(List::stream)

@@ -54,9 +54,9 @@ public class ObjectRequest implements Request {
         .findFirst();
   }
 
-  public Optional<ScalarField> getScalarField(FieldConfiguration field) {
-    return scalarFields.stream()
-        .filter(scalarField -> scalarField.getField()
+  public Optional<ObjectFieldConfiguration> getCollectionObjectField(FieldConfiguration field) {
+    return collectionObjectFields.stream()
+        .filter(objectField -> objectField.getField()
             .getName()
             .equals(field.getName()))
         .findFirst();

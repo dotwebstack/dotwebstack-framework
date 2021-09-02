@@ -114,6 +114,8 @@ objectTypes:
         field: visitAddress.city
       historyAge:
         field: history.age
+      beerName:
+        field: beers.name
     fields:
       identifier:
         type: ID

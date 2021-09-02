@@ -6,6 +6,10 @@ import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 public interface Origin {
 
+  static Reference reference() {
+    return new Reference();
+  }
+
   static Requested requested() {
     return new Requested();
   }
