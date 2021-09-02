@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -28,8 +29,7 @@ import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
-import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
-import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -176,13 +176,23 @@ class OpenApiConfigurationTest {
 
     openApiConfiguration.route(openApi);
 
-    assertEquals(16, optionsAnswer.getResults()
+    assertEquals(17, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(17)).toRouterFunctions(any(ResponseTemplateBuilder.class),
-        any(RequestBodyContextBuilder.class), argumentCaptor.capture());
+    verify(this.openApiConfiguration, times(17)).toRouterFunctions(argumentCaptor.capture(),
+        any(ResponseSchemaContext.class)); // TODO: query1 is double for options?
 
-    List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
+    List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues()
+        .stream()
+        .sorted((h1, h2) -> h1.getName()
+            .equals(h2.getName())
+                ? h1.getHttpMethod()
+                    .name()
+                    .compareTo(h2.getHttpMethod()
+                        .name())
+                : h1.getName()
+                    .compareTo(h2.getName()))
+        .collect(Collectors.toList());
     assertEquals(17, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
@@ -197,27 +207,27 @@ class OpenApiConfigurationTest {
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(2)
         .getHttpMethod());
-    assertEquals("/query2", actualHttpMethodOperations.get(2)
+    assertEquals("/query10", actualHttpMethodOperations.get(2)
         .getName());
 
-    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(3)
+    assertEquals(HttpMethod.POST, actualHttpMethodOperations.get(3)
         .getHttpMethod());
-    assertEquals("/query3/{query3_param1}", actualHttpMethodOperations.get(3)
+    assertEquals("/query11", actualHttpMethodOperations.get(3)
         .getName());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(4)
         .getHttpMethod());
-    assertEquals("/query4", actualHttpMethodOperations.get(4)
+    assertEquals("/query12", actualHttpMethodOperations.get(4)
         .getName());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(5)
         .getHttpMethod());
-    assertEquals("/query5", actualHttpMethodOperations.get(5)
+    assertEquals("/query14", actualHttpMethodOperations.get(5)
         .getName());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(6)
         .getHttpMethod());
-    assertEquals("/query6", actualHttpMethodOperations.get(6)
+    assertEquals("/query15", actualHttpMethodOperations.get(6)
         .getName());
   }
 

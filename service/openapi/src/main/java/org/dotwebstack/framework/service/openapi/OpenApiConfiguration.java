@@ -12,7 +12,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,6 +80,8 @@ public class OpenApiConfiguration {
 
   private final GraphQlQueryBuilder graphQlQueryBuilder;
 
+  private final Map<HttpMethodOperation, ResponseSchemaContext> operationResponseMap;
+
   public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, RequestBodyHandlerRouter requestBodyHandlerRouter,
@@ -95,6 +99,7 @@ public class OpenApiConfiguration {
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
     this.graphQlQueryBuilder = graphQlQueryBuilder;
+    this.operationResponseMap = new HashMap<>();
   }
 
   Optional<RouterFunction<ServerResponse>> staticResourceRouter() {
@@ -117,26 +122,14 @@ public class OpenApiConfiguration {
 
     staticResourceRouter().ifPresent(routerFunctions::add);
 
-    var responseTemplateBuilder = ResponseTemplateBuilder.builder()
-        .openApi(openApi)
-        .xdwsStringTypes(openApiProperties.getXdwsStringTypes())
-        .build();
-    var requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
-    openApi.getPaths()
-        .forEach((name, path) -> {
-          Optional<List<HttpMethodOperation>> operations = Optional.of(path)
-              .map(p -> getHttpMethodOperations(path, name));
-
-          operations.flatMap(this::toOptionRouterFunction)
-              .ifPresent(routerFunctions::add);
-
-          operations.ifPresent(httpMethodOperations -> Stream.of(httpMethodOperations)
-              .flatMap(Collection::stream)
-              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, requestBodyContextBuilder,
-                  httpMethodOperation))
-              .forEach(routerFunctions::add));
-
+    operationResponseMap().keySet()
+        .forEach((httpMethodOperation) -> {
+          toOptionRouterFunction(List.of(httpMethodOperation)).ifPresent(routerFunctions::add);
         });
+
+    operationResponseMap().forEach((httpMethodOperation, responseSchemaContext) -> {
+      routerFunctions.add(toRouterFunctions(httpMethodOperation, responseSchemaContext));
+    });
 
     addOpenApiSpecEndpoints(routerFunctions, openApiStream);
     return routerFunctions.build();
@@ -195,11 +188,33 @@ public class OpenApiConfiguration {
         .collect(Collectors.toList());
   }
 
-  protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
-      RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
+  @Bean
+  public Map<HttpMethodOperation, ResponseSchemaContext> operationResponseMap() {
+    if (this.operationResponseMap.isEmpty()) {
+      var responseTemplateBuilder = ResponseTemplateBuilder.builder()
+          .openApi(openApi)
+          .xdwsStringTypes(openApiProperties.getXdwsStringTypes())
+          .build();
+      var requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
 
-    ResponseSchemaContext responseSchemaContext =
-        buildResponseSchemaContext(httpMethodOperation, responseTemplateBuilder, requestBodyContextBuilder);
+      openApi.getPaths()
+          .forEach((name, path) -> {
+            Optional<List<HttpMethodOperation>> operations = Optional.of(path)
+                .map(p -> getHttpMethodOperations(path, name));
+
+            operations.ifPresent(httpMethodOperations -> Stream.of(httpMethodOperations)
+                .flatMap(Collection::stream)
+                .forEach(
+                    httpMethodOperation -> operationResponseMap.put(httpMethodOperation, buildResponseSchemaContext(
+                        httpMethodOperation, responseTemplateBuilder, requestBodyContextBuilder))));
+
+          });
+    }
+    return operationResponseMap;
+  }
+
+  protected RouterFunction<ServerResponse> toRouterFunctions(HttpMethodOperation httpMethodOperation,
+      ResponseSchemaContext responseSchemaContext) {
 
     var requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()));

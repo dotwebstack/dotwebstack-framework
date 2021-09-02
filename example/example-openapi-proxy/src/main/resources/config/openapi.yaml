@@ -272,7 +272,7 @@ paths:
 #                x-dws-expr: args.page
     post:
       x-dws-query:
-        field: breweries
+        field: breweryCollection
         filters:
           breweries:
             type: BreweryFilter
