@@ -5,6 +5,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import graphql.ExecutionInput;
 import graphql.introspection.IntrospectionResultToSchema;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.Type;
+import graphql.language.TypeDefinition;
+import graphql.language.TypeName;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
@@ -15,8 +18,12 @@ import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
+import org.dotwebstack.framework.service.openapi.query.OasToGraphQlHelper;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
+import org.dotwebstack.framework.service.openapi.response.oas.OasField;
+import org.dotwebstack.framework.service.openapi.response.oas.OasObjectField;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -65,20 +72,116 @@ public class OasGraphQlValidator {
     this.operationResponseMap.forEach((methodOperation, schemaContext) -> {
       LOG.debug("Validating {} operation of query {}", methodOperation.getHttpMethod()
           .name(), methodOperation.getName());
-      var queryName = schemaContext.getDwsQuerySettings()
-          .getQueryName();
-      var fieldDefOptional = queryType.getFieldDefinitions()
-          .stream()
-          .filter(fd -> fd.getName()
-              .equals(queryName))
-          .findFirst();
-      if (fieldDefOptional.isEmpty()) {
-        validationResult.addQueryError(queryName, methodOperation.getName(), "Could not find query in graphql schema");
-      } else {
-        LOG.debug("Query valid");
-      }
+      validateQuery(queryType, methodOperation, schemaContext, typeDefinitionRegistry, validationResult);
     });
     return validationResult;
+  }
+
+  private void validateQuery(ObjectTypeDefinition queryType, HttpMethodOperation methodOperation,
+      ResponseSchemaContext schemaContext, TypeDefinitionRegistry typeDefinitionRegistry,
+      ValidationResult validationResult) {
+    var queryName = schemaContext.getDwsQuerySettings()
+        .getQueryName();
+    var fieldDefOptional = queryType.getFieldDefinitions()
+        .stream()
+        .filter(fd -> fd.getName()
+            .equals(queryName))
+        .findFirst();
+    if (fieldDefOptional.isEmpty()) {
+      validationResult.addQueryError(queryName, methodOperation.getName(), "Could not find query in graphql schema");
+    } else {
+      LOG.debug("Query valid");
+      Type<?> resultType = fieldDefOptional.get()
+          .getType();
+      validateResultType(resultType, schemaContext, typeDefinitionRegistry, validationResult);
+    }
+  }
+
+  private void validateResultType(Type<?> resultType, ResponseSchemaContext schemaContext,
+      TypeDefinitionRegistry typeDefinitionRegistry, ValidationResult validationResult) {
+    OasField oasRoot = OasToGraphQlHelper.findRootField(schemaContext.getResponses()
+        .get(0));
+    if (oasRoot != null) {
+      TypeDefinition<?> type = resolveTypeDefinition(resultType, typeDefinitionRegistry); // TODO: unwraplater
+      type = unwrapConnection(type, typeDefinitionRegistry);
+      LOG.debug("Validating graphql result type {} against oas type {}", resultType, oasRoot); // TODO: log field name
+      validateType(oasRoot, type, typeDefinitionRegistry, validationResult);
+    }
+  }
+
+  private void validateType(OasField oasField, TypeDefinition<?> type, TypeDefinitionRegistry typeDefinitionRegistry,
+      ValidationResult validationResult) {
+    switch (oasField.getType()) {
+      case SCALAR:
+        break;
+      case ARRAY:
+        break;
+      case OBJECT:
+        validateObject((OasObjectField) oasField, type, typeDefinitionRegistry, validationResult);
+        break;
+      case ONE_OF:
+        break;
+      case SCALAR_EXPRESSION:
+        break;
+      default:
+        break;
+    }
+  }
+
+  private void validateObject(OasObjectField oasField, TypeDefinition<?> type,
+      TypeDefinitionRegistry typeDefinitionRegistry, ValidationResult validationResult) {
+    if (oasField.isEnvelope()) {
+      // TODO: unwrap and validate type
+    } else {
+      if (!(type instanceof ObjectTypeDefinition)) {
+        validationResult.addQueryError("bla", "bla", "bla");
+      }
+      var fields = oasField.getFields();
+      var objecTypeDef = (ObjectTypeDefinition) type;
+      fields.forEach((name, child) -> {
+        // TODO: unwrap child
+        var graphqQlOptional = objecTypeDef.getFieldDefinitions()
+            .stream()
+            .filter(f -> f.getName()
+                .equals(name))
+            .findFirst();
+        if (graphqQlOptional.isEmpty()) {
+          validationResult.addQueryError("bla", "bla", "bla");
+        } else {
+          var childTypeDef = resolveTypeDefinition(graphqQlOptional.get()
+              .getType(), typeDefinitionRegistry);
+          validateType(child, childTypeDef, typeDefinitionRegistry, validationResult);
+        }
+      });
+
+    }
+  }
+
+  private TypeDefinition<?> unwrapConnection(TypeDefinition<?> typeDefinitionRegistry,
+      TypeDefinitionRegistry registry) {
+    if (!(typeDefinitionRegistry instanceof ObjectTypeDefinition)) {
+      return typeDefinitionRegistry;
+    } else {
+      ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeDefinitionRegistry;
+      var nodeOptional = objectTypeDefinition.getFieldDefinitions()
+          .stream()
+          .filter(fd -> fd.getName()
+              .equals("nodes"))
+          .findFirst();
+      if (nodeOptional.isPresent()) {
+        Type<?> nodesType = nodeOptional.get()
+            .getType();
+        return resolveTypeDefinition(nodesType, registry);
+      }
+      return null; // TODO: error
+    }
+  }
+
+  private TypeDefinition<?> resolveTypeDefinition(Type<?> type, TypeDefinitionRegistry registry) {
+    var typeName = (TypeName) TypeHelper.unwrapType(type);
+    return registry.getType(typeName.getName())
+        .orElseThrow(
+            () -> invalidConfigurationException("Type {} not present " + "in typedefinition registry", typeName));
   }
 
   private TypeDefinitionRegistry fetchTypeDefregistry() throws IOException {

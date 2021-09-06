@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -138,16 +137,10 @@ public class OpenApiConfiguration {
   }
 
   protected List<HttpMethodOperation> getUniquePaths() {
-    Set<String> seen = ConcurrentHashMap.newKeySet();
+    var seen = ConcurrentHashMap.newKeySet();
     return operationResponseMap().keySet()
         .stream()
-        .map(k -> {
-          boolean added = seen.add(k.getName());
-          if (added) {
-            return k;
-          }
-          return null;
-        })
+        .map(k -> seen.add(k.getName()) ? k : null)
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }

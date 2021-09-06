@@ -29,13 +29,8 @@ public class OasToGraphQlHelper {
     if (responseObject == null) {
       return Optional.empty();
     }
-    List<OasField> root = findGraphqlObject(responseObject);
 
-    if (root.size() != 1) {
-      throw invalidConfigurationException("Expected 1 graphql rootobject but found {}", root.size());
-    }
-
-    OasField rootResponseObject = root.get(0);
+    OasField rootResponseObject = findRootField(responseTemplate);
     Field rootField = new Field();
     rootField.setChildren(getChildFields("", rootResponseObject, inputParams));
     rootField.setName(queryName);
@@ -47,6 +42,16 @@ public class OasToGraphQlHelper {
     }
 
     return Optional.of(rootField);
+  }
+
+  public static OasField findRootField(@NonNull ResponseTemplate responseTemplate) {
+    List<OasField> root = findGraphqlObject(responseTemplate.getResponseField());
+
+    if (root.size() != 1) {
+      throw invalidConfigurationException("Expected 1 graphql rootobject but found {}", root.size());
+    }
+
+    return root.get(0);
   }
 
   private static void addPagingNodes(Field field) {
