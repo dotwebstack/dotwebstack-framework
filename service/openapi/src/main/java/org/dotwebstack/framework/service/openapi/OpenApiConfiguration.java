@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -121,18 +123,33 @@ public class OpenApiConfiguration {
     RouterFunctions.Builder routerFunctions = RouterFunctions.route();
 
     staticResourceRouter().ifPresent(routerFunctions::add);
+    List<HttpMethodOperation> uniquePaths = getUniquePaths();
 
-    operationResponseMap().keySet()
-        .forEach((httpMethodOperation) -> {
-          toOptionRouterFunction(List.of(httpMethodOperation)).ifPresent(routerFunctions::add);
-        });
+    uniquePaths.forEach((httpMethodOperation) -> {
+      toOptionRouterFunction(List.of(httpMethodOperation)).ifPresent(routerFunctions::add);
+    });
 
-    operationResponseMap().forEach((httpMethodOperation, responseSchemaContext) -> {
+    operationResponseMap.forEach((httpMethodOperation, responseSchemaContext) -> {
       routerFunctions.add(toRouterFunctions(httpMethodOperation, responseSchemaContext));
     });
 
     addOpenApiSpecEndpoints(routerFunctions, openApiStream);
     return routerFunctions.build();
+  }
+
+  protected List<HttpMethodOperation> getUniquePaths() {
+    Set<String> seen = ConcurrentHashMap.newKeySet();
+    return operationResponseMap().keySet()
+        .stream()
+        .map(k -> {
+          boolean added = seen.add(k.getName());
+          if (added) {
+            return k;
+          }
+          return null;
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   public static ResponseSchemaContext buildResponseSchemaContext(@NonNull HttpMethodOperation httpMethodOperation,

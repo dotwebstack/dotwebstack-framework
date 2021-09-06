@@ -176,11 +176,11 @@ class OpenApiConfigurationTest {
 
     openApiConfiguration.route(openApi);
 
-    assertEquals(17, optionsAnswer.getResults()
+    assertEquals(16, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
     verify(this.openApiConfiguration, times(17)).toRouterFunctions(argumentCaptor.capture(),
-        any(ResponseSchemaContext.class)); // TODO: query1 is double for options?
+        any(ResponseSchemaContext.class));
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues()
         .stream()
