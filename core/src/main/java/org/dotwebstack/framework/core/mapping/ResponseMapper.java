@@ -8,6 +8,6 @@ public interface ResponseMapper {
 
   boolean supportsInputObjectClass(Class<?> clazz);
 
-  String toResponse(Object input);
+  String toResponse(Object input, Object context);
 
 }

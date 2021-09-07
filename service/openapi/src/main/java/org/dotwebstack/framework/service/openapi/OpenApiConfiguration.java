@@ -135,7 +135,6 @@ public class OpenApiConfiguration {
               .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, requestBodyContextBuilder,
                   httpMethodOperation))
               .forEach(routerFunctions::add));
-
         });
 
     addOpenApiSpecEndpoints(routerFunctions, openApiStream);
@@ -173,7 +172,7 @@ public class OpenApiConfiguration {
     routerFunctions.add(RouterFunctions.route(getPredicate, new OpenApiRequestHandler(openApiStream)));
   }
 
-  private List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
+  public static List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
     HttpMethodOperation.HttpMethodOperationBuilder builder = HttpMethodOperation.builder()
         .name(name);
 
@@ -207,9 +206,9 @@ public class OpenApiConfiguration {
     validateTemplateResponseMapper(responseSchemaContext.getResponses());
     var templateResponseMapper = getTemplateResponseMapper();
 
-    var coreRequestHandler = new CoreRequestHandler(openApi, responseSchemaContext, graphQl, responseMappers,
-        jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
-        environmentProperties, graphQlQueryBuilder);
+    var coreRequestHandler = new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
+        responseMappers, jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter,
+        jexlHelper, environmentProperties, graphQlQueryBuilder);
 
     responseSchemaContext.getResponses()
         .stream()
