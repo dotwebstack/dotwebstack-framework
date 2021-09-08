@@ -19,11 +19,14 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRI
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_VALIDATE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
+import static org.dotwebstack.framework.service.openapi.param.ParamValueCaster.cast;
+import static org.dotwebstack.framework.service.openapi.param.ParamValueCaster.castArray;
+import static org.dotwebstack.framework.service.openapi.param.ParamValueCaster.castList;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
@@ -42,6 +45,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
+import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -262,35 +266,34 @@ public class DefaultParamHandler implements ParamHandler {
     if (paramValue == null) {
       return null;
     }
-    String schemaType = parameter.getSchema()
-        .get$ref() != null ? OBJECT_TYPE
-            : parameter.getSchema()
-                .getType();
+    Schema<?> schema = SchemaResolver.resolveSchema(openApi, parameter.getSchema(), parameter.get$ref());
+    String schemaType = schema.getType();
     switch (schemaType) {
       case ARRAY_TYPE:
-        return deserializeArray(parameter, paramValue);
+        return deserializeArray(parameter, (ArraySchema) schema, paramValue);
       case OBJECT_TYPE:
-        return deserializeObject(parameter, paramValue);
+        return deserializeObject(parameter, schema, paramValue);
       default:
-        return paramValue;
+        return cast((String) paramValue, schema);
     }
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private Object deserializeArray(Parameter parameter, Object paramValue) {
+  private Object deserializeArray(Parameter parameter, ArraySchema schema, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
+    Schema<?> itemSchema = resolveSchema(openApi, schema.getItems());
 
     if (style == SIMPLE && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
+      return castArray(((String) paramValue).split(","), itemSchema);
     } else if (style == FORM && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
+      return castArray(((String) paramValue).split(","), itemSchema);
     } else if (style == FORM) {
-      return ImmutableList.copyOf((List) paramValue);
+      return castList((List) paramValue, itemSchema);
     } else if (style == SPACEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(" "));
+      return castArray(((String) paramValue).split(" "), itemSchema);
     } else if (style == PIPEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split("\\|"));
+      return castArray(((String) paramValue).split("\\|"), itemSchema);
     } else {
       throw ExceptionHelper.unsupportedOperationException(
           "Array deserialization not supported for parameter with 'explode=false' and style "
@@ -299,15 +302,15 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  private Object deserializeObject(Parameter parameter, Object paramValue) {
+  private Object deserializeObject(Parameter parameter, Schema<?> schema, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
     if (style == SIMPLE) {
       if (explode) {
-        return deserializeObjectFromKeyValueString((String) paramValue, ",", "=");
+        return deserializeObjectFromKeyValueString((String) paramValue, ",", "=", schema);
       }
-      return deserializeObjectFromKeyValueString((String) paramValue);
+      return deserializeObjectFromKeyValueString((String) paramValue, schema);
     } else {
       throw ExceptionHelper.unsupportedOperationException(
           "Object deserialization not supported for parameter style " + "'{}'. Supported styles are '{}'.", style,
@@ -315,24 +318,25 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  private Object deserializeObjectFromKeyValueString(String keyValueString) {
+  private Object deserializeObjectFromKeyValueString(String keyValueString, Schema<?> schema) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
       throw illegalArgumentException("Key value string '{}' should contain an even number of elements.",
           keyValueString);
     }
-    Map<String, String> result = new HashMap<>();
+    Map<String, Object> result = new HashMap<>();
     for (var i = 0; i < split.length; i += 2) {
       String key = split[i];
-      String value = split[i + 1];
+      Schema<?> propertySchema = resolvePropertySchema(schema, key);
+      Object value = cast(split[i + 1], propertySchema);
       result.put(key, value);
     }
     return result;
   }
 
   private Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
-      String keyValueSeparator) {
-    Map<String, String> result = new HashMap<>();
+      String keyValueSeparator, Schema<?> schema) {
+    Map<String, Object> result = new HashMap<>();
     Arrays.asList(keyValueString.split(elementSeparator))
         .forEach(keyValue -> {
           String[] split = keyValue.split(keyValueSeparator);
@@ -341,7 +345,8 @@ public class DefaultParamHandler implements ParamHandler {
                 "Key value element '{}' with separator '{}' should have one " + "key and one value.", keyValue,
                 keyValueSeparator);
           }
-          result.put(split[0], split[1]);
+          Schema<?> propertySchema = resolvePropertySchema(schema, split[0]);
+          result.put(split[0], cast(split[1], propertySchema));
         });
     return result;
   }
@@ -365,7 +370,7 @@ public class DefaultParamHandler implements ParamHandler {
     return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
   }
 
-  private Object getHeaderParam(Parameter parameter, ServerRequest request) {
+  private String getHeaderParam(Parameter parameter, ServerRequest request) {
     List<String> result = request.headers()
         .header(parameter.getName());
     if (!result.isEmpty()) {
@@ -405,4 +410,14 @@ public class DefaultParamHandler implements ParamHandler {
     }
     return false;
   }
+
+  private Schema<?> resolvePropertySchema(Schema<?> schema, String key) {
+    Schema<?> propertySchema = schema.getProperties()
+        .get(key);
+    if (propertySchema == null) {
+      throw illegalArgumentException("Property {} was not found in schema", key);
+    }
+    return propertySchema;
+  }
+
 }

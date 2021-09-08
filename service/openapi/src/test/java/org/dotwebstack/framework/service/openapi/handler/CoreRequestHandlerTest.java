@@ -157,7 +157,7 @@ class CoreRequestHandlerTest {
 
     DotWebStackConfiguration dwsConfig = mock(DotWebStackConfiguration.class);
     when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
-    queryBuilder = new GraphQlQueryBuilder(dwsConfig);
+    queryBuilder = new GraphQlQueryBuilder(dwsConfig, jexlEngine);
 
     coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
         List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,

@@ -332,6 +332,11 @@ paths:
               name:
                 not:
                   in: $body.o3_prop1
+              name2:
+                eq: $body.o3_prop2!
+                or:
+                  x-dws-expr: "'expression'"
+                neq: $body.o3_prop3
       requestBody:
         required: true
         content:

@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addFilters;
-import static org.dotwebstack.framework.service.openapi.query.filter.FilterHelper.addKeys;
 import static org.dotwebstack.framework.service.openapi.query.paging.PagingHelper.addPaging;
 
 import java.util.List;
@@ -11,8 +9,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
+import org.dotwebstack.framework.service.openapi.query.filter.FilterHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
@@ -25,8 +25,11 @@ public class GraphQlQueryBuilder {
 
   private final boolean pagingEnabled;
 
-  public GraphQlQueryBuilder(@NonNull DotWebStackConfiguration dwsConfig) {
+  private final JexlEngine jexlEngine;
+
+  public GraphQlQueryBuilder(@NonNull DotWebStackConfiguration dwsConfig, @NonNull JexlEngine jexlEngine) {
     this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
+    this.jexlEngine = jexlEngine;
   }
 
   public Optional<QueryInput> toQueryInput(@NonNull ResponseSchemaContext responseSchemaContext,
@@ -53,11 +56,12 @@ public class GraphQlQueryBuilder {
     }
 
     GraphQlQuery query = toQueryInput(rootField.get());
-    addKeys(query, dwsQuerySettings.getKeys(), inputParams);
+    FilterHelper filterHelper = new FilterHelper(this.jexlEngine, inputParams);
+    filterHelper.addKeys(query, dwsQuerySettings.getKeys());
     Map<String, Object> variables;
-    variables = addFilters(query, responseSchemaContext.getDwsQuerySettings()
-        .getFilters(), inputParams);
-    addFilters(query, dwsQuerySettings.getFilters(), inputParams);
+    variables = filterHelper.addFilters(query, responseSchemaContext.getDwsQuerySettings()
+        .getFilters());
+    filterHelper.addFilters(query, dwsQuerySettings.getFilters());
     addPaging(query, dwsQuerySettings.getPaging(), inputParams);
 
     return Optional.of(QueryInput.builder()

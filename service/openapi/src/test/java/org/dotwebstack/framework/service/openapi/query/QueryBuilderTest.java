@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
@@ -29,6 +31,7 @@ import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuil
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,9 +49,18 @@ class QueryBuilderTest {
   @Mock
   private DotWebStackConfiguration config;
 
+  private JexlEngine jexlEngine;
+
   @BeforeAll
   static void init() {
     openApi = TestResources.openApi();
+  }
+
+  @BeforeEach
+  void initMocks() {
+    this.jexlEngine = new JexlBuilder().silent(false)
+        .strict(true)
+        .create();
   }
 
   @ParameterizedTest(name = "{5}")
@@ -57,7 +69,8 @@ class QueryBuilderTest {
       Map<String, Object> inputParams, String varString, String displayName) {
     when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    Optional<QueryInput> queryInput = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, inputParams);
+    Optional<QueryInput> queryInput =
+        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -73,7 +86,8 @@ class QueryBuilderTest {
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(false);
-    Optional<QueryInput> queryInput = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, inputParams);
+    Optional<QueryInput> queryInput =
+        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -119,7 +133,13 @@ class QueryBuilderTest {
         Arguments.arguments("/query18/{query18_param1}", "query18", loadQuery("query18_selectionSet.txt"),
             Map.of("query18_param1", 1), null, "query with selectionSet"),
         Arguments.arguments("/query19/{query19_param1}", "query19", loadQuery("query19_selectionSet_and_fields.txt"),
-            Map.of("query19_param1", 1), null, "query with selectionSet and fields"));
+            Map.of("query19_param1", 1), null, "query with selectionSet and fields"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
+            Map.of("o3_prop1", "val1", "o3_prop3", "val2"), loadVariables("query4.txt"),
+            "query with missing required path"),
+        Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
+            Map.of("o3_prop1", "val1", "o3_prop3", "val2", "o3_prop2", "val3"), loadVariables("query4_expression.txt"),
+            "query with expression and required path"));
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {
@@ -132,7 +152,8 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
-    assertDoesNotThrow(() -> new GraphQlQueryBuilder(config).validateRequiredPathsQueried(requiredPaths, queriedPaths));
+    assertDoesNotThrow(
+        () -> new GraphQlQueryBuilder(config, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -140,7 +161,8 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
-    assertDoesNotThrow(() -> new GraphQlQueryBuilder(config).validateRequiredPathsQueried(requiredPaths, queriedPaths));
+    assertDoesNotThrow(
+        () -> new GraphQlQueryBuilder(config, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -148,7 +170,7 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder(config);
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(config, jexlEngine);
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
@@ -157,7 +179,7 @@ class QueryBuilderTest {
   void validate_throwsInvalidConfigurationException_withNoResponseTemplate() {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query14", "query1");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder(config);
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(config, jexlEngine);
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.toQueryInput(responseSchemaContext, inputParams));
@@ -168,7 +190,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -179,7 +201,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -188,9 +210,10 @@ class QueryBuilderTest {
   @Test
   void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
-    String query = new GraphQlQueryBuilder(config).toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
-        .map(QueryInput::getQuery)
-        .orElseThrow();
+    String query =
+        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
+            .map(QueryInput::getQuery)
+            .orElseThrow();
 
     assertEquals(loadQuery("query1_body_param.txt"), query);
   }
