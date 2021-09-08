@@ -1,0 +1,49 @@
+openapi: 3.0.2
+
+info:
+  title: ext-rml test
+  version: 1.0.0
+
+paths:
+  /path1:
+    get:
+      x-dws-rml-mapping:
+        - test1.rml.ttl
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+  /path2:
+    get:
+      x-dws-rml-mapping:
+        - test2a.rml.ttl
+        - test2b.rml.ttl
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+  /path3:
+    get:
+      x-dws-rml-mapping: []
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+  /path4:
+    get:
+      x-dws-rml-mapping: test1.rml.ttl
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+  /path5:
+    get:
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}

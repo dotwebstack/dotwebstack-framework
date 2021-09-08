@@ -1,0 +1,144 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix gsp: <http://www.opengis.net/ont/geosparql#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix pdok: <http://data.pdok.nl/def/pdok#> .
+@prefix schema: <https://schema.org/> .
+@prefix beer: <http://dotwebstack.org/def/beer#> .
+
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix fno: <http://semweb.datasciencelab.be/ns/function#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix carml: <http://carml.taxonic.com/carml/> .
+
+@prefix : <http://dotwebstack.org/id/mapping/beer#> .
+
+:Brewery_LogicalSource
+  rml:source [
+    a carml:Stream ;
+  ] ;
+  rml:referenceFormulation ql:JSONPath ;
+  rml:iterator "$" ;
+.
+
+:Brewery_doc_termMap
+  rr:template "http://dotwebstack.org/doc/brewery/{identifier}" ;
+.
+
+:Brewery a rr:TriplesMap ;
+  rml:logicalSource :Brewery_LogicalSource ;
+  rr:subjectMap [
+    rr:template "http://dotwebstack.org/id/brewery/{identifier}";
+    rr:class beer:Brewery ;
+    rr:graphMap :Brewery_doc_termMap ;
+  ] ;
+  rr:predicateObjectMap
+    :Brewery_graph ,
+    :Brewery_identifier ,
+    :Brewery_name ,
+    :Brewery_status ,
+    :Brewery_geometry ,
+    :Brewery_postalAddress ,
+    :Brewery_visitAddress ,
+    :Brewery_age ;
+.
+
+:Brewery_graph
+  rr:predicate
+    foaf:isPrimaryTopicOf ,
+    foaf:page ;
+  rr:objectMap :Brewery_doc_termMap ;
+.
+
+:Brewery_identifier
+  rr:predicate beer:identifier ;
+  rr:objectMap [
+    rml:reference "identifier" ;
+  ] ;
+.
+
+:Brewery_name
+  rr:predicate beer:name ;
+  rr:objectMap [
+    rml:reference "name" ;
+  ] ;
+.
+
+:Brewery_status
+  rr:predicate beer:status ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/brewery/status/{status}" ;
+  ] ;
+.
+
+:Brewery_geometry
+  rr:predicate
+    beer:geometry ,
+    gsp:hasGeometry ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/geometry/{identifier}" ;
+  ] ;
+.
+
+:Brewery_postalAddress
+  rr:predicate beer:postalAddress ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/postal-address/{postalAddress.identifier}" ;
+  ] ;
+.
+
+:Brewery_visitAddress
+  rr:predicate beer:visitingAddress ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/postal-address/{visitAddress.identifier}" ;
+  ] ;
+.
+
+:Brewery_age
+  rr:predicate beer:history ;
+  rr:objectMap [
+    rml:reference "history.age" ;
+    rr:datatype xsd:integer ;
+  ] ;
+.
+
+:Brewery_doc a rr:TriplesMap ;
+  rml:logicalSource :Brewery_LogicalSource ;
+  rr:subjectMap [
+    rr:template "http://dotwebstack.org/doc/brewery/{identifier}";
+    rr:class foaf:Document ;
+    rr:graphMap :Brewery_doc_termMap ;
+  ] ;
+  rr:predicateObjectMap
+    :Brewery_doc_history ;
+.
+
+:Brewery_doc_history
+  rr:predicate beer:history ;
+  rr:objectMap [
+    rml:reference "history.history" ;
+  ] ;
+.
+
+:Geometry a rr:TriplesMap ;
+  rml:logicalSource :Brewery_LogicalSource ;
+  rr:subjectMap [
+    rr:template "http://dotwebstack.org/id/geometry/{identifier}";
+    rr:class gsp:Geometry ;
+    rr:graphMap :Brewery_doc_termMap ;
+  ] ;
+  rr:predicateObjectMap
+   :Geometry_wkt ;
+.
+
+:Geometry_wkt
+  rr:predicate gsp:asWKT ;
+  rr:objectMap [
+    rml:reference "geometry.asWKT" ;
+    rr:datatype gsp:wktLiteral ;
+  ] ;
+.

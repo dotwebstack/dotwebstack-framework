@@ -45,6 +45,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
+import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -203,6 +204,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       var executionInput = ExecutionInput.newExecutionInput()
           .query(query)
           .variables(input.getVariables())
+          .dataLoaderRegistry(new DataLoaderRegistry())
           .build();
 
       return graphQL.execute(executionInput);
