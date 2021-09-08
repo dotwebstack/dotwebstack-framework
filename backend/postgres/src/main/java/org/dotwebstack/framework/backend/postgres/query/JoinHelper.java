@@ -15,6 +15,7 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Condition;
 import org.jooq.JoinType;
+import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -123,7 +124,7 @@ public class JoinHelper {
     }
   }
 
-  public Optional<Table<?>> createJoinTableForKeyCriteria(PostgresTypeConfiguration typeConfiguration,
+  public Optional<Table<Record>> createJoinTableForKeyCriteria(PostgresTypeConfiguration typeConfiguration,
       SelectQuery<?> query, ObjectSelectContext objectSelectContext, Table<?> table, ObjectRequest objectRequest) {
 
     return objectRequest.getKeyCriteria()

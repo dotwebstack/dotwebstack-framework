@@ -33,6 +33,7 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JoinType;
+import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
@@ -117,7 +118,7 @@ public class SelectQueryBuilder {
   }
 
   private SelectQueryBuilderResult build(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
-      Table<?> fromTable) {
+      Table<Record> fromTable) {
     var query = buildQuery(objectSelectContext, objectRequest, fromTable);
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
@@ -224,9 +225,8 @@ public class SelectQueryBuilder {
       SelectQuery<?> query, Table<?> fieldTable) {
 
     objectRequest.getNestedObjectFields()
-        .forEach(nestedObjectField -> {
-          addNestedObjectField(objectRequest, objectSelectContext, query, fieldTable, nestedObjectField);
-        });
+        .forEach(nestedObjectField -> addNestedObjectField(objectRequest, objectSelectContext, query, fieldTable,
+            nestedObjectField));
   }
 
   private void addNestedObjectField(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
@@ -410,15 +410,15 @@ public class SelectQueryBuilder {
   }
 
   private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
-      Table<?> fieldTable, ObjectRequest objectRequest) {
+      Table<Record> fieldTable, ObjectRequest objectRequest) {
 
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
 
-    Optional<Table<?>> joinTable =
+    Optional<Table<Record>> joinTable =
         joinHelper.createJoinTableForKeyCriteria((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
             subSelectQuery, objectSelectContext, fieldTable, objectRequest);
 
-    final Table<?> referencedTable = joinTable.orElse(fieldTable);
+    final Table<Record> referencedTable = joinTable.orElse(fieldTable);
 
     // create value rows array
     var valuesTableRows = objectRequest.getKeyCriteria()

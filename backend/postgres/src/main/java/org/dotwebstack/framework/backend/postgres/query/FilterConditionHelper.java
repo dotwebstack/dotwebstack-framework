@@ -46,8 +46,6 @@ public class FilterConditionHelper {
 
   public Condition createCondition(FilterCriteria filterCriteria, Table<?> table,
       ObjectSelectContext objectSelectContext, ObjectRequest objectRequest) {
-    System.out.println();
-
     if (filterCriteria instanceof NotFilterCriteria) {
       return createCondition((NotFilterCriteria) filterCriteria, table, objectSelectContext, objectRequest);
     }
