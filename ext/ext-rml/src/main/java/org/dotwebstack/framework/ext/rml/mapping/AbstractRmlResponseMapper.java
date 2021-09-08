@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.WriterConfig;
 import org.springframework.util.MimeType;
 
 @Slf4j
@@ -39,6 +40,10 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
 
   abstract RDFFormat rdfFormat();
 
+  WriterConfig getWriterConfig() {
+    return new WriterConfig();
+  }
+
   @Override
   public boolean supportsOutputMimeType(@NonNull MimeType mimeType) {
     return supportedMimeType().equals(mimeType);
@@ -62,7 +67,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
       }
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Mapping response data");
+        LOG.debug("Mapping response data:");
         try {
           LOG.debug("{}", OBJECT_MAPPER.writerWithDefaultPrettyPrinter()
               .writeValueAsString(input));
@@ -83,7 +88,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
 
   String modelToString(Model model) {
     StringWriter stringWriter = new StringWriter();
-    Rio.write(model, stringWriter, rdfFormat());
+    Rio.write(model, stringWriter, rdfFormat(), getWriterConfig());
 
     return stringWriter.toString();
   }

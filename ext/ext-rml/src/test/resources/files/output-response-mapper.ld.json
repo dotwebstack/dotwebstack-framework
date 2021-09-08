@@ -1,23 +1,22 @@
-[ {
+{
   "@graph" : [ {
     "@id" : "http://dotwebstack.org/id/beer/6",
-    "@type" : [ "http://dotwebstack.org/def/beer#Beer" ],
-    "http://dotwebstack.org/def/beer#brewery" : [ {
+    "@type" : "beer:Beer",
+    "beer:brewery" : {
       "@id" : "http://dotwebstack.org/id/brewery/123"
-    } ],
-    "http://dotwebstack.org/def/beer#identifier" : [ {
-      "@value" : "6"
-    } ],
-    "http://dotwebstack.org/def/beer#ingredient" : [ {
+    },
+    "beer:identifier" : "6",
+    "beer:ingredient" : [ {
       "@id" : "http://dotwebstack.org/id/ingredient/1"
     }, {
       "@id" : "http://dotwebstack.org/id/ingredient/2"
     }, {
       "@id" : "http://dotwebstack.org/id/ingredient/3"
     } ],
-    "http://dotwebstack.org/def/beer#name" : [ {
-      "@value" : "Alpha Edel Pils"
-    } ]
+    "beer:name" : "Alpha Edel Pils"
   } ],
-  "@id" : "http://dotwebstack.org/doc/beer/6"
-} ]
+  "@id" : "http://dotwebstack.org/doc/beer/6",
+  "@context" : {
+    "beer" : "http://dotwebstack.org/def/beer#"
+  }
+}

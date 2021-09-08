@@ -93,7 +93,7 @@ class RmlResponseMapperTest {
 
   @ParameterizedTest
   @MethodSource("createResponseMappersWithExpectedResultFileName")
-  void responseMapper_returnsString_forTrig(ResponseMapper responseMapper, String expectedResultFileName)
+  void responseMapper_returnsCorrectResult_forModel(ResponseMapper responseMapper, String expectedResultFileName)
       throws IOException {
     // Act
     String actualResult = responseMapper.toResponse(Map.of(), OPERATION);
