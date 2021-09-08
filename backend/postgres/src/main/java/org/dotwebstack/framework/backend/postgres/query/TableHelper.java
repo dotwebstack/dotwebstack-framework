@@ -12,7 +12,7 @@ public class TableHelper {
 
   private TableHelper() {}
 
-  public static Table<Record> createTable(String name, List<ContextCriteria> contextCriterias) {
+  private static Table<Record> createTable(String name, List<ContextCriteria> contextCriterias) {
     AtomicInteger atomicInteger = new AtomicInteger(0);
 
     String bindingKeys = contextCriterias.stream()
