@@ -50,12 +50,8 @@ public class FilterConditionHelper {
       return createCondition((NotFilterCriteria) filterCriteria, table, objectSelectContext, objectRequest);
     }
 
-    var fieldPath = filterCriteria.getFieldPaths()
-        .get(0);
-
-
-    return createCondition(fieldPath, filterCriteria, objectSelectContext, objectRequest.getContextCriterias(),
-        (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), table);
+    return createCondition(filterCriteria.getFieldPath(), filterCriteria, objectSelectContext,
+        objectRequest.getContextCriterias(), (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), table);
   }
 
   private Condition createCondition(NotFilterCriteria notFilterCriteria, Table<?> table,
@@ -166,15 +162,8 @@ public class FilterConditionHelper {
   }
 
   private Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
-    if (filterCriteria.getFieldPaths()
-        .size() > 1) {
-      throw illegalArgumentException("Filter criteria needs to contain a single fieldPath object!");
-    }
-
-    var fieldPath = filterCriteria.getFieldPaths()
-        .get(0);
-
-    var postgresFieldConfiguration = (PostgresFieldConfiguration) fieldPath.getLeaf()
+    var postgresFieldConfiguration = (PostgresFieldConfiguration) filterCriteria.getFieldPath()
+        .getLeaf()
         .getFieldConfiguration();
 
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
@@ -202,7 +191,7 @@ public class FilterConditionHelper {
     var typeConfiguration = (PostgresTypeConfiguration) fieldPath.getFieldConfiguration()
         .getTypeConfiguration();
 
-    var fromTable = findTable((typeConfiguration).getTable(), contextCriterias).as(objectSelectContext.newTableAlias());
+    var fromTable = findTable(typeConfiguration.getTable(), contextCriterias).as(objectSelectContext.newTableAlias());
 
     var query = dslContext.selectQuery(fromTable);
 

@@ -14,9 +14,9 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.Scalars;
@@ -157,10 +157,9 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
 
     assertThat(notFilterCriteria.getFilterCriteria(), instanceOf(EqualsFilterCriteria.class));
     assertThat(notFilterCriteria.getFilterCriteria()
-        .getFieldPaths(), hasSize(1));
+        .getFieldPath(), notNullValue());
     assertThat(notFilterCriteria.getFilterCriteria()
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((EqualsFilterCriteria) notFilterCriteria.getFilterCriteria()).getValue(), is(1));
   }
@@ -187,11 +186,10 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
         .get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(0)
-        .getFieldPaths(), hasSize(1));
+        .getFieldPath(), notNullValue());
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((EqualsFilterCriteria) andFilterCriteria.getFilterCriterias()
         .get(0)).getValue(), is(1));
@@ -200,11 +198,10 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
         .get(1), instanceOf(LowerThenFilterCriteria.class));
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(1)
-        .getFieldPaths(), hasSize(1));
+        .getFieldPath(), notNullValue());
     assertThat(andFilterCriteria.getFilterCriterias()
         .get(1)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration(), instanceOf(FieldConfigurationImpl.class));
     assertThat(((LowerThenFilterCriteria) andFilterCriteria.getFilterCriterias()
         .get(1)).getValue(), is(2));
@@ -221,10 +218,9 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getFieldPaths(), hasSize(1));
+        .getFieldPath(), notNullValue());
     assertThat(result.get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_DEFAULT_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(99));
@@ -241,10 +237,9 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getFieldPaths(), hasSize(1));
+        .getFieldPath(), notNullValue());
     assertThat(result.get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_NULL_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(1));
@@ -262,9 +257,8 @@ class CoreFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
   }
 
   private void assertFieldName(FilterCriteria filterCriteria) {
-    assertThat(filterCriteria.getFieldPaths(), hasSize(1));
-    assertThat(filterCriteria.getFieldPaths()
-        .get(0)
+    assertThat(filterCriteria.getFieldPath(), notNullValue());
+    assertThat(filterCriteria.getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_TEST));
   }

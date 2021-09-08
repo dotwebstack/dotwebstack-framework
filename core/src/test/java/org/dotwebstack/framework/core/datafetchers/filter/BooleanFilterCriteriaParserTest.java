@@ -46,8 +46,7 @@ class BooleanFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(true));
@@ -64,8 +63,7 @@ class BooleanFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_DEFAULT_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(true));
@@ -82,8 +80,7 @@ class BooleanFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     assertThat(result.size(), is(1));
     assertThat(result.get(0), instanceOf(EqualsFilterCriteria.class));
     assertThat(result.get(0)
-        .getFieldPaths()
-        .get(0)
+        .getFieldPath()
         .getFieldConfiguration()
         .getName(), is(FIELD_NULL_TEST));
     assertThat(((EqualsFilterCriteria) result.get(0)).getValue(), is(true));
@@ -99,5 +96,4 @@ class BooleanFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
 
     assertThat(result.size(), is(0));
   }
-
 }

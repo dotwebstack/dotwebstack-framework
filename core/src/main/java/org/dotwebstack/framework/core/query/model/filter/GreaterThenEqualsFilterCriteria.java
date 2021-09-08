@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.query.model.filter;
 
-import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -16,7 +15,7 @@ public class GreaterThenEqualsFilterCriteria implements FilterCriteria {
   private final Object value;
 
   @Override
-  public List<FieldPath> getFieldPaths() {
-    return List.of(fieldPath);
+  public FieldPath getFieldPath() {
+    return fieldPath;
   }
 }

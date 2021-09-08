@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -25,7 +24,7 @@ public class GeometryFilterCriteria implements FilterCriteria {
   private final String crs;
 
   @Override
-  public List<FieldPath> getFieldPaths() {
-    return List.of(fieldPath);
+  public FieldPath getFieldPath() {
+    return fieldPath;
   }
 }

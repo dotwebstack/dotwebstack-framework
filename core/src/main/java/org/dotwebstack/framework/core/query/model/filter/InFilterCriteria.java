@@ -16,8 +16,8 @@ public class InFilterCriteria implements FilterCriteria {
   private final List<?> values;
 
   @Override
-  public List<FieldPath> getFieldPaths() {
-    return List.of(fieldPath);
+  public FieldPath getFieldPath() {
+    return fieldPath;
   }
 
 }
