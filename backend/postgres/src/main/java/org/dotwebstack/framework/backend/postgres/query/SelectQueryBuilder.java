@@ -268,14 +268,9 @@ public class SelectQueryBuilder {
 
     query.addSelect(lateralTable.asterisk());
 
-    var joinTable = objectField.hasNestedFilteringOrigin() ? lateralTable : objectFieldTable;
-
-    Map<String, String> fieldAliasMap =
-        objectField.hasNestedFilteringOrigin() ? lateralJoinContext.getFieldAliasMap() : Map.of();
-
     var leftSide = PostgresTableField.builder()
         .fieldConfiguration(objectFieldConfiguration)
-        .table(joinTable)
+        .table(objectFieldTable)
         .build();
 
     var rightSide = PostgresTableType.builder()
@@ -283,11 +278,11 @@ public class SelectQueryBuilder {
         .table(fieldTable)
         .build();
 
-    joinHelper.addJoinTableCondition(subSelect, lateralJoinContext, leftSide, rightSide, fieldAliasMap,
+    joinHelper.addJoinTableCondition(subSelect, lateralJoinContext, leftSide, rightSide, Map.of(),
         objectRequest.getContextCriterias());
 
     List<Condition> joinConditions =
-        joinHelper.createJoinConditions(objectFieldConfiguration, joinTable, fieldTable, fieldAliasMap);
+        joinHelper.createJoinConditions(objectFieldConfiguration, objectFieldTable, fieldTable, Map.of());
 
     subSelect.addConditions(joinConditions);
     query.addJoin(lateralTable, JoinType.OUTER_APPLY);
