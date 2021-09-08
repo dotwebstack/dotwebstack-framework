@@ -38,7 +38,7 @@ public class ObjectRequest implements Request {
   private final List<ObjectFieldConfiguration> collectionObjectFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<ContextCriteria> contextCriteria = List.of();
+  private final List<ContextCriteria> contextCriterias = List.of();
 
   public void addScalarField(ScalarField scalar) {
     if (!scalarFields.contains(scalar)) {

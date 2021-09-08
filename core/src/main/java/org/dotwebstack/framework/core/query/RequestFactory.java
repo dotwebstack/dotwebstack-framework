@@ -147,7 +147,7 @@ public class RequestFactory {
         .aggregateObjectFields(aggregateObjectFields)
         .collectionObjectFields(collectionObjectFields)
         .keyCriteria(keyCriterias)
-        .contextCriteria(contextCriterias)
+        .contextCriterias(contextCriterias)
         .build();
   }
 

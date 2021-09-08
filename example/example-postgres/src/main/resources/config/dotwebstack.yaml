@@ -33,6 +33,8 @@ objectTypes:
     filters:
       breweryCity:
         field: brewery.visitAddress.city
+      ingredientName:
+        field: ingredients.name
     keys:
       - field: identifier
     sortableBy:
@@ -116,6 +118,8 @@ objectTypes:
         field: history.age
       beerName:
         field: beers.name
+      beerBreweryName:
+        field: beers.brewery.name
     fields:
       identifier:
         type: ID

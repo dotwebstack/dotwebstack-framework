@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +17,6 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
@@ -32,11 +33,12 @@ import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
-import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
+import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,10 +60,17 @@ class SelectQueryBuilderTest {
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
 
+  @Mock
+  private FilterConditionHelper filterConditionHelper;
+
   @BeforeEach
   void beforeAll() {
     dslContext = createDslContext();
-    selectQueryBuilder = new SelectQueryBuilder(dslContext, new AggregateFieldFactory(), dotWebStackConfiguration);
+
+    JoinHelper joinHelper = new JoinHelper(dotWebStackConfiguration);
+
+    selectQueryBuilder =
+        new SelectQueryBuilder(dslContext, new AggregateFieldFactory(), joinHelper, filterConditionHelper);
   }
 
   @Test
@@ -121,13 +130,10 @@ class SelectQueryBuilderTest {
 
     List<ScalarField> scalarFields = List.of(createScalarFieldConfiguration(createFieldConfiguration("name")));
 
-    var filterCriteria = EqualsFilterCriteria.builder()
-        .fieldPath(FieldPath.builder()
-            .fieldConfiguration((AbstractFieldConfiguration) scalarFields.get(0)
-                .getField())
-            .build())
-        .value("Brewery X")
-        .build();
+    var filterCriteria = mock(FilterCriteria.class);
+
+    when(filterConditionHelper.createCondition(eq(filterCriteria), any(), any(), any()))
+        .thenReturn(DSL.condition("1 = 1"));
 
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(createObjectRequest(typeName, scalarFields))
@@ -138,8 +144,7 @@ class SelectQueryBuilderTest {
 
     assertThat(result.getQuery()
         .toString(),
-        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n"
-            + "where \"t1\".\"nameColumn\" = 'Brewery X'"));
+        equalTo("select \"t1\".\"nameColumn\" as \"x1\"\n" + "from \"BreweryTable\" as \"t1\"\n" + "where (1 = 1)"));
   }
 
   @Test

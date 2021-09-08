@@ -972,9 +972,11 @@ class GraphQlPostgresIntegrationTest {
     assertThat(data.containsKey(BEERS), is(true));
 
     List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
-    assertThat(beers.size(), is(2));
-    assertThat(beers, is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
-        Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"))));
+    assertThat(beers.size(), is(3));
+    assertThat(beers,
+        is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
 
   @Test

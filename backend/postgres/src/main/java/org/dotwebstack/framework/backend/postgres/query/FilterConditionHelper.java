@@ -1,13 +1,20 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.TableHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
+import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.filter.AndFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.EqualsFilterCriteria;
+import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenEqualsFilterCriteria;
 import org.dotwebstack.framework.core.query.model.filter.GreaterThenFilterCriteria;
@@ -18,48 +25,96 @@ import org.dotwebstack.framework.core.query.model.filter.NotFilterCriteria;
 import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConfigurationProperties;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.SelectQuery;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.springframework.stereotype.Component;
 
-public final class FilterConditionHelper {
+@Component
+public class FilterConditionHelper {
 
-  private FilterConditionHelper() {}
+  private final DSLContext dslContext;
 
-  public static Condition createFilterCondition(FilterCriteria filterCriteria, String fromTable) {
+  private final JoinHelper joinHelper;
+
+  public FilterConditionHelper(DSLContext dslContext, JoinHelper joinHelper) {
+    this.dslContext = dslContext;
+    this.joinHelper = joinHelper;
+  }
+
+  public Condition createCondition(FilterCriteria filterCriteria, Table<?> table,
+      ObjectSelectContext objectSelectContext, ObjectRequest objectRequest) {
+    System.out.println();
+
+    if (filterCriteria instanceof NotFilterCriteria) {
+      return createCondition((NotFilterCriteria) filterCriteria, table, objectSelectContext, objectRequest);
+    }
+
+    var fieldPath = filterCriteria.getFieldPaths()
+        .get(0);
+
+
+    return createCondition(fieldPath, filterCriteria, objectSelectContext, objectRequest.getContextCriterias(),
+        (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), table);
+  }
+
+  private Condition createCondition(NotFilterCriteria notFilterCriteria, Table<?> table,
+      ObjectSelectContext objectSelectContext, ObjectRequest objectRequest) {
+    var innerCondition =
+        createCondition(notFilterCriteria.getFilterCriteria(), table, objectSelectContext, objectRequest);
+    return DSL.not(innerCondition);
+  }
+
+  private Condition createCondition(FieldPath fieldPath, FilterCriteria filterCriteria,
+      ObjectSelectContext objectSelectContext, List<ContextCriteria> contextCriterias,
+      PostgresTypeConfiguration typeConfiguration, Table<?> fromTable) {
+    // recursief
+    if (fieldPath.isNode() && !fieldPath.getFieldConfiguration()
+        .isNestedObjectField()) {
+      var subQuery =
+          buildQuery(fieldPath, filterCriteria, fromTable, objectSelectContext, typeConfiguration, contextCriterias);
+
+      return DSL.exists(subQuery);
+    } else { // leaf
+      return createCondition(filterCriteria, fromTable.getName());
+    }
+  }
+
+  private Condition createCondition(FilterCriteria filterCriteria, String fromTable) {
     if (filterCriteria instanceof EqualsFilterCriteria) {
-      return createFilterCondition((EqualsFilterCriteria) filterCriteria, fromTable);
-    } else if (filterCriteria instanceof NotFilterCriteria) {
-      return createFilterCondition((NotFilterCriteria) filterCriteria, fromTable);
+      return createCondition((EqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof GreaterThenFilterCriteria) {
-      return createFilterCondition((GreaterThenFilterCriteria) filterCriteria, fromTable);
+      return createCondition((GreaterThenFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof GreaterThenEqualsFilterCriteria) {
-      return createFilterCondition((GreaterThenEqualsFilterCriteria) filterCriteria, fromTable);
+      return createCondition((GreaterThenEqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof LowerThenFilterCriteria) {
-      return createFilterCondition((LowerThenFilterCriteria) filterCriteria, fromTable);
+      return createCondition((LowerThenFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof LowerThenEqualsFilterCriteria) {
-      return createFilterCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
+      return createCondition((LowerThenEqualsFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof InFilterCriteria) {
-      return createFilterCondition((InFilterCriteria) filterCriteria, fromTable);
+      return createCondition((InFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof AndFilterCriteria) {
-      return createFilterCondition((AndFilterCriteria) filterCriteria, fromTable);
+      return createCondition((AndFilterCriteria) filterCriteria, fromTable);
     } else if (filterCriteria instanceof GeometryFilterCriteria) {
-      return createFilterCondition((GeometryFilterCriteria) filterCriteria, fromTable);
+      return createCondition((GeometryFilterCriteria) filterCriteria, fromTable);
     }
 
     throw unsupportedOperationException("Filter '{}' is not supported!", filterCriteria.getClass()
         .getName());
   }
 
-  private static Condition createFilterCondition(AndFilterCriteria andFilterCriteria, String fromTable) {
+  private Condition createCondition(AndFilterCriteria andFilterCriteria, String fromTable) {
     var innerConditions = andFilterCriteria.getFilterCriterias()
         .stream()
-        .map(innerCriteria -> createFilterCondition(innerCriteria, fromTable))
+        .map(innerCriteria -> createCondition(innerCriteria, fromTable))
         .collect(Collectors.toList());
 
     return DSL.and(innerConditions);
   }
 
-  private static Condition createFilterCondition(GeometryFilterCriteria geometryFilterCriteria, String fromTable) {
+  private Condition createCondition(GeometryFilterCriteria geometryFilterCriteria, String fromTable) {
     Field<Object> field = getField(geometryFilterCriteria, fromTable);
 
     Field<?> geofilterField = getGeofilterField(geometryFilterCriteria);
@@ -76,52 +131,43 @@ public final class FilterConditionHelper {
     }
   }
 
-  private static Condition createFilterCondition(EqualsFilterCriteria equalsFilterCriteria, String fromTable) {
+  private Condition createCondition(EqualsFilterCriteria equalsFilterCriteria, String fromTable) {
     Field<Object> field = getField(equalsFilterCriteria, fromTable);
 
     return field.eq(equalsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(NotFilterCriteria notFilterCriteria, String fromTable) {
-    var innerCondition = createFilterCondition(notFilterCriteria.getFilterCriteria(), fromTable);
-
-    return DSL.not(innerCondition);
-  }
-
-  private static Condition createFilterCondition(GreaterThenFilterCriteria greaterThenFilterCriteria,
-      String fromTable) {
+  private Condition createCondition(GreaterThenFilterCriteria greaterThenFilterCriteria, String fromTable) {
     Field<Object> field = getField(greaterThenFilterCriteria, fromTable);
 
     return field.gt(greaterThenFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria,
-      String fromTable) {
+  private Condition createCondition(GreaterThenEqualsFilterCriteria greaterThenEqualsFilterCriteria, String fromTable) {
     Field<Object> field = getField(greaterThenEqualsFilterCriteria, fromTable);
 
     return field.ge(greaterThenEqualsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(LowerThenFilterCriteria lowerThenFilterCriteria, String fromTable) {
+  private Condition createCondition(LowerThenFilterCriteria lowerThenFilterCriteria, String fromTable) {
     Field<Object> field = getField(lowerThenFilterCriteria, fromTable);
 
     return field.lt(lowerThenFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria,
-      String fromTable) {
+  private Condition createCondition(LowerThenEqualsFilterCriteria lowerThenEqualsFilterCriteria, String fromTable) {
     Field<Object> field = getField(lowerThenEqualsFilterCriteria, fromTable);
 
     return field.le(lowerThenEqualsFilterCriteria.getValue());
   }
 
-  private static Condition createFilterCondition(InFilterCriteria inFilterCriteria, String fromTable) {
+  private Condition createCondition(InFilterCriteria inFilterCriteria, String fromTable) {
     Field<Object> field = getField(inFilterCriteria, fromTable);
 
     return field.in(inFilterCriteria.getValues());
   }
 
-  private static Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
+  private Field<Object> getField(FilterCriteria filterCriteria, String fromTable) {
     if (filterCriteria.getFieldPaths()
         .size() > 1) {
       throw illegalArgumentException("Filter criteria needs to contain a single fieldPath object!");
@@ -136,7 +182,7 @@ public final class FilterConditionHelper {
     return DSL.field(DSL.name(fromTable, postgresFieldConfiguration.getColumn()));
   }
 
-  private static Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
+  private Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
     if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
       return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
           .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
@@ -146,9 +192,50 @@ public final class FilterConditionHelper {
         .toString()));
   }
 
-  private static Integer getSrid(String crs) {
+  private Integer getSrid(String crs) {
     var srid = StringUtils.substringAfter(crs.toUpperCase(), SpatialConfigurationProperties.EPSG_PREFIX);
 
     return Integer.parseInt(srid);
+  }
+
+  private SelectQuery<?> buildQuery(FieldPath fieldPath, FilterCriteria filterCriteria, Table<?> table,
+      ObjectSelectContext objectSelectContext, PostgresTypeConfiguration parentTypeConfiguration,
+      List<ContextCriteria> contextCriterias) {
+    var typeConfiguration = (PostgresTypeConfiguration) fieldPath.getFieldConfiguration()
+        .getTypeConfiguration();
+
+    var fromTable = findTable((typeConfiguration).getTable(), contextCriterias).as(objectSelectContext.newTableAlias());
+
+    var query = dslContext.selectQuery(fromTable);
+
+    query.addSelect(DSL.val(1));
+
+    query.addConditions(createCondition(fieldPath.getChild(), filterCriteria, objectSelectContext, contextCriterias,
+        typeConfiguration, fromTable));
+
+    var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+
+    var objectFieldConfiguration = (PostgresFieldConfiguration) fieldPath.getFieldConfiguration();
+
+    Map<String, String> fieldAliasMap = lateralJoinContext.getFieldAliasMap();
+
+    var leftSide = PostgresTableField.builder()
+        .fieldConfiguration(objectFieldConfiguration)
+        .table(fromTable)
+        .build();
+
+    var rightSide = PostgresTableType.builder()
+        .typeConfiguration(parentTypeConfiguration)
+        .table(table)
+        .build();
+
+    joinHelper.addJoinTableCondition(query, lateralJoinContext, leftSide, rightSide, fieldAliasMap, contextCriterias);
+
+    List<Condition> joinConditions =
+        joinHelper.createJoinConditions(objectFieldConfiguration, fromTable, table, fieldAliasMap);
+
+    query.addConditions(joinConditions);
+
+    return query;
   }
 }

@@ -17,9 +17,8 @@ public class AggregateObjectFieldConfiguration {
 
   public List<AggregateFieldConfiguration> getAggregateFields(boolean stringJoin) {
     return aggregateFields.stream()
-        .filter(
-            aggregateFieldConfiguration -> stringJoin ? aggregateFieldConfiguration.getAggregateFunctionType() == JOIN
-                : aggregateFieldConfiguration.getAggregateFunctionType() != JOIN)
+        .filter(aggregateFieldConfiguration -> stringJoin == (aggregateFieldConfiguration
+            .getAggregateFunctionType() == JOIN))
         .collect(Collectors.toList());
 
   }
