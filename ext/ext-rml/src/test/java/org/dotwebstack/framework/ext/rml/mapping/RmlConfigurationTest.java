@@ -14,6 +14,7 @@ import java.util.Set;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
@@ -29,7 +30,19 @@ class RmlConfigurationTest {
   private RmlMapperConfigurer rmlMapperConfigurer;
 
   @Test
-  void namespaces_constructedCorrectly_forConfig() {
+  void namespaces_areDefault_whenNotConfigured() {
+    // Arrange
+    var rmlConfiguration = new RmlConfiguration();
+
+    // Act
+    Set<Namespace> namespaces = rmlConfiguration.namespaces();
+
+    // Assert
+    assertThat(namespaces, hasItems(RDF.NS, RDFS.NS, OWL.NS, XSD.NS, DCTERMS.NS));
+  }
+
+  @Test
+  void namespaces_mergedCorrectly_forConfig() {
     // Arrange
     var rmlConfiguration = new RmlConfiguration();
     Map<String, String> configuredNamespaces = new HashMap<>();
