@@ -1,0 +1,51 @@
+openapi: 3.0.2
+
+info:
+  title: Breweries
+  version: 3.0.0
+
+paths:
+  /id/beer/{id}:
+    description: endpoint for beer dereferencing
+    get:
+      x-dws-query:
+        field: beer
+        keys:
+          identifier: $path.id
+        selectionSet: |
+          {
+            identifier
+            name
+            abv
+            soldPerYear
+            retired
+            brewery {
+              identifier
+            }
+            ingredients {
+              nodes {
+                identifier
+              }
+            }
+            taste
+          }
+      x-dws-rml-mapping: beer.rml.ttl
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle:
+              x-dws-default: true
+            application/ld+json: {}
+            text/n3: {}
+            application/n-quads: {}
+            application/n-triples: {}
+            application/rdf+xml: {}
+            application/trig: {}

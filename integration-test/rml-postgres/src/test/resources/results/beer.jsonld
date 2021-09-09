@@ -1,0 +1,67 @@
+{
+  "@graph": [
+    {
+      "@id": "http://dotwebstack.org/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c",
+      "@type": "beer:Beer",
+      "beer:abv": {
+        "@type": "xsd:decimal",
+        "@value": "5.4"
+      },
+      "beer:brewedBy": {
+        "@id": "http://dotwebstack.org/id/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b"
+      },
+      "beer:identifier": "b0e7cf18-e3ce-439b-a63e-034c8452f59c",
+      "beer:ingredient": [
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd795191-5fbb-11eb-ae93-0242ac130002"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd79538a-5fbb-11eb-ae93-0242ac130002"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd795192-5fbb-11eb-ae93-0242ac130002"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd795196-5fbb-11eb-ae93-0242ac130002"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd794c14-5fbb-11eb-ae93-0242ac130002"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/ingredient/cd79545c-5fbb-11eb-ae93-0242ac130002"
+        }
+      ],
+      "beer:name": "Beer 1",
+      "beer:retired": "N",
+      "beer:soldPerYear": {
+        "@type": "xsd:integer",
+        "@value": "1000000"
+      },
+      "beer:taste": [
+        {
+          "@id": "http://dotwebstack.org/id/taste/MEATY"
+        },
+        {
+          "@id": "http://dotwebstack.org/id/taste/FRUITY"
+        }
+      ],
+      "foaf:isPrimaryTopicOf": {
+        "@id": "http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c"
+      },
+      "foaf:page": {
+        "@id": "http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c"
+      }
+    }
+  ],
+  "@id": "http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c",
+  "@context": {
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "beer": "http://dotwebstack.org/def/beer#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "gsp": "http://www.opengis.net/ont/geosparql#"
+  }
+}

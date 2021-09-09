@@ -1,0 +1,131 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix gsp: <http://www.opengis.net/ont/geosparql#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix pdok: <http://data.pdok.nl/def/pdok#> .
+@prefix beer: <http://dotwebstack.org/def/beer#> .
+
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix fno: <http://semweb.datasciencelab.be/ns/function#> .
+@prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
+@prefix carml: <http://carml.taxonic.com/carml/> .
+
+@prefix : <http://dotwebstack.org/id/mapping/beer#> .
+
+:Beer_LogicalSource
+  rml:source [
+    a carml:Stream ;
+  ] ;
+  rml:referenceFormulation ql:JSONPath ;
+  rml:iterator "$" ;
+.
+
+:Beer_doc_termMap
+  rr:template "http://dotwebstack.org/doc/beer/{identifier}" ;
+.
+
+:Beer a rr:TriplesMap ;
+  rml:logicalSource :Beer_LogicalSource ;
+  rr:subjectMap [
+    rr:template "http://dotwebstack.org/id/beer/{identifier}";
+    rr:class beer:Beer ;
+    rr:graphMap :Beer_doc_termMap ;
+  ] ;
+  rr:predicateObjectMap
+    :Beer_graph ,
+    :Beer_identifier ,
+    :Beer_name ,
+    :Beer_abv ,
+    :Beer_soldPerYear ,
+    :Beer_retired ,
+    :Beer_brewedBy ,
+    :Beer_ingredient ,
+    :Beer_taste ;
+.
+
+:Beer_graph
+  rr:predicate
+    foaf:isPrimaryTopicOf ,
+    foaf:page ;
+  rr:objectMap :Beer_doc_termMap ;
+.
+
+:Beer_identifier
+  rr:predicate beer:identifier ;
+  rr:objectMap [
+    rml:reference "identifier" ;
+  ] ;
+.
+
+:Beer_name
+  rr:predicate beer:name ;
+  rr:objectMap [
+    rml:reference "name" ;
+  ] ;
+.
+
+:Beer_abv
+  rr:predicate beer:abv ;
+  rr:objectMap [
+    rml:reference "abv" ;
+    rr:datatype xsd:decimal ;
+  ] ;
+.
+
+:Beer_soldPerYear
+  rr:predicate beer:soldPerYear ;
+  rr:objectMap [
+    rml:reference "soldPerYear" ;
+    rr:datatype xsd:integer ;
+  ] ;
+.
+
+:Beer_retired
+  rr:predicate beer:retired ;
+  rr:objectMap [
+    fnml:functionValue [
+      rml:logicalSource :Beer_LogicalSource ;
+      rr:subjectMap [
+        rml:reference "identifier";
+        rr:termType rr:BlankNode ;
+      ] ;
+      rr:predicateObjectMap
+        [
+          rr:predicate fno:executes ;
+          rr:object :booleanToIndicatie ;
+        ] ,
+        [
+          rr:predicate :valueParam ;
+          rr:objectMap [
+            rml:reference "retired" ;
+          ] ;
+        ] ;
+    ] ;
+    rr:datatype xsd:string ;
+  ] ;
+.
+
+:Beer_brewedBy
+  rr:predicate beer:brewedBy ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/brewery/{brewery.identifier}" ;
+  ] ;
+.
+
+:Beer_ingredient
+  rr:predicate beer:ingredient ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/ingredient/{ingredients.nodes[*].identifier}" ;
+  ] ;
+.
+
+:Beer_taste
+  rr:predicate beer:taste ;
+  rr:objectMap [
+    rr:template "http://dotwebstack.org/id/taste/{taste}" ;
+  ] ;
+.

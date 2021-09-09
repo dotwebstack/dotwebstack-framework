@@ -18,6 +18,7 @@
         <module>openapi-rdf4j</module>
         <module>openapi-json</module>
         <module>openapi-postgres</module>
+        <module>rml-postgres</module>
     </modules>
 
     <dependencies>

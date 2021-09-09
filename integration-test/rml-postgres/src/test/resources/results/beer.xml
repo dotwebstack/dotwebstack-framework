@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+        xmlns:foaf="http://xmlns.com/foaf/0.1/"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:beer="http://dotwebstack.org/def/beer#"
+        xmlns:dcterms="http://purl.org/dc/terms/"
+        xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+        xmlns:owl="http://www.w3.org/2002/07/owl#"
+        xmlns:gsp="http://www.opengis.net/ont/geosparql#">
+    <rdf:Description rdf:about="http://dotwebstack.org/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c">
+        <rdf:type rdf:resource="http://dotwebstack.org/def/beer#Beer"/>
+        <beer:taste rdf:resource="http://dotwebstack.org/id/taste/MEATY"/>
+        <beer:taste rdf:resource="http://dotwebstack.org/id/taste/FRUITY"/>
+        <beer:retired>N</beer:retired>
+        <beer:brewedBy rdf:resource="http://dotwebstack.org/id/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b"/>
+        <beer:identifier>b0e7cf18-e3ce-439b-a63e-034c8452f59c</beer:identifier>
+        <beer:abv rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5.4</beer:abv>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd795191-5fbb-11eb-ae93-0242ac130002"/>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd79538a-5fbb-11eb-ae93-0242ac130002"/>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd795192-5fbb-11eb-ae93-0242ac130002"/>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd795196-5fbb-11eb-ae93-0242ac130002"/>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd794c14-5fbb-11eb-ae93-0242ac130002"/>
+        <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/cd79545c-5fbb-11eb-ae93-0242ac130002"/>
+        <foaf:page rdf:resource="http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c"/>
+        <foaf:isPrimaryTopicOf rdf:resource="http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c"/>
+        <beer:name>Beer 1</beer:name>
+        <beer:soldPerYear rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1000000</beer:soldPerYear>
+    </rdf:Description>
+</rdf:RDF>
