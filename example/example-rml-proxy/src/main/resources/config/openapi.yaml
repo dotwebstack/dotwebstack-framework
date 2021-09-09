@@ -4,16 +4,6 @@ info:
   title: Beer IRI dereferencing
   version: 1.0.0
 
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        message:
-          type: string
-        errorCode:
-          type: string
-
 paths:
   /id/beer/{id}:
     description: ID endpoint for beer dereferencing
