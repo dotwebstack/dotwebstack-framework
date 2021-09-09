@@ -7,3 +7,9 @@ features:
 
 spatial:
   sourceCrs: EPSG:4258
+
+rml:
+  namespaces:
+    beer: http://dotwebstack.org/def/beer#
+    foaf: http://xmlns.com/foaf/0.1/
+    gsp: http://www.opengis.net/ont/geosparql#
