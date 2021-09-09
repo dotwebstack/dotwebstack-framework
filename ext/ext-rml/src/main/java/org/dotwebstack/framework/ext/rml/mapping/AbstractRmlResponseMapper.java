@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.model.TriplesMap;
+import com.taxonic.carml.util.Mapping;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -25,14 +27,16 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
 
   final RdfRmlMapper rmlMapper;
 
-  final Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation;
+  final Map<HttpMethodOperation, Set<TriplesMap>> actionableMappingsPerOperation;
 
   final Set<Namespace> namespaces;
 
   AbstractRmlResponseMapper(RdfRmlMapper rmlMapper, Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation,
       Set<Namespace> namespaces) {
     this.rmlMapper = rmlMapper;
-    this.mappingsPerOperation = mappingsPerOperation;
+    this.actionableMappingsPerOperation = mappingsPerOperation.entrySet()
+        .stream()
+        .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, entry -> Mapping.filterMappable(entry.getValue())));
     this.namespaces = namespaces;
   }
 
@@ -76,7 +80,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
         }
       }
 
-      Model model = rmlMapper.mapItemToRdf4jModel(input, mappingsPerOperation.get(operation));
+      Model model = rmlMapper.mapItemToRdf4jModel(input, actionableMappingsPerOperation.get(operation));
       namespaces.forEach(model::setNamespace);
 
       return modelToString(model);
