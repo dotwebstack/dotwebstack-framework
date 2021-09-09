@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.integrationtest.graphqlpostgres.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
@@ -83,7 +84,7 @@ class GraphQlPostgresWithContextIntegrationTest {
 
     JsonNode json = executeQuery(query);
 
-    assertThat(json.has(ERRORS), is(false));
+    Assert.assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
 
@@ -98,7 +99,7 @@ class GraphQlPostgresWithContextIntegrationTest {
 
     JsonNode json = executeQuery(query);
 
-    assertThat(json.has(ERRORS), is(false));
+    Assert.assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
 
@@ -118,7 +119,7 @@ class GraphQlPostgresWithContextIntegrationTest {
 
     JsonNode json = executeQuery(query);
 
-    assertThat(json.has(ERRORS), is(false));
+    Assert.assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
 
@@ -138,7 +139,7 @@ class GraphQlPostgresWithContextIntegrationTest {
 
     JsonNode json = executeQuery(query);
 
-    assertThat(json.has(ERRORS), is(false));
+    Assert.assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
 
@@ -148,6 +149,21 @@ class GraphQlPostgresWithContextIntegrationTest {
                 hasItems(hasEntry(equalTo("name"), equalTo(expected)), hasEntry(equalTo("name"), equalTo("Beer 2")),
                     hasEntry(equalTo("name"), equalTo("Beer 3")), hasEntry(equalTo("name"), equalTo("Beer 4")),
                     hasEntry(equalTo("name"), equalTo("Beer 5")), hasEntry(equalTo("name"), equalTo("Beer 6"))))));
+  }
+
+  @Test
+  void postRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
+    String query = "{breweries(context: {}, filter: {beerBreweryName: {eq: \"Brewery X\"}}){ nodes { name } }}";
+
+    JsonNode json = executeQuery(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data, hasEntry(equalTo("breweries"), hasEntry(equalTo("nodes"), iterableWithSize(1))));
+    assertThat(data, hasEntry(equalTo("breweries"),
+        hasEntry(equalTo("nodes"), hasItems(hasEntry(equalTo("name"), equalTo("Brewery X"))))));
   }
 
   private JsonNode executeQuery(String query) {

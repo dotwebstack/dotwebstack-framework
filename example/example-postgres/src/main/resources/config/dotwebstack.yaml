@@ -118,8 +118,6 @@ objectTypes:
         field: history.age
       beerName:
         field: beers.name
-      beerBreweryName:
-        field: beers.brewery.name
     fields:
       identifier:
         type: ID

@@ -180,6 +180,8 @@ objectTypes:
       geometry: {}
       historyAge:
         field: history.age
+      beerBreweryName:
+        field: beers.brewery.name
     sortableBy:
       name:
         - field: name
