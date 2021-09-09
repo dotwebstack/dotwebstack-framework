@@ -1,0 +1,15 @@
+openapi: 3.0.2
+
+info:
+  title: ext-rml test
+  version: 1.0.0
+
+paths:
+  /path6:
+    get:
+      x-dws-rml-mapping: test3.rml.unknown
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}

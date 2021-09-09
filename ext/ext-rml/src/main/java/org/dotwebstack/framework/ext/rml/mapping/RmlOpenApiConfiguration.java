@@ -23,6 +23,8 @@ import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigu
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParserRegistry;
+import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -102,6 +104,16 @@ public class RmlOpenApiConfiguration {
       throw new InvalidConfigurationException(String.format("Could not resolve mapping file %s", path));
     }
 
-    return Models.parse(mappingInputStream, RDFFormat.TURTLE);
+    RDFFormat rdfFormat = Rio.getParserFormatForFileName(mappingFile)
+        .orElseThrow(() -> new InvalidConfigurationException(
+            "Could not determine rdf format for mapping filename: %s. Supported file extensions are: %s", mappingFile,
+            RDFParserRegistry.getInstance()
+                .getKeys()
+                .stream()
+                .map(RDFFormat::getFileExtensions)
+                .flatMap(List::stream)
+                .collect(Collectors.toList())));
+
+    return Models.parse(mappingInputStream, rdfFormat);
   }
 }

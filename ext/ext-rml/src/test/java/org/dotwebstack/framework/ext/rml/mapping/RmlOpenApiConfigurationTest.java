@@ -73,4 +73,19 @@ class RmlOpenApiConfigurationTest {
     // Assert
     assertThat(invalidConfigurationException.getMessage(), startsWith("Could not resolve mapping file"));
   }
+
+  @Test
+  void mappingsPerOperation_throwsException_GivenMappingFileWithUnsupportedExtension() {
+    // Arrange
+    var openApi = TestResources.openApi("config/openapi-exception-mapping-file-extension.yaml");
+    var rmlOpenApiConfiguration = new RmlOpenApiConfiguration();
+
+    // Act
+    InvalidConfigurationException invalidConfigurationException =
+        assertThrows(InvalidConfigurationException.class, () -> rmlOpenApiConfiguration.mappingsPerOperation(openApi));
+
+    // Assert
+    assertThat(invalidConfigurationException.getMessage(), startsWith(
+        "Could not determine rdf format for mapping filename: test3.rml.unknown. Supported file extensions are:"));
+  }
 }
