@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
@@ -19,7 +21,7 @@ class TestResources {
           .getResource(path)
           .getFile()), "UTF-8");
     } catch (IOException e) {
-      throw new IllegalArgumentException("Resource " + path + "not found.");
+      throw illegalArgumentException("Resource {} not found.", path);
     }
   }
 }

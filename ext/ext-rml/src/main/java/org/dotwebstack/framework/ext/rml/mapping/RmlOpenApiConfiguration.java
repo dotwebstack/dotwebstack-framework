@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+
 import com.taxonic.carml.model.TriplesMap;
 import com.taxonic.carml.util.Models;
 import com.taxonic.carml.util.RmlMappingLoader;
@@ -15,11 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
-import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -67,8 +68,8 @@ public class RmlOpenApiConfiguration {
     } else if (mappingConfig instanceof String) {
       return Map.of(httpMethodOperation, resolveMappings(List.of((String) mappingConfig)));
     } else {
-      throw new InvalidOpenApiConfigurationException(String.format("%s on %s is not a list of RML mapping paths",
-          X_DWS_RML_MAPPING, httpMethodOperation.getName()));
+      throw invalidOpenApiConfigurationException("{} on {} is not a list of RML mapping paths", X_DWS_RML_MAPPING,
+          httpMethodOperation.getName());
     }
   }
 
@@ -91,8 +92,7 @@ public class RmlOpenApiConfiguration {
       try {
         mappingInputStream = new FileInputStream(path.toFile());
       } catch (FileNotFoundException fileNotFoundException) {
-        throw new InvalidConfigurationException(String.format("Could not resolve mapping file %s", path),
-            fileNotFoundException);
+        throw invalidConfigurationException("Could not resolve mapping file {}", path, fileNotFoundException);
       }
     } else {
       mappingInputStream = getClass().getResourceAsStream(ResourceProperties.getResourcePath()
@@ -101,12 +101,12 @@ public class RmlOpenApiConfiguration {
     }
 
     if (mappingInputStream == null) {
-      throw new InvalidConfigurationException(String.format("Could not resolve mapping file %s", path));
+      throw invalidConfigurationException("Could not resolve mapping file {}", path);
     }
 
     RDFFormat rdfFormat = Rio.getParserFormatForFileName(mappingFile)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            "Could not determine rdf format for mapping filename: %s. Supported file extensions are: %s", mappingFile,
+        .orElseThrow(() -> invalidConfigurationException(
+            "Could not determine rdf format for mapping filename: {}. Supported file extensions are: {}", mappingFile,
             RDFParserRegistry.getInstance()
                 .getKeys()
                 .stream()

@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.formatMessage;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
@@ -65,9 +68,8 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
       if (context instanceof HttpMethodOperation) {
         operation = (HttpMethodOperation) context;
       } else {
-        throw new IllegalArgumentException(
-            String.format("Context can only be of type HttpMethodOperation, but was %s", context.getClass()
-                .getCanonicalName()));
+        throw illegalArgumentException("Context can only be of type HttpMethodOperation, but was {}", context.getClass()
+            .getCanonicalName());
       }
 
       if (LOG.isDebugEnabled()) {
@@ -76,7 +78,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
           LOG.debug("{}", OBJECT_MAPPER.writerWithDefaultPrettyPrinter()
               .writeValueAsString(input));
         } catch (JsonProcessingException jsonProcessingException) {
-          throw new RmlResponseMapperException(String.format("Error processing: %s", input), jsonProcessingException);
+          throw new RmlResponseMapperException(formatMessage("Error processing: {}", input), jsonProcessingException);
         }
       }
 
@@ -85,8 +87,8 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
 
       return modelToString(model);
     } else {
-      throw new IllegalArgumentException(String.format("Input can only be of type Map, but was %s", input.getClass()
-          .getCanonicalName()));
+      throw illegalArgumentException("Input can only be of type Map, but was {}", input.getClass()
+          .getCanonicalName());
     }
   }
 
