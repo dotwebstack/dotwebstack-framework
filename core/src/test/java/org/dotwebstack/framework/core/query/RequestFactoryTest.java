@@ -297,7 +297,7 @@ class RequestFactoryTest {
 
     var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
 
-    assertThat(objectRequest.getContextCriteria(), IsIterableContainingInOrder.contains(ContextCriteria.builder()
+    assertThat(objectRequest.getContextCriterias(), IsIterableContainingInOrder.contains(ContextCriteria.builder()
         .field("validOn")
         .value(LocalDate.of(2020, 1, 1))
         .build()));

@@ -38,7 +38,7 @@ public class ObjectRequest implements Request {
   private final List<ObjectFieldConfiguration> collectionObjectFields = new ArrayList<>();
 
   @Builder.Default
-  private final List<ContextCriteria> contextCriteria = List.of();
+  private final List<ContextCriteria> contextCriterias = List.of();
 
   public void addScalarField(ScalarField scalar) {
     if (!scalarFields.contains(scalar)) {
@@ -54,9 +54,9 @@ public class ObjectRequest implements Request {
         .findFirst();
   }
 
-  public Optional<ScalarField> getScalarField(FieldConfiguration field) {
-    return scalarFields.stream()
-        .filter(scalarField -> scalarField.getField()
+  public Optional<ObjectFieldConfiguration> getCollectionObjectField(FieldConfiguration field) {
+    return collectionObjectFields.stream()
+        .filter(objectField -> objectField.getField()
             .getName()
             .equals(field.getName()))
         .findFirst();

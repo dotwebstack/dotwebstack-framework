@@ -20,22 +20,12 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.filter.FieldPath;
-import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 
 @SuperBuilder
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectRequest extends ObjectRequest {
-
-  public void addFields(FilterCriteria criteria) {
-    var origin = Origin.filtering(criteria);
-
-    criteria.getFieldPaths()
-        .stream()
-        .filter(FieldPath::isNode)
-        .forEach(fieldPath -> addFields(fieldPath, origin));
-  }
 
   public void addFields(SortCriteria criteria, Map<String, String> fieldPathAliasMap) {
     var origin = Origin.sorting(criteria, fieldPathAliasMap);
@@ -134,6 +124,16 @@ public class PostgresObjectRequest extends ObjectRequest {
 
   private ObjectFieldConfiguration getOrCreateObjectField(ObjectRequest objectRequest,
       PostgresTypeConfiguration typeConfiguration, PostgresFieldConfiguration fieldConfiguration) {
+    if (fieldConfiguration.isList()) {
+      return objectRequest.getCollectionObjectField(fieldConfiguration)
+          .orElseGet(() -> {
+            var newObjectField = createObjectFieldConfiguration(typeConfiguration, fieldConfiguration);
+            objectRequest.getCollectionObjectFields()
+                .add(newObjectField);
+            return newObjectField;
+          });
+    }
+
     return objectRequest.getObjectField(fieldConfiguration)
         .orElseGet(() -> {
           var newObjectField = createObjectFieldConfiguration(typeConfiguration, fieldConfiguration);

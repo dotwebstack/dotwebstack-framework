@@ -1,37 +1,31 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.FilterConditionHelper.createFilterCondition;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createMapAssembler;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.field;
+import static org.dotwebstack.framework.backend.postgres.query.TableHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import com.google.common.collect.Sets;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Getter;
-import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.model.PostgresObjectRequestFactory;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.NestedObjectFieldConfiguration;
+import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.core.query.model.filter.FieldPath;
-import org.dotwebstack.framework.core.query.model.origin.Filtering;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
 import org.dotwebstack.framework.core.query.model.origin.Requested;
 import org.dotwebstack.framework.core.query.model.origin.Sorting;
@@ -39,6 +33,7 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JoinType;
+import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
@@ -54,13 +49,16 @@ public class SelectQueryBuilder {
 
   private final AggregateFieldFactory aggregateFieldFactory;
 
-  private final DotWebStackConfiguration dotWebStackConfiguration;
+  private final JoinHelper joinHelper;
 
-  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory,
-      DotWebStackConfiguration dotWebStackConfiguration) {
+  private final FilterConditionHelper filterConditionHelper;
+
+  public SelectQueryBuilder(DSLContext dslContext, AggregateFieldFactory aggregateFieldFactory, JoinHelper joinHelper,
+      FilterConditionHelper filterConditionHelper) {
     this.dslContext = dslContext;
     this.aggregateFieldFactory = aggregateFieldFactory;
-    this.dotWebStackConfiguration = dotWebStackConfiguration;
+    this.joinHelper = joinHelper;
+    this.filterConditionHelper = filterConditionHelper;
   }
 
   public SelectQueryBuilderResult build(CollectionRequest collectionRequest) {
@@ -71,35 +69,23 @@ public class SelectQueryBuilder {
     var objectRequest = collectionRequest.getObjectRequest();
 
     var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable(),
-        objectRequest.getContextCriteria()).as(objectSelectContext.newTableAlias());
+        objectRequest.getContextCriterias()).as(objectSelectContext.newTableAlias());
 
-    var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest);
-
-    collectionRequest.getFilterCriterias()
-        .forEach(postgresObjectRequest::addFields);
-
-    collectionRequest.getSortCriterias()
-        .forEach(
-            sortCriteria -> postgresObjectRequest.addFields(sortCriteria, objectSelectContext.getObjectQueryContext()
-                .getFieldPathAliasMap()));
+    var postgresObjectRequest = PostgresObjectRequestFactory.create(objectRequest, collectionRequest.getSortCriterias(),
+        objectSelectContext.getObjectQueryContext());
 
     var selectQuery = buildQuery(objectSelectContext, postgresObjectRequest, fromTable);
-
-    if (!CollectionUtils.isEmpty(collectionRequest.getFilterCriterias())) {
-      collectionRequest.getFilterCriterias()
-          .stream()
-          .filter(filterCriteria -> filterCriteria.getFieldPaths()
-              .stream()
-              .anyMatch(FieldPath::isLeaf))
-          .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable.getName()))
-          .collect(Collectors.toList())
-          .forEach(selectQuery::addConditions);
-    }
 
     if (!CollectionUtils.isEmpty(collectionRequest.getSortCriterias())) {
       createSortConditions(collectionRequest.getSortCriterias(), objectSelectContext, fromTable)
           .forEach(selectQuery::addOrderBy);
     }
+
+    collectionRequest.getFilterCriterias()
+        .stream()
+        .map(filterCriteria -> filterConditionHelper.createCondition(filterCriteria, fromTable, objectSelectContext,
+            objectRequest))
+        .forEach(selectQuery::addConditions);
 
     if (collectionRequest.getPagingCriteria() != null) {
       var pagingCriteria = collectionRequest.getPagingCriteria();
@@ -127,12 +113,12 @@ public class SelectQueryBuilder {
 
   public SelectQueryBuilderResult build(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext) {
     var fromTable = findTable(((PostgresTypeConfiguration) objectRequest.getTypeConfiguration()).getTable(),
-        objectRequest.getContextCriteria()).as(objectSelectContext.newTableAlias());
+        objectRequest.getContextCriterias()).as(objectSelectContext.newTableAlias());
     return build(objectRequest, objectSelectContext, fromTable);
   }
 
   private SelectQueryBuilderResult build(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
-      Table<?> fromTable) {
+      Table<Record> fromTable) {
     var query = buildQuery(objectSelectContext, objectRequest, fromTable);
 
     var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
@@ -167,45 +153,6 @@ public class SelectQueryBuilder {
     return query;
   }
 
-  private Optional<Table<?>> addJoinTableJoin(PostgresTypeConfiguration typeConfiguration, SelectQuery<?> query,
-      ObjectSelectContext objectSelectContext, Table<?> table, ObjectRequest objectRequest) {
-
-    return objectRequest.getKeyCriteria()
-        .stream()
-        .filter(PostgresKeyCriteria.class::isInstance)
-        .map(PostgresKeyCriteria.class::cast)
-        .findFirst()
-        .filter(keyCriteria -> keyCriteria.getJoinTable() != null)
-        .map(PostgresKeyCriteria::getJoinTable)
-        .map(joinTable -> {
-          var aliasedJoinTable = findTable(joinTable.getName(), objectRequest.getContextCriteria())
-              .asTable(objectSelectContext.newTableAlias());
-
-          var joinCondition = createJoinTableJoinCondition(joinTable.getInverseJoinColumns(),
-              typeConfiguration.getFields(), aliasedJoinTable, table);
-
-          query.addJoin(aliasedJoinTable, JoinType.JOIN, joinCondition);
-
-          return aliasedJoinTable;
-        });
-  }
-
-  private Condition createJoinTableJoinCondition(List<JoinColumn> joinColumns,
-      Map<String, PostgresFieldConfiguration> fields, Table<?> leftSideTable, Table<?> rightSideTable) {
-
-    return joinColumns.stream()
-        .map(joinColumn -> {
-          var otherSideFieldConfiguration = fields.get(joinColumn.getField());
-
-          var leftColumn = field(leftSideTable, joinColumn.getName());
-          var rightColumn = field(rightSideTable, otherSideFieldConfiguration.getColumn());
-
-          return Objects.requireNonNull(leftColumn)
-              .eq(rightColumn);
-        })
-        .reduce(DSL.noCondition(), Condition::and);
-  }
-
   private void addScalarFields(PostgresTypeConfiguration typeConfiguration, List<ScalarField> scalarFields,
       ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> table) {
 
@@ -218,8 +165,10 @@ public class SelectQueryBuilder {
       var name = typeConfiguration.getKeys()
           .get(0)
           .getField();
+
       var fieldConfiguration = typeConfiguration.getFields()
           .get(name);
+
       var scalarField = ScalarField.builder()
           .field(fieldConfiguration)
           .origins(Sets.newHashSet(Origin.requested()))
@@ -232,6 +181,7 @@ public class SelectQueryBuilder {
   private void addScalarField(ScalarField scalarField, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
       Table<?> table, AtomicBoolean keyFieldAdded) {
     var scalarFieldConfiguration = (PostgresFieldConfiguration) scalarField.getField();
+
     var column = Objects.requireNonNull(field(table, scalarFieldConfiguration.getColumn()));
 
     if (scalarField.hasOrigin(Requested.class)) {
@@ -275,119 +225,108 @@ public class SelectQueryBuilder {
       SelectQuery<?> query, Table<?> fieldTable) {
 
     objectRequest.getNestedObjectFields()
-        .forEach(nestedObjectField -> {
-          var nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
-          addScalarFields((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
-              nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
-          objectSelectContext.getAssembleFns()
-              .put(nestedObjectField.getField()
-                  .getName(),
-                  createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
-                      false)::apply);
+        .forEach(nestedObjectField -> addNestedObjectField(objectRequest, objectSelectContext, query, fieldTable,
+            nestedObjectField));
+  }
 
-          query.addConditions(createFilterConditions(nestedObjectField.getScalarFields(), fieldTable));
-        });
+  private void addNestedObjectField(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable, NestedObjectFieldConfiguration nestedObjectField) {
+    var nestedObjectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+
+    addScalarFields((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
+        nestedObjectField.getScalarFields(), nestedObjectContext, query, fieldTable);
+
+    objectSelectContext.getAssembleFns()
+        .put(nestedObjectField.getField()
+            .getName(),
+            createMapAssembler(nestedObjectContext.getAssembleFns(), nestedObjectContext.getCheckNullAlias(),
+                false)::apply);
   }
 
   private void addObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> fieldTable) {
 
     objectRequest.getObjectFields()
-        .forEach(objectField -> {
-          var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
-
-          var objectFieldConfiguration = (PostgresFieldConfiguration) objectField.getField();
-
-          var objectFieldTable =
-              findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable(),
-                  objectRequest.getContextCriteria()).asTable(objectSelectContext.newTableAlias());
-
-          var subSelect = buildQuery(lateralJoinContext, objectField.getObjectRequest(), objectFieldTable);
-
-          createFilterConditions(objectField.getObjectRequest()
-              .getScalarFields(), objectFieldTable).forEach(subSelect::addConditions);
-
-          subSelect.addLimit(1);
-
-          var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
-
-          query.addSelect(lateralTable.asterisk());
-
-          var joinTable = objectField.hasNestedFilteringOrigin() ? lateralTable : objectFieldTable;
-          Map<String, String> fieldAliasMap =
-              objectField.hasNestedFilteringOrigin() ? lateralJoinContext.getFieldAliasMap() : Map.of();
-
-          var leftSide = PostgresTableField.builder()
-              .fieldConfiguration(objectFieldConfiguration)
-              .table(joinTable)
-              .build();
-
-          var rightSide = PostgresTableType.builder()
-              .typeConfiguration((PostgresTypeConfiguration) objectRequest.getTypeConfiguration())
-              .table(fieldTable)
-              .build();
-
-          addJoinTableCondition(subSelect, lateralJoinContext, leftSide, rightSide, fieldAliasMap,
-              objectRequest.getContextCriteria());
-
-          List<Condition> joinConditions =
-              createJoinConditions(objectFieldConfiguration, joinTable, fieldTable, fieldAliasMap);
-
-          if (objectField.hasNestedFilteringOrigin()) {
-            query.addJoin(DSL.lateral(lateralTable), joinConditions.toArray(Condition[]::new));
-          } else {
-            subSelect.addConditions(joinConditions);
-            query.addJoin(lateralTable, JoinType.OUTER_APPLY);
-          }
-
-          objectSelectContext.getAssembleFns()
-              .put(objectField.getField()
-                  .getName(),
-                  createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
-                      false)::apply);
-        });
+        .forEach(objectField -> addObjectField(objectRequest, objectSelectContext, query, fieldTable, objectField));
   }
 
-  private List<Condition> createFilterConditions(List<ScalarField> scalarFields, Table<?> fieldTable) {
-    return scalarFields.stream()
-        .map(ScalarField::getOrigins)
-        .flatMap(Collection::stream)
-        .filter(Filtering.class::isInstance)
-        .map(Filtering.class::cast)
-        .map(filtering -> createFilterCondition(filtering.getFilterCriteria(), fieldTable.getName()))
-        .collect(Collectors.toList());
+  private void addObjectField(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable, ObjectFieldConfiguration objectField) {
+    var lateralJoinContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+
+    var objectFieldConfiguration = (PostgresFieldConfiguration) objectField.getField();
+
+    var objectFieldTable =
+        findTable(((PostgresTypeConfiguration) objectFieldConfiguration.getTypeConfiguration()).getTable(),
+            objectRequest.getContextCriterias()).asTable(objectSelectContext.newTableAlias());
+
+    var subSelect = buildQuery(lateralJoinContext, objectField.getObjectRequest(), objectFieldTable);
+
+    subSelect.addLimit(1);
+
+    var lateralTable = subSelect.asTable(objectSelectContext.newTableAlias(objectFieldConfiguration.getName()));
+
+    query.addSelect(lateralTable.asterisk());
+
+    var leftSide = PostgresTableField.builder()
+        .fieldConfiguration(objectFieldConfiguration)
+        .table(objectFieldTable)
+        .build();
+
+    var rightSide = PostgresTableType.builder()
+        .typeConfiguration((PostgresTypeConfiguration) objectRequest.getTypeConfiguration())
+        .table(fieldTable)
+        .build();
+
+    joinHelper.addJoinTableCondition(subSelect, lateralJoinContext, leftSide, rightSide, Map.of(),
+        objectRequest.getContextCriterias());
+
+    List<Condition> joinConditions =
+        joinHelper.createJoinConditions(objectFieldConfiguration, objectFieldTable, fieldTable, Map.of());
+
+    subSelect.addConditions(joinConditions);
+    query.addJoin(lateralTable, JoinType.OUTER_APPLY);
+
+    objectSelectContext.getAssembleFns()
+        .put(objectField.getField()
+            .getName(),
+            createMapAssembler(lateralJoinContext.getAssembleFns(), lateralJoinContext.getCheckNullAlias(),
+                false)::apply);
   }
 
   private void addAggregateObjectFields(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
       SelectQuery<?> query, Table<?> fieldTable) {
 
     objectRequest.getAggregateObjectFields()
-        .forEach(aggregateObjectFieldConfiguration -> {
-          var aggregateObjectSelectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
+        .forEach(aggregateObjectFieldConfiguration -> addAggregateObjectField(objectRequest, objectSelectContext, query,
+            fieldTable, aggregateObjectFieldConfiguration));
+  }
 
-          var stringJoinAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(true);
+  private void addAggregateObjectField(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
+      SelectQuery<?> query, Table<?> fieldTable, AggregateObjectFieldConfiguration aggregateObjectFieldConfiguration) {
+    var aggregateObjectSelectContext = new ObjectSelectContext(objectSelectContext.getObjectQueryContext());
 
-          var otherAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(false);
+    var stringJoinAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(true);
 
-          stringJoinAggregateFields
-              .forEach(stringJoinAggregateField -> processAggregateFields(List.of(stringJoinAggregateField),
-                  aggregateObjectFieldConfiguration, aggregateObjectSelectContext, query,
-                  (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable,
-                  objectRequest.getContextCriteria()));
+    var otherAggregateFields = aggregateObjectFieldConfiguration.getAggregateFields(false);
 
-          if (!otherAggregateFields.isEmpty()) {
-            processAggregateFields(otherAggregateFields, aggregateObjectFieldConfiguration,
-                aggregateObjectSelectContext, query, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
-                fieldTable, objectRequest.getContextCriteria());
-          }
+    stringJoinAggregateFields
+        .forEach(stringJoinAggregateField -> processAggregateFields(List.of(stringJoinAggregateField),
+            aggregateObjectFieldConfiguration, aggregateObjectSelectContext, query,
+            (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable,
+            objectRequest.getContextCriterias()));
 
-          objectSelectContext.getAssembleFns()
-              .put(aggregateObjectFieldConfiguration.getField()
-                  .getName(),
-                  createMapAssembler(aggregateObjectSelectContext.getAssembleFns(),
-                      aggregateObjectSelectContext.getCheckNullAlias(), false)::apply);
+    if (!otherAggregateFields.isEmpty()) {
+      processAggregateFields(otherAggregateFields, aggregateObjectFieldConfiguration, aggregateObjectSelectContext,
+          query, (PostgresTypeConfiguration) objectRequest.getTypeConfiguration(), fieldTable,
+          objectRequest.getContextCriterias());
+    }
 
-        });
+    objectSelectContext.getAssembleFns()
+        .put(aggregateObjectFieldConfiguration.getField()
+            .getName(),
+            createMapAssembler(aggregateObjectSelectContext.getAssembleFns(),
+                aggregateObjectSelectContext.getCheckNullAlias(), false)::apply);
   }
 
   private void processAggregateFields(List<AggregateFieldConfiguration> aggregateFields,
@@ -415,7 +354,7 @@ public class SelectQueryBuilder {
         .build();
 
     // add join condition to subselect query
-    addAggregateJoin(subSelect, aggregateObjectSelectContext, leftSide, rightSide, contextCriterias);
+    joinHelper.addAggregateJoin(subSelect, aggregateObjectSelectContext, leftSide, rightSide, contextCriterias);
 
     // join with query
     var lateralTable = subSelect.asTable(aggregateObjectSelectContext.newTableAlias());
@@ -425,25 +364,28 @@ public class SelectQueryBuilder {
 
   private void addAggregateFields(List<AggregateFieldConfiguration> aggregateFieldConfigurations,
       ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> table) {
-    aggregateFieldConfigurations.forEach(aggregateFieldConfiguration -> {
+    aggregateFieldConfigurations.forEach(aggregateFieldConfiguration -> addAggregateField(objectSelectContext, query,
+        table, aggregateFieldConfiguration));
+  }
 
-      var columnAlias = objectSelectContext.newSelectAlias();
-      var columnName = ((PostgresFieldConfiguration) aggregateFieldConfiguration.getField()).getColumn();
+  private void addAggregateField(ObjectSelectContext objectSelectContext, SelectQuery<?> query, Table<?> table,
+      AggregateFieldConfiguration aggregateFieldConfiguration) {
+    var columnAlias = objectSelectContext.newSelectAlias();
+    var columnName = ((PostgresFieldConfiguration) aggregateFieldConfiguration.getField()).getColumn();
 
-      var column = aggregateFieldFactory.create(aggregateFieldConfiguration, table.getName(), columnName, columnAlias)
-          .as(columnAlias);
+    var column = aggregateFieldFactory.create(aggregateFieldConfiguration, table.getName(), columnName, columnAlias)
+        .as(columnAlias);
 
-      objectSelectContext.getAssembleFns()
-          .put(aggregateFieldConfiguration.getAlias(), row -> row.get(column.getName()));
+    objectSelectContext.getAssembleFns()
+        .put(aggregateFieldConfiguration.getAlias(), row -> row.get(column.getName()));
 
-      query.addSelect(column);
+    query.addSelect(column);
 
-      if (aggregateFieldConfiguration.getAggregateFunctionType() == JOIN && aggregateFieldConfiguration.getField()
-          .isList()) {
-        query.addJoin(DSL.unnest(DSL.field(DSL.name(table.getName(), columnName), String[].class))
-            .as(columnAlias), JoinType.CROSS_JOIN);
-      }
-    });
+    if (aggregateFieldConfiguration.getAggregateFunctionType() == JOIN && aggregateFieldConfiguration.getField()
+        .isList()) {
+      query.addJoin(DSL.unnest(DSL.field(DSL.name(table.getName(), columnName), String[].class))
+          .as(columnAlias), JoinType.CROSS_JOIN);
+    }
   }
 
   private void addReferenceColumns(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
@@ -467,76 +409,16 @@ public class SelectQueryBuilder {
     }
   }
 
-  private void addJoinTableCondition(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
-      PostgresTableField leftSide, PostgresTableType rightSide, Map<String, String> fieldAliasMap,
-      List<ContextCriteria> contextCriterias) {
-
-    if (leftSide.getFieldConfiguration()
-        .getJoinTable() != null) {
-      var joinTable = findTable(leftSide.getFieldConfiguration()
-          .getJoinTable()
-          .getName(), contextCriterias).asTable(objectSelectContext.newTableAlias());
-      var condition = getJoinTableCondition(leftSide, rightSide, fieldAliasMap, joinTable);
-
-      // create join for query with single value jointable mapping & subscriptions
-      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
-    }
-  }
-
-  private List<Condition> createJoinConditions(PostgresFieldConfiguration leftSideConfiguration, Table<?> leftSideTable,
-      Table<?> rightSideTable, Map<String, String> fieldAliasMap) {
-
-    if (leftSideConfiguration.getJoinColumns() != null) {
-      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(),
-          ((PostgresTypeConfiguration) leftSideConfiguration.getTypeConfiguration()).getFields(), rightSideTable,
-          leftSideTable, fieldAliasMap);
-      return List.of(condition);
-    }
-
-    if (leftSideConfiguration.getMappedBy() != null) {
-      PostgresTypeConfiguration otherSideTypeConfiguration =
-          (PostgresTypeConfiguration) dotWebStackConfiguration.getObjectTypes()
-              .get(leftSideConfiguration.getType());
-      PostgresFieldConfiguration otherSideFieldConfiguration =
-          otherSideTypeConfiguration.getField(leftSideConfiguration.getMappedBy())
-              .orElseThrow();
-
-      return createJoinConditions(otherSideFieldConfiguration, rightSideTable, leftSideTable, fieldAliasMap);
-    }
-
-    return List.of();
-  }
-
-  private void addAggregateJoin(SelectQuery<?> subSelect, ObjectSelectContext objectSelectContext,
-      PostgresTableField leftSide, PostgresTableType rightSide, List<ContextCriteria> contextCriterias) {
-
-    var leftSideConfiguration = leftSide.getFieldConfiguration();
-    var rightSideConfiguration = rightSide.getTypeConfiguration();
-
-    if (leftSideConfiguration.getJoinTable() != null) {
-      var joinTable = findTable(leftSideConfiguration.getJoinTable()
-          .getName(), contextCriterias).asTable(objectSelectContext.newTableAlias());
-
-      // create join with jointable and join condition on joinColumns and inverse joinColumn
-      var condition = getJoinTableCondition(leftSide, rightSide, objectSelectContext.getFieldAliasMap(), joinTable);
-
-      subSelect.addJoin(joinTable, JoinType.JOIN, condition);
-    } else {
-      var condition = getJoinCondition(leftSideConfiguration.getJoinColumns(), rightSideConfiguration.getFields(),
-          leftSide.getTable(), rightSide.getTable(), objectSelectContext.getFieldAliasMap());
-      subSelect.addConditions(condition);
-    }
-  }
-
   private SelectQuery<?> addKeyCriterias(SelectQuery<?> subSelectQuery, ObjectSelectContext objectSelectContext,
-      Table<?> fieldTable, ObjectRequest objectRequest) {
+      Table<Record> fieldTable, ObjectRequest objectRequest) {
 
     PostgresTypeConfiguration typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
 
-    Optional<Table<?>> joinTable = addJoinTableJoin((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
-        subSelectQuery, objectSelectContext, fieldTable, objectRequest);
+    Optional<Table<Record>> joinTable =
+        joinHelper.createJoinTableForKeyCriteria((PostgresTypeConfiguration) objectRequest.getTypeConfiguration(),
+            subSelectQuery, objectSelectContext, fieldTable, objectRequest);
 
-    final Table<?> referencedTable = joinTable.orElse(fieldTable);
+    final Table<Record> referencedTable = joinTable.orElse(fieldTable);
 
     // create value rows array
     var valuesTableRows = objectRequest.getKeyCriteria()
@@ -576,6 +458,7 @@ public class SelectQueryBuilder {
     var query = dslContext.selectQuery();
 
     var lateralTable = subSelectQuery.asTable(objectSelectContext.newTableAlias());
+
     query.addFrom(valuesTable);
     query.addSelect(lateralTable.asterisk());
     query.addJoin(lateralTable, JoinType.OUTER_APPLY);
@@ -602,132 +485,43 @@ public class SelectQueryBuilder {
         .orElseThrow();
   }
 
-  private Table<?> createTable(String name, List<ContextCriteria> contextCriterias) {
-    AtomicInteger atomicInteger = new AtomicInteger(0);
-
-    String bindingKeys = contextCriterias.stream()
-        .map(contextCriteria -> String.format("{%d}", atomicInteger.getAndIncrement()))
-        .collect(Collectors.joining(","));
-
-    Object[] bindingValues = contextCriterias.stream()
-        .map(ContextCriteria::getValue)
-        .collect(Collectors.toList())
-        .toArray(Object[]::new);
-
-    return DSL.table(String.format("%s_ctx(%s)", name, bindingKeys), bindingValues);
-  }
-
-  private Table<?> findTable(String name, List<ContextCriteria> contextCriteria) {
-    if (!contextCriteria.isEmpty()) {
-      return createTable(name, contextCriteria);
-    }
-    return DSL.table(DSL.name(name.split("\\.")));
-  }
-
-  private Condition getJoinTableCondition(PostgresTableField leftSide, PostgresTableType rightSide,
-      Map<String, String> rightFieldAliasMap, Table<?> joinTable) {
-
-    var joinColumns = leftSide.getFieldConfiguration()
-        .findJoinColumns();
-
-    var rightFields = rightSide.getTypeConfiguration()
-        .getFields();
-
-    return getJoinCondition(joinColumns, rightFields, joinTable, rightSide.getTable(), rightFieldAliasMap)
-        .and(getInverseJoinCondition(leftSide, joinTable));
-  }
-
-  private Condition getJoinCondition(List<JoinColumn> joinColumns, Map<String, PostgresFieldConfiguration> fields,
-      Table<?> leftSideTable, Table<?> rightSideTable, Map<String, String> rightFieldAliasMap) {
-
-    return joinColumns.stream()
-        .map(joinColumn -> {
-          var otherSideFieldConfiguration = fields.get(joinColumn.getField());
-
-          var leftColumn = field(leftSideTable, joinColumn.getName());
-
-          var rightColumnAlias = rightFieldAliasMap.get(otherSideFieldConfiguration.getColumn());
-
-          var rightColumn = field(rightSideTable,
-              rightColumnAlias != null ? rightColumnAlias : otherSideFieldConfiguration.getColumn());
-
-          return Objects.requireNonNull(leftColumn)
-              .eq(rightColumn);
-        })
-        .reduce(DSL.noCondition(), Condition::and);
-  }
-
-  private Condition getInverseJoinCondition(PostgresTableField leftPostgresTableField, Table<?> rightSideTable) {
-    return leftPostgresTableField.getFieldConfiguration()
-        .findInverseJoinColumns()
-        .stream()
-        .map(joinColumn -> {
-
-          var otherSideFieldConfiguration = (PostgresFieldConfiguration) leftPostgresTableField.getFieldConfiguration()
-              .getTypeConfiguration()
-              .getFields()
-              .get(joinColumn.getField());
-
-          var leftColumn = field(rightSideTable, joinColumn.getName());
-          var rightColumn = field(leftPostgresTableField.getTable(), otherSideFieldConfiguration.getColumn());
-
-          return Objects.requireNonNull(leftColumn)
-              .eq(rightColumn);
-        })
-        .reduce(DSL.noCondition(), Condition::and);
-  }
-
   @SuppressWarnings("rawtypes")
   public static List<SortField> createSortConditions(List<SortCriteria> sortCriterias,
       ObjectSelectContext objectSelectContext, Table<?> fromTable) {
     return sortCriterias.stream()
-        .map(sortCriteria -> {
-          var sortTable = !sortCriteria.getFieldPath()
-              .isLeaf() ? objectSelectContext.getTableAlias(
-                  sortCriteria.getFieldPath()
-                      .getFieldConfiguration()
-                      .getName())
-                  : fromTable.getName();
-
-          var sortColumn = objectSelectContext.getObjectQueryContext()
-              .getFieldPathAliasMap()
-              .get(sortCriteria.getFieldPath()
-                  .getName());
-
-          if (sortColumn == null) {
-            PostgresFieldConfiguration postgresFieldConfiguration =
-                (PostgresFieldConfiguration) sortCriteria.getFieldPath()
-                    .getFieldConfiguration();
-            sortColumn = postgresFieldConfiguration.getColumn();
-          }
-
-          Field<?> sortField = DSL.field(DSL.name(sortTable, sortColumn));
-
-          switch (sortCriteria.getDirection()) {
-            case ASC:
-              return sortField.asc();
-            case DESC:
-              return sortField.desc();
-            default:
-              throw unsupportedOperationException("Unsupported direction: {}", sortCriteria.getDirection());
-          }
-        })
+        .map(sortCriteria -> createSortCondition(objectSelectContext, fromTable, sortCriteria))
         .collect(Collectors.toList());
   }
 
-  @Builder
-  @Getter
-  private static class PostgresTableField {
-    private final PostgresFieldConfiguration fieldConfiguration;
+  private static SortField<?> createSortCondition(ObjectSelectContext objectSelectContext, Table<?> fromTable,
+      SortCriteria sortCriteria) {
+    var sortTable = !sortCriteria.getFieldPath()
+        .isLeaf() ? objectSelectContext.getTableAlias(
+            sortCriteria.getFieldPath()
+                .getFieldConfiguration()
+                .getName())
+            : fromTable.getName();
 
-    private final Table<?> table;
-  }
+    var sortColumn = objectSelectContext.getObjectQueryContext()
+        .getFieldPathAliasMap()
+        .get(sortCriteria.getFieldPath()
+            .getName());
 
-  @Builder
-  @Getter
-  private static class PostgresTableType {
-    private final PostgresTypeConfiguration typeConfiguration;
+    if (sortColumn == null) {
+      PostgresFieldConfiguration postgresFieldConfiguration = (PostgresFieldConfiguration) sortCriteria.getFieldPath()
+          .getFieldConfiguration();
+      sortColumn = postgresFieldConfiguration.getColumn();
+    }
 
-    private final Table<?> table;
+    Field<?> sortField = DSL.field(DSL.name(sortTable, sortColumn));
+
+    switch (sortCriteria.getDirection()) {
+      case ASC:
+        return sortField.asc();
+      case DESC:
+        return sortField.desc();
+      default:
+        throw unsupportedOperationException("Unsupported direction: {}", sortCriteria.getDirection());
+    }
   }
 }

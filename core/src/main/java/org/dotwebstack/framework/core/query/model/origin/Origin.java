@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.query.model.origin;
 
 import java.util.Map;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 
 public interface Origin {
 
@@ -12,9 +11,5 @@ public interface Origin {
 
   static Sorting sorting(SortCriteria sortCriteria, Map<String, String> fieldPathAliasMap) {
     return new Sorting(sortCriteria, fieldPathAliasMap);
-  }
-
-  static Filtering filtering(FilterCriteria filterCriteria) {
-    return new Filtering(filterCriteria);
   }
 }

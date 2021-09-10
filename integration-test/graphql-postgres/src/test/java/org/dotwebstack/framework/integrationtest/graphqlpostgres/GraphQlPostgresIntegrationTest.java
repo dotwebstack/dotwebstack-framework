@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
@@ -972,9 +973,11 @@ class GraphQlPostgresIntegrationTest {
     assertThat(data.containsKey(BEERS), is(true));
 
     List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
-    assertThat(beers.size(), is(2));
-    assertThat(beers, is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
-        Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"))));
+    assertThat(beers.size(), is(3));
+    assertThat(beers,
+        is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
 
   @Test
@@ -1199,6 +1202,20 @@ class GraphQlPostgresIntegrationTest {
         is(List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
             Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"),
             Map.of("identifier_beer", "a5148422-be13-452a-b9fa-e72c155df3b2", "name", "Beer 4"))));
+  }
+
+  @Test
+  void postRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
+    String query = "{breweries(filter: {beerBreweryName: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
+
+    JsonNode json = executePostRequest(query, "application/graphql");
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    Assert.assertThat(data, hasEntry(equalTo("breweries"), iterableWithSize(1)));
+    Assert.assertThat(data, hasEntry(equalTo("breweries"), hasItems(hasEntry(equalTo("name"), equalTo("Brewery X")))));
   }
 
   @Test
