@@ -1,0 +1,7 @@
+<http://dotwebstack.org/id/beer/6> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dotwebstack.org/def/beer#Beer> <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#identifier> "6" <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#name> "Alpha Edel Pils" <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#brewery> <http://dotwebstack.org/id/brewery/123> <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#ingredient> <http://dotwebstack.org/id/ingredient/1> <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#ingredient> <http://dotwebstack.org/id/ingredient/2> <http://dotwebstack.org/doc/beer/6> .
+<http://dotwebstack.org/id/beer/6> <http://dotwebstack.org/def/beer#ingredient> <http://dotwebstack.org/id/ingredient/3> <http://dotwebstack.org/doc/beer/6> .

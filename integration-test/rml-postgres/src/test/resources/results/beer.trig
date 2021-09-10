@@ -1,0 +1,25 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix beer: <http://dotwebstack.org/def/beer#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix gsp: <http://www.opengis.net/ont/geosparql#> .
+
+<http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c> {
+  <http://dotwebstack.org/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c> a beer:Beer;
+    foaf:isPrimaryTopicOf <http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c>;
+    foaf:page <http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c>;
+    beer:name "Beer 1";
+    beer:brewedBy <http://dotwebstack.org/id/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b>;
+    beer:soldPerYear 1000000;
+    beer:retired "N";
+    beer:ingredient <http://dotwebstack.org/id/ingredient/cd79545c-5fbb-11eb-ae93-0242ac130002>,
+      <http://dotwebstack.org/id/ingredient/cd794c14-5fbb-11eb-ae93-0242ac130002>, <http://dotwebstack.org/id/ingredient/cd795196-5fbb-11eb-ae93-0242ac130002>,
+      <http://dotwebstack.org/id/ingredient/cd795192-5fbb-11eb-ae93-0242ac130002>, <http://dotwebstack.org/id/ingredient/cd79538a-5fbb-11eb-ae93-0242ac130002>,
+      <http://dotwebstack.org/id/ingredient/cd795191-5fbb-11eb-ae93-0242ac130002>;
+    beer:taste <http://dotwebstack.org/id/taste/FRUITY>, <http://dotwebstack.org/id/taste/MEATY>;
+    beer:abv 5.4;
+    beer:identifier "b0e7cf18-e3ce-439b-a63e-034c8452f59c" .
+}

@@ -45,12 +45,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
+import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
+import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
@@ -86,6 +88,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final OpenAPI openApi;
 
+  private final HttpMethodOperation httpMethodOperation;
+
   private final ResponseSchemaContext responseSchemaContext;
 
   private final GraphQlService graphQL;
@@ -106,12 +110,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final GraphQlQueryBuilder graphQlQueryBuilder;
 
-  public CoreRequestHandler(OpenAPI openApi, ResponseSchemaContext responseSchemaContext, GraphQlService graphQL,
-      List<ResponseMapper> responseMappers, JsonResponseMapper jsonResponseMapper,
-      TemplateResponseMapper templateResponseMapper, ParamHandlerRouter paramHandlerRouter,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper, EnvironmentProperties properties,
-      GraphQlQueryBuilder queryBuilder) {
+  public CoreRequestHandler(OpenAPI openApi, HttpMethodOperation httpMethodOperation,
+      ResponseSchemaContext responseSchemaContext, GraphQlService graphQL, List<ResponseMapper> responseMappers,
+      JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper,
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
+      EnvironmentProperties properties, GraphQlQueryBuilder queryBuilder) {
     this.openApi = openApi;
+    this.httpMethodOperation = httpMethodOperation;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMappers = responseMappers;
@@ -199,6 +204,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       var executionInput = ExecutionInput.newExecutionInput()
           .query(query)
           .variables(input.getVariables())
+          .dataLoaderRegistry(new DataLoaderRegistry())
           .build();
 
       return graphQL.execute(executionInput);
@@ -304,7 +310,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       return jsonResponseMapper.toResponse(responseWriteContext);
 
     } else {
-      return getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data);
+      return getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data, httpMethodOperation);
     }
   }
 

@@ -12,6 +12,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -45,8 +47,10 @@ import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
+import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
+import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoContentException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
@@ -91,6 +95,9 @@ import reactor.core.publisher.Mono;
 class CoreRequestHandlerTest {
 
   private static final String URI_STRING = "http://dotwebstack.org/CoreRequestHandlerTest";
+
+  @Mock
+  private HttpMethodOperation httpMethodOperation;
 
   @Mock
   private ResponseSchemaContext responseSchemaContext;
@@ -152,9 +159,9 @@ class CoreRequestHandlerTest {
     when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
     queryBuilder = new GraphQlQueryBuilder(dwsConfig, jexlEngine);
 
-    coreRequestHandler = spy(new CoreRequestHandler(openApi, responseSchemaContext, graphQl, List.of(responseMapper),
-        jsonResponseMapper, templateResponseMapper, paramHandlerRouter, requestBodyHandlerRouter, jexlHelper,
-        environmentProperties, queryBuilder));
+    coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
+        List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
+        requestBodyHandlerRouter, jexlHelper, environmentProperties, queryBuilder));
 
     ResponseTemplate responseTemplate =
         ResponseTemplateBuilderTest.getResponseTemplates(openApi, "/query6", HttpMethod.GET)
@@ -279,7 +286,7 @@ class CoreRequestHandlerTest {
     MediaType mediaType = MediaType.valueOf("application/sparql-results+json");
     when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
     when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
-    when(responseMapper.toResponse(any())).thenReturn(null);
+    when(responseMapper.toResponse(any(), any())).thenReturn(null);
     mockGetQueryInput();
 
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
@@ -292,6 +299,32 @@ class CoreRequestHandlerTest {
     ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
 
     assertThrows(NoContentException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+  }
+
+  @Test
+  void getResponse_passesHttpOperationAsContext_forUntemplatedResponseMapping()
+      throws URISyntaxException, GraphQlErrorException, BadRequestException {
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", "data");
+
+    MediaType mediaType = MediaType.valueOf("text/turtle");
+    when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
+    when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
+    when(responseMapper.toResponse(any(), any())).thenReturn("{}");
+    mockGetQueryInput();
+
+    ResponseTemplate responseTemplate = ResponseTemplate.builder()
+        .mediaType(mediaType)
+        .responseCode(200)
+        .responseHeaders(new HashMap<>())
+        .mediaType(mediaType)
+        .build();
+
+    ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
+
+    coreRequestHandler.getResponse(request, "dummyRequestId");
+
+    verify(responseMapper, times(1)).toResponse("data", httpMethodOperation);
   }
 
   private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates)

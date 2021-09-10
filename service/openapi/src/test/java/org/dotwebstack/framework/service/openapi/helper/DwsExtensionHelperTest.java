@@ -129,6 +129,16 @@ class DwsExtensionHelperTest {
   }
 
   @Test
+  void getDwsSelectionSet_returnsEmptyList_withoutDwsQuery() {
+    Operation operation = TestResources.openApi()
+        .getPaths()
+        .get("/query20")
+        .getGet();
+
+    assertEquals("selectionSetTest", getDwsQuerySettings(operation).getSelectionSet());
+  }
+
+  @Test
   void isTransient_returnsFalse_withObject1() {
     Schema<?> schema = TestResources.openApi()
         .getComponents()

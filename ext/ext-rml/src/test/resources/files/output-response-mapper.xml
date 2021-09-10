@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+  xmlns:beer="http://dotwebstack.org/def/beer#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="http://dotwebstack.org/id/beer/6">
+  <rdf:type rdf:resource="http://dotwebstack.org/def/beer#Beer"/>
+  <beer:identifier>6</beer:identifier>
+  <beer:name>Alpha Edel Pils</beer:name>
+  <beer:brewery rdf:resource="http://dotwebstack.org/id/brewery/123"/>
+  <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/1"/>
+  <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/2"/>
+  <beer:ingredient rdf:resource="http://dotwebstack.org/id/ingredient/3"/>
+</rdf:Description>
+
+</rdf:RDF>

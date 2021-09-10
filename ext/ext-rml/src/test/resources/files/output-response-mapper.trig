@@ -1,0 +1,10 @@
+@prefix beer: <http://dotwebstack.org/def/beer#> .
+
+<http://dotwebstack.org/doc/beer/6> {
+  <http://dotwebstack.org/id/beer/6> a beer:Beer;
+    beer:identifier "6";
+    beer:name "Alpha Edel Pils";
+    beer:brewery <http://dotwebstack.org/id/brewery/123>;
+    beer:ingredient <http://dotwebstack.org/id/ingredient/1>, <http://dotwebstack.org/id/ingredient/2>,
+      <http://dotwebstack.org/id/ingredient/3> .
+}

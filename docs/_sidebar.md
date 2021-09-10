@@ -25,6 +25,7 @@
 
   - [Spatial](ext/spatial.md)
   - [Pebble templating](ext/templating-pebble.md)
+  - [RML (for RDF responses)](ext/rml.md)
 
 - Community
 

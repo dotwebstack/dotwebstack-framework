@@ -1,0 +1,143 @@
+openapi: 3.0.2
+
+info:
+  title: Beer IRI dereferencing
+  version: 1.0.0
+
+paths:
+  /id/beer/{id}:
+    description: ID endpoint for beer dereferencing
+    get:
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/beer/${args.id}`'
+  /doc/beer/{id}:
+    description: DOC endpoint for beer dereferencing
+    get:
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      x-dws-query:
+        field: beer
+        keys:
+          identifier: $path.id
+        selectionSet: |
+          {
+            identifier
+            name
+            abv
+            soldPerYear
+            retired
+            brewery {
+              identifier
+            }
+            ingredients {
+              nodes {
+                identifier
+              }
+            }
+            taste
+          }
+      x-dws-rml-mapping: beer.rml.ttl
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle:
+              x-dws-default: true
+#            text/html:
+#              x-dws-template: resource.html
+            application/ld+json: {}
+            text/n3: {}
+            application/n-quads: {}
+            application/n-triples: {}
+            application/rdf+xml: {}
+            application/trig: {}
+  /id/brewery/{id}:
+    description: ID endpoint for brewery dereferencing
+    get:
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/brewery/${args.id}`'
+  /doc/brewery/{id}:
+    description: DOC endpoint for brewery dereferencing
+    get:
+      x-dws-query:
+        field: brewery
+        keys:
+          identifier: $path.id
+        selectionSet: |
+          {
+            identifier
+            name
+            status
+            geometry {
+              asWKT
+            }
+            postalAddress {
+              identifier
+            }
+            visitAddress {
+              identifier
+            }
+            beers {
+              nodes {
+                identifier
+              }
+            }
+            history {
+              age
+              history
+            }
+          }
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      x-dws-rml-mapping:
+        - brewery.rml.ttl
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle:
+              x-dws-default: true
+#            text/html:
+#              x-dws-template: resource.html
+            application/ld+json: {}
+            text/n3: {}
+            application/n-quads: {}
+            application/n-triples: {}
+            application/rdf+xml: {}
+            application/trig: {}

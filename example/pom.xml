@@ -18,6 +18,7 @@
     <module>example-graphql-proxy</module>
     <module>example-rdf4j</module>
     <module>example-openapi-proxy</module>
+    <module>example-rml-proxy</module>
   </modules>
 
 </project>

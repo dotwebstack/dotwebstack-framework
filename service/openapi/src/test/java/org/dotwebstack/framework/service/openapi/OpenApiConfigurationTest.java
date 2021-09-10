@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,18 +14,25 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.JsonResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -33,6 +43,8 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilde
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -176,14 +188,14 @@ class OpenApiConfigurationTest {
 
     openApiConfiguration.route(openApi);
 
-    assertEquals(16, optionsAnswer.getResults()
+    assertEquals(19, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(17)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(20)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         any(RequestBodyContextBuilder.class), argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
-    assertEquals(17, actualHttpMethodOperations.size());
+    assertEquals(20, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
         .getHttpMethod());
@@ -295,5 +307,40 @@ class OpenApiConfigurationTest {
       result.ifPresent(results::add);
       return result;
     }
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("getPaths")
+  void getHttpMethodOperations_returnsHttpOperations_GivenPathItemAndName(String pathName) {
+    PathItem pathItem = openApi.getPaths()
+        .get(pathName);
+
+    List<HttpMethodOperation> httpMethodOperations = OpenApiConfiguration.getHttpMethodOperations(pathItem, pathName);
+
+    Set<Operation> operations = getOperations(pathItem);
+
+    assertThat(httpMethodOperations.size(), is(operations.size()));
+
+    if (!httpMethodOperations.isEmpty()) {
+      assertThat(httpMethodOperations.stream()
+          .map(HttpMethodOperation::getName)
+          .collect(Collectors.toUnmodifiableSet()), hasItem(pathName));
+      assertThat(httpMethodOperations.stream()
+          .map(HttpMethodOperation::getOperation)
+          .collect(Collectors.toUnmodifiableSet()), is(operations));
+    }
+  }
+
+  private static Set<String> getPaths() {
+    return TestResources.openApi()
+        .getPaths()
+        .keySet();
+  }
+
+  private Set<Operation> getOperations(PathItem pathItem) {
+    return Stream.of(pathItem.getGet(), pathItem.getPost())
+        .filter(Objects::nonNull)
+        .filter(DwsExtensionHelper::isDwsOperation)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

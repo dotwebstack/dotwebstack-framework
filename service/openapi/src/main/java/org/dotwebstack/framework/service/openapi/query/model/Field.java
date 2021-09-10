@@ -22,6 +22,8 @@ public class Field {
 
   private String filterId;
 
+  private String selectionSet;
+
   private List<Field> children;
 
   @Builder.Default
@@ -50,7 +52,9 @@ public class Field {
           .append(filterId);
       sb.append(")");
     }
-    if (children != null && !children.isEmpty()) {
+    if (selectionSet != null) {
+      sb.append(selectionSet);
+    } else if (children != null && !children.isEmpty()) {
       sb.append(" {\n");
       children.forEach(c -> c.writeAsString(sb, depth + 1));
       indent(sb, depth);
