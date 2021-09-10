@@ -45,7 +45,7 @@ class RmlConfigurationTest {
     configuredNamespaces.put("ex", "http://example.org/");
     configuredNamespaces.put("owl", "http://example.com/owl/");
 
-    rmlConfiguration.setNamespaces(configuredNamespaces);
+    rmlConfiguration.setNamespacePrefixes(configuredNamespaces);
 
     Set<Namespace> namespaces = rmlConfiguration.namespaces();
 
