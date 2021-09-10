@@ -304,7 +304,6 @@ class CoreRequestHandlerTest {
   @Test
   void getResponse_passesHttpOperationAsContext_forUntemplatedResponseMapping()
       throws URISyntaxException, GraphQlErrorException, BadRequestException {
-    // Arrange
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "data");
 
@@ -323,10 +322,8 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
 
-    // Act
     coreRequestHandler.getResponse(request, "dummyRequestId");
 
-    // Assert
     verify(responseMapper, times(1)).toResponse("data", httpMethodOperation);
   }
 

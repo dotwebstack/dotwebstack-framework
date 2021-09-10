@@ -68,13 +68,11 @@ class RmlPostgresIntegrationTest {
   @MethodSource("createMediaTypeResponseFileNameArguments")
   void dereference_returnsExpectedResult_forRequest(MediaType mediaType, String expectedResultFileName)
       throws IOException {
-    // Arrange
     RDFFormat rdfFormat = Rio.getParserFormatForFileName(expectedResultFileName)
         .orElseThrow(
             () -> illegalArgumentException("could not determine rdf format from filename: {}", expectedResultFileName));
     Model expected = Rio.parse(getFileInputStream(expectedResultFileName), rdfFormat);
 
-    // Act
     String responseBody = client.get()
         .uri("/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
         .accept(mediaType)
@@ -83,7 +81,6 @@ class RmlPostgresIntegrationTest {
         .returnResult()
         .getResponseBody();
 
-    // Assert
     Model result = Rio.parse(IOUtils.toInputStream(responseBody, StandardCharsets.UTF_8), rdfFormat);
     assertThat(result, is(expected));
   }

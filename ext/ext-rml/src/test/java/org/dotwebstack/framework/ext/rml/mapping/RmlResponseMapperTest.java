@@ -49,15 +49,12 @@ class RmlResponseMapperTest {
   @ParameterizedTest
   @MethodSource("createResponseMappersWithInputObjectClass")
   void responseMapper_returnsBoolean_forInputObjectClass(ResponseMapper responseMapper, Class<?> inputObjectClass) {
-    // Act
     boolean actualResult = responseMapper.supportsInputObjectClass(inputObjectClass);
 
-    // Assert
     assertThat(actualResult, is(true));
   }
 
   private static Stream<Arguments> createResponseMappersWithInputObjectClass() {
-    // Arrange
     return Stream.of(Arguments.of(new Notation3RmlResponseMapper(null, Map.of(), Set.of()), Map.class),
         Arguments.of(new TurtleRmlResponseMapper(null, Map.of(), Set.of()), Map.class),
         Arguments.of(new RdfXmlRmlResponseMapper(null, Map.of(), Set.of()), Map.class),
@@ -70,15 +67,12 @@ class RmlResponseMapperTest {
   @ParameterizedTest
   @MethodSource("createResponseMappersWithOutputMimeType")
   void responseMapper_returnsBoolean_forMimeType(ResponseMapper responseMapper, MimeType outputMimeType) {
-    // Act
     boolean actualResult = responseMapper.supportsOutputMimeType(outputMimeType);
 
-    // Assert
     assertThat(actualResult, is(true));
   }
 
   private static Stream<Arguments> createResponseMappersWithOutputMimeType() {
-    // Arrange
     return Stream.of(
         Arguments.of(new Notation3RmlResponseMapper(null, Map.of(), Set.of()),
             Notation3RmlResponseMapper.N3_MEDIA_TYPE),
@@ -95,16 +89,13 @@ class RmlResponseMapperTest {
   @MethodSource("createResponseMappersWithExpectedResultFileName")
   void responseMapper_returnsCorrectResult_forModel(ResponseMapper responseMapper, String expectedResultFileName)
       throws IOException {
-    // Act
     String actualResult = responseMapper.toResponse(Map.of(), OPERATION);
     String expectedResult = new String(getFileInputStream(expectedResultFileName).readAllBytes());
 
-    // Assert
     assertThat(actualResult, equalToCompressingWhiteSpace(expectedResult));
   }
 
   private static Stream<Arguments> createResponseMappersWithExpectedResultFileName() throws Exception {
-    // Arrange
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
     when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
@@ -136,7 +127,6 @@ class RmlResponseMapperTest {
 
   @Test
   void responseMapper_selectsCorrectMapping_forContext() throws IOException {
-    // Arrange
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
     when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
@@ -156,17 +146,14 @@ class RmlResponseMapperTest {
 
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, Set.of());
 
-    // Act
     responseMapper.toResponse(Map.of(), OPERATION);
 
-    // Assert
     verify(rdfRmlMapper, times(1)).mapItemToRdf4jModel(Map.of(), Set.of(triplesMap));
     verify(rdfRmlMapper, times(0)).mapItemToRdf4jModel(Map.of(), Set.of(otherTriplesMap));
   }
 
   @Test
-  void responseMapper_appliesNamespacesToModel_givenNamespaces() throws IOException {
-    // Arrange
+  void responseMapper_appliesNamespacesToModel_givenNamespaces() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = mock(Model.class);
     when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
@@ -176,42 +163,34 @@ class RmlResponseMapperTest {
 
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, namespaces);
 
-    // Act
     responseMapper.toResponse(Map.of(), OPERATION);
 
-    // Assert
     verify(model, times(2)).setNamespace(any());
   }
 
   @Test
-  void responseMapper_throwsException_forUnsupportedInputObject() throws IOException {
-    // Arrange
+  void responseMapper_throwsException_forUnsupportedInputObject() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, Map.of(), Set.of());
     Object input = Set.of();
     Object context = Map.of();
 
-    // Act
     IllegalArgumentException exception =
         assertThrows(IllegalArgumentException.class, () -> responseMapper.toResponse(input, context));
 
-    // Assert
     assertThat(exception.getMessage(), startsWith("Input can only be of type Map, but was"));
   }
 
   @Test
-  void responseMapper_throwsException_forUnsupportedContextObject() throws IOException {
-    // Arrange
+  void responseMapper_throwsException_forUnsupportedContextObject() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, Map.of(), Set.of());
     Object input = Map.of();
     Object context = Map.of();
 
-    // Act
     IllegalArgumentException exception =
         assertThrows(IllegalArgumentException.class, () -> responseMapper.toResponse(input, context));
 
-    // Assert
     assertThat(exception.getMessage(), startsWith("Context can only be of type HttpMethodOperation, but was"));
   }
 

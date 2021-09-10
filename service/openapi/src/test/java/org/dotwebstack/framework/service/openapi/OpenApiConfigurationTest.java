@@ -312,14 +312,11 @@ class OpenApiConfigurationTest {
   @ParameterizedTest(name = "{0}")
   @MethodSource("getPaths")
   void getHttpMethodOperations_returnsHttpOperations_GivenPathItemAndName(String pathName) {
-    // Arrange
     PathItem pathItem = openApi.getPaths()
         .get(pathName);
 
-    // Act
     List<HttpMethodOperation> httpMethodOperations = OpenApiConfiguration.getHttpMethodOperations(pathItem, pathName);
 
-    // Assert
     Set<Operation> operations = getOperations(pathItem);
 
     assertThat(httpMethodOperations.size(), is(operations.size()));

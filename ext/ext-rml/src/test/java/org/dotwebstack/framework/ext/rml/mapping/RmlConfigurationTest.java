@@ -31,19 +31,15 @@ class RmlConfigurationTest {
 
   @Test
   void namespaces_areDefault_whenNotConfigured() {
-    // Arrange
     var rmlConfiguration = new RmlConfiguration();
 
-    // Act
     Set<Namespace> namespaces = rmlConfiguration.namespaces();
 
-    // Assert
     assertThat(namespaces, hasItems(RDF.NS, RDFS.NS, OWL.NS, XSD.NS, DCTERMS.NS));
   }
 
   @Test
   void namespaces_mergedCorrectly_forConfig() {
-    // Arrange
     var rmlConfiguration = new RmlConfiguration();
     Map<String, String> configuredNamespaces = new HashMap<>();
     configuredNamespaces.put("ex", "http://example.org/");
@@ -51,26 +47,21 @@ class RmlConfigurationTest {
 
     rmlConfiguration.setNamespaces(configuredNamespaces);
 
-    // Act
     Set<Namespace> namespaces = rmlConfiguration.namespaces();
 
-    // Assert
     assertThat(namespaces, hasItems(RDF.NS, RDFS.NS, XSD.NS, DCTERMS.NS,
         new SimpleNamespace("ex", "http://example.org/"), new SimpleNamespace("owl", "http://example.com/owl/")));
   }
 
   @Test
   void rmlMapper_configuredCorrectly_forConfig() {
-    // Arrange
     var openApi = TestResources.openApi("config/openapi.yaml");
     var rmlOpenApiConfiguration = new RmlOpenApiConfiguration();
     var mappingsPerOperation = rmlOpenApiConfiguration.mappingsPerOperation(openApi);
     var rmlMapperConfiguration = new RmlConfiguration();
 
-    // Act
     var rmlMapper = rmlMapperConfiguration.rmlMapper(mappingsPerOperation, List.of(rmlMapperConfigurer));
 
-    // Assert
     assertNotNull(rmlMapper);
     verify(rmlMapperConfigurer, times(1)).configureMapper(any());
   }
