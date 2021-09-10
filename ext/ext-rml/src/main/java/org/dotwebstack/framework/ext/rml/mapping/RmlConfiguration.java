@@ -34,18 +34,18 @@ public class RmlConfiguration {
 
   private static final Set<Namespace> DEFAULT_NAMESPACES = Set.of(RDF.NS, RDFS.NS, OWL.NS, XSD.NS, DCTERMS.NS);
 
-  private Map<String, String> namespaces = new HashMap<>();
+  private Map<String, String> namespacePrefixes = new HashMap<>();
 
   @Bean
   Set<Namespace> namespaces() {
-    if (namespaces.isEmpty()) {
+    if (namespacePrefixes.isEmpty()) {
       return DEFAULT_NAMESPACES;
     }
 
-    DEFAULT_NAMESPACES
-        .forEach(ns -> namespaces.merge(ns.getPrefix(), ns.getName(), (configuredNs, defaultNs) -> configuredNs));
+    DEFAULT_NAMESPACES.forEach(
+        ns -> namespacePrefixes.merge(ns.getPrefix(), ns.getName(), (configuredNs, defaultNs) -> configuredNs));
 
-    return namespaces.entrySet()
+    return namespacePrefixes.entrySet()
         .stream()
         .map(entry -> new SimpleNamespace(entry.getKey(), entry.getValue()))
         .collect(Collectors.toUnmodifiableSet());
