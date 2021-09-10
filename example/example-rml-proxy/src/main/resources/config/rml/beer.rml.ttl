@@ -12,14 +12,11 @@
 @prefix ql: <http://semweb.mmlab.be/ns/ql#> .
 @prefix fno: <https://w3id.org/function/ontology#> .
 @prefix fnml: <http://semweb.mmlab.be/ns/fnml#> .
-@prefix carml: <http://carml.taxonic.com/carml/> .
 
 @prefix : <http://dotwebstack.org/id/mapping/beer#> .
 
 :Beer_LogicalSource
-  rml:source [
-    a carml:Stream ;
-  ] ;
+  rml:source "" ;
   rml:referenceFormulation ql:JSONPath ;
   rml:iterator "$" ;
 .

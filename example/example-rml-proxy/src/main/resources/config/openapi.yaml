@@ -26,6 +26,13 @@ paths:
   /doc/beer/{id}:
     description: DOC endpoint for beer dereferencing
     get:
+      parameters:
+        - name: id
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
       x-dws-query:
         field: beer
         keys:
@@ -47,15 +54,7 @@ paths:
             }
             taste
           }
-      x-dws-rml-mapping:
-        - beer.rml.ttl
-      parameters:
-        - name: id
-          description: Identifier
-          in: path
-          required: true
-          schema:
-            type: string
+      x-dws-rml-mapping: beer.rml.ttl
       responses:
         200:
           description: OK
@@ -119,8 +118,6 @@ paths:
               history
             }
           }
-      x-dws-rml-mapping:
-        - brewery.rml.ttl
       parameters:
         - name: id
           description: Identifier
@@ -128,6 +125,8 @@ paths:
           required: true
           schema:
             type: string
+      x-dws-rml-mapping:
+        - brewery.rml.ttl
       responses:
         200:
           description: OK
