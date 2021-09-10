@@ -252,7 +252,6 @@ class FilterConditionHelperTest {
   }
 
   @Test
-  @SuppressWarnings({"raw", "unchecked"})
   void createCondition_returnsValue_forNestedFilterCriteria() {
     when(joinHelper.createJoinConditions(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
         ArgumentMatchers.anyMap())).thenReturn(List.of(DSL.condition("1 = 1")));
@@ -267,19 +266,8 @@ class FilterConditionHelperTest {
       }
     });
 
-    var typeConfigurationNode1 = mock(PostgresTypeConfiguration.class);
-    when(typeConfigurationNode1.getTable()).thenReturn("node1");
-
-    var fieldConfigurationNode1 = mock(PostgresFieldConfiguration.class);
-
-    when(fieldConfigurationNode1.getTypeConfiguration()).thenReturn((TypeConfiguration) typeConfigurationNode1);
-
-    var typeConfigurationNode2 = mock(PostgresTypeConfiguration.class);
-    when(typeConfigurationNode2.getTable()).thenReturn("node2");
-
-    var fieldConfigurationNode2 = mock(PostgresFieldConfiguration.class);
-    when(fieldConfigurationNode2.getTypeConfiguration()).thenReturn((TypeConfiguration) typeConfigurationNode2);
-
+    var fieldConfigurationNode1 = mockFieldConfiguration("node1");
+    var fieldConfigurationNode2 = mockFieldConfiguration("node2");
     var fieldConfigurationLeaf = mock(PostgresFieldConfiguration.class);
 
     fieldPath = FieldPath.builder()
@@ -305,6 +293,17 @@ class FilterConditionHelperTest {
             + "      select 1\n" + "      from \"node2\" \"t2\"\n" + "      where (\n"
             + "        \"t2\" = 'testValue'\n" + "        and (1 = 1)\n" + "      )\n" + "    )\n" + "    and (1 = 1)\n"
             + "  )\n" + ")"));
+  }
+
+  @SuppressWarnings({"raw", "unchecked"})
+  private PostgresFieldConfiguration mockFieldConfiguration(String tableName) {
+    var typeConfiguration = mock(PostgresTypeConfiguration.class);
+    when(typeConfiguration.getTable()).thenReturn(tableName);
+
+    var fieldConfiguration = mock(PostgresFieldConfiguration.class);
+    when(fieldConfiguration.getTypeConfiguration()).thenReturn((TypeConfiguration) typeConfiguration);
+
+    return fieldConfiguration;
   }
 
   @Test
