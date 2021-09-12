@@ -19,7 +19,6 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
-import reactor.core.publisher.Mono;
 
 public class CoreRequestHelper {
 
@@ -44,9 +43,11 @@ public class CoreRequestHelper {
   }
 
   public static void validateRequestBodyNonexistent(ServerRequest request) {
-    Mono<?> mono = request.bodyToMono(String.class);
-    Object value = mono.block();
-    if (Objects.nonNull(value)) {
+    var contentLength = request.headers()
+        .contentLength()
+        .orElse(0);
+
+    if (contentLength > 0) {
       throw invalidConfigurationException("A request body is not allowed for this request");
     }
   }

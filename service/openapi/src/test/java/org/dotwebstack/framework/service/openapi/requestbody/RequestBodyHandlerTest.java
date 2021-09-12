@@ -3,7 +3,6 @@ package org.dotwebstack.framework.service.openapi.requestbody;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +28,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -64,26 +64,32 @@ class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
-    assertEquals(expected,
-        this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+    var values = requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>())
+        .block();
+
+    assertEquals(expected, values);
   }
 
   @Test
   void getValue_throwsException_forInvalidJson() {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_JSON);
 
-    assertThrows(BadRequestException.class,
-        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+    var values = requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>());
+
+    StepVerifier.create(values)
+        .expectError(BadRequestException.class)
+        .verify();
   }
 
   @Test
   void getValue_throwsException_unsupportedMediaType() {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_PDF);
 
-    Map<String, Object> parameterMap = new HashMap<>();
+    var values = requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>());
 
-    assertThrows(UnsupportedMediaTypeException.class,
-        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, parameterMap));
+    StepVerifier.create(values)
+        .expectError(UnsupportedMediaTypeException.class)
+        .verify();
   }
 
   @Test
@@ -99,18 +105,22 @@ class RequestBodyHandlerTest {
   void getValue_throwsException_emptyRequestBodyRequired() {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
-    assertThrows(BadRequestException.class,
-        () -> this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>()));
+    var values = requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>());
+
+    StepVerifier.create(values)
+        .expectError(BadRequestException.class)
+        .verify();
   }
 
   @Test
-  void getValue_returnsEmpty_emptyRequestBodyNotRequired() throws BadRequestException {
+  void getValue_returnsEmpty_emptyRequestBodyNotRequired() {
     this.requestBodyContext.getRequestBodySchema()
         .setRequired(Boolean.FALSE);
-    ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
+    var serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
+    var values = this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>())
+        .block();
 
-    assertTrue(this.requestBodyHandler.getValues(serverRequest, requestBodyContext, requestBody, new HashMap<>())
-        .isEmpty());
+    assertTrue(values.isEmpty());
   }
 
   @Test

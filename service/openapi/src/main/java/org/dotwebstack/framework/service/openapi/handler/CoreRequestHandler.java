@@ -43,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.dataloader.DataLoaderRegistry;
@@ -50,10 +51,8 @@ import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
-import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
-import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
@@ -75,7 +74,6 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
@@ -130,11 +128,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   @Override
-  public Mono<ServerResponse> handle(ServerRequest request) {
+  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
     var requestId = UUID.randomUUID()
         .toString();
-    return Mono.fromCallable(() -> getResponse(request, requestId))
-        .publishOn(Schedulers.boundedElastic());
+
+    return getResponse(request, requestId);
   }
 
   public void validateSchema() {
@@ -189,81 +187,86 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         dwsExprMap.get(X_DWS_EXPR_FALLBACK_VALUE), jexlContext, String.class);
   }
 
-  ServerResponse getResponse(ServerRequest request, String requestId)
-      throws GraphQlErrorException, BadRequestException {
+  Mono<ServerResponse> getResponse(ServerRequest request, String requestId) {
     MDC.put(MDC_REQUEST_ID, requestId);
-    Map<String, Object> inputParams = resolveParameters(request);
 
-    ExecutionResult result = getQueryInput(inputParams).map(input -> {
-      String query = input.getQuery();
-      if (LOG.isDebugEnabled()) {
-        logInputRequest(request);
-        LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
+    return resolveParameters(request).flatMap(inputParams -> {
+      var result = getQueryInput(inputParams).map(input -> {
+        String query = input.getQuery();
+
+        if (LOG.isDebugEnabled()) {
+          logInputRequest(request);
+          LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
+        }
+
+        var executionInput = ExecutionInput.newExecutionInput()
+            .query(query)
+            .variables(input.getVariables())
+            .dataLoaderRegistry(new DataLoaderRegistry())
+            .build();
+
+        return graphQL.execute(executionInput);
+      })
+          .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
+
+      if (result.getErrors()
+          .isEmpty()) {
+        if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
+          throw notFoundException("Did not find data for your response.");
+        }
+
+        var httpStatus = getHttpStatus();
+
+        if (httpStatus.is3xxRedirection()) {
+          var location = getLocationHeaderUri(inputParams, result.getData());
+
+          return ServerResponse.status(httpStatus)
+              .location(location)
+              .build();
+        }
+
+        Map<String, Object> resultData = result.getData();
+
+        Object queryResultData = resultData.values()
+            .iterator()
+            .next();
+
+        List<MediaType> acceptHeaders = request.headers()
+            .accept();
+        var template = getResponseTemplate(acceptHeaders);
+
+        String body;
+
+        if (template.usesTemplating()) {
+          body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
+              properties.getAllProperties());
+        } else {
+          body = getResponseMapperBody(request, inputParams, queryResultData, template);
+        }
+
+        if (Objects.isNull(body)) {
+          throw noContentException("No content found.");
+        }
+
+        Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+        var bodyBuilder = ServerResponse.ok()
+            .contentType(template.getMediaType());
+        responseHeaders.forEach(bodyBuilder::header);
+
+        return bodyBuilder.body(fromPublisher(Mono.just(body), String.class));
       }
 
-      var executionInput = ExecutionInput.newExecutionInput()
-          .query(query)
-          .variables(input.getVariables())
-          .dataLoaderRegistry(new DataLoaderRegistry())
-          .build();
-
-      return graphQL.execute(executionInput);
-    })
-        .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
-
-    if (result.getErrors()
-        .isEmpty()) {
-
-      if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
-        throw notFoundException("Did not find data for your response.");
+      if (hasDirectiveValidationException(result)) {
+        throw parameterValidationException("Validation of request parameters failed");
       }
 
-      var httpStatus = getHttpStatus();
-      if (httpStatus.is3xxRedirection()) {
-        var location = getLocationHeaderUri(inputParams, result.getData());
-
-        return ServerResponse.status(httpStatus)
-            .location(location)
-            .build()
-            .block();
+      try {
+        return Mono.error(unwrapExceptionWhileNeeded(result));
+      } catch (GraphQlErrorException e) {
+        return Mono.error(e);
       }
-
-      Object queryResultData = ((Map<?, ?>) result.getData()).values()
-          .iterator()
-          .next();
-
-      List<MediaType> acceptHeaders = request.headers()
-          .accept();
-      var template = getResponseTemplate(acceptHeaders);
-
-      String body;
-
-      if (template.usesTemplating()) {
-        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
-            properties.getAllProperties());
-      } else {
-        body = getResponseMapperBody(request, inputParams, queryResultData, template);
-      }
-
-      if (Objects.isNull(body)) {
-        throw noContentException("No content found.");
-      }
-
-      Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
-
-      var bodyBuilder = ServerResponse.ok()
-          .contentType(template.getMediaType());
-      responseHeaders.forEach(bodyBuilder::header);
-
-      return bodyBuilder.body(fromPublisher(Mono.just(body), String.class))
-          .block();
-    }
-
-    if (hasDirectiveValidationException(result)) {
-      throw parameterValidationException("Validation of request parameters failed");
-    }
-
-    throw unwrapExceptionWhileNeeded(result);
+    });
   }
 
   private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws GraphQlErrorException {
@@ -420,38 +423,24 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     });
   }
 
-  Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
-    Map<String, Object> result = resolveUrlAndHeaderParameters(request);
+  Mono<Map<String, Object>> resolveParameters(ServerRequest request) {
+    var result = resolveUrlAndHeaderParameters(request);
     var requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
 
     if (Objects.nonNull(requestBodyContext)) {
       var requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
 
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
+      return requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValues(request, requestBodyContext, requestBody, result)
-          .forEach(result::put);
-    } else {
-      validateRequestBodyNonexistent(request);
+          .map(values -> {
+            values.forEach(result::put);
+            return result;
+          });
     }
 
-    return addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper);
-  }
+    validateRequestBodyNonexistent(request);
 
-  @SuppressWarnings("rawtypes")
-  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
-      String pathName, Map<String, Schema> requestBodyProperties) {
-    if (argument.isRequired() && Objects.isNull(argument.getDefaultValue()) && (parameters.stream()
-        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-            .equals(argument.getName())))
-        && !requestBodyProperties.containsKey(argument.getName())) {
-      throw invalidConfigurationException(
-          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
-          argument.getName(), pathName);
-    }
-    if (argument.isRequired()) {
-      argument.getChildren()
-          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName, requestBodyProperties));
-    }
+    return Mono.just(addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), request, jexlHelper));
   }
 
   protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
@@ -494,5 +483,4 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return resultData.get(responseSchemaContext.getDwsQuerySettings()
         .getQueryName()) != null;
   }
-
 }
