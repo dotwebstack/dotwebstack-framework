@@ -6,9 +6,10 @@ import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.pro
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.EndpointProperties;
@@ -110,16 +111,15 @@ class Rdf4jConfiguration {
 
   private Model readModel(String path) {
     var model = new LinkedHashModel();
-
     var parser = new TriGParser().setRDFHandler(new StatementCollector(model));
 
-    findResources(path).forEachOrdered(resource -> parse(parser, resource));
+    findResources(path).forEach(resource -> parse(parser, resource));
 
     return model;
   }
 
   @SneakyThrows(IOException.class)
-  private Stream<Resource> findResources(String path) {
+  private List<Resource> findResources(String path) {
     var modelFolder = ResourceLoaderUtils.getResource(path)
         .orElseThrow(() -> new InvalidConfigurationException("Model path not found."));
 
@@ -131,7 +131,8 @@ class Rdf4jConfiguration {
         .getResources(searchPattern);
 
     return Arrays.stream(resources)
-        .filter(Resource::isFile);
+        .filter(Resource::isFile)
+        .collect(Collectors.toList());
   }
 
   @SneakyThrows(IOException.class)

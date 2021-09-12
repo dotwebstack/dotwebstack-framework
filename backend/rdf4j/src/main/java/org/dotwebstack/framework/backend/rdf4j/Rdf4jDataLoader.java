@@ -86,8 +86,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   }
 
   private TupleQueryResult executeQuery(String query) {
-
-    LOG.debug("Sparql query: {}", query);
+    LOG.debug("SPARQL query: {}", query);
 
     return repository.getConnection()
         .prepareTupleQuery(query)
