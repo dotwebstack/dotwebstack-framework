@@ -15,7 +15,7 @@ import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyConditionGroupedFlux;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
+import org.eclipse.rdf4j.repository.Repository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
@@ -30,13 +30,13 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
   private final QueryBuilder queryBuilder;
 
-  private final LocalRepositoryManager localRepositoryManager;
+  private final Repository repository;
 
   public Rdf4jDataLoader(@NonNull DotWebStackConfiguration dotWebStackConfiguration, @NonNull QueryBuilder queryBuilder,
-      @NonNull LocalRepositoryManager localRepositoryManager) {
+      @NonNull Repository repository) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.queryBuilder = queryBuilder;
-    this.localRepositoryManager = localRepositoryManager;
+    this.repository = repository;
   }
 
   @Override
@@ -69,7 +69,6 @@ public class Rdf4jDataLoader implements BackendDataLoader {
   @Override
   public Flux<Map<String, Object>> loadMany(KeyCondition keyCondition, LoadEnvironment environment) {
     Rdf4jTypeConfiguration typeConfiguration = dotWebStackConfiguration.getTypeConfiguration(environment);
-
     var queryHolder = queryBuilder.build(typeConfiguration, environment.getSelectionSet(), keyCondition);
 
     TupleQueryResult queryResult = executeQuery(queryHolder.getQuery());
@@ -90,8 +89,7 @@ public class Rdf4jDataLoader implements BackendDataLoader {
 
     LOG.debug("Sparql query: {}", query);
 
-    return localRepositoryManager.getRepository("local")
-        .getConnection()
+    return repository.getConnection()
         .prepareTupleQuery(query)
         .evaluate();
   }

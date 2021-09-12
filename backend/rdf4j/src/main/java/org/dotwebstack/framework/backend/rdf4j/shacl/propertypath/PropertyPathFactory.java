@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
-import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
-import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 
 public class PropertyPathFactory {
 
@@ -36,13 +37,14 @@ public class PropertyPathFactory {
   public static BasePath create(Model model, Resource subject, IRI predicate) {
     var value = ValueUtils.findRequiredProperty(model, subject, predicate);
 
-    if (value instanceof MemBNode) {
-      MemBNode blankNode = (MemBNode) value;
-      IRI iri = blankNode.getSubjectStatementList()
-          .get(0)
-          .getPredicate();
+    if (value instanceof BNode) {
+      BNode blankNode = (BNode) value;
 
-      List<BasePath> childs = listOf(blankNode.getSubjectStatementList()).stream()
+      IRI iri = Models.predicate(model.filter(blankNode, null, null))
+          .orElseThrow(() -> invalidConfigurationException("No predicate found."));
+
+      List<BasePath> childs = model.filter(blankNode, null, null)
+          .stream()
           .map(child -> create(model, child.getSubject(), child.getPredicate()))
           .collect(Collectors.toList());
 

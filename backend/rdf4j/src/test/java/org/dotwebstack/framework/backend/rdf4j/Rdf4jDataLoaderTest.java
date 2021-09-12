@@ -36,7 +36,6 @@ import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.impl.IteratingTupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,8 +44,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class Rdf4jDataLoaderTest {
+
   @Mock
-  private LocalRepositoryManager localRepositoryManager;
+  private Repository repository;
 
   @Mock
   private DotWebStackConfiguration dotWebStackConfiguration;
@@ -58,7 +58,7 @@ class Rdf4jDataLoaderTest {
 
   @BeforeEach
   void init() {
-    rdf4jDataLoader = new Rdf4jDataLoader(dotWebStackConfiguration, queryBuilder, localRepositoryManager);
+    rdf4jDataLoader = new Rdf4jDataLoader(dotWebStackConfiguration, queryBuilder, repository);
   }
 
   @Test
@@ -106,7 +106,7 @@ class Rdf4jDataLoaderTest {
     assertThat(result, notNullValue());
     assertThat(data.entrySet(), equalTo(result.entrySet()));
 
-    verify(localRepositoryManager.getRepository("local"), times(1)).getConnection();
+    verify(repository, times(1)).getConnection();
     verify(queryBuilder, times(1)).build(any(Rdf4jTypeConfiguration.class), any(DataFetchingFieldSelectionSet.class),
         any(KeyCondition.class));
   }
@@ -148,7 +148,7 @@ class Rdf4jDataLoaderTest {
     assertThat(result, notNullValue());
     assertThat(result.size(), equalTo(2));
 
-    verify(localRepositoryManager.getRepository("local"), times(1)).getConnection();
+    verify(repository, times(1)).getConnection();
     verify(queryBuilder, times(1)).build(any(Rdf4jTypeConfiguration.class), any(DataFetchingFieldSelectionSet.class),
         any(KeyCondition.class));
   }
@@ -192,12 +192,7 @@ class Rdf4jDataLoaderTest {
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
 
     when(repositoryConnection.prepareTupleQuery(anyString())).thenReturn(tupleQuery);
-
-    Repository repository = mock(Repository.class);
-
     when(repository.getConnection()).thenReturn(repositoryConnection);
-
-    when(localRepositoryManager.getRepository("local")).thenReturn(repository);
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {

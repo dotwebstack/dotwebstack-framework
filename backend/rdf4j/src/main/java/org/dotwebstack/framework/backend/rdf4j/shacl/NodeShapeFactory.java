@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findOptionalPro
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredProperty;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
-import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -26,14 +25,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
-import org.eclipse.rdf4j.sail.memory.model.MemBNode;
-import org.eclipse.rdf4j.sail.memory.model.MemIRI;
-import org.eclipse.rdf4j.sail.memory.model.MemResource;
-import org.eclipse.rdf4j.sail.memory.model.MemStatement;
-import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
-import org.eclipse.rdf4j.sail.memory.model.MemValue;
 
 public class NodeShapeFactory {
 
@@ -122,7 +115,8 @@ public class NodeShapeFactory {
 
   private static List<Resource> getOrPropertyShapes(Model shapeModel, Resource identifier) {
     return getShaclOrShapes(shapeModel, identifier).stream()
-        .filter(NodeShapeFactory::hasPathPropery)
+        .filter(resource -> !shapeModel.filter(resource, SHACL.PATH, null)
+            .isEmpty())
         .collect(Collectors.toList());
   }
 
@@ -131,31 +125,16 @@ public class NodeShapeFactory {
         .stream()
         .map(or -> unwrapOrStatements(shapeModel, or))
         .flatMap(List::stream)
-        .map(NodeShapeFactory::getClassIri)
-        .filter(Objects::nonNull)
+        .flatMap(resource -> Models.objectIRI(shapeModel.filter(resource, SHACL.CLASS, null))
+            .stream())
         .collect(Collectors.toSet());
-  }
-
-  static IRI getClassIri(Resource resource) {
-    if (resource instanceof MemBNode) {
-      MemStatementList subjectStatements = ((MemBNode) resource).getSubjectStatementList();
-      if (subjectStatements.size() == 1 && Objects.equals(SHACL.CLASS, subjectStatements.get(0)
-          .getPredicate())) {
-        MemValue value = subjectStatements.get(0)
-            .getObject();
-        if (value instanceof IRI) {
-          return (IRI) value;
-        }
-      }
-    }
-    return null;
   }
 
   private static List<Resource> getShaclOrShapes(Model shapeModel, Resource identifier) {
     return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
         .stream()
         .map(or -> unwrapOrStatements(shapeModel, or).stream()
-            .map(resource -> {
+            .peek(resource -> {
               /*
                * All the individual childs under an sh:or statement are enriched with the shared values on the
                * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
@@ -166,28 +145,18 @@ public class NodeShapeFactory {
                   .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
                   .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
                   .forEach(statement -> {
-                    if (resource instanceof MemResource && statement.getObject() instanceof MemResource) {
-                      var memStatement = new MemStatement((MemResource) resource, (MemIRI) statement.getPredicate(),
-                          (MemResource) statement.getObject(), null, 0);
-                      ((MemBNode) resource).getSubjectStatementList()
-                          .add(memStatement);
-                      shapeModel.add(memStatement);
+                    if (statement.getObject() instanceof Resource) {
+                      shapeModel.add(resource, statement.getPredicate(), statement.getObject());
+                      shapeModel.addAll(shapeModel.filter(resource, null, null));
                     } else {
                       throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
                           statement);
                     }
                   });
-              return resource;
             })
             .collect(Collectors.toList()))
         .flatMap(List::stream)
         .collect(Collectors.toList());
-  }
-
-  private static boolean hasPathPropery(Resource orShape) {
-    return listOf(((MemBNode) orShape).getSubjectStatementList()).stream()
-        .map(MemStatement::getPredicate)
-        .anyMatch(SHACL.PATH::equals);
   }
 
   private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape,
@@ -208,7 +177,7 @@ public class NodeShapeFactory {
 
       usedShape = nodeIri;
     } else if (ValueUtils.isPropertyPresent(shapeModel, usedShape, SHACL.NODE)) {
-      MemBNode bnode = (MemBNode) findRequiredProperty(shapeModel, usedShape, SHACL.NODE);
+      Resource bnode = (Resource) findRequiredProperty(shapeModel, usedShape, SHACL.NODE);
       builder.node(createShapeFromModel(shapeModel, bnode, nodeShapeMap));
       usedShape = bnode;
     }
@@ -234,36 +203,10 @@ public class NodeShapeFactory {
   }
 
   private static List<Resource> unwrapOrStatements(Model shapeModel, Resource shape) {
-    List<Resource> shapes = new ArrayList<>();
-
-    /*
-     * sh:or works with a sequence (first, rest (first, rest)) etc. structure. For that reason this
-     * function adds the content of first and then further unwraps the content of rest.
-     */
-    shapeModel.filter(shape, RDF.FIRST, null)
+    return RDFCollections.asValues(shapeModel, shape, new ArrayList<>())
         .stream()
-        .map(statement -> ((MemBNode) statement.getObject()).getSubjectStatementList()
-            .get(0)
-            .getSubject())
-        .findFirst()
-        .ifPresent(shapes::add);
-
-    shapeModel.filter(shape, RDF.REST, null)
-        .stream()
-        .map(statement -> ((MemResource) statement.getObject()))
-
-        /*
-         * Something other than type MemBNode means it is RDF.NIL (of type IRI), this means that the end of
-         * the sequence is reached. It is removed so that the optional will not be present and the process
-         * stops
-         */
-        .filter(MemBNode.class::isInstance)
-        .map(resource -> resource.getSubjectStatementList()
-            .get(0))
-        .findFirst()
-        .ifPresent(rest -> shapes.addAll(unwrapOrStatements(shapeModel, rest.getSubject())));
-
-    return shapes;
+        .map(Resource.class::cast)
+        .collect(Collectors.toList());
   }
 
   private static void chainSuperclasses(NodeShape nodeShape, Map<Resource, NodeShape> nodeShapeMap, List<IRI> parents) {
@@ -303,5 +246,4 @@ public class NodeShapeFactory {
       }
     });
   }
-
 }
