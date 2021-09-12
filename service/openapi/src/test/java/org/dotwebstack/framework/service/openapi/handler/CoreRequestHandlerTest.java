@@ -333,7 +333,7 @@ class CoreRequestHandlerTest {
     MediaType mediaType = MediaType.valueOf("text/turtle");
     when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
     when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
-    when(responseMapper.toResponse(any(), any())).thenReturn("{}");
+    when(responseMapper.toResponse(any(), any())).thenReturn(Mono.just("{}"));
     mockGetQueryInput();
 
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
@@ -358,7 +358,7 @@ class CoreRequestHandlerTest {
 
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(responseTemplates);
-    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
+    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn(Mono.just("{}"));
 
     return MockServerRequest.builder()
         .uri(URI.create(URI_STRING))

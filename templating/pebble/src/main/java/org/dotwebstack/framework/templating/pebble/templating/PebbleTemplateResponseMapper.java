@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -30,7 +31,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
   }
 
   @Override
-  public String toResponse(String templateName, Map<String, Object> queryInputParams, Object queryResultData,
+  public Mono<String> toResponse(String templateName, Map<String, Object> queryInputParams, Object queryResultData,
       Map<String, String> environmentVariables) {
 
     if (!htmlTemplates.containsKey(templateName)) {
@@ -45,7 +46,7 @@ public class PebbleTemplateResponseMapper implements TemplateResponseMapper {
       throw new TemplatingException("Could not evaluate template " + templateName, exception);
     }
 
-    return writer.toString();
+    return Mono.just(writer.toString());
   }
 
   private Map<String, Object> resolveMapsToOne(Map<String, Object> queryInputParams, Object queryResultData,

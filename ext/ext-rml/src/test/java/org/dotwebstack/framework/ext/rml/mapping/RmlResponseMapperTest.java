@@ -89,7 +89,8 @@ class RmlResponseMapperTest {
   @MethodSource("createResponseMappersWithExpectedResultFileName")
   void responseMapper_returnsCorrectResult_forModel(ResponseMapper responseMapper, String expectedResultFileName)
       throws IOException {
-    String actualResult = responseMapper.toResponse(Map.of(), OPERATION);
+    String actualResult = responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
     String expectedResult = new String(getFileInputStream(expectedResultFileName).readAllBytes());
 
     assertThat(actualResult, equalToCompressingWhiteSpace(expectedResult));
@@ -146,7 +147,8 @@ class RmlResponseMapperTest {
 
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, Set.of());
 
-    responseMapper.toResponse(Map.of(), OPERATION);
+    responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
 
     verify(rdfRmlMapper, times(1)).mapItemToRdf4jModel(Map.of(), Set.of(triplesMap));
     verify(rdfRmlMapper, times(0)).mapItemToRdf4jModel(Map.of(), Set.of(otherTriplesMap));
@@ -163,7 +165,8 @@ class RmlResponseMapperTest {
 
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, namespaces);
 
-    responseMapper.toResponse(Map.of(), OPERATION);
+    responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
 
     verify(model, times(2)).setNamespace(any());
   }

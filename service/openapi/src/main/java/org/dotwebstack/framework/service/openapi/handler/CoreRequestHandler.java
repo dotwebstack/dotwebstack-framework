@@ -20,7 +20,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.RequestBodyResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
-import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
@@ -235,7 +234,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .accept();
         var template = getResponseTemplate(acceptHeaders);
 
-        String body;
+        Mono<String> body;
 
         if (template.usesTemplating()) {
           body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
@@ -254,7 +253,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .contentType(template.getMediaType());
         responseHeaders.forEach(bodyBuilder::header);
 
-        return bodyBuilder.body(fromPublisher(Mono.just(body), String.class));
+        return bodyBuilder.body(body, String.class);
       }
 
       if (hasDirectiveValidationException(result)) {
@@ -302,7 +301,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             && ((ExceptionWhileDataFetching) e).getException() instanceof DirectiveValidationException);
   }
 
-  private String getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data,
+  private Mono<String> getResponseMapperBody(ServerRequest request, Map<String, Object> inputParams, Object data,
       ResponseTemplate template) {
     var uri = request.uri();
 
@@ -313,7 +312,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       return jsonResponseMapper.toResponse(responseWriteContext);
 
     } else {
-      return getResponseMapper(template.getMediaType(), data.getClass()).toResponse(data, httpMethodOperation);
+      var responseMapper = getResponseMapper(template.getMediaType(), data.getClass());
+      return responseMapper.toResponse(data, httpMethodOperation);
     }
   }
 

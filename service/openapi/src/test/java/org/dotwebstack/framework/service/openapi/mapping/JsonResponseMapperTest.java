@@ -97,7 +97,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertEquals("{\"prop1\":\"prop1value\"}", response);
   }
@@ -152,7 +153,8 @@ class JsonResponseMapperTest {
         .uri(uri)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1_dummy\"";
     System.out.println(response);
@@ -181,7 +183,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"_embedded\":{\"child2\":{\"prop2\":\"v3\"}}}}"));
   }
@@ -208,7 +211,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"_embedded\":{\"_embedded\":{\"child2\":{\"prop2\":\"v3\"}}}}}"));
   }
@@ -237,7 +241,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"array1\":[{\"prop2\":\"v3\"},{\"prop2\":\"v3\"}]}}"));
   }
@@ -267,7 +272,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultValue\"]}}"));
   }
@@ -292,7 +298,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"prop1\":\"defaultValue\"}}"));
   }
@@ -343,7 +350,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"array1\":[\"defaultvalue\"]}}"));
   }
@@ -399,7 +407,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":null}"));
   }
@@ -429,7 +438,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":null}"));
   }
@@ -457,7 +467,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"array1\":[]}}"));
   }
@@ -486,7 +497,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"array1\":null}}"));
   }
@@ -535,7 +547,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}"));
   }
@@ -545,7 +558,8 @@ class JsonResponseMapperTest {
   void map_returnsValue_withoutIncludedObject() {
     ResponseWriteContext writeContext = arrangeIncludeWriteContext("prop2 != `v3`");
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertEquals("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\"}}", response);
   }
@@ -555,7 +569,8 @@ class JsonResponseMapperTest {
   void map_returnsValue_withIncludedObject() {
     ResponseWriteContext writeContext = arrangeIncludeWriteContext("prop2 == `v3`");
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertEquals("{\"prop2\":\"v1\",\"child1\":{\"prop2\":\"v2\",\"child2\":{\"prop2\":\"v3\"}}}", response);
   }
@@ -579,7 +594,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":null}"));
   }
@@ -602,7 +618,8 @@ class JsonResponseMapperTest {
         .dataStack(dataStack)
         .build();
 
-    String response = jsonResponseMapper.toResponse(writeContext);
+    String response = jsonResponseMapper.toResponse(writeContext)
+        .block();
 
     assertTrue(response.contains("{\"child1\":{\"prop1\":null}}"));
   }

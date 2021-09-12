@@ -22,6 +22,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.springframework.util.MimeType;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 abstract class AbstractRmlResponseMapper implements ResponseMapper {
@@ -62,7 +64,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
   }
 
   @Override
-  public String toResponse(@NonNull Object input, Object context) {
+  public Mono<String> toResponse(@NonNull Object input, Object context) {
     if (input instanceof Map) {
       HttpMethodOperation operation;
       if (context instanceof HttpMethodOperation) {
@@ -82,10 +84,15 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
         }
       }
 
-      Model model = rmlMapper.mapItemToRdf4jModel(input, actionableMappingsPerOperation.get(operation));
-      namespaces.forEach(model::setNamespace);
+      // TODO: CARML should return a Mono directly
+      Mono<Model> response =
+          Mono.fromCallable(() -> rmlMapper.mapItemToRdf4jModel(input, actionableMappingsPerOperation.get(operation)))
+              .publishOn(Schedulers.boundedElastic());
 
-      return modelToString(model);
+      return response.map(model -> {
+        namespaces.forEach(model::setNamespace);
+        return modelToString(model);
+      });
     } else {
       throw illegalArgumentException("Input can only be of type Map, but was {}", input.getClass()
           .getCanonicalName());
