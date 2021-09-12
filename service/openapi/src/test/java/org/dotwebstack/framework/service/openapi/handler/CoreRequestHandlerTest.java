@@ -294,7 +294,7 @@ class CoreRequestHandlerTest {
         .variables(Map.of())
         .query("")
         .build())).when(coreRequestHandler)
-        .getQueryInput(any(Map.class));
+            .getQueryInput(any(Map.class));
   }
 
   @Test
