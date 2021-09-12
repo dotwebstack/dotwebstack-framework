@@ -30,8 +30,9 @@
 
 ### joinColumns
 
-The `joinColumns` field configuration property contains an array of `joinColumn` objects. An `joinColumn` object
-indicates that a given column in the owner entity refers to a primary key in the reference entity:
+The `joinColumns` field configuration property contains an array of `joinColumn` objects.
+An `joinColumn` object indicates that a given column in the owner entity refers to a primary key in
+the reference entity:
 
 ```yaml
 objectTypes:
@@ -59,14 +60,16 @@ objectTypes:
         type: ID
 ```
 
-The above configuration example will use a foreign key linking the *Beer* entity with the primary key from the *Brewery*
+The above configuration example will use a foreign key linking the *Beer* entity with the primary
+key from the *Brewery*
 entity. The name of the foreign key column in the *Brewery* entity is specified by name property.
 
 ### mappedBy
 
-Once we have defined the owning side of the relationship, DotWebStack already has all the information it needs to map
-that relationship in our database. To make this association bidirectional, all we'll have to do is to define the
-referencing side. The inverse or the referencing side simply maps to the owning side.
+Once we have defined the owning side of the relationship, DotWebStack already has all the
+information it needs to map that relationship in our database. To make this association
+bidirectional, all we'll have to do is to define the referencing side. The inverse or the
+referencing side simply maps to the owning side.
 
 We can easily use the `mappedBy` configuration property to do so. So, let's define it:
 
@@ -101,12 +104,13 @@ objectTypes:
         mappedBy: brewery
 ```
 
-Here, the value of mappedBy is the name of the association-mapping field on the owning side. With this, we have now
-established a bidirectional association between our *Brewery* and *Beer* entities.
+Here, the value of mappedBy is the name of the association-mapping field on the owning side. With
+this, we have now established a bidirectional association between our *Brewery* and *Beer* entities.
 
 ### joinTable
 
-An `joinTable` field configuration property can be used to make a many-to-many relation with a jointable.
+An `joinTable` field configuration property can be used to make a many-to-many relation with a
+jointable.
 
 ```yaml
 objectTypes:
@@ -140,13 +144,14 @@ objectTypes:
         type: ID
 ```
 
-This association has two sides i.e. the owning side and the inverse side. In our example, the owning side is *Beer* so
-the join table is specified on the owning side by using the *joinTable* annotation in *Beer* class.
+This association has two sides i.e. the owning side and the inverse side. In our example, the owning
+side is *Beer* so the join table is specified on the owning side by using the *joinTable* annotation
+in *Beer* class.
 
 ### aggregationOf
 
-An `aggregationOf` field configuration can be used to aggregate a type with a many-to-many or one-to-many relation.
-The `mappedBy` or `joinTable` configuration needs to be included.
+An `aggregationOf` field configuration can be used to aggregate a type with a many-to-many or
+one-to-many relation. The `mappedBy` or `joinTable` configuration needs to be included.
 
 Simplified configuration example:
 
@@ -189,24 +194,29 @@ Simplified configuration example:
 
 ### Nested objects using parent table
 
-It is possible to store two objects with a 1:1 relation in the same table by omitting the `table` property of the nested object.
+It is possible to store two objects with a 1:1 relation in the same table by omitting the `table`
+property of the nested object.
 
-Note that it is possible to define one nested object and reuse it in multiple type definitions. 
-The correct parent table will be used in every instance assuming each parent table contains the columns needed for the nested object. 
+Note that it is possible to define one nested object and reuse it in multiple type definitions. The
+correct parent table will be used in every instance assuming each parent table contains the columns
+needed for the nested object.
 
 data example:
+
 ```json
 {
   "brewery": {
     "name": "Alfa",
-    "history":{
+    "history": {
       "age": 1900,
       "history": "A long and glorious fairytale"
     }
   }
 }
 ```
+
 Simplified configuration example
+
 ```yaml
   Brewery:
     table: db.brewery
@@ -222,7 +232,7 @@ Simplified configuration example
         type: Int
       history:
         type: String
-        
+
   Beer:
     table: db.beer
     fields:
@@ -234,9 +244,11 @@ Simplified configuration example
 
 ### Context fields
 
-It is optional to define context fields. Context fields are common to all objects within the query. A practical application for context fields is time traveling within a bi-temportal datamodel.
+It is optional to define context fields. Context fields are common to all objects within the query.
+A practical application for context fields is time traveling within a bi-temportal datamodel.
 
-If there are context fields defined in the configuration, data for each object will be retrieved with an context table function named `<table>_ctx` with the context parameters in natural order.
+If there are context fields defined in the configuration, data for each object will be retrieved
+with an context table function named `<table>_ctx` with the context parameters in natural order.
 
 Example configuration:
 
@@ -276,7 +288,8 @@ objectTypes:
         type: String
 ```
 
-With this configured context within the `dotwebstack.yaml` you need to create the following table function:
+With this configured context within the `dotwebstack.yaml` you need to create the following table
+function:
 
 ```sql
 CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_v AS $$
@@ -284,17 +297,19 @@ CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.be
 $$ language SQL immutable;
 ```
 
-
 ## PostGIS
 
-Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are supported.
+Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are
+supported.
 
 For an example implementation,
-see [example/example-postgres](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.3/example/example-postgres).
+see [example/example-postgres](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.3/example/example-postgres)
+.
 
 ## Connection configuration
 
-The postgres connection configuration are included within the spring `application.yml` as follows:
+The PostgreSQL connection properties are included in the spring `application.yml`. These are the
+default values:
 
 ```yaml
 dotwebstack:
@@ -304,7 +319,11 @@ dotwebstack:
     username: postgres
     password: postgres
     database: postgres
-    schema: dbeerpedia
+    sslMode: disable
     options:
       enable_seqscan: "off"
+    pool:
+      initialSize: 10
+      maxSize: 100
+      maxIdleTime: 30
 ```
