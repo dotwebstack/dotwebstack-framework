@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.40-SNAPSHOT</version>
+  <version>0.3.40</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -35,7 +33,7 @@
     <connection>scm:git:https://github.com/dotwebstack/dotwebstack-framework.git</connection>
     <developerConnection>scm:git:https://github.com/dotwebstack/dotwebstack-framework.git
     </developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.3.40</tag>
   </scm>
 
   <developers>
@@ -267,7 +265,7 @@
                     <version>3.3.9</version>
                   </requireMavenVersion>
                   <!-- Prevent transitive versioning conflicts -->
-                  <dependencyConvergence/>
+                  <dependencyConvergence />
                 </rules>
               </configuration>
             </execution>
@@ -380,7 +378,7 @@
                         <minimum>0.5</minimum>
                       </limit>
                     </limits>
-                    <excludes/>
+                    <excludes />
                   </rule>
                 </rules>
               </configuration>
@@ -396,12 +394,12 @@
               <eclipse>
                 <file>${maven.multiModuleProjectDirectory}/eclipse-java-style-dws.xml</file>
               </eclipse>
-              <removeUnusedImports/>
-              <endWithNewline/>
+              <removeUnusedImports />
+              <endWithNewline />
               <importOrder>
                 <file>${maven.multiModuleProjectDirectory}/dws.importorder</file>
               </importOrder>
-              <trimTrailingWhitespace/>
+              <trimTrailingWhitespace />
               <indent>
                 <spaces>true</spaces>
                 <spacesPerTab>2</spacesPerTab>
