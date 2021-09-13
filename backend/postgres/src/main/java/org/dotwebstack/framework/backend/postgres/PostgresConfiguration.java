@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import io.r2dbc.postgresql.extension.CodecRegistrar;
 import io.r2dbc.spi.ConnectionFactory;
+import java.time.Duration;
 import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
@@ -54,7 +57,16 @@ public class PostgresConfiguration {
 
     codecRegistrars.forEach(configurationBuilder::codecRegistrar);
 
-    return new PostgresqlConnectionFactory(configurationBuilder.build());
+    var connectionFactory = new PostgresqlConnectionFactory(configurationBuilder.build());
+    var poolProperties = postgresProperties.getPool();
+
+    var poolConfiguration = ConnectionPoolConfiguration.builder(connectionFactory)
+        .initialSize(poolProperties.getInitialSize())
+        .maxSize(poolProperties.getMaxSize())
+        .maxIdleTime(Duration.ofMinutes(poolProperties.getMaxIdleTime()))
+        .build();
+
+    return new ConnectionPool(poolConfiguration);
   }
 
   @Bean
