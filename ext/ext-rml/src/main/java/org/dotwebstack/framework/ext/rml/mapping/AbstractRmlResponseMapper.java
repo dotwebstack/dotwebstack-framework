@@ -18,10 +18,12 @@ import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.springframework.util.MimeType;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 abstract class AbstractRmlResponseMapper implements ResponseMapper {
@@ -62,7 +64,7 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
   }
 
   @Override
-  public String toResponse(@NonNull Object input, Object context) {
+  public Mono<String> toResponse(@NonNull Object input, Object context) {
     if (input instanceof Map) {
       HttpMethodOperation operation;
       if (context instanceof HttpMethodOperation) {
@@ -82,10 +84,12 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
         }
       }
 
-      Model model = rmlMapper.mapItemToRdf4jModel(input, actionableMappingsPerOperation.get(operation));
-      namespaces.forEach(model::setNamespace);
-
-      return modelToString(model);
+      return rmlMapper.mapItem(input, actionableMappingsPerOperation.get(operation))
+          .collect(ModelCollector.toModel())
+          .map(model -> {
+            namespaces.forEach(model::setNamespace);
+            return modelToString(model);
+          });
     } else {
       throw illegalArgumentException("Input can only be of type Map, but was {}", input.getClass()
           .getCanonicalName());

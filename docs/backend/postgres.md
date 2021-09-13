@@ -320,8 +320,7 @@ dotwebstack:
     password: postgres
     database: postgres
     sslMode: disable
-    options:
-      enable_seqscan: "off"
+    options: {}         # Additional PostgreSQL options, e.g. { enable_seqscan: 'off' }
     pool:
       initialSize: 10
       maxSize: 100

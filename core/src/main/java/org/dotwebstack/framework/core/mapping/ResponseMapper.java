@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.mapping;
 
 import org.springframework.util.MimeType;
+import reactor.core.publisher.Mono;
 
 public interface ResponseMapper {
 
@@ -8,6 +9,5 @@ public interface ResponseMapper {
 
   boolean supportsInputObjectClass(Class<?> clazz);
 
-  String toResponse(Object input, Object context);
-
+  Mono<String> toResponse(Object input, Object context);
 }

@@ -84,11 +84,13 @@ import org.mockito.quality.Strictness;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.reactive.function.server.MockServerRequest;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -171,10 +173,14 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void handle_ReturnsHeaders() throws URISyntaxException {
-    coreRequestHandler.handle(getServerRequest())
-        .doOnSuccess(response -> {
+  void handle_ReturnsHeaders() {
+    Map<Object, Object> data = new HashMap<>();
+    data.put("query6", "{\"key\" : \"value\" }");
 
+    var serverRequest = arrangeResponseTest(data, getResponseTemplates());
+
+    coreRequestHandler.handle(serverRequest)
+        .doOnSuccess(response -> {
           assertNotNull(response.headers());
           assertEquals(ImmutableList.of("value"), response.headers()
               .get("X-Response-Header"));
@@ -183,8 +189,9 @@ class CoreRequestHandlerTest {
 
   @ParameterizedTest
   @CsvSource({"application/xml, application/xml", "application/json, application/json"})
-  void getResponseTemplateTest(String acceptHeader, String expected) throws URISyntaxException {
-    getServerRequest();
+  void getResponseTemplateTest(String acceptHeader, String expected) {
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf(acceptHeader));
     ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
@@ -193,8 +200,9 @@ class CoreRequestHandlerTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"application/xml;q=0.4,application/json", "application/*"})
-  void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) throws URISyntaxException {
-    getServerRequest();
+  void getResponseTemplateWithQualityAndWildcardTest(String acceptHeader) {
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+
     List<MediaType> acceptHeaders = Arrays.stream(acceptHeader.split(","))
         .map(MediaType::valueOf)
         .collect(Collectors.toList());
@@ -205,8 +213,9 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() throws URISyntaxException {
-    getServerRequest();
+  void getDefaultResponseTemplateWhenNoAcceptHeaderIsProvidedTest() {
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
+
     List<MediaType> acceptHeaders = Collections.singletonList(MediaType.valueOf("*/*"));
     ResponseTemplate responseTemplate = coreRequestHandler.getResponseTemplate(acceptHeaders);
 
@@ -220,7 +229,8 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, getResponseTemplates());
 
-    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId")
+        .block();
 
     assertTrue(serverResponse.statusCode()
         .is2xxSuccessful());
@@ -236,7 +246,8 @@ class CoreRequestHandlerTest {
     DwsQuerySettings graphqlBinding = DwsQuerySettings.builder()
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
-    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId");
+    ServerResponse serverResponse = coreRequestHandler.getResponse(request, "dummyRequestId")
+        .block();
 
     assertTrue(serverResponse.statusCode()
         .is3xxRedirection());
@@ -252,7 +263,11 @@ class CoreRequestHandlerTest {
     ExceptionWhileDataFetching graphQlError = mockError();
     when(graphQlError.getException()).thenReturn(new DirectiveValidationException("Something went wrong"));
 
-    assertThrows(ParameterValidationException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+    var responseMono = coreRequestHandler.getResponse(request, "dummyRequestId");
+
+    StepVerifier.create(responseMono)
+        .expectError(ParameterValidationException.class)
+        .verify();
   }
 
   @Test
@@ -266,7 +281,11 @@ class CoreRequestHandlerTest {
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
     mockGetQueryInput();
 
-    assertThrows(NotFoundException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+    var responseMono = coreRequestHandler.getResponse(request, "dummyRequestId");
+
+    StepVerifier.create(responseMono)
+        .expectError(NotFoundException.class)
+        .verify();
   }
 
   @SuppressWarnings("unchecked")
@@ -279,7 +298,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNoContentExceptionTest() throws URISyntaxException {
+  void shouldThrowNoContentExceptionTest() {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "data");
 
@@ -298,7 +317,11 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
 
-    assertThrows(NoContentException.class, () -> coreRequestHandler.getResponse(request, "dummyRequestId"));
+    var responseMono = coreRequestHandler.getResponse(request, "dummyRequestId");
+
+    StepVerifier.create(responseMono)
+        .expectError(NoContentException.class)
+        .verify();
   }
 
   @Test
@@ -310,7 +333,7 @@ class CoreRequestHandlerTest {
     MediaType mediaType = MediaType.valueOf("text/turtle");
     when(responseMapper.supportsInputObjectClass(any())).thenReturn(true);
     when(responseMapper.supportsOutputMimeType(mediaType)).thenReturn(true);
-    when(responseMapper.toResponse(any(), any())).thenReturn("{}");
+    when(responseMapper.toResponse(any(), any())).thenReturn(Mono.just("{}"));
     mockGetQueryInput();
 
     ResponseTemplate responseTemplate = ResponseTemplate.builder()
@@ -322,42 +345,30 @@ class CoreRequestHandlerTest {
 
     ServerRequest request = arrangeResponseTest(data, List.of(responseTemplate));
 
-    coreRequestHandler.getResponse(request, "dummyRequestId");
+    coreRequestHandler.getResponse(request, "dummyRequestId")
+        .block();
 
     verify(responseMapper, times(1)).toResponse("data", httpMethodOperation);
   }
 
-  private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates)
-      throws URISyntaxException {
-    URI uri = new URI(URI_STRING);
-    MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-    ServerRequest request = mock(ServerRequest.class);
-    when(request.uri()).thenReturn(uri);
-    when(request.queryParams()).thenReturn(queryParams);
-
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
-    HttpHeaders asHeaders = mock(HttpHeaders.class);
-    when(asHeaders.getContentType()).thenReturn(MediaType.APPLICATION_JSON);
-    when(headers.asHttpHeaders()).thenReturn(asHeaders);
-    when(request.headers()).thenReturn(headers);
-
-    Mono<String> mono = Mono.empty();
-    when(request.bodyToMono(String.class)).thenReturn(mono);
-
+  private ServerRequest arrangeResponseTest(Map<Object, Object> data, List<ResponseTemplate> responseTemplates) {
     ExecutionResult executionResult = mock(ExecutionResult.class);
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
     when(executionResult.getData()).thenReturn(data);
 
     when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
     when(responseSchemaContext.getResponses()).thenReturn(responseTemplates);
-    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn("{}");
+    when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn(Mono.just("{}"));
 
-    return request;
+    return MockServerRequest.builder()
+        .uri(URI.create(URI_STRING))
+        .headers(HttpHeaders.EMPTY)
+        .body(Mono.empty());
   }
 
   @Test
-  void shouldThrowNotAcceptedExceptionTest() throws URISyntaxException {
-    getServerRequest();
+  void shouldThrowNotAcceptedExceptionTest() {
+    when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
     List<MediaType> acceptHeader = Collections.singletonList(MediaType.valueOf("application/not_supported"));
 
     assertThrows(NotAcceptableException.class, () -> coreRequestHandler.getResponseTemplate(acceptHeader));
@@ -464,8 +475,8 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void resolveUrlAndHeaderParameters_returnsValue() throws URISyntaxException {
-    ServerRequest request = getServerRequest();
+  void resolveUrlAndHeaderParameters_returnsValue() {
+    var request = mockServerRequest();
 
     Map<String, Object> params = this.coreRequestHandler.resolveUrlAndHeaderParameters(request);
 
@@ -497,7 +508,7 @@ class CoreRequestHandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException, URISyntaxException {
+  void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException {
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query1")
         .getPost()
@@ -507,33 +518,37 @@ class CoreRequestHandlerTest {
     when(this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext.getRequestBodySchema()))
         .thenReturn(this.defaultRequestBodyHandler);
     when(this.defaultRequestBodyHandler.getValues(any(ServerRequest.class), any(RequestBodyContext.class),
-        any(RequestBody.class), any(Map.class))).thenReturn(Map.of("key", "value"));
+        any(RequestBody.class), any(Map.class))).thenReturn(Mono.just(Map.of("key", "value")));
 
-    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1", "key", "value"),
-        this.coreRequestHandler.resolveParameters(getServerRequest()));
+    var request = mockServerRequest();
+    var parameters = coreRequestHandler.resolveParameters(request)
+        .block();
+
+    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1", "key", "value"), parameters);
   }
 
   @Test
-  void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException, URISyntaxException {
-    ServerRequest request = getServerRequest();
-    when(request.bodyToMono(String.class)).thenReturn(Mono.empty());
+  void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException {
+    var request = mockServerRequest();
     when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
 
-    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1"),
-        this.coreRequestHandler.resolveParameters(request));
+    var params = this.coreRequestHandler.resolveParameters(request)
+        .block();
+
+    assertEquals(Map.of("request_uri", URI_STRING, "query6_param1", "value1"), params);
   }
 
-  ServerRequest getServerRequest() throws URISyntaxException {
+  private ServerRequest mockServerRequest() {
     MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
     queryParams.put("query6_param1", ImmutableList.of("value1"));
-    ServerRequest request = mock(ServerRequest.class);
-    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
 
     when(responseSchemaContext.getResponses()).thenReturn(getResponseTemplates());
-    when(request.uri()).thenReturn(new URI(URI_STRING));
-    when(request.headers()).thenReturn(headers);
-    when(request.queryParams()).thenReturn(queryParams);
-    return request;
+
+    return MockServerRequest.builder()
+        .uri(URI.create(URI_STRING))
+        .queryParams(queryParams)
+        .headers(HttpHeaders.EMPTY)
+        .body(Mono.empty());
   }
 
   private ExceptionWhileDataFetching mockError() {
@@ -586,5 +601,4 @@ class CoreRequestHandlerTest {
   private OasField buildOasField() {
     return new OasObjectField(false, true, Map.of(), false, null);
   }
-
 }

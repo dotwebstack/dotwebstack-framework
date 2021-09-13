@@ -23,11 +23,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
-import org.springframework.web.reactive.function.server.HandlerStrategies;
+import org.springframework.mock.web.reactive.function.server.MockServerRequest;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class CoreRequestHelperTest {
@@ -65,11 +65,10 @@ class CoreRequestHelperTest {
 
   @Test
   void parameterValidation_ThrowsError_withNonexistentRequestBody() {
-    MockServerWebExchange mockServerWebExchange = MockServerWebExchange.from(MockServerHttpRequest.post("/")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body("test"));
-    ServerRequest request = ServerRequest.create(mockServerWebExchange, HandlerStrategies.withDefaults()
-        .messageReaders());
+    ServerRequest request = MockServerRequest.builder()
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .header(HttpHeaders.CONTENT_LENGTH, "2")
+        .body(Mono.just("{}"));
 
     assertThrows(InvalidConfigurationException.class, () -> validateRequestBodyNonexistent(request));
   }

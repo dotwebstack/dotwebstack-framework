@@ -77,7 +77,9 @@ class PebbleTemplateResponseMapperTest {
   void testValid() {
     // Act
     String response =
-        pebbleTemplateResponseMapper.toResponse("correct.html", Map.of(), Map.of("name", "alfa"), Map.of());
+        pebbleTemplateResponseMapper.toResponse("correct.html", Map.of(), Map.of("name", "alfa"), Map.of())
+            .block();
+
     // Assert
     assertThat(response,
         is("<html>\n" + "<head>\n" + "    <title>alfa</title>\n" + "</head>\n" + "<body>\n" + "<div id=\"content\">\n"

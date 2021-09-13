@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,28 +42,30 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   }
 
   @Override
-  public Map<String, Object> getValues(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext,
-      @NonNull RequestBody requestBody, @NonNull Map<String, Object> parameterMap) throws BadRequestException {
-    Mono<String> mono = request.bodyToMono(String.class);
-    String value = mono.block();
+  public Mono<Map<String, Object>> getValues(@NonNull ServerRequest request,
+      @NonNull RequestBodyContext requestBodyContext, @NonNull RequestBody requestBody,
+      @NonNull Map<String, Object> parameterMap) {
+    return request.bodyToMono(String.class)
+        .flatMap(value -> Mono.fromCallable(() -> {
+          try {
+            validateContentType(request);
+            JsonNode node = objectMapper.reader()
+                .readTree(value);
+            Map<String, Object> result = new HashMap<>();
+            node.fields()
+                .forEachRemaining(field -> result.put(field.getKey(), JsonNodeUtils.toObject(field.getValue())));
+            return result;
+          } catch (JsonProcessingException | BadRequestException e) {
+            throw badRequestException("Request body is invalid", e);
+          }
+        }))
+        .switchIfEmpty(Mono.fromCallable(() -> {
+          if (Boolean.TRUE.equals(requestBody.getRequired())) {
+            throw badRequestException("Request body required but not found.");
+          }
 
-    if (Objects.isNull(value) && Boolean.TRUE.equals(requestBody.getRequired())) {
-      throw badRequestException("Request body required but not found.");
-    } else if (Objects.isNull(value)) {
-      return Collections.emptyMap();
-    } else {
-      validateContentType(request);
-      try {
-        JsonNode node = objectMapper.reader()
-            .readTree(value);
-        Map<String, Object> result = new HashMap<>();
-        node.fields()
-            .forEachRemaining(field -> result.put(field.getKey(), JsonNodeUtils.toObject(field.getValue())));
-        return result;
-      } catch (JsonProcessingException e) {
-        throw badRequestException("Request body is invalid", e);
-      }
-    }
+          return Map.of();
+        }));
   }
 
   @Override
