@@ -60,8 +60,7 @@ class Rdf4jConfigurationTest {
     when(rdfResource.getInputStream()).thenReturn(new ByteArrayInputStream(rdfContent.getBytes()));
     when(rdfResource.isFile()).thenReturn(true);
 
-    when(resourceLoader.getResources(anyString()))
-        .thenReturn(new Resource[]{rdfResource});
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {rdfResource});
 
     var repository = rdf4jConfiguration.repository();
 
@@ -78,8 +77,7 @@ class Rdf4jConfigurationTest {
     when(rdfResource.getInputStream()).thenReturn(new ByteArrayInputStream(rdfContent.getBytes()));
     when(rdfResource.isFile()).thenReturn(true);
 
-    when(resourceLoader.getResources(anyString()))
-        .thenReturn(new Resource[]{rdfResource});
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {rdfResource});
 
     assertThrows(RDFParseException.class, () -> rdf4jConfiguration.repository());
   }
@@ -89,7 +87,7 @@ class Rdf4jConfigurationTest {
     Resource rdfResource = mock(Resource.class);
     when(rdfResource.isFile()).thenReturn(true);
     when(rdfResource.getInputStream()).thenThrow(IOException.class);
-    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[]{rdfResource});
+    when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {rdfResource});
 
     assertThrows(IOException.class, () -> rdf4jConfiguration.repository());
   }
@@ -113,7 +111,7 @@ class Rdf4jConfigurationTest {
   @Test
   void nodeShapeRegistry_ReturnsRegistry_ForShapes() throws IOException {
     when(resourceLoader.getResources(anyString()))
-        .thenReturn(new Resource[]{new ClassPathResource("config/shapes/shapes.trig")});
+        .thenReturn(new Resource[] {new ClassPathResource("config/shapes/shapes.trig")});
     var nodeShapeRegistry = rdf4jConfiguration.nodeShapeRegistry();
 
     assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));
