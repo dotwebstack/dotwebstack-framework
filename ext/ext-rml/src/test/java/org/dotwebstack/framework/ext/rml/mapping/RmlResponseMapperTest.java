@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -38,6 +38,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.MimeType;
+import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
 class RmlResponseMapperTest {
@@ -89,7 +90,8 @@ class RmlResponseMapperTest {
   @MethodSource("createResponseMappersWithExpectedResultFileName")
   void responseMapper_returnsCorrectResult_forModel(ResponseMapper responseMapper, String expectedResultFileName)
       throws IOException {
-    String actualResult = responseMapper.toResponse(Map.of(), OPERATION);
+    String actualResult = responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
     String expectedResult = new String(getFileInputStream(expectedResultFileName).readAllBytes());
 
     assertThat(actualResult, equalToCompressingWhiteSpace(expectedResult));
@@ -98,7 +100,7 @@ class RmlResponseMapperTest {
   private static Stream<Arguments> createResponseMappersWithExpectedResultFileName() throws Exception {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
+    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation = Map.of(OPERATION, Set.of());
     Set<Namespace> namespaces = Set.of(new SimpleNamespace("beer", "http://dotwebstack.org/def/beer#"));
 
@@ -129,7 +131,7 @@ class RmlResponseMapperTest {
   void responseMapper_selectsCorrectMapping_forContext() throws IOException {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
+    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     HttpMethodOperation otherOperation = HttpMethodOperation.builder()
         .name("other")
         .build();
@@ -146,26 +148,26 @@ class RmlResponseMapperTest {
 
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, Set.of());
 
-    responseMapper.toResponse(Map.of(), OPERATION);
+    responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
 
-    verify(rdfRmlMapper, times(1)).mapItemToRdf4jModel(Map.of(), Set.of(triplesMap));
-    verify(rdfRmlMapper, times(0)).mapItemToRdf4jModel(Map.of(), Set.of(otherTriplesMap));
+    verify(rdfRmlMapper, times(1)).mapItem(Map.of(), Set.of(triplesMap));
+    verify(rdfRmlMapper, times(0)).mapItem(Map.of(), Set.of(otherTriplesMap));
   }
 
   @Test
   void responseMapper_appliesNamespacesToModel_givenNamespaces() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
-    Model model = mock(Model.class);
-    when(rdfRmlMapper.mapItemToRdf4jModel(any(), any())).thenReturn(model);
-    when(model.iterator()).thenReturn(Collections.emptyIterator());
+    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.empty());
     Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation = Map.of(OPERATION, Set.of());
     Set<Namespace> namespaces = Set.of(RDFS.NS, OWL.NS);
-
     ResponseMapper responseMapper = new Notation3RmlResponseMapper(rdfRmlMapper, mappingsPerOperation, namespaces);
 
-    responseMapper.toResponse(Map.of(), OPERATION);
+    var response = responseMapper.toResponse(Map.of(), OPERATION)
+        .block();
 
-    verify(model, times(2)).setNamespace(any());
+    assertThat(response, containsString("@prefix owl: <http://www.w3.org/2002/07/owl#>"));
+    assertThat(response, containsString("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"));
   }
 
   @Test

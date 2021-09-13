@@ -33,4 +33,21 @@ public class PostgresProperties {
 
   @NotNull
   private Map<String, String> options;
+
+  @NotNull
+  private Pool pool = new Pool();
+
+  @Getter
+  @Setter
+  static class Pool {
+
+    @NotNull
+    private Integer initialSize = 10;
+
+    @NotNull
+    private Integer maxSize = 100;
+
+    @NotNull
+    private Integer maxIdleTime = 30;
+  }
 }

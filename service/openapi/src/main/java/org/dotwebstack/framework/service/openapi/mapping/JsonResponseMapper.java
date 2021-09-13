@@ -38,6 +38,7 @@ import org.dotwebstack.framework.service.openapi.response.oas.OasScalarField;
 import org.dotwebstack.framework.service.openapi.response.oas.OasType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 public class JsonResponseMapper {
@@ -64,10 +65,10 @@ public class JsonResponseMapper {
     this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
   }
 
-  public String toResponse(@NonNull Object input) {
+  public Mono<String> toResponse(@NonNull Object input) {
     if (input instanceof ResponseWriteContext) {
       try {
-        return toJson((ResponseWriteContext) input);
+        return Mono.just(toJson((ResponseWriteContext) input));
       } catch (JsonProcessingException jpe) {
         throw new MappingException("An exception occurred when serializing to JSON.", jpe);
       }
