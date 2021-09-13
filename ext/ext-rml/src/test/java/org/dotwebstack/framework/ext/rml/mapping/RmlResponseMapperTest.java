@@ -167,7 +167,7 @@ class RmlResponseMapperTest {
         .block();
 
     assertThat(response, containsString("@prefix owl: <http://www.w3.org/2002/07/owl#>"));
-    assertThat(response, containsString("@prefix owl: <http://www.w3.org/2002/07/owl#>"));
+    assertThat(response, containsString("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>"));
   }
 
   @Test
