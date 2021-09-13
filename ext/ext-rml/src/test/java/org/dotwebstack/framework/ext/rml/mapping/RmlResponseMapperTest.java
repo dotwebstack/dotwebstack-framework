@@ -26,7 +26,6 @@ import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -101,8 +100,7 @@ class RmlResponseMapperTest {
   private static Stream<Arguments> createResponseMappersWithExpectedResultFileName() throws Exception {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(
-        Flux.fromIterable(model.getStatements(null, null, null)));
+    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation = Map.of(OPERATION, Set.of());
     Set<Namespace> namespaces = Set.of(new SimpleNamespace("beer", "http://dotwebstack.org/def/beer#"));
 
@@ -133,8 +131,7 @@ class RmlResponseMapperTest {
   void responseMapper_selectsCorrectMapping_forContext() throws IOException {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(
-        Flux.fromIterable(model.getStatements(null, null, null)));
+    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     HttpMethodOperation otherOperation = HttpMethodOperation.builder()
         .name("other")
         .build();
