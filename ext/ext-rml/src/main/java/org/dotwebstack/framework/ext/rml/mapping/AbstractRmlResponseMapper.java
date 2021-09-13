@@ -18,12 +18,12 @@ import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
 import org.springframework.util.MimeType;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 abstract class AbstractRmlResponseMapper implements ResponseMapper {
@@ -84,15 +84,12 @@ abstract class AbstractRmlResponseMapper implements ResponseMapper {
         }
       }
 
-      // TODO: CARML should return a Mono directly
-      Mono<Model> response =
-          Mono.fromCallable(() -> rmlMapper.mapItemToRdf4jModel(input, actionableMappingsPerOperation.get(operation)))
-              .publishOn(Schedulers.boundedElastic());
-
-      return response.map(model -> {
-        namespaces.forEach(model::setNamespace);
-        return modelToString(model);
-      });
+      return rmlMapper.mapItem(input, actionableMappingsPerOperation.get(operation))
+          .collect(ModelCollector.toModel())
+          .map(model -> {
+            namespaces.forEach(model::setNamespace);
+            return modelToString(model);
+          });
     } else {
       throw illegalArgumentException("Input can only be of type Map, but was {}", input.getClass()
           .getCanonicalName());
