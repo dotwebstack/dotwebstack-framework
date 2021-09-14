@@ -102,8 +102,8 @@ class NodeShapeFactoryTest {
     PropertyShape supplements = propertyShapes.get("supplements");
 
     assertThat(supplements.getPath()
-        .toPredicate()
-        .getQueryString(),
+            .toPredicate()
+            .getQueryString(),
         equalTo(PredicatePath.builder()
             .iri(INGREDIENT_PATH)
             .build()
@@ -120,8 +120,8 @@ class NodeShapeFactoryTest {
     PropertyShape ingredients = propertyShapes.get("ingredients");
 
     assertThat(ingredients.getPath()
-        .toPredicate()
-        .getQueryString(),
+            .toPredicate()
+            .getQueryString(),
         equalTo(PredicatePath.builder()
             .iri(INGREDIENT_PATH)
             .build()
@@ -155,44 +155,4 @@ class NodeShapeFactoryTest {
 
     assertThrows(InvalidConfigurationException.class, () -> NodeShapeFactory.validatePropertyShapes(propertyShapes));
   }
-  //
-  // @Test
-  // void getClassIri_returnsClassIri_forClassStatement() {
-  // when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
-  // when(mockMemStatements.size()).thenReturn(1);
-  // when(mockMemStatements.get(0)).thenReturn(mockMemStatement);
-  // when(mockMemStatement.getPredicate()).thenReturn(mockMemStatementPredicate);
-  // when(mockMemStatementPredicate.toString()).thenReturn("http://www.w3.org/ns/shacl#class");
-  // when(mockMemStatement.getObject()).thenReturn(mockMemStatementObject);
-  // when(mockMemStatementObject.toString()).thenReturn("http://www.example.com#Beer");
-  //
-  // assertThat(NodeShapeFactory.getClassIri(mockMemBNode)
-  // .toString(), is(equalTo("http://www.example.com#Beer")));
-  // }
-  //
-  // @Test
-  // void getClassIri_returnsNull_forNonClassIri() {
-  // when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
-  // when(mockMemStatements.size()).thenReturn(1);
-  // when(mockMemStatements.get(0)).thenReturn(mockMemStatement);
-  // when(mockMemStatement.getPredicate()).thenReturn(mockMemStatementPredicate);
-  // when(mockMemStatementPredicate.toString()).thenReturn("http://www.w3.org/ns/rdf#type");
-  //
-  // assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
-  // }
-  //
-  // @Test
-  // void getClassIri_returnsNull_forEmptyList() {
-  // when(mockMemBNode.getSubjectStatementList()).thenReturn(EMPTY_LIST);
-  //
-  // assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
-  // }
-  //
-  // @Test
-  // void getClassIri_returnsNull_forListWithMoreThenOneStatement() {
-  // when(mockMemBNode.getSubjectStatementList()).thenReturn(mockMemStatements);
-  // when(mockMemStatements.size()).thenReturn(2);
-  //
-  // assertNull(NodeShapeFactory.getClassIri(mockMemBNode));
-  // }
 }
