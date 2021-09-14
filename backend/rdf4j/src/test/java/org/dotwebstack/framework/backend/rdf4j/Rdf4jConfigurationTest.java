@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,8 +12,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Map;
 import lombok.Cleanup;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,8 @@ class Rdf4jConfigurationTest {
   @Mock
   private ResourcePatternResolver resourceLoader;
 
+  private Rdf4jProperties rdf4jProperties;
+
   private Rdf4jConfiguration rdf4jConfiguration;
 
   @BeforeEach
@@ -37,7 +43,7 @@ class Rdf4jConfigurationTest {
     shapeProperties.setGraph(Constants.SHAPE_GRAPH);
     shapeProperties.setPrefix(Constants.SHAPE_PREFIX);
 
-    var rdf4jProperties = new Rdf4jProperties();
+    rdf4jProperties = new Rdf4jProperties();
     rdf4jProperties.setShape(shapeProperties);
     rdf4jConfiguration = new Rdf4jConfiguration(rdf4jProperties, resourceLoader);
   }
@@ -53,7 +59,7 @@ class Rdf4jConfigurationTest {
   }
 
   @Test
-  void repository_CreatesPopulatedRepository_ForNonEmptyFolder() throws IOException {
+  void repository_CreatesLocalRepository_ForNonEmptyFolder() throws IOException {
     var rdfResource = mock(Resource.class);
     var rdfContent = "<http://foo> a <http://bar>";
 
@@ -64,9 +70,39 @@ class Rdf4jConfigurationTest {
 
     var repository = rdf4jConfiguration.repository();
 
+    assertThat(repository, instanceOf(SailRepository.class));
+
     @Cleanup
-    var con = repository.getConnection();
-    assertThat(con.size(), is(equalTo(1L)));
+    var conn = repository.getConnection();
+    assertThat(conn.size(), is(equalTo(1L)));
+  }
+
+  @Test
+  void repository_CreatesSPARQLRepository_WhenEndpointSet() {
+    var endpoint = new Rdf4jProperties.EndpointProperties();
+    endpoint.setUrl("https://dbeerpedia.org/sparql");
+    rdf4jProperties.setEndpoint(endpoint);
+
+    var repository = rdf4jConfiguration.repository();
+    assertThat(repository, instanceOf(SPARQLRepository.class));
+
+    var additionalHeaders = ((SPARQLRepository) repository).getAdditionalHttpHeaders();
+    assertThat(additionalHeaders.isEmpty(), is(true));
+  }
+
+  @Test
+  void repository_CreatesSPARQLRepositoryWithAdditionalHeaders_WhenHeadersSet() {
+    var endpoint = new Rdf4jProperties.EndpointProperties();
+    endpoint.setUrl("https://dbeerpedia.org/sparql");
+    var headers = Map.of("Foo", "Bar");
+    endpoint.setHeaders(headers);
+    rdf4jProperties.setEndpoint(endpoint);
+
+    var repository = rdf4jConfiguration.repository();
+    assertThat(repository, instanceOf(SPARQLRepository.class));
+
+    var additionalHeaders = ((SPARQLRepository) repository).getAdditionalHttpHeaders();
+    assertThat(additionalHeaders, is(headers));
   }
 
   @Test
