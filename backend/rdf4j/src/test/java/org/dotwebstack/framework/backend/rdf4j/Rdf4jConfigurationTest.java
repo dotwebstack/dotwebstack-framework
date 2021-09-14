@@ -78,7 +78,7 @@ class Rdf4jConfigurationTest {
   }
 
   @Test
-  void repository_CreatesSPARQLRepository_WhenEndpointSet() {
+  void repository_CreatesRemoteRepository_WhenEndpointSet() {
     var endpoint = new Rdf4jProperties.EndpointProperties();
     endpoint.setUrl("https://dbeerpedia.org/sparql");
     rdf4jProperties.setEndpoint(endpoint);
@@ -91,7 +91,7 @@ class Rdf4jConfigurationTest {
   }
 
   @Test
-  void repository_CreatesSPARQLRepositoryWithAdditionalHeaders_WhenHeadersSet() {
+  void repository_CreatesRemoteRepositoryWithAdditionalHeaders_WhenHeadersSet() {
     var endpoint = new Rdf4jProperties.EndpointProperties();
     endpoint.setUrl("https://dbeerpedia.org/sparql");
     var headers = Map.of("Foo", "Bar");
