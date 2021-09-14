@@ -102,8 +102,8 @@ class NodeShapeFactoryTest {
     PropertyShape supplements = propertyShapes.get("supplements");
 
     assertThat(supplements.getPath()
-            .toPredicate()
-            .getQueryString(),
+        .toPredicate()
+        .getQueryString(),
         equalTo(PredicatePath.builder()
             .iri(INGREDIENT_PATH)
             .build()
@@ -120,8 +120,8 @@ class NodeShapeFactoryTest {
     PropertyShape ingredients = propertyShapes.get("ingredients");
 
     assertThat(ingredients.getPath()
-            .toPredicate()
-            .getQueryString(),
+        .toPredicate()
+        .getQueryString(),
         equalTo(PredicatePath.builder()
             .iri(INGREDIENT_PATH)
             .build()
