@@ -133,29 +133,34 @@ public class NodeShapeFactory {
   private static List<Resource> getShaclOrShapes(Model shapeModel, Resource identifier) {
     return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
         .stream()
-        .map(or -> unwrapOrStatements(shapeModel, or).stream()
-            .peek(resource -> {
-              /*
-               * All the individual childs under an sh:or statement are enriched with the shared values on the
-               * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
-               * to the model for later reuse.
-               */
-              shapeModel.filter(identifier, null, null)
-                  .stream()
-                  .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
-                  .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
-                  .forEach(statement -> {
-                    if (statement.getObject() instanceof Resource) {
-                      shapeModel.add(resource, statement.getPredicate(), statement.getObject());
-                      shapeModel.addAll(shapeModel.filter(resource, null, null));
-                    } else {
-                      throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
-                          statement);
-                    }
-                  });
-            })
-            .collect(Collectors.toList()))
-        .flatMap(List::stream)
+        .flatMap(or -> unwrapAndEnrichOrs(shapeModel, identifier, or))
+        .collect(Collectors.toList());
+  }
+
+  private static Stream<Resource> unwrapAndEnrichOrs(Model shapeModel, Resource identifier, Resource or) {
+    List<Resource> ors = unwrapOrStatements(shapeModel, or);
+
+    ors.forEach(resource -> shapeModel.filter(identifier, null, null)
+        .stream()
+        .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
+        .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
+        .forEach(statement -> {
+          if (statement.getObject() instanceof Resource) {
+            shapeModel.add(resource, statement.getPredicate(), statement.getObject());
+            shapeModel.addAll(shapeModel.filter(resource, null, null));
+          } else {
+            throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
+                statement);
+          }
+        }));
+
+    return ors.stream();
+  }
+
+  private static List<Resource> unwrapOrStatements(Model shapeModel, Resource shape) {
+    return RDFCollections.asValues(shapeModel, shape, new ArrayList<>())
+        .stream()
+        .map(Resource.class::cast)
         .collect(Collectors.toList());
   }
 
@@ -200,13 +205,6 @@ public class NodeShapeFactory {
     builder.identifier(usedShape);
 
     return builder.build();
-  }
-
-  private static List<Resource> unwrapOrStatements(Model shapeModel, Resource shape) {
-    return RDFCollections.asValues(shapeModel, shape, new ArrayList<>())
-        .stream()
-        .map(Resource.class::cast)
-        .collect(Collectors.toList());
   }
 
   private static void chainSuperclasses(NodeShape nodeShape, Map<Resource, NodeShape> nodeShapeMap, List<IRI> parents) {

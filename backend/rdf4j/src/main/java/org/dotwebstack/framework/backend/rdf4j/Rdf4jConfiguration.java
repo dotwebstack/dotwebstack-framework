@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +57,8 @@ class Rdf4jConfiguration {
 
   @Bean
   Repository repository() {
-    return Optional.ofNullable(rdf4jProperties.getEndpoint())
-        .map(this::createRemoteRepository)
-        .orElseGet(this::createLocalRepository);
+    var endpoint = rdf4jProperties.getEndpoint();
+    return endpoint != null ? createRemoteRepository(endpoint) : createLocalRepository();
   }
 
   private Repository createRemoteRepository(EndpointProperties endpoint) {
