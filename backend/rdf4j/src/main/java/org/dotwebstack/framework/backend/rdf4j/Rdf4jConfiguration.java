@@ -3,29 +3,31 @@ package org.dotwebstack.framework.backend.rdf4j;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
 import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.processInheritance;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import lombok.Cleanup;
-import lombok.NonNull;
+import java.util.stream.Collectors;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.EndpointProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
-import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.config.RepositoryConfig;
-import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
-import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.sail.memory.config.MemoryStoreConfig;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.eclipse.rdf4j.rio.trig.TriGParser;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,48 +40,61 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 @EnableConfigurationProperties(Rdf4jProperties.class)
 class Rdf4jConfiguration {
 
-  public static final String LOCAL_REPOSITORY_ID = "local";
+  private static final String SHAPES_PATH = "shapes";
 
-  private static final String BASE_DIR_PREFIX = "rdf4j";
+  private static final String DATA_PATH = "data";
 
-  private static final String MODEL_PATH = "model";
+  private static final String FILE_PATTERN = "/**.trig";
 
-  private static final String MODEL_PATTERN = "/**.trig";
+  private final Rdf4jProperties rdf4jProperties;
 
-  @Bean
-  public ConfigFactory configFactory() {
-    return new ConfigFactoryImpl();
+  private final ResourceLoader resourceLoader;
+
+  public Rdf4jConfiguration(Rdf4jProperties rdf4jProperties, ResourceLoader resourceLoader) {
+    this.rdf4jProperties = rdf4jProperties;
+    this.resourceLoader = resourceLoader;
   }
 
   @Bean
-  LocalRepositoryManager localRepositoryManager(@NonNull Rdf4jProperties rdf4jProperties,
-      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
-    LOG.debug("Initializing repository manager");
+  Repository repository() {
+    var endpoint = rdf4jProperties.getEndpoint();
+    return endpoint != null ? createRemoteRepository(endpoint) : createLocalRepository();
+  }
 
-    var baseDir = new File(BASE_DIR_PREFIX);
-    var repositoryManager = new LocalRepositoryManager(baseDir);
-    repositoryManager.init();
+  private Repository createRemoteRepository(EndpointProperties endpoint) {
+    var repository = new SPARQLRepository(endpoint.getUrl());
 
-    // Add & populate local repository
-    repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
+    if (endpoint.getUsername() != null && endpoint.getPassword() != null) {
+      repository.setUsernameAndPassword(endpoint.getUsername(), endpoint.getPassword());
+    }
 
-    populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader);
+    if (endpoint.getHeaders() != null) {
+      repository.setAdditionalHttpHeaders(endpoint.getHeaders());
+    }
 
-    return repositoryManager;
+    return repository;
+  }
+
+  private Repository createLocalRepository() {
+    var repository = new SailRepository(new MemoryStore());
+    var dataModel = readModel(DATA_PATH);
+
+    try (var conn = repository.getConnection()) {
+      conn.add(dataModel);
+    }
+
+    return repository;
   }
 
   @Bean
-  NodeShapeRegistry nodeShapeRegistry(@NonNull LocalRepositoryManager localRepositoryManager,
-      @NonNull Rdf4jProperties rdf4jProperties) {
-    var repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
+  NodeShapeRegistry nodeShapeRegistry() {
+    var shapeModel = readModel(SHAPES_PATH);
 
-    var shapeModel = QueryResults.asModel(repository.getConnection()
-        .getStatements(null, null, null, rdf4jProperties.getShape()
-            .getGraph()));
     var registry = new NodeShapeRegistry(rdf4jProperties.getShape()
         .getPrefix());
 
     Map<org.eclipse.rdf4j.model.Resource, NodeShape> nodeShapeMap = new HashMap<>();
+
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .forEach(subject -> createShapeFromModel(shapeModel, subject, nodeShapeMap));
 
@@ -92,48 +107,34 @@ class Rdf4jConfiguration {
     return registry;
   }
 
-  private static RepositoryConfig createLocalRepositoryConfig() {
-    var repositoryConfig = new SailRepositoryConfig(new MemoryStoreConfig());
-    return new RepositoryConfig(LOCAL_REPOSITORY_ID, repositoryConfig);
+  private Model readModel(String path) {
+    var model = new LinkedHashModel();
+    var parser = new TriGParser().setRDFHandler(new StatementCollector(model));
+
+    findResources(path).forEach(resource -> parse(parser, resource));
+
+    return model;
   }
 
-  private static void populateLocalRepository(Repository repository, ResourceLoader resourceLoader) {
-    ResourceLoaderUtils.getResource(MODEL_PATH)
-        .ifPresent(resource -> {
-          Resource[] resourceList;
+  @SneakyThrows(IOException.class)
+  private List<Resource> findResources(String path) {
+    var modelFolder = ResourceLoaderUtils.getResource(path)
+        .orElseThrow(() -> new InvalidConfigurationException("Model path not found."));
 
-          try {
-            resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-                .getResources(resource.getURI()
-                    .toString() + MODEL_PATTERN);
-          } catch (IOException e) {
-            throw new UncheckedIOException("Error while loading local model.", e);
-          }
+    var searchPattern = modelFolder.getURI()
+        .toString()
+        .concat(FILE_PATTERN);
 
-          @Cleanup
-          RepositoryConnection con = repository.getConnection();
+    var resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+        .getResources(searchPattern);
 
-          Arrays.stream(resourceList)
-              .filter(Resource::isReadable)
-              .filter(fileResource -> fileResource.getFilename() != null)
-              .forEach(modelResource -> {
-                String fileExtension = Arrays.stream(modelResource.getFilename()
-                    .split("\\."))
-                    .reduce("", (s1, s2) -> s2);
+    return Arrays.stream(resources)
+        .filter(Resource::isFile)
+        .collect(Collectors.toList());
+  }
 
-                RDFFormat format = FileFormats.getFormat(fileExtension);
-
-                if (format != null) {
-                  LOG.debug("Adding '{}' into '{}' repository", modelResource.getFilename(), LOCAL_REPOSITORY_ID);
-
-                  try {
-                    con.add(modelResource.getInputStream(), "", format);
-                  } catch (IOException e) {
-                    throw new UncheckedIOException("Error while loading data.", e);
-                  }
-                }
-              });
-        });
-
+  @SneakyThrows(IOException.class)
+  private void parse(RDFParser parser, Resource resource) {
+    parser.parse(resource.getInputStream());
   }
 }
