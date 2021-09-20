@@ -30,14 +30,10 @@ public class GraphQlProxyService implements GraphQlService {
 
   private final ObjectMapper objectMapper;
 
-  private final String uri;
-
   private final HttpClient client;
 
-  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri,
-      @NonNull HttpClient proxyHttpClient) {
+  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull HttpClient proxyHttpClient) {
     this.objectMapper = proxyObjectMapper;
-    this.uri = proxyUri;
     this.client = proxyHttpClient;
   }
 
@@ -61,7 +57,6 @@ public class GraphQlProxyService implements GraphQlService {
   protected Mono<ByteBuf> executePost(String body) {
     return client.headers(h -> h.set("Content-Type", "application/json"))
         .post()
-        .uri(uri)
         .send(ByteBufMono.fromString(Mono.just(body)))
         .responseSingle(checkResult());
   }

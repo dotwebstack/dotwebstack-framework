@@ -32,7 +32,6 @@ import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.HttpClientResponse;
 
-
 @ExtendWith(MockitoExtension.class)
 class GraphQlProxyServiceTest {
 
@@ -48,7 +47,7 @@ class GraphQlProxyServiceTest {
     sm.addDeserializer(ExecutionResult.class, new ExecutionResultDeserializer(ExecutionResult.class));
     objectMapper.registerModule(sm);
 
-    proxyService = new GraphQlProxyService(objectMapper, "http://localhost:8081/", httpClient);
+    proxyService = new GraphQlProxyService(objectMapper, httpClient);
   }
 
   @Test
@@ -127,8 +126,6 @@ class GraphQlProxyServiceTest {
         .headers(any(Consumer.class));
     doReturn(sender).when(httpClient)
         .post();
-    doReturn(sender).when(sender)
-        .uri(any(String.class));
 
     HttpClient.ResponseReceiver<?> receiver = mock(HttpClient.ResponseReceiver.class);
     doReturn(receiver).when(sender)
@@ -136,5 +133,4 @@ class GraphQlProxyServiceTest {
     doReturn(Mono.just(response)).when(receiver)
         .responseSingle(any());
   }
-
 }
