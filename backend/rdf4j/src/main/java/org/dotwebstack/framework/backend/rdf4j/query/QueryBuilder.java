@@ -168,7 +168,7 @@ public class QueryBuilder {
       Map<String, String> keyFieldNames) {
 
     // Create class patterns
-    List<GraphPattern> classPatterns = createClassPatterns(subject, nodeShape);
+    List<GraphPattern> classPatterns = createClassPatterns(subject, nodeShape, queryContext);
 
     Map<String, Function<BindingSet, Object>> assembleFns = new HashMap<>();
 
@@ -244,11 +244,21 @@ public class QueryBuilder {
     return propertyShape.getMinCount() == null || propertyShape.getMinCount() == 0;
   }
 
-  private List<GraphPattern> createClassPatterns(RdfSubject rdfSubject, NodeShape nodeShape) {
+  private List<GraphPattern> createClassPatterns(RdfSubject rdfSubject, NodeShape nodeShape,
+      QueryContext queryContext) {
     return nodeShape.getClasses()
         .stream()
-        .flatMap(Collection::stream)
-        .map(classIri -> GraphPatterns.tp(rdfSubject, RDF.TYPE, classIri))
+        .map(classes -> {
+          if (classes.size() == 1) {
+            return GraphPatterns.tp(rdfSubject, RDF.TYPE, classes.iterator()
+                .next());
+          }
+
+          var typeVar = SparqlBuilder.var(queryContext.newAlias());
+          var graphPattern = GraphPatterns.tp(rdfSubject, RDF.TYPE, typeVar);
+
+          return new GraphPatternWithValues(graphPattern, Map.of(typeVar, classes));
+        })
         .collect(Collectors.toList());
   }
 
