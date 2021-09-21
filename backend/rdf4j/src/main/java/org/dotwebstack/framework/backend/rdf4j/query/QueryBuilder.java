@@ -28,7 +28,9 @@ import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.repository.sparql.query.QueryStringUtil;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -39,6 +41,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatternNotTriples;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfSubject;
 import org.springframework.stereotype.Component;
 
@@ -249,13 +252,16 @@ public class QueryBuilder {
     return nodeShape.getClasses()
         .stream()
         .map(classes -> {
+          RdfPredicate typePredicate = () -> String.format("%s/%s*", QueryStringUtil.valueToString(RDF.TYPE),
+              QueryStringUtil.valueToString(RDFS.SUBCLASSOF));
+
           if (classes.size() == 1) {
-            return GraphPatterns.tp(rdfSubject, RDF.TYPE, classes.iterator()
+            return GraphPatterns.tp(rdfSubject, typePredicate, classes.iterator()
                 .next());
           }
 
           var typeVar = SparqlBuilder.var(queryContext.newAlias());
-          var graphPattern = GraphPatterns.tp(rdfSubject, RDF.TYPE, typeVar);
+          var graphPattern = GraphPatterns.tp(rdfSubject, typePredicate, typeVar);
 
           return new GraphPatternWithValues(graphPattern, Map.of(typeVar, classes));
         })

@@ -99,7 +99,7 @@ class QueryBuilderTest {
 
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), equalTo("SELECT ?x2 ?x4\n"
-        + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .\n"
+        + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/<http://www.w3.org/2000/01/rdf-schema#subClassOf>* <https://github.com/dotwebstack/beer/def#Beer> .\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#identifier> ?x2 . }\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#name> ?x4 . }\n"
         + "FILTER ( ?x2 IN ( \"id-1\" ) ) }\n" + "LIMIT 10\n"));
@@ -140,7 +140,7 @@ class QueryBuilderTest {
 
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), equalTo("SELECT ?x2 ?x3\n"
-        + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/dotwebstack/beer/def#Beer> .\n"
+        + "WHERE { ?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/<http://www.w3.org/2000/01/rdf-schema#subClassOf>* <https://github.com/dotwebstack/beer/def#Beer> .\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#identifier> ?x2 . }\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#name> ?x3 . } }\n" + "LIMIT 10\n"));
   }
