@@ -254,7 +254,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var type = queryConfiguration.getType();
 
     if (queryConfiguration.isList()) {
-      return createListType(type, queryConfiguration.isNullable());
+      return createListType(type, false);
     }
 
     return createType(queryConfiguration);

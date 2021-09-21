@@ -15,8 +15,6 @@ public class ObjectSelectContext {
 
   private AtomicReference<String> checkNullAlias = new AtomicReference<>();
 
-  private boolean useNullMapWhenNotFound = false;
-
   private Map<String, Function<Map<String, Object>, Object>> assembleFns = new HashMap<>();
 
   private Map<String, String> keyColumnNames = new HashMap<>();
@@ -27,11 +25,6 @@ public class ObjectSelectContext {
 
   public ObjectSelectContext(ObjectQueryContext objectQueryContext) {
     this.objectQueryContext = objectQueryContext;
-  }
-
-  public ObjectSelectContext(boolean useNullMapWhenNotFound) {
-    this(new ObjectQueryContext());
-    this.useNullMapWhenNotFound = useNullMapWhenNotFound;
   }
 
   public String newSelectAlias() {

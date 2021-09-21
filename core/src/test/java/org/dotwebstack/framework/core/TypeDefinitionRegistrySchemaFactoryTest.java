@@ -72,7 +72,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -106,7 +106,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -143,7 +143,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 

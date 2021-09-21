@@ -221,7 +221,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   private CompletableFuture<DataFetcherResult<Object>> mapLoadSingle(TypeConfiguration<?> typeConfiguration,
       Mono<Map<String, Object>> mono) {
-    return mono.map(data -> createDataFetcherResult(typeConfiguration, data))
+    return mono.map(data -> {
+      if (data == NULL_MAP) {
+        return DataFetcherResult.newResult()
+            .build();
+      }
+      return createDataFetcherResult(typeConfiguration, data);
+    })
         .onErrorMap(ExceptionHelper::internalServerErrorException)
         .toFuture();
   }

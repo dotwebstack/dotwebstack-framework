@@ -378,7 +378,7 @@ class SelectQueryBuilderTest {
         .scalarFields(List.of(createScalarFieldConfiguration(createFieldConfiguration("identifier_ingredient"))))
         .build();
 
-    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext(true));
+    var result = selectQueryBuilder.build(objectRequest, new ObjectSelectContext());
 
     assertThat(result.getQuery()
         .toString(),
