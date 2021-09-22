@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
 import lombok.NonNull;
 
 public interface GraphQlService {
-  ExecutionResult execute(@NonNull ExecutionInput executionInput);
 
   CompletableFuture<ExecutionResult> executeAsync(@NonNull ExecutionInput executionInput);
 }

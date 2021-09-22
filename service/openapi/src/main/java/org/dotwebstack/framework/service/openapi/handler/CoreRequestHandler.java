@@ -189,86 +189,89 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   Mono<ServerResponse> getResponse(ServerRequest request, String requestId) {
     MDC.put(MDC_REQUEST_ID, requestId);
 
-    return resolveParameters(request).flatMap(inputParams -> {
-      var result = getQueryInput(inputParams).map(input -> {
-        String query = input.getQuery();
+    if (LOG.isDebugEnabled()) {
+      logInputRequest(request);
+    }
 
-        if (LOG.isDebugEnabled()) {
-          logInputRequest(request);
-          LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
-        }
-
-        var executionInput = ExecutionInput.newExecutionInput()
-            .query(query)
-            .variables(input.getVariables())
-            .dataLoaderRegistry(new DataLoaderRegistry())
-            .build();
-
-        return graphQL.execute(executionInput);
-      })
-          .orElse(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList()));
-
-      if (result.getErrors()
-          .isEmpty()) {
-        if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
-          throw notFoundException("Did not find data for your response.");
-        }
-
-        var httpStatus = getHttpStatus();
-
-        if (httpStatus.is3xxRedirection()) {
-          var location = getLocationHeaderUri(inputParams, result.getData());
-
-          return ServerResponse.status(httpStatus)
-              .location(location)
-              .build();
-        }
-
-        Map<String, Object> resultData = result.getData();
-
-        Object queryResultData = resultData.values()
-            .iterator()
-            .next();
-
-        List<MediaType> acceptHeaders = request.headers()
-            .accept();
-        var template = getResponseTemplate(acceptHeaders);
-
-        Mono<String> body;
-
-        if (template.usesTemplating()) {
-          body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
-              properties.getAllProperties());
-        } else {
-          body = getResponseMapperBody(request, inputParams, queryResultData, template);
-        }
-
-        if (Objects.isNull(body)) {
-          throw noContentException("No content found.");
-        }
-
-        Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
-
-        var bodyBuilder = ServerResponse.ok()
-            .contentType(template.getMediaType());
-        responseHeaders.forEach(bodyBuilder::header);
-
-        return bodyBuilder.body(body, String.class);
-      }
-
-      if (hasDirectiveValidationException(result)) {
-        throw parameterValidationException("Validation of request parameters failed");
-      }
-
-      try {
-        return Mono.error(unwrapExceptionWhileNeeded(result));
-      } catch (GraphQlErrorException e) {
-        return Mono.error(e);
-      }
-    });
+    return resolveParameters(request).flatMap(inputParams -> getQueryInput(inputParams).map(this::executeQuery)
+        .orElse(Mono.just(new ExecutionResultImpl(new HashMap<String, Object>(), emptyList())))
+        .flatMap(result -> handleResult(result, request, inputParams)));
   }
 
-  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) throws GraphQlErrorException {
+  private Mono<ExecutionResult> executeQuery(QueryInput input) {
+    String query = input.getQuery();
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("GraphQL query is:\n\n{}\n", formatQuery(query));
+    }
+
+    var executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .variables(input.getVariables())
+        .dataLoaderRegistry(new DataLoaderRegistry())
+        .build();
+
+    return Mono.fromFuture(graphQL.executeAsync(executionInput));
+  }
+
+  private Mono<ServerResponse> handleResult(ExecutionResult result, ServerRequest request,
+      Map<String, Object> inputParams) {
+    if (result.getErrors()
+        .isEmpty()) {
+      if (isQueryExecuted(result.getData()) && !objectExists(result.getData())) {
+        throw notFoundException("Did not find data for your response.");
+      }
+
+      var httpStatus = getHttpStatus();
+
+      if (httpStatus.is3xxRedirection()) {
+        var location = getLocationHeaderUri(inputParams, result.getData());
+
+        return ServerResponse.status(httpStatus)
+            .location(location)
+            .build();
+      }
+
+      Map<String, Object> resultData = result.getData();
+
+      Object queryResultData = resultData.values()
+          .iterator()
+          .next();
+
+      List<MediaType> acceptHeaders = request.headers()
+          .accept();
+      var template = getResponseTemplate(acceptHeaders);
+
+      Mono<String> body;
+
+      if (template.usesTemplating()) {
+        body = templateResponseMapper.toResponse(template.getTemplateName(), inputParams, queryResultData,
+            properties.getAllProperties());
+      } else {
+        body = getResponseMapperBody(request, inputParams, queryResultData, template);
+      }
+
+      if (Objects.isNull(body)) {
+        throw noContentException("No content found.");
+      }
+
+      Map<String, String> responseHeaders = createResponseHeaders(template, resolveUrlAndHeaderParameters(request));
+
+      var bodyBuilder = ServerResponse.ok()
+          .contentType(template.getMediaType());
+      responseHeaders.forEach(bodyBuilder::header);
+
+      return bodyBuilder.body(body, String.class);
+    }
+
+    if (hasDirectiveValidationException(result)) {
+      throw parameterValidationException("Validation of request parameters failed");
+    }
+
+    throw unwrapExceptionWhileNeeded(result);
+  }
+
+  private GraphQlErrorException unwrapExceptionWhileNeeded(ExecutionResult result) {
     var graphQlError = result.getErrors()
         .get(0);
 
@@ -444,7 +447,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   protected Optional<QueryInput> getQueryInput(Map<String, Object> inputParams) {
-    return this.graphQlQueryBuilder.toQueryInput(this.responseSchemaContext, inputParams);
+    return graphQlQueryBuilder.toQueryInput(this.responseSchemaContext, inputParams);
   }
 
   private MediaType getDefaultResponseType(List<ResponseTemplate> responseTemplates,
