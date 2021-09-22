@@ -218,13 +218,11 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     return flux.map(data -> createDataFetcherResult(typeConfiguration, data))
         .onErrorMap(ExceptionHelper::internalServerErrorException);
   }
-  
+
   private CompletableFuture<DataFetcherResult<Object>> mapLoadSingle(TypeConfiguration<?> typeConfiguration,
-                                                                     Mono<Map<String, Object>> mono) {
-    return mono
-        .map(data -> (data == NULL_MAP)
-            ? DataFetcherResult.newResult().build()
-            : createDataFetcherResult(typeConfiguration, data))
+      Mono<Map<String, Object>> mono) {
+    return mono.map(data -> (data.get("id") == "null") ? DataFetcherResult.newResult()
+        .build() : createDataFetcherResult(typeConfiguration, data))
         .onErrorMap(ExceptionHelper::internalServerErrorException)
         .toFuture();
   }
