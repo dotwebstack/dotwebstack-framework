@@ -6,7 +6,6 @@ queries:
     type: Beer
     keys:
       - field: identifier_beer
-    nullable: true
   breweries:
     type: Brewery
     list: true
@@ -14,12 +13,10 @@ queries:
     type: Brewery
     keys:
       - field: identifier_brewery
-    nullable: true
   ingredient:
     type: Ingredient
     keys:
       - field: identifier_ingredient
-    nullable: true
 
 subscriptions:
   beersSubscription:
