@@ -19,11 +19,6 @@ public class NativeGraphQlService implements GraphQlService {
   }
 
   @Override
-  public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
-    return graphQL.execute(executionInput);
-  }
-
-  @Override
   public CompletableFuture<ExecutionResult> executeAsync(@NonNull ExecutionInput executionInput) {
     return graphQL.executeAsync(executionInput);
   }

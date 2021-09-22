@@ -30,24 +30,11 @@ public class GraphQlProxyService implements GraphQlService {
 
   private final ObjectMapper objectMapper;
 
-  private final String uri;
-
   private final HttpClient client;
 
-  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull String proxyUri,
-      @NonNull HttpClient proxyHttpClient) {
+  public GraphQlProxyService(@NonNull ObjectMapper proxyObjectMapper, @NonNull HttpClient proxyHttpClient) {
     this.objectMapper = proxyObjectMapper;
-    this.uri = proxyUri;
     this.client = proxyHttpClient;
-  }
-
-  @Override
-  public ExecutionResult execute(@NonNull ExecutionInput executionInput) {
-    LOG.debug("Executing graphql query using remote proxy with query \n{}\n and variables {}",
-        executionInput.getQuery(), executionInput.getVariables());
-    String body = createBody(executionInput);
-    return executePost(body).map(this::readBody)
-        .block();
   }
 
   @Override
@@ -61,7 +48,6 @@ public class GraphQlProxyService implements GraphQlService {
   protected Mono<ByteBuf> executePost(String body) {
     return client.headers(h -> h.set("Content-Type", "application/json"))
         .post()
-        .uri(uri)
         .send(ByteBufMono.fromString(Mono.just(body)))
         .responseSingle(checkResult());
   }
