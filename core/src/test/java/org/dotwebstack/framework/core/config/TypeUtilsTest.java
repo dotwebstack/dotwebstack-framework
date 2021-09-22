@@ -45,6 +45,26 @@ class TypeUtilsTest {
     assertThat(type, instanceOf(NonNullType.class));
     assertListType(TypeUtil.unwrapOne(type));
   }
+  
+  @Test
+  void createType_ReturnsNonNullType() {
+    var configMock = mock(QueryConfiguration.class);
+    doReturn(TYPE_NAME).when(configMock).getType();
+    doReturn(true).when(configMock).isList();
+  
+    var result = TypeUtils.createType(configMock);
+    assertThat(result, instanceOf(NonNullType.class));
+  }
+  
+  @Test
+  void createType_ReturnsNewType() {
+    var configMock = mock(QueryConfiguration.class);
+    doReturn(TYPE_NAME).when(configMock).getType();
+    doReturn(false).when(configMock).isList();
+  
+    var result = TypeUtils.createType(configMock);
+    assertTypeName(result);
+  }
 
   private static void assertTypeName(Type<?> type) {
     assertThat(type, instanceOf(TypeName.class));

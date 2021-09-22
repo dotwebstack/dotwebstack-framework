@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -28,9 +29,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -55,7 +55,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.plugins.MemberAccessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -444,6 +446,29 @@ class GenericDataFetcherTest {
     assertThat(result, instanceOf(Future.class));
     var executionException = assertThrows(ExecutionException.class, ((Future<?>) result)::get);
     assertThat(executionException.getCause(), instanceOf(InternalServerErrorException.class));
+  }
+  
+  @Test
+  void  mapLoadSingle_ReturnsEmptyDataFetcherResult() throws ExecutionException, InterruptedException {
+    var outputType = createBreweryType();
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+  
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    Map<String, Object> mapMock = genericDataFetcher.NULL_MAP;
+    var monoMock = Mono.just(mapMock);
+  
+    var objectQuery = createObjectQuery();
+  
+    when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(mapMock));
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+  
+    var future = genericDataFetcher.get(dataFetchingEnvironment);
+    assertThat(future, instanceOf(Future.class));
+  
+    var result = (DataFetcherResult<Object>) ((Future<?>) future).get();
+    assertTrue(Objects.isNull(result.getData()));
   }
 
   private ObjectRequest createObjectQuery() {
