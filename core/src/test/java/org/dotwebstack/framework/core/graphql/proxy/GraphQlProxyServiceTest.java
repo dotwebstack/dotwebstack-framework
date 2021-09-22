@@ -51,39 +51,6 @@ class GraphQlProxyServiceTest {
   }
 
   @Test
-  void execute_returnsResult_success() {
-    ExecutionInput input = ExecutionInput.newExecutionInput()
-        .query("myquery")
-        .build();
-    mockResult("{\"data\":{\"key\":\"value\"}}");
-
-    ExecutionResult result = proxyService.execute(input);
-
-    assertThat(result.getData(), is(Map.of("key", "value")));
-  }
-
-  @Test
-  void execute_throwsException_forInvalidResponse() {
-    ExecutionInput input = ExecutionInput.newExecutionInput()
-        .query("myquery")
-        .build();
-    mockResult("{\"data\":[_]}");
-
-    assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
-  }
-
-  @Test
-  void execute_throwsException_forHttpErrorCode() {
-    ExecutionInput input = ExecutionInput.newExecutionInput()
-        .query("myquery")
-        .build();
-    mockResult("{\"data\":[_]}");
-
-    assertThrows(GraphQlProxyException.class, () -> proxyService.execute(input));
-  }
-
-
-  @Test
   void executeAsync_returnsResult_success() throws ExecutionException, InterruptedException {
     ExecutionInput input = ExecutionInput.newExecutionInput()
         .query("myquery")

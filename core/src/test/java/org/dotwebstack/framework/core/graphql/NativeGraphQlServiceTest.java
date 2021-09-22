@@ -20,15 +20,6 @@ class NativeGraphQlServiceTest {
   private NativeGraphQlService service;
 
   @Test
-  void execute() {
-    ExecutionInput input = mock(ExecutionInput.class);
-
-    service.execute(input);
-
-    verify(graphQL).execute(input);
-  }
-
-  @Test
   void executeAsync() {
     ExecutionInput input = mock(ExecutionInput.class);
 
