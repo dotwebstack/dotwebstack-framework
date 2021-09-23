@@ -5,6 +5,9 @@ import static java.lang.String.format;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import graphql.ExecutionResult;
+import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Optional;
+import java.util.function.Consumer;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
@@ -17,11 +20,11 @@ import reactor.netty.http.client.HttpClient;
 
 @Conditional(GraphQlNativeDisabled.class)
 @Configuration
-public class GraphqQlProxyConfig {
+public class GraphQlProxyConfig {
 
   private final Environment environment;
 
-  public GraphqQlProxyConfig(@NonNull Environment environment) {
+  public GraphQlProxyConfig(@NonNull Environment environment) {
     this.environment = environment;
   }
 
@@ -35,20 +38,24 @@ public class GraphqQlProxyConfig {
   }
 
   @Bean
-  public String proxyUri(@NonNull DotWebStackConfiguration dotWebStackConfiguration) {
-    String proxyname = dotWebStackConfiguration.getSettings()
+  public HttpClient proxyHttpClient(@NonNull DotWebStackConfiguration dotWebStackConfiguration) {
+    String proxyName = dotWebStackConfiguration.getSettings()
         .getGraphql()
         .getProxy();
-    String uriKey = "dotwebstack.graphql.proxies." + proxyname + ".uri";
-    String uri = environment.getProperty(uriKey);
-    if (uri == null) {
-      throw new InvalidConfigurationException(format("Missing property %s", uriKey));
-    }
-    return uri;
+
+    String uri = getProxyEnv(proxyName, "uri")
+        .orElseThrow(() -> new InvalidConfigurationException(format("Missing URI config for proxy '%s'.", proxyName)));
+
+    Consumer<HttpHeaders> headerBuilder = headers -> getProxyEnv(proxyName, "bearerAuth")
+        .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
+
+    return HttpClient.create()
+        .baseUrl(uri)
+        .headers(headerBuilder);
   }
 
-  @Bean
-  public HttpClient proxyHttpClient() {
-    return HttpClient.create();
+  private Optional<String> getProxyEnv(String proxyName, String key) {
+    return Optional
+        .ofNullable(environment.getProperty(String.format("dotwebstack.graphql.proxies.%s.%s", proxyName, key)));
   }
 }

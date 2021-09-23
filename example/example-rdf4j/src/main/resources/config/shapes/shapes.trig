@@ -46,7 +46,10 @@
 
   beer_sh:Beer a sh:NodeShape ;
     sh:name "Beer";
-    sh:class beer_def:Beer ;
+    sh:or (
+      [ sh:class beer_def:Beer ]
+      [ sh:class beer_def:Beverage ]
+    ) ;
     dws:inherits beer_sh:Identifiable ;
     sh:property
       beer_sh:abv,

@@ -10,4 +10,5 @@ dotwebstack:
   graphql:
     proxies:
       localhostProxy:
-        uri: "http://localhost:8080/"
+        uri: http://localhost:8080
+        bearerAuth: foo

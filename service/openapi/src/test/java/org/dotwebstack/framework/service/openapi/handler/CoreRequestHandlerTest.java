@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -356,7 +357,8 @@ class CoreRequestHandlerTest {
     when(executionResult.getErrors()).thenReturn(new ArrayList<>());
     when(executionResult.getData()).thenReturn(data);
 
-    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(executionResult);
+    when(graphQl.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(executionResult));
     when(responseSchemaContext.getResponses()).thenReturn(responseTemplates);
     when(jsonResponseMapper.toResponse(any(ResponseWriteContext.class))).thenReturn(Mono.just("{}"));
 
@@ -553,9 +555,10 @@ class CoreRequestHandlerTest {
 
   private ExceptionWhileDataFetching mockError() {
     ExceptionWhileDataFetching graphQlError = mock(ExceptionWhileDataFetching.class);
-    when(graphQl.execute(any(ExecutionInput.class))).thenReturn(ExecutionResultImpl.newExecutionResult()
-        .addError(graphQlError)
-        .build());
+    when(graphQl.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(ExecutionResultImpl.newExecutionResult()
+            .addError(graphQlError)
+            .build()));
     return graphQlError;
   }
 

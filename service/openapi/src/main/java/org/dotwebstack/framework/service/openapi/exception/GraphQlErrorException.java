@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.exception;
 
-public class GraphQlErrorException extends Exception {
+public class GraphQlErrorException extends RuntimeException {
 
   static final long serialVersionUID = 1564735180022L;
 
