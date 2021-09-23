@@ -132,6 +132,25 @@ class GraphQlPostgresWithContextIntegrationTest {
   }
 
   @Test
+  void getRequest_returnBeers_forDefault_ifContextNull() {
+    var query = "{\n" + "  beers {\n" + "    \tnodes {\n" + "        name\n" + "        soldPerYear\n"
+        + "        brewery {\n" + "          name\n" + "        }\n" + "      }\n" + "  }\n" + "}";
+
+    JsonNode json = executeQuery(query);
+
+    Assert.assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data, hasEntry(equalTo("beers"), hasEntry(equalTo("nodes"),
+        hasItems(
+            hasEntry(equalTo("name"), equalTo("Beer 1 validStart: 2019-01-01, availableStart: 2019-04-01T12:00:00Z")),
+            hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("name"), equalTo("Beer 3")),
+            hasEntry(equalTo("name"), equalTo("Beer 4")), hasEntry(equalTo("name"), equalTo("Beer 5")),
+            hasEntry(equalTo("name"), equalTo("Beer 6"))))));
+  }
+
+  @Test
   void getRequest_returnsEmptyResult_forQueryBeforeOrigin() {
     var query = "{\n" + "  beers(context:{validOn: \"2015-06-01\", availableOn: \"2015-02-01T00:00:00Z\"}) {\n"
         + "    \tnodes {\n" + "        name\n" + "        soldPerYear\n" + "        brewery {\n"
