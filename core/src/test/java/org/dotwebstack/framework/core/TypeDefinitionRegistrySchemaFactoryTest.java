@@ -4,7 +4,9 @@ import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.StringValue.newStringValue;
-import static org.dotwebstack.framework.core.config.TypeUtils.*;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -17,7 +19,18 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import graphql.language.*;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValue;
+import graphql.language.EnumValueDefinition;
+import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.ListType;
+import graphql.language.NonNullType;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectValue;
+import graphql.language.Type;
+import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -467,7 +480,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
             .type(newNonNullableListType("Brewery"))
             .inputValueDefinition(newInputValueDefinition().name("context")
                 .type(newType("Context"))
-                .defaultValue(ObjectValue.newObjectValue().build())
+                .defaultValue(ObjectValue.newObjectValue()
+                    .build())
                 .build())
             .build()
             .toString()));

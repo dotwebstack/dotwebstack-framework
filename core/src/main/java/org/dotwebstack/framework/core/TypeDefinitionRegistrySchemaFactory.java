@@ -16,7 +16,17 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import graphql.Scalars;
-import graphql.language.*;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValue;
+import graphql.language.EnumValueDefinition;
+import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.IntValue;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectValue;
+import graphql.language.StringValue;
+import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -477,11 +487,10 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private void addOptionalContext(List<InputValueDefinition> inputValueDefinitions) {
     Optional.ofNullable(dotWebStackConfiguration.getContext())
-        .ifPresent(context -> inputValueDefinitions
-            .add(newInputValueDefinition()
-            .name(CONTEXT_ARGUMENT_NAME)
+        .ifPresent(context -> inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
             .type(newType(CONTEXT_TYPE_NAME))
-            .defaultValue(ObjectValue.newObjectValue().build())
+            .defaultValue(ObjectValue.newObjectValue()
+                .build())
             .build()));
   }
 
