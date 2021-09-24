@@ -44,10 +44,10 @@ public final class TypeUtils {
     var type = queryConfiguration.getType();
 
     if (queryConfiguration.isList()) {
-      return queryConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
+      return TypeUtils.newNonNullableListType(type);
     }
 
-    return queryConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
+    return TypeUtils.newType(type);
   }
 
   public static Type<?> createType(FieldConfiguration fieldConfiguration) {

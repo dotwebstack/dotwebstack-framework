@@ -6,6 +6,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.StringValue.newStringValue;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
+import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -27,6 +28,7 @@ import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
@@ -72,7 +74,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -106,7 +108,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -143,7 +145,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
-    assertNonNullType(breweryFieldDefinition.getType(), "Brewery");
+    assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -477,7 +479,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         equalTo(newFieldDefinition().name("breweryCollection")
             .type(newNonNullableListType("Brewery"))
             .inputValueDefinition(newInputValueDefinition().name("context")
-                .type(newNonNullableType("Context"))
+                .type(newType("Context"))
+                .defaultValue(ObjectValue.newObjectValue()
+                    .build())
                 .build())
             .build()
             .toString()));

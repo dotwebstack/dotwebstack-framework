@@ -18,7 +18,6 @@ queries:
     type: Beer
     keys:
       - field: identifier_beer
-    nullable: true
   breweries:
     type: Brewery
     list: true

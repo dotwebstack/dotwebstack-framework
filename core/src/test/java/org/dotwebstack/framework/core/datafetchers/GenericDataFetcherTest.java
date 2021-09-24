@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -30,6 +31,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -444,6 +446,25 @@ class GenericDataFetcherTest {
     assertThat(result, instanceOf(Future.class));
     var executionException = assertThrows(ExecutionException.class, ((Future<?>) result)::get);
     assertThat(executionException.getCause(), instanceOf(InternalServerErrorException.class));
+  }
+
+  @Test
+  void mapLoadSingle_ReturnsEmptyDataFetcherResult() throws ExecutionException, InterruptedException {
+    var outputType = createBreweryType();
+    var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(Map.of("id", "null")));
+    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
+    when(backendDataLoader.useRequestApproach()).thenReturn(true);
+    var objectQuery = createObjectQuery();
+    when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
+
+    var future = genericDataFetcher.get(dataFetchingEnvironment);
+    assertThat(future, instanceOf(Future.class));
+
+    @SuppressWarnings("unchecked")
+    var result = (DataFetcherResult<Object>) ((Future<?>) future).get();
+    assertTrue(Objects.isNull(result.getData()));
   }
 
   private ObjectRequest createObjectQuery() {
