@@ -73,6 +73,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RequestFactoryTest {
 
+  private static final String FIELD_TYPENAME = "__typename";
+
   private static final String FIELD_IDENTIFIER = "identifier";
 
   private static final String FIELD_BREWERY = "brewery";
@@ -155,6 +157,7 @@ class RequestFactoryTest {
 
   @Test
   void createCollectionRequest_returnsCollectionRequest_forScalarField() {
+    selectedFields.add(mockSelectedField(FIELD_TYPENAME));
     selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration);
@@ -657,11 +660,14 @@ class RequestFactoryTest {
     var fieldDefinition = mock(GraphQLFieldDefinition.class);
 
     var type = mock(GraphQLObjectType.class);
-    when(type.getName()).thenReturn("testType");
+    lenient().when(type.getName())
+        .thenReturn("testType");
 
-    when(fieldDefinition.getType()).thenReturn(type);
+    lenient().when(fieldDefinition.getType())
+        .thenReturn(type);
 
-    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
+    lenient().when(selectedField.getFieldDefinitions())
+        .thenReturn(List.of(fieldDefinition));
 
     return selectedField;
   }
