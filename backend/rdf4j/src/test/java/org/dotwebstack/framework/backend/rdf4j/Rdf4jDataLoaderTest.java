@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
 import java.util.Arrays;
@@ -24,13 +22,10 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryBuilder;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryHolder;
-import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.impl.IteratingTupleQueryResult;
@@ -59,20 +54,6 @@ class Rdf4jDataLoaderTest {
   @BeforeEach
   void init() {
     rdf4jDataLoader = new Rdf4jDataLoader(dotWebStackConfiguration, queryBuilder, repository);
-  }
-
-  @Test
-  void supports_True_ForRdf4jTypeConfiguration() {
-    Rdf4jTypeConfiguration rdf4jTypeConfiguration = new Rdf4jTypeConfiguration();
-
-    assertThat(rdf4jDataLoader.supports(rdf4jTypeConfiguration), is(true));
-  }
-
-  @Test
-  void supports_False_ForUnsupportedConfiguration() {
-    UnsupportedTypeConfiguration unsupportedTypeConfiguration = new UnsupportedTypeConfiguration();
-
-    assertThat(rdf4jDataLoader.supports(unsupportedTypeConfiguration), is(false));
   }
 
   @Test
@@ -153,26 +134,6 @@ class Rdf4jDataLoaderTest {
         any(KeyCondition.class));
   }
 
-  private static class UnsupportedTypeConfiguration extends AbstractTypeConfiguration<UnsupportedFieldConfiguration> {
-    @Override
-    public void init(DotWebStackConfiguration dotWebStackConfiguration) {}
-
-    @Override
-    public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
-      return null;
-    }
-
-    @Override
-    public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
-      return null;
-    }
-  }
-
   private LoadEnvironment mockLoadEnvironment() {
     return LoadEnvironment.builder()
         .executionStepInfo(mock(ExecutionStepInfo.class))
@@ -193,27 +154,5 @@ class Rdf4jDataLoaderTest {
 
     when(repositoryConnection.prepareTupleQuery(anyString())).thenReturn(tupleQuery);
     when(repository.getConnection()).thenReturn(repositoryConnection);
-  }
-
-  private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {
-    @Override
-    public boolean isScalarField() {
-      return false;
-    }
-
-    @Override
-    public boolean isObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isNestedObjectField() {
-      return false;
-    }
-
-    @Override
-    public boolean isAggregateField() {
-      return false;
-    }
   }
 }

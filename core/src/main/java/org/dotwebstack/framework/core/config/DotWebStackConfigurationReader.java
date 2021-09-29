@@ -2,48 +2,44 @@ package org.dotwebstack.framework.core.config;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.SubtypeResolver;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.backend.BackendDefinition;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.ClassUtils;
 
 public class DotWebStackConfigurationReader {
+
   private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
-  public DotWebStackConfigurationReader() {
-    registerSubTypes();
-    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+  public DotWebStackConfigurationReader(BackendDefinition backendDefinition) {
+    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .registerModule(new SimpleModule()
+            .addDeserializer(AbstractTypeConfiguration.class, new TypeConfigurationDeserializer(backendDefinition)));
   }
 
-  public DotWebStackConfigurationReader(Class<?>... configurationClasses) {
-    objectMapper.registerSubtypes(configurationClasses);
-    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-  }
-
-  private void registerSubTypes() {
-    var scanner = new ClassPathScanningCandidateComponentProvider(false);
-    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
-    scanner.findCandidateComponents("org.dotwebstack.framework.backend")
-        .stream()
-        .map(beanDefinition -> ClassUtils.resolveClassName(Objects.requireNonNull(beanDefinition.getBeanClassName()),
-            getClass().getClassLoader()))
-        .forEach(objectMapper::registerSubtypes);
-  }
-
-  public DotWebStackConfiguration read(String filename) {
+  public DotWebStackConfiguration<?> read(String filename) {
     return ResourceLoaderUtils.getResource(filename)
         .map(resource -> {
           try {
@@ -53,7 +49,7 @@ public class DotWebStackConfigurationReader {
           }
         })
         .map(configuration -> {
-          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
+          Set<ConstraintViolation<DotWebStackConfiguration<?>>> violations = Validation.buildDefaultValidatorFactory()
               .getValidator()
               .validate(configuration);
 
@@ -64,5 +60,19 @@ public class DotWebStackConfigurationReader {
           return configuration;
         })
         .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", filename));
+  }
+
+  private static class TypeConfigurationDeserializer extends JsonDeserializer<AbstractTypeConfiguration<?>> {
+
+    private final BackendDefinition backendDefinition;
+
+    public TypeConfigurationDeserializer(BackendDefinition backendDefinition) {
+      this.backendDefinition = backendDefinition;
+    }
+
+    @Override
+    public AbstractTypeConfiguration<?> deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+      return parser.readValueAs(backendDefinition.getTypeConfigurationClass());
+    }
   }
 }

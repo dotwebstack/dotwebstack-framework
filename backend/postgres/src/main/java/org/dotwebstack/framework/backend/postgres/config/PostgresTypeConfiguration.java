@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.postgres.config;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("postgres")
 public class PostgresTypeConfiguration extends AbstractTypeConfiguration<PostgresFieldConfiguration> {
 
   private String table;

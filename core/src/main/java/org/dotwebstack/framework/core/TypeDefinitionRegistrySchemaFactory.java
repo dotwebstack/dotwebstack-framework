@@ -98,7 +98,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return typeDefinitionRegistry;
   }
 
-  private void addObjectTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addObjectTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .forEach((name, objectType) -> {
@@ -110,7 +110,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         });
   }
 
-  private void addFilterTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addFilterTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .forEach((name, objectType) -> {
@@ -121,7 +121,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         });
   }
 
-  private void addSortTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addSortTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .forEach((name, objectType) -> {
@@ -133,7 +133,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         });
   }
 
-  private void addContextTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addContextTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     Optional.ofNullable(dotWebStackConfiguration.getContext())
         .ifPresent(contextConfiguration -> typeDefinitionRegistry
@@ -158,7 +158,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private void addConnectionTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addConnectionTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getObjectTypes()
         .values()
@@ -307,7 +307,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return inputValueDefinitions;
   }
 
-  private void addQueryTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addQueryTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
 
     var queryFieldDefinitions = dotWebStackConfiguration.getQueries()
@@ -324,7 +324,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     typeDefinitionRegistry.add(queryTypeDefinition);
   }
 
-  private void addSubscriptionTypes(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addSubscriptionTypes(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
 
     var subscriptionFieldDefinitions = dotWebStackConfiguration.getSubscriptions()
@@ -345,7 +345,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     }
   }
 
-  private void addEnumerations(DotWebStackConfiguration dotWebStackConfiguration,
+  private void addEnumerations(DotWebStackConfiguration<?> dotWebStackConfiguration,
       TypeDefinitionRegistry typeDefinitionRegistry) {
     dotWebStackConfiguration.getEnumerations()
         .forEach((name, enumeration) -> {
@@ -385,7 +385,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private FieldDefinition createQueryFieldDefinition(String queryName, QueryConfiguration queryConfiguration,
-      DotWebStackConfiguration dotWebStackConfiguration) {
+      DotWebStackConfiguration<?> dotWebStackConfiguration) {
 
     AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration =
         dotWebStackConfiguration.getObjectTypes()

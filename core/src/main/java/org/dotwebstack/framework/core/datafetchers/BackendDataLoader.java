@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.datafetchers;
 
 import java.util.Map;
 import java.util.Set;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import reactor.core.publisher.Flux;
@@ -11,10 +10,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 public interface BackendDataLoader {
-
-  default boolean supports(TypeConfiguration<?> typeConfiguration) {
-    return false;
-  }
 
   Mono<Map<String, Object>> loadSingle(KeyCondition keyCondition, LoadEnvironment environment);
 

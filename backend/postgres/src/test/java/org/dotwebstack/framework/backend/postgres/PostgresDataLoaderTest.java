@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -28,11 +27,8 @@ import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfigurati
 import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilderResult;
-import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
-import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.SelectQuery;
@@ -60,38 +56,6 @@ class PostgresDataLoaderTest {
   @BeforeEach
   void beforeAll() {
     postgresDataLoader = new PostgresDataLoader(databaseClient, selectQueryBuilder);
-  }
-
-  @Test
-  void supports_returnsTrue_withPostgresTypeConfiguration() {
-    boolean supported = postgresDataLoader.supports(new PostgresTypeConfiguration());
-
-    assertThat(supported, is(Boolean.TRUE));
-  }
-
-  @Test
-  void supports_returnsFalse_withNonPostgresTypeConfiguration() {
-    boolean supported = postgresDataLoader.supports(new AbstractTypeConfiguration<>() {
-      @Override
-      public void init(DotWebStackConfiguration dotWebStackConfiguration) {}
-
-      @Override
-      public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
-        return null;
-      }
-
-      @Override
-      public KeyCondition getKeyCondition(String fieldName, Map<String, Object> source) {
-        return null;
-      }
-
-      @Override
-      public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
-        return null;
-      }
-    });
-
-    assertThat(supported, is(Boolean.FALSE));
   }
 
   @Test

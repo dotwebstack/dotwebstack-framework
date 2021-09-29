@@ -29,7 +29,7 @@ public class SortValidator implements DotWebStackConfigurationValidator {
   }
 
   private Map<String, List<SortableByConfiguration>> getSortableByPerObjectTypeName(
-      DotWebStackConfiguration dotWebStackConfiguration) {
+      DotWebStackConfiguration<?> dotWebStackConfiguration) {
     return dotWebStackConfiguration.getObjectTypes()
         .entrySet()
         .stream()
@@ -37,14 +37,14 @@ public class SortValidator implements DotWebStackConfigurationValidator {
         .collect(Collectors.toMap(Map.Entry::getKey, this::getSortableByConfiguration));
   }
 
-  private boolean isSortableByListNotEmpty(Map.Entry<String, AbstractTypeConfiguration<?>> entry) {
+  private boolean isSortableByListNotEmpty(Map.Entry<String, ? extends AbstractTypeConfiguration<?>> entry) {
     return !entry.getValue()
         .getSortableBy()
         .isEmpty();
   }
 
   private List<SortableByConfiguration> getSortableByConfiguration(
-      Map.Entry<String, AbstractTypeConfiguration<?>> entry) {
+      Map.Entry<String, ? extends AbstractTypeConfiguration<?>> entry) {
     return entry.getValue()
         .getSortableBy()
         .values()

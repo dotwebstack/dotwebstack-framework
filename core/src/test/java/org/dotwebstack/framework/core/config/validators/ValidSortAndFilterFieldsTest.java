@@ -6,14 +6,12 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.List;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
-import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.junit.jupiter.api.Test;
 
 class ValidSortAndFilterFieldsTest {
 
-  private final DotWebStackConfigurationReader dwsReader =
-      new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
 
   @Test
   void get_returnsValidFields_withDotWebStackConfiguration() {

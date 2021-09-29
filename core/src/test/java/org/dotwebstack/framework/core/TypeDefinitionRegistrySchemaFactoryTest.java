@@ -35,7 +35,6 @@ import graphql.schema.idl.TypeUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
-import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -46,8 +45,7 @@ import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
 
-  private final DotWebStackConfigurationReader dwsReader =
-      new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
 
   private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
     fieldFilterMap.put("String", FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE);

@@ -11,11 +11,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.backend.postgres.query.ObjectSelectContext;
 import org.dotwebstack.framework.backend.postgres.query.PostgresKeyCriteria;
 import org.dotwebstack.framework.backend.postgres.query.SelectQueryBuilder;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -47,11 +45,6 @@ public class PostgresDataLoader implements BackendDataLoader {
   public PostgresDataLoader(DatabaseClient databaseClient, SelectQueryBuilder selectQueryBuilder) {
     this.databaseClient = databaseClient;
     this.selectQueryBuilder = selectQueryBuilder;
-  }
-
-  @Override
-  public boolean supports(TypeConfiguration<?> typeConfiguration) {
-    return typeConfiguration instanceof PostgresTypeConfiguration;
   }
 
   @Override

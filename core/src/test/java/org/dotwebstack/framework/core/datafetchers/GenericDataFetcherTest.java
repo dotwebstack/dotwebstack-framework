@@ -97,7 +97,7 @@ class GenericDataFetcherTest {
 
     dataLoaderRegistry = new DataLoaderRegistry();
 
-    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, List.of(backendDataLoader), requestFactory);
+    genericDataFetcher = new GenericDataFetcher(dotWebStackConfiguration, backendDataLoader, requestFactory);
   }
 
   @Test
@@ -108,7 +108,6 @@ class GenericDataFetcherTest {
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.just(data));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
 
     var future = genericDataFetcher.get(dataFetchingEnvironment);
 
@@ -133,7 +132,6 @@ class GenericDataFetcherTest {
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
     when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(data));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
 
@@ -158,7 +156,6 @@ class GenericDataFetcherTest {
     var outputType = GraphQLList.list(createBreweryType());
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.fromIterable(data));
 
     var future = genericDataFetcher.get(dataFetchingEnvironment);
@@ -185,7 +182,6 @@ class GenericDataFetcherTest {
         .objectRequest(createObjectQuery())
         .build();
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadManyRequest(any(), any())).thenReturn(Flux.fromIterable(data));
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
@@ -210,7 +206,6 @@ class GenericDataFetcherTest {
     var outputType = GraphQLList.list(createBreweryType());
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, SUBSCRIPTION);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.empty());
 
     var result = genericDataFetcher.get(dataFetchingEnvironment);
@@ -228,7 +223,6 @@ class GenericDataFetcherTest {
         .objectRequest(createObjectQuery())
         .build();
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadManyRequest(any(), any())).thenReturn(Flux.empty());
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
@@ -279,7 +273,6 @@ class GenericDataFetcherTest {
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
     when(backendDataLoader.batchLoadMany(any(), any())).thenReturn(batchLoadManyResult);
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/beers"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
@@ -321,7 +314,6 @@ class GenericDataFetcherTest {
 
     when(dotWebStackConfiguration.getObjectTypes()).thenReturn(Map.of("Beers", typeConfiguration));
     when(backendDataLoader.batchLoadManyRequest(any(), any())).thenReturn(batchLoadManyResult);
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createCollectionRequest(typeConfiguration, dataFetchingEnvironment))
         .thenReturn(collectionQuery);
@@ -359,7 +351,6 @@ class GenericDataFetcherTest {
         List.of(Tuples.of(breweryOneKey, breweryOneData), Tuples.of(breweryTwoKey, breweryTwoData));
 
     when(backendDataLoader.batchLoadSingle(any(), any())).thenReturn(Flux.fromIterable(breweries));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
     when(executionStepInfo.getPath()).thenReturn(ResultPath.parse("/my/brewery"));
     when(executionStepInfo.getUnwrappedNonNullType()).thenReturn(outputType);
@@ -399,7 +390,6 @@ class GenericDataFetcherTest {
         createDataFetchingEnvironment(outputType, QUERY, Map.of(), breweryOneKey);
 
     when(backendDataLoader.batchLoadSingleRequest(any())).thenReturn(Flux.fromIterable(breweries));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);
     when(executionStepInfo.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
@@ -423,7 +413,6 @@ class GenericDataFetcherTest {
     var outputType = GraphQLList.list(createBreweryType());
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadMany(any(), any())).thenReturn(Flux.error(new RuntimeException("Query error!")));
 
     var result = genericDataFetcher.get(dataFetchingEnvironment);
@@ -438,7 +427,6 @@ class GenericDataFetcherTest {
     var outputType = createBreweryType();
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
 
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadSingle(any(), any())).thenReturn(Mono.error(new RuntimeException("Query error!")));
 
     var result = genericDataFetcher.get(dataFetchingEnvironment);
@@ -452,9 +440,7 @@ class GenericDataFetcherTest {
   void mapLoadSingle_ReturnsEmptyDataFetcherResult() throws ExecutionException, InterruptedException {
     var outputType = createBreweryType();
     var dataFetchingEnvironment = createDataFetchingEnvironment(outputType, QUERY);
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.loadSingleRequest(any())).thenReturn(Mono.just(Map.of("id", "null")));
-    when(backendDataLoader.supports(typeConfiguration)).thenReturn(true);
     when(backendDataLoader.useRequestApproach()).thenReturn(true);
     var objectQuery = createObjectQuery();
     when(requestFactory.createObjectRequest(typeConfiguration, dataFetchingEnvironment)).thenReturn(objectQuery);

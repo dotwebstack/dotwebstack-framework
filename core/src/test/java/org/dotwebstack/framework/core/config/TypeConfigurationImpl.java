@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Map;
 import lombok.Data;
@@ -10,7 +9,6 @@ import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@JsonTypeName("test")
 public class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
 
   @Override

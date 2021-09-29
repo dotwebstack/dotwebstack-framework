@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryBuilder;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyConditionGroupedFlux;
@@ -37,11 +36,6 @@ public class Rdf4jDataLoader implements BackendDataLoader {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.queryBuilder = queryBuilder;
     this.repository = repository;
-  }
-
-  @Override
-  public boolean supports(TypeConfiguration<?> typeConfiguration) {
-    return typeConfiguration instanceof Rdf4jTypeConfiguration;
   }
 
   @Override

@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
+import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
@@ -40,16 +41,16 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   public static final Map<String, Object> NULL_MAP = Map.of("id", "null");
 
-  private final DotWebStackConfiguration dotWebStackConfiguration;
+  private final DotWebStackConfiguration<?> dotWebStackConfiguration;
 
-  private final Collection<BackendDataLoader> backendDataLoaders;
+  private final BackendDataLoader backendDataLoader;
 
   private final RequestFactory requestFactory;
 
-  public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration,
-      Collection<BackendDataLoader> backendDataLoaders, RequestFactory requestFactory) {
+  public GenericDataFetcher(DotWebStackConfiguration<?> dotWebStackConfiguration, BackendDataLoader backendDataLoader,
+      RequestFactory requestFactory) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
-    this.backendDataLoaders = backendDataLoaders;
+    this.backendDataLoader = backendDataLoader;
     this.requestFactory = requestFactory;
   }
 
@@ -71,8 +72,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
     if (source.isPresent() && localContext.isPresent()) {
       return doNestedGet(environment, localContext.get(), source.get(), executionStepInfo);
     }
-
-    var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
     var loadEnvironment = createLoadEnvironment(environment);
 
@@ -168,7 +167,7 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .build();
   }
 
-  private Optional<TypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
+  private Optional<? extends AbstractTypeConfiguration<?>> getTypeConfiguration(GraphQLOutputType outputType) {
     var nullableType = GraphQLTypeUtil.unwrapNonNull(outputType);
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(nullableType);
 
@@ -184,8 +183,6 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
       TypeConfiguration<?> typeConfiguration) {
     var unwrappedType = environment.getExecutionStepInfo()
         .getUnwrappedNonNullType();
-
-    var backendDataLoader = getBackendDataLoader(typeConfiguration).orElseThrow();
 
     var loadEnvironment = createLoadEnvironment(environment);
 
@@ -253,11 +250,5 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
         .subscription(SUBSCRIPTION.equals(environment.getOperationDefinition()
             .getOperation()))
         .build();
-  }
-
-  private Optional<BackendDataLoader> getBackendDataLoader(TypeConfiguration<?> typeConfiguration) {
-    return backendDataLoaders.stream()
-        .filter(loader -> loader.supports(typeConfiguration))
-        .findFirst();
   }
 }

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.BackendDataLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -25,11 +24,6 @@ public class JsonDataLoader implements BackendDataLoader {
   public JsonDataLoader(DotWebStackConfiguration dotWebStackConfiguration, JsonDataService jsonDataService) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.jsonDataService = jsonDataService;
-  }
-
-  @Override
-  public boolean supports(TypeConfiguration<?> typeConfiguration) {
-    return typeConfiguration instanceof JsonTypeConfiguration;
   }
 
   @Override

@@ -3,7 +3,6 @@ package org.dotwebstack.framework.core.config;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import java.util.Arrays;
@@ -24,7 +23,6 @@ import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "backend")
 public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfiguration> implements TypeConfiguration<T> {
 
   protected String name;

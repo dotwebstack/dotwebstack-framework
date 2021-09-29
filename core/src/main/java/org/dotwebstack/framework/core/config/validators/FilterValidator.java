@@ -29,7 +29,7 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(
-      DotWebStackConfiguration dotWebStackConfiguration) {
+      DotWebStackConfiguration<?> dotWebStackConfiguration) {
     return dotWebStackConfiguration.getObjectTypes()
         .entrySet()
         .stream()
@@ -37,14 +37,14 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
         .collect(Collectors.toMap(Map.Entry::getKey, this::getFilterConfiguration));
   }
 
-  private boolean isFilterListNotEmpty(Map.Entry<String, AbstractTypeConfiguration<?>> entry) {
+  private boolean isFilterListNotEmpty(Map.Entry<String, ? extends AbstractTypeConfiguration<?>> entry) {
     return !entry.getValue()
         .getFilters()
         .isEmpty();
   }
 
   private Map<String, FilterConfiguration> getFilterConfiguration(
-      Map.Entry<String, AbstractTypeConfiguration<?>> entry) {
+      Map.Entry<String, ? extends AbstractTypeConfiguration<?>> entry) {
     return entry.getValue()
         .getFilters();
   }

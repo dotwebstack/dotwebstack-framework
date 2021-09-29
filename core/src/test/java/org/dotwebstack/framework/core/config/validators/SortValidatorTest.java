@@ -6,14 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
-import org.dotwebstack.framework.core.config.FieldConfigurationImpl;
 import org.dotwebstack.framework.core.config.TypeConfigurationImpl;
 import org.junit.jupiter.api.Test;
 
 class SortValidatorTest {
 
-  private final DotWebStackConfigurationReader dwsReader =
-      new DotWebStackConfigurationReader(TypeConfigurationImpl.class, FieldConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
 
   @Test
   void validate_throwsNoException_withValidSortableByFields() {
