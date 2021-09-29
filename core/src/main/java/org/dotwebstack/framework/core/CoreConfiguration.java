@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CoreConfiguration {
 
+  public static DotWebStackConfiguration dotWebStackConfiguration;
+
   @Bean
   public GraphQlService graphQlService(List<GraphQlService> beans) {
     return beans.get(0);
@@ -23,18 +25,25 @@ public class CoreConfiguration {
   public DotWebStackConfiguration dotWebStackConfiguration(
       @Value("${dotwebstack.config:dotwebstack.yaml}") String configFilename,
       List<DotWebStackConfigurationValidator> validators) {
-    LOG.info("Using DotWebStackConfiguration: {}", configFilename);
     var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
     var dotWebStackConfiguration = dotWebStackConfigurationReader.read(configFilename);
 
+    validateDotWebStackConfiguration(validators, dotWebStackConfiguration);
+    initObjectTypes(dotWebStackConfiguration);
+
+    return dotWebStackConfiguration;
+  }
+
+  private void initObjectTypes(DotWebStackConfiguration dotWebStackConfiguration) {
     if (dotWebStackConfiguration.getObjectTypes() != null) {
       dotWebStackConfiguration.getObjectTypes()
           .values()
           .forEach(objectType -> objectType.init(dotWebStackConfiguration));
     }
+  }
 
+  private void validateDotWebStackConfiguration(List<DotWebStackConfigurationValidator> validators,
+      DotWebStackConfiguration dotWebStackConfiguration) {
     validators.forEach(validator -> validator.validate(dotWebStackConfiguration));
-
-    return dotWebStackConfiguration;
   }
 }
