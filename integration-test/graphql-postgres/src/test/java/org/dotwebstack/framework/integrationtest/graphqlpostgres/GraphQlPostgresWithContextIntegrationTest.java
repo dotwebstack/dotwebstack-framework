@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static graphql.Assert.assertTrue;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.integrationtest.graphqlpostgres.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -93,8 +94,46 @@ class GraphQlPostgresWithContextIntegrationTest {
   }
 
   @Test
+  void getRequest_returnBeer_NullIfNotExist() {
+    var query = "{\n" + "  beer(identifier_beer: \"11111\", context:{validOn: \"2020-09-01\", "
+        + "availableOn: \"2020-02-01T00:00:00Z\"}) {\n" + "    name\n" + "    soldPerYear\n" + "    brewery {\n"
+        + "      identifier_brewery\n" + "      name\n" + "    }\n" + "  }\n" + "}";
+
+    JsonNode json = executeQuery(query);
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey("beer"), is(true));
+    assertTrue(json.get("data")
+        .get("beer")
+        .toString()
+        .startsWith("null"));
+  }
+
+  @Test
   void getRequest_returnBeers_forDefault() {
     var query = "{\n" + "  beers(context:{}) {\n" + "    \tnodes {\n" + "        name\n" + "        soldPerYear\n"
+        + "        brewery {\n" + "          name\n" + "        }\n" + "      }\n" + "  }\n" + "}";
+
+    JsonNode json = executeQuery(query);
+
+    Assert.assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data, hasEntry(equalTo("beers"), hasEntry(equalTo("nodes"),
+        hasItems(
+            hasEntry(equalTo("name"), equalTo("Beer 1 validStart: 2019-01-01, availableStart: 2019-04-01T12:00:00Z")),
+            hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("name"), equalTo("Beer 3")),
+            hasEntry(equalTo("name"), equalTo("Beer 4")), hasEntry(equalTo("name"), equalTo("Beer 5")),
+            hasEntry(equalTo("name"), equalTo("Beer 6"))))));
+  }
+
+  @Test
+  void getRequest_returnBeers_forDefault_ifContextNull() {
+    var query = "{\n" + "  beers {\n" + "    \tnodes {\n" + "        name\n" + "        soldPerYear\n"
         + "        brewery {\n" + "          name\n" + "        }\n" + "      }\n" + "  }\n" + "}";
 
     JsonNode json = executeQuery(query);

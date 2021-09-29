@@ -13,8 +13,6 @@ public class QueryConfiguration {
 
   private List<KeyConfiguration> keys = new ArrayList<>();
 
-  private boolean nullable = false;
-
   private boolean list = false;
 
   private boolean context = true;

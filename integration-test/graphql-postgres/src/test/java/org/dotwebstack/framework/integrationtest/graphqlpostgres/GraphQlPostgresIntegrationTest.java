@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static graphql.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -188,6 +189,23 @@ class GraphQlPostgresIntegrationTest {
 
     Map<String, Object> beer = getNestedObject(data, BEER);
     assertThat(beer.get(NAME), is("Beer 1"));
+  }
+
+  @Test
+  void getRequest_ReturnsBeer_forIdentifier_NullIfNotExist() {
+    var query = "{beer(identifier_beer: \"1111\" ){name}}";
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEER), is(true));
+    assertTrue(json.get("data")
+        .get(BEER)
+        .toString()
+        .startsWith("null"));
   }
 
   @Test

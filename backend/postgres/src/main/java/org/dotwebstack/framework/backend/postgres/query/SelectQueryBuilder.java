@@ -96,8 +96,8 @@ public class SelectQueryBuilder {
       selectQuery = addKeyCriterias(selectQuery, objectSelectContext, fromTable, objectRequest);
     }
 
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-        objectSelectContext.isUseNullMapWhenNotFound());
+    var rowMapper =
+        createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(), true);
 
     return SelectQueryBuilderResult.builder()
         .query(selectQuery)
@@ -121,8 +121,8 @@ public class SelectQueryBuilder {
       Table<Record> fromTable) {
     var query = buildQuery(objectSelectContext, objectRequest, fromTable);
 
-    var rowMapper = createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(),
-        objectSelectContext.isUseNullMapWhenNotFound());
+    var rowMapper =
+        createMapAssembler(objectSelectContext.getAssembleFns(), objectSelectContext.getCheckNullAlias(), true);
 
     if (!CollectionUtils.isEmpty(objectRequest.getKeyCriteria())) {
       query = addKeyCriterias(query, objectSelectContext, fromTable, objectRequest);

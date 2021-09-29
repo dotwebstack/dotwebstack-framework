@@ -397,6 +397,8 @@ public class RequestFactory {
   private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
+        .filter(selectedField -> !selectedField.getName()
+            .startsWith("__"))
         .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinitions()
             .stream()
             .findFirst()

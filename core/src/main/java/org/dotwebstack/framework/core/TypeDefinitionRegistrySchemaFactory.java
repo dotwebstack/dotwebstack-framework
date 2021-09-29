@@ -24,6 +24,7 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -254,7 +255,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var type = queryConfiguration.getType();
 
     if (queryConfiguration.isList()) {
-      return createListType(type, queryConfiguration.isNullable());
+      return createListType(type, false);
     }
 
     return createType(queryConfiguration);
@@ -487,7 +488,9 @@ public class TypeDefinitionRegistrySchemaFactory {
   private void addOptionalContext(List<InputValueDefinition> inputValueDefinitions) {
     Optional.ofNullable(dotWebStackConfiguration.getContext())
         .ifPresent(context -> inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
-            .type(newNonNullableType(CONTEXT_TYPE_NAME))
+            .type(newType(CONTEXT_TYPE_NAME))
+            .defaultValue(ObjectValue.newObjectValue()
+                .build())
             .build()));
   }
 

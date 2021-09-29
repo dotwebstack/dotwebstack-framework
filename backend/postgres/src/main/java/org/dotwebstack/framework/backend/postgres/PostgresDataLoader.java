@@ -58,7 +58,7 @@ public class PostgresDataLoader implements BackendDataLoader {
   public Mono<Map<String, Object>> loadSingleRequest(ObjectRequest objectRequest) {
     var selectQueryBuilderResult = selectQueryBuilder.build(objectRequest, new ObjectSelectContext());
 
-    return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).single();
+    return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler()).singleOrEmpty();
   }
 
   @Override
@@ -68,7 +68,7 @@ public class PostgresDataLoader implements BackendDataLoader {
       addKeyConditionsToCollectionRequest(Set.of(keyCondition), collectionRequest);
     }
 
-    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext(true));
+    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext());
 
     return fetch(selectQueryBuilderResult.getQuery(), selectQueryBuilderResult.getMapAssembler());
   }
@@ -78,7 +78,7 @@ public class PostgresDataLoader implements BackendDataLoader {
       CollectionRequest collectionRequest) {
     addKeyConditionsToCollectionRequest(keyConditions, collectionRequest);
 
-    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext(true));
+    var selectQueryBuilderResult = selectQueryBuilder.build(collectionRequest, new ObjectSelectContext());
 
     Map<String, String> keyColumnNames = selectQueryBuilderResult.getContext()
         .getKeyColumnNames();
