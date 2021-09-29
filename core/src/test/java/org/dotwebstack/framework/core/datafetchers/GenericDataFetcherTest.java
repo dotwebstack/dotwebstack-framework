@@ -597,5 +597,10 @@ class GenericDataFetcherTest {
     public boolean isAggregateField() {
       return isAggregateField;
     }
+
+    @Override
+    public boolean isVisible() {
+      return true;
+    }
   }
 }

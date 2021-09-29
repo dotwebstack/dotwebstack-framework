@@ -107,7 +107,7 @@ class PostgresTypeConfigurationTest {
   private JoinColumn createJoinColumnWithReferencedColumn(String name, String columnName) {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName(name);
-    joinColumn.setReferencedColumn(columnName);
+    // joinColumn.setReferencedColumn(columnName);
 
     return joinColumn;
   }
@@ -116,7 +116,7 @@ class PostgresTypeConfigurationTest {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName(name);
     joinColumn.setReferencedField(fieldName);
-    joinColumn.setReferencedColumn(columnName);
+    // joinColumn.setReferencedColumn(columnName);
 
     return joinColumn;
   }
@@ -130,7 +130,7 @@ class PostgresTypeConfigurationTest {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
     KeyConfiguration keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField(FIELD_IDENTIFIER);
-    typeConfiguration.setKeys(List.of(keyConfiguration));
+    // typeConfiguration.setKeys(List.of(keyConfiguration));
 
     JoinTable joinTable = createJoinTable(joinColumn, inverseJoinColumn);
     PostgresFieldConfiguration fieldConfiguration = createPostgresFieldConfiguration(joinTable);

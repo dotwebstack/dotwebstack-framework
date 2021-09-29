@@ -11,11 +11,6 @@ public class JoinColumn {
   @NotBlank
   private String name;
 
+  @NotBlank
   private String referencedField;
-
-  private String referencedColumn;
-
-  public String getField() {
-    return referencedField != null ? referencedField : referencedColumn;
-  }
 }

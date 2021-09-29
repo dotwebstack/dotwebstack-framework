@@ -80,7 +80,7 @@ class SelectQueryBuilderTest {
     var keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField("identifier");
 
-    when(typeConfiguration.getKeys()).thenReturn(List.of(keyConfiguration));
+    // when(typeConfiguration.getKeys()).thenReturn(List.of(keyConfiguration));
 
     var identifierFieldConfiguration = new PostgresFieldConfiguration();
     identifierFieldConfiguration.setName("identifier");
@@ -258,7 +258,6 @@ class SelectQueryBuilderTest {
     addressIdentifierFieldConfiguration.setColumn("identifier_address");
 
     var typeConfiguration = new PostgresTypeConfiguration();
-    typeConfiguration.setKeys(List.of());
     typeConfiguration.setTable("Address" + TABLE_POSTFIX);
     typeConfiguration.setFields(Map.of("identifier_address", addressIdentifierFieldConfiguration));
 
@@ -303,7 +302,7 @@ class SelectQueryBuilderTest {
 
     mappedByFieldConfiguration.setTypeConfiguration(beerTypeConfiguration);
 
-    beerTypeConfiguration.setKeys(List.of());
+    // beerTypeConfiguration.setKeys(List.of());
     beerTypeConfiguration.setTable("Beer" + TABLE_POSTFIX);
 
     var breweryTypeConfiguration = mockTypeConfiguration("brewery");
@@ -353,7 +352,6 @@ class SelectQueryBuilderTest {
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
 
     var typeConfiguration = new PostgresTypeConfiguration();
-    typeConfiguration.setKeys(List.of());
     typeConfiguration.setTable("IngredientTable");
     typeConfiguration.setFields(Map.of("identifier_ingredient", ingredientIdentifierFieldConfiguration));
 
@@ -428,7 +426,6 @@ class SelectQueryBuilderTest {
     beerIdentifierFieldConfiguration.setColumn("identifier_beer");
 
     var beerTypeConfiguration = new PostgresTypeConfiguration();
-    beerTypeConfiguration.setKeys(List.of());
     beerTypeConfiguration.setTable("BeerTable");
     beerTypeConfiguration.setFields(Map.of("identifierBeer", beerIdentifierFieldConfiguration));
 
@@ -446,7 +443,6 @@ class SelectQueryBuilderTest {
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
 
     var ingredientTypeConfiguration = new PostgresTypeConfiguration();
-    ingredientTypeConfiguration.setKeys(List.of());
     ingredientTypeConfiguration.setTable("IngredientTable");
     ingredientTypeConfiguration.setFields(Map.of("identifier_ingredient", ingredientIdentifierFieldConfiguration));
 
@@ -492,7 +488,6 @@ class SelectQueryBuilderTest {
     beerIdentifierFieldConfiguration.setColumn("identifier_beer");
 
     var beerTypeConfiguration = new PostgresTypeConfiguration();
-    beerTypeConfiguration.setKeys(List.of());
     beerTypeConfiguration.setTable("BeerTable");
     beerTypeConfiguration.setFields(Map.of("identifierBeer", beerIdentifierFieldConfiguration));
 
@@ -510,7 +505,6 @@ class SelectQueryBuilderTest {
     ingredientIdentifierFieldConfiguration.setColumn("identifier_ingredientColumn");
 
     var ingredientTypeConfiguration = new PostgresTypeConfiguration();
-    ingredientTypeConfiguration.setKeys(List.of());
     ingredientTypeConfiguration.setTable("IngredientTable");
     ingredientTypeConfiguration.setFields(Map.of("identifier_ingredient", ingredientIdentifierFieldConfiguration));
 
@@ -556,7 +550,6 @@ class SelectQueryBuilderTest {
     breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
 
     var breweryTypeConfiguration = new PostgresTypeConfiguration();
-    breweryTypeConfiguration.setKeys(List.of());
     breweryTypeConfiguration.setTable("BreweryTable");
     breweryTypeConfiguration.setFields(Map.of("identifier", breweryIdentifierFieldConfiguration));
 
@@ -570,7 +563,6 @@ class SelectQueryBuilderTest {
     beerIdentifierFieldConfiguration.setColumn("identifierColumn");
 
     var beerTypeConfiguration = new PostgresTypeConfiguration();
-    beerTypeConfiguration.setKeys(List.of());
     beerTypeConfiguration.setTable("BeerTable");
     beerTypeConfiguration.setFields(Map.of("identifier", beerIdentifierFieldConfiguration));
 
@@ -616,7 +608,6 @@ class SelectQueryBuilderTest {
     breweryIdentifierFieldConfiguration.setColumn("identifierColumn");
 
     var breweryTypeConfiguration = new PostgresTypeConfiguration();
-    breweryTypeConfiguration.setKeys(List.of());
     breweryTypeConfiguration.setTable("BreweryTable");
     breweryTypeConfiguration.setFields(Map.of("identifier", breweryIdentifierFieldConfiguration));
 
@@ -630,7 +621,6 @@ class SelectQueryBuilderTest {
     beerIdentifierFieldConfiguration.setColumn("identifierColumn");
 
     var beerTypeConfiguration = new PostgresTypeConfiguration();
-    beerTypeConfiguration.setKeys(List.of());
     beerTypeConfiguration.setTable("BeerTable");
     beerTypeConfiguration.setFields(Map.of("identifier", beerIdentifierFieldConfiguration));
 

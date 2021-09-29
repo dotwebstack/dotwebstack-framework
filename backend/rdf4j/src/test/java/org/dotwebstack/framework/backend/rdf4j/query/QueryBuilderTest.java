@@ -195,7 +195,8 @@ class QueryBuilderTest {
 
     KeyConfiguration keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField(FIELD_IDENTIFIER);
-    typeConfiguration.setKeys(List.of(keyConfiguration));
+    // TODO: fix me
+    // typeConfiguration.setKeys(List.of(keyConfiguration));
 
     typeConfiguration.setFields(new HashMap<>(
         Map.of(FIELD_IDENTIFIER, new Rdf4jFieldConfiguration(), FIELD_NAME, new Rdf4jFieldConfiguration())));

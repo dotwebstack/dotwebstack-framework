@@ -72,7 +72,7 @@ public class JoinHelper {
 
     return joinColumns.stream()
         .map(joinColumn -> {
-          var otherSideFieldConfiguration = fields.get(joinColumn.getField());
+          var otherSideFieldConfiguration = fields.get(joinColumn.getReferencedField());
 
           var leftColumn = field(leftSideTable, joinColumn.getName());
 
@@ -151,7 +151,7 @@ public class JoinHelper {
       Map<String, PostgresFieldConfiguration> fields, Table<?> leftSideTable, Table<?> rightSideTable) {
     return joinColumns.stream()
         .map(joinColumn -> {
-          var otherSideFieldConfiguration = fields.get(joinColumn.getField());
+          var otherSideFieldConfiguration = fields.get(joinColumn.getReferencedField());
 
           var leftColumn = field(leftSideTable, joinColumn.getName());
           var rightColumn = field(rightSideTable, otherSideFieldConfiguration.getColumn());
@@ -170,7 +170,7 @@ public class JoinHelper {
           var otherSideFieldConfiguration = (PostgresFieldConfiguration) leftPostgresTableField.getFieldConfiguration()
               .getTypeConfiguration()
               .getFields()
-              .get(joinColumn.getField());
+              .get(joinColumn.getReferencedField());
 
           var leftColumn = field(rightSideTable, joinColumn.getName());
           var rightColumn = field(leftPostgresTableField.getTable(), otherSideFieldConfiguration.getColumn());

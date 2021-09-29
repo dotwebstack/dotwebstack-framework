@@ -22,6 +22,8 @@ public class PostgresFieldConfiguration extends AbstractFieldConfiguration {
 
   private String column;
 
+  private boolean visible = true;
+
   private boolean isNested = false;
 
   @Override
