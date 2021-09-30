@@ -29,7 +29,7 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(
-      DotWebStackConfiguration<?> dotWebStackConfiguration) {
+      DotWebStackConfiguration dotWebStackConfiguration) {
     return dotWebStackConfiguration.getObjectTypes()
         .entrySet()
         .stream()

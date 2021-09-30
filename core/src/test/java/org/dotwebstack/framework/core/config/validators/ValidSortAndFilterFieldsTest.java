@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 class ValidSortAndFilterFieldsTest {
 
-  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader =
+      new DotWebStackConfigurationReader(TypeConfigurationImpl.class);
 
   @Test
   void get_returnsValidFields_withDotWebStackConfiguration() {

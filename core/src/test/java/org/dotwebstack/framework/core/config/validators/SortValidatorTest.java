@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 class SortValidatorTest {
 
-  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader =
+      new DotWebStackConfigurationReader(TypeConfigurationImpl.class);
 
   @Test
   void validate_throwsNoException_withValidSortableByFields() {

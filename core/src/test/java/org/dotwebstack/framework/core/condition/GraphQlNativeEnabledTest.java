@@ -24,33 +24,33 @@ class GraphQlNativeEnabledTest {
   @Spy
   private GraphQlNativeEnabled condition;
 
-//  @Test
-//  void matches_returnsTrue_whenProxyIsNotSet() {
-//    DotWebStackConfiguration config = getConfig(null);
-//    doReturn(config).when(condition)
-//        .readConfig(any(String.class));
-//
-//    ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
-//    when(context.getEnvironment()
-//        .getProperty(any(String.class))).thenReturn("config.yaml");
-//
-//    boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
-//    assertThat(matches, is(true));
-//  }
-//
-//  @Test
-//  void matches_returnsFalse_whenProxyIsSet() {
-//    DotWebStackConfiguration config = getConfig("theproxy");
-//    doReturn(config).when(condition)
-//        .readConfig(any(String.class));
-//
-//    ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
-//    when(context.getEnvironment()
-//        .getProperty(any(String.class))).thenReturn("config.yaml");
-//
-//    boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
-//    assertThat(matches, is(false));
-//  }
+  @Test
+  void matches_returnsTrue_whenProxyIsNotSet() {
+    DotWebStackConfiguration config = getConfig(null);
+    doReturn(config).when(condition)
+        .readConfig(any(String.class));
+
+    ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
+    when(context.getEnvironment()
+        .getProperty(any(String.class))).thenReturn("config.yaml");
+
+    boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
+    assertThat(matches, is(true));
+  }
+
+  @Test
+  void matches_returnsFalse_whenProxyIsSet() {
+    DotWebStackConfiguration config = getConfig("theproxy");
+    doReturn(config).when(condition)
+        .readConfig(any(String.class));
+
+    ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
+    when(context.getEnvironment()
+        .getProperty(any(String.class))).thenReturn("config.yaml");
+
+    boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
+    assertThat(matches, is(false));
+  }
 
   private DotWebStackConfiguration getConfig(String proxy) {
     DotWebStackConfiguration config = new DotWebStackConfiguration();

@@ -29,7 +29,7 @@ public class SortValidator implements DotWebStackConfigurationValidator {
   }
 
   private Map<String, List<SortableByConfiguration>> getSortableByPerObjectTypeName(
-      DotWebStackConfiguration<?> dotWebStackConfiguration) {
+      DotWebStackConfiguration dotWebStackConfiguration) {
     return dotWebStackConfiguration.getObjectTypes()
         .entrySet()
         .stream()

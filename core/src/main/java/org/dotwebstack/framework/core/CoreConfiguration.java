@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.backend.BackendDefinition;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfigurationReader;
 import org.dotwebstack.framework.core.config.validators.DotWebStackConfigurationValidator;
@@ -23,9 +22,9 @@ public class CoreConfiguration {
   @Bean
   public DotWebStackConfiguration dotWebStackConfiguration(
       @Value("${dotwebstack.config:dotwebstack.yaml}") String configFilename,
-      List<DotWebStackConfigurationValidator> validators, BackendDefinition backendDefinition) {
+      List<DotWebStackConfigurationValidator> validators) {
     LOG.info("Using DotWebStackConfiguration: {}", configFilename);
-    var dotWebStackConfigurationReader = new DotWebStackConfigurationReader(backendDefinition);
+    var dotWebStackConfigurationReader = new DotWebStackConfigurationReader();
     var dotWebStackConfiguration = dotWebStackConfigurationReader.read(configFilename);
 
     if (dotWebStackConfiguration.getObjectTypes() != null) {

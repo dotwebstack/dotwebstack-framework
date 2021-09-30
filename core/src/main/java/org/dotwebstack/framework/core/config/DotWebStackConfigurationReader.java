@@ -3,43 +3,45 @@ package org.dotwebstack.framework.core.config;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.SubtypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.backend.BackendDefinition;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.ClassUtils;
 
 public class DotWebStackConfigurationReader {
-
   private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
-  public DotWebStackConfigurationReader(BackendDefinition backendDefinition) {
-    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(new SimpleModule()
-            .addDeserializer(AbstractTypeConfiguration.class, new TypeConfigurationDeserializer(backendDefinition)));
+  public DotWebStackConfigurationReader() {
+    this(null);
   }
 
-  public DotWebStackConfiguration<?> read(String filename) {
+  public DotWebStackConfigurationReader(Class<? extends AbstractTypeConfiguration<?>> typeConfigurationClass) {
+    if (typeConfigurationClass == null) {
+      typeConfigurationClass = findTypeConfigurationClass();
+    }
+
+    var deserializerModule = new SimpleModule().addDeserializer(AbstractTypeConfiguration.class,
+        new AbstractTypeConfigurationDeserializer(typeConfigurationClass));
+
+    objectMapper.registerModule(deserializerModule);
+    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  }
+
+  public DotWebStackConfiguration read(String filename) {
     return ResourceLoaderUtils.getResource(filename)
         .map(resource -> {
           try {
@@ -49,7 +51,7 @@ public class DotWebStackConfigurationReader {
           }
         })
         .map(configuration -> {
-          Set<ConstraintViolation<DotWebStackConfiguration<?>>> violations = Validation.buildDefaultValidatorFactory()
+          Set<ConstraintViolation<DotWebStackConfiguration>> violations = Validation.buildDefaultValidatorFactory()
               .getValidator()
               .validate(configuration);
 
@@ -62,17 +64,32 @@ public class DotWebStackConfigurationReader {
         .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", filename));
   }
 
-  private static class TypeConfigurationDeserializer extends JsonDeserializer<AbstractTypeConfiguration<?>> {
+  @SuppressWarnings("unchecked")
+  private Class<? extends AbstractTypeConfiguration<?>> findTypeConfigurationClass() {
+    var scanner = new ClassPathScanningCandidateComponentProvider(false);
+    scanner.addIncludeFilter(new AssignableTypeFilter(TypeConfiguration.class));
 
-    private final BackendDefinition backendDefinition;
+    return scanner.findCandidateComponents("org.dotwebstack.framework.backend")
+        .stream()
+        .map(beanDefinition -> ClassUtils.resolveClassName(Objects.requireNonNull(beanDefinition.getBeanClassName()),
+            getClass().getClassLoader()))
+        .findFirst()
+        .map(c -> (Class<? extends AbstractTypeConfiguration<?>>) c)
+        .orElseThrow(() -> invalidConfigurationException("No implementation found for AbstractTypeConfiguration."));
+  }
 
-    public TypeConfigurationDeserializer(BackendDefinition backendDefinition) {
-      this.backendDefinition = backendDefinition;
+  private static class AbstractTypeConfigurationDeserializer extends JsonDeserializer<AbstractTypeConfiguration<?>> {
+
+    private final Class<? extends AbstractTypeConfiguration<?>> typeConfigurationClass;
+
+    public AbstractTypeConfigurationDeserializer(Class<? extends AbstractTypeConfiguration<?>> typeConfigurationClass) {
+      this.typeConfigurationClass = typeConfigurationClass;
     }
 
     @Override
-    public AbstractTypeConfiguration<?> deserialize(JsonParser parser, DeserializationContext context) throws IOException {
-      return parser.readValueAs(backendDefinition.getTypeConfigurationClass());
+    public AbstractTypeConfiguration<?> deserialize(JsonParser parser, DeserializationContext context)
+        throws IOException {
+      return parser.readValueAs(typeConfigurationClass);
     }
   }
 }

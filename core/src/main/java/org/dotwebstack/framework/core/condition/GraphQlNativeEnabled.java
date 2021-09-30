@@ -10,23 +10,21 @@ public class GraphQlNativeEnabled implements Condition {
 
   @Override
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-    // TODO: don't reload config
-    return true;
-//    String configFilename = context.getEnvironment()
-//        .getProperty("dotwebstack.config");
-//    if (configFilename == null) {
-//      configFilename = "dotwebstack.yaml";
-//    }
-//    DotWebStackConfiguration config = readConfig(configFilename);
-//
-//    // if no proxy is configured, use the local/native graphql service
-//    return config.getSettings() == null || config.getSettings()
-//        .getGraphql() == null || config.getSettings()
-//            .getGraphql()
-//            .getProxy() == null;
+    String configFilename = context.getEnvironment()
+        .getProperty("dotwebstack.config");
+    if (configFilename == null) {
+      configFilename = "dotwebstack.yaml";
+    }
+    DotWebStackConfiguration config = readConfig(configFilename);
+
+    // if no proxy is configured, use the local/native graphql service
+    return config.getSettings() == null || config.getSettings()
+        .getGraphql() == null || config.getSettings()
+            .getGraphql()
+            .getProxy() == null;
   }
 
-//  protected DotWebStackConfiguration readConfig(String configFilename) {
-//    return new DotWebStackConfigurationReader().read(configFilename);
-//  }
+  protected DotWebStackConfiguration readConfig(String configFilename) {
+    return new DotWebStackConfigurationReader().read(configFilename);
+  }
 }

@@ -13,7 +13,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,13 +40,13 @@ public final class GenericDataFetcher implements DataFetcher<Object> {
 
   public static final Map<String, Object> NULL_MAP = Map.of("id", "null");
 
-  private final DotWebStackConfiguration<?> dotWebStackConfiguration;
+  private final DotWebStackConfiguration dotWebStackConfiguration;
 
   private final BackendDataLoader backendDataLoader;
 
   private final RequestFactory requestFactory;
 
-  public GenericDataFetcher(DotWebStackConfiguration<?> dotWebStackConfiguration, BackendDataLoader backendDataLoader,
+  public GenericDataFetcher(DotWebStackConfiguration dotWebStackConfiguration, BackendDataLoader backendDataLoader,
       RequestFactory requestFactory) {
     this.dotWebStackConfiguration = dotWebStackConfiguration;
     this.backendDataLoader = backendDataLoader;

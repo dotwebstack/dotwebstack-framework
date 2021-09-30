@@ -45,7 +45,8 @@ import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
 
-  private final DotWebStackConfigurationReader dwsReader = new DotWebStackConfigurationReader(() -> TypeConfigurationImpl.class);
+  private final DotWebStackConfigurationReader dwsReader =
+      new DotWebStackConfigurationReader(TypeConfigurationImpl.class);
 
   private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
     fieldFilterMap.put("String", FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE);
