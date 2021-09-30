@@ -15,6 +15,8 @@ public final class ValidSortAndFilterFields {
 
   private static final int MAX_DEPTH = 10;
 
+  private static Map<String, AbstractTypeConfiguration<?>> OBJECT_TYPES;
+
   private ValidSortAndFilterFields() {}
 
   public static List<String> get(DotWebStackConfiguration dotWebStackConfiguration) {
@@ -22,30 +24,29 @@ public final class ValidSortAndFilterFields {
   }
 
   public static List<String> get(DotWebStackConfiguration dotWebStackConfiguration, int initialDepth) {
-    Map<String, AbstractTypeConfiguration<?>> objectTypes = dotWebStackConfiguration.getObjectTypes();
+    OBJECT_TYPES = dotWebStackConfiguration.getObjectTypes();
 
-    return objectTypes.entrySet()
+    return OBJECT_TYPES.entrySet()
         .stream()
-        .map(entry -> getValidSortAndFilterFields(objectTypes, uncapitalize(entry.getKey()), entry.getValue(),
-            initialDepth))
+        .map(entry -> getValidSortAndFilterFields(uncapitalize(entry.getKey()), entry.getValue(), initialDepth))
         .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
-  private static List<String> getValidSortAndFilterFields(Map<String, AbstractTypeConfiguration<?>> objectTypes,
-      String parentFieldPath, AbstractTypeConfiguration<?> typeConfiguration, int depth) {
+  private static List<String> getValidSortAndFilterFields(String parentFieldPath,
+      AbstractTypeConfiguration<?> typeConfiguration, int depth) {
     Map<String, ? extends AbstractFieldConfiguration> fields = typeConfiguration.getFields();
 
     return fields.values()
         .stream()
         .filter(field -> !field.isAggregateField())
-        .map(field -> getValidSortAndFilterField(objectTypes, parentFieldPath, field, depth))
+        .map(field -> getValidSortAndFilterField(parentFieldPath, field, depth))
         .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
-  private static List<String> getValidSortAndFilterField(Map<String, AbstractTypeConfiguration<?>> objectTypes,
-      String parentFieldPath, AbstractFieldConfiguration field, int depth) {
+  private static List<String> getValidSortAndFilterField(String parentFieldPath, AbstractFieldConfiguration field,
+      int depth) {
     String currentFieldPath = parentFieldPath.concat(".")
         .concat(field.getName());
 
@@ -53,8 +54,12 @@ public final class ValidSortAndFilterFields {
       return List.of();
     }
 
+    if ((currentFieldPath.contains(uncapitalize(field.getType()) + "."))) {
+      return List.of(currentFieldPath);
+    }
+
     if ((field.isNestedObjectField() || field.isObjectField())) {
-      return getValidSortAndFilterFields(objectTypes, currentFieldPath, objectTypes.get(field.getType()), depth + 1);
+      return getValidSortAndFilterFields(currentFieldPath, OBJECT_TYPES.get(field.getType()), depth + 1);
     }
 
     if (field.isScalarField()) {

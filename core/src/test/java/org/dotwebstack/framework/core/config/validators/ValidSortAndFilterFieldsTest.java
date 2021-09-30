@@ -30,6 +30,20 @@ class ValidSortAndFilterFieldsTest {
   }
 
   @Test
+  void get_returnsValidFields_withValidMeervoudigeRelatie() {
+    var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-meervoudige-relatie.yaml");
+
+    List<String> result = ValidSortAndFilterFields.get(dotWebStackConfiguration);
+
+    assertThat(result.size(), is(12));
+    assertThat(result,
+        containsInAnyOrder("brewery.identifier", "brewery.name", "brewery.status", "brewery.visitAddress.identifier",
+            "brewery.visitAddress.street", "brewery.visitAddress.city", "brewery.specialisatieVan",
+            "brewery.specialisatieVanExtern", "brewery.relatieVan", "address.identifier", "address.street",
+            "address.city"));
+  }
+
+  @Test
   void get_returnsNothing_whenMaxDepthIsExceeded() {
     var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-sort-filter-fields.yaml");
 

@@ -1,0 +1,66 @@
+queries:
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Brewery:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      visitAddress:
+        type: Address
+        objectField: true
+        nullable: true
+      specialisatieVan:
+        type: Brewery
+        list: true
+        joinTable:
+          name: brewery__specialisatie_van
+          joinColumns:
+            - name: brewery__record_id
+              referencedColumn: record_id
+          inverseJoinColumns:
+            - name: identificatie
+              referencedField: identificatie
+      specialisatieVanExtern:
+        type: Brewery
+        list: true
+        joinTable:
+          name: brewery__specialisatie_van_extern
+          joinColumns:
+            - name: brewery__record_id
+              referencedColumn: record_id
+          inverseJoinColumns:
+            - name: identificatie
+              referencedField: identificatie
+      relatieVan:
+        type: Brewery
+        list: true
+        joinTable:
+          name: brewery__relatie_van
+          joinColumns:
+            - name: brewery__record_id
+              referencedColumn: record_id
+          inverseJoinColumns:
+            - name: identificatie
+              referencedField: identificatie
+
+  Address:
+    backend: test
+    keys:
+      - field: identifier
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
