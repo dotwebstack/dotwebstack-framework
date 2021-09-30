@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,9 +127,8 @@ class PostgresTypeConfigurationTest {
   private PostgresTypeConfiguration createTypeConfiguration(JoinColumn joinColumn, JoinColumn inverseJoinColumn,
       String aggregationOf) {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
-    KeyConfiguration keyConfiguration = new KeyConfiguration();
-    keyConfiguration.setField(FIELD_IDENTIFIER);
-    // typeConfiguration.setKeys(List.of(keyConfiguration));
+
+    typeConfiguration.setKeys(List.of(FIELD_IDENTIFIER));
 
     JoinTable joinTable = createJoinTable(joinColumn, inverseJoinColumn);
     PostgresFieldConfiguration fieldConfiguration = createPostgresFieldConfiguration(joinTable);
@@ -145,6 +143,7 @@ class PostgresTypeConfigurationTest {
 
     Map<String, PostgresFieldConfiguration> fieldsMap =
         new HashMap<>(Map.of(FIELD_IDENTIFIER, stringFieldConfiguration, FIELD_PART_OF, fieldConfiguration));
+
 
     typeConfiguration.setFields(fieldsMap);
 

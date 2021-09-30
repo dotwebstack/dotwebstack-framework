@@ -75,8 +75,6 @@ class SelectQueryBuilderTest {
 
   @Test
   void buildCollectionRequest_returnsQuery_forScalarFields() {
-    var typeConfiguration = mockTypeConfiguration("Brewery");
-
     var keyConfiguration = new KeyConfiguration();
     keyConfiguration.setField("identifier");
 
@@ -85,6 +83,8 @@ class SelectQueryBuilderTest {
     var identifierFieldConfiguration = new PostgresFieldConfiguration();
     identifierFieldConfiguration.setName("identifier");
     identifierFieldConfiguration.setColumn("identifierColumn");
+
+    var typeConfiguration = mockTypeConfiguration("Brewery");
 
     when(typeConfiguration.getFields()).thenReturn(Map.of("identifier", identifierFieldConfiguration));
 

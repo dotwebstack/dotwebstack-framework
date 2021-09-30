@@ -9,7 +9,6 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -19,7 +18,6 @@ import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -64,6 +62,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
     initNestedObjectTypes(dotWebStackConfiguration.getObjectTypes());
     initSortCriterias(dotWebStackConfiguration);
     initObjectTypes(dotWebStackConfiguration.getObjectTypes());
+    initKeyFields();
   }
 
   private void initSortCriterias(DotWebStackConfiguration dotWebStackConfiguration) {
@@ -82,19 +81,6 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
         .fieldPath(FieldPathHelper.createFieldPath(dotWebStackConfiguration, this, sortableByConfiguration.getField()))
         .direction(sortableByConfiguration.getDirection())
         .build();
-  }
-
-  private void validateTargetObjectTypeHasPostgresBackend(PostgresFieldConfiguration fieldConfiguration,
-      Map<String, AbstractTypeConfiguration<?>> objectTypes) {
-    if (!fieldConfiguration.isAggregate()) {
-      TypeConfiguration<?> typeConfiguration = objectTypes.get(fieldConfiguration.getType());
-      if (!(typeConfiguration instanceof PostgresTypeConfiguration)) {
-        throw invalidConfigurationException("Target objectType must be an 'PostgresTypeConfiguration' but is an '{}'.",
-            Optional.ofNullable(typeConfiguration)
-                .map(TypeConfiguration::getClass)
-                .orElse(null));
-      }
-    }
   }
 
   @Override
@@ -189,6 +175,17 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
             fieldConfiguration.setTypeConfiguration(typeConfiguration);
           }
 
+        });
+  }
+
+  private void initKeyFields() {
+    fields.values()
+        .forEach(fieldConfiguration -> {
+
+          if ((getKeys().stream()
+              .anyMatch(keyField -> Objects.equals(keyField, fieldConfiguration.getName())))) {
+            fieldConfiguration.setKeyField(true);
+          }
         });
   }
 

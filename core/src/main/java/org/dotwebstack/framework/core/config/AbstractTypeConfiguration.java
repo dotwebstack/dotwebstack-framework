@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
@@ -27,6 +28,11 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfiguration> implements TypeConfiguration<T> {
 
   protected String name;
+
+  @NotNull
+  @Valid
+  @Size(max = 1)
+  protected List<String> keys;
 
   @NotNull
   @Valid

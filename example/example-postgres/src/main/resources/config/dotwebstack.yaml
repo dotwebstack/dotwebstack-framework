@@ -36,7 +36,7 @@ objectTypes:
       ingredientName:
         field: ingredients.name
     keys:
-      - field: identifier
+      - identifier
     sortableBy:
       name:
         - field: name
@@ -59,7 +59,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: identifier
+            referencedField: record_id
       ingredients:
         type: Ingredient
         list: true
@@ -89,7 +89,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - record_id
     sortableBy:
       name:
         - field: name
@@ -119,8 +119,11 @@ objectTypes:
       beerName:
         field: beers.name
     fields:
-      identifier:
+      record_id:
         type: ID
+        visible: false
+      identifier:
+        type: String
       name:
         type: String
       status:
@@ -155,7 +158,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.ingredients
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -168,7 +171,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.addresses
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -180,7 +183,7 @@ objectTypes:
   History:
     backend: postgres
     keys:
-      - field: identifier
+      - identifier
     fields:
       age:
         type: Int

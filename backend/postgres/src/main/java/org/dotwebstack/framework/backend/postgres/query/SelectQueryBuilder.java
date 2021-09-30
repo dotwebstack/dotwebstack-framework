@@ -159,23 +159,22 @@ public class SelectQueryBuilder {
     var keyFieldAdded = new AtomicBoolean(false);
     scalarFields.forEach(scalarField -> addScalarField(scalarField, objectSelectContext, query, table, keyFieldAdded));
 
-    // if (!keyFieldAdded.get() && !typeConfiguration.getKeys()
-    // .isEmpty()) {
-    //
-    // var name = typeConfiguration.getKeys()
-    // .get(0)
-    // .getField();
-    //
-    // var fieldConfiguration = typeConfiguration.getFields()
-    // .get(name);
-    //
-    // var scalarField = ScalarField.builder()
-    // .field(fieldConfiguration)
-    // .origins(Sets.newHashSet(Origin.requested()))
-    // .build();
-    //
-    // addScalarField(scalarField, objectSelectContext, query, table, keyFieldAdded);
-    // }
+    if (!keyFieldAdded.get() && !typeConfiguration.getKeys()
+        .isEmpty()) {
+
+      var name = typeConfiguration.getKeys()
+          .get(0);
+
+      var fieldConfiguration = typeConfiguration.getFields()
+          .get(name);
+
+      var scalarField = ScalarField.builder()
+          .field(fieldConfiguration)
+          .origins(Sets.newHashSet(Origin.requested()))
+          .build();
+
+      addScalarField(scalarField, objectSelectContext, query, table, keyFieldAdded);
+    }
   }
 
   private void addScalarField(ScalarField scalarField, ObjectSelectContext objectSelectContext, SelectQuery<?> query,
@@ -190,13 +189,11 @@ public class SelectQueryBuilder {
       objectSelectContext.getAssembleFns()
           .put(scalarField.getName(), row -> row.get(aliasedColumn.getName()));
 
-      // TODO: key fields dienen bepaald te worden o.b.v selectionFields en de object configuratie (denk
-      // al in de RequestFactory)
-      // if (scalarFieldConfiguration.isKeyField()) {
-      // keyFieldAdded.set(true);
-      // objectSelectContext.getCheckNullAlias()
-      // .set(columnAlias);
-      // }
+      if (scalarFieldConfiguration.isKeyField()) {
+        keyFieldAdded.set(true);
+        objectSelectContext.getCheckNullAlias()
+            .set(columnAlias);
+      }
 
       query.addSelect(aliasedColumn);
       objectSelectContext.getFieldAliasMap()
