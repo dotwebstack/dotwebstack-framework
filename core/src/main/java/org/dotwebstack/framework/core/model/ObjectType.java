@@ -7,6 +7,8 @@ public interface ObjectType<T extends ObjectField> {
 
   String getName();
 
+  void setName(String name);
+
   Collection<T> getFields();
 
   Optional<T> getField(String name);

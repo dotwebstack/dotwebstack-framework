@@ -14,8 +14,8 @@ import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
-@Component
+//@Conditional(GraphQlNativeEnabled.class)
+//@Component
 public final class DataFetcherWiringFactory implements WiringFactory {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;

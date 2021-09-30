@@ -65,7 +65,10 @@ class ModelConfiguration {
     @Override
     public ObjectType<? extends ObjectField> deserialize(JsonParser parser, DeserializationContext context)
         throws IOException {
-      return parser.readValueAs(backendModule.getObjectTypeClass());
+      var objectType = parser.readValueAs(backendModule.getObjectTypeClass());
+      objectType.setName(parser.getCurrentName());
+
+      return objectType;
     }
   }
 }
