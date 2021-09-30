@@ -15,30 +15,32 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final BackendModule<?> backendModule;
 
+  private final BackendRequestFactory requestFactory;
+
   private final Schema schema;
 
-  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, Schema schema) {
+  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
+      Schema schema) {
     this.backendModule = backendModule;
+    this.requestFactory = requestFactory;
     this.schema = schema;
   }
 
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
-    return getTypeName(environment.getFieldType())
-        .flatMap(schema::getObjectType)
+    return getTypeName(environment.getFieldType()).flatMap(schema::getObjectType)
         .isPresent();
   }
 
   @Override
   public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
-    var objectType = getTypeName(environment.getFieldType())
-        .flatMap(schema::getObjectType)
+    var objectType = getTypeName(environment.getFieldType()).flatMap(schema::getObjectType)
         .orElseThrow();
 
     var backendLoader = backendModule.getBackendLoaderFactory()
         .create(objectType);
 
-    return new BackendDataFetcher(backendLoader);
+    return new BackendDataFetcher(backendLoader, requestFactory);
   }
 
   // TODO: move to util class?

@@ -6,7 +6,7 @@ import org.dotwebstack.framework.core.backend.BackendModule;
 import org.springframework.stereotype.Component;
 
 @Component
-class JsonBackendModule implements BackendModule {
+class JsonBackendModule implements BackendModule<JsonObjectType> {
 
   @Override
   public Class<JsonObjectType> getObjectTypeClass() {

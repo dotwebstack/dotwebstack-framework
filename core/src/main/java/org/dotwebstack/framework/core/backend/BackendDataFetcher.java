@@ -9,19 +9,26 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final BackendLoader backendLoader;
 
-  public BackendDataFetcher(BackendLoader backendLoader) {
+  private final BackendRequestFactory requestFactory;
+
+  public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory) {
     this.backendLoader = backendLoader;
+    this.requestFactory = requestFactory;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
     if (isListType(environment.getFieldType())) {
-      return backendLoader.loadMany()
+      var collectionRequest = requestFactory.createCollectionRequest(environment);
+
+      return backendLoader.loadMany(collectionRequest)
           .collectList()
           .toFuture();
     }
 
-    return backendLoader.loadSingle()
+    var objectRequest = requestFactory.createObjectRequest(environment);
+
+    return backendLoader.loadSingle(objectRequest)
         .toFuture();
   }
 
