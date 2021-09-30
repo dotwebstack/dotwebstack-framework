@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.core.config.validators;
 
+import static org.springframework.util.StringUtils.uncapitalize;
+
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -16,12 +19,13 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
 
   @Override
   public void validate(DotWebStackConfiguration dotWebStackConfiguration) {
+    List<String> validSortFields = ValidSortAndFilterFields.get(dotWebStackConfiguration);
+
     Map<String, Map<String, FilterConfiguration>> filtersPerObjectTypeName =
         getFiltersPerObjectTypeName(dotWebStackConfiguration);
 
-    filtersPerObjectTypeName.forEach((objectType, filters) -> filters.entrySet()
-        .forEach(filterEntry -> validateFilterField(dotWebStackConfiguration.getTypeConfiguration(objectType),
-            filterEntry)));
+    filtersPerObjectTypeName.forEach((objectTypeName, filters) -> filters.entrySet()
+        .forEach(filterEntry -> validateFilterField(validSortFields, objectTypeName, filterEntry)));
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(
@@ -45,21 +49,29 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
         .getFilters();
   }
 
-  private void validateFilterField(AbstractTypeConfiguration<?> objectType,
+  private void validateFilterField(List<String> validSortFields, String objectTypeName,
       Map.Entry<String, FilterConfiguration> filterEntry) {
-    String filterFieldName = getFilterFieldName(filterEntry);
+    String filterFieldName = getFilterFieldName(objectTypeName, filterEntry);
 
-    objectType.getField(filterFieldName)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
-                filterFieldName, objectType.getName())));
-
+    if (!validSortFields.contains(filterFieldName)) {
+      throw new InvalidConfigurationException(
+          String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
+              filterFieldName, objectTypeName));
+    }
   }
 
-  private String getFilterFieldName(Map.Entry<String, FilterConfiguration> filterEntry) {
+  private String getFilterFieldName(String objectTypeName, Map.Entry<String, FilterConfiguration> filterEntry) {
+    String fieldName;
 
-    return (filterEntry.getValue()
-        .getField() != null) ? filterEntry.getValue()
-            .getField() : filterEntry.getKey();
+    if (filterEntry.getValue()
+        .getField() != null) {
+      fieldName = filterEntry.getValue()
+          .getField();
+    } else {
+      fieldName = filterEntry.getKey();
+    }
+
+    return uncapitalize(objectTypeName).concat(".")
+        .concat(fieldName);
   }
 }
