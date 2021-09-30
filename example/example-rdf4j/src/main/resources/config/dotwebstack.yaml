@@ -16,7 +16,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: rdf4j
     nodeShape: https://github.com/dotwebstack/beer/shapes#Beer
     keys:
       - field: identifier
@@ -34,7 +33,6 @@ objectTypes:
             referencedField: identifier
 
   Brewery:
-    backend: rdf4j
     nodeShape: https://github.com/dotwebstack/beer/shapes#Brewery
     keys:
       - field: identifier
@@ -65,7 +63,6 @@ objectTypes:
             referencedField: identifier
 
   Address:
-    backend: rdf4j
     nodeShape: https://github.com/dotwebstack/beer/shapes#Address
     keys:
       - field: identifier

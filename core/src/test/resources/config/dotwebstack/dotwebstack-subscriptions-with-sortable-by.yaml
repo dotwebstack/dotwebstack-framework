@@ -4,7 +4,6 @@ subscriptions:
 
 objectTypes:
   Brewery:
-    backend: test
     keys:
       - field: identifier
     fields:
@@ -28,7 +27,6 @@ objectTypes:
           direction: ASC
 
   Address:
-    backend: test
     keys:
       - field: identifier
     fields:

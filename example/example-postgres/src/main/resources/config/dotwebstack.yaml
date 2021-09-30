@@ -28,13 +28,14 @@ queries:
 
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     filters:
       breweryCity:
         field: brewery.visitAddress.city
       ingredientName:
         field: ingredients.name
+    keys:
+      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -84,8 +85,9 @@ objectTypes:
         list: true
 
   Brewery:
-    backend: postgres
     table: dbeerpedia.breweries
+    keys:
+      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -148,8 +150,9 @@ objectTypes:
         type: History
 
   Ingredient:
-    backend: postgres
     table: dbeerpedia.ingredients
+    keys:
+      - field: identifier
     fields:
       identifier:
         type: ID
@@ -158,25 +161,10 @@ objectTypes:
       weight:
         type: Float
 
-  AddressRelation:
-    backend: postgres
-    fields:
-      ref:
-        type: AddressRef
-
-  AddressRef:
-    backend: postgres
-    fields:
-      identifier:
-        type: ID
-      street:
-        type: String
-      city:
-        type: String
-
   Address:
-    backend: postgres
     table: dbeerpedia.addresses
+    keys:
+      - field: identifier
     fields:
       identifier:
         type: ID
@@ -186,7 +174,8 @@ objectTypes:
         type: String
 
   History:
-    backend: postgres
+    keys:
+      - field: identifier
     fields:
       age:
         type: Int

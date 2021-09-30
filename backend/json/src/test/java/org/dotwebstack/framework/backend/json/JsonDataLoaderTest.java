@@ -64,20 +64,6 @@ class JsonDataLoaderTest {
   }
 
   @Test
-  void supports_True_ForJsonTypeConfiguration() {
-    JsonTypeConfiguration jsonTypeConfiguration = new JsonTypeConfiguration();
-
-    assertThat(jsonDataLoader.supports(jsonTypeConfiguration), is(true));
-  }
-
-  @Test
-  void supports_False_ForUnsupportedConfiguration() {
-    UnsupportedTypeConfiguration unsupportedTypeConfiguration = new UnsupportedTypeConfiguration();
-
-    assertThat(jsonDataLoader.supports(unsupportedTypeConfiguration), is(false));
-  }
-
-  @Test
   void loadSingle_Beer1_ForKey() throws JsonProcessingException {
     FieldKeyCondition fieldKeyCondition = FieldKeyCondition.builder()
         .fieldValues(Map.of("identifier", "1"))

@@ -13,7 +13,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: json
     file: data.json
     queryPaths:
       beer: $.beers[*].beer[?]
@@ -31,7 +30,6 @@ objectTypes:
         type: Brewery
 
   Brewery:
-    backend: json
 #    queryPaths:
 #      brewery: $..breweries[?]
     keys:
@@ -52,7 +50,6 @@ objectTypes:
         nullable: true
 
   Address:
-    backend: json
     keys:
       - field: identifier
     fields:

@@ -11,7 +11,6 @@ queries:
 objectTypes:
   Beer:
     table: db.beer
-    backend: postgres
     keys:
       - field: identifier
     fields:
@@ -92,7 +91,6 @@ objectTypes:
           direction: ASC
 
   Ingredient:
-    backend: postgres
     table: db.ingredient
     keys:
       - field: identifier
@@ -119,7 +117,6 @@ objectTypes:
               referencedField: identifier
 
   Brewery:
-    backend: postgres
     table: db.brewery
     keys:
       - field: identifier
@@ -173,7 +170,6 @@ objectTypes:
           direction: ASC
 
   Address:
-    backend: postgres
     table: db.address
     keys:
       - field: identifier
@@ -186,7 +182,6 @@ objectTypes:
         type: String
 
   History:
-    backend: postgres
     keys:
       - field: identifier
     fields:

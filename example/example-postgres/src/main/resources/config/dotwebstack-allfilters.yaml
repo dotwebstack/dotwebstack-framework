@@ -22,7 +22,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     keys:
       - field: identifier
@@ -75,7 +74,6 @@ objectTypes:
         list: true
 
   Brewery:
-    backend: postgres
     table: dbeerpedia.breweries
     keys:
       - field: identifier
@@ -119,7 +117,6 @@ objectTypes:
 
 
   Ingredient:
-    backend: postgres
     table: dbeerpedia.ingredients
     keys:
       - field: identifier
@@ -135,7 +132,6 @@ objectTypes:
         type: Float
 
   Address:
-    backend: postgres
     table: dbeerpedia.addresses
     filters:
       city: { }
@@ -150,7 +146,6 @@ objectTypes:
         type: String
 
   History:
-    backend: postgres
     keys:
       - field: identifier
     fields:

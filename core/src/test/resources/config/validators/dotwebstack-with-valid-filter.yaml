@@ -5,7 +5,6 @@ queries:
 
 objectTypes:
   Brewery:
-    backend: test
     keys:
       - field: identifier
     fields:
@@ -27,7 +26,6 @@ objectTypes:
         field: visitAddress.city
 
   Address:
-    backend: test
     keys:
       - field: identifier
     fields:

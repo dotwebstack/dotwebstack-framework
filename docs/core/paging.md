@@ -20,7 +20,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: x
     keys:
       - field: identifier
     fields:
@@ -31,7 +30,6 @@ objectTypes:
       brewery:
         type: Brewery
   Brewery:
-    backend: x
     keys:
       - field: identifier
     fields:
