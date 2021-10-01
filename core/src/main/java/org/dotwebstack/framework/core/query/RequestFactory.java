@@ -343,7 +343,7 @@ public class RequestFactory {
                 .equals(scalarField.getName())))
         .map(field -> ScalarField.builder()
             .field(field)
-            .origins(Sets.newHashSet(Origin.referred()))
+            .origins(Sets.newHashSet(Origin.requested()))
             .build())
         .collect(Collectors.toList());
 

@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,6 +59,7 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.PagingCriteria;
+import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -245,6 +247,36 @@ class RequestFactoryTest {
         .offset(0)
         .first(10)
         .build()));
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequest_withReferredField() {
+    selectedFields.add(mockSelectedField(FIELD_IDENTIFIER));
+    selectedFields.add(mockSelectedField("ingredients"));
+
+    TestFieldConfiguration ingredientFieldConfiguration = mock(TestFieldConfiguration.class);
+    when(ingredientFieldConfiguration.getName()).thenReturn("ingredients");
+
+    TestFieldConfiguration codeFieldConfiguration = getTestFieldConfiguration("code", SCALAR_FIELDCONFIGURATION);
+
+    when(typeConfiguration.getReferredFields("ingredients")).thenReturn(List.of(codeFieldConfiguration));
+
+    Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration, "ingredients",
+        ingredientFieldConfiguration, "code", codeFieldConfiguration);
+
+    when(environment.getSelectionSet()).thenReturn(selectionSet);
+    when(selectionSet.getFields(fieldPathPrefix.concat("*.*"))).thenReturn(selectedFields);
+
+    when(typeConfiguration.getFields()).thenReturn(fields);
+
+    var objectRequest = requestFactory.createObjectRequest(typeConfiguration, environment);
+
+    var expected = objectRequest.getScalarFields()
+        .stream()
+        .map(ScalarField::getName)
+        .collect(Collectors.toList());
+
+    assertThat(expected, equalTo(List.of("identifier", "code")));
   }
 
   @Test
