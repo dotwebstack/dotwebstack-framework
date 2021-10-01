@@ -27,7 +27,6 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.ScalarField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.origin.Origin;
-import org.dotwebstack.framework.core.query.model.origin.Referred;
 import org.dotwebstack.framework.core.query.model.origin.Requested;
 import org.dotwebstack.framework.core.query.model.origin.Sorting;
 import org.jooq.Condition;
@@ -181,7 +180,7 @@ public class SelectQueryBuilder {
 
     var column = Objects.requireNonNull(field(table, scalarFieldConfiguration.getColumn()));
 
-    if (scalarField.hasOrigin(Requested.class) || scalarField.hasOrigin(Referred.class)) {
+    if (scalarField.hasOrigin(Requested.class)) {
       var columnAlias = objectSelectContext.newSelectAlias();
       var aliasedColumn = column.as(columnAlias);
       objectSelectContext.getAssembleFns()

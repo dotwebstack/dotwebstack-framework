@@ -26,7 +26,7 @@ class GraphPatternWithValuesTest {
 
     var queryString = graphPattern.getQueryString();
 
-    assertThat(queryString, equalTo("VALUES ?x1 {<http://www.w3.org/2002/07/owl#Class>}\n"
+    assertThat(queryString.replace("\r\n", "\n"), equalTo("VALUES ?x1 {<http://www.w3.org/2002/07/owl#Class>}\n"
         + "<https://github.com/dotwebstack/beer/def#Beer> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x1 ."));
   }
 }
