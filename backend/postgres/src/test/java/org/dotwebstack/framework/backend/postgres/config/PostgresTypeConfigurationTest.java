@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +66,32 @@ class PostgresTypeConfigurationTest {
     assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration));
   }
 
+  @Test
+  void getReferredFields_returnsList_forFieldWithJoinTable() {
+    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "partOf");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
+
+    PostgresTypeConfiguration typeConfiguration =
+        createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
+
+    var fieldConfigurations = typeConfiguration.getReferredFields("partOf");
+
+    assertThat(fieldConfigurations, hasSize(1));
+  }
+
+  @Test
+  void getReferredFields_returnsEmptyList_forFieldWithoutJoinTable() {
+    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "partOf");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
+
+    PostgresTypeConfiguration typeConfiguration =
+        createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
+
+    var fieldConfigurations = typeConfiguration.getReferredFields("identifier");
+
+    assertThat(fieldConfigurations, is(empty()));
+  }
+
   private JoinColumn createJoinColumnWithReferencedField(String name, String fieldName) {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName(name);
@@ -112,7 +141,7 @@ class PostgresTypeConfigurationTest {
     }
 
     if (inverseJoinColumn != null) {
-      joinTable.setJoinColumns(List.of(inverseJoinColumn));
+      joinTable.setInverseJoinColumns(List.of(inverseJoinColumn));
     }
 
     return joinTable;
@@ -127,7 +156,8 @@ class PostgresTypeConfigurationTest {
   }
 
   private void dotWebStackConfigurationMock() {
-    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
+    lenient().when(dotWebStackConfiguration.getObjectTypes())
+        .thenReturn(objectTypesMock);
     lenient().when(objectTypesMock.get(null))
         .thenReturn(null);
   }
