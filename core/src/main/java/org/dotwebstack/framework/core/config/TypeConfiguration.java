@@ -10,8 +10,6 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
-  List<String> getKeys();
-
   Map<String, T> getFields();
 
   Optional<T> getField(String field);
@@ -29,5 +27,7 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
   KeyCondition getKeyCondition(String fieldName, Map<String, Object> source);
 
   KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source);
+
+  List<T> getReferredFields(String fieldName);
 
 }

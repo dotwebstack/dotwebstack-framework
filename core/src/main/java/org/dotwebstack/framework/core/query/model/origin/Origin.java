@@ -12,4 +12,8 @@ public interface Origin {
   static Sorting sorting(SortCriteria sortCriteria, Map<String, String> fieldPathAliasMap) {
     return new Sorting(sortCriteria, fieldPathAliasMap);
   }
+
+  static Referred referred() {
+    return new Referred();
+  }
 }

@@ -6,14 +6,12 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.CaseFormat;
 import graphql.schema.DataFetchingEnvironment;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Setter;
 import org.dotwebstack.framework.backend.postgres.ColumnKeyCondition;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
@@ -30,9 +28,6 @@ import org.dotwebstack.framework.core.query.model.filter.FieldPathHelper;
 public class PostgresTypeConfiguration extends AbstractTypeConfiguration<PostgresFieldConfiguration> {
 
   private String table;
-
-  @Setter(AccessLevel.NONE)
-  private Map<String, PostgresFieldConfiguration> referencedColumns = new HashMap<>();
 
   @Override
   public void init(DotWebStackConfiguration dotWebStackConfiguration) {
@@ -192,5 +187,21 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   private boolean isEnum(String type, DotWebStackConfiguration dotWebStackConfiguration) {
     return dotWebStackConfiguration.getEnumerations()
         .containsKey(type);
+  }
+
+  @Override
+  public List<PostgresFieldConfiguration> getReferredFields(String fieldName) {
+    PostgresFieldConfiguration fieldConfiguration = getFields().get(fieldName);
+
+    if (fieldConfiguration.getJoinTable() != null) {
+      return fieldConfiguration.getJoinTable()
+          .getJoinColumns()
+          .stream()
+          .map(JoinColumn::getReferencedField)
+          .flatMap(referencedFieldName -> getField(referencedFieldName).stream())
+          .collect(Collectors.toList());
+    }
+
+    return List.of();
   }
 }

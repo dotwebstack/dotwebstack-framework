@@ -118,4 +118,9 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
     return Map.entry(argument.getName(), value);
   }
+
+  @Override
+  public List<T> getReferredFields(String fieldName) {
+    return List.of();
+  }
 }
