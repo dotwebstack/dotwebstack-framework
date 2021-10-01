@@ -65,8 +65,8 @@ public class Query {
 
   private GraphPattern createWherePattern(ObjectRequest objectRequest, NodeShape nodeShape, Variable subject,
       ResultMapper resultMapper) {
-    var classPattern = QueryHelper.createClassPatterns(subject, SparqlBuilder.var(newAlias()), nodeShape);
-    var patterns = new ArrayList<>(classPattern);
+    var typePatterns = QueryHelper.createTypePatterns(subject, SparqlBuilder.var(newAlias()), nodeShape);
+    var patterns = new ArrayList<>(typePatterns);
 
     objectRequest.getSelectedScalarFields()
         .stream()

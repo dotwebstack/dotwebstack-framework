@@ -18,14 +18,14 @@ public class QueryHelper {
 
   private QueryHelper() {}
 
-  public static List<GraphPattern> createClassPatterns(Variable subject, Variable type, NodeShape nodeShape) {
+  public static List<GraphPattern> createTypePatterns(Variable subject, Variable type, NodeShape nodeShape) {
     return nodeShape.getClasses()
         .stream()
-        .map(classes -> createClassPattern(subject, type, classes))
+        .map(classes -> createTypePattern(subject, type, classes))
         .collect(Collectors.toList());
   }
 
-  private static GraphPattern createClassPattern(Variable subject, Variable type, Set<IRI> classes) {
+  private static GraphPattern createTypePattern(Variable subject, Variable type, Set<IRI> classes) {
     RdfPredicate typePredicate = () -> String.format("%s/%s*", QueryStringUtil.valueToString(RDF.TYPE),
         QueryStringUtil.valueToString(RDFS.SUBCLASSOF));
 
