@@ -49,11 +49,12 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
       Map.Entry<String, FilterConfiguration> filterEntry) {
     String filterFieldName = getFilterFieldName(filterEntry);
 
-    objectType.getField(filterFieldName)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
-                filterFieldName, objectType.getName())));
-
+    if (!objectType.getField(filterFieldName)
+        .isPresent()) {
+      throw new InvalidConfigurationException(
+          String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
+              filterFieldName, objectType.getName()));
+    }
   }
 
   private String getFilterFieldName(Map.Entry<String, FilterConfiguration> filterEntry) {
