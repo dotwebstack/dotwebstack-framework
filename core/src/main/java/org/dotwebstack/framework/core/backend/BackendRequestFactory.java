@@ -1,14 +1,17 @@
 package org.dotwebstack.framework.core.backend;
 
 import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,6 +21,7 @@ import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,20 +34,16 @@ public class BackendRequestFactory {
   }
 
   public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
+    var objectType = getObjectType(environment.getFieldType());
+
     return CollectionRequest.builder()
-        .objectRequest(createObjectRequest(environment))
+        .objectRequest(createObjectRequest(objectType, environment.getSelectionSet()))
+        .sortCriterias(createSortCriterias(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
-    var rawType = GraphQLTypeUtil.unwrapAll(environment.getFieldType());
-
-    if (!(rawType instanceof GraphQLObjectType)) {
-      throw ExceptionHelper.illegalStateException("Not an object type.");
-    }
-
-    var objectType = schema.getObjectType(((GraphQLObjectType) rawType).getName())
-        .orElseThrow();
+    var objectType = getObjectType(environment.getFieldType());
 
     return createObjectRequest(objectType, environment.getSelectionSet());
   }
@@ -75,6 +75,44 @@ public class BackendRequestFactory {
     return selectedFields.stream()
         .filter(isObjectField)
         .collect(Collectors.toMap(Function.identity(), this::createObjectRequest));
+  }
+
+  private List<SortCriteria> createSortCriterias(ObjectType<?> objectType, String sortArgument) {
+    var sortableBy = objectType.getSortableBy();
+
+    if (sortableBy.isEmpty()) {
+      return List.of();
+    }
+
+    // TODO fix compound names
+    var sortableByConfig = objectType.getSortableBy()
+        .entrySet()
+        .stream()
+        .filter(entry -> entry.getKey()
+            .toUpperCase()
+            .equals(sortArgument))
+        .findFirst()
+        .map(Map.Entry::getValue)
+        .orElseThrow();
+
+    return sortableByConfig.stream()
+        .map(config -> SortCriteria.builder()
+            .fields(List.of(objectType.getField(config.getField())
+                .orElseThrow()))
+            .direction(config.getDirection())
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  private ObjectType<?> getObjectType(GraphQLType type) {
+    var rawType = GraphQLTypeUtil.unwrapAll(type);
+
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw ExceptionHelper.illegalStateException("Not an object type.");
+    }
+
+    return schema.getObjectType(((GraphQLObjectType) rawType).getName())
+        .orElseThrow();
   }
 
   // TODO move to utils?

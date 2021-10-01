@@ -16,9 +16,17 @@ queries:
 
 objectTypes:
   Beer:
-    nodeShape: https://github.com/dotwebstack/beer/shapes#Beer
     keys:
       - field: identifier
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+        - field: abv
+          direction: DESC
+      abv:
+        - field: abv
+          direction: ASC
     fields:
       identifier:
         type: ID
@@ -28,12 +36,8 @@ objectTypes:
         type: Float
       brewery:
         type: Brewery
-        joinProperties:
-          - name: brewery
-            referencedField: identifier
 
   Brewery:
-    nodeShape: https://github.com/dotwebstack/beer/shapes#Brewery
     keys:
       - field: identifier
     fields:
@@ -52,18 +56,11 @@ objectTypes:
       postalAddress:
         type: Address
         nullable: true
-        joinProperties:
-          - name: postal_address
-            referencedField: identifier
       visitAddress:
         type: Address
         nullable: true
-        joinProperties:
-          - name: visit_address
-            referencedField: identifier
 
   Address:
-    nodeShape: https://github.com/dotwebstack/beer/shapes#Address
     keys:
       - field: identifier
     fields:

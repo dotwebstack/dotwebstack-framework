@@ -4,11 +4,16 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.sparqlbuilder.core.OrderBy;
+import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
@@ -51,7 +56,7 @@ public class Query {
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
-    return createSelect(collectionRequest.getObjectRequest(), nodeShape);
+    return createSelect(collectionRequest.getObjectRequest(), nodeShape).orderBy(createOrderBy(collectionRequest));
   }
 
   private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
@@ -82,10 +87,10 @@ public class Query {
     return GraphPatterns.and(patterns.toArray(GraphPattern[]::new));
   }
 
-  private GraphPattern createWherePattern(SelectedField selectedField, PropertyShape propertyShape,
-      Variable subject, ResultMapper resultMapper) {
+  private GraphPattern createWherePattern(SelectedField selectedField, PropertyShape propertyShape, Variable subject,
+      ResultMapper resultMapper) {
     var objectAlias = newAlias();
-    resultMapper.registerFieldMapper(selectedField.getName(), QueryHelper.createFieldMapper(objectAlias));
+    resultMapper.registerFieldMapper(selectedField.getName(), new ScalarFieldMapper(objectAlias));
 
     return QueryHelper.applyCardinality(propertyShape,
         subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias)));
@@ -94,12 +99,33 @@ public class Query {
   private GraphPattern createNestedWherePattern(SelectedField selectedField, PropertyShape propertyShape,
       ObjectRequest objectRequest, Variable subject, ResultMapper resultMapper) {
     var nestedResource = SparqlBuilder.var(newAlias());
-    var nestedResultMapper = resultMapper.nestedResultMapper(selectedField.getName());
+    var nestedResultMapper = resultMapper.createNestedResultMapper(selectedField.getName());
 
     var nestedPattern = GraphPatterns.tp(subject, propertyShape.toPredicate(), nestedResource)
         .and(createWherePattern(objectRequest, propertyShape.getNode(), nestedResource, nestedResultMapper));
 
     return QueryHelper.applyCardinality(propertyShape, nestedPattern);
+  }
+
+  private OrderBy createOrderBy(CollectionRequest collectionRequest) {
+    var sortCriterias = collectionRequest.getSortCriterias();
+
+    if (sortCriterias.isEmpty()) {
+      return null;
+    }
+
+    var orderables = sortCriterias.stream()
+        .map(this::createOrderable)
+        .collect(Collectors.toList());
+
+    return SparqlBuilder.orderBy(orderables.toArray(Orderable[]::new));
+  }
+
+  private Orderable createOrderable(SortCriteria sortCriteria) {
+    var fieldMapper = finalResultMapper.getScalarFieldMapper(sortCriteria.getFields());
+    var orderable = SparqlBuilder.var(fieldMapper.getAlias());
+
+    return SortDirection.ASC.equals(sortCriteria.getDirection()) ? orderable : orderable.desc();
   }
 
   private String newAlias() {

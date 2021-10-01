@@ -33,7 +33,7 @@ public class CoreConfiguration {
           .forEach(objectType -> objectType.init(dotWebStackConfiguration));
     }
 
-    validators.forEach(validator -> validator.validate(dotWebStackConfiguration));
+    // validators.forEach(validator -> validator.validate(dotWebStackConfiguration));
 
     return dotWebStackConfiguration;
   }

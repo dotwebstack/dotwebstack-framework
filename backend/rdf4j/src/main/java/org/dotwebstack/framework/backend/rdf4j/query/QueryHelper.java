@@ -36,8 +36,7 @@ public class QueryHelper {
           .next());
     }
 
-    return new GraphPatternWithValues(
-        GraphPatterns.tp(subject, typePredicate, type), Map.of(type, classes));
+    return new GraphPatternWithValues(GraphPatterns.tp(subject, typePredicate, type), Map.of(type, classes));
   }
 
   public static GraphPattern applyCardinality(PropertyShape propertyShape, GraphPattern graphPattern) {
@@ -45,17 +44,5 @@ public class QueryHelper {
         .orElse(0);
 
     return minCount == 0 ? graphPattern.optional() : graphPattern;
-  }
-
-  public static FieldMapper<Object> createFieldMapper(String objectAlias) {
-    return bindings -> {
-      if (!bindings.hasBinding(objectAlias)) {
-        return null;
-      }
-
-      return bindings.getBinding(objectAlias)
-          .getValue()
-          .stringValue();
-    };
   }
 }

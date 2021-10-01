@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.model;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 
 public interface ObjectType<T extends ObjectField> {
 
@@ -9,7 +11,9 @@ public interface ObjectType<T extends ObjectField> {
 
   void setName(String name);
 
-  Collection<T> getFields();
+  Map<String, T> getFields();
 
   Optional<T> getField(String name);
+
+  Map<String, List<SortableByConfiguration>> getSortableBy();
 }
