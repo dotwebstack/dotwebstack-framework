@@ -2,6 +2,7 @@ logging:
   level:
     root: INFO
     org.dotwebstack: DEBUG
+    org.eclipse.rdf4j: DEBUG
 
 dotwebstack:
   rdf4j:

@@ -1,28 +1,42 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import java.util.Map;
-import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectType;
+import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQuery;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.eclipse.rdf4j.repository.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class Rdf4jBackendLoader implements BackendLoader {
 
-  private final Rdf4jObjectType objectType;
+  private final Repository repository;
 
-  public Rdf4jBackendLoader(Rdf4jObjectType objectType) {
-    this.objectType = objectType;
+  private final NodeShape nodeShape;
+
+  public Rdf4jBackendLoader(Repository repository, NodeShape nodeShape) {
+    this.repository = repository;
+    this.nodeShape = nodeShape;
   }
 
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest) {
-    return Mono.empty();
+    var query = Rdf4jQuery.builder()
+        .nodeShape(nodeShape)
+        .build(objectRequest);
+
+    return query.execute(repository)
+        .single();
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest) {
-    return Flux.empty();
+    var query = Rdf4jQuery.builder()
+        .nodeShape(nodeShape)
+        .build(collectionRequest);
+
+    return query.execute(repository);
   }
 }
