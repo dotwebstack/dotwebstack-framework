@@ -2,9 +2,11 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -36,6 +38,13 @@ public class QueryHelper {
 
     return new GraphPatternWithValues(
         GraphPatterns.tp(subject, typePredicate, type), Map.of(type, classes));
+  }
+
+  public static GraphPattern applyCardinality(PropertyShape propertyShape, GraphPattern graphPattern) {
+    var minCount = Optional.ofNullable(propertyShape.getMinCount())
+        .orElse(0);
+
+    return minCount == 0 ? graphPattern.optional() : graphPattern;
   }
 
   public static FieldMapper<Object> createFieldMapper(String objectAlias) {

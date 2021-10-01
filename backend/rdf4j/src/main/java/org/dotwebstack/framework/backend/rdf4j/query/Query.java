@@ -4,7 +4,6 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -70,8 +69,7 @@ public class Query {
 
     objectRequest.getSelectedScalarFields()
         .stream()
-        .flatMap(
-            field -> createWherePatterns(field, nodeShape.getPropertyShape(field.getName()), subject, resultMapper))
+        .map(field -> createWherePattern(field, nodeShape.getPropertyShape(field.getName()), subject, resultMapper))
         .forEach(patterns::add);
 
     objectRequest.getSelectedObjectFields()
@@ -84,14 +82,13 @@ public class Query {
     return GraphPatterns.and(patterns.toArray(GraphPattern[]::new));
   }
 
-  private Stream<GraphPattern> createWherePatterns(SelectedField selectedField, PropertyShape propertyShape,
+  private GraphPattern createWherePattern(SelectedField selectedField, PropertyShape propertyShape,
       Variable subject, ResultMapper resultMapper) {
     var objectAlias = newAlias();
-    var pattern = subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias));
-
     resultMapper.registerFieldMapper(selectedField.getName(), QueryHelper.createFieldMapper(objectAlias));
 
-    return Stream.of(pattern);
+    return QueryHelper.applyCardinality(propertyShape,
+        subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias)));
   }
 
   private GraphPattern createNestedWherePattern(SelectedField selectedField, PropertyShape propertyShape,
@@ -99,8 +96,10 @@ public class Query {
     var nestedResource = SparqlBuilder.var(newAlias());
     var nestedResultMapper = resultMapper.nestedResultMapper(selectedField.getName());
 
-    return GraphPatterns.tp(subject, propertyShape.toPredicate(), nestedResource)
+    var nestedPattern = GraphPatterns.tp(subject, propertyShape.toPredicate(), nestedResource)
         .and(createWherePattern(objectRequest, propertyShape.getNode(), nestedResource, nestedResultMapper));
+
+    return QueryHelper.applyCardinality(propertyShape, nestedPattern);
   }
 
   private String newAlias() {
