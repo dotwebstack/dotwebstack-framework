@@ -150,17 +150,16 @@ public class QueryBuilder {
 
   private Set<String> getFieldNames(Rdf4jTypeConfiguration typeConfiguration, Collection<SelectedField> selectedFields,
       Map<String, String> keyFieldNames) {
-
-    // TODO: fix me
-    List<String> emptyList = List.of();
-
-    return Stream.concat(Stream.concat(emptyList.stream(), selectedFields.stream()
-        .filter(selectedField -> !GraphQLTypeUtil.isList(selectedField.getFieldDefinitions()
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> illegalStateException("No field definition found for selected field."))
-            .getType()))
-        .map(SelectedField::getName)), keyFieldNames.keySet()
+    return Stream.concat(Stream.concat(typeConfiguration.getKeys()
+        .stream(),
+        selectedFields.stream()
+            .filter(selectedField -> !GraphQLTypeUtil.isList(selectedField.getFieldDefinitions()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> illegalStateException("No field definition found for selected field."))
+                .getType()))
+            .map(SelectedField::getName)),
+        keyFieldNames.keySet()
             .stream())
         .collect(Collectors.toSet());
   }

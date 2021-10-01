@@ -27,7 +27,6 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.eclipse.rdf4j.model.IRI;
@@ -184,7 +183,7 @@ class QueryBuilderTest {
 
     assertThat(queryHolder, notNullValue());
     assertThat(queryHolder.getQuery(), equalTo("SELECT ?x3 ?x4\n"
-        + "WHERE { VALUES ?x2 {<https://github.com/dotwebstack/beer/def#Beer> <https://github.com/dotwebstack/beer/def#Beverage>}\n"
+        + "WHERE { VALUES ?x2 {<https://github.com/dotwebstack/beer/def#Beer> <https://github.com/dotwebstack/beer/def#Beverage>}\r\n"
         + "?x1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/<http://www.w3.org/2000/01/rdf-schema#subClassOf>* ?x2 .\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#identifier> ?x3 . }\n"
         + "OPTIONAL { ?x1 <https://github.com/dotwebstack/beer/def#name> ?x4 . } }\n" + "LIMIT 10\n"));
@@ -193,10 +192,7 @@ class QueryBuilderTest {
   private Rdf4jTypeConfiguration createBeerTypeConfiguration() {
     Rdf4jTypeConfiguration typeConfiguration = new Rdf4jTypeConfiguration();
 
-    KeyConfiguration keyConfiguration = new KeyConfiguration();
-    keyConfiguration.setField(FIELD_IDENTIFIER);
-    // TODO: fix me
-    // typeConfiguration.setKeys(List.of(keyConfiguration));
+    typeConfiguration.setKeys(List.of(FIELD_IDENTIFIER));
 
     typeConfiguration.setFields(new HashMap<>(
         Map.of(FIELD_IDENTIFIER, new Rdf4jFieldConfiguration(), FIELD_NAME, new Rdf4jFieldConfiguration())));

@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +40,7 @@ class PostgresTypeConfigurationTest {
   @SuppressWarnings({"rawtypes", "unchecked"})
   void init_shouldWork_withValidConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inversedJoinColumn);
 
@@ -59,7 +55,7 @@ class PostgresTypeConfigurationTest {
   @Test
   void init_shouldWork_withAggregationOfConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
     PostgresTypeConfiguration typeConfiguration =
         createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
@@ -67,55 +63,10 @@ class PostgresTypeConfigurationTest {
     assertDoesNotThrow(() -> typeConfiguration.init(dotWebStackConfiguration));
   }
 
-  @Test
-  void init_shouldThrowException_whenReferencedFieldAndReferencedColumnAreNull() {
-    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inverseJoinColumn = createJoinColumnWithReferencedFieldAndColumn("ingredient_code", null, null);
-
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
-
-    InvalidConfigurationException thrown =
-        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
-
-    assertThat(thrown.getMessage(),
-        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
-  }
-
-  @Test
-  void init_shouldThrowException_whenReferencedFieldAndReferencedColumnBothHaveValues() {
-    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inverseJoinColumn = createJoinColumnWithReferencedFieldAndColumn("ingredient_code", "code", "code");
-
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
-
-    InvalidConfigurationException thrown =
-        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
-
-    assertThat(thrown.getMessage(),
-        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
-  }
-
   private JoinColumn createJoinColumnWithReferencedField(String name, String fieldName) {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName(name);
     joinColumn.setReferencedField(fieldName);
-
-    return joinColumn;
-  }
-
-  private JoinColumn createJoinColumnWithReferencedColumn(String name, String columnName) {
-    JoinColumn joinColumn = new JoinColumn();
-    joinColumn.setName(name);
-    // joinColumn.setReferencedColumn(columnName);
-
-    return joinColumn;
-  }
-
-  private JoinColumn createJoinColumnWithReferencedFieldAndColumn(String name, String fieldName, String columnName) {
-    JoinColumn joinColumn = new JoinColumn();
-    joinColumn.setName(name);
-    joinColumn.setReferencedField(fieldName);
-    // joinColumn.setReferencedColumn(columnName);
 
     return joinColumn;
   }
