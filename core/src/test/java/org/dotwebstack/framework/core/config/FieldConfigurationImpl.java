@@ -47,9 +47,4 @@ public class FieldConfigurationImpl extends AbstractFieldConfiguration {
   public boolean isAggregateField() {
     return isAggregate();
   }
-
-  @Override
-  public boolean isVisible() {
-    return true;
-  }
 }
