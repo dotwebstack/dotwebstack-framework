@@ -21,7 +21,7 @@ objectTypes:
   Beer:
     backend: x
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -41,7 +41,7 @@ objectTypes:
   Brewery:
     backend: x
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

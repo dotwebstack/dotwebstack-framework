@@ -14,7 +14,7 @@ objectTypes:
   Beer:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -24,7 +24,7 @@ objectTypes:
   Brewery:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
