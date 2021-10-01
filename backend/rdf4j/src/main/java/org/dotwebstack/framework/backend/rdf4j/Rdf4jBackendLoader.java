@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import java.util.Map;
-import org.dotwebstack.framework.backend.rdf4j.query.Rdf4jQuery;
+import org.dotwebstack.framework.backend.rdf4j.query.Query;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -23,9 +23,7 @@ public class Rdf4jBackendLoader implements BackendLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest) {
-    var query = Rdf4jQuery.builder()
-        .nodeShape(nodeShape)
-        .build(objectRequest);
+    var query = new Query(objectRequest, nodeShape);
 
     return query.execute(repository)
         .single();
@@ -33,9 +31,7 @@ public class Rdf4jBackendLoader implements BackendLoader {
 
   @Override
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest) {
-    var query = Rdf4jQuery.builder()
-        .nodeShape(nodeShape)
-        .build(collectionRequest);
+    var query = new Query(collectionRequest, nodeShape);
 
     return query.execute(repository);
   }

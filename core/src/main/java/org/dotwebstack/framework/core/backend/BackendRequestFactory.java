@@ -1,11 +1,20 @@
 package org.dotwebstack.framework.core.backend;
 
+import static java.util.function.Predicate.not;
+
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -27,22 +36,60 @@ public class BackendRequestFactory {
   }
 
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
-    var selectionSet = environment.getSelectionSet();
+    var rawType = GraphQLTypeUtil.unwrapAll(environment.getFieldType());
 
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw ExceptionHelper.illegalStateException("Not an object type.");
+    }
+
+    var objectType = schema.getObjectType(((GraphQLObjectType) rawType).getName())
+        .orElseThrow();
+
+    return createObjectRequest(objectType, environment.getSelectionSet());
+  }
+
+  private ObjectRequest createObjectRequest(SelectedField selectedField) {
+    var objectType = schema.getObjectType(selectedField.getObjectTypeNames()
+        .get(0))
+        .orElseThrow();
+
+    return createObjectRequest(objectType, selectedField.getSelectionSet());
+  }
+
+  private ObjectRequest createObjectRequest(ObjectType<?> objectType, DataFetchingFieldSelectionSet selectionSet) {
     return ObjectRequest.builder()
+        .objectType(objectType)
         .selectedScalarFields(getScalarFields(selectionSet.getImmediateFields()))
+        .selectedObjectFields(getObjectFields(selectionSet.getImmediateFields()))
         .build();
   }
 
-  private List<SelectedField> getScalarFields(List<SelectedField> selectedFields) {
+  private Collection<SelectedField> getScalarFields(Collection<SelectedField> selectedFields) {
     return selectedFields.stream()
-        .filter(BackendRequestFactory::isScalarField)
-        .collect(Collectors.toList());
+        .filter(isScalarField)
+        .filter(not(isIntrospectionField))
+        .collect(Collectors.toSet());
   }
 
-  // TODO move to utils class
-  private static boolean isScalarField(SelectedField selectedField) {
+  private Map<SelectedField, ObjectRequest> getObjectFields(Collection<SelectedField> selectedFields) {
+    return selectedFields.stream()
+        .filter(isObjectField)
+        .collect(Collectors.toMap(Function.identity(), this::createObjectRequest));
+  }
+
+  // TODO move to utils?
+  private static Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
     return unwrappedType instanceof GraphQLScalarType;
-  }
+  };
+
+  // TODO move to utils?
+  private static Predicate<SelectedField> isObjectField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
+    return unwrappedType instanceof GraphQLObjectType;
+  };
+
+  // TODO move to utils?
+  private static Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
+      .startsWith("__");
 }

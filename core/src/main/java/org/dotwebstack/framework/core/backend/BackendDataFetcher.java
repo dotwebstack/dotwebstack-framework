@@ -4,6 +4,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Map;
 
 class BackendDataFetcher implements DataFetcher<Object> {
 
@@ -18,6 +19,16 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
+    Map<String, Object> source = environment.getSource();
+
+    var fieldName = environment.getField()
+        .getName();
+
+    // Data was eager-loaded by parent
+    if (source != null && source.containsKey(fieldName)) {
+      return source.get(fieldName);
+    }
+
     if (isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(environment);
 
