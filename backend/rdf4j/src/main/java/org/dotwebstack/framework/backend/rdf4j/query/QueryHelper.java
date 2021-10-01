@@ -34,9 +34,8 @@ public class QueryHelper {
           .next());
     }
 
-    var graphPattern = GraphPatterns.tp(subject, typePredicate, type);
-
-    return new GraphPatternWithValues(graphPattern, Map.of(type, classes));
+    return new GraphPatternWithValues(
+        GraphPatterns.tp(subject, typePredicate, type), Map.of(type, classes));
   }
 
   public static FieldMapper<Object> createFieldMapper(String objectAlias) {
