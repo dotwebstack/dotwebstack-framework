@@ -1,14 +1,15 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import lombok.Getter;
+import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
 import org.eclipse.rdf4j.query.BindingSet;
 
 @Getter
-public class ScalarFieldMapper implements FieldMapper<Object> {
+public class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
   private final String alias;
 
-  public ScalarFieldMapper(String alias) {
+  public BindingMapper(String alias) {
     this.alias = alias;
   }
 

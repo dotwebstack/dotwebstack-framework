@@ -24,15 +24,19 @@ public class Rdf4jBackendLoader implements BackendLoader {
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest) {
     var query = new Query(objectRequest, nodeShape);
+    var connection = repository.getConnection();
 
-    return query.execute(repository)
-        .single();
+    return query.execute(connection)
+        .singleOrEmpty()
+        .doFinally(signalType -> connection.close());
   }
 
   @Override
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest) {
     var query = new Query(collectionRequest, nodeShape);
+    var connection = repository.getConnection();
 
-    return query.execute(repository);
+    return query.execute(connection)
+        .doFinally(signalType -> connection.close());
   }
 }
