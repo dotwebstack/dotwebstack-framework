@@ -28,8 +28,11 @@ objectTypes:
         - field: abv
           direction: ASC
     fields:
+      uri:
+        type: String
+        resource: true
       identifier:
-        type: ID
+        type: String
       name:
         type: String
       abv:
@@ -41,8 +44,11 @@ objectTypes:
     keys:
       - field: identifier
     fields:
+      uri:
+        type: String
+        resource: true
       identifier:
-        type: ID
+        type: String
       name:
         type: String
       beers:

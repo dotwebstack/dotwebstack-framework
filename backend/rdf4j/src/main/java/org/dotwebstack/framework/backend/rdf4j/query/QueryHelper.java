@@ -1,12 +1,17 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectField;
+import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -44,5 +49,16 @@ public class QueryHelper {
         .orElse(0);
 
     return minCount == 0 ? graphPattern.optional() : graphPattern;
+  }
+
+  public static Rdf4jObjectField getObjectField(ObjectRequest objectRequest, String name) {
+    var objectType = objectRequest.getObjectType();
+
+    if (!(objectType instanceof Rdf4jObjectType)) {
+      throw illegalArgumentException("Object type has wrong type.");
+    }
+
+    return ((Rdf4jObjectType) objectType).getField(name)
+        .orElseThrow(() -> illegalArgumentException("Object field {} not found", name));
   }
 }
