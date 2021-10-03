@@ -3,6 +3,10 @@ queries:
     type: Beer
     keys:
       - field: identifier
+  beerByUri:
+    type: Beer
+    keys:
+      - field: uri
   beerCollection:
     type: Beer
     list: true

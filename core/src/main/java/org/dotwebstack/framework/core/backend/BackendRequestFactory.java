@@ -16,46 +16,55 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.datafetchers.ContextConstants;
+import org.dotwebstack.framework.core.datafetchers.SortConstants;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.springframework.stereotype.Component;
 
-@Component
 public class BackendRequestFactory {
+
+  private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
+      SortConstants.SORT_ARGUMENT_NAME, ContextConstants.CONTEXT_ARGUMENT_NAME);
 
   private final Schema schema;
 
-  public BackendRequestFactory(Schema schema) {
+  private final DataFetchingEnvironment environment;
+
+  public BackendRequestFactory(Schema schema, DataFetchingEnvironment environment) {
     this.schema = schema;
+    this.environment = environment;
   }
 
-  public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
+  public CollectionRequest createCollectionRequest() {
     var objectType = getObjectType(environment.getFieldType());
 
     return CollectionRequest.builder()
-        .objectRequest(createObjectRequest(objectType, environment.getSelectionSet()))
-        .sortCriterias(createSortCriterias(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
+        .objectRequest(createObjectRequest(objectType, environment.getSelectionSet(), environment.getArguments()))
+        .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
-  public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
+  public ObjectRequest createObjectRequest() {
     var objectType = getObjectType(environment.getFieldType());
-
-    return createObjectRequest(objectType, environment.getSelectionSet());
+    return createObjectRequest(objectType, environment.getSelectionSet(), environment.getArguments());
   }
 
   private ObjectRequest createObjectRequest(SelectedField selectedField) {
     var objectType = getObjectType(selectedField.getType());
-    return createObjectRequest(objectType, selectedField.getSelectionSet());
+    return createObjectRequest(objectType, selectedField.getSelectionSet(), selectedField.getArguments());
   }
 
-  private ObjectRequest createObjectRequest(ObjectType<?> objectType, DataFetchingFieldSelectionSet selectionSet) {
+  private ObjectRequest createObjectRequest(ObjectType<?> objectType, DataFetchingFieldSelectionSet selectionSet,
+      Map<String, Object> arguments) {
     return ObjectRequest.builder()
         .objectType(objectType)
+        .keyCriteria(createKeyCriteria(arguments))
         .selectedScalarFields(getScalarFields(selectionSet.getImmediateFields()))
         .selectedObjectFields(getObjectFields(selectionSet.getImmediateFields()))
         .build();
@@ -74,7 +83,17 @@ public class BackendRequestFactory {
         .collect(Collectors.toMap(Function.identity(), this::createObjectRequest));
   }
 
-  private List<SortCriteria> createSortCriterias(ObjectType<?> objectType, String sortArgument) {
+  private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
+    return arguments.entrySet()
+        .stream()
+        .filter(argument -> !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
+        .map(entry -> KeyCriteria.builder()
+            .values(Map.of(entry.getKey(), entry.getValue()))
+            .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {
     var sortableBy = objectType.getSortableBy();
 
     if (sortableBy.isEmpty()) {
