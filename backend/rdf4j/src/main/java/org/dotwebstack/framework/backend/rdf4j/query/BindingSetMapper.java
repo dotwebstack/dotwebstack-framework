@@ -8,9 +8,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 @Getter
 class BindingSetMapper extends AbstractObjectMapper<BindingSet> {
 
-  private String alias;
-
-  public BindingSetMapper() {}
+  private final String alias;
 
   public BindingSetMapper(String alias) {
     this.alias = alias;
@@ -18,7 +16,7 @@ class BindingSetMapper extends AbstractObjectMapper<BindingSet> {
 
   @Override
   public Object apply(BindingSet bindings) {
-    if (alias != null && !bindings.hasBinding(alias)) {
+    if (!bindings.hasBinding(alias)) {
       return Optional.empty();
     }
 
