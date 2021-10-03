@@ -49,10 +49,7 @@ public class BackendRequestFactory {
   }
 
   private ObjectRequest createObjectRequest(SelectedField selectedField) {
-    var objectType = schema.getObjectType(selectedField.getObjectTypeNames()
-        .get(0))
-        .orElseThrow();
-
+    var objectType = getObjectType(selectedField.getType());
     return createObjectRequest(objectType, selectedField.getSelectionSet());
   }
 

@@ -36,7 +36,7 @@ public class Query {
 
   private final AtomicInteger aliasCounter = new AtomicInteger();
 
-  private final BindingSetMapper finalRowMapper = new BindingSetMapper();
+  private final BindingSetMapper rootMapper = new BindingSetMapper();
 
   private final SelectQuery selectQuery;
 
@@ -56,7 +56,7 @@ public class Query {
     var queryResult = connection.prepareTupleQuery(queryString)
         .evaluate();
 
-    return finalRowMapper.map(queryResult);
+    return rootMapper.map(queryResult);
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
@@ -65,7 +65,7 @@ public class Query {
 
   private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
     var subject = SparqlBuilder.var(newAlias());
-    var wherePattern = createWherePattern(objectRequest, nodeShape, subject, finalRowMapper);
+    var wherePattern = createWherePattern(objectRequest, nodeShape, subject, rootMapper);
 
     return Queries.SELECT()
         .where(wherePattern);
@@ -135,7 +135,7 @@ public class Query {
   }
 
   private Orderable createOrderable(SortCriteria sortCriteria) {
-    var fieldMapper = finalRowMapper.getScalarFieldMapper(sortCriteria.getFields());
+    var fieldMapper = rootMapper.getScalarFieldMapper(sortCriteria.getFields());
     var orderable = SparqlBuilder.var(fieldMapper.getAlias());
 
     return SortDirection.ASC.equals(sortCriteria.getDirection()) ? orderable : orderable.desc();
