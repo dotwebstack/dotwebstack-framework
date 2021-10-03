@@ -1,20 +1,16 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import java.util.Map;
 import java.util.Optional;
 import lombok.Getter;
-import org.dotwebstack.framework.core.backend.query.AbstractRowMapper;
+import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import reactor.core.publisher.Flux;
 
 @Getter
-class BindingSetMapper extends AbstractRowMapper<BindingSet> {
+class BindingSetMapper extends AbstractObjectMapper<BindingSet> {
 
   private String alias;
 
-  public BindingSetMapper() {
-  }
+  public BindingSetMapper() {}
 
   public BindingSetMapper(String alias) {
     this.alias = alias;
@@ -27,17 +23,5 @@ class BindingSetMapper extends AbstractRowMapper<BindingSet> {
     }
 
     return super.apply(bindings);
-  }
-
-  public BindingSetMapper createNestedResultMapper(String name, String alias) {
-    var resultMapper = new BindingSetMapper(alias);
-    fieldMappers.put(name, resultMapper);
-    return resultMapper;
-  }
-
-  @SuppressWarnings("unchecked")
-  public Flux<Map<String, Object>> map(TupleQueryResult queryResult) {
-    return Flux.fromIterable(queryResult)
-        .map(row -> (Map<String, Object>) super.apply(row));
   }
 }

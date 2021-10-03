@@ -6,7 +6,7 @@ import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
 import org.eclipse.rdf4j.query.BindingSet;
 
 @Getter
-public class BindingMapper implements ScalarFieldMapper<BindingSet> {
+class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
   private final String alias;
 
