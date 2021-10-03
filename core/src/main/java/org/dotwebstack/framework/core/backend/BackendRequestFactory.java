@@ -26,7 +26,9 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BackendRequestFactory {
 
   private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
@@ -34,55 +36,59 @@ public class BackendRequestFactory {
 
   private final Schema schema;
 
-  private final DataFetchingEnvironment environment;
-
-  public BackendRequestFactory(Schema schema, DataFetchingEnvironment environment) {
+  public BackendRequestFactory(Schema schema) {
     this.schema = schema;
-    this.environment = environment;
   }
 
-  public CollectionRequest createCollectionRequest() {
+  public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
 
     return CollectionRequest.builder()
-        .objectRequest(createObjectRequest(objectType, environment.getSelectionSet(), environment.getArguments()))
+        .objectRequest(createObjectRequest(environment))
         .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
-  public ObjectRequest createObjectRequest() {
+  public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
-    return createObjectRequest(objectType, environment.getSelectionSet(), environment.getArguments());
-  }
 
-  private ObjectRequest createObjectRequest(SelectedField selectedField) {
-    var objectType = getObjectType(selectedField.getType());
-    return createObjectRequest(objectType, selectedField.getSelectionSet(), selectedField.getArguments());
-  }
-
-  private ObjectRequest createObjectRequest(ObjectType<?> objectType, DataFetchingFieldSelectionSet selectionSet,
-      Map<String, Object> arguments) {
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(arguments))
-        .selectedScalarFields(getScalarFields(selectionSet.getImmediateFields()))
-        .selectedObjectFields(getObjectFields(selectionSet.getImmediateFields()))
+        .keyCriteria(createKeyCriteria(environment.getArguments()))
+        .selectedScalarFields(getScalarFields(environment.getSelectionSet()))
+        .selectedObjectFields(getObjectFields(environment.getSelectionSet(), environment))
         .build();
   }
 
-  private Collection<SelectedField> getScalarFields(Collection<SelectedField> selectedFields) {
-    return selectedFields.stream()
+  private ObjectRequest createObjectRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
+    var objectType = getObjectType(selectedField.getType());
+
+    return ObjectRequest.builder()
+        .objectType(objectType)
+        .keyCriteria(createKeyCriteria(selectedField.getArguments()))
+        .selectedScalarFields(getScalarFields(selectedField.getSelectionSet()))
+        .selectedObjectFields(getObjectFields(selectedField.getSelectionSet(), environment))
+        .build();
+  }
+
+  private Collection<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+    return selectionSet.getImmediateFields()
+        .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
         .collect(Collectors.toSet());
   }
 
-  private Map<SelectedField, ObjectRequest> getObjectFields(Collection<SelectedField> selectedFields) {
-    return selectedFields.stream()
+  private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+      DataFetchingEnvironment environment) {
+    return selectionSet.getImmediateFields()
+        .stream()
         .filter(isObjectField)
-        .collect(Collectors.toMap(Function.identity(), this::createObjectRequest));
+        .collect(
+            Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
   }
 
+  @SuppressWarnings("unchecked")
   private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
     return arguments.entrySet()
         .stream()

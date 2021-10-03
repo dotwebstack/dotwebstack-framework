@@ -85,16 +85,14 @@ public class WherePatternFactory {
 
     var propertyShape = nodeShape.getPropertyShape(name);
 
-    return Stream.of(
-        subject.has(propertyShape.toPredicate(), Values.literal(value)));
+    return Stream.of(subject.has(propertyShape.toPredicate(), Values.literal(value)));
   }
 
   private Stream<GraphPattern> createWherePattern(SelectedField selectedField) {
     var objectField = getObjectField(objectRequest, selectedField.getName());
 
     if (objectField.isResource()) {
-      fieldMapper.register(selectedField.getName(), new BindingMapper(subject.getQueryString()
-          .substring(1)));
+      fieldMapper.register(selectedField.getName(), new BindingMapper(subject));
       return Stream.empty();
     }
 

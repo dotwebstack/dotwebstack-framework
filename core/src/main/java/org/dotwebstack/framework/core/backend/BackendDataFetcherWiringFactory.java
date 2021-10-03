@@ -15,10 +15,14 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final BackendModule<?> backendModule;
 
+  private final BackendRequestFactory requestFactory;
+
   private final Schema schema;
 
-  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, Schema schema) {
+  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
+      Schema schema) {
     this.backendModule = backendModule;
+    this.requestFactory = requestFactory;
     this.schema = schema;
   }
 
@@ -36,7 +40,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     var backendLoader = backendModule.getBackendLoaderFactory()
         .create(objectType);
 
-    return new BackendDataFetcher(backendLoader, schema);
+    return new BackendDataFetcher(backendLoader, requestFactory);
   }
 
   // TODO: move to util class?

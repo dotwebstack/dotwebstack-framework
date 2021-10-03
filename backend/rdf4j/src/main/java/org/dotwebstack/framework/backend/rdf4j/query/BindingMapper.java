@@ -6,6 +6,7 @@ import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 
 @Getter
 class BindingMapper implements ScalarFieldMapper<BindingSet> {
@@ -14,6 +15,11 @@ class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
   public BindingMapper(String alias) {
     this.alias = alias;
+  }
+
+  public BindingMapper(Variable variable) {
+    this.alias = variable.getQueryString()
+        .substring(1);
   }
 
   @Override

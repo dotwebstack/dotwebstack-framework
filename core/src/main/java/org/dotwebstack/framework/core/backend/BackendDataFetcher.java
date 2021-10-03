@@ -5,17 +5,16 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.Map;
-import org.dotwebstack.framework.core.model.Schema;
 
 class BackendDataFetcher implements DataFetcher<Object> {
 
   private final BackendLoader backendLoader;
 
-  private final Schema schema;
+  private final BackendRequestFactory requestFactory;
 
-  public BackendDataFetcher(BackendLoader backendLoader, Schema schema) {
+  public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory) {
     this.backendLoader = backendLoader;
-    this.schema = schema;
+    this.requestFactory = requestFactory;
   }
 
   @Override
@@ -31,16 +30,14 @@ class BackendDataFetcher implements DataFetcher<Object> {
     }
 
     if (isListType(environment.getFieldType())) {
-      var collectionRequest = new BackendRequestFactory(schema, environment)
-          .createCollectionRequest();
+      var collectionRequest = requestFactory.createCollectionRequest(environment);
 
       return backendLoader.loadMany(collectionRequest)
           .collectList()
           .toFuture();
     }
 
-    var objectRequest = new BackendRequestFactory(schema, environment)
-        .createObjectRequest();
+    var objectRequest = requestFactory.createObjectRequest(environment);
 
     return backendLoader.loadSingle(objectRequest)
         .toFuture();
