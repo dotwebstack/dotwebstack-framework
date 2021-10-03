@@ -111,8 +111,8 @@ public class Query {
 
   private GraphPattern createNestedWherePattern(SelectedField selectedField, PropertyShape propertyShape,
       ObjectRequest objectRequest, Variable subject, BindingSetMapper rowMapper) {
-    var nestedResource = SparqlBuilder.var(newAlias());
-    var nestedRowMapper = rowMapper.createNestedResultMapper(selectedField.getName());
+    var nestedRowMapper = rowMapper.createNestedResultMapper(selectedField.getName(), newAlias());
+    var nestedResource = SparqlBuilder.var(nestedRowMapper.getAlias());
 
     var nestedPattern = GraphPatterns.tp(subject, propertyShape.toPredicate(), nestedResource)
         .and(createWherePattern(objectRequest, propertyShape.getNode(), nestedResource, nestedRowMapper));

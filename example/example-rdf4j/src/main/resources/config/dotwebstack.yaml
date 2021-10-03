@@ -37,6 +37,7 @@ objectTypes:
         type: String
       abv:
         type: Float
+        nullable: true
       brewery:
         type: Brewery
 

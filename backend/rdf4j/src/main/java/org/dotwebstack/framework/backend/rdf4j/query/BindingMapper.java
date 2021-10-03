@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import java.util.Optional;
 import lombok.Getter;
 import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -16,7 +17,7 @@ public class BindingMapper implements ScalarFieldMapper<BindingSet> {
   @Override
   public Object apply(BindingSet bindings) {
     if (!bindings.hasBinding(alias)) {
-      return null;
+      return Optional.empty();
     }
 
     return bindings.getBinding(alias)
