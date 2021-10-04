@@ -165,50 +165,7 @@ objectTypes:
           inverseJoinColumns:
             - name: brewery_related_to_identifier
               referencedField: identifier
-      relatedTo2:
-        type: Brewery
-        list: true
-        joinTable:
-          name: dbeerpedia.breweries__related_to
-          joinColumns:
-            - name: brewery_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: brewery_related_to_identifier
-              referencedField: identifier
-      relatedTo3:
-        type: Brewery
-        list: true
-        joinTable:
-          name: dbeerpedia.breweries__related_to
-          joinColumns:
-            - name: brewery_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: brewery_related_to_identifier
-              referencedField: identifier
-      relatedTo4:
-        type: Brewery
-        list: true
-        joinTable:
-          name: dbeerpedia.breweries__related_to
-          joinColumns:
-            - name: brewery_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: brewery_related_to_identifier
-              referencedField: identifier
-      relatedTo5:
-        type: Brewery
-        list: true
-        joinTable:
-          name: dbeerpedia.breweries__related_to
-          joinColumns:
-            - name: brewery_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: brewery_related_to_identifier
-              referencedField: identifier
+
   Ingredient:
     backend: postgres
     table: dbeerpedia.ingredients
