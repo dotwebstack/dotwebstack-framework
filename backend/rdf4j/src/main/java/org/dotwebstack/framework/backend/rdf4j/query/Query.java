@@ -1,15 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.sparqlbuilder.core.OrderBy;
-import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
@@ -47,43 +42,35 @@ public class Query {
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
-    var selectQuery = createSelect(collectionRequest.getObjectRequest(), nodeShape);
+    var patternFactory = createPatternFactory(collectionRequest.getObjectRequest(), nodeShape);
+    var query = createSelect(patternFactory);
 
     if (collectionRequest.hasSortCriterias()) {
-      selectQuery = selectQuery.orderBy(createOrderBy(collectionRequest));
+      query = query.orderBy(patternFactory.createOrderBy(collectionRequest.getSortCriterias()));
     }
 
-    return selectQuery;
+    return query;
   }
 
   private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
+    var patternFactory = createPatternFactory(objectRequest, nodeShape);
+    return createSelect(patternFactory);
+  }
+
+  private SelectQuery createSelect(GraphPatternFactory patternFactory) {
+    return Queries.SELECT()
+        .where(patternFactory.create());
+  }
+
+  private GraphPatternFactory createPatternFactory(ObjectRequest objectRequest, NodeShape nodeShape) {
     var subject = SparqlBuilder.var(aliasManager.newAlias());
 
-    var wherePatternFactory = WherePatternFactory.builder()
+    return GraphPatternFactory.builder()
         .objectRequest(objectRequest)
         .nodeShape(nodeShape)
         .subject(subject)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .build();
-
-    return Queries.SELECT()
-        .where(wherePatternFactory.create());
-  }
-
-  private OrderBy createOrderBy(CollectionRequest collectionRequest) {
-    var orderables = collectionRequest.getSortCriterias()
-        .stream()
-        .map(this::createOrderable)
-        .collect(Collectors.toList());
-
-    return SparqlBuilder.orderBy(orderables.toArray(Orderable[]::new));
-  }
-
-  private Orderable createOrderable(SortCriteria sortCriteria) {
-    var fieldMapper = rowMapper.getLeafFieldMapper(sortCriteria.getFields());
-    var orderable = SparqlBuilder.var(fieldMapper.getAlias());
-
-    return SortDirection.ASC.equals(sortCriteria.getDirection()) ? orderable : orderable.desc();
   }
 }

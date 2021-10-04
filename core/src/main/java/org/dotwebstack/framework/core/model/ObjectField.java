@@ -5,4 +5,6 @@ public interface ObjectField {
   String getName();
 
   void setName(String name);
+
+  String getType();
 }

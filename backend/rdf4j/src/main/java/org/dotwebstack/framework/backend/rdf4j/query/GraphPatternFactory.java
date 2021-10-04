@@ -9,25 +9,32 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.sparqlbuilder.core.OrderBy;
+import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 
 @Builder
-class WherePatternFactory {
+class GraphPatternFactory {
 
   private final ObjectRequest objectRequest;
 
@@ -50,18 +57,18 @@ class WherePatternFactory {
 
     objectRequest.getKeyCriteria()
         .stream()
-        .flatMap(this::createFilterPattern)
+        .flatMap(this::createPattern)
         .forEach(subPatterns::add);
 
     objectRequest.getSelectedScalarFields()
         .stream()
-        .flatMap(this::createWherePattern)
+        .flatMap(this::createPattern)
         .forEach(subPatterns::add);
 
     objectRequest.getSelectedObjectFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> createNestedWherePattern(entry.getKey(), entry.getValue()))
+        .flatMap(entry -> createNestedPattern(entry.getKey(), entry.getValue()))
         .forEach(subPatterns::add);
 
     var graphPattern = GraphPatterns.and(subPatterns.toArray(GraphPattern[]::new));
@@ -71,6 +78,29 @@ class WherePatternFactory {
     }
 
     return graphPattern;
+  }
+
+  public OrderBy createOrderBy(List<SortCriteria> sortCriterias) {
+    if (sortCriterias.isEmpty()) {
+      throw ExceptionHelper.illegalArgumentException("Sort criteria is empty.");
+    }
+
+    var orderables = sortCriterias.stream()
+        .map(this::createOrderable)
+        .collect(Collectors.toList());
+
+    return SparqlBuilder.orderBy(orderables.toArray(Orderable[]::new));
+  }
+
+  private Orderable createOrderable(SortCriteria sortCriteria) {
+    if (!(fieldMapper instanceof RowMapper)) {
+      throw ExceptionHelper.illegalStateException("Sorting can only be applied on root level.");
+    }
+
+    var leafFieldMapper = ((RowMapper) fieldMapper).getLeafFieldMapper(sortCriteria.getFields());
+    var orderable = SparqlBuilder.var(leafFieldMapper.getAlias());
+
+    return SortDirection.ASC.equals(sortCriteria.getDirection()) ? orderable : orderable.desc();
   }
 
   private Optional<GraphPattern> createJoinPattern() {
@@ -86,14 +116,14 @@ class WherePatternFactory {
     return Optional.of(GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(), subject));
   }
 
-  private Stream<GraphPattern> createFilterPattern(KeyCriteria keyCriteria) {
+  private Stream<GraphPattern> createPattern(KeyCriteria keyCriteria) {
     return keyCriteria.getValues()
         .entrySet()
         .stream()
-        .flatMap(entry -> createFilterPattern(entry.getKey(), entry.getValue()));
+        .flatMap(entry -> createPattern(entry.getKey(), entry.getValue()));
   }
 
-  private Stream<GraphPattern> createFilterPattern(String name, Object value) {
+  private Stream<GraphPattern> createPattern(String name, Object value) {
     var objectField = getObjectField(objectRequest, name);
 
     if (objectField.isResource()) {
@@ -106,7 +136,7 @@ class WherePatternFactory {
     return Stream.of(subject.has(propertyShape.toPredicate(), Values.literal(value)));
   }
 
-  private Stream<GraphPattern> createWherePattern(SelectedField selectedField) {
+  private Stream<GraphPattern> createPattern(SelectedField selectedField) {
     var objectField = getObjectField(objectRequest, selectedField.getName());
 
     if (objectField.isResource()) {
@@ -123,8 +153,7 @@ class WherePatternFactory {
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private Stream<GraphPattern> createNestedWherePattern(SelectedField selectedField,
-      ObjectRequest nestedObjectRequest) {
+  private Stream<GraphPattern> createNestedPattern(SelectedField selectedField, ObjectRequest nestedObjectRequest) {
     var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
     var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
 
@@ -142,7 +171,7 @@ class WherePatternFactory {
 
     fieldMapper.register(selectedField.getName(), nestedResourceMapper);
 
-    var nestedPatternFactory = WherePatternFactory.builder()
+    var nestedPatternFactory = GraphPatternFactory.builder()
         .objectRequest(nestedObjectRequest)
         .nodeShape(propertyShape.getNode())
         .subject(nestedResource)

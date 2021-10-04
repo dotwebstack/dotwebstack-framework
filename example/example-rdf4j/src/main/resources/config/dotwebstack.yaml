@@ -24,13 +24,10 @@ objectTypes:
       - field: identifier
     sortableBy:
       name:
+        - field: brewery.name
+          direction: ASC
         - field: name
-          direction: ASC
-        - field: abv
           direction: DESC
-      abv:
-        - field: abv
-          direction: ASC
     fields:
       uri:
         type: String

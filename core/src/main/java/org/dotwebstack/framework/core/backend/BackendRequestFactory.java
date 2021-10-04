@@ -10,9 +10,11 @@ import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -122,11 +125,28 @@ public class BackendRequestFactory {
 
     return sortableByConfig.stream()
         .map(config -> SortCriteria.builder()
-            .fields(List.of(objectType.getField(config.getField())
-                .orElseThrow()))
+            .fields(createFieldPath(objectType, config.getField()))
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
+  }
+
+  private List<ObjectField> createFieldPath(ObjectType<?> objectType, String path) {
+    var current = objectType;
+    var fieldPath = new ArrayList<ObjectField>();
+
+    for (var segment : path.split("\\.")) {
+      var field = Optional.ofNullable(current)
+          .flatMap(o -> o.getField(segment))
+          .orElseThrow();
+
+      fieldPath.add(field);
+
+      current = schema.getObjectType(field.getType())
+          .orElse(null);
+    }
+
+    return fieldPath;
   }
 
   private ObjectType<?> getObjectType(GraphQLType type) {
