@@ -3,8 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import java.util.Optional;
 import lombok.Getter;
 import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 

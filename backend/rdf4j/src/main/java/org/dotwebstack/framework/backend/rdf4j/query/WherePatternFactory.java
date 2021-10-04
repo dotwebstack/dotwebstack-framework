@@ -83,8 +83,7 @@ public class WherePatternFactory {
     var parentField = objectRequest.getParentField();
     var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
 
-    return Optional.of(
-        GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(), subject));
+    return Optional.of(GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(), subject));
   }
 
   private Stream<GraphPattern> createFilterPattern(KeyCriteria keyCriteria) {
