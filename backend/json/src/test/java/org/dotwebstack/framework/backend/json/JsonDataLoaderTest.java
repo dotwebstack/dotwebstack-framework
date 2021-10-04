@@ -22,7 +22,6 @@ import org.dotwebstack.framework.backend.json.config.JsonTypeConfiguration;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.dotwebstack.framework.core.datafetchers.LoadEnvironment;
@@ -154,11 +153,9 @@ class JsonDataLoaderTest {
     map.put(name, pathExpression);
 
     JsonTypeConfiguration jsonTypeConfiguration = new JsonTypeConfiguration();
-    KeyConfiguration keyConfiguration = new KeyConfiguration();
-    keyConfiguration.setField(FIELD_IDENTIFIER);
     jsonTypeConfiguration.setQueryPaths(map);
     jsonTypeConfiguration.setFile(DATAFILE);
-    jsonTypeConfiguration.setKeys(List.of(keyConfiguration));
+    jsonTypeConfiguration.setKeys(List.of(FIELD_IDENTIFIER));
     jsonTypeConfiguration.setFields(Map.of(FIELD_IDENTIFIER, new JsonFieldConfiguration()));
     return jsonTypeConfiguration;
   }
@@ -205,6 +202,8 @@ class JsonDataLoaderTest {
     public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
       return null;
     }
+
+
   }
 
   private static class UnsupportedFieldConfiguration extends AbstractFieldConfiguration {

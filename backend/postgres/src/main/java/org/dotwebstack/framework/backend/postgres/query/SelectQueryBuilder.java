@@ -147,9 +147,6 @@ public class SelectQueryBuilder {
     addObjectFields(objectRequest, objectSelectContext, query, fromTable);
     addAggregateObjectFields(objectRequest, objectSelectContext, query, fromTable);
 
-    // check if any non-key-fields need to be added in order to support join
-    addReferenceColumns(objectRequest, objectSelectContext, query, fromTable);
-
     return query;
   }
 
@@ -163,8 +160,7 @@ public class SelectQueryBuilder {
         .isEmpty()) {
 
       var name = typeConfiguration.getKeys()
-          .get(0)
-          .getField();
+          .get(0);
 
       var fieldConfiguration = typeConfiguration.getFields()
           .get(name);
@@ -385,27 +381,6 @@ public class SelectQueryBuilder {
         .isList()) {
       query.addJoin(DSL.unnest(DSL.field(DSL.name(table.getName(), columnName), String[].class))
           .as(columnAlias), JoinType.CROSS_JOIN);
-    }
-  }
-
-  private void addReferenceColumns(ObjectRequest objectRequest, ObjectSelectContext objectSelectContext,
-      SelectQuery<?> query, Table<?> table) {
-    if (!objectRequest.getObjectFields()
-        .isEmpty()
-        || !objectRequest.getAggregateObjectFields()
-            .isEmpty()
-        || !objectRequest.getCollectionObjectFields()
-            .isEmpty()) {
-      var typeConfiguration = (PostgresTypeConfiguration) objectRequest.getTypeConfiguration();
-      typeConfiguration.getReferencedColumns()
-          .values()
-          .forEach(referenceFieldConfiguration -> {
-            var refScalarField = ScalarField.builder()
-                .field(referenceFieldConfiguration)
-                .origins(Sets.newHashSet(Origin.requested()))
-                .build();
-            addScalarField(refScalarField, objectSelectContext, query, table, new AtomicBoolean());
-          });
     }
   }
 

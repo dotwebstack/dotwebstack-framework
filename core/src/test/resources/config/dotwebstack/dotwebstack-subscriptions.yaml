@@ -5,7 +5,7 @@ subscriptions:
 objectTypes:
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

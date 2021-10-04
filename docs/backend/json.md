@@ -12,7 +12,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier
+      - identifier
     nullable: true
 
 objectTypes:
@@ -22,7 +22,7 @@ objectTypes:
       beer: $.beers[*].beer[?]
       beers: $.beers[*].beer
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -35,7 +35,7 @@ objectTypes:
 
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -62,7 +62,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier
+      - identifier
     nullable: true
 ```
 

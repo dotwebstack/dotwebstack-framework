@@ -44,7 +44,6 @@ import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.config.FieldArgumentConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.QueryConfiguration;
 import org.dotwebstack.framework.core.config.SubscriptionConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
@@ -526,10 +525,10 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
-  private InputValueDefinition createQueryInputValueDefinition(KeyConfiguration keyConfiguration,
+  private InputValueDefinition createQueryInputValueDefinition(String keyField,
       AbstractTypeConfiguration<? extends AbstractFieldConfiguration> objectTypeConfiguration) {
-    return newInputValueDefinition().name(keyConfiguration.getField())
-        .type(createType(keyConfiguration.getField(), objectTypeConfiguration))
+    return newInputValueDefinition().name(keyField)
+        .type(createType(keyField, objectTypeConfiguration))
         .build();
   }
 

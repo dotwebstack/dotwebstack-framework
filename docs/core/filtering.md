@@ -25,7 +25,7 @@ queries:
 objectTypes:
   Beer:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -38,7 +38,7 @@ objectTypes:
       soldPerYear: {}
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

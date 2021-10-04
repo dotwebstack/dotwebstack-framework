@@ -5,7 +5,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
     nullable: true
   breweries:
     type: Brewery
@@ -13,12 +13,12 @@ queries:
   brewery:
     type: Brewery
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     nullable: true
   ingredient:
     type: Ingredient
     keys:
-      - field: identifier_ingredient
+      - identifier_ingredient
     nullable: true
 
 subscriptions:
@@ -29,7 +29,7 @@ objectTypes:
   Beer:
     table: db.beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
     fields:
       identifier_beer:
         type: ID
@@ -54,7 +54,7 @@ objectTypes:
               referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       ingredient:
         type: Ingredient
         nullable: true
@@ -65,7 +65,7 @@ objectTypes:
               referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       ingredientAgg:
         aggregationOf: Ingredient
         joinTable:
@@ -75,7 +75,7 @@ objectTypes:
               referencedField: identifier_beer
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       taste:
         type: Taste
         list: true
@@ -108,7 +108,7 @@ objectTypes:
   Ingredient:
     table: db.ingredient
     keys:
-      - field: identifier_ingredient
+      - identifier_ingredient
     fields:
       identifier_ingredient:
         type: ID
@@ -116,6 +116,9 @@ objectTypes:
         type: String
       weight:
         type: Float
+      code:
+        type: String
+        visible: false
       partOf:
         type: Beer
         list: true
@@ -124,7 +127,7 @@ objectTypes:
           name: db.beer_ingredient
           joinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
           inverseJoinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
@@ -132,7 +135,7 @@ objectTypes:
   Brewery:
     table: db.brewery
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       identifier_brewery:
         type: ID
@@ -181,7 +184,7 @@ objectTypes:
   Address:
     table: db.address
     keys:
-      - field: identifier_address
+      - identifier_address
     fields:
       identifier_address:
         type: ID
@@ -192,7 +195,7 @@ objectTypes:
 
   History:
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       age:
         type: Int

@@ -5,7 +5,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier
+      - identifier
     nullable: true
   breweries:
     type: Brewery
@@ -13,13 +13,13 @@ queries:
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
     nullable: true
 
 objectTypes:
   Beer:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -50,7 +50,7 @@ objectTypes:
 
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -95,7 +95,7 @@ objectTypes:
 
   Address:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -104,21 +104,21 @@ objectTypes:
 
   Ingredient:
     keys:
-      - field: name
+      - name
     fields:
       name:
         type: String
 
   Supplement:
     keys:
-      - field: name
+      - name
     fields:
       name:
         type: String
 
   BeerType:
     keys:
-      - field: name
+      - name
     fields:
       name:
         type: String

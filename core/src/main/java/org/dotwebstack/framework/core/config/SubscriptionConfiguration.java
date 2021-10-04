@@ -11,7 +11,7 @@ public class SubscriptionConfiguration {
   @NotBlank
   private String type;
 
-  private List<KeyConfiguration> keys = new ArrayList<>();
+  private List<String> keys = new ArrayList<>();
 
   private boolean context = true;
 }

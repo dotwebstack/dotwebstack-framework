@@ -6,7 +6,7 @@ queries:
 objectTypes:
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -26,7 +26,7 @@ objectTypes:
 
   Address:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

@@ -1,7 +1,7 @@
 objectTypes:
   Beer:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

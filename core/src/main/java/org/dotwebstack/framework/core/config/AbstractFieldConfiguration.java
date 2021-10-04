@@ -18,6 +18,8 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   private boolean isText = false;
 
+  private boolean visible = true;
+
   private String mappedBy;
 
   private String aggregationOf;
@@ -36,4 +38,7 @@ public abstract class AbstractFieldConfiguration implements FieldConfiguration {
 
   public abstract boolean isAggregateField();
 
+  public boolean isVisible() {
+    return visible;
+  }
 }

@@ -13,7 +13,7 @@ shape:
 objectTypes:
   Beer:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -22,7 +22,7 @@ objectTypes:
 
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

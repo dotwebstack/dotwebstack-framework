@@ -21,7 +21,7 @@ queries:
 objectTypes:
   Beer:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -31,7 +31,7 @@ objectTypes:
         type: Brewery
   Brewery:
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

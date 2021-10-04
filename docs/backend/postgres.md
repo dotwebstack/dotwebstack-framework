@@ -6,7 +6,7 @@
   Beer:
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -38,7 +38,7 @@ objectTypes:
   Beer:
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -51,7 +51,7 @@ objectTypes:
   Brewery:
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -75,7 +75,7 @@ objectTypes:
   Beer:
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -88,7 +88,7 @@ objectTypes:
   Brewery:
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -112,7 +112,7 @@ objectTypes:
   Beer:
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -131,7 +131,7 @@ objectTypes:
   Ingredient:
     table: dbeerpedia.ingredients
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -262,7 +262,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
     nullable: true
   breweries:
     type: Brewery
@@ -272,7 +272,7 @@ objectTypes:
   Beer:
     table: db.beer_v
     keys:
-      - field: identifier_beer
+      - identifier_beer
     fields:
       identifier_beer:
         type: ID

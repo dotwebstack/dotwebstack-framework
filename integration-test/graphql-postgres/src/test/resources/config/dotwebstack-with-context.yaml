@@ -17,7 +17,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
   breweries:
     type: Brewery
     list: true
@@ -26,7 +26,7 @@ objectTypes:
   Beer:
     table: db.beer_v
     keys:
-      - field: identifier_beer
+      - identifier_beer
     fields:
       identifier_beer:
         type: ID
@@ -69,7 +69,7 @@ objectTypes:
   Brewery:
     table: db.brewery_v
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       identifier_brewery:
         type: ID
@@ -120,7 +120,7 @@ objectTypes:
   Address:
     table: db.address_v
     keys:
-      - field: identifier_address
+      - identifier_address
     fields:
       identifier_address:
         type: ID
@@ -131,7 +131,7 @@ objectTypes:
 
   History:
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       age:
         type: Int
