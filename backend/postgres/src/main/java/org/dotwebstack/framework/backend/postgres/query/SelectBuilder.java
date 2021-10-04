@@ -6,7 +6,8 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 
 import graphql.schema.SelectedField;
 import java.util.Map;
-import lombok.Builder;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
@@ -20,18 +21,23 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-@Builder
-class SelectFactory {
+@Setter
+@Accessors(fluent = true)
+class SelectBuilder {
 
-  private final DSLContext dslContext;
+  private DSLContext dslContext;
 
-  private final ObjectRequest objectRequest;
+  private ObjectRequest objectRequest;
 
-  private final ObjectFieldMapper<Map<String, Object>> fieldMapper;
+  private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
-  private final AliasManager aliasManager;
+  private AliasManager aliasManager;
 
-  public SelectQuery<Record> create() {
+  public static SelectBuilder newSelect() {
+    return new SelectBuilder();
+  }
+
+  public SelectQuery<Record> build() {
     var objectType = getObjectType(objectRequest);
 
     var fromTable = DSL.table(objectType.getTable())
@@ -81,14 +87,13 @@ class SelectFactory {
 
     fieldMapper.register(selectedField.getName(), nestedObjectMapper);
 
-    var nestedSelectFactory = SelectFactory.builder()
+    var nestedSelect = SelectBuilder.newSelect()
         .dslContext(dslContext)
         .objectRequest(nestedObjectRequest)
         .fieldMapper(nestedObjectMapper)
         .aliasManager(aliasManager)
         .build();
 
-    var nestedSelect = nestedSelectFactory.create();
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 

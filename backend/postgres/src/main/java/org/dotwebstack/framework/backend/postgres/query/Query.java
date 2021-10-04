@@ -51,11 +51,7 @@ public class Query {
   }
 
   private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {
-    return createSelectFactory(objectRequest).create();
-  }
-
-  private SelectFactory createSelectFactory(ObjectRequest objectRequest) {
-    return SelectFactory.builder()
+    return SelectBuilder.newSelect()
         .dslContext(dslContext)
         .objectRequest(objectRequest)
         .fieldMapper(rowMapper)
