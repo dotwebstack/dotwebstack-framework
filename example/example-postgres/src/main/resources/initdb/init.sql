@@ -29,6 +29,15 @@ INSERT INTO dbeerpedia.breweries(identifier, name, status, postal_address, visit
   ('6e8f89da-9676-4cb9-801b-aeb6e2a59ac9', 'Brewery Y', 'active', '3fe6c706-54af-4420-89c4-926ff719236a', NULL,'POLYGON((6.171943938628401 51.48699391333906,6.174325740233626 51.48699391333906,6.174325740233626 51.48564437918149,6.171943938628401 51.48564437918149,6.171943938628401 51.48699391333906))', 1900, 'A long time ago'),
   ('28649f76-ddcf-417a-8c1d-8e5012c31959', 'Brewery Z', 'inactive', NULL, NULL,'POLYGON((6.81534412421009 52.207653734352334,6.818358927142829 52.207653734352334,6.818358927142829 52.206457132522104,6.81534412421009 52.206457132522104,6.81534412421009 52.207653734352334))', 1700, 'A king wanted a spicy beer');
 
+CREATE TABLE dbeerpedia.breweries__related_to (
+    brewery_identifier character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
+    brewery_related_to_identifier character varying NOT NULL REFERENCES dbeerpedia.breweries (identifier),
+    PRIMARY KEY (brewery_identifier,brewery_related_to_identifier)
+);
+
+INSERT INTO dbeerpedia.breweries__related_to(brewery_identifier, brewery_related_to_identifier) VALUES
+    ('d3654375-95fa-46b4-8529-08b0f777bd6b', '6e8f89da-9676-4cb9-801b-aeb6e2a59ac9');
+
 CREATE TABLE dbeerpedia.beers (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,

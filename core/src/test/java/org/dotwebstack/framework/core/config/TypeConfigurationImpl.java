@@ -12,7 +12,9 @@ import org.dotwebstack.framework.core.datafetchers.MappedByKeyCondition;
 public class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfigurationImpl> {
 
   @Override
-  public void init(DotWebStackConfiguration dotWebStackConfiguration) {}
+  public void init(DotWebStackConfiguration dotWebStackConfiguration) {
+    initObjectTypes(dotWebStackConfiguration.getObjectTypes());
+  }
 
   @Override
   public KeyCondition getKeyCondition(DataFetchingEnvironment environment) {
@@ -27,5 +29,17 @@ public class TypeConfigurationImpl extends AbstractTypeConfiguration<FieldConfig
   @Override
   public KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source) {
     return null;
+  }
+
+  private void initObjectTypes(Map<String, AbstractTypeConfiguration<?>> objectTypes) {
+    fields.values()
+        .stream()
+        .filter(FieldConfigurationImpl::isObjectField)
+        .forEach(fieldConfiguration -> {
+
+          TypeConfigurationImpl typeConfiguration =
+              (TypeConfigurationImpl) objectTypes.get(fieldConfiguration.getType());
+          fieldConfiguration.setTypeConfiguration(typeConfiguration);
+        });
   }
 }

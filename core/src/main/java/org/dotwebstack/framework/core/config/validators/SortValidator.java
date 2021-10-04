@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.config.validators;
 
-import static org.springframework.util.StringUtils.uncapitalize;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,13 +17,12 @@ public class SortValidator implements DotWebStackConfigurationValidator {
 
   @Override
   public void validate(DotWebStackConfiguration dotWebStackConfiguration) {
-    List<String> validSortFields = ValidSortAndFilterFields.get(dotWebStackConfiguration);
-
     Map<String, List<SortableByConfiguration>> sortableByPerObjectTypeName =
         getSortableByPerObjectTypeName(dotWebStackConfiguration);
 
-    sortableByPerObjectTypeName.forEach((objectTypeName, sortableByList) -> sortableByList.forEach(
-        sortableByConfiguration -> validateSortableByField(validSortFields, objectTypeName, sortableByConfiguration)));
+    sortableByPerObjectTypeName.forEach((objectType, sortableByList) -> sortableByList.forEach(
+        sortableByConfiguration -> validateSortableByField(dotWebStackConfiguration.getTypeConfiguration(objectType),
+            sortableByConfiguration)));
   }
 
   private Map<String, List<SortableByConfiguration>> getSortableByPerObjectTypeName(
@@ -53,21 +50,15 @@ public class SortValidator implements DotWebStackConfigurationValidator {
         .collect(Collectors.toList());
   }
 
-  private void validateSortableByField(List<String> validSortFields, String objectTypeName,
+  private void validateSortableByField(AbstractTypeConfiguration<?> objectType,
       SortableByConfiguration sortableByConfiguration) {
-    String sortableByFieldName = getSortableByFieldName(objectTypeName, sortableByConfiguration);
-
-    if (!validSortFields.contains(sortableByFieldName)) {
-      throw new InvalidConfigurationException(
-          String.format("Sort field '%s' in object type '%s' can't be resolved to a single scalar type.",
-              sortableByFieldName, objectTypeName));
-    }
-  }
-
-  private String getSortableByFieldName(String objectTypeName, SortableByConfiguration sortableByConfiguration) {
     String fieldName = sortableByConfiguration.getField();
 
-    return uncapitalize(objectTypeName).concat(".")
-        .concat(fieldName);
+    if (!objectType.getField(fieldName)
+        .isPresent()) {
+      throw new InvalidConfigurationException(
+          String.format("Sort field '%s' in object type '%s' can't be resolved to a single scalar type.", fieldName,
+              objectType.getName()));
+    }
   }
 }
