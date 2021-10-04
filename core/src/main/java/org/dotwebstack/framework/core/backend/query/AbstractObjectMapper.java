@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.backend.query;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -14,8 +13,8 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
   public Map<String, Object> apply(T row) {
     return fieldMappers.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
-            .apply(row)));
+        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()
+            .apply(row)), HashMap::putAll);
   }
 
   public void register(String name, FieldMapper<T, ?> fieldMapper) {

@@ -11,7 +11,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -77,12 +76,12 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Collection<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+  private List<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
   }
 
   private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
@@ -94,7 +93,6 @@ public class BackendRequestFactory {
             Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
   }
 
-  @SuppressWarnings("unchecked")
   private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
     return arguments.entrySet()
         .stream()

@@ -1,3 +1,4 @@
+CREATE EXTENSION postgis;
 CREATE SCHEMA dbeerpedia;
 
 CREATE TABLE dbeerpedia.addresses (
@@ -14,7 +15,7 @@ CREATE TYPE dbeerpedia.brewery_status AS ENUM ('active', 'inactive');
 
 CREATE TABLE dbeerpedia.breweries (
   record_id BIGINT PRIMARY KEY NOT NULL,
-  identifier character varying NOT NULL,
+  identifier character varying NOT NULL UNIQUE,
   name character varying NOT NULL,
   status dbeerpedia.brewery_status NOT NULL,
   postal_address character varying REFERENCES dbeerpedia.addresses (identifier),
