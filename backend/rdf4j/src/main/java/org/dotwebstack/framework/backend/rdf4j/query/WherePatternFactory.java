@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.constants.Rdf4jConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.applyCardinality;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.createTypePatterns;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.getObjectField;
@@ -9,10 +10,10 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Builder;
-import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jKeyCriteria;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
@@ -45,6 +46,8 @@ public class WherePatternFactory {
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
 
+    createJoinPattern().ifPresent(subPatterns::add);
+
     objectRequest.getKeyCriteria()
         .stream()
         .flatMap(this::createFilterPattern)
@@ -68,6 +71,20 @@ public class WherePatternFactory {
     }
 
     return graphPattern;
+  }
+
+  private Optional<GraphPattern> createJoinPattern() {
+    var source = objectRequest.getSource();
+
+    if (source == null) {
+      return Optional.empty();
+    }
+
+    var parentField = objectRequest.getParentField();
+    var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
+
+    return Optional.of(
+        GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(), subject));
   }
 
   private Stream<GraphPattern> createFilterPattern(KeyCriteria keyCriteria) {
@@ -107,16 +124,17 @@ public class WherePatternFactory {
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private Stream<GraphPattern> createNestedWherePattern(SelectedField selectedField, ObjectRequest nestedObjectRequest) {
+  private Stream<GraphPattern> createNestedWherePattern(SelectedField selectedField,
+      ObjectRequest nestedObjectRequest) {
     var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
     var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
 
-    // Nested lists are never eager-loaded
     if (GraphQLTypeUtil.isList(fieldType)) {
-      fieldMapper.register("$ref." + selectedField.getName(), bindings -> Rdf4jKeyCriteria.builder()
-          .predicate(propertyShape.toPredicate())
-          .build());
+      // Provide join info for child data fetcher
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
+          new JoinMapper(subject, propertyShape.toPredicate()));
 
+      // Nested lists are never eager-loaded
       return Stream.empty();
     }
 

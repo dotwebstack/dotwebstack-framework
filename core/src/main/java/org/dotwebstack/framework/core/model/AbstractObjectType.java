@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.model;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +14,7 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
 
   protected Map<String, T> fields;
 
-  protected Map<String, List<SortableByConfiguration>> sortableBy;
+  protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
 
   public Optional<T> getField(String name) {
     return Optional.ofNullable(fields.get(name));

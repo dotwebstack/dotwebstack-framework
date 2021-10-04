@@ -47,7 +47,13 @@ public class Query {
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
-    return createSelect(collectionRequest.getObjectRequest(), nodeShape).orderBy(createOrderBy(collectionRequest));
+    var selectQuery = createSelect(collectionRequest.getObjectRequest(), nodeShape);
+
+    if (collectionRequest.hasSortCriterias()) {
+      selectQuery = selectQuery.orderBy(createOrderBy(collectionRequest));
+    }
+
+    return selectQuery;
   }
 
   private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
@@ -66,13 +72,8 @@ public class Query {
   }
 
   private OrderBy createOrderBy(CollectionRequest collectionRequest) {
-    var sortCriterias = collectionRequest.getSortCriterias();
-
-    if (sortCriterias.isEmpty()) {
-      return null;
-    }
-
-    var orderables = sortCriterias.stream()
+    var orderables = collectionRequest.getSortCriterias()
+        .stream()
         .map(this::createOrderable)
         .collect(Collectors.toList());
 

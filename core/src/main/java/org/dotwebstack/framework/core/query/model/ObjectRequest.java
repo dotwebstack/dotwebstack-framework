@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.query.model;
 
+import graphql.language.Field;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
 @SuperBuilder
@@ -24,6 +27,8 @@ public class ObjectRequest implements Request {
   private final TypeConfiguration<?> typeConfiguration;
 
   private final ObjectType<?> objectType;
+
+  private final Field parentField;
 
   private final Map<String, Object> source;
 

@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 @Getter
 class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
-  private final String alias;
+  protected final String alias;
 
   public BindingMapper(String alias) {
     this.alias = alias;
@@ -24,8 +24,12 @@ class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
   @Override
   public Object apply(BindingSet bindings) {
-    return Optional.ofNullable(bindings.getBinding(alias))
-        .map(Binding::getValue)
-        .map(Value::stringValue);
+    var value = bindings.getValue(alias);
+
+    if (value == null) {
+      return Optional.empty();
+    }
+
+    return value.stringValue();
   }
 }

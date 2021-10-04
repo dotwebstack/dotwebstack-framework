@@ -55,6 +55,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
+        .parentField(environment.getField())
         .source(source)
         .keyCriteria(createKeyCriteria(environment.getArguments()))
         .selectedScalarFields(getScalarFields(environment.getSelectionSet()))

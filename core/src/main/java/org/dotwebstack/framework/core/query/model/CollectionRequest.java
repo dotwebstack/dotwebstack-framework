@@ -20,4 +20,8 @@ public class CollectionRequest implements Request {
   private final List<FilterCriteria> filterCriterias = List.of();
 
   private final PagingCriteria pagingCriteria;
+
+  public boolean hasSortCriterias() {
+    return !sortCriterias.isEmpty();
+  }
 }
