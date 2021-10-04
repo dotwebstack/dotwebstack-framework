@@ -74,7 +74,7 @@ class PostgresTypeConfigurationTest {
     PostgresTypeConfiguration typeConfiguration =
         createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
-    var fieldConfigurations = typeConfiguration.getReferredFields("partOf");
+    var fieldConfigurations = typeConfiguration.getReferencedFields("partOf");
 
     assertThat(fieldConfigurations, hasSize(1));
   }
@@ -87,7 +87,7 @@ class PostgresTypeConfigurationTest {
     PostgresTypeConfiguration typeConfiguration =
         createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
-    var fieldConfigurations = typeConfiguration.getReferredFields("identifier");
+    var fieldConfigurations = typeConfiguration.getReferencedFields("identifier");
 
     assertThat(fieldConfigurations, is(empty()));
   }

@@ -259,7 +259,7 @@ class RequestFactoryTest {
 
     TestFieldConfiguration codeFieldConfiguration = getTestFieldConfiguration("code", SCALAR_FIELDCONFIGURATION);
 
-    when(typeConfiguration.getReferredFields("ingredients")).thenReturn(List.of(codeFieldConfiguration));
+    when(typeConfiguration.getReferencedFields("ingredients")).thenReturn(List.of(codeFieldConfiguration));
 
     Map<String, TestFieldConfiguration> fields = Map.of(FIELD_IDENTIFIER, identifierFieldConfiguration, "ingredients",
         ingredientFieldConfiguration, "code", codeFieldConfiguration);

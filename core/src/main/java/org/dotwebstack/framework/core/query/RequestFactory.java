@@ -336,7 +336,7 @@ public class RequestFactory {
     // add referenced scalar field
     List<ScalarField> referred = selectedFields.stream()
         .filter(field -> !field.isScalarField())
-        .flatMap(field -> typeConfiguration.getReferredFields(field.getName())
+        .flatMap(field -> typeConfiguration.getReferencedFields(field.getName())
             .stream())
         .filter(field -> requested.stream()
             .noneMatch(scalarField -> field.getName()

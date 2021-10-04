@@ -28,6 +28,6 @@ public interface TypeConfiguration<T extends AbstractFieldConfiguration> {
 
   KeyCondition invertKeyCondition(MappedByKeyCondition mappedByKeyCondition, Map<String, Object> source);
 
-  List<T> getReferredFields(String fieldName);
+  List<T> getReferencedFields(String fieldName);
 
 }

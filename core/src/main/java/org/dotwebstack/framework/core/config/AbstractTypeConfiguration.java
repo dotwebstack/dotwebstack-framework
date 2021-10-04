@@ -120,7 +120,7 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
   }
 
   @Override
-  public List<T> getReferredFields(String fieldName) {
+  public List<T> getReferencedFields(String fieldName) {
     return List.of();
   }
 }

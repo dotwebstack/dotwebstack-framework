@@ -190,7 +190,7 @@ public class PostgresTypeConfiguration extends AbstractTypeConfiguration<Postgre
   }
 
   @Override
-  public List<PostgresFieldConfiguration> getReferredFields(String fieldName) {
+  public List<PostgresFieldConfiguration> getReferencedFields(String fieldName) {
     PostgresFieldConfiguration fieldConfiguration = getFields().get(fieldName);
 
     if (fieldConfiguration.getJoinTable() != null) {
