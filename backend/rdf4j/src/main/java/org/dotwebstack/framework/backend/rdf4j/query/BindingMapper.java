@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 @Getter
 class BindingMapper implements ScalarFieldMapper<BindingSet> {
 
-  protected final String alias;
+  private final String alias;
 
   public BindingMapper(String alias) {
     this.alias = alias;

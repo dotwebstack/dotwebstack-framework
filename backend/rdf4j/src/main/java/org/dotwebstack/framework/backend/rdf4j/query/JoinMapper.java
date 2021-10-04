@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
-public class JoinMapper implements FieldMapper<BindingSet> {
+class JoinMapper implements FieldMapper<BindingSet> {
 
   private final String alias;
 

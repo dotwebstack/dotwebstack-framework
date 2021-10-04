@@ -21,7 +21,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
-public class QueryHelper {
+class QueryHelper {
 
   private QueryHelper() {}
 

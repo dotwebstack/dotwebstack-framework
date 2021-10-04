@@ -2,7 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AliasManager {
+class AliasManager {
 
   private final AtomicInteger aliasCounter = new AtomicInteger();
 

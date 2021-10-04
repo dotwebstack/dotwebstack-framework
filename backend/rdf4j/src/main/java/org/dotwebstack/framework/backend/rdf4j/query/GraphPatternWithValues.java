@@ -12,7 +12,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 
 @Getter
 @RequiredArgsConstructor
-public class GraphPatternWithValues implements GraphPattern {
+class GraphPatternWithValues implements GraphPattern {
 
   private final GraphPattern graphPattern;
 

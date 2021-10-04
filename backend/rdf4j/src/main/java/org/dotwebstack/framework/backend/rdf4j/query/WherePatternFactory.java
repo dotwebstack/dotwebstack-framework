@@ -27,7 +27,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 
 @Builder
-public class WherePatternFactory {
+class WherePatternFactory {
 
   private final ObjectRequest objectRequest;
 

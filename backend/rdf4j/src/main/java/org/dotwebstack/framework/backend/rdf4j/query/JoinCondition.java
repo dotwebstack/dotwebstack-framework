@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Getter
 @RequiredArgsConstructor
-public class JoinCondition {
+class JoinCondition {
 
   private final Resource resource;
 
