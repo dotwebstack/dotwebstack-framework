@@ -118,6 +118,10 @@ objectTypes:
         field: history.age
       beerName:
         field: beers.name
+      relatedToName:
+        field: relatedTo.name
+      relatedToStatus:
+        field: relatedTo.status
     fields:
       identifier:
         type: ID
@@ -150,6 +154,17 @@ objectTypes:
         mappedBy: brewery
       history:
         type: History
+      relatedTo:
+        type: Brewery
+        list: true
+        joinTable:
+          name: dbeerpedia.breweries__related_to
+          joinColumns:
+            - name: brewery_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: brewery_related_to_identifier
+              referencedField: identifier
 
   Ingredient:
     backend: postgres
