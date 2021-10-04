@@ -18,7 +18,6 @@ import org.dotwebstack.framework.backend.postgres.config.JoinTable;
 import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFieldConfiguration;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -77,10 +76,7 @@ class SelectQueryBuilderTest {
   void buildCollectionRequest_returnsQuery_forScalarFields() {
     var typeConfiguration = mockTypeConfiguration("Brewery");
 
-    var keyConfiguration = new KeyConfiguration();
-    keyConfiguration.setField("identifier");
-
-    when(typeConfiguration.getKeys()).thenReturn(List.of(keyConfiguration));
+    when(typeConfiguration.getKeys()).thenReturn(List.of("identifier"));
 
     var identifierFieldConfiguration = new PostgresFieldConfiguration();
     identifierFieldConfiguration.setName("identifier");

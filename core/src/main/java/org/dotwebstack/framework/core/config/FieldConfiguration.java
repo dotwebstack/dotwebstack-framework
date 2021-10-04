@@ -15,6 +15,9 @@ public interface FieldConfiguration {
   boolean isNullable();
 
   @NotNull
+  boolean isVisible();
+
+  @NotNull
   boolean isList();
 
   @NotNull

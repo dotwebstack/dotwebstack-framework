@@ -5,14 +5,14 @@ queries:
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
     nullable: true
 
 objectTypes:
   Beer:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -28,7 +28,7 @@ objectTypes:
   Brewery:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -50,7 +50,7 @@ objectTypes:
   Address:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -65,7 +65,7 @@ objectTypes:
   Ingredient:
     backend: rdf4j
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

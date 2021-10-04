@@ -7,7 +7,7 @@ objectTypes:
   Brewery:
     backend: test
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -29,7 +29,7 @@ objectTypes:
   Address:
     backend: test
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

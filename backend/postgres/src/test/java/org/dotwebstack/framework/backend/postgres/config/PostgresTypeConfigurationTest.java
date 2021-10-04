@@ -1,20 +1,18 @@
 package org.dotwebstack.framework.backend.postgres.config;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +43,7 @@ class PostgresTypeConfigurationTest {
   @SuppressWarnings({"rawtypes", "unchecked"})
   void init_shouldWork_withValidConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
     PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inversedJoinColumn);
 
@@ -60,7 +58,7 @@ class PostgresTypeConfigurationTest {
   @Test
   void init_shouldWork_withAggregationOfConfiguration() {
     JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedColumn("ingredient_code", "code");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
     PostgresTypeConfiguration typeConfiguration =
         createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
@@ -69,54 +67,35 @@ class PostgresTypeConfigurationTest {
   }
 
   @Test
-  void init_shouldThrowException_whenReferencedFieldAndReferencedColumnAreNull() {
-    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inverseJoinColumn = createJoinColumnWithReferencedFieldAndColumn("ingredient_code", null, null);
+  void getReferredFields_returnsList_forFieldWithJoinTable() {
+    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "partOf");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
+    PostgresTypeConfiguration typeConfiguration =
+        createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
-    InvalidConfigurationException thrown =
-        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
+    var fieldConfigurations = typeConfiguration.getReferencedFields("partOf");
 
-    assertThat(thrown.getMessage(),
-        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
+    assertThat(fieldConfigurations, hasSize(1));
   }
 
   @Test
-  void init_shouldThrowException_whenReferencedFieldAndReferencedColumnBothHaveValues() {
-    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "identifier_beer");
-    JoinColumn inverseJoinColumn = createJoinColumnWithReferencedFieldAndColumn("ingredient_code", "code", "code");
+  void getReferredFields_returnsEmptyList_forFieldWithoutJoinTable() {
+    JoinColumn joinColumn = createJoinColumnWithReferencedField("beer_identifier", "partOf");
+    JoinColumn inversedJoinColumn = createJoinColumnWithReferencedField("ingredient_code", "code");
 
-    PostgresTypeConfiguration typeConfiguration = createTypeConfiguration(joinColumn, inverseJoinColumn);
+    PostgresTypeConfiguration typeConfiguration =
+        createTypeConfiguration(joinColumn, inversedJoinColumn, BEER_TYPE_NAME);
 
-    InvalidConfigurationException thrown =
-        assertThrows(InvalidConfigurationException.class, () -> typeConfiguration.init(dotWebStackConfiguration));
+    var fieldConfigurations = typeConfiguration.getReferencedFields("identifier");
 
-    assertThat(thrown.getMessage(),
-        is("The field 'referencedField' or 'referencedColumn' must have a value in field 'partOf'."));
+    assertThat(fieldConfigurations, is(empty()));
   }
 
   private JoinColumn createJoinColumnWithReferencedField(String name, String fieldName) {
     JoinColumn joinColumn = new JoinColumn();
     joinColumn.setName(name);
     joinColumn.setReferencedField(fieldName);
-
-    return joinColumn;
-  }
-
-  private JoinColumn createJoinColumnWithReferencedColumn(String name, String columnName) {
-    JoinColumn joinColumn = new JoinColumn();
-    joinColumn.setName(name);
-    joinColumn.setReferencedColumn(columnName);
-
-    return joinColumn;
-  }
-
-  private JoinColumn createJoinColumnWithReferencedFieldAndColumn(String name, String fieldName, String columnName) {
-    JoinColumn joinColumn = new JoinColumn();
-    joinColumn.setName(name);
-    joinColumn.setReferencedField(fieldName);
-    joinColumn.setReferencedColumn(columnName);
 
     return joinColumn;
   }
@@ -128,9 +107,8 @@ class PostgresTypeConfigurationTest {
   private PostgresTypeConfiguration createTypeConfiguration(JoinColumn joinColumn, JoinColumn inverseJoinColumn,
       String aggregationOf) {
     PostgresTypeConfiguration typeConfiguration = new PostgresTypeConfiguration();
-    KeyConfiguration keyConfiguration = new KeyConfiguration();
-    keyConfiguration.setField(FIELD_IDENTIFIER);
-    typeConfiguration.setKeys(List.of(keyConfiguration));
+
+    typeConfiguration.setKeys(List.of(FIELD_IDENTIFIER));
 
     JoinTable joinTable = createJoinTable(joinColumn, inverseJoinColumn);
     PostgresFieldConfiguration fieldConfiguration = createPostgresFieldConfiguration(joinTable);
@@ -145,6 +123,7 @@ class PostgresTypeConfigurationTest {
 
     Map<String, PostgresFieldConfiguration> fieldsMap =
         new HashMap<>(Map.of(FIELD_IDENTIFIER, stringFieldConfiguration, FIELD_PART_OF, fieldConfiguration));
+
 
     typeConfiguration.setFields(fieldsMap);
 
@@ -162,7 +141,7 @@ class PostgresTypeConfigurationTest {
     }
 
     if (inverseJoinColumn != null) {
-      joinTable.setJoinColumns(List.of(inverseJoinColumn));
+      joinTable.setInverseJoinColumns(List.of(inverseJoinColumn));
     }
 
     return joinTable;
@@ -177,7 +156,8 @@ class PostgresTypeConfigurationTest {
   }
 
   private void dotWebStackConfigurationMock() {
-    when(dotWebStackConfiguration.getObjectTypes()).thenReturn(objectTypesMock);
+    lenient().when(dotWebStackConfiguration.getObjectTypes())
+        .thenReturn(objectTypesMock);
     lenient().when(objectTypesMock.get(null))
         .thenReturn(null);
   }

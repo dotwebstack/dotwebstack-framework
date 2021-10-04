@@ -17,7 +17,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
   breweries:
     type: Brewery
     list: true
@@ -27,7 +27,7 @@ objectTypes:
     table: db.beer_v
     backend: postgres
     keys:
-      - field: identifier_beer
+      - identifier_beer
     fields:
       identifier_beer:
         type: ID
@@ -71,7 +71,7 @@ objectTypes:
     backend: postgres
     table: db.brewery_v
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       identifier_brewery:
         type: ID
@@ -123,7 +123,7 @@ objectTypes:
     backend: postgres
     table: db.address_v
     keys:
-      - field: identifier_address
+      - identifier_address
     fields:
       identifier_address:
         type: ID
@@ -135,7 +135,7 @@ objectTypes:
   History:
     backend: postgres
     keys:
-      - field: identifier_brewery
+      - identifier_brewery
     fields:
       age:
         type: Int

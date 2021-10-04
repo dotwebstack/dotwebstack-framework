@@ -24,7 +24,6 @@ import org.dotwebstack.framework.backend.rdf4j.config.Rdf4jTypeConfiguration;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.core.config.KeyConfiguration;
 import org.dotwebstack.framework.core.datafetchers.FieldKeyCondition;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -152,8 +151,7 @@ public class QueryBuilder {
   private Set<String> getFieldNames(Rdf4jTypeConfiguration typeConfiguration, Collection<SelectedField> selectedFields,
       Map<String, String> keyFieldNames) {
     return Stream.concat(Stream.concat(typeConfiguration.getKeys()
-        .stream()
-        .map(KeyConfiguration::getField),
+        .stream(),
         selectedFields.stream()
             .filter(selectedField -> !GraphQLTypeUtil.isList(selectedField.getFieldDefinitions()
                 .stream()

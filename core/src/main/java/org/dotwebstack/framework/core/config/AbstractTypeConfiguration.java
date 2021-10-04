@@ -31,8 +31,8 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
 
   @NotNull
   @Valid
-  @Size(min = 1, max = 1)
-  protected List<KeyConfiguration> keys;
+  @Size(max = 1)
+  protected List<String> keys;
 
   @NotNull
   @Valid
@@ -117,5 +117,10 @@ public abstract class AbstractTypeConfiguration<T extends AbstractFieldConfigura
     }
 
     return Map.entry(argument.getName(), value);
+  }
+
+  @Override
+  public List<T> getReferencedFields(String fieldName) {
+    return List.of();
   }
 }
