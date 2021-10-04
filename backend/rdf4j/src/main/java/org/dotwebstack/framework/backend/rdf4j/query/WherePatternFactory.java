@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.applyCar
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.createTypePatterns;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.getObjectField;
 
+import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.Builder;
+import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jKeyCriteria;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
@@ -56,7 +58,7 @@ public class WherePatternFactory {
     objectRequest.getSelectedObjectFields()
         .entrySet()
         .stream()
-        .map(entry -> createNestedWherePattern(entry.getKey(), entry.getValue()))
+        .flatMap(entry -> createNestedWherePattern(entry.getKey(), entry.getValue()))
         .forEach(subPatterns::add);
 
     var graphPattern = GraphPatterns.and(subPatterns.toArray(GraphPattern[]::new));
@@ -105,13 +107,23 @@ public class WherePatternFactory {
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private GraphPattern createNestedWherePattern(SelectedField selectedField, ObjectRequest nestedObjectRequest) {
+  private Stream<GraphPattern> createNestedWherePattern(SelectedField selectedField, ObjectRequest nestedObjectRequest) {
+    var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
+    var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
+
+    // Nested lists are never eager-loaded
+    if (GraphQLTypeUtil.isList(fieldType)) {
+      fieldMapper.register("$ref." + selectedField.getName(), bindings -> Rdf4jKeyCriteria.builder()
+          .predicate(propertyShape.toPredicate())
+          .build());
+
+      return Stream.empty();
+    }
+
     var nestedResourceMapper = new BindingSetMapper(aliasManager.newAlias());
     var nestedResource = SparqlBuilder.var(nestedResourceMapper.getAlias());
 
     fieldMapper.register(selectedField.getName(), nestedResourceMapper);
-
-    var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
 
     var nestedPatternFactory = WherePatternFactory.builder()
         .objectRequest(nestedObjectRequest)
@@ -124,6 +136,6 @@ public class WherePatternFactory {
     var nestedPattern = subject.has(propertyShape.toPredicate(), nestedResource)
         .and(nestedPatternFactory.create());
 
-    return applyCardinality(propertyShape, nestedPattern);
+    return Stream.of(applyCardinality(propertyShape, nestedPattern));
   }
 }

@@ -25,6 +25,8 @@ public class ObjectRequest implements Request {
 
   private final ObjectType<?> objectType;
 
+  private final Map<String, Object> source;
+
   @Builder.Default
   private final List<ScalarField> scalarFields = new ArrayList<>();
 

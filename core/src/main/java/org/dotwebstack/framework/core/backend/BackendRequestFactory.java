@@ -51,9 +51,11 @@ public class BackendRequestFactory {
 
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
+    Map<String, Object> source = environment.getSource();
 
     return ObjectRequest.builder()
         .objectType(objectType)
+        .source(source)
         .keyCriteria(createKeyCriteria(environment.getArguments()))
         .selectedScalarFields(getScalarFields(environment.getSelectionSet()))
         .selectedObjectFields(getObjectFields(environment.getSelectionSet(), environment))
@@ -145,7 +147,7 @@ public class BackendRequestFactory {
 
   // TODO move to utils?
   private static Predicate<SelectedField> isObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
     return unwrappedType instanceof GraphQLObjectType;
   };
 
