@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.core.backend.query;
 
-public interface ObjectFieldMapper<T> extends FieldMapper<T> {
+import java.util.Map;
 
-  void register(String name, FieldMapper<T> fieldMapper);
+public interface ObjectFieldMapper<T> extends FieldMapper<T, Map<String, Object>> {
 
-  FieldMapper<T> getFieldMapper(String name);
+  void register(String name, FieldMapper<T, ?> fieldMapper);
+
+  FieldMapper<T, ?> getFieldMapper(String name);
 }

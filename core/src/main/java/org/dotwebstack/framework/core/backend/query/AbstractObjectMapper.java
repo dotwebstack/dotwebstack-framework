@@ -8,21 +8,21 @@ import lombok.Getter;
 @Getter
 public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
-  protected final Map<String, FieldMapper<T>> fieldMappers = new HashMap<>();
+  protected final Map<String, FieldMapper<T, ?>> fieldMappers = new HashMap<>();
 
   @Override
-  public Object apply(T row) {
+  public Map<String, Object> apply(T row) {
     return fieldMappers.entrySet()
         .stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
             .apply(row)));
   }
 
-  public void register(String name, FieldMapper<T> fieldMapper) {
+  public void register(String name, FieldMapper<T, ?> fieldMapper) {
     fieldMappers.put(name, fieldMapper);
   }
 
-  public FieldMapper<T> getFieldMapper(String name) {
+  public FieldMapper<T, ?> getFieldMapper(String name) {
     return fieldMappers.get(name);
   }
 }

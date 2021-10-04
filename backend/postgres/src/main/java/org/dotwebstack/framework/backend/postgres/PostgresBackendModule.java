@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
+  private final PostgresBackendLoaderFactory backendLoaderFactory;
+
+  public PostgresBackendModule(PostgresBackendLoaderFactory backendLoaderFactory) {
+    this.backendLoaderFactory = backendLoaderFactory;
+  }
+
   @Override
   public Class<PostgresObjectType> getObjectTypeClass() {
     return PostgresObjectType.class;
@@ -15,6 +21,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
   @Override
   public BackendLoaderFactory getBackendLoaderFactory() {
-    return null;
+    return backendLoaderFactory;
   }
 }

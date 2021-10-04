@@ -2,8 +2,11 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.Map;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
@@ -18,7 +21,7 @@ public class Query {
 
   private final AliasManager aliasManager = new AliasManager();
 
-  private final RowMapper rowMapper = new RowMapper();
+  private final RowMapper<BindingSet> rowMapper = new RowMapper<>();
 
   private final SelectQuery selectQuery;
 
@@ -38,7 +41,8 @@ public class Query {
     var queryResult = connection.prepareTupleQuery(queryString)
         .evaluate();
 
-    return rowMapper.map(queryResult);
+    return Flux.fromIterable(queryResult)
+        .map(rowMapper);
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {

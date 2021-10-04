@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
-class JoinMapper implements FieldMapper<BindingSet> {
+class JoinMapper implements FieldMapper<BindingSet, JoinCondition> {
 
   private final String alias;
 
@@ -22,7 +22,7 @@ class JoinMapper implements FieldMapper<BindingSet> {
   }
 
   @Override
-  public Object apply(BindingSet bindings) {
+  public JoinCondition apply(BindingSet bindings) {
     var resource = Optional.ofNullable(bindings.getValue(alias))
         .map(Resource.class::cast)
         .orElseThrow(() -> illegalStateException("Subject is missing in binding set."));

@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import java.util.Optional;
+import java.util.Map;
 import lombok.Getter;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -15,9 +15,9 @@ class BindingSetMapper extends AbstractObjectMapper<BindingSet> {
   }
 
   @Override
-  public Object apply(BindingSet bindings) {
+  public Map<String, Object> apply(BindingSet bindings) {
     if (!bindings.hasBinding(alias)) {
-      return Optional.empty();
+      return null;
     }
 
     return super.apply(bindings);

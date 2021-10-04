@@ -9,7 +9,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 
 @Getter
-public abstract class AbstractRowMapper<T> extends AbstractObjectMapper<T> {
+public class RowMapper<T> extends AbstractObjectMapper<T> {
 
   @SuppressWarnings("unchecked")
   public ScalarFieldMapper<T> getLeafFieldMapper(List<ObjectField> fieldPath) {
