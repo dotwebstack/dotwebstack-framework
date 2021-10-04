@@ -44,6 +44,8 @@ class GraphPatternBuilder {
 
   private final Map<Variable, Set<? extends Value>> valuesMap = new HashMap<>();
 
+  private GraphPatternBuilder() {}
+
   public static GraphPatternBuilder newGraphPattern() {
     return new GraphPatternBuilder();
   }

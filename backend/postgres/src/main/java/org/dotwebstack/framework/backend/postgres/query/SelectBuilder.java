@@ -33,6 +33,8 @@ class SelectBuilder {
 
   private AliasManager aliasManager;
 
+  private SelectBuilder() {}
+
   public static SelectBuilder newSelect() {
     return new SelectBuilder();
   }

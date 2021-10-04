@@ -13,7 +13,7 @@ public class ObjectMapper extends AbstractObjectMapper<Map<String, Object>> {
 
   @Override
   public Map<String, Object> apply(Map<String, Object> row) {
-    if (!row.containsKey(alias)) {
+    if (row.get(alias) == null) {
       return null;
     }
 
