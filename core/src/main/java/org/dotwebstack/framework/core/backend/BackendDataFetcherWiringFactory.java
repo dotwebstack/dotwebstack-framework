@@ -33,7 +33,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
   }
 
   @Override
-  public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
+  public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
     var objectType = getTypeName(environment.getFieldType()).flatMap(schema::getObjectType)
         .orElseThrow();
 
