@@ -6,19 +6,23 @@ import org.jooq.Field;
 
 class ColumnMapper implements ScalarFieldMapper<Map<String, Object>> {
 
-  private final Field<Object> field;
+  private final Field<Object> column;
 
-  public ColumnMapper(Field<Object> field) {
-    this.field = field;
+  public ColumnMapper(Field<Object> column) {
+    this.column = column;
+  }
+
+  public Field<Object> getColumn() {
+    return column;
   }
 
   @Override
   public String getAlias() {
-    return field.getName();
+    return column.getName();
   }
 
   @Override
   public Object apply(Map<String, Object> row) {
-    return row.get(field.getName());
+    return row.get(column.getName());
   }
 }

@@ -41,6 +41,10 @@ public class ObjectRequest implements Request {
   @Builder.Default
   private final Map<SelectedField, ObjectRequest> selectedObjectFields = new HashMap<>();
 
+  // TODO replace collectionObjectFields
+  @Builder.Default
+  private final Map<SelectedField, CollectionRequest> selectedObjectListFields = new HashMap<>();
+
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 

@@ -4,7 +4,6 @@ import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
-import graphql.execution.nextgen.ExecutionHelper;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -53,6 +51,17 @@ public class BackendRequestFactory {
         .build();
   }
 
+  private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
+    var objectType = getObjectType(selectedField.getType());
+
+    return CollectionRequest.builder()
+        .objectRequest(createObjectRequest(selectedField, environment))
+        .sortCriterias(createSortCriteria(objectType, selectedField.getArguments()
+            .get(SORT_ARGUMENT_NAME)
+            .toString()))
+        .build();
+  }
+
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
     Map<String, Object> source = environment.getSource();
@@ -64,6 +73,7 @@ public class BackendRequestFactory {
         .keyCriteria(createKeyCriteria(environment.getArguments()))
         .selectedScalarFields(getScalarFields(environment.getSelectionSet()))
         .selectedObjectFields(getObjectFields(environment.getSelectionSet(), environment))
+        .selectedObjectListFields(getObjectListFields(environment.getSelectionSet(), environment))
         .build();
   }
 
@@ -75,6 +85,7 @@ public class BackendRequestFactory {
         .keyCriteria(createKeyCriteria(selectedField.getArguments()))
         .selectedScalarFields(getScalarFields(selectedField.getSelectionSet()))
         .selectedObjectFields(getObjectFields(selectedField.getSelectionSet(), environment))
+        .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), environment))
         .build();
   }
 
@@ -93,6 +104,15 @@ public class BackendRequestFactory {
         .filter(isObjectField)
         .collect(
             Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
+  }
+
+  private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
+      DataFetchingEnvironment environment) {
+    return selectionSet.getImmediateFields()
+        .stream()
+        .filter(isObjectListField)
+        .collect(Collectors.toMap(Function.identity(),
+            selectedField -> createCollectionRequest(selectedField, environment)));
   }
 
   private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
@@ -156,7 +176,8 @@ public class BackendRequestFactory {
       throw illegalStateException("Not an object type.");
     }
 
-    return schema.getObjectType(rawType.getName()).orElseThrow(() -> illegalStateException("No objectType with name '{}' found!",rawType.getName()));
+    return schema.getObjectType(rawType.getName())
+        .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
   }
 
   // TODO move to utils?
@@ -166,10 +187,14 @@ public class BackendRequestFactory {
   };
 
   // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLObjectType;
-  };
+  private static final Predicate<SelectedField> isObjectField =
+      selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
+
+  // TODO move to utils?
+  private static final Predicate<SelectedField> isObjectListField =
+      selectedField -> GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
 
   // TODO move to utils?
   private static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
