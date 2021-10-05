@@ -18,6 +18,8 @@ public class PostgresObjectField extends AbstractObjectField {
   @Valid
   private List<JoinColumn> joinColumns = new ArrayList<>();
 
+  private String mappedBy;
+
   public String getColumn() {
     // Lazy-determine default column name
     if (column == null) {
