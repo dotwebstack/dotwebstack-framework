@@ -17,8 +17,10 @@ import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -125,7 +127,13 @@ class GraphPatternBuilder {
     var objectAlias = aliasManager.newAlias();
     var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
 
-    fieldMapper.register(selectedField.getName(), new BindingMapper(objectAlias));
+    var typeName = TypeHelper.getTypeName(selectedField.getType());
+
+    if (SpatialConstants.GEOMETRY.equals(typeName)) {
+      fieldMapper.register(selectedField.getName(), new GeometryBindingMapper(objectAlias));
+    } else {
+      fieldMapper.register(selectedField.getName(), new BindingMapper(objectAlias));
+    }
 
     return Stream
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
