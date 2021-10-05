@@ -159,7 +159,7 @@ public class OasToGraphQlHelper {
             .collectionNode(value.stream()
                 .anyMatch(Field::isCollectionNode))
             .children(merge(value.stream()
-                .flatMap(f -> f.getChildren()
+                .flatMap(field -> field.getChildren()
                     .stream())
                 .collect(Collectors.toList())))
             .build()));
