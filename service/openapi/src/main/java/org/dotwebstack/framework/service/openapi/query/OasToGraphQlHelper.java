@@ -121,8 +121,8 @@ public class OasToGraphQlHelper {
 
   private static List<Field> getRequiredFields(List<String> requiredFields) {
     return requiredFields.stream()
-        .map(s -> {
-          List<String> parts = Arrays.stream(s.split("\\."))
+        .map(requiredField -> {
+          List<String> parts = Arrays.stream(requiredField.split("\\."))
               .collect(Collectors.toList());
           Collections.reverse(parts);
 
@@ -140,10 +140,10 @@ public class OasToGraphQlHelper {
   private static Field createRequiredField(Field child, String name) {
     Field field = Field.builder()
         .name(name)
-        .children(List.of())
         .build();
     if (child != null) {
-      field.setChildren(List.of(child));
+      field.getChildren()
+          .add(child);
     }
     return field;
   }
