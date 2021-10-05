@@ -37,6 +37,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -59,6 +60,7 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
     TypeName stringType = newTypeName(Scalars.GraphQLString.getName()).build();
 
     return newObjectTypeDefinition().name(GEOMETRY)
+        .additionalData(GraphQlConstants.IS_SCALAR, Boolean.TRUE.toString())
         .fieldDefinition(newFieldDefinition().name(TYPE)
             .type(newTypeName(GEOMETRY_TYPE).build())
             .build())

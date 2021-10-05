@@ -10,10 +10,12 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -183,13 +186,15 @@ public class BackendRequestFactory {
   // TODO move to utils?
   private static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLScalarType;
+    return unwrappedType instanceof GraphQLScalarType || isScalarType(unwrappedType);
   };
 
   // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectField =
-      selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
-          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
+  private static final Predicate<SelectedField> isObjectField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    return !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType);
+  };
 
   // TODO move to utils?
   private static final Predicate<SelectedField> isObjectListField =
@@ -197,6 +202,13 @@ public class BackendRequestFactory {
           && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
 
   // TODO move to utils?
-  private static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
+  private final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
+
+  private static boolean isScalarType(GraphQLUnmodifiedType unmodifiedType) {
+    var additionalData = unmodifiedType.getDefinition()
+        .getAdditionalData();
+    return additionalData.containsKey(GraphQlConstants.IS_SCALAR)
+        && Objects.equals(additionalData.get(GraphQlConstants.IS_SCALAR), Boolean.TRUE.toString());
+  }
 }

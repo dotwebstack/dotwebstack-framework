@@ -6,7 +6,7 @@ public class SpatialConstants {
 
   // ObjectTypes
 
-  static final String GEOMETRY = "Geometry";
+  public static final String GEOMETRY = "Geometry";
 
   static final String GEOMETRY_INPUT = "GeometryInput";
 

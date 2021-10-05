@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.test.TestApplication;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,7 +53,7 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForObjectQueryField() {
+  void graphQlQuery_ReturnsMap_ForObjectQueryField() {
     String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -70,7 +69,7 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test()
-  void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() {
+  void graphQlQuery_ReturnsMap_ForObjectQueryNestedField() {
     String query = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -85,8 +84,7 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled("TODO: Geometry type not found")
-  void graphqlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
+  void graphQlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
     String query = "{ brewery(identifier: \"123\") { identifier, name, geometry { type, asWKT, asWKB }}}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -102,7 +100,6 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled("TODO: Geometry type not found")
   void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
     String query =
         "{ brewery(identifier: \"123\") { identifier, name, geometry(type : MULTIPOINT) { type, asWKT, asWKB }}}";
