@@ -190,9 +190,11 @@ public class BackendRequestFactory {
   };
 
   // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectField =
-      selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
-          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
+  private static final Predicate<SelectedField> isObjectField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    return !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType);
+  };
 
   // TODO move to utils?
   private static final Predicate<SelectedField> isObjectListField =
