@@ -2,14 +2,18 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
+import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
@@ -51,6 +55,8 @@ class SelectBuilder {
 
     var selectQuery = dslContext.selectQuery(fromTable);
 
+    createJoinConditions(fromTable).forEach(selectQuery::addConditions);
+
     objectRequest.getKeyCriteria()
         .stream()
         .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, fromTable))
@@ -64,7 +70,7 @@ class SelectBuilder {
     objectRequest.getSelectedObjectFields()
         .entrySet()
         .stream()
-        .map(entry -> createNestedSelect(entry.getKey(), entry.getValue(), fromTable))
+        .flatMap(entry -> createNestedSelect(entry.getKey(), entry.getValue(), fromTable))
         .forEach(nestedSelect -> {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
           selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
@@ -72,6 +78,23 @@ class SelectBuilder {
         });
 
     return selectQuery;
+  }
+
+  private Stream<Condition> createJoinConditions(Table<Record> table) {
+    var source = objectRequest.getSource();
+
+    if (source == null) {
+      return Stream.empty();
+    }
+
+    var parentField = objectRequest.getParentField();
+    var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
+
+    return joinCondition.getFields()
+        .entrySet()
+        .stream()
+        .map(entry -> DSL.field(DSL.name(table.getName(), entry.getKey()))
+            .equal(entry.getValue()));
   }
 
   private List<Condition> createKeyConditions(KeyCriteria keyCriteria, PostgresObjectType objectType,
@@ -101,9 +124,27 @@ class SelectBuilder {
     return column;
   }
 
-  private SelectQuery<Record> createNestedSelect(SelectedField selectedField, ObjectRequest nestedObjectRequest,
+  private Stream<SelectQuery<Record>> createNestedSelect(SelectedField selectedField, ObjectRequest nestedObjectRequest,
       Table<Record> table) {
+    var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
     var objectField = getObjectField(objectRequest, selectedField.getName());
+
+    if (GraphQLTypeUtil.isList(fieldType)) {
+      // Provide join info for child data fetcher
+      if (objectField.getMappedBy() != null) {
+        var nestedObjectField = getObjectField(nestedObjectRequest, objectField.getMappedBy());
+
+        fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
+            row -> new JoinCondition(nestedObjectField.getJoinColumns()
+                .stream()
+                .collect(Collectors.toMap(JoinColumn::getName,
+                    joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
+                        .apply(row)))));
+      }
+
+      // Nested lists are never eager-loaded
+      return Stream.empty();
+    }
 
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
@@ -127,6 +168,6 @@ class SelectBuilder {
           nestedSelect.addConditions(referencedField.equal(field));
         });
 
-    return nestedSelect;
+    return Stream.of(nestedSelect);
   }
 }

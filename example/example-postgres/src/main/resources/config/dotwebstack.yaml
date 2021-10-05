@@ -123,7 +123,7 @@ objectTypes:
     fields:
       record_id:
         type: ID
-        visible: false
+#        visible: false
       identifier:
         type: String
       name:
