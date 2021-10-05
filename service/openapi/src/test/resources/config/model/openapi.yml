@@ -425,6 +425,7 @@ paths:
       x-dws-query:
         field: query9
         requiredFields:
+          - o2_prop1
           - field1
       responses:
         200:

@@ -1,0 +1,6 @@
+query Query{
+ query9 {
+  field1
+  o2_prop1
+ }
+}
