@@ -7,7 +7,7 @@
     backend: postgres
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -40,7 +40,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -54,7 +54,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -79,7 +79,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -93,7 +93,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -118,7 +118,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.beers
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -138,7 +138,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.ingredients
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -269,7 +269,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier_beer
+      - identifier_beer
     nullable: true
   breweries:
     type: Brewery
@@ -280,7 +280,7 @@ objectTypes:
     table: db.beer_v
     backend: postgres
     keys:
-      - field: identifier_beer
+      - identifier_beer
     fields:
       identifier_beer:
         type: ID

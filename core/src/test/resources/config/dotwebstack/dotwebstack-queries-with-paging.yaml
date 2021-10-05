@@ -4,7 +4,7 @@ queries:
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
   breweryCollection:
     type: Brewery
     list: true
@@ -13,7 +13,7 @@ objectTypes:
   Brewery:
     backend: test
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID

@@ -5,7 +5,7 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier
+      - identifier
     nullable: true
 
 objectTypes:
@@ -13,7 +13,7 @@ objectTypes:
     table: db.beer
     backend: postgres
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -40,7 +40,7 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       ingredient:
         type: Ingredient
         nullable: true
@@ -51,7 +51,7 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       ingredientAgg:
         aggregationOf: Ingredient
         joinTable:
@@ -61,7 +61,7 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
       taste:
         type: Taste
         list: true
@@ -95,7 +95,7 @@ objectTypes:
     backend: postgres
     table: db.ingredient
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -113,7 +113,7 @@ objectTypes:
           name: db.beer_ingredient
           joinColumns:
             - name: ingredient_code
-              referencedColumn: code
+              referencedField: code
           inverseJoinColumns:
             - name: beer_identifier
               referencedField: identifier
@@ -122,7 +122,7 @@ objectTypes:
     backend: postgres
     table: db.brewery
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -176,7 +176,7 @@ objectTypes:
     backend: postgres
     table: db.address
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -188,7 +188,7 @@ objectTypes:
   History:
     backend: postgres
     keys:
-      - field: identifier
+      - identifier
     fields:
       age:
         type: Int

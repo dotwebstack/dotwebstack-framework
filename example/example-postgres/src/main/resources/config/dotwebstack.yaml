@@ -14,14 +14,14 @@ queries:
   beer:
     type: Beer
     keys:
-      - field: identifier
+      - identifier
   beerCollection:
     type: Beer
     list: true
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
   breweryCollection:
     type: Brewery
     list: true
@@ -36,7 +36,7 @@ objectTypes:
       ingredientName:
         field: ingredients.name
     keys:
-      - field: identifier
+      - identifier
     sortableBy:
       name:
         - field: name
@@ -59,7 +59,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: identifier
+            referencedField: record_id
       ingredients:
         type: Ingredient
         list: true
@@ -89,7 +89,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.breweries
     keys:
-      - field: identifier
+      - record_id
     sortableBy:
       name:
         - field: name
@@ -118,9 +118,16 @@ objectTypes:
         field: history.age
       beerName:
         field: beers.name
+      relatedToName:
+        field: relatedTo.name
+      relatedToStatus:
+        field: relatedTo.status
     fields:
-      identifier:
+      record_id:
         type: ID
+        visible: false
+      identifier:
+        type: String
       name:
         type: String
       status:
@@ -150,12 +157,23 @@ objectTypes:
         mappedBy: brewery
       history:
         type: History
+      relatedTo:
+        type: Brewery
+        list: true
+        joinTable:
+          name: dbeerpedia.breweries__related_to
+          joinColumns:
+            - name: brewery_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: brewery_related_to_identifier
+              referencedField: identifier
 
   Ingredient:
     backend: postgres
     table: dbeerpedia.ingredients
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -168,7 +186,7 @@ objectTypes:
     backend: postgres
     table: dbeerpedia.addresses
     keys:
-      - field: identifier
+      - identifier
     fields:
       identifier:
         type: ID
@@ -180,7 +198,7 @@ objectTypes:
   History:
     backend: postgres
     keys:
-      - field: identifier
+      - identifier
     fields:
       age:
         type: Int

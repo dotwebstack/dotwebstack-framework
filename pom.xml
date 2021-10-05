@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.45-SNAPSHOT</version>
+  <version>0.3.46-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -52,16 +52,16 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.boot.version>2.5.4</spring.boot.version>
-    <rdf4j.version>3.7.2</rdf4j.version>
-    <graphql.java.version>17.2</graphql.java.version>
+    <spring.boot.version>2.5.5</spring.boot.version>
+    <rdf4j.version>3.7.3</rdf4j.version>
+    <graphql.java.version>17.3</graphql.java.version>
     <commons.jexl.version>3.2.1</commons.jexl.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
     <swagger-parser.version>2.0.27</swagger-parser.version>
     <lombok.version>1.18.20</lombok.version>
-    <guava.version>30.1.1-jre</guava.version>
+    <guava.version>31.0.1-jre</guava.version>
     <problem.spring.webflux.version>0.26.2</problem.spring.webflux.version>
     <json-path.version>2.6.0</json-path.version>
     <testcontainers.version>1.16.0</testcontainers.version>

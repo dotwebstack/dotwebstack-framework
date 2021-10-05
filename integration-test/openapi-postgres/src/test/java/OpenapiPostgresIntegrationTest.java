@@ -53,7 +53,7 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
-  void brewries_returnsExpectedResult() throws IOException {
+  void breweries_returnsExpectedResult() throws IOException {
     String result = client.get()
         .uri("/breweries")
         .exchange()
@@ -65,7 +65,7 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
-  void brewries_returnsExpectedResult_withFilter() throws IOException {
+  void breweries_returnsExpectedResult_withFilter() throws IOException {
     String result = client.get()
         .uri("/breweries?name=Brewery Z")
         .exchange()
@@ -77,7 +77,7 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
-  void brewries_returnsExpectedResult_withKey() throws IOException {
+  void breweries_returnsExpectedResult_withKey() throws IOException {
     String result = client.get()
         .uri("/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b")
         .exchange()

@@ -1,8 +1,5 @@
 package org.dotwebstack.framework.core.config.validators;
 
-import static org.springframework.util.StringUtils.uncapitalize;
-
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -19,13 +16,12 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
 
   @Override
   public void validate(DotWebStackConfiguration dotWebStackConfiguration) {
-    List<String> validSortFields = ValidSortAndFilterFields.get(dotWebStackConfiguration);
-
     Map<String, Map<String, FilterConfiguration>> filtersPerObjectTypeName =
         getFiltersPerObjectTypeName(dotWebStackConfiguration);
 
-    filtersPerObjectTypeName.forEach((objectTypeName, filters) -> filters.entrySet()
-        .forEach(filterEntry -> validateFilterField(validSortFields, objectTypeName, filterEntry)));
+    filtersPerObjectTypeName.forEach((objectType, filters) -> filters.entrySet()
+        .forEach(filterEntry -> validateFilterField(dotWebStackConfiguration.getTypeConfiguration(objectType),
+            filterEntry)));
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(
@@ -49,29 +45,22 @@ public class FilterValidator implements DotWebStackConfigurationValidator {
         .getFilters();
   }
 
-  private void validateFilterField(List<String> validSortFields, String objectTypeName,
+  private void validateFilterField(AbstractTypeConfiguration<?> objectType,
       Map.Entry<String, FilterConfiguration> filterEntry) {
-    String filterFieldName = getFilterFieldName(objectTypeName, filterEntry);
+    String filterFieldName = getFilterFieldName(filterEntry);
 
-    if (!validSortFields.contains(filterFieldName)) {
+    if (!objectType.getField(filterFieldName)
+        .isPresent()) {
       throw new InvalidConfigurationException(
           String.format("Filter field '%s' in object type '%s' can't be resolved to a single scalar type.",
-              filterFieldName, objectTypeName));
+              filterFieldName, objectType.getName()));
     }
   }
 
-  private String getFilterFieldName(String objectTypeName, Map.Entry<String, FilterConfiguration> filterEntry) {
-    String fieldName;
+  private String getFilterFieldName(Map.Entry<String, FilterConfiguration> filterEntry) {
 
-    if (filterEntry.getValue()
-        .getField() != null) {
-      fieldName = filterEntry.getValue()
-          .getField();
-    } else {
-      fieldName = filterEntry.getKey();
-    }
-
-    return uncapitalize(objectTypeName).concat(".")
-        .concat(fieldName);
+    return (filterEntry.getValue()
+        .getField() != null) ? filterEntry.getValue()
+            .getField() : filterEntry.getKey();
   }
 }

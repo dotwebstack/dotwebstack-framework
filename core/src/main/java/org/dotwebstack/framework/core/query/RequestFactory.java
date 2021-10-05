@@ -126,9 +126,12 @@ public class RequestFactory {
     DataFetchingFieldSelectionSet selectionSet = environment.getSelectionSet();
 
     List<ScalarField> scalarFields = getScalarFields(fieldPathPrefix, typeConfiguration, selectionSet);
+
     List<ObjectFieldConfiguration> objectFields = getObjectFields(fieldPathPrefix, typeConfiguration, environment);
+
     List<NestedObjectFieldConfiguration> nestedObjectFields =
         getNestedObjectFields(fieldPathPrefix, typeConfiguration, selectionSet);
+
     List<AggregateObjectFieldConfiguration> aggregateObjectFields =
         getAggregateObjectFields(fieldPathPrefix, typeConfiguration, selectionSet);
 
@@ -313,16 +316,38 @@ public class RequestFactory {
         .collect(Collectors.toList());
   }
 
-  private List<ScalarField> getScalarFields(String fieldPathPrefix, TypeConfiguration<?> typeConfiguration,
+  private List<ScalarField> getScalarFields(String fieldPathPrefix,
+      TypeConfiguration<? extends AbstractFieldConfiguration> typeConfiguration,
       DataFetchingFieldSelectionSet selectionSet) {
-    return getSelectedFields(fieldPathPrefix, selectionSet).stream()
-        .map(selectedField -> typeConfiguration.getFields()
+
+    List<AbstractFieldConfiguration> selectedFields = getSelectedFields(fieldPathPrefix, selectionSet).stream()
+        .map(selectedField -> (AbstractFieldConfiguration) typeConfiguration.getFields()
             .get(selectedField.getName()))
+        .collect(Collectors.toList());
+
+    List<ScalarField> requested = selectedFields.stream()
         .filter(AbstractFieldConfiguration::isScalarField)
         .map(field -> ScalarField.builder()
             .field(field)
             .origins(Sets.newHashSet(Origin.requested()))
             .build())
+        .collect(Collectors.toList());
+
+    // add referenced scalar field
+    List<ScalarField> referred = selectedFields.stream()
+        .filter(field -> !field.isScalarField())
+        .flatMap(field -> typeConfiguration.getReferencedFields(field.getName())
+            .stream())
+        .filter(field -> requested.stream()
+            .noneMatch(scalarField -> field.getName()
+                .equals(scalarField.getName())))
+        .map(field -> ScalarField.builder()
+            .field(field)
+            .origins(Sets.newHashSet(Origin.requested()))
+            .build())
+        .collect(Collectors.toList());
+
+    return Stream.concat(requested.stream(), referred.stream())
         .collect(Collectors.toList());
   }
 
@@ -397,6 +422,8 @@ public class RequestFactory {
   private List<SelectedField> getSelectedFields(String fieldPathPrefix, DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getFields(fieldPathPrefix.concat("*.*"))
         .stream()
+        .filter(selectedField -> !selectedField.getName()
+            .startsWith("__"))
         .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getFieldDefinitions()
             .stream()
             .findFirst()
