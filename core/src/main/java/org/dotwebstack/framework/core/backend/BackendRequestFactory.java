@@ -2,7 +2,9 @@ package org.dotwebstack.framework.core.backend;
 
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
+import graphql.execution.nextgen.ExecutionHelper;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
@@ -151,26 +153,25 @@ public class BackendRequestFactory {
     var rawType = GraphQLTypeUtil.unwrapAll(type);
 
     if (!(rawType instanceof GraphQLObjectType)) {
-      throw ExceptionHelper.illegalStateException("Not an object type.");
+      throw illegalStateException("Not an object type.");
     }
 
-    return schema.getObjectType(((GraphQLObjectType) rawType).getName())
-        .orElseThrow();
+    return schema.getObjectType(rawType.getName()).orElseThrow(() -> illegalStateException("No objectType with name '{}' found!",rawType.getName()));
   }
 
   // TODO move to utils?
-  private static Predicate<SelectedField> isScalarField = selectedField -> {
+  private static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
     return unwrappedType instanceof GraphQLScalarType;
   };
 
   // TODO move to utils?
-  private static Predicate<SelectedField> isObjectField = selectedField -> {
+  private static final Predicate<SelectedField> isObjectField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
     return unwrappedType instanceof GraphQLObjectType;
   };
 
   // TODO move to utils?
-  private static Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
+  private static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
 }
