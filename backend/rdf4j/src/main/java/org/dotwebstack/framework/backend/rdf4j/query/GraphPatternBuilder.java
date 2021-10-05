@@ -52,6 +52,7 @@ class GraphPatternBuilder {
   }
 
   public GraphPattern build() {
+    // TODO null checks on class properties
     var typeVar = SparqlBuilder.var(aliasManager.newAlias());
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);

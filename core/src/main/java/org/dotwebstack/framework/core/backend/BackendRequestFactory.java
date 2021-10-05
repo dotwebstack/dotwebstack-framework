@@ -54,6 +54,17 @@ public class BackendRequestFactory {
         .build();
   }
 
+  private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
+    var objectType = getObjectType(selectedField.getType());
+
+    return CollectionRequest.builder()
+        .objectRequest(createObjectRequest(selectedField, environment))
+        .sortCriterias(createSortCriteria(objectType, selectedField.getArguments()
+            .get(SORT_ARGUMENT_NAME)
+            .toString()))
+        .build();
+  }
+
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
     Map<String, Object> source = environment.getSource();
@@ -65,6 +76,7 @@ public class BackendRequestFactory {
         .keyCriteria(createKeyCriteria(environment.getArguments()))
         .selectedScalarFields(getScalarFields(environment.getSelectionSet()))
         .selectedObjectFields(getObjectFields(environment.getSelectionSet(), environment))
+        .selectedObjectListFields(getObjectListFields(environment.getSelectionSet(), environment))
         .build();
   }
 
@@ -76,6 +88,7 @@ public class BackendRequestFactory {
         .keyCriteria(createKeyCriteria(selectedField.getArguments()))
         .selectedScalarFields(getScalarFields(selectedField.getSelectionSet()))
         .selectedObjectFields(getObjectFields(selectedField.getSelectionSet(), environment))
+        .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), environment))
         .build();
   }
 
@@ -94,6 +107,15 @@ public class BackendRequestFactory {
         .filter(isObjectField)
         .collect(
             Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
+  }
+
+  private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
+      DataFetchingEnvironment environment) {
+    return selectionSet.getImmediateFields()
+        .stream()
+        .filter(isObjectListField)
+        .collect(Collectors.toMap(Function.identity(),
+            selectedField -> createCollectionRequest(selectedField, environment)));
   }
 
   private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
@@ -168,10 +190,14 @@ public class BackendRequestFactory {
   };
 
   // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLObjectType && !isScalarType(unwrappedType);
-  };
+  private static final Predicate<SelectedField> isObjectField =
+      selectedField -> !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
+
+  // TODO move to utils?
+  private static final Predicate<SelectedField> isObjectListField =
+      selectedField -> GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
 
   // TODO move to utils?
   private final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()

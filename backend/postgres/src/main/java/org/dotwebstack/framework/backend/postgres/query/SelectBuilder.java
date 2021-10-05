@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
-import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Condition;
@@ -48,6 +48,7 @@ class SelectBuilder {
   }
 
   public SelectQuery<Record> build() {
+    // TODO null checks on class properties
     var objectType = getObjectType(objectRequest);
 
     var fromTable = DSL.table(objectType.getTable())
@@ -76,6 +77,12 @@ class SelectBuilder {
           selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
           selectQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
         });
+
+    objectRequest.getSelectedObjectListFields()
+        .entrySet()
+        .stream()
+        .flatMap(entry -> processObjectListFields(entry.getKey(), entry.getValue(), fromTable))
+        .forEach(selectQuery::addSelect);
 
     return selectQuery;
   }
@@ -112,40 +119,25 @@ class SelectBuilder {
 
   private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
       Table<Record> table) {
-    var columnName = objectType.getField(selectedField.getName())
-        .map(PostgresObjectField::getColumn)
+    var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 
-    var column = DSL.field(DSL.name(table.getName(), columnName))
+    var columnMapper = createColumnMapper(objectField, table);
+
+    fieldMapper.register(selectedField.getName(), columnMapper);
+
+    return columnMapper.getColumn();
+  }
+
+  private ColumnMapper createColumnMapper(PostgresObjectField objectField, Table<Record> table) {
+    var column = DSL.field(DSL.name(table.getName(), objectField.getColumn()))
         .as(aliasManager.newAlias());
 
-    fieldMapper.register(selectedField.getName(), new ColumnMapper(column));
-
-    return column;
+    return new ColumnMapper(column);
   }
 
   private Stream<SelectQuery<Record>> createNestedSelect(SelectedField selectedField, ObjectRequest nestedObjectRequest,
       Table<Record> table) {
-    var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
-    var objectField = getObjectField(objectRequest, selectedField.getName());
-
-    if (GraphQLTypeUtil.isList(fieldType)) {
-      // Provide join info for child data fetcher
-      if (objectField.getMappedBy() != null) {
-        var nestedObjectField = getObjectField(nestedObjectRequest, objectField.getMappedBy());
-
-        fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
-            row -> new JoinCondition(nestedObjectField.getJoinColumns()
-                .stream()
-                .collect(Collectors.toMap(JoinColumn::getName,
-                    joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
-                        .apply(row)))));
-      }
-
-      // Nested lists are never eager-loaded
-      return Stream.empty();
-    }
-
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
 
@@ -161,7 +153,7 @@ class SelectBuilder {
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 
-    objectField.getJoinColumns()
+    getObjectField(objectRequest, selectedField.getName()).getJoinColumns()
         .forEach(joinColumn -> {
           var field = DSL.field(DSL.name(table.getName(), joinColumn.getName()));
           var referencedField = DSL.field(joinColumn.getReferencedField());
@@ -169,5 +161,36 @@ class SelectBuilder {
         });
 
     return Stream.of(nestedSelect);
+  }
+
+  private Stream<SelectFieldOrAsterisk> processObjectListFields(SelectedField selectedField,
+      CollectionRequest collectionRequest, Table<Record> table) {
+    var objectField = getObjectField(objectRequest, selectedField.getName());
+
+    if (objectField.getMappedBy() != null) {
+      var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
+
+      // Provide join info for child data fetcher
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
+          row -> new JoinCondition(nestedObjectField.getJoinColumns()
+              .stream()
+              .collect(Collectors.toMap(JoinColumn::getName,
+                  joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
+                      .apply(row)))));
+
+      // Make sure join columns are selected
+      return nestedObjectField.getJoinColumns()
+          .stream()
+          .map(joinColumn -> {
+            var joinField = getObjectField(objectRequest, joinColumn.getReferencedField());
+            var columnMapper = createColumnMapper(joinField, table);
+
+            fieldMapper.register(joinField.getName(), columnMapper);
+
+            return columnMapper.getColumn();
+          });
+    }
+
+    return Stream.of();
   }
 }
