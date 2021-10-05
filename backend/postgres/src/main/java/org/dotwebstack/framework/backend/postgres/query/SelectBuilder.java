@@ -5,14 +5,18 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import graphql.schema.SelectedField;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
 import org.jooq.Record;
@@ -47,6 +51,11 @@ class SelectBuilder {
 
     var selectQuery = dslContext.selectQuery(fromTable);
 
+    objectRequest.getKeyCriteria()
+        .stream()
+        .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, fromTable))
+        .forEach(selectQuery::addConditions);
+
     objectRequest.getSelectedScalarFields()
         .stream()
         .map(selectedField -> processScalarField(selectedField, objectType, fromTable))
@@ -58,12 +67,24 @@ class SelectBuilder {
         .map(entry -> createNestedSelect(entry.getKey(), entry.getValue(), fromTable))
         .forEach(nestedSelect -> {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
-          selectQuery.addSelect(DSL.field(lateralTable.getName()
-              .concat(".*")));
+          selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
           selectQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
         });
 
     return selectQuery;
+  }
+
+  private List<Condition> createKeyConditions(KeyCriteria keyCriteria, PostgresObjectType objectType,
+      Table<Record> table) {
+    return keyCriteria.getValues()
+        .entrySet()
+        .stream()
+        .map(entry -> objectType.getField(entry.getKey())
+            .map(PostgresObjectField::getColumn)
+            .map(column -> DSL.field(DSL.name(table.getName(), column))
+                .equal(entry.getValue()))
+            .orElseThrow())
+        .collect(Collectors.toList());
   }
 
   private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,

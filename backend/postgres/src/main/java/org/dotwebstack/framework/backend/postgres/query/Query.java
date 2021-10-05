@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.Map;
+import java.util.stream.IntStream;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -8,6 +9,7 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
+import org.jooq.conf.ParamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -36,12 +38,17 @@ public class Query {
   }
 
   public Flux<Map<String, Object>> execute(DatabaseClient databaseClient) {
-    var queryString = selectQuery.getSQL();
+    var queryString = selectQuery.getSQL(ParamType.INLINED);
 
     LOG.debug("Executing query: {}", queryString);
 
-    return databaseClient.sql(queryString)
-        .fetch()
+    var executeSpec = databaseClient.sql(queryString);
+    var bindValues = selectQuery.getBindValues();
+
+    IntStream.range(0, bindValues.size())
+        .forEach(i -> executeSpec.bind(i + 1, bindValues.get(i)));
+
+    return executeSpec.fetch()
         .all()
         .map(rowMapper);
   }
