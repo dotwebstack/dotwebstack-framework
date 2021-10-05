@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.Map;
-import java.util.stream.IntStream;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -42,13 +41,8 @@ public class Query {
 
     LOG.debug("Executing query: {}", queryString);
 
-    var executeSpec = databaseClient.sql(queryString);
-    var bindValues = selectQuery.getBindValues();
-
-    IntStream.range(0, bindValues.size())
-        .forEach(i -> executeSpec.bind(i + 1, bindValues.get(i)));
-
-    return executeSpec.fetch()
+    return databaseClient.sql(queryString)
+        .fetch()
         .all()
         .map(rowMapper);
   }
