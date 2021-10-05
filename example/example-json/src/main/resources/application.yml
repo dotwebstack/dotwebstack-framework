@@ -1,9 +1,0 @@
-logging:
-  level:
-    root: INFO
-    org.dotwebstack: DEBUG
-
-server.port: 8080
-
-dotwebstack:
-  json:
