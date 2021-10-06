@@ -449,8 +449,8 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_ReturnsBreweryWithNestedGeometry_forIdentifier() {
-    String query =
-        "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB asGeoJSON}}}";
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry{type asWKT asWKB asGeoJSON}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -509,9 +509,9 @@ class GraphQlPostgresIntegrationTest {
             + "617d5d4017e3621424872e404a1cdcf8617d5d4017e3621424872e404a1cd5f8a6e3d"
             + "44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
     assertThat(geometry.get("asGeoJSON"),
-      is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[5.97138596,52.22549348],[5.97205383,52.22549348],"
-        + "[5.97205383,52.22527989],[5.97138596,52.22527989],[5.97138596,52.22549348]]]],"
-        + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
+        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[5.97138596,52.22549348],[5.97205383,52.22549348],"
+            + "[5.97205383,52.22527989],[5.97138596,52.22527989],[5.97138596,52.22549348]]]],"
+            + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
   }
 
   @Test

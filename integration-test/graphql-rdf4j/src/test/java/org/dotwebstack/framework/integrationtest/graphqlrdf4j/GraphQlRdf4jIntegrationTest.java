@@ -96,26 +96,27 @@ class GraphQlRdf4jIntegrationTest {
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
                 ImmutableMap.of("type", "POINT", "asWKB", "00000000014017eac6e4232933404a1bcbd2b403c4", "asWKT",
-                    "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON", "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"))));
+                    "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON",
+                    "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":{\"type\":\"name\","
+                        + "\"properties\":{\"name\":\"EPSG:0\"}}}"))));
   }
 
   @Test
   void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
-    String query =
-        "{ brewery(identifier: \"123\") { identifier, name, geometry(type : MULTIPOINT) { type, asWKT, asWKB, asGeoJSON }}}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, geometry(type : MULTIPOINT) "
+        + "{ type, asWKT, asWKB, asGeoJSON }}}";
 
     ExecutionResult result = graphQL.execute(query);
 
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data,
-        hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
-                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
-                ImmutableMap.of("type", "MULTIPOINT", "asWKB",
-                    "00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4", "asWKT",
-                    "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
-                    "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"))));
+    assertThat(data, hasEntry(BREWERY_FIELD, ImmutableMap.of(BREWERY_IDENTIFIER_FIELD,
+        BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
+        BREWERY_GEOMETRY_FIELD,
+        ImmutableMap.of("type", "MULTIPOINT", "asWKB", "00000000040000000100000000014017eac6e4232933404a1bcbd2b403c4",
+            "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
+            "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\","
+                + "\"properties\":{\"name\":\"EPSG:0\"}}}"))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {

@@ -156,7 +156,8 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
+    assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":"
+        + "{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
   }
 
   @Test
