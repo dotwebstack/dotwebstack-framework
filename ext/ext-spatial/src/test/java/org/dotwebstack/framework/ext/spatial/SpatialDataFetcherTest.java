@@ -140,7 +140,7 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("00000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(stringValue, is("0101000000332923E4C6EA1740C403B4D2CB1B4A40"));
   }
 
   @Test

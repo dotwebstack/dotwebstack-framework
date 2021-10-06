@@ -1,3 +1,6 @@
+spatial:
+  sourceCrs: EPSG:7415
+
 queries:
   beers:
     type: Beer

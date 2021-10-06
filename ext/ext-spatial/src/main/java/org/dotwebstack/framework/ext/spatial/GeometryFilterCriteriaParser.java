@@ -23,12 +23,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
 
-  private static final WKBReader wkbReader = new WKBReader();
-
-  private static final WKTReader wktReader = new WKTReader();
-
-  private static final GeoJsonReader geoJsonReader = new GeoJsonReader();
-
   private final SpatialConfigurationProperties spatialConfigurationProperties;
 
   public GeometryFilterCriteriaParser(SpatialConfigurationProperties spatialConfigurationProperties) {
@@ -80,11 +74,12 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
     }
 
     throw illegalArgumentException(
-        String.format("The filter input does not contain one of the following geometry filters: %s, %s or, %s",
+        String.format("The geometry filter does not contain one of the following methods: '%s', '%s' or, '%s'.",
             FROM_WKT, FROM_WKB, FROM_GEOJSON));
   }
 
   private Geometry getGeometryFromWkt(String wkt) {
+    var wktReader = new WKTReader();
     try {
       return wktReader.read(wkt);
     } catch (ParseException e) {
@@ -93,6 +88,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   private Geometry getGeometryFromWkb(String wkb) {
+    var wkbReader = new WKBReader();
     try {
       return wkbReader.read(hexToBytes(wkb));
     } catch (ParseException e) {
@@ -101,6 +97,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   private Geometry getGeometryFromGeoJson(String geoJson) {
+    var geoJsonReader = new GeoJsonReader();
     try {
       return geoJsonReader.read(geoJson);
     } catch (ParseException e) {

@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
@@ -8,6 +7,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
+import static org.locationtech.jts.io.WKBWriter.toHex;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -68,8 +68,8 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkb(Geometry geometry) {
-    var wkbWriter = new WKBWriter();
-    return encodeHexString(wkbWriter.write(geometry));
+    var wkbWriter = new WKBWriter(2, 2);
+    return toHex(wkbWriter.write(geometry));
   }
 
   private String createGeoJson(Geometry geometry) {
