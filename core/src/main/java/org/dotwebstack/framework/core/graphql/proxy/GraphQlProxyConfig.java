@@ -40,10 +40,19 @@ public class GraphQlProxyConfig {
 
   @Bean
   @ConditionalOnMissingBean
-  public GraphQL graphql(RemoteExecutor remoteExecutor) {
+  public GraphQL graphql(Subschema subschema) {
+    var wrappedSchema = SchemaWrapper.wrap(subschema);
+
+    return GraphQL.newGraphQL(wrappedSchema)
+        .build();
+  }
+
+  @Bean
+  public Subschema subschema(RemoteExecutor remoteExecutor) {
     TypeDefinitionRegistry typeDefinitionRegistry;
 
     try {
+      // TODO: custom exception
       typeDefinitionRegistry = SchemaIntrospector.introspectSchema(remoteExecutor)
           .get();
     } catch (InterruptedException | ExecutionException e) {
@@ -56,12 +65,9 @@ public class GraphQlProxyConfig {
         .scalar(CoreScalars.OBJECT)
         .build());
 
-    var wrappedSchema = SchemaWrapper.wrap(Subschema.builder()
+    return Subschema.builder()
         .schema(schema)
         .executor(remoteExecutor)
-        .build());
-
-    return GraphQL.newGraphQL(wrappedSchema)
         .build();
   }
 
