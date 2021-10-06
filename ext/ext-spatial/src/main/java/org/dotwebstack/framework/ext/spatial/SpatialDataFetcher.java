@@ -21,10 +21,6 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
 
   private final TypeEnforcer typeEnforcer;
 
-  private static final WKTWriter wktWriter = new WKTWriter();
-  private static final WKBWriter wkbWriter = new WKBWriter();
-  private static final GeoJsonWriter geoJsonWriter = new GeoJsonWriter();
-
   public SpatialDataFetcher(TypeEnforcer typeEnforcer) {
     this.typeEnforcer = typeEnforcer;
   }
@@ -56,13 +52,28 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
         return geometry.getGeometryType()
             .toUpperCase();
       case AS_WKT:
-        return wktWriter.write(geometry);
+        return createWkt(geometry);
       case AS_WKB:
-        return encodeHexString(wkbWriter.write(geometry));
+        return createWkb(geometry);
       case AS_GEOJSON:
-        return geoJsonWriter.write(geometry);
+        return createGeoJson(geometry);
       default:
         throw unsupportedOperationException("Invalid fieldName {}", fieldName);
     }
+  }
+
+  private String createWkt(Geometry geometry) {
+    var wktWriter = new WKTWriter();
+    return wktWriter.write(geometry);
+  }
+
+  private String createWkb(Geometry geometry) {
+    var wkbWriter = new WKBWriter();
+    return encodeHexString(wkbWriter.write(geometry));
+  }
+
+  private String createGeoJson(Geometry geometry) {
+    var geoJsonWriter = new GeoJsonWriter();
+    return geoJsonWriter.write(geometry);
   }
 }
