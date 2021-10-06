@@ -13,6 +13,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -29,7 +30,6 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
@@ -60,7 +60,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 class OpenApiConfigurationTest {
 
   @Mock
-  private GraphQlService graphQL;
+  private GraphQL graphQL;
 
   private OpenAPI openApi;
 

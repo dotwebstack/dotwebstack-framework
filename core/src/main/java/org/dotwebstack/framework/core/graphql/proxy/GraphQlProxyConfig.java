@@ -1,22 +1,32 @@
 package org.dotwebstack.framework.core.graphql.proxy;
 
 import static java.lang.String.format;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import graphql.ExecutionResult;
-import io.netty.handler.codec.http.HttpHeaders;
+import graphql.GraphQL;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.scalars.CoreScalars;
+import org.dotwebstack.graphql.orchestrate.schema.RemoteExecutor;
+import org.dotwebstack.graphql.orchestrate.schema.SchemaIntrospector;
+import org.dotwebstack.graphql.orchestrate.schema.Subschema;
+import org.dotwebstack.graphql.orchestrate.wrap.SchemaWrapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import reactor.netty.http.client.HttpClient;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Conditional(GraphQlNativeDisabled.class)
 @Configuration
@@ -29,29 +39,51 @@ public class GraphQlProxyConfig {
   }
 
   @Bean
-  public ObjectMapper proxyObjectMapper() {
-    ObjectMapper result = new ObjectMapper();
-    SimpleModule sm = new SimpleModule("Graphql");
-    sm.addDeserializer(ExecutionResult.class, new ExecutionResultDeserializer(ExecutionResult.class));
-    result.registerModule(sm);
-    return result;
+  @ConditionalOnMissingBean
+  public GraphQL graphql(RemoteExecutor remoteExecutor) {
+    TypeDefinitionRegistry typeDefinitionRegistry;
+
+    try {
+      typeDefinitionRegistry = SchemaIntrospector.introspectSchema(remoteExecutor)
+          .get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw internalServerErrorException(e);
+    }
+
+    var schema = new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.newRuntimeWiring()
+        .scalar(CoreScalars.DATE)
+        .scalar(CoreScalars.DATETIME)
+        .scalar(CoreScalars.OBJECT)
+        .build());
+
+    var wrappedSchema = SchemaWrapper.wrap(Subschema.builder()
+        .schema(schema)
+        .executor(remoteExecutor)
+        .build());
+
+    return GraphQL.newGraphQL(wrappedSchema)
+        .build();
   }
 
   @Bean
-  public HttpClient proxyHttpClient(@NonNull DotWebStackConfiguration dotWebStackConfiguration) {
-    String proxyName = dotWebStackConfiguration.getSettings()
+  public RemoteExecutor remoteExecutor(DotWebStackConfiguration configuration, WebClient.Builder webClientBuilder) {
+    var proxyName = configuration.getSettings()
         .getGraphql()
         .getProxy();
 
-    String uri = getProxyEnv(proxyName, "uri")
-        .orElseThrow(() -> new InvalidConfigurationException(format("Missing URI config for proxy '%s'.", proxyName)));
+    var endpoint = URI.create(getProxyEnv(proxyName, "uri")
+        .orElseThrow(() -> new InvalidConfigurationException(format("Missing URI config for proxy '%s'.", proxyName))));
 
     Consumer<HttpHeaders> headerBuilder = headers -> getProxyEnv(proxyName, "bearerAuth")
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
-    return HttpClient.create()
-        .baseUrl(uri)
-        .headers(headerBuilder);
+    var webClient = webClientBuilder.defaultHeaders(headerBuilder)
+        .build();
+
+    return RemoteExecutor.builder()
+        .endpoint(endpoint)
+        .webClient(webClient)
+        .build();
   }
 
   private Optional<String> getProxyEnv(String proxyName, String key) {

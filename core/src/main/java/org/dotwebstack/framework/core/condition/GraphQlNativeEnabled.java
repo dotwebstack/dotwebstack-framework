@@ -12,9 +12,12 @@ public class GraphQlNativeEnabled implements Condition {
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
     String configFilename = context.getEnvironment()
         .getProperty("dotwebstack.config");
+
     if (configFilename == null) {
       configFilename = "dotwebstack.yaml";
     }
+
+    // TODO: prevent re-loading configuration
     DotWebStackConfiguration config = readConfig(configFilename);
 
     // if no proxy is configured, use the local/native graphql service
