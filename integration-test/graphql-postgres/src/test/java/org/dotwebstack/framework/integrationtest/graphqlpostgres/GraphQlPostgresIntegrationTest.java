@@ -450,7 +450,7 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_ReturnsBreweryWithNestedGeometry_forIdentifier() {
     String query =
-        "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB}}}";
+        "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name geometry{type asWKT asWKB asGeoJSON}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -465,7 +465,7 @@ class GraphQlPostgresIntegrationTest {
     assertThat(brewery.containsKey(GEOMETRY), is(true));
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
-    assertThat(geometry.size(), is(3));
+    assertThat(geometry.size(), is(4));
     assertThat(geometry.get("type"), is("POLYGON"));
     assertThat(geometry.get("asWKT"),
         is("POLYGON ((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
@@ -474,12 +474,16 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("asWKB"),
         is("000000000300000001000000054017e2b30024872e404a1cdcf8617d5d4017e3621424872e404a1cdcf8617d5d401"
             + "7e3621424872e404a1cd5f8a6e3d44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[5.97138596,52.22549348],[5.97205383,52.22549348],"
+            + "[5.97205383,52.22527989],[5.97138596,52.22527989],[5.97138596,52.22549348]]],\"crs\":{"
+            + "\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
   }
 
   @Test
   void getRequest_ReturnsBreweryWithGeometryType_forGeometryType() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB}}}";
+        + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB asGeoJSON}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -494,7 +498,7 @@ class GraphQlPostgresIntegrationTest {
     assertThat(brewery.containsKey(GEOMETRY), is(true));
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
-    assertThat(geometry.size(), is(3));
+    assertThat(geometry.size(), is(4));
     assertThat(geometry.get("type"), is("MULTIPOLYGON"));
     assertThat(geometry.get("asWKT"),
         is("MULTIPOLYGON (((5.971385957936759 52.22549347648849, 5.972053827981467 52.22549347648849, "
@@ -504,6 +508,10 @@ class GraphQlPostgresIntegrationTest {
         is("000000000600000001000000000300000001000000054017e2b30024872e404a1cdcf8"
             + "617d5d4017e3621424872e404a1cdcf8617d5d4017e3621424872e404a1cd5f8a6e3d"
             + "44017e2b30024872e404a1cd5f8a6e3d44017e2b30024872e404a1cdcf8617d5d"));
+    assertThat(geometry.get("asGeoJSON"),
+      is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[5.97138596,52.22549348],[5.97205383,52.22549348],"
+        + "[5.97205383,52.22527989],[5.97138596,52.22527989],[5.97138596,52.22549348]]]],"
+        + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
   }
 
   @Test

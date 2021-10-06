@@ -26,6 +26,8 @@ public class SpatialConstants {
 
   static final String AS_WKB = "asWKB";
 
+  static final String AS_GEOJSON = "asGeoJSON";
+
   static final String FROM_WKT = "fromWKT";
 
   static final String FROM_WKB = "fromWKB";

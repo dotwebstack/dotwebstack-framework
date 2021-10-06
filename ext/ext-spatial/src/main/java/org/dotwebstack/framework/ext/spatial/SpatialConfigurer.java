@@ -8,6 +8,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.CONTAINS;
@@ -67,6 +68,9 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
             .type(stringType)
             .build())
         .fieldDefinition(newFieldDefinition().name(AS_WKT)
+            .type(stringType)
+            .build())
+        .fieldDefinition(newFieldDefinition().name(AS_GEOJSON)
             .type(stringType)
             .build())
         .build();

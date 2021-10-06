@@ -23,6 +23,7 @@ type Geometry{
   type: GeometryType!
   asWKB: String!
   asWKT: String!
+  asGeoJSON: String!
 }
 
 enum GeometryType{

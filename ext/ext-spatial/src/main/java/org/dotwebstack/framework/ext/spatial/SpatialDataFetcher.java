@@ -4,6 +4,7 @@ import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
@@ -14,10 +15,15 @@ import java.util.Objects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 public class SpatialDataFetcher implements DataFetcher<Object> {
 
   private final TypeEnforcer typeEnforcer;
+
+  private static final WKTWriter wktWriter = new WKTWriter();
+  private static final WKBWriter wkbWriter = new WKBWriter();
+  private static final GeoJsonWriter geoJsonWriter = new GeoJsonWriter();
 
   public SpatialDataFetcher(TypeEnforcer typeEnforcer) {
     this.typeEnforcer = typeEnforcer;
@@ -50,21 +56,13 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
         return geometry.getGeometryType()
             .toUpperCase();
       case AS_WKT:
-        return createWkt(geometry);
+        return wktWriter.write(geometry);
       case AS_WKB:
-        return createWkb(geometry);
+        return encodeHexString(wkbWriter.write(geometry));
+      case AS_GEOJSON:
+        return geoJsonWriter.write(geometry);
       default:
         throw unsupportedOperationException("Invalid fieldName {}", fieldName);
     }
-  }
-
-  private String createWkt(Geometry geometry) {
-    var wktWriter = new WKTWriter();
-    return wktWriter.write(geometry);
-  }
-
-  private String createWkb(Geometry geometry) {
-    var wkbWriter = new WKBWriter();
-    return encodeHexString(wkbWriter.write(geometry));
   }
 }
