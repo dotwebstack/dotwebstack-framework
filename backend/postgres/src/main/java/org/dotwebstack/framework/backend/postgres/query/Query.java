@@ -48,7 +48,14 @@ public class Query {
   }
 
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {
-    return createSelect(collectionRequest.getObjectRequest());
+    return SelectBuilder.newSelect()
+        .dslContext(dslContext)
+        .objectRequest(collectionRequest.getObjectRequest())
+        .filterCriterias(collectionRequest.getBackendFilterCriteria())
+        .sortCriterias(collectionRequest.getSortCriterias())
+        .fieldMapper(rowMapper)
+        .aliasManager(aliasManager)
+        .build();
   }
 
   private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {

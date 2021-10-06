@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
@@ -82,7 +83,7 @@ public class Query {
 
   private OrderBy createOrderBy(List<SortCriteria> sortCriterias) {
     if (sortCriterias.isEmpty()) {
-      throw ExceptionHelper.illegalArgumentException("Sort criteria is empty.");
+      throw illegalArgumentException("Sort criteria is empty.");
     }
 
     var orderables = sortCriterias.stream()

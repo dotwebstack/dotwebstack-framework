@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.backend;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -50,6 +52,8 @@ public class BackendRequestFactory {
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(environment))
+        .backendFilterCriteria(createFilterCriteria(objectType,
+            getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
         .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
@@ -59,6 +63,8 @@ public class BackendRequestFactory {
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(selectedField, environment))
+        .backendFilterCriteria(createFilterCriteria(objectType,
+            getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
         .sortCriterias(createSortCriteria(objectType, selectedField.getArguments()
             .get(SORT_ARGUMENT_NAME)
             .toString()))
@@ -125,6 +131,29 @@ public class BackendRequestFactory {
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
             .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<BackendFilterCriteria> createFilterCriteria(ObjectType<?> objectType,
+      Map<String, Object> filterArgument) {
+    if (filterArgument == null) {
+      return List.of();
+    }
+
+    return filterArgument.keySet()
+        .stream()
+        .map(filterName -> {
+          var filterConfiguration = objectType.getFilters()
+              .get(filterName);
+
+          var fieldPath = createFieldPath(objectType, filterConfiguration.getField());
+
+          return BackendFilterCriteria.builder()
+              .fieldPath(fieldPath)
+              .value(getNestedMap(filterArgument, filterName))
+              .build();
+
+        })
         .collect(Collectors.toList());
   }
 

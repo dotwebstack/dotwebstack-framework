@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
+import java.util.Objects;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -70,6 +71,16 @@ class ModelConfiguration {
       objectType.setName(parser.getCurrentName());
       objectType.getFields()
           .forEach((name, field) -> field.setName(name));
+
+      if (objectType.getFilters() != null) {
+        objectType.getFilters()
+            .entrySet()
+            .stream()
+            .filter(entry -> Objects.isNull(entry.getValue()
+                .getField()))
+            .forEach(entry -> entry.getValue()
+                .setField(entry.getKey()));
+      }
 
       return objectType;
     }

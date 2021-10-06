@@ -3,7 +3,9 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import graphql.schema.SelectedField;
 import java.util.List;
@@ -15,17 +17,22 @@ import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectQuery;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
@@ -36,6 +43,10 @@ class SelectBuilder {
   private DSLContext dslContext;
 
   private ObjectRequest objectRequest;
+
+  private List<SortCriteria> sortCriterias;
+
+  private List<BackendFilterCriteria> filterCriterias;
 
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
@@ -84,7 +95,103 @@ class SelectBuilder {
         .flatMap(entry -> processObjectListFields(entry.getKey(), entry.getValue(), fromTable))
         .forEach(selectQuery::addSelect);
 
+    createSortConditions(sortCriterias, fromTable).forEach(selectQuery::addOrderBy);
+
+    filterCriterias.stream()
+        .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable))
+        .forEach(selectQuery::addConditions);
+
     return selectQuery;
+  }
+
+  public Condition createFilterCondition(BackendFilterCriteria filterCriteria, Table<Record> table) {
+    // TODO: bij nesting dienen we hier de juiste joins te leggen
+
+    var leafObjectField = (PostgresObjectField) filterCriteria.getFieldPath()
+        .get(0);
+
+    var field = DSL.field(leafObjectField.getColumn());
+
+    var conditions = filterCriteria.getValue()
+        .entrySet()
+        .stream()
+        .map(entry -> createFilterValue(entry.getKey(), field, entry.getValue()))
+        .collect(Collectors.toList());
+
+    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Condition createFilterValue(String filterField, Field<Object> field, Object value) {
+    if (FilterConstants.EQ_FIELD.equals(filterField)) {
+      return field.eq(DSL.val(value));
+    }
+
+    if (FilterConstants.LT_FIELD.equals(filterField)) {
+      return field.lt(DSL.val(value));
+    }
+
+    if (FilterConstants.LTE_FIELD.equals(filterField)) {
+      return field.le(DSL.val(value));
+    }
+
+    if (FilterConstants.GT_FIELD.equals(filterField)) {
+      return field.gt(DSL.val(value));
+    }
+
+    if (FilterConstants.GTE_FIELD.equals(filterField)) {
+      return field.ge(DSL.val(value));
+    }
+
+    if (FilterConstants.IN_FIELD.equals(filterField)) {
+      List<Object> list = (List<Object>) value;
+      return field.in(list);
+    }
+
+    if (FilterConstants.NOT_FIELD.equals(filterField)) {
+      Map<String, Object> mapValue = (Map<String, Object>) value;
+
+      var conditions = mapValue.entrySet()
+          .stream()
+          .map(entry -> createFilterValue(entry.getKey(), field, entry.getValue()))
+          .collect(Collectors.toList());
+
+      var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+
+      return DSL.not(condition);
+    }
+
+    throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
+  }
+
+
+
+  @SuppressWarnings("rawtypes")
+  public List<SortField> createSortConditions(List<SortCriteria> sortCriterias, Table<Record> table) {
+    return sortCriterias.stream()
+        .map(sortCriteria -> createSortCondition(sortCriteria, table))
+        .collect(Collectors.toList());
+  }
+
+  private SortField<?> createSortCondition(SortCriteria sortCriteria, Table<Record> table) {
+    if (sortCriteria.getFields()
+        .size() > 1) {
+      throw illegalStateException("Nested field path not supported!");
+    }
+
+    var leafObjectField = (PostgresObjectField) sortCriteria.getFields()
+        .get(0);
+
+    Field<?> sortField = DSL.field(DSL.name(table.getName(), leafObjectField.getColumn()));
+
+    switch (sortCriteria.getDirection()) {
+      case ASC:
+        return sortField.asc();
+      case DESC:
+        return sortField.desc();
+      default:
+        throw unsupportedOperationException("Unsupported direction: {}", sortCriteria.getDirection());
+    }
   }
 
   private Stream<Condition> createJoinConditions(Table<Record> table) {
