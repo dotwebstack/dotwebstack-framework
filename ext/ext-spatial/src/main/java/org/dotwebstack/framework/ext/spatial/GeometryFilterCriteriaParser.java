@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.ext.spatial;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
+import static org.locationtech.jts.io.WKBReader.hexToBytes;
 
 import graphql.schema.GraphQLInputObjectField;
 import java.util.Map;
@@ -11,11 +15,19 @@ import org.dotwebstack.framework.core.query.model.filter.FieldPath;
 import org.dotwebstack.framework.core.query.model.filter.FilterCriteria;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
+
+  private static final WKBReader wkbReader = new WKBReader();
+
+  private static final WKTReader wktReader = new WKTReader();
+
+  private static final GeoJsonReader geoJsonReader = new GeoJsonReader();
 
   private final SpatialConfigurationProperties spatialConfigurationProperties;
 
@@ -53,17 +65,46 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
         .fieldPath(fieldPath)
         .filterOperator(GeometryFilterOperator.valueOf(filterItem.getOperator()
             .toUpperCase()))
-        .geometry(readGeometry(data.get(SpatialConstants.FROM_WKT)))
+        .geometry(getGeometry(data))
         .crs(spatialConfigurationProperties.getSourceCrs())
         .build();
   }
 
-  private Geometry readGeometry(String wkt) {
-    var wktReader = new WKTReader();
+  private Geometry getGeometry(Map<String, String> data) {
+    if (data.containsKey(FROM_WKT)) {
+      return getGeometryFromWkt(data.get(FROM_WKT));
+    } else if (data.containsKey(FROM_WKB)) {
+      return getGeometryFromWkb(data.get(FROM_WKB));
+    } else if (data.containsKey(FROM_GEOJSON)) {
+      return getGeometryFromGeoJson(data.get(FROM_GEOJSON));
+    }
+
+    throw illegalArgumentException(
+        String.format("The filter input does not contain one of the following geometry filters: %s, %s or, %s",
+            FROM_WKT, FROM_WKB, FROM_GEOJSON));
+  }
+
+  private Geometry getGeometryFromWkt(String wkt) {
     try {
       return wktReader.read(wkt);
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKT is invalid!", e);
+    }
+  }
+
+  private Geometry getGeometryFromWkb(String wkb) {
+    try {
+      return wkbReader.read(hexToBytes(wkb));
+    } catch (ParseException e) {
+      throw illegalArgumentException("The filter input WKB is invalid!", e);
+    }
+  }
+
+  private Geometry getGeometryFromGeoJson(String geoJson) {
+    try {
+      return geoJsonReader.read(geoJson);
+    } catch (ParseException e) {
+      throw illegalArgumentException("The filter input GeoJSON is invalid!", e);
     }
   }
 }

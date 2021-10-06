@@ -28,6 +28,10 @@ public class SpatialConstants {
 
   static final String FROM_WKT = "fromWKT";
 
+  static final String FROM_WKB = "fromWKB";
+
+  static final String FROM_GEOJSON = "fromGeoJSON";
+
   static final String WITHIN = "within";
 
   static final String CONTAINS = "contains";

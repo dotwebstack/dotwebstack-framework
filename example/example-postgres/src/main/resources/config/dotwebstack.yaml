@@ -2,7 +2,7 @@ features:
   - paging
 
 spatial:
-  sourceCrs: EPSG:4258
+  sourceCrs: EPSG:7415
 
 subscriptions:
   beerSubscription:
