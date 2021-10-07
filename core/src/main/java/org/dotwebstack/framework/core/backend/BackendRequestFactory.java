@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.schema.GraphQLTypeUtil.isList;
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
@@ -48,14 +51,30 @@ public class BackendRequestFactory {
   }
 
   public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
+    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
+
     var objectType = getObjectType(environment.getFieldType());
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(environment))
         .backendFilterCriteria(createFilterCriteria(objectType,
             getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
-        .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
+        .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
+  }
+
+  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
+    ExecutionStepInfo executionStepInfo;
+
+    var isList = isList(unwrapNonNull(environment.getFieldType()));
+
+    if (schema.usePaging() && isList) {
+      executionStepInfo = environment.getExecutionStepInfo()
+          .getParent();
+    } else {
+      executionStepInfo = environment.getExecutionStepInfo();
+    }
+    return executionStepInfo;
   }
 
   private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
@@ -227,13 +246,13 @@ public class BackendRequestFactory {
   // TODO move to utils?
   private static final Predicate<SelectedField> isObjectField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return !GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+    return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType);
   };
 
   // TODO move to utils?
   private static final Predicate<SelectedField> isObjectListField =
-      selectedField -> GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(selectedField.getType()))
+      selectedField -> GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
           && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
 
   // TODO move to utils?

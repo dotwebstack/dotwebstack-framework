@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
+import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
@@ -11,6 +12,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,16 +25,13 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
     validateArgumentValues(firstArgumentValue, offsetArgumentValue);
 
-    PagingDataFetcherContext localContext = PagingDataFetcherContext.builder()
-        .first(firstArgumentValue)
-        .offset(offsetArgumentValue)
-        .parentLocalContext(environment.getLocalContext())
-        .parentSource(environment.getSource())
-        .build();
+    Map<String, Object> data = new HashMap<>();
+    data.put(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), offsetArgumentValue);
+    data.put(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), firstArgumentValue);
+    data.put(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue);
 
     return DataFetcherResult.newResult()
-        .data(Map.of(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue))
-        .localContext(localContext)
+        .data(data)
         .build();
   }
 

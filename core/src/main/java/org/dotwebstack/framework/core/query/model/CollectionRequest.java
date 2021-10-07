@@ -23,6 +23,7 @@ public class CollectionRequest implements Request {
   @Builder.Default
   private final List<BackendFilterCriteria> backendFilterCriteria = List.of();
 
+  @Deprecated
   private final PagingCriteria pagingCriteria;
 
   public boolean hasSortCriterias() {

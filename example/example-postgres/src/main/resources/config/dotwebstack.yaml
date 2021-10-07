@@ -1,5 +1,5 @@
-#features:
-#  - paging
+features:
+  - paging
 
 spatial:
   sourceCrs: EPSG:4258
