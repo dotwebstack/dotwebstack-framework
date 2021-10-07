@@ -7,10 +7,10 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
-import static org.locationtech.jts.io.WKBWriter.toHex;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.Base64;
 import java.util.Objects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
@@ -68,8 +68,9 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkb(Geometry geometry) {
-    var wkbWriter = new WKBWriter(2, 2);
-    return toHex(wkbWriter.write(geometry));
+    int dimensions = GeometrySrid.valueOfSrid(geometry.getSRID()).getDimension();
+    var wkbWriter = new WKBWriter(dimensions, true);
+    return Base64.getEncoder().encodeToString(wkbWriter.write(geometry));
   }
 
   private String createGeoJson(Geometry geometry) {

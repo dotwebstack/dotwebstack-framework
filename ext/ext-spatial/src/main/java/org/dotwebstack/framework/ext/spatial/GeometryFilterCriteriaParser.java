@@ -4,9 +4,9 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
-import static org.locationtech.jts.io.WKBReader.hexToBytes;
 
 import graphql.schema.GraphQLInputObjectField;
+import java.util.Base64;
 import java.util.Map;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.OperatorFilterCriteriaParser;
@@ -90,7 +90,7 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   private Geometry getGeometryFromWkb(String wkb) {
     var wkbReader = new WKBReader();
     try {
-      return wkbReader.read(hexToBytes(wkb));
+      return wkbReader.read(Base64.getDecoder().decode(wkb));
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKB is invalid!", e);
     }
