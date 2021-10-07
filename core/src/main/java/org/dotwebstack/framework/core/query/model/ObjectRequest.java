@@ -35,11 +35,11 @@ public class ObjectRequest implements Request {
 
   // TODO replace scalarFields
   @Builder.Default
-  private final Collection<String> selectedScalarFields = new ArrayList<>();
+  private final Collection<SelectedField> selectedScalarFields = new ArrayList<>();
 
   // TODO replace objectFields
   @Builder.Default
-  private final Map<String, ObjectRequest> selectedObjectFields = new HashMap<>();
+  private final Map<SelectedField, ObjectRequest> selectedObjectFields = new HashMap<>();
 
   // TODO replace collectionObjectFields
   @Builder.Default

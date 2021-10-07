@@ -58,7 +58,7 @@ public class BackendRequestFactory {
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(environment))
         .backendFilterCriteria(createFilterCriteria(objectType,
-            getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
+            executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME)))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
@@ -115,22 +115,21 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<String> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+  private List<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .map(SelectedField::getName)
         .collect(Collectors.toList());
   }
 
-  private Map<String, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       DataFetchingEnvironment environment) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
         .collect(
-            Collectors.toMap(SelectedField::getName, selectedField -> createObjectRequest(selectedField, environment)));
+            Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
   }
 
   private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,

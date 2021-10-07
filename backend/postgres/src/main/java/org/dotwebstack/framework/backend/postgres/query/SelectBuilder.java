@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import graphql.schema.SelectedField;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
@@ -83,7 +85,7 @@ class SelectBuilder {
     objectRequest.getSelectedObjectFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> createNestedSelect(entry.getKey(), entry.getValue(), fromTable))
+        .flatMap(entry -> createNestedSelect(entry.getKey().getName(), entry.getValue(), fromTable))
         .forEach(nestedSelect -> {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
           selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
@@ -224,6 +226,10 @@ class SelectBuilder {
   private Stream<Condition> createJoinConditions(Table<Record> table) {
     var source = objectRequest.getSource();
 
+    if(source == null) {
+      return Stream.empty();
+    }
+
     return source.entrySet()
         .stream()
         .filter(entry -> entry.getKey()
@@ -239,6 +245,10 @@ class SelectBuilder {
 
   private void addPagingCriteria(SelectQuery<Record> selectQuery) {
     var source = objectRequest.getSource();
+
+    if(source == null) {
+      return;
+    }
 
     Optional<Integer> offset = Optional.ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME)))
         .map(Integer.class::cast);
@@ -263,14 +273,14 @@ class SelectBuilder {
         .collect(Collectors.toList());
   }
 
-  private SelectFieldOrAsterisk processScalarField(String fieldName, PostgresObjectType objectType,
-      Table<Record> table) {
-    var objectField = objectType.getField(fieldName)
-        .orElseThrow(() -> illegalStateException("Object field '{}' not found.", fieldName));
+  private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
+                                                   Table<Record> table) {
+    var objectField = objectType.getField(selectedField.getName())
+        .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 
     var columnMapper = createColumnMapper(objectField, table);
 
-    fieldMapper.register(fieldName, columnMapper);
+    fieldMapper.register(selectedField.getName(), columnMapper);
 
     return columnMapper.getColumn();
   }
