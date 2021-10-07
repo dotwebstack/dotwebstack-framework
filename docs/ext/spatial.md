@@ -103,9 +103,9 @@ input GeometryFilter {
 }
 
 input GeometryInput {
-  fromWKT: String!
-  fromWKB: String!
-  fromGeoJSON: String!
+  fromWKT: String
+  fromWKB: String
+  fromGeoJSON: String
 }
 ```
 

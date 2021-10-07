@@ -65,6 +65,12 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   private Geometry getGeometry(Map<String, String> data) {
+    if (countGeometryFilters(data) > 1) {
+      throw illegalArgumentException(
+        "The geometry filter can only contain one of the following methods: '%s', '%s' or '%s'.",
+        FROM_WKT, FROM_WKB, FROM_GEOJSON
+      );
+    }
     if (data.containsKey(FROM_WKT)) {
       return getGeometryFromWkt(data.get(FROM_WKT));
     } else if (data.containsKey(FROM_WKB)) {
@@ -74,8 +80,19 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
     }
 
     throw illegalArgumentException(
-        String.format("The geometry filter does not contain one of the following methods: '%s', '%s' or, '%s'.",
-            FROM_WKT, FROM_WKB, FROM_GEOJSON));
+      "The geometry filter does not contain one of the following methods: '%s', '%s' or '%s'.",
+      FROM_WKT, FROM_WKB, FROM_GEOJSON
+    );
+  }
+
+  private int countGeometryFilters(Map<String, String> data) {
+    int counter = 0;
+    for (String filter : new String[] { FROM_WKT, FROM_WKB, FROM_GEOJSON } ) {
+      if (data.containsKey(filter)) {
+        counter++;
+      }
+    }
+    return counter;
   }
 
   private Geometry getGeometryFromWkt(String wkt) {
