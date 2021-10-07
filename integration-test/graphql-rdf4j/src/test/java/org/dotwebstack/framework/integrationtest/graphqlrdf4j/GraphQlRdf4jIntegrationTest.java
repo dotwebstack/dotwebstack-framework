@@ -95,10 +95,10 @@ class GraphQlRdf4jIntegrationTest {
         hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
-                ImmutableMap.of("type", "POINT", "asWKB", "0101000000332923E4C6EA1740C403B4D2CB1B4A40", "asWKT",
+                ImmutableMap.of("type", "POINT", "asWKB", "ACAAAAEAAHFAQBfqxuQjKTNAShvL0rQDxA==", "asWKT",
                     "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON",
                     "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":{\"type\":\"name\","
-                        + "\"properties\":{\"name\":\"EPSG:0\"}}}"))));
+                        + "\"properties\":{\"name\":\"EPSG:28992\"}}}"))));
   }
 
   @Test
@@ -110,13 +110,14 @@ class GraphQlRdf4jIntegrationTest {
 
     assertResultHasNoErrors(result);
     Map<String, Object> data = result.getData();
-    assertThat(data, hasEntry(BREWERY_FIELD, ImmutableMap.of(BREWERY_IDENTIFIER_FIELD,
-        BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
-        BREWERY_GEOMETRY_FIELD,
-        ImmutableMap.of("type", "MULTIPOINT", "asWKB", "0104000000010000000101000000332923E4C6EA1740C403B4D2CB1B4A40",
-            "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
-            "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\","
-                + "\"properties\":{\"name\":\"EPSG:0\"}}}"))));
+    assertThat(data,
+        hasEntry(BREWERY_FIELD,
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
+                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
+                ImmutableMap.of("type", "MULTIPOINT", "asWKB", "ACAAAAQAAHFAAAAAAQAgAAABAABxQEAX6sbkIykzQEoby9K0A8Q=",
+                    "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
+                    "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\","
+                        + "\"properties\":{\"name\":\"EPSG:28992\"}}}"))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {

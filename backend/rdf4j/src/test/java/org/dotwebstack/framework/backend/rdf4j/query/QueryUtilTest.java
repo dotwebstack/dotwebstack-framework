@@ -28,7 +28,7 @@ class QueryUtilTest {
   void parseGeometryOrNull_returnsNull_forNullValue() {
     String testValue = null;
 
-    Geometry parsedValue = parseGeometryOrNull(testValue);
+    Geometry parsedValue = parseGeometryOrNull(testValue, 28992);
 
     assertThat(parsedValue, is(nullValue()));
   }
@@ -37,7 +37,7 @@ class QueryUtilTest {
   void parseGeometryOrNull_returnsGeometry_forCorrectInput() {
     String testValue = "LINESTRING (0 0, 0 10)";
 
-    Geometry parsedValue = parseGeometryOrNull(testValue);
+    Geometry parsedValue = parseGeometryOrNull(testValue, 28992);
 
     assertThat(parsedValue, is(notNullValue()));
     assertThat(parsedValue.toString(), is(testValue));
@@ -47,7 +47,7 @@ class QueryUtilTest {
   void parseGeometryOrNull_throwsException_forInCorrectInput() {
     String testValue = "monkey";
 
-    assertThrows(IllegalArgumentException.class, () -> parseGeometryOrNull(testValue));
+    assertThrows(IllegalArgumentException.class, () -> parseGeometryOrNull(testValue, 28992));
   }
 
   @Test
@@ -68,7 +68,7 @@ class QueryUtilTest {
     when(bindingSet.getValue(alias)).thenReturn(value);
     when(value.stringValue()).thenReturn(data);
 
-    addBinding(assembleFns, alias, propertyShape, fieldName);
+    addBinding(assembleFns, alias, propertyShape, fieldName, 28992);
 
     assertThat(assembleFns.size(), is(1));
     assertThat(assembleFns.get(fieldName), is(notNullValue()));
@@ -95,7 +95,7 @@ class QueryUtilTest {
     when(bindingSet.getValue(alias)).thenReturn(value);
     when(value.stringValue()).thenReturn(data);
 
-    addBinding(assembleFns, alias, propertyShape, fieldName);
+    addBinding(assembleFns, alias, propertyShape, fieldName, 28992);
 
     assertThat(assembleFns.size(), is(1));
     assertThat(assembleFns.get(fieldName), is(notNullValue()));

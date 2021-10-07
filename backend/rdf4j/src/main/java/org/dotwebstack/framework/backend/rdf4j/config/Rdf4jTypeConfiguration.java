@@ -24,6 +24,8 @@ public class Rdf4jTypeConfiguration extends AbstractTypeConfiguration<Rdf4jField
 
   private String nodeShape;
 
+  private int crs;
+
   @Override
   public void init(DotWebStackConfiguration dotWebStackConfiguration) {
     fields.entrySet()
