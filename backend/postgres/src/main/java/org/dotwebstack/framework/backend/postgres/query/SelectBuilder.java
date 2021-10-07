@@ -7,7 +7,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
-import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,13 +17,11 @@ import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.*;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -44,9 +41,9 @@ class SelectBuilder {
 
   private ObjectRequest objectRequest;
 
-  private List<SortCriteria> sortCriterias;
+  private List<SortCriteria> sortCriterias = List.of();
 
-  private List<BackendFilterCriteria> filterCriterias;
+  private List<BackendFilterCriteria> filterCriterias = List.of();
 
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
@@ -92,33 +89,57 @@ class SelectBuilder {
     objectRequest.getSelectedObjectListFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> processObjectListFields(entry.getKey(), entry.getValue(), fromTable))
+        .flatMap(entry -> processObjectListFields(entry.getKey()
+            .getName(), entry.getValue(), fromTable))
         .forEach(selectQuery::addSelect);
 
     createSortConditions(sortCriterias, fromTable).forEach(selectQuery::addOrderBy);
 
     filterCriterias.stream()
-        .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable))
+        .map(filterCriteria -> createFilterCondition(filterCriteria.getFieldPath(), filterCriteria.getValue(),
+            fromTable))
         .forEach(selectQuery::addConditions);
 
     return selectQuery;
   }
 
-  public Condition createFilterCondition(BackendFilterCriteria filterCriteria, Table<Record> table) {
-    // TODO: bij nesting dienen we hier de juiste joins te leggen
+  public Condition createFilterCondition(List<ObjectFieldPath> fieldPath, Map<String, Object> value,
+      Table<Record> table) {
+    var node = fieldPath.size() > 1;
 
-    var leafObjectField = (PostgresObjectField) filterCriteria.getFieldPath()
-        .get(0);
+    var current = fieldPath.get(0);
+    var objectField = (PostgresObjectField) current.getObjectField();
 
-    var field = DSL.field(leafObjectField.getColumn());
+    if (node) {
+      var fromTable = DSL.table(((PostgresObjectType) current.getObjectType()).getTable())
+          .as(aliasManager.newAlias());
 
-    var conditions = filterCriteria.getValue()
-        .entrySet()
-        .stream()
-        .map(entry -> createFilterValue(entry.getKey(), field, entry.getValue()))
-        .collect(Collectors.toList());
+      var selectQuery = dslContext.selectQuery(fromTable);
 
-    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+      selectQuery.addSelect(DSL.val(1));
+
+      objectField.getJoinColumns()
+          .forEach(joinColumn -> {
+            var field = DSL.field(DSL.name(table.getName(), joinColumn.getName()));
+            var referencedField = DSL.field(joinColumn.getReferencedField());
+            selectQuery.addConditions(referencedField.equal(field));
+          });
+
+      var rest = fieldPath.subList(1, fieldPath.size());
+
+      var nestedCondition = createFilterCondition(rest, value, fromTable);
+
+      selectQuery.addConditions(nestedCondition);
+
+      return DSL.exists(selectQuery);
+    } else {
+      var conditions = value.entrySet()
+          .stream()
+          .map(entry -> createFilterValue(entry.getKey(), DSL.field(objectField.getColumn()), entry.getValue()))
+          .collect(Collectors.toList());
+
+      return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -224,14 +245,14 @@ class SelectBuilder {
         .collect(Collectors.toList());
   }
 
-  private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
+  private SelectFieldOrAsterisk processScalarField(String fieldName, PostgresObjectType objectType,
       Table<Record> table) {
-    var objectField = objectType.getField(selectedField.getName())
-        .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
+    var objectField = objectType.getField(fieldName)
+        .orElseThrow(() -> illegalStateException("Object field '{}' not found.", fieldName));
 
     var columnMapper = createColumnMapper(objectField, table);
 
-    fieldMapper.register(selectedField.getName(), columnMapper);
+    fieldMapper.register(fieldName, columnMapper);
 
     return columnMapper.getColumn();
   }
@@ -243,12 +264,12 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectQuery<Record>> createNestedSelect(SelectedField selectedField, ObjectRequest nestedObjectRequest,
+  private Stream<SelectQuery<Record>> createNestedSelect(String fieldName, ObjectRequest nestedObjectRequest,
       Table<Record> table) {
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
 
-    fieldMapper.register(selectedField.getName(), nestedObjectMapper);
+    fieldMapper.register(fieldName, nestedObjectMapper);
 
     var nestedSelect = SelectBuilder.newSelect()
         .dslContext(dslContext)
@@ -260,7 +281,7 @@ class SelectBuilder {
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 
-    getObjectField(objectRequest, selectedField.getName()).getJoinColumns()
+    getObjectField(objectRequest, fieldName).getJoinColumns()
         .forEach(joinColumn -> {
           var field = DSL.field(DSL.name(table.getName(), joinColumn.getName()));
           var referencedField = DSL.field(joinColumn.getReferencedField());
@@ -270,15 +291,15 @@ class SelectBuilder {
     return Stream.of(nestedSelect);
   }
 
-  private Stream<SelectFieldOrAsterisk> processObjectListFields(SelectedField selectedField,
-      CollectionRequest collectionRequest, Table<Record> table) {
-    var objectField = getObjectField(objectRequest, selectedField.getName());
+  private Stream<SelectFieldOrAsterisk> processObjectListFields(String fieldName, CollectionRequest collectionRequest,
+      Table<Record> table) {
+    var objectField = getObjectField(objectRequest, fieldName);
 
     if (objectField.getMappedBy() != null) {
       var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
 
       // Provide join info for child data fetcher
-      fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(fieldName),
           row -> new JoinCondition(nestedObjectField.getJoinColumns()
               .stream()
               .collect(Collectors.toMap(JoinColumn::getName,

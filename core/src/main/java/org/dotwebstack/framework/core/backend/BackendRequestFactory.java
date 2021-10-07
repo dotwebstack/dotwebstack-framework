@@ -22,11 +22,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -65,9 +65,7 @@ public class BackendRequestFactory {
         .objectRequest(createObjectRequest(selectedField, environment))
         .backendFilterCriteria(createFilterCriteria(objectType,
             getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
-        .sortCriterias(createSortCriteria(objectType, selectedField.getArguments()
-            .get(SORT_ARGUMENT_NAME)
-            .toString()))
+        .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
@@ -98,21 +96,22 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+  private List<String> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
+        .map(SelectedField::getName)
         .collect(Collectors.toList());
   }
 
-  private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<String, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       DataFetchingEnvironment environment) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
         .collect(
-            Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
+            Collectors.toMap(SelectedField::getName, selectedField -> createObjectRequest(selectedField, environment)));
   }
 
   private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
@@ -146,7 +145,7 @@ public class BackendRequestFactory {
           var filterConfiguration = objectType.getFilters()
               .get(filterName);
 
-          var fieldPath = createFieldPath(objectType, filterConfiguration.getField());
+          var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 
           return BackendFilterCriteria.builder()
               .fieldPath(fieldPath)
@@ -177,25 +176,32 @@ public class BackendRequestFactory {
 
     return sortableByConfig.stream()
         .map(config -> SortCriteria.builder()
-            .fields(createFieldPath(objectType, config.getField()))
+            .fields(createObjectFieldPath(objectType, config.getField()).stream()
+                .map(ObjectFieldPath::getObjectField)
+                .collect(Collectors.toList()))
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
   }
 
-  private List<ObjectField> createFieldPath(ObjectType<?> objectType, String path) {
+  private List<ObjectFieldPath> createObjectFieldPath(ObjectType<?> objectType, String path) {
     var current = objectType;
-    var fieldPath = new ArrayList<ObjectField>();
+    var fieldPath = new ArrayList<ObjectFieldPath>();
 
     for (var segment : path.split("\\.")) {
       var field = Optional.ofNullable(current)
           .flatMap(o -> o.getField(segment))
           .orElseThrow();
 
-      fieldPath.add(field);
-
       current = schema.getObjectType(field.getType())
           .orElse(null);
+
+      var objectFieldPath = ObjectFieldPath.builder()
+          .objectField(field)
+          .objectType(current)
+          .build();
+
+      fieldPath.add(objectFieldPath);
     }
 
     return fieldPath;

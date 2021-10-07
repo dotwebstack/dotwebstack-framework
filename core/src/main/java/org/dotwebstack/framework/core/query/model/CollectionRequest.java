@@ -18,7 +18,6 @@ public class CollectionRequest implements Request {
   private final List<SortCriteria> sortCriterias = List.of();
 
   @Builder.Default
-  @Deprecated
   private final List<FilterCriteria> filterCriterias = List.of();
 
   @Builder.Default
