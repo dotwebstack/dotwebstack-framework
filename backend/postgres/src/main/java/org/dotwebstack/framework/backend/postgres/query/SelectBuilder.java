@@ -3,6 +3,9 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -10,6 +13,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Setter;
@@ -100,6 +104,8 @@ class SelectBuilder {
     filterCriterias.stream()
         .map(filterCriteria -> createFilterCondition(filterCriteria, fromTable))
         .forEach(selectQuery::addConditions);
+
+    addPagingCriteria(selectQuery);
 
     return selectQuery;
   }
@@ -197,18 +203,30 @@ class SelectBuilder {
   private Stream<Condition> createJoinConditions(Table<Record> table) {
     var source = objectRequest.getSource();
 
-    if (source == null) {
-      return Stream.empty();
-    }
-
-    var parentField = objectRequest.getParentField();
-    var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
-
-    return joinCondition.getFields()
-        .entrySet()
+    return source.entrySet()
         .stream()
+        .filter(entry -> entry.getKey()
+            .startsWith(JOIN_KEY_PREFIX))
+        .map(Map.Entry::getValue)
+        .map(JoinCondition.class::cast)
+        .map(JoinCondition::getFields)
+        .flatMap(map -> map.entrySet()
+            .stream())
         .map(entry -> DSL.field(DSL.name(table.getName(), entry.getKey()))
             .equal(entry.getValue()));
+  }
+
+  private void addPagingCriteria(SelectQuery<Record> selectQuery) {
+    var source = objectRequest.getSource();
+
+    Optional<Integer> offset = Optional.ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME)))
+        .map(Integer.class::cast);
+    Optional<Integer> first = Optional.ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME)))
+        .map(Integer.class::cast);
+
+    if (offset.isPresent() && first.isPresent()) {
+      selectQuery.addLimit(offset.get(), first.get());
+    }
   }
 
   private List<Condition> createKeyConditions(KeyCriteria keyCriteria, PostgresObjectType objectType,
