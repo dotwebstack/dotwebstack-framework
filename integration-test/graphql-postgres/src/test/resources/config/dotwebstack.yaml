@@ -1,5 +1,5 @@
 spatial:
-  sourceCrs: EPSG:7415
+  sourceCrs: EPSG:28992
 
 queries:
   beers:

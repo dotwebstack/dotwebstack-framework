@@ -57,6 +57,7 @@ class SpatialDataFetcherTest {
 
     WKTReader reader = new WKTReader();
     geometry = reader.read(geometryString);
+    geometry.setSRID(28992);
   }
 
   @Test
@@ -140,7 +141,7 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("0101000000332923E4C6EA1740C403B4D2CB1B4A40"));
+    assertThat(stringValue, is("ACAAAAEAAHFAQBfqxuQjKTNAShvL0rQDxA=="));
   }
 
   @Test
@@ -157,7 +158,7 @@ class SpatialDataFetcherTest {
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
     assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":"
-        + "{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
+        + "{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:28992\"}}}"));
   }
 
   @Test

@@ -68,9 +68,11 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkb(Geometry geometry) {
-    int dimensions = GeometrySrid.valueOfSrid(geometry.getSRID()).getDimension();
+    int dimensions = GeometrySrid.valueOfSrid(geometry.getSRID())
+        .getDimension();
     var wkbWriter = new WKBWriter(dimensions, true);
-    return Base64.getEncoder().encodeToString(wkbWriter.write(geometry));
+    return Base64.getEncoder()
+        .encodeToString(wkbWriter.write(geometry));
   }
 
   private String createGeoJson(Geometry geometry) {

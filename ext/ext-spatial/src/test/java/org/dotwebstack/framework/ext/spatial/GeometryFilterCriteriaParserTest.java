@@ -104,7 +104,7 @@ class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
   @ParameterizedTest
   @CsvSource({"within", "contains", "intersects"})
   void parse_returnsFilterCriterias_forWkbGeoFilters(String geometryOperator) {
-    var wkb = "0101000000713d0ad7c5cb0741713d0ad7f7be1c41";
+    var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
     var typeConfiguration = createTypeConfiguration(SpatialConstants.GEOMETRY);
     var inputObjectField = createInputObjectField(FIELD_TEST, SpatialConstants.GEOMETRY_FILTER);
     Map<String, Object> data = Map.of(FIELD_TEST, Map.of(geometryOperator, Map.of(SpatialConstants.FROM_WKB, wkb)));
@@ -123,7 +123,7 @@ class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
   @ParameterizedTest
   @CsvSource({"within", "contains", "intersects"})
   void parse_returnsFilterCriterias_forWkbNotGeoFilters(String geometryOperator) {
-    var wkb = "0101000000713d0ad7c5cb0741713d0ad7f7be1c41";
+    var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
     var typeConfiguration = createTypeConfiguration(SpatialConstants.GEOMETRY);
     var inputObjectField = createInputObjectField(FIELD_TEST, SpatialConstants.GEOMETRY_FILTER);
     Map<String, Object> data = Map.of(FIELD_TEST,

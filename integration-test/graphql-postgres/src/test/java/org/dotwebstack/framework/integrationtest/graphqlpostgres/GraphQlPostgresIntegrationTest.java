@@ -472,13 +472,13 @@ class GraphQlPostgresIntegrationTest {
             + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
             + "194914.7190916618 470984.86365462304))"));
     assertThat(geometry.get("asWKB"),
-        is("010300000001000000050000001221B3C015CB0741A4E0617423BF1C411AF62CCF82CC074126831EED24BF1C4143B8C9"
-            + "5784CC07415DFCD9DEC5BE1C41B624DD4817CB074136071D66C4BE1C411221B3C015CB0741A4E0617423BF1C41"));
+        is("ACAAAAMAAHFAAAAAAQAAAAVBB8sVwLMhEkEcvyN0YeCkQQfMgs8s9hpBHL8k7R6DJkEHzIRXybhDQRy+"
+            + "xd7Z/F1BB8sXSN0ktkEcvsRmHQc2QQfLFcCzIRJBHL8jdGHgpA=="));
     assertThat(geometry.get("asGeoJSON"),
         is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462],"
             + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
             + "[194914.71909166,470984.86365462]]],"
-            + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:7415\"}}}"));
+            + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:28992\"}}}"));
   }
 
   @Test
@@ -505,15 +505,13 @@ class GraphQlPostgresIntegrationTest {
         is("MULTIPOLYGON (((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
             + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
             + "194914.7190916618 470984.86365462304)))"));
-    assertThat(geometry.get("asWKB"),
-        is("010600000001000000010300000001000000050000001221B3C015CB0741A4E0617423BF1C411AF62CCF82CC074126831"
-            + "EED24BF1C4143B8C95784CC07415DFCD9DEC5BE1C41B624DD4817CB074136071D66C4BE1C411"
-            + "221B3C015CB0741A4E0617423BF1C41"));
+    assertThat(geometry.get("asWKB"), is("ACAAAAYAAHFAAAAAAQAgAAADAABxQAAAAAEAAAAFQQfLFcCzIRJBHL8jdGHgpEEHzILPLPYaQRy"
+        + "/JO0egyZBB8yEV8m4Q0EcvsXe2fxdQQfLF0jdJLZBHL7EZh0HNkEHyxXAsyESQRy/I3Rh4KQ="));
     assertThat(geometry.get("asGeoJSON"),
         is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[194914.71909166,470984.86365462],"
             + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
             + "[194914.71909166,470984.86365462]]]],"
-            + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:0\"}}}"));
+            + "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:28992\"}}}"));
   }
 
   @Test
@@ -1393,9 +1391,9 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkb() {
     String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKB: \"01030000000100000005000000F24C8F6E91BC07417A6B202"
-            + "C68C71C41775B49F525E407419D52852C91C71C4153CC315B67E407416317A07F07B81C4133BBD0CBD0BC0741118DC"
-            + "27DDEB71C41F24C8F6E91BC07417A6B202C68C71C41\"}}}) { identifier_brewery name }}";
+        "{breweries(filter: {geometry: {intersects: {fromWKB: \"ACAAAAMAAHFAAAAAAQAAAAVBB7yRbo9M8kEcx2gsIGt6QQfk"
+            + "JfVJW3dBHMeRLIVSnUEH5GdbMcxTQRy4B3+gF2NBB7zQy9C7M0Ect959wo0RQQe8kW6PTPJBHMdoLCBreg==\"}}}) "
+            + "{ identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 

@@ -90,7 +90,8 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   private Geometry getGeometryFromWkb(String wkb) {
     var wkbReader = new WKBReader();
     try {
-      return wkbReader.read(Base64.getDecoder().decode(wkb));
+      return wkbReader.read(Base64.getDecoder()
+          .decode(wkb));
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKB is invalid!", e);
     }
