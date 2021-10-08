@@ -18,14 +18,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
@@ -39,7 +31,6 @@ import graphql.language.ObjectValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.SchemaReader;
@@ -47,7 +38,6 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.dotwebstack.framework.core.model.ObjectType;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -65,27 +55,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
   @BeforeEach
   void doBefore() {
-    var deserializerModule =
-        new SimpleModule().addDeserializer(ObjectType.class, new JsonDeserializer<TestObjectType>() {
-          @Override
-          public TestObjectType deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-              throws IOException {
-            var objectType = jsonParser.readValueAs(TestObjectType.class);
-
-            objectType.setName(jsonParser.getCurrentName());
-            objectType.getFields()
-                .forEach((name, field) -> field.setName(name));
-
-            return objectType;
-          }
-        });
-
-    var objectMapper = new ObjectMapper(new YAMLFactory()).enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(deserializerModule);
-
-    schemaReader = new SchemaReader(objectMapper);
-
+    schemaReader = new SchemaReader(TestHelper.createObjectMapper());
   }
 
   @Test
