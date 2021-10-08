@@ -10,30 +10,33 @@ subscriptions:
   brewerySubscription:
     type: Brewery
 
-context:
-  fields:
-    validOn:
-      type: Date
-      default: NOW
-    availableOn:
-      type: DateTime
-      default: NOW
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
 
 queries:
   beer:
     type: Beer
-    keys:
-      - field: identifier
+    context: history
   beerCollection:
     type: Beer
     list: true
+    context: history
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
+    context: history
   breweryCollection:
     type: Brewery
     list: true
+    context: history
 
 objectTypes:
   Beer:
@@ -41,8 +44,6 @@ objectTypes:
     filters:
       breweryCity:
         field: brewery.visitAddress.city
-    keys:
-      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -65,7 +66,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: identifier
+            referencedField: record_id
       ingredients:
         type: Ingredient
         list: true
@@ -93,8 +94,6 @@ objectTypes:
 
   Brewery:
     table: dbeerpedia.breweries
-    keys:
-      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -157,8 +156,6 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
-    keys:
-      - field: identifier
     fields:
       identifier:
         type: ID
@@ -169,8 +166,6 @@ objectTypes:
 
   Address:
     table: dbeerpedia.addresses
-    keys:
-      - field: identifier
     fields:
       identifier:
         type: ID
@@ -180,8 +175,6 @@ objectTypes:
         type: String
 
   History:
-    keys:
-      - field: identifier
     fields:
       age:
         type: Int

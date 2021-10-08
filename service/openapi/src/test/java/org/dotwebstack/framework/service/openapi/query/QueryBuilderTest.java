@@ -22,8 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
@@ -47,7 +46,7 @@ class QueryBuilderTest {
   private static OpenAPI openApi;
 
   @Mock
-  private DotWebStackConfiguration config;
+  private Schema config;
 
   private JexlEngine jexlEngine;
 
@@ -67,7 +66,7 @@ class QueryBuilderTest {
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
-    when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+    when(config.usePaging()).thenReturn(true);
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     Optional<QueryInput> queryInput =
         new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
@@ -85,7 +84,7 @@ class QueryBuilderTest {
   void queryBuilder_returnsExpectedQuery_forNoPagingConfig(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    when(config.isFeatureEnabled(Feature.PAGING)).thenReturn(false);
+    when(config.usePaging()).thenReturn(false);
     Optional<QueryInput> queryInput =
         new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)

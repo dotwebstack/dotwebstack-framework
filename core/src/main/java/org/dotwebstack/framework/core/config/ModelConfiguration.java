@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.config;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -13,37 +11,27 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.util.Objects;
 import org.dotwebstack.framework.core.backend.BackendModule;
-import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 
 @Configuration
-class ModelConfiguration {
+public class ModelConfiguration {
 
   private final BackendModule<?> backendModule;
 
-  ModelConfiguration(BackendModule<?> backendModule) {
+  public ModelConfiguration(BackendModule<?> backendModule) {
     this.backendModule = backendModule;
   }
 
   @Bean
   Schema schema(@Value("${dotwebstack.config:dotwebstack.yaml}") String configFile) {
-    return ResourceLoaderUtils.getResource(configFile)
-        .map(this::parseResource)
-        .orElseThrow(() -> invalidConfigurationException("Config file not found on location: {}", configFile));
-  }
+    var objectMapper = createObjectMapper();
 
-  private Schema parseResource(Resource resource) {
-    try {
-      return createObjectMapper().readValue(resource.getInputStream(), Schema.class);
-    } catch (IOException e) {
-      throw invalidConfigurationException("Error while reading config file.", e);
-    }
+    return new SchemaReader(objectMapper).read(configFile);
   }
 
   private ObjectMapper createObjectMapper() {

@@ -17,7 +17,7 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
 
   protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
 
-  protected Map<String, FilterConfiguration> filters;
+  protected Map<String, FilterConfiguration> filters = new HashMap<>();
 
   public Optional<T> getField(String name) {
     return Optional.ofNullable(fields.get(name));

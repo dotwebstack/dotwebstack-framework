@@ -116,22 +116,22 @@ INSERT INTO dbeerpedia.beers_ingredients(beers_identifier, ingredients_identifie
   ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'cd795191-5fbb-11eb-ae93-0242ac130002');
 
 
-CREATE FUNCTION dbeerpedia.breweries_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.breweries AS $$
+CREATE FUNCTION dbeerpedia.breweries_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.breweries AS $$
    SELECT * FROM dbeerpedia.breweries
 $$ language SQL immutable;
 
-CREATE FUNCTION dbeerpedia.beers_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.beers AS $$
+CREATE FUNCTION dbeerpedia.beers_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.beers AS $$
    SELECT * FROM dbeerpedia.beers WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
 $$ language SQL immutable;
 
-CREATE FUNCTION dbeerpedia.addresses_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.addresses AS $$
+CREATE FUNCTION dbeerpedia.addresses_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.addresses AS $$
    SELECT * FROM dbeerpedia.addresses
 $$ language SQL immutable;
 
-CREATE FUNCTION dbeerpedia.ingredients_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.ingredients AS $$
+CREATE FUNCTION dbeerpedia.ingredients_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.ingredients AS $$
    SELECT * FROM dbeerpedia.ingredients
 $$ language SQL immutable;
 
-CREATE FUNCTION dbeerpedia.beers_ingredients_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.beers_ingredients AS $$
+CREATE FUNCTION dbeerpedia.beers_ingredients_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.beers_ingredients AS $$
    SELECT * FROM dbeerpedia.beers_ingredients
 $$ language SQL immutable;

@@ -24,8 +24,6 @@ queries:
 objectTypes:
   Beer:
     table: db.beer
-    keys:
-      - identifier_beer
     fields:
       identifier_beer:
         type: ID
@@ -99,8 +97,6 @@ objectTypes:
 
   Ingredient:
     table: db.ingredient
-    keys:
-      - identifier_ingredient
     fields:
       identifier_ingredient:
         type: ID
@@ -126,8 +122,6 @@ objectTypes:
 
   Brewery:
     table: db.brewery
-    keys:
-      - identifier_brewery
     fields:
       identifier_brewery:
         type: ID
@@ -175,8 +169,6 @@ objectTypes:
 
   Address:
     table: db.address
-    keys:
-      - identifier_address
     fields:
       identifier_address:
         type: ID
@@ -186,8 +178,6 @@ objectTypes:
         type: String
 
   History:
-    keys:
-      - identifier_brewery
     fields:
       age:
         type: Int

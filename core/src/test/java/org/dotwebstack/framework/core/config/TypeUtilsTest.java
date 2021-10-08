@@ -12,6 +12,7 @@ import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
+import org.dotwebstack.framework.core.query.model.Query;
 import org.junit.jupiter.api.Test;
 
 class TypeUtilsTest {
@@ -50,7 +51,7 @@ class TypeUtilsTest {
 
   @Test
   void createType_ReturnsNonNullType() {
-    var configMock = mock(QueryConfiguration.class);
+    var configMock = mock(Query.class);
     doReturn(TYPE_NAME).when(configMock)
         .getType();
     doReturn(true).when(configMock)
@@ -62,7 +63,7 @@ class TypeUtilsTest {
 
   @Test
   void createType_ReturnsNewType() {
-    var configMock = mock(QueryConfiguration.class);
+    var configMock = mock(Query.class);
     doReturn(TYPE_NAME).when(configMock)
         .getType();
     doReturn(false).when(configMock)

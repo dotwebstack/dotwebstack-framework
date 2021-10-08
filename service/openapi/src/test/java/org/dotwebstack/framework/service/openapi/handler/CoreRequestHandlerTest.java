@@ -41,8 +41,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -158,9 +156,9 @@ class CoreRequestHandlerTest {
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
 
-    DotWebStackConfiguration dwsConfig = mock(DotWebStackConfiguration.class);
-    when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
-    queryBuilder = new GraphQlQueryBuilder(dwsConfig, jexlEngine);
+    org.dotwebstack.framework.core.model.Schema schema = mock(org.dotwebstack.framework.core.model.Schema.class);
+    when(schema.usePaging()).thenReturn(true);
+    queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
 
     coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
         List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,

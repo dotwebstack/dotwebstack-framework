@@ -10,5 +10,5 @@ import org.dotwebstack.framework.core.model.ObjectType;
 public class ObjectFieldPath {
   private ObjectField objectField;
 
-  private ObjectType objectType;
+  private ObjectType<?> objectType;
 }

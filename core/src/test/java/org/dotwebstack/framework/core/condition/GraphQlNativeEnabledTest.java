@@ -7,9 +7,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.GraphQlSettingsConfiguration;
-import org.dotwebstack.framework.core.config.SettingsConfiguration;
+import org.dotwebstack.framework.core.model.GraphQlSettings;
+import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.model.Settings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -26,13 +26,13 @@ class GraphQlNativeEnabledTest {
 
   @Test
   void matches_returnsTrue_whenProxyIsNotSet() {
-    DotWebStackConfiguration config = getConfig(null);
-    doReturn(config).when(condition)
-        .readConfig(any(String.class));
+    Schema schema = getSchema(null);
+    doReturn(schema).when(condition)
+        .readSchema(any(String.class));
 
     ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
     when(context.getEnvironment()
-        .getProperty(any(String.class))).thenReturn("config.yaml");
+        .getProperty(any(String.class))).thenReturn("schema.yaml");
 
     boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
     assertThat(matches, is(true));
@@ -40,27 +40,27 @@ class GraphQlNativeEnabledTest {
 
   @Test
   void matches_returnsFalse_whenProxyIsSet() {
-    DotWebStackConfiguration config = getConfig("theproxy");
-    doReturn(config).when(condition)
-        .readConfig(any(String.class));
+    Schema schema = getSchema("theproxy");
+    doReturn(schema).when(condition)
+        .readSchema(any(String.class));
 
     ConditionContext context = mock(ConditionContext.class, Answers.RETURNS_DEEP_STUBS);
     when(context.getEnvironment()
-        .getProperty(any(String.class))).thenReturn("config.yaml");
+        .getProperty(any(String.class))).thenReturn("schema.yaml");
 
     boolean matches = condition.matches(context, mock(AnnotatedTypeMetadata.class));
     assertThat(matches, is(false));
   }
 
-  private DotWebStackConfiguration getConfig(String proxy) {
-    DotWebStackConfiguration config = new DotWebStackConfiguration();
-    SettingsConfiguration settings = new SettingsConfiguration();
-    GraphQlSettingsConfiguration graphql = new GraphQlSettingsConfiguration();
+  private Schema getSchema(String proxy) {
+    var schema = new Schema();
+    var settings = new Settings();
+    var graphql = new GraphQlSettings();
     graphql.setProxy(proxy);
 
     settings.setGraphql(graphql);
-    config.setSettings(settings);
+    schema.setSettings(settings);
 
-    return config;
+    return schema;
   }
 }

@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
+import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -33,12 +34,15 @@ import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
+@Conditional(GraphQlNativeEnabled.class)
 public class BackendRequestFactory {
 
   private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
@@ -57,24 +61,10 @@ public class BackendRequestFactory {
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(environment))
-        .backendFilterCriteria(createFilterCriteria(objectType,
-            executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME)))
+        .backendFilterCriteria(
+            createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME)))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
-  }
-
-  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo;
-
-    var isList = isList(unwrapNonNull(environment.getFieldType()));
-
-    if (schema.usePaging() && isList) {
-      executionStepInfo = environment.getExecutionStepInfo()
-          .getParent();
-    } else {
-      executionStepInfo = environment.getExecutionStepInfo();
-    }
-    return executionStepInfo;
   }
 
   private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
@@ -97,9 +87,10 @@ public class BackendRequestFactory {
         .parentField(environment.getField())
         .source(source)
         .keyCriteria(createKeyCriteria(environment.getArguments()))
-        .selectedScalarFields(getScalarFields(environment.getSelectionSet()))
-        .selectedObjectFields(getObjectFields(environment.getSelectionSet(), environment))
+        .scalarFields(getScalarFields(environment.getSelectionSet()))
+        .objectFields(getObjectFields(environment.getSelectionSet(), environment))
         .selectedObjectListFields(getObjectListFields(environment.getSelectionSet(), environment))
+        .contextCriteria(createContextCriteria(environment))
         .build();
   }
 
@@ -109,10 +100,56 @@ public class BackendRequestFactory {
     return ObjectRequest.builder()
         .objectType(objectType)
         .keyCriteria(createKeyCriteria(selectedField.getArguments()))
-        .selectedScalarFields(getScalarFields(selectedField.getSelectionSet()))
-        .selectedObjectFields(getObjectFields(selectedField.getSelectionSet(), environment))
+        .scalarFields(getScalarFields(selectedField.getSelectionSet()))
+        .objectFields(getObjectFields(selectedField.getSelectionSet(), environment))
         .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), environment))
+        .contextCriteria(createContextCriteria(environment))
         .build();
+  }
+
+  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
+    ExecutionStepInfo executionStepInfo;
+
+    var isList = isList(unwrapNonNull(environment.getFieldType()));
+
+    if (schema.usePaging() && isList) {
+      executionStepInfo = environment.getExecutionStepInfo()
+          .getParent();
+    } else {
+      executionStepInfo = environment.getExecutionStepInfo();
+    }
+    return executionStepInfo;
+  }
+
+  private ContextCriteria createContextCriteria(DataFetchingEnvironment environment) {
+    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
+
+    var contextName = executionStepInfo.getFieldDefinition()
+        .getArguments()
+        .stream()
+        .flatMap(graphQLArgument -> graphQLArgument.getDefinition()
+            .getAdditionalData()
+            .entrySet()
+            .stream())
+        .filter(entry -> "contextName".equals(entry.getKey()))
+        .map(Map.Entry::getValue)
+        .findFirst();
+
+    if (contextName.isPresent()) {
+      var context = schema.getContext(contextName.get());
+
+      Map<String, Object> arguments =
+          getNestedMap(executionStepInfo.getArguments(), ContextConstants.CONTEXT_ARGUMENT_NAME);
+
+      return context.map(c -> ContextCriteria.builder()
+          .name(contextName.get())
+          .context(c)
+          .values(arguments)
+          .build())
+          .orElseThrow();
+    }
+
+    return null;
   }
 
   private List<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {

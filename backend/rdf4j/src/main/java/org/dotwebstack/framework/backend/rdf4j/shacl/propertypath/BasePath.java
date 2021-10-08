@@ -23,7 +23,7 @@ public abstract class BasePath implements PropertyPath {
 
   private IRI baseIri = createIri(Rdf4jConstants.DOTWEBSTACK_NAMESPACE + this.getClass()
       .getSimpleName()
-      .toLowerCase() + "#" + uuid.toString());
+      .toLowerCase() + "#" + uuid);
 
   @Override
   public Set<Value> resolvePath(Model model, Resource subject) {

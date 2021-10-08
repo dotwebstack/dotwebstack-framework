@@ -64,12 +64,12 @@ class GraphPatternBuilder {
         .flatMap(this::createPattern)
         .forEach(subPatterns::add);
 
-    objectRequest.getSelectedScalarFields()
+    objectRequest.getScalarFields()
         .stream()
         .flatMap(this::createPattern)
         .forEach(subPatterns::add);
 
-    objectRequest.getSelectedObjectFields()
+    objectRequest.getObjectFields()
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedPattern(entry.getKey(), entry.getValue()))

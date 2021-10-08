@@ -10,8 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.service.openapi.query.filter.FilterHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
@@ -27,8 +26,8 @@ public class GraphQlQueryBuilder {
 
   private final JexlEngine jexlEngine;
 
-  public GraphQlQueryBuilder(@NonNull DotWebStackConfiguration dwsConfig, @NonNull JexlEngine jexlEngine) {
-    this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
+  public GraphQlQueryBuilder(@NonNull Schema schema, @NonNull JexlEngine jexlEngine) {
+    this.pagingEnabled = schema.usePaging();
     this.jexlEngine = jexlEngine;
   }
 

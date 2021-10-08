@@ -13,7 +13,7 @@
 // import java.util.Map;
 // import java.util.Optional;
 // import org.apache.commons.lang3.StringUtils;
-// import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
+// import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 // import org.dotwebstack.framework.backend.postgres.config.PostgresFieldConfiguration;
 // import org.dotwebstack.framework.backend.postgres.config.PostgresTypeConfiguration;
 // import org.dotwebstack.framework.core.query.model.ObjectFieldConfiguration;

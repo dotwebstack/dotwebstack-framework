@@ -6,7 +6,6 @@ import java.util.List;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
 
 @Data

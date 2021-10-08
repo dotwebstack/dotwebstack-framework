@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.backend.postgres.query.TableHelper.findTable;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
@@ -10,16 +11,15 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import graphql.schema.SelectedField;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dotwebstack.framework.backend.postgres.config.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
@@ -27,7 +27,10 @@ import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -65,8 +68,7 @@ class SelectBuilder {
     // TODO null checks on class properties
     var objectType = getObjectType(objectRequest);
 
-    var fromTable = DSL.table(objectType.getTable())
-        .as(aliasManager.newAlias());
+    var fromTable = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(aliasManager.newAlias());
 
     var selectQuery = dslContext.selectQuery(fromTable);
 
@@ -77,15 +79,16 @@ class SelectBuilder {
         .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, fromTable))
         .forEach(selectQuery::addConditions);
 
-    objectRequest.getSelectedScalarFields()
+    objectRequest.getScalarFields()
         .stream()
         .map(selectedField -> processScalarField(selectedField, objectType, fromTable))
         .forEach(selectQuery::addSelect);
 
-    objectRequest.getSelectedObjectFields()
+    objectRequest.getObjectFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> createNestedSelect(entry.getKey().getName(), entry.getValue(), fromTable))
+        .flatMap(entry -> createNestedSelect(entry.getKey()
+            .getName(), entry.getValue(), fromTable))
         .forEach(nestedSelect -> {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
           selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
@@ -119,8 +122,9 @@ class SelectBuilder {
     var objectField = (PostgresObjectField) current.getObjectField();
 
     if (node) {
-      var fromTable = DSL.table(((PostgresObjectType) current.getObjectType()).getTable())
-          .as(aliasManager.newAlias());
+      var fromTable =
+          findTable(((PostgresObjectType) current.getObjectType()).getTable(), objectRequest.getContextCriteria())
+              .as(aliasManager.newAlias());
 
       var selectQuery = dslContext.selectQuery(fromTable);
 
@@ -226,7 +230,7 @@ class SelectBuilder {
   private Stream<Condition> createJoinConditions(Table<Record> table) {
     var source = objectRequest.getSource();
 
-    if(source == null) {
+    if (source == null) {
       return Stream.empty();
     }
 
@@ -246,7 +250,7 @@ class SelectBuilder {
   private void addPagingCriteria(SelectQuery<Record> selectQuery) {
     var source = objectRequest.getSource();
 
-    if(source == null) {
+    if (source == null) {
       return;
     }
 
@@ -274,7 +278,7 @@ class SelectBuilder {
   }
 
   private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
-                                                   Table<Record> table) {
+      Table<Record> table) {
     var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 

@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.dotwebstack.framework.backend.postgres.config.JoinTable;
+import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.core.datafetchers.KeyCondition;
 
 @Builder

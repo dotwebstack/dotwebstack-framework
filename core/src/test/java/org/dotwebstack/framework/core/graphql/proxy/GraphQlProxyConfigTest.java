@@ -4,10 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.model.Schema;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -32,7 +33,7 @@ class GraphQlProxyConfigTest {
   private GraphQlProxyConfig config;
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private DotWebStackConfiguration dwsConfig;
+  private Schema schema;
 
   @Test
   void proxyObjectMapper_returnsResult() {
@@ -41,12 +42,12 @@ class GraphQlProxyConfigTest {
 
   @Test
   void proxyHttpClient_returnsClient_forPresentEnvConfig() {
-    when(dwsConfig.getSettings()
+    when(schema.getSettings()
         .getGraphql()
         .getProxy()).thenReturn("theproxy");
     when(env.getProperty("dotwebstack.graphql.proxies.theproxy.uri")).thenReturn(PROXY_URI);
 
-    HttpClient httpClient = config.proxyHttpClient(dwsConfig);
+    HttpClient httpClient = config.proxyHttpClient(schema);
     assertThat(httpClient, notNullValue());
 
     HttpClientConfig httpClientConfig = httpClient.configuration();
@@ -57,22 +58,23 @@ class GraphQlProxyConfigTest {
 
   @Test
   void proxyHttpClient_throwsException_forAbsentEnvConfig() {
-    when(dwsConfig.getSettings()
+    lenient().when(schema.getSettings()
         .getGraphql()
-        .getProxy()).thenReturn("theproxy");
+        .getProxy())
+        .thenReturn("theproxy");
 
-    assertThrows(InvalidConfigurationException.class, () -> config.proxyHttpClient(dwsConfig));
+    assertThrows(InvalidConfigurationException.class, () -> config.proxyHttpClient(schema));
   }
 
   @Test
   void proxyHttpClient_returnsClientWithAuthHeader_whenBearerAuthEnabled() {
-    when(dwsConfig.getSettings()
+    when(schema.getSettings()
         .getGraphql()
         .getProxy()).thenReturn("theproxy");
     when(env.getProperty("dotwebstack.graphql.proxies.theproxy.uri")).thenReturn(PROXY_URI);
     when(env.getProperty("dotwebstack.graphql.proxies.theproxy.bearerAuth")).thenReturn(PROXY_BEARER_AUTH);
 
-    HttpClient httpClient = config.proxyHttpClient(dwsConfig);
+    HttpClient httpClient = config.proxyHttpClient(schema);
     assertThat(httpClient, notNullValue());
 
     HttpClientConfig httpClientConfig = httpClient.configuration();

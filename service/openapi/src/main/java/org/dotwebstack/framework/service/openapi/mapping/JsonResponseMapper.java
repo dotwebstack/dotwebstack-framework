@@ -23,9 +23,8 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
@@ -57,12 +56,12 @@ public class JsonResponseMapper {
   private final boolean pagingEnabled;
 
   public JsonResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
-      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter, DotWebStackConfiguration dwsConfig) {
+      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter, Schema schema) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.properties = properties;
     this.typeConverterRouter = typeConverterRouter;
-    this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
+    this.pagingEnabled = schema.usePaging();
   }
 
   public Mono<String> toResponse(@NonNull Object input) {
@@ -358,7 +357,7 @@ public class JsonResponseMapper {
           ((Map<String, Object>) data).entrySet()
               .stream()
               .filter(entry -> !(entry.getValue() instanceof Map))
-              .forEach(entry -> context.set(fieldsBuilder.toString() + entry.getKey(), entry.getValue()));
+              .forEach(entry -> context.set(fieldsBuilder + entry.getKey(), entry.getValue()));
           fieldsBuilder.append("_parent.");
         });
 
@@ -367,7 +366,7 @@ public class JsonResponseMapper {
         .stream()
         .map(FieldContext::getInput)
         .forEach(input -> {
-          input.forEach((key, value) -> context.set(argsBuilder.toString() + key, value));
+          input.forEach((key, value) -> context.set(argsBuilder + key, value));
           argsBuilder.append("_parent.");
         });
 

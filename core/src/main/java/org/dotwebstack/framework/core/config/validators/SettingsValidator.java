@@ -2,22 +2,22 @@ package org.dotwebstack.framework.core.config.validators;
 
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.GraphQlSettingsConfiguration;
+import org.dotwebstack.framework.core.model.GraphQlSettings;
+import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SettingsValidator implements DotWebStackConfigurationValidator {
+public class SettingsValidator implements SchemaValidator {
 
   @Override
-  public void validate(DotWebStackConfiguration dotWebStackConfiguration) {
-    if (dotWebStackConfiguration.getSettings() != null && isProxy(dotWebStackConfiguration.getSettings()
+  public void validate(Schema schema) {
+    if (schema.getSettings() != null && isProxy(schema.getSettings()
         .getGraphql())) {
-      if (isPresent(dotWebStackConfiguration.getQueries())) {
+      if (isPresent(schema.getQueries())) {
         throw new InvalidConfigurationException("Queries should not be configured when using a graphql proxy");
-      } else if (isPresent(dotWebStackConfiguration.getSubscriptions())) {
+      } else if (isPresent(schema.getSubscriptions())) {
         throw new InvalidConfigurationException("Subscriptions should not be configured when using a graphql proxy");
-      } else if (isPresent(dotWebStackConfiguration.getObjectTypes())) {
+      } else if (isPresent(schema.getObjectTypes())) {
         throw new InvalidConfigurationException("Object types should not be configured when using a graphql proxy");
       }
     }
@@ -27,7 +27,7 @@ public class SettingsValidator implements DotWebStackConfigurationValidator {
     return map != null && !map.isEmpty();
   }
 
-  private boolean isProxy(GraphQlSettingsConfiguration graphql) {
+  private boolean isProxy(GraphQlSettings graphql) {
     return graphql != null && graphql.getProxy() != null;
   }
 }
