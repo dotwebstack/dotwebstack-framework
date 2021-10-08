@@ -248,13 +248,15 @@ class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     var wkt = "POINT (194936.73 470973.96)";
     var typeConfiguration = createTypeConfiguration(SpatialConstants.GEOMETRY);
     var inputObjectField = createInputObjectField(FIELD_TEST, SpatialConstants.GEOMETRY_FILTER);
-    Map<String, Object> data = Map.of(FIELD_TEST, Map.of("contains", Map.of(SpatialConstants.FROM_WKT, wkt, SpatialConstants.FROM_WKB, wkb)));
+    Map<String, Object> data =
+        Map.of(FIELD_TEST, Map.of("contains", Map.of(SpatialConstants.FROM_WKT, wkt, SpatialConstants.FROM_WKB, wkb)));
 
     var exception =
-      assertThrows(IllegalArgumentException.class, () -> parser.parse(typeConfiguration, inputObjectField, data));
+        assertThrows(IllegalArgumentException.class, () -> parser.parse(typeConfiguration, inputObjectField, data));
 
-    assertThat(exception.getMessage(), is(
-      "The geometry filter can only contain one of the following methods: 'fromWKT', 'fromWKB' or 'fromGeoJSON'."));
+    assertThat(exception.getMessage(),
+        is("The geometry filter can only contain one of the following methods: 'fromWKT', "
+            + "'fromWKB' or 'fromGeoJSON'."));
   }
 
   @Test

@@ -15,18 +15,20 @@ import org.locationtech.jts.io.WKTReader;
 
 public class QueryUtil {
 
+  private static final int WGS84_CRS = 4326;
+
   private static final IRI GEOMETRY_IRI = SimpleValueFactory.getInstance()
       .createIRI("http://www.opengis.net/ont/geosparql#wktLiteral");
 
   private QueryUtil() {}
 
-  public static Geometry parseGeometryOrNull(String wktString, int crs) {
+  public static Geometry parseGeometryOrNull(String wktString) {
 
     if (Objects.nonNull(wktString)) {
       var reader = new WKTReader();
       try {
         var geometry = reader.read(wktString);
-        geometry.setSRID(crs);
+        geometry.setSRID(WGS84_CRS);
         return geometry;
       } catch (ParseException ignore) {
         throw illegalArgumentException("invalid wkt string");
@@ -37,12 +39,12 @@ public class QueryUtil {
   }
 
   public static void addBinding(Map<String, Function<BindingSet, Object>> assembleFns, String alias,
-      PropertyShape propertyShape, String fieldName, int crs) {
+      PropertyShape propertyShape, String fieldName) {
 
     if (GEOMETRY_IRI.equals(propertyShape.getDatatype())) {
       assembleFns.put(fieldName,
           bindingSet -> bindingSet.getValue(alias) != null ? parseGeometryOrNull(bindingSet.getValue(alias)
-              .stringValue(), crs) : null);
+              .stringValue()) : null);
     } else {
       assembleFns.put(fieldName, bindingSet -> bindingSet.getValue(alias) != null ? bindingSet.getValue(alias)
           .stringValue() : null);

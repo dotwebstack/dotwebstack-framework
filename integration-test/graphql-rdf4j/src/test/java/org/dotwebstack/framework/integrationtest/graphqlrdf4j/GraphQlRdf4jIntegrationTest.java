@@ -98,7 +98,7 @@ class GraphQlRdf4jIntegrationTest {
                 ImmutableMap.of("type", "POINT", "asWKB", "ACAAAAEAAHFAQBfqxuQjKTNAShvL0rQDxA==", "asWKT",
                     "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON",
                     "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769],\"crs\":{\"type\":\"name\","
-                        + "\"properties\":{\"name\":\"EPSG:28992\"}}}"))));
+                        + "\"properties\":{\"name\":\"EPSG:4326\"}}}"))));
   }
 
   @Test
@@ -117,7 +117,7 @@ class GraphQlRdf4jIntegrationTest {
                 ImmutableMap.of("type", "MULTIPOINT", "asWKB", "ACAAAAQAAHFAAAAAAQAgAAABAABxQEAX6sbkIykzQEoby9K0A8Q=",
                     "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
                     "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\","
-                        + "\"properties\":{\"name\":\"EPSG:28992\"}}}"))));
+                        + "\"properties\":{\"name\":\"EPSG:4326\"}}}"))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {

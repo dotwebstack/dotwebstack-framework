@@ -192,7 +192,7 @@ public class QueryBuilder {
               if (propertyShape.getNode() == null || selectedFields.get(fieldName) == null) {
                 projectables.add(SparqlBuilder.var(alias));
 
-                addBinding(assembleFns, alias, propertyShape, fieldName, typeConfiguration.getCrs());
+                addBinding(assembleFns, alias, propertyShape, fieldName);
 
                 return makeOptionalIfNeeded(propertyShape, current);
               } else {
