@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.core.backend;
 
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
+
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLTypeUtil;
 import java.util.Map;
 
 class BackendDataFetcher implements DataFetcher<Object> {
@@ -29,11 +30,17 @@ class BackendDataFetcher implements DataFetcher<Object> {
       return source.get(fieldName);
     }
 
-    if (isListType(environment.getFieldType())) {
-      var collectionRequest = requestFactory.createCollectionRequest(environment);
+    var isSubscription = isSubscription(environment.getOperationDefinition());
 
-      return backendLoader.loadMany(collectionRequest)
-          .collectList()
+    if (isSubscription || isListType(environment.getFieldType())) {
+      var collectionRequest = requestFactory.createCollectionRequest(environment);
+      var result = backendLoader.loadMany(collectionRequest);
+
+      if (isSubscription) {
+        return result;
+      }
+
+      return result.collectList()
           .toFuture();
     }
 
@@ -41,10 +48,5 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return backendLoader.loadSingle(objectRequest)
         .toFuture();
-  }
-
-  // TODO move to utils class
-  private static boolean isListType(GraphQLOutputType type) {
-    return GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(type));
   }
 }

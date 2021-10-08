@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import graphql.Scalars;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
+import graphql.language.OperationDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
@@ -13,15 +14,25 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.List;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
 public class TypeHelper {
+
   public static final String IS_CONNECTION_TYPE = "isConnectionType";
 
   private TypeHelper() {}
+
+  public static boolean isSubscription(OperationDefinition operation) {
+    return OperationDefinition.Operation.SUBSCRIPTION.equals(operation.getOperation());
+  }
+
+  public static boolean isListType(GraphQLType type) {
+    return GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(type));
+  }
 
   public static boolean hasListType(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
