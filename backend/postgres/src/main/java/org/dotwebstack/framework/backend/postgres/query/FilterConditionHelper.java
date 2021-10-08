@@ -170,10 +170,10 @@ public class FilterConditionHelper {
   }
 
   private Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
-//    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
-//      return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-//          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
-//    }
+    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
+      return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
+          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
+    }
 
     return DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
         .toString()));

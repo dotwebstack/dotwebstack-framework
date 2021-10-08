@@ -63,12 +63,12 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createWkt(Geometry geometry) {
-    var wktWriter = new WKTWriter(geometry.getDimension());
+    var wktWriter = new WKTWriter(getDimensionsFromGeometry(geometry));
     return wktWriter.write(geometry);
   }
 
   private String createWkb(Geometry geometry) {
-    var wkbWriter = new WKBWriter(geometry.getDimension(), true);
+    var wkbWriter = new WKBWriter(getDimensionsFromGeometry(geometry), true);
     return Base64.getEncoder()
         .encodeToString(wkbWriter.write(geometry));
   }
@@ -76,5 +76,13 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   private String createGeoJson(Geometry geometry) {
     var geoJsonWriter = new GeoJsonWriter();
     return geoJsonWriter.write(geometry);
+  }
+
+  private int getDimensionsFromGeometry(Geometry geometry) {
+    int dimensions = geometry.getDimension();
+    if (dimensions == 0) {
+      dimensions = Double.isNaN(geometry.getCoordinate().getZ()) ? 2 : 3;
+    }
+    return dimensions;
   }
 }

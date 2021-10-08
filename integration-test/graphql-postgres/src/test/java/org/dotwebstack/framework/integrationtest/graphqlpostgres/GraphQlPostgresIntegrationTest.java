@@ -1415,7 +1415,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
         + "\\\"coordinates\\\": [[[194450.17898426164,471514.04309242184],[195716.74476882417,471524.29347733577],"
         + "[195724.91952857617,470529.87463413755],[194458.099519217,470519.6228124658],"
-        + "[194450.17898426164,471514.04309242184]]]}\"}}}) { identifier_brewery name }}";
+        + "[194450.17898426164,471514.04309242184]]],\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":{\\\"name\\\":\\\"EPSG:28992\\\"}}}\"}}}) { identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
