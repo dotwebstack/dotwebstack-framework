@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
@@ -27,7 +28,7 @@ public class TypeHelper {
   private TypeHelper() {}
 
   public static boolean isSubscription(OperationDefinition operation) {
-    return OperationDefinition.Operation.SUBSCRIPTION.equals(operation.getOperation());
+    return SUBSCRIPTION.equals(operation.getOperation());
   }
 
   public static boolean isListType(GraphQLType type) {

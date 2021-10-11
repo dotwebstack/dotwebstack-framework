@@ -36,6 +36,7 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
@@ -54,8 +55,7 @@ public class BackendRequestFactory {
   }
 
   public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
-
+    var executionStepInfo = getExecutionStepInfo(environment);
     var objectType = getObjectType(environment.getFieldType());
 
     return CollectionRequest.builder()
@@ -79,12 +79,9 @@ public class BackendRequestFactory {
 
   public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
     var objectType = getObjectType(environment.getFieldType());
-    Map<String, Object> source = environment.getSource();
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .parentField(environment.getField())
-        .source(source)
         .keyCriteria(createKeyCriteria(environment.getArguments()))
         .scalarFields(getScalarFields(environment.getSelectionSet()))
         .objectFields(getObjectFields(environment.getSelectionSet(), environment))
@@ -103,6 +100,22 @@ public class BackendRequestFactory {
         .objectFields(getObjectFields(selectedField.getSelectionSet(), environment))
         .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), environment))
         .contextCriteria(createContextCriteria(environment))
+        .build();
+  }
+
+  public RequestContext createRequestContext(DataFetchingEnvironment environment) {
+    Map<String, Object> source = environment.getSource();
+
+    var objectField = schema.getObjectType(environment.getExecutionStepInfo()
+        .getObjectType()
+        .getName())
+        .flatMap(objectType -> objectType.getField(environment.getField()
+            .getName()))
+        .orElse(null);
+
+    return RequestContext.builder()
+        .objectField(objectField)
+        .source(source)
         .build();
   }
 

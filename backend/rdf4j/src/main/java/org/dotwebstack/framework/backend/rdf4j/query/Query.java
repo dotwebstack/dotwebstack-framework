@@ -56,9 +56,10 @@ public class Query {
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
     var query = createSelect(collectionRequest.getObjectRequest(), nodeShape);
+    var sortCriterias = collectionRequest.getSortCriterias();
 
-    if (collectionRequest.hasSortCriterias()) {
-      query = query.orderBy(createOrderBy(collectionRequest.getSortCriterias()));
+    if (!sortCriterias.isEmpty()) {
+      query = query.orderBy(createOrderBy(sortCriterias));
     }
 
     return query;

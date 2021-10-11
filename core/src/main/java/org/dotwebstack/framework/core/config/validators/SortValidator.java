@@ -4,9 +4,11 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
@@ -20,9 +22,8 @@ public class SortValidator implements SchemaValidator {
   public void validate(Schema schema) {
     Map<String, List<SortableByConfiguration>> sortableByPerObjectTypeName = getSortableByPerObjectTypeName(schema);
 
-    sortableByPerObjectTypeName.forEach((objectType, sortableByList) -> sortableByList
-        .forEach(sortableByConfiguration -> validateSortableByField(schema.getObjectType(objectType)
-            .orElseThrow(), sortableByConfiguration)));
+    sortableByPerObjectTypeName.forEach((objectTypeName, sortableByList) -> sortableByList
+        .forEach(sortableByConfiguration -> validateSortableByField(schema, objectTypeName, sortableByConfiguration)));
   }
 
   private Map<String, List<SortableByConfiguration>> getSortableByPerObjectTypeName(Schema schema) {
@@ -48,14 +49,17 @@ public class SortValidator implements SchemaValidator {
         .collect(Collectors.toList());
   }
 
-  private void validateSortableByField(ObjectType<?> objectType, SortableByConfiguration sortableByConfiguration) {
-    String fieldName = sortableByConfiguration.getField();
+  private void validateSortableByField(Schema schema, String objectTypeName,
+      SortableByConfiguration sortableByConfiguration) {
+    String sortFieldPath = sortableByConfiguration.getField();
+    String[] sortFieldPathArr = sortFieldPath.split("\\.");
 
-    if (objectType.getField(fieldName)
-        .isEmpty()) {
+    Optional<? extends ObjectField> field = getField(schema, objectTypeName, sortFieldPathArr);
+
+    if (field.isEmpty()) {
       throw invalidConfigurationException(
-          "Sort field '{}' in object type '{}' can't be resolved to a single scalar type.", fieldName,
-          objectType.getName());
+          "Sort field '{}' in object type '{}' can't be resolved to a single scalar type.", sortFieldPath,
+          objectTypeName);
     }
   }
 }
