@@ -5,12 +5,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.r2dbc.postgresql.client.Parameter;
 import io.r2dbc.postgresql.message.Format;
-import java.util.Set;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -22,9 +22,11 @@ class SpatialCodecTest {
 
   private final int id = 17991;
 
+  private final String name = "geometry";
+
   private final ByteBufGeometryParser geometryParser = new ByteBufGeometryParser();
 
-  private final SpatialCodec codec = new SpatialCodec(Set.of(id), geometryParser);
+  private final SpatialCodec codec = new SpatialCodec(Map.of(name, id), geometryParser);
 
   @Test
   void canDecode_returnsTrue_forKnownGeoTypes() {
@@ -54,7 +56,7 @@ class SpatialCodecTest {
 
   @Test
   void decode_returnsGeometry_forBinaryFormat() {
-    Point point = (new GeometryFactory()).createPoint(new Coordinate(5.97927433, 52.21715768));
+    Point point = new GeometryFactory().createPoint(new Coordinate(5.97927433, 52.21715768));
     byte[] bytes = new JtsBinaryWriter().writeBinary(point);
     ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
 
@@ -72,29 +74,47 @@ class SpatialCodecTest {
   }
 
   @Test
-  void canEncode_returnsFalse_always() {
-    boolean canEncode = codec.canEncode(new Object());
+  void canEncode_returnsTrue_forGeometry() {
+    boolean canDecode = codec.canEncode(new GeometryFactory().createPoint());
 
-    assertThat(canEncode, is(Boolean.FALSE));
+    assertThat(canDecode, is(Boolean.TRUE));
   }
 
   @Test
-  void canEncodeNull_returnsFalse_always() {
+  void canEncode_returnsFalse_forObject() {
+    boolean canDecode = codec.canEncode(new Object());
+
+    assertThat(canDecode, is(Boolean.FALSE));
+  }
+
+  @Test
+  void canEncodeNull_returnsTrue_forObject() {
     boolean canEncode = codec.canEncodeNull(Object.class);
 
+    assertThat(canEncode, is(Boolean.TRUE));
+  }
+
+  @Test
+  void canEncodeNull_returnsFalse_forPrimitive() {
+    boolean canEncode = codec.canEncodeNull(Integer.class);
+
     assertThat(canEncode, is(Boolean.FALSE));
   }
 
   @Test
-  void encode_throwsException_always() {
-    Object encodedValue = new Object();
+  void encode_returnsParameter_forGeometry() {
+    Point point = new GeometryFactory().createPoint(new Coordinate(5.97927433, 52.21715768));
 
-    assertThrows(UnsupportedOperationException.class, () -> codec.encode(encodedValue));
+    Parameter encodedValue = codec.encode(point);
+
+    assertThat(encodedValue, is(notNullValue()));
   }
 
   @Test
-  void encodeNull_throwsException_always() {
-    assertThrows(UnsupportedOperationException.class, codec::encodeNull);
+  void encodeNull_returnsParameter_always() {
+    Parameter result = codec.encodeNull();
+
+    assertThat(result.getClass(), is(Parameter.class));
   }
 
   @Test
