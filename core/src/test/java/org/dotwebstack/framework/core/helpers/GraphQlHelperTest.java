@@ -14,14 +14,14 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
-class GraphQlValueHelperTest {
+class GraphQlHelperTest {
 
   @Test
   void getStringValue_returnsString_forStringValue() {
     StringValue value = StringValue.newStringValue("string value")
         .build();
 
-    String actual = GraphQlValueHelper.getStringValue(value);
+    String actual = GraphQlHelper.getStringValue(value);
 
     assertEquals("string value", actual);
   }
@@ -32,7 +32,7 @@ class GraphQlValueHelperTest {
         .value(BigInteger.TEN)
         .build();
 
-    String actual = GraphQlValueHelper.getStringValue(value);
+    String actual = GraphQlHelper.getStringValue(value);
 
     assertEquals("10", actual);
   }
@@ -43,7 +43,7 @@ class GraphQlValueHelperTest {
         .value(BigDecimal.valueOf(10.12))
         .build();
 
-    String actual = GraphQlValueHelper.getStringValue(value);
+    String actual = GraphQlHelper.getStringValue(value);
 
     assertEquals("10.12", actual);
   }
@@ -53,7 +53,7 @@ class GraphQlValueHelperTest {
     BooleanValue value = BooleanValue.newBooleanValue(false)
         .build();
 
-    String actual = GraphQlValueHelper.getStringValue(value);
+    String actual = GraphQlHelper.getStringValue(value);
 
     assertEquals("false", actual);
   }
@@ -68,7 +68,7 @@ class GraphQlValueHelperTest {
             .build())
         .build();
 
-    String actual = GraphQlValueHelper.getStringValue(value);
+    String actual = GraphQlHelper.getStringValue(value);
 
     assertEquals("ObjectValue{objectFields=[ObjectField{name='field', value=StringValue{value='test'}}]}", actual);
   }
@@ -78,7 +78,7 @@ class GraphQlValueHelperTest {
     StringValue value = StringValue.newStringValue("string value")
         .build();
 
-    String actual = (String) GraphQlValueHelper.getValue(TypeName.newTypeName("String")
+    String actual = (String) GraphQlHelper.getValue(TypeName.newTypeName("String")
         .build(), value);
 
     assertEquals("string value", actual);
@@ -90,7 +90,7 @@ class GraphQlValueHelperTest {
     StringValue value = StringValue.newStringValue("NOW")
         .build();
 
-    Object actual = GraphQlValueHelper.getValue(TypeName.newTypeName("Date")
+    Object actual = GraphQlHelper.getValue(TypeName.newTypeName("Date")
         .build(), value);
 
     assertEquals("LocalDate", actual.getClass()

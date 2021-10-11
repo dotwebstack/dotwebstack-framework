@@ -5,24 +5,24 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
@@ -30,7 +30,6 @@ import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -271,34 +270,5 @@ public class BackendRequestFactory {
 
     return schema.getObjectType(rawType.getName())
         .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
-  }
-
-  // TODO move to utils?
-  private static final Predicate<SelectedField> isScalarField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLScalarType || isScalarType(unwrappedType);
-  };
-
-  // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType);
-  };
-
-  // TODO move to utils?
-  private static final Predicate<SelectedField> isObjectListField =
-      selectedField -> GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
-
-  // TODO move to utils?
-  private final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
-      .startsWith("__");
-
-  private static boolean isScalarType(GraphQLUnmodifiedType unmodifiedType) {
-    var additionalData = unmodifiedType.getDefinition()
-        .getAdditionalData();
-    return additionalData.containsKey(GraphQlConstants.IS_SCALAR)
-        && Objects.equals(additionalData.get(GraphQlConstants.IS_SCALAR), Boolean.TRUE.toString());
   }
 }
