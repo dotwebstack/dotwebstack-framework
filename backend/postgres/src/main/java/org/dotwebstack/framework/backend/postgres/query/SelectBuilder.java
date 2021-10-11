@@ -31,20 +31,20 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.JoinType;
-import org.jooq.Record;
-import org.jooq.SelectFieldOrAsterisk;
-import org.jooq.SelectQuery;
-import org.jooq.SortField;
-import org.jooq.Table;
+import org.dotwebstack.framework.ext.spatial.SpatialConstants;
+import org.jooq.*;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 @Setter
 @Accessors(fluent = true)
 class SelectBuilder {
+
+  private static final DataType<Geometry> GEOMETRY_DATATYPE =
+      new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
 
   private DSLContext dslContext;
 
@@ -147,7 +147,7 @@ class SelectBuilder {
     } else {
       var conditions = value.entrySet()
           .stream()
-          .map(entry -> createFilterValue(entry.getKey(), DSL.field(objectField.getColumn()), entry.getValue()))
+          .map(entry -> createFilterValue(entry.getKey(), objectField, entry.getValue()))
           .collect(Collectors.toList());
 
       return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
@@ -155,7 +155,9 @@ class SelectBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  private Condition createFilterValue(String filterField, Field<Object> field, Object value) {
+  private Condition createFilterValue(String filterField, PostgresObjectField objectField, Object value) {
+    Field<Object> field = DSL.field(objectField.getColumn());
+
     if (FilterConstants.EQ_FIELD.equals(filterField)) {
       return field.eq(DSL.val(value));
     }
@@ -186,7 +188,7 @@ class SelectBuilder {
 
       var conditions = mapValue.entrySet()
           .stream()
-          .map(entry -> createFilterValue(entry.getKey(), field, entry.getValue()))
+          .map(entry -> createFilterValue(entry.getKey(), objectField, entry.getValue()))
           .collect(Collectors.toList());
 
       var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
@@ -194,10 +196,37 @@ class SelectBuilder {
       return DSL.not(condition);
     }
 
+    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+      Map<String, Object> mapValue = (Map<String, Object>) value;
+
+      Geometry geometry = readGeometry((String) mapValue.get(SpatialConstants.FROM_WKT));
+
+      Field<Geometry> geoField = DSL.val(geometry)
+          .cast(GEOMETRY_DATATYPE);
+
+      switch (filterField) {
+        case SpatialConstants.CONTAINS:
+          return DSL.condition("ST_Contains({0}, {1})", field, geoField);
+        case SpatialConstants.WITHIN:
+          return DSL.condition("ST_Within({0}, {1})", geoField, field);
+        case SpatialConstants.INTERSECTS:
+          return DSL.condition("ST_Intersects({0}, {1})", field, geoField);
+        default:
+          throw illegalArgumentException("Unsupported geometry filter operation");
+      }
+    }
+
     throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
   }
 
-
+  private Geometry readGeometry(String wkt) {
+    var wktReader = new WKTReader();
+    try {
+      return wktReader.read(wkt);
+    } catch (ParseException e) {
+      throw illegalArgumentException("The filter input WKT is invalid!", e);
+    }
+  }
 
   @SuppressWarnings("rawtypes")
   public List<SortField> createSortConditions(List<SortCriteria> sortCriterias, Table<Record> table) {
