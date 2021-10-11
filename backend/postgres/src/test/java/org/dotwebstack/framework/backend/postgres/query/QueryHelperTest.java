@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,7 +13,7 @@ import org.jooq.Record;
 import org.jooq.Table;
 import org.junit.jupiter.api.Test;
 
-class TableHelperTest {
+class QueryHelperTest {
 
   @Test
   void findTable_returnsValue_forContextCriteria() {
@@ -22,7 +23,7 @@ class TableHelperTest {
         .values(Map.of("arg", "val"))
         .build();
 
-    Table<Record> result = TableHelper.findTable("table", contextCriteria);
+    Table<Record> result = findTable("table", contextCriteria);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("table_test_ctx('val')"));
@@ -30,7 +31,7 @@ class TableHelperTest {
 
   @Test
   void findTable_returnsValue_forDefault() {
-    Table<Record> result = TableHelper.findTable("table", null);
+    Table<Record> result = findTable("table", null);
 
     assertThat(result, notNullValue());
     assertThat(result.getName(), equalTo("table"));

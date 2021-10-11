@@ -16,5 +16,4 @@ public abstract class AbstractObjectField implements ObjectField {
   protected boolean nullable = false;
 
   private List<FieldArgument> arguments = new ArrayList<>();
-
 }

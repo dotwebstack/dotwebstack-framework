@@ -3,9 +3,10 @@ package org.dotwebstack.framework.backend.postgres.query;
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
+import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.jooq.DSLContext;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.conf.ParamType;
@@ -13,10 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 
 public class Query {
 
   private static final Logger LOG = LoggerFactory.getLogger(Query.class);
+
+  public static final String GROUP_KEY = "$group";
 
   private final AliasManager aliasManager = new AliasManager();
 
@@ -24,15 +28,20 @@ public class Query {
 
   private final SelectQuery<Record> selectQuery;
 
-  private final DSLContext dslContext;
+  private final RequestContext requestContext;
 
-  public Query(CollectionRequest collectionRequest, DSLContext dslContext) {
-    this.dslContext = dslContext;
+  public Query(CollectionRequest collectionRequest, RequestContext requestContext) {
+    this.requestContext = requestContext;
     selectQuery = createSelect(collectionRequest);
   }
 
-  public Query(ObjectRequest objectRequest, DSLContext dslContext) {
-    this.dslContext = dslContext;
+  public Query(CollectionBatchRequest collectionBatchRequest, RequestContext requestContext) {
+    this.requestContext = requestContext;
+    selectQuery = createSelect(collectionBatchRequest);
+  }
+
+  public Query(ObjectRequest objectRequest, RequestContext requestContext) {
+    this.requestContext = requestContext;
     selectQuery = createSelect(objectRequest);
   }
 
@@ -47,23 +56,34 @@ public class Query {
         .map(rowMapper);
   }
 
+  @SuppressWarnings("unchecked")
+  public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatch(DatabaseClient databaseClient) {
+    return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY));
+  }
+
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {
     return SelectBuilder.newSelect()
-        .dslContext(dslContext)
-        .objectRequest(collectionRequest.getObjectRequest())
-        .filterCriterias(collectionRequest.getBackendFilterCriteria())
-        .sortCriterias(collectionRequest.getSortCriterias())
+        .requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
-        .build();
+        .build(collectionRequest, null);
+  }
+
+  private SelectQuery<Record> createSelect(CollectionBatchRequest collectionBatchRequest) {
+    var collectionRequest = collectionBatchRequest.getCollectionRequest();
+
+    return SelectBuilder.newSelect()
+        .requestContext(requestContext)
+        .fieldMapper(rowMapper)
+        .aliasManager(aliasManager)
+        .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
   private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {
     return SelectBuilder.newSelect()
-        .dslContext(dslContext)
-        .objectRequest(objectRequest)
+        .requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
-        .build();
+        .build(objectRequest);
   }
 }

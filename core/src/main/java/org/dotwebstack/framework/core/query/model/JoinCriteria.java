@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.core.query.model;
 
 import java.util.Map;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class KeyCriteria {
+public class JoinCriteria {
 
-  private Map<String, Object> values;
+  private final Set<Map<String, Object>> keys;
 }

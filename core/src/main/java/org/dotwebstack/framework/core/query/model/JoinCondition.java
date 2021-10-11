@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class KeyCriteria {
+public class JoinCondition {
 
-  private Map<String, Object> values;
+  private final Map<String, Object> key;
 }
