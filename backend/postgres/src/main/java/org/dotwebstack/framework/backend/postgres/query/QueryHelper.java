@@ -25,6 +25,17 @@ class QueryHelper {
     return DSL.field(DSL.name(table.getName(), columnName));
   }
 
+  public static Field<Object> column(Table<Record> table, JoinColumn joinColumn, PostgresObjectType objectType) {
+    return DSL.field(DSL.name(table.getName(), columnName(joinColumn, objectType)));
+  }
+
+  public static String columnName(JoinColumn joinColumn, PostgresObjectType objectType) {
+    var objectField = objectType.getField(joinColumn.getReferencedField())
+        .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", joinColumn.getReferencedField()));
+
+    return objectField.getColumn();
+  }
+
   public static PostgresObjectType getObjectType(ObjectRequest objectRequest) {
     var objectType = objectRequest.getObjectType();
 
@@ -40,11 +51,11 @@ class QueryHelper {
         .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", name));
   }
 
-  public static List<Condition> createJoinConditions(Table<Record> table, Table<Record> referencedTable,
-      List<JoinColumn> joinColumns) {
+  public static List<Condition> createJoinConditions(Table<Record> junctionTable, Table<Record> referencedTable,
+      List<JoinColumn> joinColumns, PostgresObjectType objectType) {
     return joinColumns.stream()
-        .map(joinColumn -> column(table, joinColumn.getName())
-            .equal(column(referencedTable, joinColumn.getReferencedColumn())))
+        .map(joinColumn -> column(junctionTable, joinColumn.getName())
+            .equal(column(referencedTable, joinColumn, objectType)))
         .collect(Collectors.toList());
   }
 

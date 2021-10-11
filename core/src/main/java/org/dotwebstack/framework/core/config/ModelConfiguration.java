@@ -62,7 +62,10 @@ public class ModelConfiguration {
 
       objectType.setName(parser.getCurrentName());
       objectType.getFields()
-          .forEach((name, field) -> field.setName(name));
+          .forEach((name, field) -> {
+            field.setObjectType(objectType);
+            field.setName(name);
+          });
 
       if (objectType.getFilters() != null) {
         objectType.getFilters()

@@ -5,6 +5,10 @@ import javax.validation.constraints.NotNull;
 
 public interface ObjectField {
 
+  ObjectType<?> getObjectType();
+
+  void setObjectType(ObjectType<?> objectType);
+
   String getName();
 
   void setName(String name);

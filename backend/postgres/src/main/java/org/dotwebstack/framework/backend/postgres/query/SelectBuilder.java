@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
@@ -100,7 +102,8 @@ class SelectBuilder {
     var objectField = (PostgresObjectField) requestContext.getObjectField();
 
     if (objectField.getJoinTable() != null) {
-      return batchJoin(dataQuery, dataTable, joinCriteria);
+      var targetObjectType = getObjectType(collectionRequest.getObjectRequest());
+      return batchJoin(dataQuery, dataTable, joinCriteria, targetObjectType);
     }
 
     throw new UnsupportedOperationException();
@@ -154,12 +157,13 @@ class SelectBuilder {
   }
 
   private SelectQuery<Record> batchJoin(SelectQuery<Record> dataQuery, Table<Record> dataTable,
-      JoinCriteria joinCriteria) {
+      JoinCriteria joinCriteria, PostgresObjectType targetObjectType) {
     var objectField = (PostgresObjectField) requestContext.getObjectField();
+    var objectType = (PostgresObjectType) objectField.getObjectType();
     var joinTable = objectField.getJoinTable();
 
     // Create virtual table with static key values
-    var keyTable = createValuesTable(joinTable, joinCriteria.getKeys());
+    var keyTable = createValuesTable(objectType, joinTable, joinCriteria.getKeys());
 
     var batchQuery = dslContext.selectQuery(keyTable);
 
@@ -167,18 +171,20 @@ class SelectBuilder {
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);
-    dataQuery.addConditions(createJoinConditions(junctionTable, dataTable, joinTable.getInverseJoinColumns()));
-    dataQuery.addConditions(createJoinConditions(junctionTable, keyTable, joinTable.getJoinColumns()));
+    dataQuery.addConditions(createJoinConditions(junctionTable, keyTable, joinTable.getJoinColumns(), objectType));
+    dataQuery.addConditions(
+        createJoinConditions(junctionTable, dataTable, joinTable.getInverseJoinColumns(), targetObjectType));
 
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
+    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())));
 
     return batchQuery;
   }
 
-  private Table<Record> createValuesTable(JoinTable joinTable, Collection<Map<String, Object>> keys) {
+  private Table<Record> createValuesTable(PostgresObjectType objectType, JoinTable joinTable,
+      Collection<Map<String, Object>> keys) {
     var keyColumnNames = joinTable.getJoinColumns()
         .stream()
-        .map(JoinColumn::getReferencedColumn)
+        .map(joinColumn -> columnName(joinColumn, objectType))
         .collect(Collectors.toList());
 
     var keyTableRows = keys.stream()
@@ -212,8 +218,8 @@ class SelectBuilder {
 
       objectField.getJoinColumns()
           .forEach(joinColumn -> {
-            var field = DSL.field(DSL.name(table.getName(), joinColumn.getName()));
-            var referencedField = DSL.field(joinColumn.getReferencedField());
+            var field = column(table, joinColumn.getName());
+            var referencedField = column(table, joinColumn, getObjectType(objectRequest));
             filterQuery.addConditions(referencedField.equal(field));
           });
 
@@ -324,7 +330,7 @@ class SelectBuilder {
     var leafObjectField = (PostgresObjectField) sortCriteria.getFields()
         .get(0);
 
-    Field<?> sortField = DSL.field(DSL.name(table.getName(), leafObjectField.getColumn()));
+    var sortField = column(table, leafObjectField.getColumn());
 
     switch (sortCriteria.getDirection()) {
       case ASC:
@@ -360,8 +366,7 @@ class SelectBuilder {
         .stream()
         .map(entry -> objectType.getField(entry.getKey())
             .map(PostgresObjectField::getColumn)
-            .map(column -> DSL.field(DSL.name(table.getName(), column))
-                .equal(entry.getValue()))
+            .map(column -> column(table, column).equal(entry.getValue()))
             .orElseThrow())
         .collect(Collectors.toList());
   }
@@ -379,8 +384,7 @@ class SelectBuilder {
   }
 
   private ColumnMapper createColumnMapper(PostgresObjectField objectField, Table<Record> table) {
-    var column = DSL.field(DSL.name(table.getName(), objectField.getColumn()))
-        .as(aliasManager.newAlias());
+    var column = column(table, objectField.getColumn()).as(aliasManager.newAlias());
 
     return new ColumnMapper(column);
   }
@@ -403,7 +407,7 @@ class SelectBuilder {
 
     getObjectField(objectRequest, fieldName).getJoinColumns()
         .forEach(joinColumn -> {
-          var field = DSL.field(DSL.name(table.getName(), joinColumn.getName()));
+          var field = column(table, joinColumn.getName());
           var referencedField = DSL.field(joinColumn.getReferencedField());
           nestedSelect.addConditions(referencedField.equal(field));
         });
@@ -451,7 +455,7 @@ class SelectBuilder {
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {
     return joinColumns.stream()
-        .collect(Collectors.toMap(JoinColumn::getReferencedColumn,
+        .collect(Collectors.toMap(JoinColumn::getReferencedField,
             joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
                 .apply(row)));
   }

@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 public abstract class AbstractObjectField implements ObjectField {
 
+  protected ObjectType<?> objectType;
+
   protected String name;
 
   protected String type;
