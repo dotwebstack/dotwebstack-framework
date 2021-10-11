@@ -112,20 +112,12 @@ class GraphQlRdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
     assertThat(data,
         hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(
-              BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(),
-              BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
-              BREWERY_GEOMETRY_FIELD, ImmutableMap.of(
-                "type", "MULTIPOINT",
-                "asWKB", "ACAAAAQAABDmAAAAAQAgAAABAAAQ5kAX6sbkIykzQEoby9K0A8Q=",
-                "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))",
-                "asGeoJSON",
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
+                BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
+                ImmutableMap.of("type", "MULTIPOINT", "asWKB", "ACAAAAQAABDmAAAAAQAgAAABAAAQ5kAX6sbkIykzQEoby9K0A8Q=",
+                    "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
                     "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]],\"crs\":{\"type\":\"name\","
-                        + "\"properties\":{\"name\":\"EPSG:4326\"}}}"
-              )
-            )
-        )
-    );
+                        + "\"properties\":{\"name\":\"EPSG:4326\"}}}"))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {
