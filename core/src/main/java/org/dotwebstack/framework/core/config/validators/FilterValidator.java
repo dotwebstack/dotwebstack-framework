@@ -3,9 +3,11 @@ package org.dotwebstack.framework.core.config.validators;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
@@ -20,8 +22,7 @@ public class FilterValidator implements SchemaValidator {
     Map<String, Map<String, FilterConfiguration>> filtersPerObjectTypeName = getFiltersPerObjectTypeName(schema);
 
     filtersPerObjectTypeName.forEach((objectTypeName, filters) -> filters.entrySet()
-        .forEach(filterEntry -> validateFilterField(schema.getObjectType(objectTypeName)
-            .orElseThrow(), filterEntry)));
+        .forEach(filterEntry -> validateFilterField(schema, objectTypeName, filterEntry)));
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(Schema schema) {
@@ -43,21 +44,23 @@ public class FilterValidator implements SchemaValidator {
         .getFilters();
   }
 
-  private void validateFilterField(ObjectType<?> objectType, Map.Entry<String, FilterConfiguration> filterEntry) {
-    String filterFieldName = getFilterFieldName(filterEntry);
+  private void validateFilterField(Schema schema, String objectTypeName,
+      Map.Entry<String, FilterConfiguration> filterEntry) {
+    String filterFieldPath = getFilterFieldPath(filterEntry);
+    String[] filterFieldPathArr = filterFieldPath.split("\\.");
 
-    if (objectType.getField(filterFieldName)
-        .isEmpty()) {
+    Optional<? extends ObjectField> field = getField(schema, objectTypeName, filterFieldPathArr);
+
+    if (field.isEmpty()) {
       throw invalidConfigurationException(
-          "Filter field '{}' in object type '{}' can't be resolved to a single scalar type.", filterFieldName,
-          objectType.getName());
+          "Filter field '{}' in object type '{}' can't be resolved to a single scalar type.", filterFieldPath,
+          objectTypeName);
     }
   }
 
-  private String getFilterFieldName(Map.Entry<String, FilterConfiguration> filterEntry) {
-
-    return (filterEntry.getValue()
-        .getField() != null) ? filterEntry.getValue()
-            .getField() : filterEntry.getKey();
+  private String getFilterFieldPath(Map.Entry<String, FilterConfiguration> filterEntry) {
+    return Optional.ofNullable(filterEntry.getValue()
+        .getField())
+        .orElse(filterEntry.getKey());
   }
 }

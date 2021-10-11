@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.dotwebstack.framework.core.backend.BackendModule;
+import org.dotwebstack.framework.core.config.validators.SchemaValidator;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -28,10 +30,12 @@ public class ModelConfiguration {
   }
 
   @Bean
-  Schema schema(@Value("${dotwebstack.config:dotwebstack.yaml}") String configFile) {
+  Schema schema(@Value("${dotwebstack.config:dotwebstack.yaml}") String configFile, List<SchemaValidator> validators) {
     var objectMapper = createObjectMapper();
 
-    return new SchemaReader(objectMapper).read(configFile);
+    Schema schema = new SchemaReader(objectMapper).read(configFile);
+    validators.forEach(validator -> validator.validate(schema));
+    return schema;
   }
 
   private ObjectMapper createObjectMapper() {
