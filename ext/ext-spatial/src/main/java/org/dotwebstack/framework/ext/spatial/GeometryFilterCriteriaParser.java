@@ -96,10 +96,21 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   private Geometry getGeometryFromWkt(String wkt) {
     var wktReader = new WKTReader();
     try {
-      return wktReader.read(wkt);
+      Geometry geometry = wktReader.read(wkt);
+      if (getDimensionsFromGeometry(geometry) == 2) {
+        geometry.setSRID(28992);
+      } else {
+        geometry.setSRID(7415);
+      }
+      return geometry;
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKT is invalid!", e);
     }
+  }
+
+  private int getDimensionsFromGeometry(Geometry geometry) {
+    return Double.isNaN(geometry.getCoordinate()
+        .getZ()) ? 2 : 3;
   }
 
   private Geometry getGeometryFromWkb(String wkb) {
