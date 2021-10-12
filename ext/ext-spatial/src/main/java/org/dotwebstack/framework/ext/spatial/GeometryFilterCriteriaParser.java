@@ -7,7 +7,9 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 
 import graphql.schema.GraphQLInputObjectField;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.datafetchers.filter.OperatorFilterCriteriaParser;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -22,6 +24,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
+
+  private static final int RD = 28992;
+
+  private static final int RDNAP = 7415;
 
   private final SpatialConfigurationProperties spatialConfigurationProperties;
 
@@ -65,42 +71,44 @@ public class GeometryFilterCriteriaParser extends OperatorFilterCriteriaParser {
   }
 
   private Geometry getGeometry(Map<String, String> data) {
-    if (countGeometryFilters(data) > 1) {
-      throw illegalArgumentException(
-          "The geometry filter can only contain one of the following methods: '%s', '%s' or '%s'.", FROM_WKT, FROM_WKB,
-          FROM_GEOJSON);
-    }
+    validateGeometryFilters(data);
+
     if (data.containsKey(FROM_WKT)) {
       return getGeometryFromWkt(data.get(FROM_WKT));
     } else if (data.containsKey(FROM_WKB)) {
       return getGeometryFromWkb(data.get(FROM_WKB));
-    } else if (data.containsKey(FROM_GEOJSON)) {
+    } else {
       return getGeometryFromGeoJson(data.get(FROM_GEOJSON));
     }
-
-    throw illegalArgumentException(
-        "The geometry filter does not contain one of the following methods: '%s', '%s' or '%s'.", FROM_WKT, FROM_WKB,
-        FROM_GEOJSON);
   }
 
-  private int countGeometryFilters(Map<String, String> data) {
-    int counter = 0;
-    for (String filter : new String[] {FROM_WKT, FROM_WKB, FROM_GEOJSON}) {
-      if (data.containsKey(filter)) {
-        counter++;
-      }
+  private void validateGeometryFilters(Map<String, String> data) {
+    var filters = List.of(FROM_WKT, FROM_WKB, FROM_GEOJSON);
+
+    var foundFilters = data.keySet()
+        .stream()
+        .filter(filters::contains)
+        .collect(Collectors.toList());
+
+    if (foundFilters.isEmpty()) {
+      throw illegalArgumentException("The geometry filter does not contain one of the following methods: %s.",
+          String.join(" or ", filters));
     }
-    return counter;
+
+    if (foundFilters.size() > 1) {
+      throw illegalArgumentException("The geometry filter can only contain one of the following methods: %s.",
+          String.join(" or ", filters));
+    }
   }
 
   private Geometry getGeometryFromWkt(String wkt) {
     var wktReader = new WKTReader();
     try {
-      Geometry geometry = wktReader.read(wkt);
+      var geometry = wktReader.read(wkt);
       if (getDimensionsFromGeometry(geometry) == 2) {
-        geometry.setSRID(28992);
+        geometry.setSRID(RD);
       } else {
-        geometry.setSRID(7415);
+        geometry.setSRID(RDNAP);
       }
       return geometry;
     } catch (ParseException e) {

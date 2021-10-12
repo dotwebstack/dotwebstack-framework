@@ -51,7 +51,6 @@ objectTypes:
 
   Brewery:
     backend: rdf4j
-    crs: 28992
     keys:
       - identifier
     fields:

@@ -79,11 +79,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private int getDimensionsFromGeometry(Geometry geometry) {
-    int dimensions = geometry.getDimension();
-    if (dimensions == 0) {
-      dimensions = Double.isNaN(geometry.getCoordinate()
-          .getZ()) ? 2 : 3;
-    }
-    return dimensions;
+    return Double.isNaN(geometry.getCoordinate()
+        .getZ()) ? 2 : 3;
   }
 }

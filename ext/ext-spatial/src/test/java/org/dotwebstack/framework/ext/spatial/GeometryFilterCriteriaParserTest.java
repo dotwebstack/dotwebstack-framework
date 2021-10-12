@@ -255,8 +255,7 @@ class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
         assertThrows(IllegalArgumentException.class, () -> parser.parse(typeConfiguration, inputObjectField, data));
 
     assertThat(exception.getMessage(),
-        is("The geometry filter can only contain one of the following methods: 'fromWKT', "
-            + "'fromWKB' or 'fromGeoJSON'."));
+        is("The geometry filter can only contain one of the following methods: fromWKT or fromWKB or fromGeoJSON."));
   }
 
   @Test
@@ -269,7 +268,7 @@ class GeometryFilterCriteriaParserTest extends FilterCriteriaParserBaseTest {
     var exception =
         assertThrows(IllegalArgumentException.class, () -> parser.parse(typeConfiguration, inputObjectField, data));
 
-    assertThat(exception.getMessage(), is(
-        "The geometry filter does not contain one of the following methods: 'fromWKT', 'fromWKB' or 'fromGeoJSON'."));
+    assertThat(exception.getMessage(),
+        is("The geometry filter does not contain one of the following methods: fromWKT or fromWKB or fromGeoJSON."));
   }
 }
