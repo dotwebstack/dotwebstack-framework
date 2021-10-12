@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
 import graphql.GraphQL;
+import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -40,7 +41,12 @@ public class GraphQlProxyConfig {
 
   @Bean
   @ConditionalOnMissingBean
-  public GraphQL graphql(Subschema subschema) {
+  public GraphQL graphql(GraphQLSchema schema, RemoteExecutor remoteExecutor) {
+    var subschema = Subschema.builder()
+        .schema(schema)
+        .executor(remoteExecutor)
+        .build();
+
     var wrappedSchema = SchemaWrapper.wrap(subschema);
 
     return GraphQL.newGraphQL(wrappedSchema)
@@ -48,7 +54,7 @@ public class GraphQlProxyConfig {
   }
 
   @Bean
-  public Subschema subschema(RemoteExecutor remoteExecutor) {
+  public GraphQLSchema schema(RemoteExecutor remoteExecutor) {
     TypeDefinitionRegistry typeDefinitionRegistry;
 
     try {
@@ -59,16 +65,11 @@ public class GraphQlProxyConfig {
       throw internalServerErrorException(e);
     }
 
-    var schema = new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.newRuntimeWiring()
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.newRuntimeWiring()
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME)
         .scalar(CoreScalars.OBJECT)
         .build());
-
-    return Subschema.builder()
-        .schema(schema)
-        .executor(remoteExecutor)
-        .build();
   }
 
   @Bean

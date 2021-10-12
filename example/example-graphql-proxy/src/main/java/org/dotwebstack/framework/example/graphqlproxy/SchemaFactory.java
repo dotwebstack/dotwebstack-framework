@@ -8,6 +8,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import java.io.IOException;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
+import org.dotwebstack.graphql.orchestrate.schema.RemoteExecutor;
 import org.dotwebstack.graphql.orchestrate.schema.Subschema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -18,16 +19,25 @@ public class SchemaFactory {
 
   private final Resource schemaFile;
 
-  private final Subschema subschema;
+  private final GraphQLSchema schema;
 
-  public SchemaFactory(@Value("classpath:config/schema.graphql") Resource schemaFile, Subschema subschema) {
+  private final RemoteExecutor executor;
+
+  public SchemaFactory(@Value("classpath:config/schema.graphql") Resource schemaFile, GraphQLSchema schema,
+      RemoteExecutor executor) {
     this.schemaFile = schemaFile;
-    this.subschema = subschema;
+    this.schema = schema;
+    this.executor = executor;
   }
 
   public GraphQLSchema create() throws IOException {
     var typeDefinitionRegistry = new SchemaParser()
         .parse(schemaFile.getInputStream());
+
+    var subschema = Subschema.builder()
+        .schema(schema)
+        .executor(executor)
+        .build();
 
     var codeReqistry = GraphQLCodeRegistry.newCodeRegistry()
         .dataFetcher(FieldCoordinates.coordinates("Query", "zoek"),
