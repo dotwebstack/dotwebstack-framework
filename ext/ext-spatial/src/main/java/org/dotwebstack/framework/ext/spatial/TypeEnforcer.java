@@ -44,12 +44,16 @@ public class TypeEnforcer {
   }
 
   private Point enforcePoint(Geometry geometry) {
-    return (Point) precisionReducer.reduce(geometry.getCentroid());
+    var point = (Point) precisionReducer.reduce(geometry.getCentroid());
+    point.setSRID(geometry.getSRID());
+    return point;
   }
 
   private MultiPoint enforceMultiPoint(Geometry geometry) {
     if (geometry instanceof Point) {
-      return geometryFactory.createMultiPoint(new Point[] {(Point) geometry});
+      var multiPoint = geometryFactory.createMultiPoint(new Point[] {(Point) geometry});
+      multiPoint.setSRID(geometry.getSRID());
+      return multiPoint;
     }
 
     throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiPoint' not supported!",
@@ -59,7 +63,9 @@ public class TypeEnforcer {
 
   private MultiLineString enforceMultiLineString(Geometry geometry) {
     if (geometry instanceof LineString) {
-      return geometryFactory.createMultiLineString(new LineString[] {(LineString) geometry});
+      var multiLineString = geometryFactory.createMultiLineString(new LineString[] {(LineString) geometry});
+      multiLineString.setSRID(geometry.getSRID());
+      return multiLineString;
     }
 
     throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiLineString' not supported!",
@@ -69,7 +75,9 @@ public class TypeEnforcer {
 
   private MultiPolygon enforceMultiPolygon(Geometry geometry) {
     if (geometry instanceof Polygon) {
-      return geometryFactory.createMultiPolygon(new Polygon[] {(Polygon) geometry});
+      var multiPolygon = geometryFactory.createMultiPolygon(new Polygon[] {(Polygon) geometry});
+      multiPolygon.setSRID(geometry.getSRID());
+      return multiPolygon;
     }
 
     throw ExceptionHelper.unsupportedOperationException("Enforcing '{}' to 'MultiPolygon' not supported!",

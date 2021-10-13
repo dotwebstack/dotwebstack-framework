@@ -26,6 +26,10 @@
       <artifactId>commons-codec</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.locationtech.jts.io</groupId>
+      <artifactId>jts-io-common</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>

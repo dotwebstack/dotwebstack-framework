@@ -26,14 +26,21 @@ import org.dotwebstack.framework.ext.spatial.GeometryFilterCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConfigurationProperties;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDataType;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FilterConditionHelper {
+
+  private static final DataType<Geometry> GEOMETRY_DATATYPE =
+      new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
 
   private final DSLContext dslContext;
 
@@ -170,13 +177,14 @@ public class FilterConditionHelper {
   }
 
   private Field<?> getGeofilterField(GeometryFilterCriteria geometryFilterCriteria) {
-    if (StringUtils.isNotBlank(geometryFilterCriteria.getCrs())) {
-      return DSL.field("ST_GeomFromText({0},{1})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-          .toString()), DSL.val(getSrid(geometryFilterCriteria.getCrs())));
+    Geometry geometry = geometryFilterCriteria.getGeometry();
+
+    if (geometry.getSRID() == 0) {
+      geometry.setSRID(getSrid(geometryFilterCriteria.getCrs()));
     }
 
-    return DSL.field("ST_GeomFromText({0})", Object.class, DSL.val(geometryFilterCriteria.getGeometry()
-        .toString()));
+    return DSL.val(geometry)
+        .cast(GEOMETRY_DATATYPE);
   }
 
   private Integer getSrid(String crs) {

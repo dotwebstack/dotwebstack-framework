@@ -1,5 +1,7 @@
 CREATE SCHEMA db;
 
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
 
 CREATE TYPE db.taste AS ENUM ('MEATY', 'SMOKY', 'WATERY', 'FRUITY', 'SPICY');
