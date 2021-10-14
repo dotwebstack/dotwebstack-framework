@@ -99,12 +99,14 @@ public class BackendDataFetcherTest {
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
     when(environment.getDataLoaderRegistry()).thenReturn(new DataLoaderRegistry());
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-    when(requestFactory.createCollectionRequest(executionStepInfoMock,environment.getSelectionSet())).thenReturn(collectionRequestMock);
+    when(requestFactory.createCollectionRequest(executionStepInfoMock, environment.getSelectionSet()))
+        .thenReturn(collectionRequestMock);
 
     var result = dataFetcher.get(environment);
 
     assertTrue(result instanceof CompletableFuture);
-    verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
+    verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
     verify(requestFactory).createRequestContext(any(DataFetchingEnvironment.class));
   }
 
@@ -129,7 +131,7 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-//    when(requestFactory.createCollectionRequest()).thenReturn(collectionRequestMock);
+    // when(requestFactory.createCollectionRequest()).thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
     when(backendLoader.loadMany(eq(collectionRequestMock), eq(requestContext))).thenReturn(Flux.just(resultMock));
@@ -138,7 +140,7 @@ public class BackendDataFetcherTest {
 
     assertTrue(result instanceof List);
     assertThat(((List<?>) result).get(0), is(resultMock));
-//    verify(requestFactory).createCollectionRequest(any(DataFetchingEnvironment.class));
+    // verify(requestFactory).createCollectionRequest(any(DataFetchingEnvironment.class));
     verify(backendLoader).loadMany(any(CollectionRequest.class), any(RequestContext.class));
   }
 
@@ -161,7 +163,7 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-//    when(requestFactory.createCollectionRequest(environment)).thenReturn(collectionRequestMock);
+    // when(requestFactory.createCollectionRequest(environment)).thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
     when(backendLoader.loadMany(eq(collectionRequestMock), eq(requestContext))).thenReturn(Flux.just(resultMock));
@@ -191,7 +193,7 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     ObjectRequest objectRequest = mock(ObjectRequest.class);
-//    when(requestFactory.createObjectRequest(environment)).thenReturn(objectRequest);
+    // when(requestFactory.createObjectRequest(environment)).thenReturn(objectRequest);
 
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
@@ -201,7 +203,7 @@ public class BackendDataFetcherTest {
 
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(resultMock.get("aa")));
-//    verify(requestFactory).createObjectRequest(any(DataFetchingEnvironment.class));
+    // verify(requestFactory).createObjectRequest(any(DataFetchingEnvironment.class));
   }
 
 }

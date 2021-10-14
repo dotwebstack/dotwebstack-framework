@@ -43,6 +43,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.FieldArgument;
@@ -100,6 +101,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .forEach((name, objectType) -> {
           var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType))
+              .additionalData(GraphQlConstants.IS_NESTED, Boolean.TRUE.toString())
               .build();
 
           typeDefinitionRegistry.add(objectTypeDefinition);

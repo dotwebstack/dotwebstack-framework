@@ -19,4 +19,6 @@ public interface ObjectType<T extends ObjectField> {
   Map<String, List<SortableByConfiguration>> getSortableBy();
 
   Map<String, FilterConfiguration> getFilters();
+
+  boolean isNested();
 }

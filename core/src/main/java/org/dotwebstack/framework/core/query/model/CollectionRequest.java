@@ -4,7 +4,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 
 @Getter
 @Builder
@@ -17,5 +17,5 @@ public class CollectionRequest implements Request {
   private final List<SortCriteria> sortCriterias = List.of();
 
   @Builder.Default
-  private final List<BackendFilterCriteria> backendFilterCriteria = List.of();
+  private final List<FilterCriteria> filterCriterias = List.of();
 }

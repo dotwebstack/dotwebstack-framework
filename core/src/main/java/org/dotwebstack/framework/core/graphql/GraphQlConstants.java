@@ -5,4 +5,6 @@ public class GraphQlConstants {
   private GraphQlConstants() {}
 
   public static final String IS_SCALAR = "isScalar";
+
+  public static final String IS_NESTED = "isNested";
 }

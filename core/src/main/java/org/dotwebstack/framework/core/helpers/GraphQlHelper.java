@@ -14,6 +14,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.NonNull;
@@ -55,8 +56,20 @@ public class GraphQlHelper {
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    var additionalData = unwrappedType.getDefinition() != null ? unwrappedType.getDefinition()
+        .getAdditionalData() : Map.of();
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType);
+        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
+        && !additionalData.containsKey(GraphQlConstants.IS_NESTED);
+  };
+
+  public static final Predicate<SelectedField> isNestedObjectField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    var additionalData = unwrappedType.getDefinition() != null ? unwrappedType.getDefinition()
+        .getAdditionalData() : Map.of();
+    return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
+        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
+        && additionalData.containsKey(GraphQlConstants.IS_NESTED);
   };
 
   public static final Predicate<SelectedField> isObjectListField =

@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BackendFilterCriteria {
+public class FilterCriteria {
 
   private final List<ObjectFieldPath> fieldPath;
 

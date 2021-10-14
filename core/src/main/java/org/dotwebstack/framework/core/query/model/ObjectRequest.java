@@ -29,10 +29,7 @@ public class ObjectRequest implements Request {
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
   @Builder.Default
-  protected final List<NestedObjectFieldConfiguration> nestedObjectFields = new ArrayList<>();
-
-  @Builder.Default
-  private final List<AggregateObjectFieldConfiguration> aggregateObjectFields = new ArrayList<>();
+  protected final Map<SelectedField, Collection<SelectedField>> nestedObjectFields = new HashMap<>();
 
   private final ContextCriteria contextCriteria;
 }

@@ -86,7 +86,7 @@ class SelectBuilder {
 
     createSortConditions(collectionRequest.getSortCriterias(), dataTable).forEach(dataQuery::addOrderBy);
 
-    collectionRequest.getBackendFilterCriteria()
+    collectionRequest.getFilterCriterias()
         .stream()
         .map(filterCriteria -> createFilterCondition(collectionRequest.getObjectRequest(),
             filterCriteria.getFieldPath(), filterCriteria.getValue(), dataTable))
@@ -140,7 +140,7 @@ class SelectBuilder {
 
     objectRequest.getScalarFields()
         .stream()
-        .map(selectedField -> processScalarField(selectedField, objectType, table))
+        .map(selectedField -> processScalarField(selectedField, objectType, table, fieldMapper))
         .forEach(dataQuery::addSelect);
 
     objectRequest.getObjectFields()
@@ -152,6 +152,21 @@ class SelectBuilder {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
           dataQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
           dataQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
+        });
+
+    objectRequest.getNestedObjectFields()
+        .forEach((key, value) -> {
+          var objectField = objectType.getFields()
+              .get(key.getName());
+
+          var nestedObjectMapper = new ObjectMapper();
+
+          fieldMapper.register(objectField.getName(), nestedObjectMapper);
+
+          value.stream()
+              .map(selectedField -> processScalarField(selectedField, objectField.getTargetType(), table,
+                  nestedObjectMapper))
+              .forEach(dataQuery::addSelect);
         });
 
     objectRequest.getSelectedObjectListFields()
@@ -230,6 +245,7 @@ class SelectBuilder {
       Map<String, Object> value, Table<Record> table) {
     var current = fieldPath.get(0);
     var objectField = (PostgresObjectField) current.getObjectField();
+    var objectType = (PostgresObjectType) current.getObjectType();
 
     if (fieldPath.size() > 1) {
       var filterTable =
@@ -243,7 +259,7 @@ class SelectBuilder {
       objectField.getJoinColumns()
           .forEach(joinColumn -> {
             var field = column(table, joinColumn.getName());
-            var referencedField = column(table, joinColumn, getObjectType(objectRequest));
+            var referencedField = column(filterTable, joinColumn, objectType);
             filterQuery.addConditions(referencedField.equal(field));
           });
 
@@ -396,13 +412,13 @@ class SelectBuilder {
   }
 
   private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
-      Table<Record> table) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> objectFieldMapper) {
     var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 
     var columnMapper = createColumnMapper(objectField, table);
 
-    fieldMapper.register(selectedField.getName(), columnMapper);
+    objectFieldMapper.register(selectedField.getName(), columnMapper);
 
     return columnMapper.getColumn();
   }

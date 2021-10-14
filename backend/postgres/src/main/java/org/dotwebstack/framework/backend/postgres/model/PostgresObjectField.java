@@ -24,6 +24,8 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private PostgresObjectField mappedByObjectField;
 
+  private PostgresObjectType targetType;
+
   public String getColumn() {
     // Lazy-determine default column name
     if (column == null) {
