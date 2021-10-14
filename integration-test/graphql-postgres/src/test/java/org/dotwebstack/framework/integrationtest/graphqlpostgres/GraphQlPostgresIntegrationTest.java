@@ -507,6 +507,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBreweryWithAggregateType_forMultipleBeers() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
@@ -530,6 +531,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBreweryWithAggregateType_forSingleBeer() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
@@ -553,6 +555,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBreweryWithAggregateType_forNoBeer() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
@@ -579,6 +582,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBeerWithAggregateType_forIngredients() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
@@ -604,6 +608,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBeerWithAggregateType_forDuplicateAvg() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
@@ -674,6 +679,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBeerWithStringJoinAggregateType_forString() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name taste ingredientAgg{ totalCount : count( field : \"weight\" )"
@@ -696,6 +702,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_ReturnsBeerWithStringJoinAggregateType_forStringArray() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
