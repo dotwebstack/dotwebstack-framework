@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.core.backend;
 
-import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
@@ -9,7 +9,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderFactory;
 import org.dataloader.MappedBatchLoader;
@@ -36,8 +36,9 @@ class BackendDataFetcher implements DataFetcher<Object> {
     Map<String, Object> source = environment.getSource();
 
     // TODO: getExecutionStepInfo verplaatsen naar aparte helper.
-    var fieldName = requestFactory.getExecutionStepInfo(environment)
-        .getField()
+    var executionStepInfo = requestFactory.getExecutionStepInfo(environment);
+
+    var fieldName = executionStepInfo.getField()
         .getName();
 
     // Data was eager-loaded by parent
@@ -49,22 +50,29 @@ class BackendDataFetcher implements DataFetcher<Object> {
     var requestContext = requestFactory.createRequestContext(environment);
 
     if (isSubscription || isListType(environment.getFieldType())) {
-      var collectionRequest = requestFactory.createCollectionRequest(environment);
+      var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
-      var completableFutures = source.entrySet()
-          .stream()
-          .filter(entry -> entry.getKey()
-              .startsWith(JOIN_KEY_PREFIX))
-          .map(Map.Entry::getValue)
-          .map(JoinCondition.class::cast)
-          .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
-          .toArray(CompletableFuture[]::new);
+      if (source != null) {
+        var completableFutures = source.entrySet()
+            .stream()
+            .filter(entry -> entry.getKey()
+                .startsWith(JOIN_KEY_PREFIX))
+            .map(Map.Entry::getValue)
+            .map(JoinCondition.class::cast)
+            .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
+            .collect(Collectors.toList());
 
-      if (isNotEmpty(completableFutures)) {
-        return CompletableFuture.allOf(completableFutures);
+        if (completableFutures.size() > 0) {
+          if (completableFutures.size() == 1) {
+            return completableFutures.get(0);
+          }
+
+          throw illegalStateException("Batching failed: found multiple join conditions!");
+        }
       }
 
-      var result = backendLoader.loadMany(collectionRequest, requestContext);
+      var result = backendLoader.loadMany(collectionRequest, requestContext)
+          .map(row -> row);
 
       if (isSubscription) {
         return result;
@@ -74,7 +82,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    var objectRequest = requestFactory.createObjectRequest(environment);
+    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
@@ -94,7 +102,9 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private DataLoader<Map<String, Object>, List<Map<String, Object>>> createBatchLoader(
       DataFetchingEnvironment environment, RequestContext requestContext) {
-    var collectionRequest = requestFactory.createCollectionRequest(environment);
+    var executionStepInfo = requestFactory.getExecutionStepInfo(environment);
+
+    var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
     MappedBatchLoader<Map<String, Object>, List<Map<String, Object>>> batchLoader = keys -> {
       var collectionBatchRequest = CollectionBatchRequest.builder()
@@ -106,11 +116,25 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
       return backendLoader.batchLoadMany(collectionBatchRequest, requestContext)
           .flatMap(group -> group.collectList()
-              .map(rows -> Tuples.of(group.key(), rows)))
+              .map(rows -> Tuples.of(manipulateKey(group.key()), rows)))
           .collectMap(Tuple2::getT1, Tuple2::getT2)
           .toFuture();
     };
 
     return DataLoaderFactory.newMappedDataLoader(batchLoader);
+  }
+
+  private Map<String, Object> manipulateKey(Map<String, Object> key) {
+    // TODO: Tijdelijke workaround: Equals check faalt omdat numerieke bij de eerste query als Long word
+    // opgehaald en in tweede query als Int
+    return key.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+          var v = entry.getValue();
+          if (v instanceof Integer) {
+            return ((Integer) v).longValue();
+          }
+          return v;
+        }));
   }
 }

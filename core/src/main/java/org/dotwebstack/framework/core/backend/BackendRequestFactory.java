@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.Argument;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLObjectType;
@@ -20,10 +21,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.BackendFilterCriteria;
@@ -60,54 +58,53 @@ public class BackendRequestFactory {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
-    var executionStepInfo = getExecutionStepInfo(environment);
-    var objectType = getObjectType(environment.getFieldType());
+  public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet) {
+    var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
+    var objectType = getObjectType(unwrappedType);
 
     return CollectionRequest.builder()
-        .objectRequest(createObjectRequest(environment))
+        .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
         .backendFilterCriteria(
             createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME)))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
-  private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
-    ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
-
-    var executionStepInfo = getExecutionStepInfo(environment);
-
+  private CollectionRequest createCollectionRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
+    // enkel nodig voor het bepalen van een joinconditie
     return CollectionRequest.builder()
-        .objectRequest(createObjectRequest(selectedField, environment))
-        .backendFilterCriteria(createFilterCriteria(objectType,
-            getNestedMap(executionStepInfo.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
-        .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
+        .objectRequest(createObjectRequest(selectedField, executionStepInfo))
         .build();
   }
 
-  public ObjectRequest createObjectRequest(DataFetchingEnvironment environment) {
-    var objectType = getObjectType(environment.getFieldType());
+  public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet) {
+    var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
+    var objectType = getObjectType(unwrappedType);
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(environment.getArguments()))
-        .scalarFields(getScalarFields(environment.getSelectionSet()))
-        .objectFields(getObjectFields(environment.getSelectionSet(), environment))
-        .selectedObjectListFields(getObjectListFields(environment.getSelectionSet(), environment))
-        .contextCriteria(createContextCriteria(environment))
+        .keyCriteria(createKeyCriteria(executionStepInfo.getField()
+            .getArguments(), executionStepInfo.getArguments()))
+        .scalarFields(getScalarFields(selectionSet))
+        .objectFields(getObjectFields(selectionSet, executionStepInfo))
+        .selectedObjectListFields(getObjectListFields(selectionSet, executionStepInfo))
+        .contextCriteria(createContextCriteria(executionStepInfo))
         .build();
   }
 
-  private ObjectRequest createObjectRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
+  private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
     ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(selectedField.getArguments()))
+        .keyCriteria(createKeyCriteria(executionStepInfo.getField()
+            .getArguments(), selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
-        .objectFields(getObjectFields(selectedField.getSelectionSet(), environment))
-        .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), environment))
-        .contextCriteria(createContextCriteria(environment))
+        .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
+        .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
+        .contextCriteria(createContextCriteria(executionStepInfo))
         .build();
   }
 
@@ -141,9 +138,7 @@ public class BackendRequestFactory {
     return executionStepInfo;
   }
 
-  private ContextCriteria createContextCriteria(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo = getExecutionStepInfo(environment);
-
+  private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {
     var contextName = executionStepInfo.getFieldDefinition()
         .getArguments()
         .stream()
@@ -181,31 +176,33 @@ public class BackendRequestFactory {
   }
 
   private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
-      DataFetchingEnvironment environment) {
+      ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
         // TODO: typeDefinitionRegistry weg refactoren
         .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getType()))
-        .collect(
-            Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
+        .collect(Collectors.toMap(Function.identity(),
+            selectedField -> createObjectRequest(selectedField, executionStepInfo)));
   }
 
   private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
-      DataFetchingEnvironment environment) {
+      ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
         // TODO: typeDefinitionRegistry weg refactoren
         .filter(
             isObjectListField.or((selectedField) -> isConnectionType(typeDefinitionRegistry, selectedField.getType())))
         .collect(Collectors.toMap(Function.identity(),
-            selectedField -> createCollectionRequest(selectedField, environment)));
+            selectedField -> createCollectionRequest(selectedField, executionStepInfo)));
   }
 
-  private List<KeyCriteria> createKeyCriteria(Map<String, Object> arguments) {
-    return arguments.entrySet()
+  private List<KeyCriteria> createKeyCriteria(List<Argument> arguments, Map<String, Object> argumentValues) {
+    return argumentValues.entrySet()
         .stream()
-        .filter(argument -> !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
+        .filter(argument -> arguments.stream()
+            .anyMatch(arg -> Objects.equals(arg.getName(), argument.getKey()))
+            && !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
         .map(entry -> KeyCriteria.builder()
             .values(Map.of(entry.getKey(), entry.getValue()))
             .build())

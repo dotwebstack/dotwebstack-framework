@@ -34,7 +34,11 @@ public class ModelConfiguration {
     var objectMapper = createObjectMapper();
 
     Schema schema = new SchemaReader(objectMapper).read(configFile);
+
+    backendModule.init(schema.getObjectTypes());
+
     validators.forEach(validator -> validator.validate(schema));
+
     return schema;
   }
 

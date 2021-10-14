@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
-import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
@@ -101,6 +100,15 @@ class SelectBuilder {
 
     var objectField = (PostgresObjectField) requestContext.getObjectField();
 
+    if (objectField.getMappedByObjectField() != null) {
+      objectField = objectField.getMappedByObjectField();
+    }
+
+    if (!objectField.getJoinColumns()
+        .isEmpty()) {
+      return batchJoin(dataQuery, dataTable, joinCriteria, objectField.getJoinColumns());
+    }
+
     if (objectField.getJoinTable() != null) {
       var targetObjectType = getObjectType(collectionRequest.getObjectRequest());
       return batchJoin(dataQuery, dataTable, joinCriteria, targetObjectType);
@@ -157,13 +165,30 @@ class SelectBuilder {
   }
 
   private SelectQuery<Record> batchJoin(SelectQuery<Record> dataQuery, Table<Record> dataTable,
+      JoinCriteria joinCriteria, List<JoinColumn> joinColumns) {
+    var objectType = (PostgresObjectType) requestContext.getObjectField()
+        .getObjectType();
+
+    // Create virtual table with static key values
+    var keyTable = createValuesTable(objectType, joinColumns, joinCriteria.getKeys());
+
+    var batchQuery = dslContext.selectQuery(keyTable);
+
+    dataQuery.addConditions(createJoinConditions(dataTable, keyTable, joinColumns, objectType));
+
+    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())));
+
+    return batchQuery;
+  }
+
+  private SelectQuery<Record> batchJoin(SelectQuery<Record> dataQuery, Table<Record> dataTable,
       JoinCriteria joinCriteria, PostgresObjectType targetObjectType) {
     var objectField = (PostgresObjectField) requestContext.getObjectField();
     var objectType = (PostgresObjectType) objectField.getObjectType();
     var joinTable = objectField.getJoinTable();
 
     // Create virtual table with static key values
-    var keyTable = createValuesTable(objectType, joinTable, joinCriteria.getKeys());
+    var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());
 
     var batchQuery = dslContext.selectQuery(keyTable);
 
@@ -180,10 +205,9 @@ class SelectBuilder {
     return batchQuery;
   }
 
-  private Table<Record> createValuesTable(PostgresObjectType objectType, JoinTable joinTable,
+  private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,
       Collection<Map<String, Object>> keys) {
-    var keyColumnNames = joinTable.getJoinColumns()
-        .stream()
+    var keyColumnNames = joinColumns.stream()
         .map(joinColumn -> columnName(joinColumn, objectType))
         .collect(Collectors.toList());
 

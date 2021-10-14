@@ -30,19 +30,19 @@ objectTypes:
   Beer:
     table: dbeerpedia.beers
     filters:
+      name:
+        field: name
       breweryCity:
         field: brewery.visitAddress.city
       ingredientName:
         field: ingredients.name
-    keys:
-      - identifier
     sortableBy:
       name:
         - field: name
           direction: ASC
-#      breweryCity:
-#        - field: brewery.visitAddress.city
-#          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
     fields:
       identifier:
         type: ID
@@ -86,8 +86,6 @@ objectTypes:
 
   Brewery:
     table: dbeerpedia.breweries
-    keys:
-      - record_id
     sortableBy:
       name:
         - field: name
@@ -123,7 +121,6 @@ objectTypes:
     fields:
       record_id:
         type: ID
-#        visible: false
       identifier:
         type: String
       name:
@@ -169,8 +166,6 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -181,8 +176,6 @@ objectTypes:
 
   Address:
     table: dbeerpedia.addresses
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -192,8 +185,6 @@ objectTypes:
         type: String
 
   History:
-    keys:
-      - identifier
     fields:
       age:
         type: Int
