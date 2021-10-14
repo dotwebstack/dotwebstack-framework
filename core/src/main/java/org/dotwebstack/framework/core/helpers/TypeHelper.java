@@ -14,6 +14,7 @@ import graphql.language.TypeName;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -64,6 +65,22 @@ public class TypeHelper {
       return ((NonNullType) type).getType();
     }
     return type;
+  }
+
+  public static GraphQLType unwrapConnectionType(GraphQLType type) {
+    if (type instanceof GraphQLNonNull && isConnectionType(((GraphQLNonNull) type).getWrappedType())) {
+      return unwrapConnectionType(((GraphQLNonNull) type).getWrappedType());
+    }
+    if (isConnectionType(type)) {
+      return ((GraphQLObjectType) type).getFieldDefinition("nodes")
+          .getType();
+    }
+    return type;
+  }
+
+  private static boolean isConnectionType(GraphQLType type) {
+    return type instanceof GraphQLObjectType && ((GraphQLObjectType) type).getName()
+        .endsWith("Connection");
   }
 
   public static Type getBaseType(@NonNull Type<?> type) {

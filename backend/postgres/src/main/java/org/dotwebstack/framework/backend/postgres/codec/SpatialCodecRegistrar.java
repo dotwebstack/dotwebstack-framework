@@ -26,11 +26,9 @@ public class SpatialCodecRegistrar implements CodecRegistrar {
   public Publisher<Void> register(PostgresqlConnection connection, ByteBufAllocator allocator, CodecRegistry registry) {
     return connection.createStatement(GEO_OID_STMT)
         .execute()
-        .flatMap(result ->
-            result.map((row, rowMetadata) ->
-                new AbstractMap.SimpleEntry<>(
-                    row.get("typname", String.class),
-                    row.get("oid", Integer.class))))
+        .flatMap(
+            result -> result.map((row, rowMetadata) -> new AbstractMap.SimpleEntry<>(row.get("typname", String.class),
+                row.get("oid", Integer.class))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         .doOnNext(dataTypes -> registry.addFirst(new SpatialCodec(dataTypes, geometryParser)))
         .then();

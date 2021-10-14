@@ -30,6 +30,10 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
     data.put(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), firstArgumentValue);
     data.put(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue);
 
+    if (environment.getSource() != null) {
+      data.putAll(environment.getSource());
+    }
+
     return DataFetcherResult.newResult()
         .data(data)
         .build();

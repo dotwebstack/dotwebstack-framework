@@ -424,22 +424,22 @@ class SelectBuilder {
     }
 
     if (objectField.getMappedBy() != null) {
-      return handleJoinMappedBy(collectionRequest, objectField, table);
+      return handleJoinMappedBy(collectionRequest, objectRequest, objectField, table);
     }
 
     return Stream.of();
   }
 
   private Stream<SelectFieldOrAsterisk> handleJoinMappedBy(CollectionRequest collectionRequest,
-      PostgresObjectField objectField, Table<Record> table) {
+      ObjectRequest objectRequest, PostgresObjectField objectField, Table<Record> table) {
     var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
 
     // Provide join info for child data fetcher
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-        .key(getJoinColumnValues(objectField.getJoinColumns(), row))
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(nestedObjectField.getName()), row -> JoinCondition.builder()
+        .key(getJoinColumnValues(nestedObjectField.getJoinColumns(), row))
         .build());
 
-    return selectJoinColumns(collectionRequest.getObjectRequest(), nestedObjectField.getJoinColumns(), table);
+    return selectJoinColumns(objectRequest, nestedObjectField.getJoinColumns(), table);
   }
 
   private Stream<SelectFieldOrAsterisk> handleJoinTable(ObjectRequest objectRequest, PostgresObjectField objectField,

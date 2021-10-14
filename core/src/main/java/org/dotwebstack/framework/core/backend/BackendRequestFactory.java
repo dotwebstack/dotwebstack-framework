@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
@@ -18,6 +19,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -50,8 +53,11 @@ public class BackendRequestFactory {
 
   private final Schema schema;
 
-  public BackendRequestFactory(Schema schema) {
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
+
+  public BackendRequestFactory(Schema schema, TypeDefinitionRegistry typeDefinitionRegistry) {
     this.schema = schema;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public CollectionRequest createCollectionRequest(DataFetchingEnvironment environment) {
@@ -67,13 +73,15 @@ public class BackendRequestFactory {
   }
 
   private CollectionRequest createCollectionRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
-    var objectType = getObjectType(selectedField.getType());
+    ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
+
+    var executionStepInfo = getExecutionStepInfo(environment);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(selectedField, environment))
         .backendFilterCriteria(createFilterCriteria(objectType,
-            getNestedMap(environment.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
-        .sortCriterias(createSortCriteria(objectType, environment.getArgument(SORT_ARGUMENT_NAME)))
+            getNestedMap(executionStepInfo.getArguments(), FilterConstants.FILTER_ARGUMENT_NAME)))
+        .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
 
@@ -91,7 +99,7 @@ public class BackendRequestFactory {
   }
 
   private ObjectRequest createObjectRequest(SelectedField selectedField, DataFetchingEnvironment environment) {
-    var objectType = getObjectType(selectedField.getType());
+    ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
 
     return ObjectRequest.builder()
         .objectType(objectType)
@@ -106,10 +114,9 @@ public class BackendRequestFactory {
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {
     Map<String, Object> source = environment.getSource();
 
-    var objectField = schema.getObjectType(environment.getExecutionStepInfo()
-        .getObjectType()
+    var objectField = schema.getObjectType(getExecutionStepInfo(environment).getObjectType()
         .getName())
-        .flatMap(objectType -> objectType.getField(environment.getField()
+        .flatMap(objectType -> objectType.getField(getExecutionStepInfo(environment).getField()
             .getName()))
         .orElse(null);
 
@@ -119,7 +126,8 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
+  // TODO: getExecutionStepInfo verplaatsen naar aparte helper.
+  public ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
     ExecutionStepInfo executionStepInfo;
 
     var isList = isList(unwrapNonNull(environment.getFieldType()));
@@ -177,6 +185,8 @@ public class BackendRequestFactory {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
+        // TODO: typeDefinitionRegistry weg refactoren
+        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getType()))
         .collect(
             Collectors.toMap(Function.identity(), selectedField -> createObjectRequest(selectedField, environment)));
   }
@@ -185,7 +195,9 @@ public class BackendRequestFactory {
       DataFetchingEnvironment environment) {
     return selectionSet.getImmediateFields()
         .stream()
-        .filter(isObjectListField)
+        // TODO: typeDefinitionRegistry weg refactoren
+        .filter(
+            isObjectListField.or((selectedField) -> isConnectionType(typeDefinitionRegistry, selectedField.getType())))
         .collect(Collectors.toMap(Function.identity(),
             selectedField -> createCollectionRequest(selectedField, environment)));
   }
