@@ -256,12 +256,26 @@ class SelectBuilder {
 
       filterQuery.addSelect(DSL.val(1));
 
+      // Inverted mapped by
+      if (objectField.getMappedByObjectField() != null) {
+        var mappedByObjectField = objectField.getMappedByObjectField();
+        mappedByObjectField.getJoinColumns()
+            .forEach(joinColumn -> {
+              var field = column(filterTable, joinColumn.getName());
+              var referencedField = column(table, joinColumn, (PostgresObjectType) objectField.getObjectType());
+              filterQuery.addConditions(referencedField.equal(field));
+            });
+      }
+
+      // Normal join column
       objectField.getJoinColumns()
           .forEach(joinColumn -> {
             var field = column(table, joinColumn.getName());
             var referencedField = column(filterTable, joinColumn, objectType);
             filterQuery.addConditions(referencedField.equal(field));
           });
+
+      // TODO: JoinTable
 
       var rest = fieldPath.subList(1, fieldPath.size());
 
@@ -490,14 +504,15 @@ class SelectBuilder {
         .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
         .build());
 
-    return selectJoinColumns(objectRequest, objectField.getJoinColumns(), table);
+    return selectJoinColumns(objectRequest, joinTable.getJoinColumns(), table);
   }
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {
     return joinColumns.stream()
-        .collect(Collectors.toMap(JoinColumn::getReferencedField,
-            joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
-                .apply(row)));
+        .collect(Collectors.toMap(JoinColumn::getReferencedField, joinColumn -> {
+          return fieldMapper.getFieldMapper(joinColumn.getReferencedField())
+              .apply(row);
+        }));
   }
 
   private Stream<SelectFieldOrAsterisk> selectJoinColumns(ObjectRequest objectRequest, List<JoinColumn> joinColumns,

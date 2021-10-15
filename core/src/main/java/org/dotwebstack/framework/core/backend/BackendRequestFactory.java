@@ -86,7 +86,7 @@ public class BackendRequestFactory {
             .getArguments(), executionStepInfo.getArguments()))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
-        .nestedObjectFields(getNestedObjectFields(selectionSet, executionStepInfo))
+        .nestedObjectFields(getNestedObjectFields(selectionSet))
         .selectedObjectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
         .build();
@@ -101,7 +101,7 @@ public class BackendRequestFactory {
             .getArguments(), selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
-        .nestedObjectFields(getNestedObjectFields(selectedField.getSelectionSet(), executionStepInfo))
+        .nestedObjectFields(getNestedObjectFields(selectedField.getSelectionSet()))
         .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
         .build();
@@ -175,7 +175,7 @@ public class BackendRequestFactory {
   }
 
   private Map<SelectedField, Collection<SelectedField>> getNestedObjectFields(
-      DataFetchingFieldSelectionSet selectionSet, ExecutionStepInfo executionStepInfo) {
+      DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isNestedObjectField)

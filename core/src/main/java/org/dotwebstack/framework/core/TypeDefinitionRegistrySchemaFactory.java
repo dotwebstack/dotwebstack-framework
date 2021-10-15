@@ -99,12 +99,15 @@ public class TypeDefinitionRegistrySchemaFactory {
   private void addObjectTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
     schema.getObjectTypes()
         .forEach((name, objectType) -> {
-          var objectTypeDefinition = newObjectTypeDefinition().name(name)
-              .fieldDefinitions(createFieldDefinitions(objectType))
-              .additionalData(GraphQlConstants.IS_NESTED, Boolean.TRUE.toString())
-              .build();
 
-          typeDefinitionRegistry.add(objectTypeDefinition);
+          var objectTypeDefinition = newObjectTypeDefinition().name(name)
+              .fieldDefinitions(createFieldDefinitions(objectType));
+
+          if (objectType.isNested()) {
+            objectTypeDefinition.additionalData(GraphQlConstants.IS_NESTED, Boolean.TRUE.toString());
+          }
+
+          typeDefinitionRegistry.add(objectTypeDefinition.build());
         });
   }
 
