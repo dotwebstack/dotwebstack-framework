@@ -1,25 +1,29 @@
 features:
   - paging
 
-context:
-  fields:
-    validOn:
-      type: Date
-      default: NOW
-    availableOn:
-      type: DateTime
-      default: NOW
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
 
 queries:
   beers:
     type: Beer
+    context: history
     list: true
   beer:
     type: Beer
+    context: history
     keys:
       - identifier_beer
   breweries:
     type: Brewery
+    context: history
     list: true
 
 objectTypes:
