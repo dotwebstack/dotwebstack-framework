@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import org.dotwebstack.graphql.orchestrate.schema.RemoteExecutor;
 import org.dotwebstack.graphql.orchestrate.schema.Subschema;
+import org.dotwebstack.graphql.orchestrate.transform.HoistField;
 import org.dotwebstack.graphql.orchestrate.transform.RenameObjectFields;
 import org.dotwebstack.graphql.orchestrate.transform.Transform;
 import org.dotwebstack.graphql.orchestrate.wrap.SchemaWrapper;
@@ -28,7 +29,8 @@ public class GraphQLConfiguration {
     var subschema = Subschema.builder()
         .schema(schema)
         .executor(executor)
-        .transforms(createTransforms())
+        .transform(createNameTransform()
+            .pipe(createHoistTransform()))
         .build();
 
     var wrappedSchema = SchemaWrapper.wrap(subschema);
@@ -37,8 +39,13 @@ public class GraphQLConfiguration {
         .build();
   }
 
-  private List<Transform> createTransforms() {
-    var nameTransform = new RenameObjectFields((typeName, fieldName, fieldDefinition) -> {
+  private Transform createNameTransform() {
+    return new RenameObjectFields((typeName, fieldName, fieldDefinition) -> {
+      // Only rename fields for type Woonplaats
+      if (!typeName.equals("Woonplaats")) {
+        return fieldName;
+      }
+
       switch (fieldName) {
         case "identificatie":
           return "uri";
@@ -48,7 +55,9 @@ public class GraphQLConfiguration {
           return fieldName;
       }
     });
+  }
 
-    return List.of(nameTransform);
+  private Transform createHoistTransform() {
+    return new HoistField("Woonplaats", "geoWKT", List.of("geometrie", "asWKT"));
   }
 }
