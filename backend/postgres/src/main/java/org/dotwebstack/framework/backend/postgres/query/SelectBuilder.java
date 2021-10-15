@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
@@ -16,10 +17,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import graphql.schema.SelectedField;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -192,7 +190,9 @@ class SelectBuilder {
 
     dataQuery.addConditions(createJoinConditions(dataTable, keyTable, joinColumns, objectType));
 
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())));
+    addExists(dataQuery, joinColumns, dataTable);
+
+    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
 
     return batchQuery;
   }
@@ -213,12 +213,30 @@ class SelectBuilder {
 
     dataQuery.addFrom(junctionTable);
     dataQuery.addConditions(createJoinConditions(junctionTable, keyTable, joinTable.getJoinColumns(), objectType));
+
+    addExists(dataQuery, joinTable.getJoinColumns(), junctionTable);
+
     dataQuery.addConditions(
         createJoinConditions(junctionTable, dataTable, joinTable.getInverseJoinColumns(), targetObjectType));
 
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())));
+    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
 
     return batchQuery;
+  }
+
+  private void addExists(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
+    var existsColumnNames = joinColumns.stream()
+        .map(JoinColumn::getName)
+        .collect(Collectors.toList());
+
+    existsColumnNames.stream()
+        .map(existsColumn -> QueryHelper.column(table, existsColumn))
+        .forEach(dataQuery::addSelect);
+
+    // Register field mapper for exist row columns
+    fieldMapper.register(EXISTS_KEY, row -> existsColumnNames.stream()
+        .filter(key -> !Objects.isNull(row.get(key)))
+        .collect(Collectors.toMap(Function.identity(), row::get, (prev, next) -> next, HashMap::new)));
   }
 
   private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,

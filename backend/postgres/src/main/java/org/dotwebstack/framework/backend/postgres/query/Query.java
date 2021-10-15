@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
+
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
+import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -21,6 +24,8 @@ public class Query {
   private static final Logger LOG = LoggerFactory.getLogger(Query.class);
 
   public static final String GROUP_KEY = "$group";
+
+  public static final String EXISTS_KEY = "$exists";
 
   private final AliasManager aliasManager = new AliasManager();
 
@@ -58,7 +63,9 @@ public class Query {
 
   @SuppressWarnings("unchecked")
   public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatch(DatabaseClient databaseClient) {
-    return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY));
+    return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY))
+        .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(),
+            groupedFlux.filter(row -> !row.containsKey(EXISTS_KEY) || getNestedMap(row, EXISTS_KEY).size() > 0)));
   }
 
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {

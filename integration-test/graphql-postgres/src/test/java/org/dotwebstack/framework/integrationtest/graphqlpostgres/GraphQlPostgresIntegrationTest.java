@@ -725,6 +725,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("Aggregation not supported yet!")
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
     String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
