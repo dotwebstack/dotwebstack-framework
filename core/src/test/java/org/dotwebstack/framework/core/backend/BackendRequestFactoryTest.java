@@ -14,23 +14,21 @@ import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.DataFetchingFieldSelectionSetImpl;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.DataFetchingFieldSelectionSetImpl;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLOutputType;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.dotwebstack.framework.core.TestHelper;
 import org.dotwebstack.framework.core.config.SchemaReader;
-import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,19 +54,24 @@ public class BackendRequestFactoryTest {
 
     DataFetchingEnvironmentImpl.Builder envBuilder = new DataFetchingEnvironmentImpl.Builder();
     var typeMock = mock(GraphQLObjectType.class);
-    lenient().when(typeMock.getName()).thenReturn("Brewery");
+    lenient().when(typeMock.getName())
+        .thenReturn("Brewery");
     envBuilder.fieldType(typeMock);
 
     var fieldSelectionSet = mock(DataFetchingFieldSelectionSetImpl.class);
     envBuilder.selectionSet(fieldSelectionSet);
 
     var executionStepInfo = mock(ExecutionStepInfo.class);
-    var resultPath = ResultPath.rootPath().segment("a");
-    lenient().when(executionStepInfo.getPath()).thenReturn(resultPath);
+    var resultPath = ResultPath.rootPath()
+        .segment("a");
+    lenient().when(executionStepInfo.getPath())
+        .thenReturn(resultPath);
     var objectType = mock(GraphQLObjectType.class);
-    lenient().when(objectType.getName()).thenReturn("Brewery");
-  
-    lenient().when(executionStepInfo.getType()).thenReturn(objectType);
+    lenient().when(objectType.getName())
+        .thenReturn("Brewery");
+
+    lenient().when(executionStepInfo.getType())
+        .thenReturn(objectType);
 
     var date = LocalDate.of(2021, 1, 1);
     Map<String, Object> data = new HashMap<>();
@@ -77,9 +80,12 @@ public class BackendRequestFactoryTest {
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("arg", Map.of("arg1", data));
     arguments.put("filter", argument);
-    lenient().when(executionStepInfo.getArguments()).thenReturn(arguments);
-    lenient().when(executionStepInfo.getArgument(eq("filter"))).thenReturn(argument);
-    lenient().when(executionStepInfo.getArgument(eq("sort"))).thenReturn("NAME");
+    lenient().when(executionStepInfo.getArguments())
+        .thenReturn(arguments);
+    lenient().when(executionStepInfo.getArgument(eq("filter")))
+        .thenReturn(argument);
+    lenient().when(executionStepInfo.getArgument(eq("sort")))
+        .thenReturn("NAME");
 
     var fieldDefinitionBuilder = GraphQLFieldDefinition.newFieldDefinition();
     List<GraphQLArgument> argumentList = new ArrayList<>();
@@ -91,15 +97,22 @@ public class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
     var selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
-    
+
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetMock);
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof CollectionRequest);
-    assertThat(result.getObjectRequest().getObjectType().getName(), is("Brewery"));
-    assertTrue(!result.getFilterCriterias().isEmpty());
-    assertThat(result.getSortCriterias().get(0).getFields().get(0).getName(), is("name"));
+    assertThat(result.getObjectRequest()
+        .getObjectType()
+        .getName(), is("Brewery"));
+    assertTrue(!result.getFilterCriterias()
+        .isEmpty());
+    assertThat(result.getSortCriterias()
+        .get(0)
+        .getFields()
+        .get(0)
+        .getName(), is("name"));
   }
 
   @Test
@@ -131,8 +144,10 @@ public class BackendRequestFactoryTest {
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof RequestContext);
-    assertThat(result.getObjectField().getName(), is("addresses"));
-    assertThat(result.getObjectField().getType(), is("Address"));
+    assertThat(result.getObjectField()
+        .getName(), is("addresses"));
+    assertThat(result.getObjectField()
+        .getType(), is("Address"));
   }
 
   @Test
@@ -145,10 +160,13 @@ public class BackendRequestFactoryTest {
 
     var executionStepInfo = mock(ExecutionStepInfo.class);
     var executionStepInfoParent = mock(ExecutionStepInfo.class);
-    lenient().when(executionStepInfoParent.hasParent()).thenReturn(false);
+    lenient().when(executionStepInfoParent.hasParent())
+        .thenReturn(false);
     var objectType = mock(GraphQLObjectType.class);
-    lenient().when(objectType.getName()).thenReturn("anyName");
-    lenient().when(executionStepInfoParent.getObjectType()).thenReturn(objectType);
+    lenient().when(objectType.getName())
+        .thenReturn("anyName");
+    lenient().when(executionStepInfoParent.getObjectType())
+        .thenReturn(objectType);
     when(executionStepInfo.getParent()).thenReturn(executionStepInfoParent);
 
     envBuilder.executionStepInfo(executionStepInfo);
@@ -158,6 +176,7 @@ public class BackendRequestFactoryTest {
     var result = backendRequestFactory.getExecutionStepInfo(envBuilder.build());
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof ExecutionStepInfo);
-    assertThat(result.getObjectType().getName(), is("anyName"));
+    assertThat(result.getObjectType()
+        .getName(), is("anyName"));
   }
 }

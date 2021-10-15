@@ -16,9 +16,19 @@ class GraphQlFieldBuilderTest {
   private final TypeDefinitionRegistry registry = mock(TypeDefinitionRegistry.class);
 
   @Test
+  void toGraphQlField_returnsGraphQlField() {
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    FieldDefinition fieldDefinition = createFieldDefinition();
+
+    Map<String, GraphQlField> typeNameFieldMap = new HashMap<>();
+    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, typeNameFieldMap));
+  }
+
+  @Test
   void toGraphQlField_throwsException_MissingType() {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     FieldDefinition fieldDefinition = createFieldDefinition();
+    // when(registry.getType(anyString())).thenReturn();
 
     Map<String, GraphQlField> typeNameFieldMap = new HashMap<>();
     assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, typeNameFieldMap));
