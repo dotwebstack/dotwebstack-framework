@@ -50,8 +50,6 @@ public class BackendRequestFactoryTest {
 
   @Test
   void createCollectionRequest_returnsCollectionRequest_Brewery() {
-    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-
     DataFetchingEnvironmentImpl.Builder envBuilder = new DataFetchingEnvironmentImpl.Builder();
     var typeMock = mock(GraphQLObjectType.class);
     lenient().when(typeMock.getName())
@@ -97,7 +95,9 @@ public class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
     var selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
-
+  
+    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
+  
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetMock);
@@ -117,8 +117,6 @@ public class BackendRequestFactoryTest {
 
   @Test
   void createRequestContext_returnsRequestContext_whithObjectFieldType_Address() {
-    var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
-
     LocalDate date = LocalDate.of(2021, 1, 1);
     Map<String, Object> data = new HashMap<>();
     data.put("key", new DateSupplier(false, date));
@@ -138,7 +136,9 @@ public class BackendRequestFactoryTest {
     when(executionStepInfo.getField()).thenReturn(mergedField);
 
     envBuilder.executionStepInfo(executionStepInfo);
-
+  
+    var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
+  
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
@@ -152,8 +152,6 @@ public class BackendRequestFactoryTest {
 
   @Test
   void getExecutionStepInfo_returnsExecutionStepInfo_ifPaging() {
-    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
-
     var envBuilder = new DataFetchingEnvironmentImpl.Builder();
     var listType = mock(GraphQLList.class);
     envBuilder.fieldType(listType);
@@ -170,7 +168,9 @@ public class BackendRequestFactoryTest {
     when(executionStepInfo.getParent()).thenReturn(executionStepInfoParent);
 
     envBuilder.executionStepInfo(executionStepInfo);
-
+  
+    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
+  
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.getExecutionStepInfo(envBuilder.build());

@@ -17,8 +17,18 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 
 import com.google.common.base.CaseFormat;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.Type;
+import graphql.language.IntValue;
+import graphql.language.StringValue;
+import graphql.language.InputValueDefinition;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.EnumValueDefinition;
+import graphql.language.FieldDefinition;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.ObjectValue;
+import graphql.language.EnumValue;
 import graphql.Scalars;
-import graphql.language.*;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
