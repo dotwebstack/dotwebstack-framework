@@ -22,12 +22,12 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
-import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -269,17 +269,15 @@ public class BackendRequestFactory {
 
     return sortableByConfig.stream()
         .map(config -> SortCriteria.builder()
-            .fields(createObjectFieldPath(objectType, config.getField()).stream()
-                .map(ObjectFieldPath::getObjectField)
-                .collect(Collectors.toList()))
+            .fields(createObjectFieldPath(objectType, config.getField()))
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
   }
 
-  private List<ObjectFieldPath> createObjectFieldPath(ObjectType<?> objectType, String path) {
+  private List<ObjectField> createObjectFieldPath(ObjectType<?> objectType, String path) {
     var current = objectType;
-    var fieldPath = new ArrayList<ObjectFieldPath>();
+    var fieldPath = new ArrayList<ObjectField>();
 
     for (var segment : path.split("\\.")) {
       var field = Optional.ofNullable(current)
@@ -289,12 +287,7 @@ public class BackendRequestFactory {
       current = schema.getObjectType(field.getType())
           .orElse(null);
 
-      var objectFieldPath = ObjectFieldPath.builder()
-          .objectField(field)
-          .objectType(current)
-          .build();
-
-      fieldPath.add(objectFieldPath);
+      fieldPath.add(field);
     }
 
     return fieldPath;

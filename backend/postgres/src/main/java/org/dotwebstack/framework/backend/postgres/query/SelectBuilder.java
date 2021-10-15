@@ -28,7 +28,6 @@ import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.core.backend.filter.ObjectFieldPath;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -88,8 +87,10 @@ class SelectBuilder {
 
     collectionRequest.getFilterCriterias()
         .stream()
-        .map(filterCriteria -> createFilterCondition(collectionRequest.getObjectRequest(),
-            filterCriteria.getFieldPath(), filterCriteria.getValue(), dataTable))
+        .map(filterCriteria -> createFilterCondition(collectionRequest.getObjectRequest(), filterCriteria.getFieldPath()
+            .stream()
+            .map(PostgresObjectField.class::cast)
+            .collect(Collectors.toList()), filterCriteria.getValue(), dataTable))
         .forEach(dataQuery::addConditions);
 
     addPagingCriteria(dataQuery);
@@ -241,43 +242,46 @@ class SelectBuilder {
         .as(aliasManager.newAlias(), keyColumnNames.toArray(String[]::new));
   }
 
-  public Condition createFilterCondition(ObjectRequest objectRequest, List<ObjectFieldPath> fieldPath,
+  public Condition createFilterCondition(ObjectRequest objectRequest, List<PostgresObjectField> fieldPath,
       Map<String, Object> value, Table<Record> table) {
     var current = fieldPath.get(0);
-    var objectField = (PostgresObjectField) current.getObjectField();
-    var objectType = (PostgresObjectType) current.getObjectType();
 
     if (fieldPath.size() > 1) {
-      var filterTable =
-          findTable(((PostgresObjectType) current.getObjectType()).getTable(), objectRequest.getContextCriteria())
-              .as(aliasManager.newAlias());
+
+      var rest = fieldPath.subList(1, fieldPath.size());
+
+      if (current.getTargetType()
+          .isNested()) {
+        return createFilterCondition(objectRequest, rest, value, table);
+      }
+
+      var filterTable = findTable((current.getTargetType()).getTable(), objectRequest.getContextCriteria())
+          .as(aliasManager.newAlias());
 
       var filterQuery = dslContext.selectQuery(filterTable);
 
       filterQuery.addSelect(DSL.val(1));
 
       // Inverted mapped by
-      if (objectField.getMappedByObjectField() != null) {
-        var mappedByObjectField = objectField.getMappedByObjectField();
+      if (current.getMappedByObjectField() != null) {
+        var mappedByObjectField = current.getMappedByObjectField();
         mappedByObjectField.getJoinColumns()
             .forEach(joinColumn -> {
               var field = column(filterTable, joinColumn.getName());
-              var referencedField = column(table, joinColumn, (PostgresObjectType) objectField.getObjectType());
+              var referencedField = column(table, joinColumn, (PostgresObjectType) current.getObjectType());
               filterQuery.addConditions(referencedField.equal(field));
             });
       }
 
       // Normal join column
-      objectField.getJoinColumns()
+      current.getJoinColumns()
           .forEach(joinColumn -> {
             var field = column(table, joinColumn.getName());
-            var referencedField = column(filterTable, joinColumn, objectType);
+            var referencedField = column(filterTable, joinColumn, current.getTargetType());
             filterQuery.addConditions(referencedField.equal(field));
           });
 
       // TODO: JoinTable
-
-      var rest = fieldPath.subList(1, fieldPath.size());
 
       var nestedCondition = createFilterCondition(objectRequest, rest, value, filterTable);
 
@@ -288,7 +292,7 @@ class SelectBuilder {
 
     var conditions = value.entrySet()
         .stream()
-        .map(entry -> createFilterValue(entry.getKey(), objectField, entry.getValue()))
+        .map(entry -> createFilterValue(entry.getKey(), current, entry.getValue()))
         .collect(Collectors.toList());
 
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);

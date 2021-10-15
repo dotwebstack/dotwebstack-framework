@@ -26,6 +26,7 @@ queries:
     type: Brewery
     list: true
 
+
 objectTypes:
   Beer:
     table: dbeerpedia.beers
