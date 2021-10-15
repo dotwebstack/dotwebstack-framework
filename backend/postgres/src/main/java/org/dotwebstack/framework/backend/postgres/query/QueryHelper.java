@@ -11,22 +11,26 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.jooq.Condition;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
 class QueryHelper {
 
   private QueryHelper() {}
 
+  private static Name name(Table<Record> table, String columnName) {
+    if (table == null) {
+      return DSL.name(columnName);
+    }
+    return DSL.name(table.getName(), columnName);
+  }
+
   public static Field<Object> column(Table<Record> table, String columnName) {
-    return DSL.field(DSL.name(table.getName(), columnName));
+    return DSL.field(name(table, columnName));
   }
 
   public static Field<Object> column(Table<Record> table, JoinColumn joinColumn, PostgresObjectType objectType) {
-    return DSL.field(DSL.name(table.getName(), columnName(joinColumn, objectType)));
+    return DSL.field(name(table, columnName(joinColumn, objectType)));
   }
 
   public static String columnName(JoinColumn joinColumn, PostgresObjectType objectType) {

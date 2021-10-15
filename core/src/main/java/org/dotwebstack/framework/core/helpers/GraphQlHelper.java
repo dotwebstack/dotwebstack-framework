@@ -1,14 +1,9 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
+import static java.util.Optional.ofNullable;
 
-import graphql.language.BooleanValue;
-import graphql.language.FloatValue;
-import graphql.language.IntValue;
-import graphql.language.StringValue;
-import graphql.language.Type;
-import graphql.language.TypeName;
-import graphql.language.Value;
+import graphql.language.*;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
@@ -56,33 +51,41 @@ public class GraphQlHelper {
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    var additionalData = unwrappedType.getDefinition() != null ? unwrappedType.getDefinition()
-        .getAdditionalData() : Map.of();
+    var additionalData = getAdditionalData(unwrappedType);
+
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && !additionalData.containsKey(GraphQlConstants.IS_NESTED);
+        && !additionalData.containsKey(GraphQlConstants.IS_NESTED)
+        && !additionalData.containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
   };
 
   public static final Predicate<SelectedField> isNestedObjectField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    var additionalData = unwrappedType.getDefinition() != null ? unwrappedType.getDefinition()
-        .getAdditionalData() : Map.of();
+
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && additionalData.containsKey(GraphQlConstants.IS_NESTED);
+        && getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_NESTED);
   };
 
-  public static final Predicate<SelectedField> isObjectListField =
-      selectedField -> GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-          && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType()));
+  public static final Predicate<SelectedField> isObjectListField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+
+    return (GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
+        && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType())))
+        || getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
+  };
 
   public static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
 
   private static boolean isScalarType(GraphQLUnmodifiedType unmodifiedType) {
-    var additionalData = unmodifiedType.getDefinition()
-        .getAdditionalData();
-    return additionalData.containsKey(GraphQlConstants.IS_SCALAR)
-        && Objects.equals(additionalData.get(GraphQlConstants.IS_SCALAR), Boolean.TRUE.toString());
+    return getAdditionalData(unmodifiedType).containsKey(GraphQlConstants.IS_SCALAR);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, String> getAdditionalData(GraphQLUnmodifiedType unmodifiedType) {
+    return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
+        .map(Node::getAdditionalData)
+        .orElse(Map.of());
   }
 }

@@ -7,25 +7,17 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.*;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
-import static org.dotwebstack.framework.core.helpers.TypeHelper.isConnectionType;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.language.Argument;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.SelectedField;
-import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
-import org.dotwebstack.framework.core.datafetchers.SortConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -43,16 +35,10 @@ import org.springframework.stereotype.Component;
 @Conditional(GraphQlNativeEnabled.class)
 public class BackendRequestFactory {
 
-  private static final List<String> KEY_ARGUMENTS_EXCLUDE = List.of(FilterConstants.FILTER_ARGUMENT_NAME,
-      SortConstants.SORT_ARGUMENT_NAME, ContextConstants.CONTEXT_ARGUMENT_NAME);
-
   private final Schema schema;
 
-  private final TypeDefinitionRegistry typeDefinitionRegistry;
-
-  public BackendRequestFactory(Schema schema, TypeDefinitionRegistry typeDefinitionRegistry) {
+  public BackendRequestFactory(Schema schema) {
     this.schema = schema;
-    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
@@ -82,7 +68,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getField()
+        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
             .getArguments(), executionStepInfo.getArguments()))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
@@ -97,7 +83,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getField()
+        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
             .getArguments(), selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -188,8 +174,6 @@ public class BackendRequestFactory {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
-        // TODO: typeDefinitionRegistry weg refactoren
-        .filter(selectedField -> !isConnectionType(typeDefinitionRegistry, selectedField.getType()))
         .collect(Collectors.toMap(Function.identity(),
             selectedField -> createObjectRequest(selectedField, executionStepInfo)));
   }
@@ -198,21 +182,20 @@ public class BackendRequestFactory {
       ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
-        // TODO: typeDefinitionRegistry weg refactoren
-        .filter(
-            isObjectListField.or((selectedField) -> isConnectionType(typeDefinitionRegistry, selectedField.getType())))
+        .filter(isObjectListField)
         .collect(Collectors.toMap(Function.identity(),
             selectedField -> createCollectionRequest(selectedField, executionStepInfo)));
   }
 
-  private List<KeyCriteria> createKeyCriteria(List<Argument> arguments, Map<String, Object> argumentValues) {
-    return argumentValues.entrySet()
-        .stream()
-        .filter(argument -> arguments.stream()
-            .anyMatch(arg -> Objects.equals(arg.getName(), argument.getKey()))
-            && !KEY_ARGUMENTS_EXCLUDE.contains(argument.getKey()))
-        .map(entry -> KeyCriteria.builder()
-            .values(Map.of(entry.getKey(), entry.getValue()))
+  private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+    return arguments.stream()
+        .filter(argument -> argument.getDefinition()
+            .getAdditionalData()
+            .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
+        .filter(argument -> argumentMap.containsKey(argument.getName()))
+        .map(argument -> Map.of(argument.getName(), argumentMap.get(argument.getName())))
+        .map(values -> KeyCriteria.builder()
+            .values(values)
             .build())
         .collect(Collectors.toList());
   }

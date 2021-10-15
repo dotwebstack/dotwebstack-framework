@@ -8,27 +8,22 @@ import static org.mockito.Mockito.when;
 
 import graphql.language.FieldDefinition;
 import graphql.schema.idl.FieldWiringEnvironment;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Map;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ConnectionDataFetcherWiringFactoryTest {
 
-  @Mock
-  private TypeDefinitionRegistry typeDefinitionRegistry;
-
   private ConnectionDataFetcherWiringFactory wiringFactory;
 
   @BeforeEach
   void beforeEach() {
-    wiringFactory = new ConnectionDataFetcherWiringFactory(typeDefinitionRegistry);
+    wiringFactory = new ConnectionDataFetcherWiringFactory();
   }
 
   @Test
@@ -42,10 +37,8 @@ class ConnectionDataFetcherWiringFactoryTest {
     when(fieldDefinition.getType()).thenReturn(type);
 
     var typeDefinition =
-        newObjectTypeDefinition().additionalData(Map.of(TypeHelper.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
+        newObjectTypeDefinition().additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
             .build();
-
-    when(typeDefinitionRegistry.types()).thenReturn(Map.of("testType", typeDefinition));
 
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.TRUE));
   }
@@ -61,10 +54,8 @@ class ConnectionDataFetcherWiringFactoryTest {
     when(fieldDefinition.getType()).thenReturn(type);
 
     var typeDefinition =
-        newObjectTypeDefinition().additionalData(Map.of(TypeHelper.IS_CONNECTION_TYPE, Boolean.FALSE.toString()))
+        newObjectTypeDefinition().additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.FALSE.toString()))
             .build();
-
-    when(typeDefinitionRegistry.types()).thenReturn(Map.of("testType", typeDefinition));
 
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.FALSE));
   }
@@ -80,8 +71,6 @@ class ConnectionDataFetcherWiringFactoryTest {
     when(fieldDefinition.getType()).thenReturn(type);
 
     var typeDefinition = newObjectTypeDefinition().build();
-
-    when(typeDefinitionRegistry.types()).thenReturn(Map.of("testType", typeDefinition));
 
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.FALSE));
   }

@@ -5,6 +5,7 @@ import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
@@ -17,17 +18,7 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 
 import com.google.common.base.CaseFormat;
 import graphql.Scalars;
-import graphql.language.EnumTypeDefinition;
-import graphql.language.EnumValue;
-import graphql.language.EnumValueDefinition;
-import graphql.language.FieldDefinition;
-import graphql.language.InputObjectTypeDefinition;
-import graphql.language.InputValueDefinition;
-import graphql.language.IntValue;
-import graphql.language.ObjectTypeDefinition;
-import graphql.language.ObjectValue;
-import graphql.language.StringValue;
-import graphql.language.Type;
+import graphql.language.*;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +35,6 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -175,7 +165,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .fieldDefinition(newFieldDefinition().name(PagingConstants.OFFSET_FIELD_NAME)
             .type(newNonNullableType(Scalars.GraphQLInt.getName()))
             .build())
-        .additionalData(Map.of(TypeHelper.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
+        .additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
         .build();
   }
 
@@ -259,7 +249,9 @@ public class TypeDefinitionRegistrySchemaFactory {
   private Type<?> createListType(String type, boolean nullable) {
     if (schema.usePaging()) {
       var connectionTypeName = createConnectionName(type);
-      return newNonNullableType(connectionTypeName);
+      return newNonNullType(newType(connectionTypeName))
+          .additionalData(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString())
+          .build();
     } else {
       if (nullable) {
         return newListType(type);
@@ -404,7 +396,8 @@ public class TypeDefinitionRegistrySchemaFactory {
       List<InputValueDefinition> inputValueDefinitions) {
     query.getKeys()
         .stream()
-        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType))
+        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType,
+            Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
         .forEach(inputValueDefinitions::add);
   }
 
@@ -516,8 +509,14 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType) {
+    return createQueryInputValueDefinition(keyField, objectType, Map.of());
+  }
+
+  private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType,
+      Map<String, String> additionalData) {
     return newInputValueDefinition().name(keyField)
         .type(createType(keyField, objectType))
+        .additionalData(additionalData)
         .build();
   }
 

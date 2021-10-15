@@ -31,6 +31,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -147,8 +148,7 @@ class SelectBuilder {
     objectRequest.getObjectFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> createNestedSelect(objectRequest, entry.getKey()
-            .getName(), entry.getValue(), table))
+        .flatMap(entry -> createNestedSelect(objectRequest, entry.getKey(), entry.getValue(), table))
         .forEach(nestedSelect -> {
           var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
           dataQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
@@ -247,7 +247,6 @@ class SelectBuilder {
     var current = fieldPath.get(0);
 
     if (fieldPath.size() > 1) {
-
       var rest = fieldPath.subList(1, fieldPath.size());
 
       if (current.getTargetType()
@@ -262,26 +261,7 @@ class SelectBuilder {
 
       filterQuery.addSelect(DSL.val(1));
 
-      // Inverted mapped by
-      if (current.getMappedByObjectField() != null) {
-        var mappedByObjectField = current.getMappedByObjectField();
-        mappedByObjectField.getJoinColumns()
-            .forEach(joinColumn -> {
-              var field = column(filterTable, joinColumn.getName());
-              var referencedField = column(table, joinColumn, (PostgresObjectType) current.getObjectType());
-              filterQuery.addConditions(referencedField.equal(field));
-            });
-      }
-
-      // Normal join column
-      current.getJoinColumns()
-          .forEach(joinColumn -> {
-            var field = column(table, joinColumn.getName());
-            var referencedField = column(filterTable, joinColumn, current.getTargetType());
-            filterQuery.addConditions(referencedField.equal(field));
-          });
-
-      // TODO: JoinTable
+      join(table, current, filterTable).forEach(filterQuery::addConditions);
 
       var nestedCondition = createFilterCondition(objectRequest, rest, value, filterTable);
 
@@ -296,6 +276,33 @@ class SelectBuilder {
         .collect(Collectors.toList());
 
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+  }
+
+  private List<Condition> join(Table<Record> table, PostgresObjectField current, Table<Record> relatedTable) {
+    // Inverted mapped by
+    if (current.getMappedByObjectField() != null) {
+      var mappedByObjectField = current.getMappedByObjectField();
+      return mappedByObjectField.getJoinColumns()
+          .stream()
+          .map(joinColumn -> {
+            var field = column(relatedTable, joinColumn.getName());
+            var referencedField = column(table, joinColumn, (PostgresObjectType) current.getObjectType());
+            return referencedField.equal(field);
+          })
+          .collect(Collectors.toList());
+    }
+
+    // Normal join column
+    return current.getJoinColumns()
+        .stream()
+        .map(joinColumn -> {
+          var field = column(table, joinColumn.getName());
+          var referencedField = column(relatedTable, joinColumn, current.getTargetType());
+          return referencedField.equal(field);
+        })
+        .collect(Collectors.toList());
+
+    // TODO: JoinTable
   }
 
   @SuppressWarnings("unchecked")
@@ -447,12 +454,12 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, String fieldName,
+  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, SelectedField selectedField,
       ObjectRequest nestedObjectRequest, Table<Record> table) {
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
 
-    fieldMapper.register(fieldName, nestedObjectMapper);
+    fieldMapper.register(selectedField.getName(), nestedObjectMapper);
 
     var nestedSelect = SelectBuilder.newSelect()
         .requestContext(requestContext)
@@ -463,12 +470,19 @@ class SelectBuilder {
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 
-    getObjectField(objectRequest, fieldName).getJoinColumns()
-        .forEach(joinColumn -> {
-          var field = column(table, joinColumn.getName());
-          var referencedField = DSL.field(joinColumn.getReferencedField());
-          nestedSelect.addConditions(referencedField.equal(field));
-        });
+    if (!TypeHelper.isListType(selectedField.getType())) {
+      nestedSelect.addLimit(1);
+    }
+
+    var objectField = getObjectField(objectRequest, selectedField.getName());
+
+    join(table, objectField, null).forEach(nestedSelect::addConditions);
+    // getObjectField(objectRequest, selectedField.getName()).getJoinColumns()
+    // .forEach(joinColumn -> {
+    // var field = column(table, joinColumn.getName());
+    // var referencedField = DSL.field(joinColumn.getReferencedField());
+    // nestedSelect.addConditions(referencedField.equal(field));
+    // });
 
     return Stream.of(nestedSelect);
   }
