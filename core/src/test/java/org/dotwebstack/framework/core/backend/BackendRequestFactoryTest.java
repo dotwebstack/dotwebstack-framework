@@ -95,9 +95,9 @@ public class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
     var selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
-  
+
     var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-  
+
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetMock);
@@ -136,9 +136,9 @@ public class BackendRequestFactoryTest {
     when(executionStepInfo.getField()).thenReturn(mergedField);
 
     envBuilder.executionStepInfo(executionStepInfo);
-  
+
     var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
-  
+
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
@@ -168,9 +168,9 @@ public class BackendRequestFactoryTest {
     when(executionStepInfo.getParent()).thenReturn(executionStepInfoParent);
 
     envBuilder.executionStepInfo(executionStepInfo);
-  
+
     var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
-  
+
     backendRequestFactory = new BackendRequestFactory(schema);
 
     var result = backendRequestFactory.getExecutionStepInfo(envBuilder.build());
