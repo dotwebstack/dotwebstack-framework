@@ -117,12 +117,14 @@ class GraphQlHelperTest {
   }
 
   @Test
-  void isScalarField_returnsFalse_forGraphQLObjectType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
+  void isScalarField_returnsFalse_forGraphQlObjectType() {
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     when(definitionMock.getAdditionalData()).thenReturn(Map.of("a", "b"));
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isScalarField.test(selectedFieldMock);
@@ -130,9 +132,9 @@ class GraphQlHelperTest {
   }
 
   @Test
-  void isScalarField_returnsTrue_forGraphQLScalarType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
+  void isScalarField_returnsTrue_forGraphQlScalarType() {
     GraphQLScalarType objectMock = mock(GraphQLScalarType.class);
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn(objectMock);
 
     var r = isScalarField.test(selectedFieldMock);
@@ -141,11 +143,12 @@ class GraphQlHelperTest {
 
   @Test
   void isScalarField_returnsTrue_forContainsKeyIsScalar() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
     GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     when(definitionMock.getAdditionalData()).thenReturn(Map.of("isScalar", "b"));
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isScalarField.test(selectedFieldMock);
@@ -153,12 +156,13 @@ class GraphQlHelperTest {
   }
 
   @Test
-  void isObjectField_returnsTrue_forGraphQLObjectType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
+  void isObjectField_returnsTrue_forGraphQlObjectType() {
     GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     when(definitionMock.getAdditionalData()).thenReturn(Map.of("a", "b"));
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectField.test(selectedFieldMock);
@@ -167,13 +171,15 @@ class GraphQlHelperTest {
 
   @Test
   void isObjectField_returnsFalse_forIsConnectionType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("isConnectionType", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectField.test(selectedFieldMock);
@@ -182,13 +188,15 @@ class GraphQlHelperTest {
 
   @Test
   void isObjectField_returnsFalse_forIsNested() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("isNested", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectField.test(selectedFieldMock);
@@ -197,13 +205,15 @@ class GraphQlHelperTest {
 
   @Test
   void isNestedObjectField_returnsTrue_forIsNested() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("isNested", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isNestedObjectField.test(selectedFieldMock);
@@ -212,13 +222,15 @@ class GraphQlHelperTest {
 
   @Test
   void isNestedObjectField_returnsFalse_forNotIsNested() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("a", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isNestedObjectField.test(selectedFieldMock);
@@ -227,13 +239,15 @@ class GraphQlHelperTest {
 
   @Test
   void isObjectListField_returnsTrue_forIsConnectionType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("isConnectionType", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectListField.test(selectedFieldMock);
@@ -242,13 +256,15 @@ class GraphQlHelperTest {
 
   @Test
   void isObjectListField_returnsFalse_forNotList_andNotIsConnectionType() {
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();
     additionalData.put("a", "b");
     when(definitionMock.getAdditionalData()).thenReturn(additionalData);
+
+    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+
+    SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectListField.test(selectedFieldMock);
