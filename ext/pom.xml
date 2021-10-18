@@ -11,8 +11,8 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>ext-proxy</module>
     <module>ext-spatial</module>
     <module>ext-rml</module>
   </modules>
-
 </project>
