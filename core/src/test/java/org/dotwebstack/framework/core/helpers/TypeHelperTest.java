@@ -1,16 +1,25 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
+import graphql.language.OperationDefinition;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.Coercing;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
@@ -58,6 +67,62 @@ class TypeHelperTest {
 
     // Assert
     assertEquals(type, TypeHelper.unwrapNonNullType(type));
+  }
+
+  @Test
+  void isSubscription_returnsTrue() {
+    var operationMock = mock(OperationDefinition.class);
+    when(operationMock.getOperation()).thenReturn(OperationDefinition.Operation.SUBSCRIPTION);
+    assertTrue(TypeHelper.isSubscription(operationMock));
+  }
+
+  @Test
+  void isSubscription_returnsFalse() {
+    var operationMock = mock(OperationDefinition.class);
+    when(operationMock.getOperation()).thenReturn(OperationDefinition.Operation.MUTATION);
+    assertFalse(TypeHelper.isSubscription(operationMock));
+  }
+
+  @Test
+  void isListType_returnsTrue() {
+    assertTrue(TypeHelper.isListType(mock(GraphQLList.class)));
+  }
+
+  @Test
+  void isListType_returnsFalse() {
+    assertFalse(TypeHelper.isListType(mock(GraphQLObjectType.class)));
+  }
+
+  @Test
+  void unwrapConnectionType_returnsArgumentObject() {
+    var nonNullType = mock(GraphQLNonNull.class);
+    var objectType = mock(GraphQLObjectType.class);
+    when(objectType.getName()).thenReturn("AA");
+    when(nonNullType.getWrappedType()).thenReturn(objectType);
+
+    var result = TypeHelper.unwrapConnectionType(nonNullType);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertTrue(result instanceof GraphQLNonNull);
+  }
+
+  @Test
+  void unwrapConnectionType_returnsUnwrappedObject() {
+    var nonNullType = mock(GraphQLNonNull.class);
+    var objectType = mock(GraphQLObjectType.class);
+    when(objectType.getName()).thenReturn("AA Connection");
+    var fieldDef = mock(GraphQLFieldDefinition.class);
+    var resultMock = mock(GraphQLEnumType.class);
+    when(resultMock.getName()).thenReturn("@@@@@");
+    when(fieldDef.getType()).thenReturn(resultMock);
+    when(objectType.getFieldDefinition(eq("nodes"))).thenReturn(fieldDef);
+
+    when(nonNullType.getWrappedType()).thenReturn(objectType);
+
+    var result = TypeHelper.unwrapConnectionType(nonNullType);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertTrue(result instanceof GraphQLEnumType);
+    assertThat(((GraphQLEnumType) result).getName(), is("@@@@@"));
+
   }
 
   @ParameterizedTest()

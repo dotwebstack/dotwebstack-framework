@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.backend;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -12,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
+import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
 import graphql.language.Field;
 import graphql.language.OperationDefinition;
@@ -28,7 +31,7 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.junit.jupiter.api.Disabled;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -53,22 +56,34 @@ public class BackendDataFetcherTest {
   private BackendDataFetcher dataFetcher;
 
   @Test
-  @Disabled("Fix me")
   public void get_returnObject_ifDataWasEagerLoaded() {
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
-    graphql.language.Field fieldMock = new Field("a");
-
     when(environment.getSource()).thenReturn(source);
-    when(environment.getField()).thenReturn(fieldMock);
+
+    var fieldMock = mock(MergedField.class);
+    when(fieldMock.getName()).thenReturn("a");
+    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
+    when(executionStepInfo.getField()).thenReturn(fieldMock);
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfo);
 
     var result = dataFetcher.get(environment);
     assertThat(result, is("bbb"));
   }
 
   @Test
-  @Disabled("Fix me")
-  public void get_returnCompletableFuture_ifNotSubscription_and_ListTypeTrue() {
+  public void get_returnCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
+    var fieldMock1 = mock(MergedField.class);
+    when(fieldMock1.getName()).thenReturn("fff");
+    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
+    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
+    ResultPath resultPath = ResultPath.rootPath()
+        .segment("a");
+    when(executionStepInfoMock.getPath()).thenReturn(resultPath);
+
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
+
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
     Map<String, Object> condition = new HashMap<>();
@@ -85,25 +100,28 @@ public class BackendDataFetcherTest {
 
     when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
     when(environment.getSource()).thenReturn(source);
-    when(environment.getField()).thenReturn(fieldMock);
+    lenient().when(environment.getField())
+        .thenReturn(fieldMock);
     GraphQLList listTypeMock = mock(GraphQLList.class);
     when(environment.getFieldType()).thenReturn(listTypeMock);
+
     OperationDefinition operationDefinitionMock = mock(OperationDefinition.class);
     lenient().when(operationDefinitionMock.getOperation())
         .thenReturn(OperationDefinition.Operation.MUTATION);
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    ResultPath resultPath = ResultPath.rootPath()
-        .segment("a");
-    when(executionStepInfoMock.getPath()).thenReturn(resultPath);
-    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
+
     when(environment.getDataLoaderRegistry()).thenReturn(new DataLoaderRegistry());
+
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-    when(requestFactory.createCollectionRequest(executionStepInfoMock, environment.getSelectionSet()))
+    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
+
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
         .thenReturn(collectionRequestMock);
 
     var result = dataFetcher.get(environment);
 
+    assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof CompletableFuture);
     verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class),
         any(DataFetchingFieldSelectionSet.class));
@@ -111,9 +129,74 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  @Disabled("Fix me")
-  public void get_returnFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
+  public void get_throwsIllegalStateException_whenMoreJoinConditions() {
+    var fieldMock1 = mock(MergedField.class);
+    when(fieldMock1.getName()).thenReturn("fff");
+    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
+    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
+    ResultPath resultPath = ResultPath.rootPath()
+        .segment("a");
+    when(executionStepInfoMock.getPath()).thenReturn(resultPath);
+
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
+
+    Map<String, Object> source = new HashMap<>();
+    source.put("a", "bbb");
+    Map<String, Object> condition = new HashMap<>();
+    condition.put("b", "ccc");
+    JoinCondition joinCondition = JoinCondition.builder()
+        .key(condition)
+        .build();
+    source.put("$join:aaa", joinCondition);
+    source.put("$join:bbb", joinCondition);
     graphql.language.Field fieldMock = new Field("aaa");
+    RequestContext requestContext = RequestContext.builder()
+        .objectField(mock(ObjectField.class))
+        .source(source)
+        .build();
+
+    when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
+    when(environment.getSource()).thenReturn(source);
+    lenient().when(environment.getField())
+        .thenReturn(fieldMock);
+    GraphQLList listTypeMock = mock(GraphQLList.class);
+    when(environment.getFieldType()).thenReturn(listTypeMock);
+
+    OperationDefinition operationDefinitionMock = mock(OperationDefinition.class);
+    lenient().when(operationDefinitionMock.getOperation())
+        .thenReturn(OperationDefinition.Operation.MUTATION);
+    when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
+
+    when(environment.getDataLoaderRegistry()).thenReturn(new DataLoaderRegistry());
+
+    CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
+    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
+
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
+        .thenReturn(collectionRequestMock);
+
+    var exception = assertThrows(IllegalStateException.class, () -> dataFetcher.get(environment));
+
+    assertThat(exception.getMessage(), CoreMatchers.is("Batching failed: found multiple join conditions!"));
+  }
+
+  @Test
+  public void get_returnFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
+    var fieldMock1 = mock(MergedField.class);
+    when(fieldMock1.getName()).thenReturn("fff");
+    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
+    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
+    ResultPath resultPath = ResultPath.rootPath()
+        .segment("a");
+    lenient().when(executionStepInfoMock.getPath())
+        .thenReturn(resultPath);
+
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    lenient().when(environment.getExecutionStepInfo())
+        .thenReturn(executionStepInfoMock);
+
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
@@ -121,7 +204,9 @@ public class BackendDataFetcherTest {
 
     when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
     when(environment.getSource()).thenReturn(null);
-    when(environment.getField()).thenReturn(fieldMock);
+    graphql.language.Field fieldMock = new Field("aaa");
+    lenient().when(environment.getField())
+        .thenReturn(fieldMock);
 
     GraphQLList listTypeMock = mock(GraphQLList.class);
     when(environment.getFieldType()).thenReturn(listTypeMock);
@@ -131,23 +216,40 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-    // when(requestFactory.createCollectionRequest()).thenReturn(collectionRequestMock);
+    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
+        .thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
-    when(backendLoader.loadMany(eq(collectionRequestMock), eq(requestContext))).thenReturn(Flux.just(resultMock));
+    when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
+        .thenReturn(Flux.just(resultMock));
 
     var result = ((CompletableFuture) dataFetcher.get(environment)).join();
 
+    assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof List);
     assertThat(((List<?>) result).get(0), is(resultMock));
-    // verify(requestFactory).createCollectionRequest(any(DataFetchingEnvironment.class));
+    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
     verify(backendLoader).loadMany(any(CollectionRequest.class), any(RequestContext.class));
   }
 
   @Test
-  @Disabled("Fix me")
   public void get_returnFluxMap_ifSourceNull_SubscriptionTrue() {
-    graphql.language.Field fieldMock = new Field("aaa");
+    var fieldMock1 = mock(MergedField.class);
+    when(fieldMock1.getName()).thenReturn("fff");
+    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
+    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
+    ResultPath resultPath = ResultPath.rootPath()
+        .segment("a");
+    lenient().when(executionStepInfoMock.getPath())
+        .thenReturn(resultPath);
+
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    lenient().when(environment.getExecutionStepInfo())
+        .thenReturn(executionStepInfoMock);
+
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
@@ -155,7 +257,9 @@ public class BackendDataFetcherTest {
 
     when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
     when(environment.getSource()).thenReturn(null);
-    when(environment.getField()).thenReturn(fieldMock);
+    graphql.language.Field fieldMock = new Field("aaa");
+    lenient().when(environment.getField())
+        .thenReturn(fieldMock);
 
     OperationDefinition operationDefinitionMock = mock(OperationDefinition.class);
     lenient().when(operationDefinitionMock.getOperation())
@@ -163,29 +267,42 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-    // when(requestFactory.createCollectionRequest(environment)).thenReturn(collectionRequestMock);
+    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
+        .thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
-    when(backendLoader.loadMany(eq(collectionRequestMock), eq(requestContext))).thenReturn(Flux.just(resultMock));
+    when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
+        .thenReturn(Flux.just(resultMock));
 
     var result = ((Flux) dataFetcher.get(environment)).blockFirst();
 
+    assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(resultMock.get("aa")));
+    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
+    verify(backendLoader).loadMany(any(CollectionRequest.class), any(RequestContext.class));
   }
 
   @Test
-  @Disabled("Fix me")
   public void get_returnMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
-    graphql.language.Field fieldMock = new Field("aaa");
+    var fieldMock1 = mock(MergedField.class);
+    when(fieldMock1.getName()).thenReturn("fff");
+    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
+    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
+
+    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
         .build();
 
-    when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
+    lenient().when(requestFactory.createRequestContext(environment))
+        .thenReturn(requestContext);
     when(environment.getSource()).thenReturn(null);
-    when(environment.getField()).thenReturn(fieldMock);
 
     OperationDefinition operationDefinitionMock = mock(OperationDefinition.class);
     lenient().when(operationDefinitionMock.getOperation())
@@ -193,7 +310,10 @@ public class BackendDataFetcherTest {
     when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
 
     ObjectRequest objectRequest = mock(ObjectRequest.class);
-    // when(requestFactory.createObjectRequest(environment)).thenReturn(objectRequest);
+    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
+    lenient().when(requestFactory.createObjectRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
+        .thenReturn(objectRequest);
 
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
@@ -203,7 +323,8 @@ public class BackendDataFetcherTest {
 
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(resultMock.get("aa")));
-    // verify(requestFactory).createObjectRequest(any(DataFetchingEnvironment.class));
+    verify(requestFactory).createObjectRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
+    verify(backendLoader).loadSingle(any(ObjectRequest.class), any(RequestContext.class));
   }
 
 }

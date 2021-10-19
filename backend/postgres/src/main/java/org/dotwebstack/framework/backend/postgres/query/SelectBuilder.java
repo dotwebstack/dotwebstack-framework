@@ -17,8 +17,12 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
-import graphql.schema.SelectedField;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +36,15 @@ import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.model.ObjectField;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.JoinCondition;
+import org.dotwebstack.framework.core.query.model.JoinCriteria;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -63,10 +76,12 @@ class SelectBuilder {
   }
 
   public SelectQuery<Record> build(CollectionRequest collectionRequest, JoinCriteria joinCriteria) {
+    addSortFields(collectionRequest);
+
     var dataTable = createTable(collectionRequest.getObjectRequest());
     var dataQuery = createDataQuery(collectionRequest.getObjectRequest(), dataTable);
 
-    createSortConditions(collectionRequest.getSortCriterias(), dataTable).forEach(dataQuery::addOrderBy);
+    createSortConditions(collectionRequest.getSortCriterias()).forEach(dataQuery::addOrderBy);
 
     collectionRequest.getFilterCriterias()
         .stream()
@@ -99,6 +114,70 @@ class SelectBuilder {
     }
 
     throw new UnsupportedOperationException();
+  }
+
+  private void addSortFields(CollectionRequest collectionRequest) {
+    collectionRequest.getSortCriterias()
+        .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
+  }
+
+  private void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
+    ObjectRequest objectRequest = collectionRequest.getObjectRequest();
+
+    for (int index = 0; index < sortCriteria.getFields()
+        .size(); index++) {
+      ObjectField sortField = sortCriteria.getFields()
+          .get(index);
+
+      if (index == (sortCriteria.getFields()
+          .size() - 1)) {
+        findOrAddScalarField(objectRequest, sortField);
+      } else {
+        ObjectField nextSortField = sortCriteria.getFields()
+            .get(index + 1);
+        objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
+      }
+    }
+  }
+
+  private ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields, ObjectField objectField,
+      ObjectField nextObjectField) {
+    return objectFields.entrySet()
+        .stream()
+        .filter(field -> field.getKey()
+            .getName()
+            .equals(objectField.getName()))
+        .map(Map.Entry::getValue)
+        .findFirst()
+        .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
+  }
+
+  private ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields, ObjectField objectField,
+      ObjectField nextObjectField) {
+    ObjectRequest objectRequest = ObjectRequest.builder()
+        .objectType(nextObjectField.getObjectType())
+        .build();
+    FieldRequest field = FieldRequest.builder()
+        .name(objectField.getName())
+        .build();
+    objectFields.put(field, objectRequest);
+    return objectRequest;
+  }
+
+  private void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
+    Optional<FieldRequest> scalarField = objectRequest.getScalarFields()
+        .stream()
+        .filter(field -> field.getName()
+            .equals(objectField.getName()))
+        .findFirst();
+
+    if (scalarField.isEmpty()) {
+      FieldRequest field = FieldRequest.builder()
+          .name(objectField.getName())
+          .build();
+      objectRequest.getScalarFields()
+          .add(field);
+    }
   }
 
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
@@ -430,7 +509,7 @@ class SelectBuilder {
 
       Geometry geometry = readGeometry((String) mapValue.get(SpatialConstants.FROM_WKT));
 
-      Field<Geometry> geoField = DSL.val(geometry)
+      Field geoField = DSL.val(geometry)
           .cast(GEOMETRY_DATATYPE);
 
       switch (filterField) {
@@ -457,23 +536,17 @@ class SelectBuilder {
     }
   }
 
-  @SuppressWarnings("rawtypes")
-  public List<SortField> createSortConditions(List<SortCriteria> sortCriterias, Table<Record> table) {
+  public List<SortField<Object>> createSortConditions(List<SortCriteria> sortCriterias) {
     return sortCriterias.stream()
-        .map(sortCriteria -> createSortCondition(sortCriteria, table))
+        .map(this::createSortCondition)
         .collect(Collectors.toList());
   }
 
-  private SortField<?> createSortCondition(SortCriteria sortCriteria, Table<Record> table) {
-    if (sortCriteria.getFields()
-        .size() > 1) {
-      throw illegalStateException("Nested field path not supported!");
-    }
+  private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
+    List<ObjectField> fieldPath = sortCriteria.getFields();
+    var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
-    var leafObjectField = (PostgresObjectField) sortCriteria.getFields()
-        .get(0);
-
-    var sortField = column(table, leafObjectField.getColumn());
+    var sortField = column(null, leafFieldMapper.getAlias());
 
     switch (sortCriteria.getDirection()) {
       case ASC:
@@ -514,7 +587,7 @@ class SelectBuilder {
         .collect(Collectors.toList());
   }
 
-  private SelectFieldOrAsterisk processScalarField(SelectedField selectedField, PostgresObjectType objectType,
+  private SelectFieldOrAsterisk processScalarField(FieldRequest selectedField, PostgresObjectType objectType,
       Table<Record> table, ObjectFieldMapper<Map<String, Object>> objectFieldMapper) {
     var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
@@ -532,7 +605,7 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, SelectedField selectedField,
+  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, FieldRequest selectedField,
       ObjectRequest nestedObjectRequest, Table<Record> table) {
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
@@ -548,7 +621,7 @@ class SelectBuilder {
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 
-    if (!TypeHelper.isListType(selectedField.getType())) {
+    if (!selectedField.isList()) {
       nestedSelect.addLimit(1);
     }
 

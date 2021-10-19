@@ -18,7 +18,17 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 
 import com.google.common.base.CaseFormat;
 import graphql.Scalars;
-import graphql.language.*;
+import graphql.language.EnumTypeDefinition;
+import graphql.language.EnumValue;
+import graphql.language.EnumValueDefinition;
+import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.IntValue;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.ObjectValue;
+import graphql.language.StringValue;
+import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -537,7 +547,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createGeometryInputValueDefinition() {
     return newInputValueDefinition().name(GEOMETRY_ARGUMENT_NAME)
-        .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
+        .type(newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
   }
 
@@ -551,7 +561,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private FieldDefinition createDummyQueryFieldDefinition() {
     return newFieldDefinition().name("dummy")
-        .type(TypeUtils.newType("String"))
+        .type(newType("String"))
         .build();
   }
 

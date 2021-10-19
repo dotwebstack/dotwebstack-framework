@@ -9,6 +9,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderFactory;
@@ -52,23 +53,9 @@ class BackendDataFetcher implements DataFetcher<Object> {
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
-      if (source != null) {
-        var completableFutures = source.entrySet()
-            .stream()
-            .filter(entry -> entry.getKey()
-                .startsWith(JOIN_KEY_PREFIX))
-            .map(Map.Entry::getValue)
-            .map(JoinCondition.class::cast)
-            .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
-            .collect(Collectors.toList());
-
-        if (completableFutures.size() > 0) {
-          if (completableFutures.size() == 1) {
-            return completableFutures.get(0);
-          }
-
-          throw illegalStateException("Batching failed: found multiple join conditions!");
-        }
+      var batchLoader = extractJoinCondition(environment, source, requestContext);
+      if (batchLoader != null) {
+        return batchLoader;
       }
 
       var result = backendLoader.loadMany(collectionRequest, requestContext)
@@ -86,6 +73,29 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
+  }
+
+  private CompletableFuture<Object> extractJoinCondition(DataFetchingEnvironment environment,
+      Map<String, Object> source, RequestContext requestContext) {
+    if (source != null) {
+      var completableFutures = source.entrySet()
+          .stream()
+          .filter(entry -> entry.getKey()
+              .startsWith(JOIN_KEY_PREFIX))
+          .map(Map.Entry::getValue)
+          .map(JoinCondition.class::cast)
+          .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
+          .collect(Collectors.toList());
+
+      if (completableFutures.size() > 0) {
+        if (completableFutures.size() == 1) {
+          return completableFutures.get(0);
+        }
+
+        throw illegalStateException("Batching failed: found multiple join conditions!");
+      }
+    }
+    return null;
   }
 
   private DataLoader<Object, Object> getOrCreateBatchLoader(DataFetchingEnvironment environment,

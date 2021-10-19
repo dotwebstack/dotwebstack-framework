@@ -6,13 +6,27 @@ import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.*;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.*;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isNestedObjectField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.execution.ExecutionStepInfo;
-import graphql.schema.*;
-import java.util.*;
-import java.util.function.Function;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.SelectedField;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
@@ -26,6 +40,13 @@ import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
@@ -152,38 +173,46 @@ public class BackendRequestFactory {
     return null;
   }
 
-  private List<SelectedField> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+  private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
+        .map(this::mapToFieldRequest)
         .collect(Collectors.toList());
   }
 
-  private Map<SelectedField, Collection<SelectedField>> getNestedObjectFields(
+  private FieldRequest mapToFieldRequest(SelectedField selectedField) {
+    return FieldRequest.builder()
+        .name(selectedField.getName())
+        .isList(GraphQLTypeUtil.isList(selectedField.getType()))
+        .build();
+  }
+
+  private Map<FieldRequest, Collection<FieldRequest>> getNestedObjectFields(
       DataFetchingFieldSelectionSet selectionSet) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isNestedObjectField)
-        .collect(
-            Collectors.toMap(Function.identity(), selectedField -> getScalarFields(selectedField.getSelectionSet())));
+        .collect(Collectors.toMap(this::mapToFieldRequest,
+            selectedField -> getScalarFields(selectedField.getSelectionSet())));
   }
 
-  private Map<SelectedField, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
-        .collect(Collectors.toMap(Function.identity(),
+        .collect(Collectors.toMap(this::mapToFieldRequest,
             selectedField -> createObjectRequest(selectedField, executionStepInfo)));
   }
 
-  private Map<SelectedField, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<FieldRequest, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectListField)
-        .collect(Collectors.toMap(Function.identity(),
+        .collect(Collectors.toMap(this::mapToFieldRequest,
             selectedField -> createCollectionRequest(selectedField, executionStepInfo)));
   }
 
