@@ -16,13 +16,7 @@ import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.ObjectField;
-import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
-import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ContextCriteria;
-import org.dotwebstack.framework.core.query.model.JoinCriteria;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.*;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -60,7 +54,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
@@ -106,7 +100,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
@@ -155,7 +149,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);

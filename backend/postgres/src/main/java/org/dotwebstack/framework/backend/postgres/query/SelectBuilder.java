@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
@@ -209,11 +211,7 @@ class SelectBuilder {
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedSelect(objectRequest, entry.getKey(), entry.getValue(), table))
-        .forEach(nestedSelect -> {
-          var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
-          dataQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
-          dataQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
-        });
+        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect));
 
     objectRequest.getNestedObjectFields()
         .forEach((key, value) -> {
@@ -232,14 +230,10 @@ class SelectBuilder {
 
     objectRequest.getAggregateObjectFields()
         .stream()
-        .flatMap(aggregateObjectFieldConfiguration -> addAggregateObjectField(objectRequest,
+        .flatMap(aggregateObjectFieldConfiguration -> processAggregateObjectField(objectRequest,
             aggregateObjectFieldConfiguration, table))
         .collect(Collectors.toList())
-        .forEach(nestedSelect -> {
-          var lateralTable = DSL.lateral(nestedSelect.asTable(aliasManager.newAlias()));
-          dataQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
-          dataQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
-        });
+        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect));
 
     objectRequest.getSelectedObjectListFields()
         .entrySet()
@@ -251,57 +245,61 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private Stream<Select<Record>> addAggregateObjectField(ObjectRequest objectRequest,
+  private void addSubSelect(SelectQuery<Record> selectQuery, Select<Record> nestedSelectQuery) {
+    var nestedTable = nestedSelectQuery.asTable(aliasManager.newAlias());
+
+    var lateralTable = DSL.lateral(nestedTable);
+    selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
+    selectQuery.addJoin(lateralTable, JoinType.LEFT_OUTER_JOIN);
+  }
+
+  private Stream<Select<Record>> processAggregateObjectField(ObjectRequest objectRequest,
       AggregateObjectRequest aggregateObjectRequest, Table<Record> table) {
-    var nestedObjectMapper = new ObjectMapper();
+    var aggregateObjectMapper = new ObjectMapper();
 
     fieldMapper.register(aggregateObjectRequest.getObjectField()
-        .getName(), nestedObjectMapper);
+        .getName(), aggregateObjectMapper);
 
-    Stream<Select<Record>> stringJoinResult = aggregateObjectRequest.getAggregateFields(true)
+    var objectField = (PostgresObjectField) aggregateObjectRequest.getObjectField();
+
+    var stringJoinResult = aggregateObjectRequest.getAggregateFields()
         .stream()
-        .map(stringJoinAggregateField -> processAggregateFields(objectRequest, List.of(stringJoinAggregateField),
-            aggregateObjectRequest, table, nestedObjectMapper));
+        .filter(isStringJoin)
+        .map(aggregateField -> processAggregateFields(objectField, List.of(aggregateField), aggregateObjectMapper,
+            table, objectRequest.getContextCriteria()));
 
-    Stream<Select<Record>> otherResult = Stream.empty();
-
-    var otherAggregateFields = aggregateObjectRequest.getAggregateFields(false);
-    if (!otherAggregateFields.isEmpty()) {
-      otherResult = Stream.of(processAggregateFields(objectRequest, otherAggregateFields, aggregateObjectRequest, table,
-          nestedObjectMapper));
-    }
+    var otherResult = Stream.of(processAggregateFields(objectField, aggregateObjectRequest.getAggregateFields()
+        .stream()
+        .filter(not(isStringJoin))
+        .collect(Collectors.toList()), aggregateObjectMapper, table, objectRequest.getContextCriteria()));
 
     return Stream.concat(stringJoinResult, otherResult);
   }
 
-  private SelectQuery<Record> processAggregateFields(ObjectRequest objectRequest, List<AggregateField> aggregateFields,
-      AggregateObjectRequest aggregateObjectRequest, Table<Record> table, ObjectMapper aggregateMapper) {
-    var aggregateField = (PostgresObjectField) aggregateObjectRequest.getObjectField();
-    var aggregateObjectType = (PostgresObjectType) aggregateField.getAggregationOfType();
+  private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField,
+      List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper, Table<Record> table,
+      ContextCriteria contextCriteria) {
+    var aggregateObjectType = (PostgresObjectType) objectField.getAggregationOfType();
 
     var aliasedAggregateTable =
-        findTable(aggregateObjectType.getTable(), objectRequest.getContextCriteria()).asTable(aliasManager.newAlias());
+        findTable(aggregateObjectType.getTable(), contextCriteria).asTable(aliasManager.newAlias());
 
     var subSelect = dslContext.selectQuery(aliasedAggregateTable);
 
-    addAggregateFields(aggregateFields, subSelect, aliasedAggregateTable, aggregateMapper);
+    aggregateFields
+        .forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect, aliasedAggregateTable));
 
-    join(table, aggregateField, null).forEach(subSelect::addConditions);
+    join(table, objectField, null).forEach(subSelect::addConditions);
 
     return subSelect;
   }
 
-  private void addAggregateFields(List<AggregateField> aggregateFields, SelectQuery<?> query, Table<?> table,
-      ObjectMapper aggregateMapper) {
-    aggregateFields.forEach(aggregateField -> addAggregateField(query, table, aggregateField, aggregateMapper));
-  }
-
-  private void addAggregateField(SelectQuery<?> query, Table<?> table, AggregateField aggregateField,
-      ObjectMapper aggregateMapper) {
+  private void processAggregateField(AggregateField aggregateField, ObjectMapper aggregateMapper, SelectQuery<?> query,
+      Table<?> table) {
     var columnAlias = aliasManager.newAlias();
     var columnName = ((PostgresObjectField) aggregateField.getField()).getColumn();
 
-    var column = AggregateFieldFactory.create(aggregateField, table.getName(), columnName, columnAlias)
+    var column = AggregateFieldHelper.create(aggregateField, table.getName(), columnName, columnAlias)
         .as(columnAlias);
 
     aggregateMapper.register(aggregateField.getAlias(), row -> row.get(columnAlias));
