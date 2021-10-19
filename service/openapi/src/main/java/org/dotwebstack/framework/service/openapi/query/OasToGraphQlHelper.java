@@ -4,10 +4,15 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -31,7 +36,7 @@ public class OasToGraphQlHelper {
   }
 
   public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
-      @NonNull Map<String, Object> inputParams, boolean pagingEnabled) {
+      @NonNull Map<String, Object> inputParams, @NonNull List<String> requiredFields, boolean pagingEnabled) {
     var responseObject = responseTemplate.getResponseField();
 
     if (responseObject == null) {
@@ -45,7 +50,11 @@ public class OasToGraphQlHelper {
 
     OasField rootResponseObject = root.get(0);
     Field rootField = new Field();
-    rootField.setChildren(getChildFields("", rootResponseObject, inputParams));
+    List<Field> children = getChildFields("", rootResponseObject, inputParams);
+    List<Field> required = getRequiredFields(requiredFields);
+
+    rootField.setChildren(merge(Stream.concat(children.stream(), required.stream())
+        .collect(Collectors.toList())));
     rootField.setName(queryName);
     rootField.setCollectionNode(rootResponseObject.isArray() && !(((OasArrayField) rootResponseObject).getContent()
         .isScalar()));
@@ -107,6 +116,53 @@ public class OasToGraphQlHelper {
     result.setCollectionNode(responseObject.isArray() && !(((OasArrayField) responseObject).getContent()
         .isScalar()));
 
+    return result;
+  }
+
+  private static List<Field> getRequiredFields(List<String> requiredFields) {
+    return requiredFields.stream()
+        .map(requiredField -> {
+          List<String> parts = Arrays.stream(requiredField.split("\\."))
+              .collect(Collectors.toList());
+          Collections.reverse(parts);
+
+          ListIterator<String> iterator = parts.listIterator();
+          Field current = null;
+          while (iterator.hasNext()) {
+            current = createRequiredField(current, iterator.next());
+          }
+          return current;
+
+        })
+        .collect(Collectors.toList());
+  }
+
+  private static Field createRequiredField(Field child, String name) {
+    Field field = Field.builder()
+        .name(name)
+        .build();
+    if (child != null) {
+      field.getChildren()
+          .add(child);
+    }
+    return field;
+  }
+
+  private static List<Field> merge(List<Field> fields) {
+    List<Field> result = Lists.newArrayList();
+    fields.stream()
+        .collect(Collectors.groupingBy(Field::getName, TreeMap::new, Collectors.toList()))
+        .forEach((key, value) -> result.add(Field.builder()
+            .name(key)
+            .nodeField(value.stream()
+                .anyMatch(Field::isNodeField))
+            .collectionNode(value.stream()
+                .anyMatch(Field::isCollectionNode))
+            .children(merge(value.stream()
+                .flatMap(field -> field.getChildren()
+                    .stream())
+                .collect(Collectors.toList())))
+            .build()));
     return result;
   }
 

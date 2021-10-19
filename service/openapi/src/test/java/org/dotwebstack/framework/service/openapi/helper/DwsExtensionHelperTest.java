@@ -115,7 +115,7 @@ class DwsExtensionHelperTest {
         .get("/query9")
         .getGet();
 
-    assertEquals(List.of("field1"), getDwsQuerySettings(operation).getRequiredFields());
+    assertEquals(List.of("o2_prop1", "field1"), getDwsQuerySettings(operation).getRequiredFields());
   }
 
   @Test
