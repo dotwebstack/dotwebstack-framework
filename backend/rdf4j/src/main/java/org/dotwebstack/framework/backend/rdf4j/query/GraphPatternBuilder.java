@@ -5,8 +5,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.createTy
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 
-import graphql.schema.GraphQLTypeUtil;
-import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,9 +15,10 @@ import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -43,6 +42,8 @@ class GraphPatternBuilder {
 
   private AliasManager aliasManager;
 
+  private RequestContext requestContext;
+
   private final Map<Variable, Set<? extends Value>> valuesMap = new HashMap<>();
 
   private GraphPatternBuilder() {}
@@ -57,7 +58,7 @@ class GraphPatternBuilder {
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
 
-    createJoinPatterns().forEach(subPatterns::add);
+    // createJoinPatterns().forEach(subPatterns::add);
 
     objectRequest.getKeyCriteria()
         .stream()
@@ -84,18 +85,20 @@ class GraphPatternBuilder {
     return graphPattern;
   }
 
-  private Stream<GraphPattern> createJoinPatterns() {
-    var source = objectRequest.getSource();
-
-    if (source == null) {
-      return Stream.empty();
-    }
-
-    var parentField = objectRequest.getParentField();
-    var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
-
-    return Stream.of(GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(), subject));
-  }
+  // TODO: Join patterns
+  // private Stream<GraphPattern> createJoinPatterns() {
+  // var source = requestContext.getSource();
+  //
+  // if (source == null) {
+  // return Stream.empty();
+  // }
+  //
+  // var parentField = objectRequest.getParentField();
+  // var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
+  //
+  // return Stream.of(GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(),
+  // subject));
+  // }
 
   private Stream<GraphPattern> createPattern(KeyCriteria keyCriteria) {
     return keyCriteria.getValues()
@@ -117,36 +120,33 @@ class GraphPatternBuilder {
     return Stream.of(subject.has(propertyShape.toPredicate(), Values.literal(value)));
   }
 
-  private Stream<GraphPattern> createPattern(SelectedField selectedField) {
-    var objectField = getObjectField(objectRequest, selectedField.getName());
+  private Stream<GraphPattern> createPattern(FieldRequest fieldRequest) {
+    var objectField = getObjectField(objectRequest, fieldRequest.getName());
 
     if (objectField.isResource()) {
-      fieldMapper.register(selectedField.getName(), new BindingMapper(subject));
+      fieldMapper.register(fieldRequest.getName(), new BindingMapper(subject));
       return Stream.empty();
     }
 
     var objectAlias = aliasManager.newAlias();
-    var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
+    var propertyShape = nodeShape.getPropertyShape(fieldRequest.getName());
 
-    var typeName = TypeHelper.getTypeName(selectedField.getType());
-
-    if (SpatialConstants.GEOMETRY.equals(typeName)) {
-      fieldMapper.register(selectedField.getName(), new GeometryBindingMapper(objectAlias));
+    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+      fieldMapper.register(fieldRequest.getName(), new GeometryBindingMapper(objectAlias));
     } else {
-      fieldMapper.register(selectedField.getName(), new BindingMapper(objectAlias));
+      fieldMapper.register(fieldRequest.getName(), new BindingMapper(objectAlias));
     }
 
     return Stream
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private Stream<GraphPattern> createNestedPattern(SelectedField selectedField, ObjectRequest nestedObjectRequest) {
-    var fieldType = GraphQLTypeUtil.unwrapNonNull(selectedField.getType());
-    var propertyShape = nodeShape.getPropertyShape(selectedField.getName());
+  private Stream<GraphPattern> createNestedPattern(FieldRequest fieldRequest, ObjectRequest nestedObjectRequest) {
+    var propertyShape = nodeShape.getPropertyShape(fieldRequest.getName());
 
-    if (GraphQLTypeUtil.isList(fieldType)) {
+    if (fieldRequest.isList()) {
       // Provide join info for child data fetcher
-      fieldMapper.register(JOIN_KEY_PREFIX.concat(selectedField.getName()),
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()),
           new JoinMapper(subject, propertyShape.toPredicate()));
 
       // Nested lists are never eager-loaded
@@ -156,7 +156,7 @@ class GraphPatternBuilder {
     var nestedResourceMapper = new BindingSetMapper(aliasManager.newAlias());
     var nestedResource = SparqlBuilder.var(nestedResourceMapper.getAlias());
 
-    fieldMapper.register(selectedField.getName(), nestedResourceMapper);
+    fieldMapper.register(fieldRequest.getName(), nestedResourceMapper);
 
     var nestedPattern = GraphPatternBuilder.newGraphPattern()
         .objectRequest(nestedObjectRequest)
