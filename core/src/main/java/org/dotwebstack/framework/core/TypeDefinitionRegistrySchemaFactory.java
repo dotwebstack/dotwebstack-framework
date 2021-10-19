@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
-import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
@@ -538,7 +537,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createGeometryInputValueDefinition() {
     return newInputValueDefinition().name(GEOMETRY_ARGUMENT_NAME)
-        .type(TypeUtils.newType(GEOMETRY_ARGUMENT_TYPE))
+        .type(newType(GEOMETRY_ARGUMENT_TYPE))
         .build();
   }
 
@@ -552,7 +551,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private FieldDefinition createDummyQueryFieldDefinition() {
     return newFieldDefinition().name("dummy")
-        .type(TypeUtils.newType("String"))
+        .type(newType("String"))
         .build();
   }
 
