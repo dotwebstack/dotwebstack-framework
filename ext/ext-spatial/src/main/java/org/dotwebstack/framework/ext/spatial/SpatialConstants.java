@@ -26,7 +26,13 @@ public class SpatialConstants {
 
   static final String AS_WKB = "asWKB";
 
+  static final String AS_GEOJSON = "asGeoJSON";
+
   public static final String FROM_WKT = "fromWKT";
+
+  static final String FROM_WKB = "fromWKB";
+
+  public static final String FROM_GEOJSON = "fromGeoJSON";
 
   public static final String WITHIN = "within";
 
