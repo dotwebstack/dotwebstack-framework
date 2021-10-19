@@ -226,7 +226,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private Optional<FieldDefinition> createFieldDefinition(ObjectField objectField) {
-    Type type;
+    Type<?> type;
     if (StringUtils.isBlank(objectField.getType())) {
       if (AggregateHelper.isAggregate(objectField)) {
         type = TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE);

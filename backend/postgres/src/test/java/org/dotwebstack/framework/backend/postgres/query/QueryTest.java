@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.ObjectField;
-import org.dotwebstack.framework.core.query.model.*;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;

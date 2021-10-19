@@ -37,8 +37,10 @@ import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
-import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.query.model.AggregateField;
+import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -47,7 +49,19 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
-import org.jooq.*;
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.DataType;
+import org.jooq.Field;
+import org.jooq.JoinType;
+import org.jooq.Record;
+import org.jooq.RowN;
+import org.jooq.SQLDialect;
+import org.jooq.Select;
+import org.jooq.SelectFieldOrAsterisk;
+import org.jooq.SelectQuery;
+import org.jooq.SortField;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
@@ -117,6 +131,14 @@ class SelectBuilder {
     throw new UnsupportedOperationException();
   }
 
+  public SelectQuery<Record> build(ObjectRequest objectRequest) {
+    var objectType = getObjectType(objectRequest);
+    var dataTable = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(aliasManager.newAlias());
+
+    return createDataQuery(objectRequest, dataTable);
+  }
+
+
   private void addSortFields(CollectionRequest collectionRequest) {
     collectionRequest.getSortCriterias()
         .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
@@ -179,13 +201,6 @@ class SelectBuilder {
       objectRequest.getScalarFields()
           .add(field);
     }
-  }
-
-  public SelectQuery<Record> build(ObjectRequest objectRequest) {
-    var objectType = getObjectType(objectRequest);
-    var dataTable = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(aliasManager.newAlias());
-
-    return createDataQuery(objectRequest, dataTable);
   }
 
   private Table<Record> createTable(ObjectRequest objectRequest) {
@@ -342,8 +357,6 @@ class SelectBuilder {
     // Create virtual table with static key values
     var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());
 
-    var batchQuery = dslContext.selectQuery(keyTable);
-
     var junctionTable = DSL.table(joinTable.getName())
         .as(aliasManager.newAlias());
 
@@ -354,6 +367,8 @@ class SelectBuilder {
 
     dataQuery.addConditions(
         createJoinConditions(junctionTable, dataTable, joinTable.getInverseJoinColumns(), targetObjectType));
+
+    var batchQuery = dslContext.selectQuery(keyTable);
 
     batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
 
@@ -506,7 +521,7 @@ class SelectBuilder {
 
       Geometry geometry = readGeometry((String) mapValue.get(SpatialConstants.FROM_WKT));
 
-      Field geoField = DSL.val(geometry)
+      Field<Geometry> geoField = DSL.val(geometry)
           .cast(GEOMETRY_DATATYPE);
 
       switch (filterField) {

@@ -29,7 +29,7 @@ public class ModelConfigurationTest {
   @Mock
   private DatabaseClient databaseClient;
 
-  private BackendModule backendModule;
+  private BackendModule<?> backendModule;
 
   private ModelConfiguration modelConfiguration;
 

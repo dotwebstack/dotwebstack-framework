@@ -94,7 +94,7 @@ public class GraphQlHelper {
     return getAdditionalData(unmodifiedType).containsKey(GraphQlConstants.IS_SCALAR);
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static Map<String, String> getAdditionalData(GraphQLUnmodifiedType unmodifiedType) {
     return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
         .map(Node::getAdditionalData)

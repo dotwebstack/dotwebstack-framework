@@ -18,13 +18,14 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 class AbstractObjectMapperTest {
 
-  private RowMapper mapper;
+  private RowMapper<Map<String, Object>> mapper;
 
   @BeforeEach
   void setUp() {
-    mapper = new RowMapper();
+    mapper = new RowMapper<>();
   }
 
   @Test
