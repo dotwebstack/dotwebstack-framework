@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.query.model;
 
-import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,19 +16,19 @@ public class ObjectRequest implements Request {
   private final ObjectType<?> objectType;
 
   @Builder.Default
-  private final Collection<SelectedField> scalarFields = new ArrayList<>();
+  private final Collection<FieldRequest> scalarFields = new ArrayList<>();
 
   @Builder.Default
-  private final Map<SelectedField, ObjectRequest> objectFields = new HashMap<>();
+  private final Map<FieldRequest, ObjectRequest> objectFields = new HashMap<>();
 
   @Builder.Default
-  private final Map<SelectedField, CollectionRequest> selectedObjectListFields = new HashMap<>();
+  private final Map<FieldRequest, CollectionRequest> selectedObjectListFields = new HashMap<>();
 
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
   @Builder.Default
-  protected final Map<SelectedField, Collection<SelectedField>> nestedObjectFields = new HashMap<>();
+  protected final Map<FieldRequest, Collection<FieldRequest>> nestedObjectFields = new HashMap<>();
 
   private final ContextCriteria contextCriteria;
 }
