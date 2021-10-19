@@ -4,6 +4,7 @@ import static graphql.schema.GraphQLTypeUtil.isList;
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.*;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.*;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
@@ -16,18 +17,15 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
-import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ContextCriteria;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.*;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
@@ -75,6 +73,7 @@ public class BackendRequestFactory {
         .nestedObjectFields(getNestedObjectFields(selectionSet))
         .selectedObjectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
+        .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
         .build();
   }
 
@@ -90,6 +89,7 @@ public class BackendRequestFactory {
         .nestedObjectFields(getNestedObjectFields(selectedField.getSelectionSet()))
         .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
+        .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
   }
 
@@ -186,6 +186,72 @@ public class BackendRequestFactory {
         .collect(Collectors.toMap(Function.identity(),
             selectedField -> createCollectionRequest(selectedField, executionStepInfo)));
   }
+
+  private List<AggregateObjectRequest> getAggregateObjectFields(ObjectType<?> objectType,
+      DataFetchingFieldSelectionSet selectionSet) {
+    return selectionSet.getImmediateFields()
+        .stream()
+        .filter(AggregateHelper::isAggregateField)
+        .map(selectedField -> {
+          var objectField = objectType.getFields()
+              .get(selectedField.getName());
+
+          var aggregationObjectType = objectField.getAggregationOfType();
+
+          return AggregateObjectRequest.builder()
+              .objectField(objectField)
+              .aggregateFields(getAggregateFields(aggregationObjectType, selectedField.getSelectionSet()))
+              .build();
+        })
+        .collect(Collectors.toList());
+  }
+
+  private List<AggregateField> getAggregateFields(ObjectType<?> objectType,
+      DataFetchingFieldSelectionSet selectionSet) {
+    return selectionSet.getImmediateFields()
+        .stream()
+        .map(selectedField -> createAggregateField(objectType, selectedField))
+        .collect(Collectors.toList());
+
+    // String fieldPathPrefix = fieldConfigurationPair.getSelectedField()
+    // .getFullyQualifiedName()
+    // .concat("/");
+    // TypeConfiguration<?> aggregateTypeConfiguration = fieldConfigurationPair.getFieldConfiguration()
+    // .getTypeConfiguration();
+    // return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration,
+    // selectionSet)
+    // .map(this::createAggregateFieldConfiguration)
+    // .collect(Collectors.toList());
+  }
+
+  private AggregateField createAggregateField(ObjectType<?> objectType, SelectedField selectedField) {
+    var aggregateFunctionType = getAggregateFunctionType(selectedField);
+    var type = getAggregateScalarType(selectedField);
+    var distinct = isDistinct(selectedField);
+
+    // validate(fieldConfigurationPair.getFieldConfiguration(), aggregateField);
+
+    String separator = null;
+    if (aggregateFunctionType == AggregateFunctionType.JOIN) {
+      separator = getSeparator(selectedField);
+    }
+
+    var fieldName = (String) selectedField.getArguments()
+        .get(AggregateConstants.FIELD_ARGUMENT);
+
+    var objectField = objectType.getFields()
+        .get(fieldName);
+
+    return AggregateField.builder()
+        .field(objectField)
+        .functionType(aggregateFunctionType)
+        .type(type)
+        .alias(selectedField.getName())
+        .distinct(distinct)
+        .separator(separator)
+        .build();
+  }
+
 
   private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
     return arguments.stream()

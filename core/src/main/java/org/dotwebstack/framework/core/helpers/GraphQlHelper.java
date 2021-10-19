@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 
 public class GraphQlHelper {
@@ -56,7 +57,8 @@ public class GraphQlHelper {
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
         && !additionalData.containsKey(GraphQlConstants.IS_NESTED)
-        && !additionalData.containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
+        && !additionalData.containsKey(GraphQlConstants.IS_CONNECTION_TYPE) && !unwrappedType.getName()
+            .equals(AggregateConstants.AGGREGATE_TYPE);
   };
 
   public static final Predicate<SelectedField> isNestedObjectField = selectedField -> {
@@ -64,7 +66,8 @@ public class GraphQlHelper {
 
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_NESTED);
+        && getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_NESTED) && !unwrappedType.getName()
+            .equals(AggregateConstants.AGGREGATE_TYPE);
   };
 
   public static final Predicate<SelectedField> isObjectListField = selectedField -> {
@@ -72,6 +75,8 @@ public class GraphQlHelper {
 
     return (GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType())))
+        && !unwrappedType.getName()
+            .equals(AggregateConstants.AGGREGATE_TYPE)
         || getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
   };
 

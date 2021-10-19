@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.TypeUtils;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
@@ -214,12 +216,19 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private Optional<FieldDefinition> createFieldDefinition(ObjectField objectField) {
+    Type type;
     if (StringUtils.isBlank(objectField.getType())) {
-      return Optional.empty();
+      if (AggregateHelper.isAggregate(objectField)) {
+        type = TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE);
+      } else {
+        return Optional.empty();
+      }
+    } else {
+      type = createTypeForField(objectField);
     }
 
     return Optional.of(newFieldDefinition().name(objectField.getName())
-        .type(createTypeForField(objectField))
+        .type(type)
         .inputValueDefinitions(createInputValueDefinitions(objectField))
         .build());
   }

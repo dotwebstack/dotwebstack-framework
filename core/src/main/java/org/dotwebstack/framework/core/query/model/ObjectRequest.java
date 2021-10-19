@@ -26,6 +26,9 @@ public class ObjectRequest implements Request {
   private final Map<SelectedField, CollectionRequest> selectedObjectListFields = new HashMap<>();
 
   @Builder.Default
+  private final List<AggregateObjectRequest> aggregateObjectFields = new ArrayList<>();
+
+  @Builder.Default
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
   @Builder.Default

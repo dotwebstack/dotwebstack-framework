@@ -4,10 +4,12 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.springframework.stereotype.Component;
 
@@ -53,15 +55,25 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     // mapped By
     allFields.stream()
         .filter(objectField -> isNotEmpty(objectField.getMappedBy()))
-        .filter(objectField -> isNotEmpty(objectField.getType())) // TODO: Aggregatie heeft geen type, moet
-                                                                  // nog bekeken worden
         .forEach(objectField -> {
-          var mappedByType = objectTypes.get(objectField.getType());
+          var type = StringUtils.isNotEmpty(objectField.getAggregationOf()) ? objectField.getAggregationOf()
+              : objectField.getType();
 
-          PostgresObjectField mappedByObjectField = (PostgresObjectField) mappedByType.getFields()
+          var objectType = objectTypes.get(type);
+
+          PostgresObjectField mappedByObjectField = (PostgresObjectField) objectType.getFields()
               .get(objectField.getMappedBy());
 
           objectField.setMappedByObjectField(mappedByObjectField);
+        });
+
+    // aggregation
+    allFields.stream()
+        .filter(AggregateHelper::isAggregate)
+        .forEach(objectField -> {
+          var aggregationOfType = (PostgresObjectType) objectTypes.get(objectField.getAggregationOf());
+
+          objectField.setAggregationOfType(aggregationOfType);
         });
   }
 }

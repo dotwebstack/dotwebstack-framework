@@ -17,5 +17,9 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected boolean nullable = false;
 
-  private List<FieldArgument> arguments = new ArrayList<>();
+  protected String aggregationOf;
+
+  protected ObjectType<?> aggregationOfType;
+
+  protected List<FieldArgument> arguments = new ArrayList<>();
 }

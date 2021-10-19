@@ -23,4 +23,8 @@ public interface ObjectField {
 
   @NotNull
   List<FieldArgument> getArguments();
+
+  String getAggregationOf();
+
+  ObjectType<?> getAggregationOfType();
 }
