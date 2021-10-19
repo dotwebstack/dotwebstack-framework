@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import graphql.schema.SelectedField;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -60,7 +60,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
@@ -106,7 +106,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
@@ -155,7 +155,7 @@ public class PostgresBackendLoaderTest {
     List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<SelectedField, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
