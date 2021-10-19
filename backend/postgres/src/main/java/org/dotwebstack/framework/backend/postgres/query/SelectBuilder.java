@@ -286,8 +286,8 @@ class SelectBuilder {
 
     var subSelect = dslContext.selectQuery(aliasedAggregateTable);
 
-    aggregateFields
-        .forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect, aliasedAggregateTable));
+    aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
+        aliasedAggregateTable));
 
     join(table, objectField, null).forEach(subSelect::addConditions);
 
