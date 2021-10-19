@@ -5,13 +5,15 @@ import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
-import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.CONTAINS;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_FILTER;
@@ -70,6 +72,9 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
         .fieldDefinition(newFieldDefinition().name(AS_WKT)
             .type(stringType)
             .build())
+        .fieldDefinition(newFieldDefinition().name(AS_GEOJSON)
+            .type(stringType)
+            .build())
         .build();
   }
 
@@ -78,8 +83,13 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
     return newInputObjectDefinition().name(GEOMETRY_INPUT)
         .inputValueDefinition(newInputValueDefinition().name(FROM_WKT)
-            .type(newNonNullType().type(newTypeName(typeName).build())
-                .build())
+            .type(newTypeName(typeName).build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(FROM_WKB)
+            .type(newTypeName(typeName).build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(FROM_GEOJSON)
+            .type(newTypeName(typeName).build())
             .build())
         .build();
   }

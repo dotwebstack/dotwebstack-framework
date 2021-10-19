@@ -23,6 +23,7 @@ type Geometry{
   type: GeometryType!
   asWKB: String!
   asWKT: String!
+  asGeoJSON: String!
 }
 
 enum GeometryType{
@@ -102,7 +103,9 @@ input GeometryFilter {
 }
 
 input GeometryInput {
-  fromWKT: String!
+  fromWKT: String
+  fromWKB: String
+  fromGeoJSON: String
 }
 ```
 

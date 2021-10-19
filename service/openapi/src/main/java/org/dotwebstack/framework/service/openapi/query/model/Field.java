@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,8 @@ public class Field {
 
   private String selectionSet;
 
-  private List<Field> children;
+  @Builder.Default
+  private List<Field> children = new ArrayList<>();
 
   @Builder.Default
   private boolean nodeField = false;

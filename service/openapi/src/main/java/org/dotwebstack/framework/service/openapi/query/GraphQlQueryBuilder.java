@@ -47,7 +47,9 @@ public class GraphQlQueryBuilder {
       rootField = OasToGraphQlHelper.toQueryField(queryName, selectionSet);
     } else {
       ResponseTemplate okResponse = getOkResponse(responseSchemaContext);
-      rootField = OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, this.pagingEnabled);
+      List<String> requiredFields = responseSchemaContext.getRequiredFields();
+      rootField =
+          OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, requiredFields, this.pagingEnabled);
     }
 
     if (rootField.isEmpty()) {

@@ -1,3 +1,6 @@
+spatial:
+  sourceCrs: EPSG:28992
+
 subscriptions:
   beerSubscription:
     type: Beer
