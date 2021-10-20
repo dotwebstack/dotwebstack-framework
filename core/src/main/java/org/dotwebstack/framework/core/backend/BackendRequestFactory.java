@@ -352,7 +352,7 @@ public class BackendRequestFactory {
 
     return sortableByConfig.stream()
         .map(config -> SortCriteria.builder()
-            .fields(createObjectFieldPath(objectType, config.getField()))
+            .fieldPath(createObjectFieldPath(objectType, config.getField()))
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());

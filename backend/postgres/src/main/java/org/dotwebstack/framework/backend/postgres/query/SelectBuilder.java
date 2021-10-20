@@ -148,16 +148,16 @@ class SelectBuilder {
   private void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
     ObjectRequest objectRequest = collectionRequest.getObjectRequest();
 
-    for (int index = 0; index < sortCriteria.getFields()
+    for (int index = 0; index < sortCriteria.getFieldPath()
         .size(); index++) {
-      ObjectField sortField = sortCriteria.getFields()
+      ObjectField sortField = sortCriteria.getFieldPath()
           .get(index);
 
-      if (index == (sortCriteria.getFields()
+      if (index == (sortCriteria.getFieldPath()
           .size() - 1)) {
         findOrAddScalarField(objectRequest, sortField);
       } else {
-        ObjectField nextSortField = sortCriteria.getFields()
+        ObjectField nextSortField = sortCriteria.getFieldPath()
             .get(index + 1);
         objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
@@ -554,7 +554,7 @@ class SelectBuilder {
   }
 
   private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
-    List<ObjectField> fieldPath = sortCriteria.getFields();
+    List<ObjectField> fieldPath = sortCriteria.getFieldPath();
     var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
     var sortField = column(null, leafFieldMapper.getAlias());

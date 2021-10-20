@@ -97,7 +97,7 @@ public class Query {
   }
 
   private Orderable createOrderable(SortCriteria sortCriteria) {
-    var leafFieldMapper = rowMapper.getLeafFieldMapper(sortCriteria.getFields());
+    var leafFieldMapper = rowMapper.getLeafFieldMapper(sortCriteria.getFieldPath());
     var orderable = SparqlBuilder.var(leafFieldMapper.getAlias());
 
     return SortDirection.ASC.equals(sortCriteria.getDirection()) ? orderable : orderable.desc();

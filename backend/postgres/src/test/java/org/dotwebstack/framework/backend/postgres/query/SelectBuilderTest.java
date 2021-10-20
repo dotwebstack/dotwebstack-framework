@@ -458,7 +458,7 @@ class SelectBuilderTest {
         .thenReturn("a");
 
     SortCriteria.SortCriteriaBuilder sortCriteria = SortCriteria.builder()
-        .fields(List.of(sortCriteriaField))
+        .fieldPath(List.of(sortCriteriaField))
         .direction(direction);
     sortCriteriaList = List.of(sortCriteria.build());
 
