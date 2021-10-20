@@ -20,12 +20,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.TypeConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingDataFetcherContext;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.RequestFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
@@ -34,7 +35,7 @@ import reactor.util.function.Tuple2;
 
 @Slf4j
 @Component
-@ConditionalOnBean(DotWebStackConfiguration.class)
+@Conditional(OnLocalSchema.class)
 public final class GenericDataFetcher implements DataFetcher<Object> {
 
   public static final Map<String, Object> NULL_MAP = Map.of("id", "null");

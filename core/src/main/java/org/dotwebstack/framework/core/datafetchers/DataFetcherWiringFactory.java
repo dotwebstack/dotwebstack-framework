@@ -9,12 +9,13 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import java.util.Optional;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnBean(DotWebStackConfiguration.class)
+@Conditional(OnLocalSchema.class)
 public final class DataFetcherWiringFactory implements WiringFactory {
 
   private final DotWebStackConfiguration dotWebStackConfiguration;

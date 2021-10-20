@@ -15,8 +15,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Profile;
 public class GraphqlConfiguration {
 
   @Bean
-  @ConditionalOnBean(DotWebStackConfiguration.class)
+  @Conditional(OnLocalSchema.class)
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories,
       DotWebStackConfiguration dotWebStackConfiguration) {
@@ -61,7 +61,7 @@ public class GraphqlConfiguration {
 
   @Profile("!test")
   @Bean
-  @ConditionalOnBean(DotWebStackConfiguration.class)
+  @Conditional(OnLocalSchema.class)
   public TypeDefinitionRegistry typeDefinitionRegistry(
       TypeDefinitionRegistrySchemaFactory typeDefinitionRegistryFactory) {
     return typeDefinitionRegistryFactory.createTypeDefinitionRegistry();
