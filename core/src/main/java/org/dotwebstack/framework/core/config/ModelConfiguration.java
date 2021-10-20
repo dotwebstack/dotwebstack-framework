@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.config;
 
+import static java.util.stream.Collectors.joining;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -11,6 +13,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.validators.SchemaValidator;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -34,6 +40,7 @@ public class ModelConfiguration {
     var objectMapper = createObjectMapper();
 
     Schema schema = new SchemaReader(objectMapper).read(configFile);
+    validateSchemaFields(configFile, schema);
 
     backendModule.init(schema.getObjectTypes());
 
@@ -49,6 +56,20 @@ public class ModelConfiguration {
     return new ObjectMapper(new YAMLFactory()).enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .registerModule(deserializerModule);
+  }
+
+  private void validateSchemaFields(String configFile, Schema schema) {
+    Set<ConstraintViolation<Object>> violations = Validation.buildDefaultValidatorFactory()
+        .getValidator()
+        .validate(schema);
+
+    if (!violations.isEmpty()) {
+      String msg = String.format("%s is not valid. Reasons (%s):%n", configFile, violations.size());
+      String violationLines = violations.stream()
+          .map(violation -> violation.getPropertyPath() + " " + violation.getMessage())
+          .collect(joining(", " + System.lineSeparator()));
+      throw new ConstraintViolationException(msg + violationLines, violations);
+    }
   }
 
   private static class ObjectTypeDeserializer extends JsonDeserializer<ObjectType<? extends ObjectField>> {

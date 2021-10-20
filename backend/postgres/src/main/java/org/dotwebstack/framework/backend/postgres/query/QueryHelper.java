@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -38,10 +39,14 @@ class QueryHelper {
   }
 
   public static String columnName(JoinColumn joinColumn, PostgresObjectType objectType) {
-    var objectField = objectType.getField(joinColumn.getReferencedField())
-        .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", joinColumn.getReferencedField()));
+    return Optional.ofNullable(joinColumn.getReferencedColumn())
+        .orElseGet(() -> getColumnNameOfReferencedField(joinColumn, objectType));
+  }
 
-    return objectField.getColumn();
+  private static String getColumnNameOfReferencedField(JoinColumn joinColumn, PostgresObjectType objectType) {
+    return objectType.getField(joinColumn.getReferencedField())
+        .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", joinColumn.getReferencedField()))
+        .getColumn();
   }
 
   public static PostgresObjectType getObjectType(ObjectRequest objectRequest) {

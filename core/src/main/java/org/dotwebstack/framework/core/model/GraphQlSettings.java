@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.core.model;
 
-import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class GraphQlSettings {
 
-  @Valid
+  @NotBlank
   private String proxy;
 }

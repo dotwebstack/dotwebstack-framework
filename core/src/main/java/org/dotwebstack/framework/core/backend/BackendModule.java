@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.backend;
 
 import java.util.Map;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
 public interface BackendModule<T extends ObjectType<?>> {
@@ -9,5 +10,5 @@ public interface BackendModule<T extends ObjectType<?>> {
 
   BackendLoaderFactory getBackendLoaderFactory();
 
-  void init(Map<String, ObjectType<?>> objectTypes);
+  void init(Map<String, ObjectType<? extends ObjectField>> objectTypes);
 }
