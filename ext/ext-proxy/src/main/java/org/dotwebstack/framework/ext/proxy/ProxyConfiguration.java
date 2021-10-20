@@ -12,7 +12,9 @@ import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.dotwebstack.graphql.orchestrate.schema.RemoteExecutor;
 import org.dotwebstack.graphql.orchestrate.schema.SchemaIntrospector;
 import org.dotwebstack.graphql.orchestrate.schema.Subschema;
+import org.dotwebstack.graphql.orchestrate.transform.Transform;
 import org.dotwebstack.graphql.orchestrate.wrap.SchemaWrapper;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -33,13 +35,14 @@ class ProxyConfiguration {
 
   @Bean
   @Primary
-  public GraphQLSchema schema() {
+  public GraphQLSchema schema(ObjectProvider<Transform> transform) {
     var remoteExecutor = createRemoteExecutor();
     var schema = loadSchema(remoteExecutor);
 
     var subschema = Subschema.builder()
         .schema(schema)
         .executor(remoteExecutor)
+        .transform(transform.getIfAvailable())
         .build();
 
     return SchemaWrapper.wrap(subschema);

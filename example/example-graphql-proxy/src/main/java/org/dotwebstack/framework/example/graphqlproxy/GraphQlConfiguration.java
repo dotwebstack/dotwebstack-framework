@@ -10,15 +10,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GraphQlConfiguration {
 
-  // @Bean
-  // @Primary
-  // public GraphQL graphQL(SchemaFactory schemaFactory) throws IOException {
-  // var schema = schemaFactory.create();
-  //
-  // return GraphQL.newGraphQL(schema)
-  // .build();
-  // }
-
   @Bean
   public Transform transform() {
     return createNameTransform().pipe(createHoistTransform());
@@ -26,16 +17,16 @@ public class GraphQlConfiguration {
 
   private Transform createNameTransform() {
     return new RenameObjectFields((typeName, fieldName, fieldDefinition) -> {
-      // Only rename fields for type Woonplaats
-      if (!typeName.equals("Woonplaats")) {
+      // Only rename fields for type Beer
+      if (!typeName.equals("Beer")) {
         return fieldName;
       }
 
       switch (fieldName) {
-        case "identificatie":
-          return "uri";
-        case "naam":
-          return "plaatsnaam";
+        case "name":
+          return "productLabel";
+        case "abv":
+          return "abvPercentage";
         default:
           return fieldName;
       }
@@ -43,6 +34,6 @@ public class GraphQlConfiguration {
   }
 
   private Transform createHoistTransform() {
-    return new HoistField("Woonplaats", "geoWKT", List.of("geometrie", "asWKT"));
+    return new HoistField("Beer", "breweryName", List.of("brewery", "name"));
   }
 }
