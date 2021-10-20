@@ -23,8 +23,6 @@ class PebbleTemplatingConfigurationTest {
   @Mock
   private ResourcePatternResolver resourceLoader;
 
-  private PebbleTemplatingConfiguration templatingConfiguration;
-
   @Test
   void testConfiguration_readsTemplates_successfully() throws IOException {
     // Arrange
@@ -39,7 +37,7 @@ class PebbleTemplatingConfigurationTest {
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {baseHtmlResource, correctHtmlResource});
 
     // Arrange
-    templatingConfiguration = new PebbleTemplatingConfiguration(resourceLoader, Collections.emptyList());
+    PebbleTemplatingConfiguration templatingConfiguration = new PebbleTemplatingConfiguration(resourceLoader, Collections.emptyList());
 
     // Act
     Map<String, PebbleTemplate> templateMap = templatingConfiguration.htmlTemplates();

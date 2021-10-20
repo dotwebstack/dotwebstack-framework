@@ -124,8 +124,6 @@ class CoreRequestHandlerTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
-  private GraphQlQueryBuilder queryBuilder;
-
   private final OpenAPI openApi = TestResources.openApi();
 
   private final ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
@@ -158,7 +156,7 @@ class CoreRequestHandlerTest {
 
     org.dotwebstack.framework.core.model.Schema schema = mock(org.dotwebstack.framework.core.model.Schema.class);
     when(schema.usePaging()).thenReturn(true);
-    queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
+    GraphQlQueryBuilder queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
 
     coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
         List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,

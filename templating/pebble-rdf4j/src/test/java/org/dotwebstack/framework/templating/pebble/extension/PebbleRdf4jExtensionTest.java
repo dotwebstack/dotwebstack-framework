@@ -14,15 +14,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PebbleRdf4jExtensionTest {
 
-  private PebbleRdf4jExtension pebbleRdf4jExtension;
-
   @Mock
   private JsonLdFilter jsonLdFilterMock;
 
   @Test
   void pebbleExtensionShouldHaveOneFilter() {
     // Arrange
-    pebbleRdf4jExtension = new PebbleRdf4jExtension(jsonLdFilterMock);
+    PebbleRdf4jExtension pebbleRdf4jExtension = new PebbleRdf4jExtension(jsonLdFilterMock);
 
     // Act
     Map<String, Filter> filters = pebbleRdf4jExtension.getFilters();

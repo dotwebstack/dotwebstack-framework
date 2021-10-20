@@ -29,15 +29,13 @@ class ModelConfigurationTest {
   @Mock
   private DatabaseClient databaseClient;
 
-  private BackendModule<?> backendModule;
-
   private ModelConfiguration modelConfiguration;
 
   private List<SchemaValidator> validatorList;
 
   @BeforeEach
   void setUp() {
-    backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
+    BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
     modelConfiguration = new ModelConfiguration(backendModule);
     validatorList = List.of(new FilterValidator(), new SettingsValidator(), new SortValidator());
   }

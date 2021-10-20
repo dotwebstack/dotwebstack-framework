@@ -38,19 +38,13 @@ class BackendDataFetcherWiringFactoryTest {
   @Mock
   private DatabaseClient databaseClient;
 
-  private BackendModule<?> backendModule;
-
-  private Schema schema;
-
-  private SchemaReader schemaReader;
-
   private BackendDataFetcherWiringFactory dataFetcher;
 
   @BeforeEach
   void doBeforeEach() {
-    backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
-    schemaReader = new SchemaReader(TestHelper.createObjectMapper());
-    schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
+    BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
+    SchemaReader schemaReader = new SchemaReader(TestHelper.createObjectMapper());
+    Schema schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
     dataFetcher = new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema);
   }
 
