@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
-public class PostgresConfigurationTest {
+class PostgresConfigurationTest {
 
   @Mock
   private PostgresProperties postgresProperties;

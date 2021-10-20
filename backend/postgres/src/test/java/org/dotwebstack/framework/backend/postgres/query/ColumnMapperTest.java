@@ -13,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ColumnMapperTest {
+class ColumnMapperTest {
 
   @Test
   void initObject() {

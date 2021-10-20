@@ -41,7 +41,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-public class BackendDataFetcherTest {
+class BackendDataFetcherTest {
 
   @Mock
   private BackendLoader backendLoader;
@@ -56,7 +56,7 @@ public class BackendDataFetcherTest {
   private BackendDataFetcher dataFetcher;
 
   @Test
-  public void get_returnObject_ifDataWasEagerLoaded() {
+  void get_returnObject_ifDataWasEagerLoaded() {
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
     when(environment.getSource()).thenReturn(source);
@@ -72,7 +72,7 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  public void get_returnCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
+  void get_returnCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
@@ -129,7 +129,7 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  public void get_throwsIllegalStateException_whenMoreJoinConditions() {
+  void get_throwsIllegalStateException_whenMoreJoinConditions() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
@@ -183,7 +183,7 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  public void get_returnFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
+  void get_returnFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
@@ -236,7 +236,7 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  public void get_returnFluxMap_ifSourceNull_SubscriptionTrue() {
+  void get_returnFluxMap_ifSourceNull_SubscriptionTrue() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
@@ -287,7 +287,7 @@ public class BackendDataFetcherTest {
   }
 
   @Test
-  public void get_returnMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
+  void get_returnMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);

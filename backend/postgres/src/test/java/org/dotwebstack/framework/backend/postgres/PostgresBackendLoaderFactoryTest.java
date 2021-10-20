@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
-public class PostgresBackendLoaderFactoryTest {
+class PostgresBackendLoaderFactoryTest {
 
   @Mock
   private DatabaseClient databaseClient;

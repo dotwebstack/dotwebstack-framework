@@ -21,7 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-public class SpatialCodecRegistrarTest {
+class SpatialCodecRegistrarTest {
 
   @Mock
   private ByteBufGeometryParser geometryParser;

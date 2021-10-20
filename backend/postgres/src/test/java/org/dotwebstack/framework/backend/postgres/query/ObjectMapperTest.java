@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,8 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
-
-public class ObjectMapperTest {
+class ObjectMapperTest {
 
   private ObjectMapper mapper;
 
@@ -29,7 +29,7 @@ public class ObjectMapperTest {
     var result = mapper.apply(row);
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
-    assertTrue(result.size() == 1);
+    assertThat(result.size(), is(1));
   }
 
   @Test
@@ -51,6 +51,6 @@ public class ObjectMapperTest {
     var result = mapper.apply(row);
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
-    assertTrue(result.size() == 1);
+    assertThat(result.size(), is(1));
   }
 }

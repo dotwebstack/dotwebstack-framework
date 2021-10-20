@@ -11,7 +11,7 @@ import java.util.Map;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.junit.jupiter.api.Test;
 
-public class FilterCriteriaTest {
+class FilterCriteriaTest {
 
   @Test
   void initFilterCriteriaObject() {

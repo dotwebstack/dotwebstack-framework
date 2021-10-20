@@ -37,7 +37,7 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class PostgresBackendLoaderTest {
+class PostgresBackendLoaderTest {
 
   @Mock
   private DatabaseClient databaseClient;

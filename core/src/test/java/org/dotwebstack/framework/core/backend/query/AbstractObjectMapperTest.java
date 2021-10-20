@@ -37,7 +37,7 @@ class AbstractObjectMapperTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
-    assertTrue(result.size() == 1);
+    assertThat(result.size(), is(1));
   }
 
   @Test
