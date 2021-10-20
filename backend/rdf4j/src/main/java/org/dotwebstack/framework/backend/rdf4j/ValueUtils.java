@@ -1,10 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.util.Optional;
-import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
@@ -22,17 +20,6 @@ public final class ValueUtils {
     return Models.getPropertyIRI(model, subject, predicate)
         .orElseThrow(
             () -> invalidConfigurationException("Resource '{}' requires a '{}' IRI property.", subject, predicate));
-  }
-
-  public static Set<IRI> findRequiredPropertyIris(@NonNull Model model, @NonNull Resource subject,
-      @NonNull IRI predicate) {
-    Set<IRI> result = Models.getPropertyIRIs(model, subject, predicate);
-
-    if (isEmpty(result)) {
-      throw invalidConfigurationException("Resource '{}' requires a '{}' IRI property.", subject, predicate);
-    }
-
-    return result;
   }
 
   public static Optional<IRI> findOptionalPropertyIri(@NonNull Model model, @NonNull Resource subject,

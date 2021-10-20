@@ -86,9 +86,7 @@ class PostgresBackendLoaderTest {
     var res = backendLoader.loadSingle(request, requestContext);
     assertThat(res, CoreMatchers.is(notNullValue()));
     assertTrue(res instanceof Mono);
-    res.doOnNext(result -> {
-      assertThat(result.get("@@@"), is("ccc"));
-    })
+    res.doOnNext(result -> assertThat(result.get("@@@"), is("ccc")))
         .subscribe();
   }
 
@@ -138,9 +136,7 @@ class PostgresBackendLoaderTest {
     var res = backendLoader.loadMany(request, requestContext);
     assertThat(res, CoreMatchers.is(notNullValue()));
     assertTrue(res instanceof Flux);
-    res.doOnNext(result -> {
-      assertThat(result.get("@@@"), is(null));
-    })
+    res.doOnNext(result -> assertThat(result.get("@@@"), is(null)))
         .subscribe();
   }
 

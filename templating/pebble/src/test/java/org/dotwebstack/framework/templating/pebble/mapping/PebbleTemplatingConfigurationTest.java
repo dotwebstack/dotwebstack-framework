@@ -37,7 +37,8 @@ class PebbleTemplatingConfigurationTest {
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[] {baseHtmlResource, correctHtmlResource});
 
     // Arrange
-    PebbleTemplatingConfiguration templatingConfiguration = new PebbleTemplatingConfiguration(resourceLoader, Collections.emptyList());
+    PebbleTemplatingConfiguration templatingConfiguration =
+        new PebbleTemplatingConfiguration(resourceLoader, Collections.emptyList());
 
     // Act
     Map<String, PebbleTemplate> templateMap = templatingConfiguration.htmlTemplates();

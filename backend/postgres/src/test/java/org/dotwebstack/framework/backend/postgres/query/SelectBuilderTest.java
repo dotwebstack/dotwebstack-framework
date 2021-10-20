@@ -135,9 +135,9 @@ class SelectBuilderTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
-        .contains("select  as \nfrom anyTable_Brewery_ctx(\'b\') as \nwhere exists (\n  select 1\n"
-            + "  from a_Brewery_ctx(\'b\') as \n  where (\n    \"b\" = \"a\"\n    and b < \'a\'\n"
-            + "    and b = \'b\'\n  )\n)\norder by \"a\" asc"));
+        .contains("select  as \nfrom anyTable_Brewery_ctx('b') as \nwhere exists (\n  select 1\n"
+            + "  from a_Brewery_ctx('b') as \n  where (\n    \"b\" = \"a\"\n    and b < 'a'\n"
+            + "    and b = 'b'\n  )\n)\norder by \"a\" asc"));
   }
 
   @Test

@@ -52,7 +52,7 @@ class RequestBodyHandlerTest {
   }
 
   @Test
-  void getValue_returns_Map_forValidJson() throws BadRequestException {
+  void getValue_returns_Map_forValidJson() {
     Map<String, Object> expected = new HashMap<>();
     ArrayList<String> expectedList = new ArrayList<>();
     expectedList.add("value1");

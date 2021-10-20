@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.TestHelper;
 import org.dotwebstack.framework.core.model.Schema;
@@ -39,7 +38,7 @@ class SchemaReaderTest {
   }
 
   @Test
-  void read_returnsSchema_forConfigFile() throws IOException {
+  void read_returnsSchema_forConfigFile() {
     var result = schemaReader.read("dotwebstack/dotwebstack-queries.yaml");
 
     assertThat(result, CoreMatchers.is(notNullValue()));

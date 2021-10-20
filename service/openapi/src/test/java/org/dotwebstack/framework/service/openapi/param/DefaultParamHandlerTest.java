@@ -485,7 +485,7 @@ class DefaultParamHandlerTest {
       boolean explode, Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn(PARAM_HEADER_TYPE);
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
-    when(headers.header(name)).thenReturn(asList(value));
+    when(headers.header(name)).thenReturn(List.of(value));
     when(request.headers()).thenReturn(headers);
     mockParameter(name, type, subType, format, explode, style);
   }

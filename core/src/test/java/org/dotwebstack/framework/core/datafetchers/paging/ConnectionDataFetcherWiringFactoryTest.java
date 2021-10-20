@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
-import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -8,8 +7,6 @@ import static org.mockito.Mockito.when;
 
 import graphql.language.FieldDefinition;
 import graphql.schema.idl.FieldWiringEnvironment;
-import java.util.Map;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -38,10 +35,6 @@ class ConnectionDataFetcherWiringFactoryTest {
     var type = newTypeName("testType").build();
     when(fieldDefinition.getType()).thenReturn(type);
 
-    var typeDefinition =
-        newObjectTypeDefinition().additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
-            .build();
-
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.TRUE));
   }
 
@@ -55,10 +48,6 @@ class ConnectionDataFetcherWiringFactoryTest {
     var type = newTypeName("testType").build();
     when(fieldDefinition.getType()).thenReturn(type);
 
-    var typeDefinition =
-        newObjectTypeDefinition().additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.FALSE.toString()))
-            .build();
-
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.FALSE));
   }
 
@@ -71,8 +60,6 @@ class ConnectionDataFetcherWiringFactoryTest {
 
     var type = newTypeName("testType").build();
     when(fieldDefinition.getType()).thenReturn(type);
-
-    var typeDefinition = newObjectTypeDefinition().build();
 
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.FALSE));
   }

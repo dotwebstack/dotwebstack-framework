@@ -172,6 +172,7 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
     return mapContext;
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<Schema<?>> getSchema(ServerWebExchange exchange, HttpStatus responseStatus) {
     return getApiResponse(exchange, responseStatus).map(ApiResponse::getContent)
         .map(content -> content.get(APPLICATION_PROBLEM_JSON_MIMETYPE))
@@ -179,19 +180,23 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
         .map(s -> resolveSchema(openApi, s));
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<URI> resolveExpressionUri(Schema<?> schema, MapContext mapContext, String property) {
     return resolveExpression(schema, mapContext, property).map(Object::toString)
         .map(URI::create);
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<Object> resolveExpression(Schema<?> schema, MapContext mapContext, String property) {
     return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object.class));
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<Object[]> resolveExpressionArray(Schema<?> schema, MapContext mapContext, String property) {
     return resolveScript(schema, property).flatMap(s -> jexlHelper.evaluateScript(s, mapContext, Object[].class));
   }
 
+  @SuppressWarnings("rawtypes")
   private Optional<String> resolveScript(Schema<?> schema, String property) {
     return Optional.of(schema)
         .map(Schema::getProperties)

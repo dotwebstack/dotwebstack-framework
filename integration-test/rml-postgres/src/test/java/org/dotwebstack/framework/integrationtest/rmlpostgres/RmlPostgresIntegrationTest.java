@@ -47,7 +47,7 @@ class RmlPostgresIntegrationTest {
   private WebTestClient client;
 
   @Container
-  static TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
+  static final TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
       .withClasspathResourceMapping("config/model", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY);
 
   private static class TestPostgreSqlContainer extends PostgreSQLContainer<TestPostgreSqlContainer> {
