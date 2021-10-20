@@ -18,9 +18,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 @Data
 public class DotWebStackConfiguration {
 
-  @Valid
-  private SettingsConfiguration settings;
-
   @NotNull
   private List<Feature> features = List.of();
 
