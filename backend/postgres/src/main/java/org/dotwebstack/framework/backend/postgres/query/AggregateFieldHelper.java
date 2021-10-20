@@ -14,6 +14,8 @@ public final class AggregateFieldHelper {
 
   private AggregateFieldHelper() {}
 
+  private AggregateFieldHelper() {}
+
   public static final Predicate<AggregateField> isStringJoin =
       aggregateField -> JOIN.equals(aggregateField.getFunctionType());
 

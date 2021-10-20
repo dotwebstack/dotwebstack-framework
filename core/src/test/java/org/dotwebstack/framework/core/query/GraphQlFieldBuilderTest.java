@@ -81,11 +81,10 @@ class GraphQlFieldBuilderTest {
   @Test
   void toGraphQlField_throwsException_MissingType() {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    FieldDefinition.Builder fieldDefinition = createFieldDefinition();
-
     Map<String, GraphQlField> typeNameFieldMap = new HashMap<>();
-    assertThrows(InvalidConfigurationException.class,
-        () -> builder.toGraphQlField(fieldDefinition.build(), typeNameFieldMap));
+    FieldDefinition fieldDefinition = createFieldDefinition().build();
+
+    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, typeNameFieldMap));
   }
 
   private FieldDefinition.Builder createFieldDefinition() {

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
 
@@ -16,7 +17,7 @@ public class ObjectMapper extends AbstractObjectMapper<Map<String, Object>> {
   @Override
   public Map<String, Object> apply(Map<String, Object> row) {
     if (alias != null && row.get(alias) == null) {
-      return null;
+      return Collections.emptyMap();
     }
 
     return super.apply(row);

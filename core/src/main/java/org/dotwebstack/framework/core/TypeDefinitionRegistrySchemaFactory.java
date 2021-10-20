@@ -466,7 +466,6 @@ public class TypeDefinitionRegistrySchemaFactory {
           .keySet()
           .iterator()
           .next()
-          .toString()
           .toUpperCase();
 
       var inputValueDefinition = newInputValueDefinition().name(SORT_ARGUMENT_NAME)

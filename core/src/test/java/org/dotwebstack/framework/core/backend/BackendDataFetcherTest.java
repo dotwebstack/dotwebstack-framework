@@ -317,7 +317,7 @@ class BackendDataFetcherTest {
 
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
-    when(backendLoader.loadSingle(eq(objectRequest), eq(requestContext))).thenReturn(Mono.just(resultMock));
+    when(backendLoader.loadSingle(objectRequest, requestContext)).thenReturn(Mono.just(resultMock));
 
     var result = ((CompletableFuture) dataFetcher.get(environment)).join();
 

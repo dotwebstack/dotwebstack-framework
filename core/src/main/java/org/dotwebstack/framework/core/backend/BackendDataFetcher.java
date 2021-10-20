@@ -87,7 +87,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
           .collect(Collectors.toList());
 
-      if (completableFutures.size() > 0) {
+      if (!completableFutures.isEmpty() && completableFutures.size() > 0) {
         if (completableFutures.size() == 1) {
           return completableFutures.get(0);
         }

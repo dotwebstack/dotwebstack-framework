@@ -87,9 +87,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    var collectionRequest = collectionRequestBuilder.build();
 
-    var exception =
-        assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequestBuilder.build(), null));
+    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
 
     assertThat(exception.getMessage(), CoreMatchers.is("Unknown filter filterField 'a'"));
   }
@@ -131,8 +131,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertThat(result.toString(),
@@ -142,20 +143,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionEq() {
+  void build_returnsSelectQuery_forFilterCondition_Eq() {
     initSortCriteriaList(SortDirection.ASC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("eq", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("eq", "b"));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -163,20 +162,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionLt() {
+  void build_returnsSelectQuery_forFilterCondition_Lt() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("lt", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("lt", "b"));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -184,20 +181,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionLte() {
+  void build_returnsSelectQuery_forFilterCondition_Lte() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("lte", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("lte", "b"));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -205,20 +200,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionGt() {
+  void build_returnsSelectQuery_forFilterCondition_Gt() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("gt", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("gt", "b"));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -226,20 +219,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionGte() {
+  void build_returnsSelectQuery_forFilterCondition_Gte() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("gte", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("gte", "b"));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -247,20 +238,18 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionIn() {
+  void build_returnsSelectQuery_forFilterCondition_In() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("in", List.of("a", "b", "c")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
+    filterCriteriaBuilder.value(Map.of("in", List.of("a", "b", "c")));
+    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -281,15 +270,15 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var exception =
-        assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequestBuilder.build(), null));
+    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
 
     assertThat(exception.getMessage(), CoreMatchers.is("The filter input WKT is invalid!"));
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionGeometryContains() {
+  void build_returnsSelectQuery_forFilterCondition_GeometryContains() {
     initSortCriteriaList(SortDirection.ASC);
     initCollectionRequest();
 
@@ -302,8 +291,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -312,7 +302,7 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionGeometryWithin() {
+  void build_returnsSelectQuery_forFilterCondition_GeometryWithin() {
     initSortCriteriaList(SortDirection.ASC);
     initCollectionRequest();
 
@@ -325,8 +315,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -335,7 +326,7 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forFilterConditionGeometryIntersects() {
+  void build_returnsSelectQuery_forFilterCondition_GeometryIntersects() {
     initSortCriteriaList(SortDirection.DESC);
     initCollectionRequest();
 
@@ -348,8 +339,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
+    var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
@@ -371,9 +363,9 @@ class SelectBuilderTest {
     List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
 
     collectionRequestBuilder.filterCriterias(filterCriteriaList);
+    CollectionRequest collectionRequest = collectionRequestBuilder.build();
 
-    var exception =
-        assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequestBuilder.build(), null));
+    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
 
     assertThat(exception.getMessage(), CoreMatchers.is("Unsupported geometry filter operation"));
   }
@@ -474,5 +466,14 @@ class SelectBuilderTest {
     collectionRequestBuilder = CollectionRequest.builder()
         .objectRequest(objectRequestBuilder.build())
         .sortCriterias(sortCriteriaList);
+  }
+
+  private FilterCriteria.FilterCriteriaBuilder initFilterCriteriaBuilder() {
+    PostgresObjectField current = mock(PostgresObjectField.class);
+    when(current.getColumn()).thenReturn("a");
+    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = FilterCriteria.builder()
+        .fieldPath(List.of(current));
+
+    return filterCriteriaBuilder;
   }
 }

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -114,7 +113,7 @@ class TypeHelperTest {
     var resultMock = mock(GraphQLEnumType.class);
     when(resultMock.getName()).thenReturn("@@@@@");
     when(fieldDef.getType()).thenReturn(resultMock);
-    when(objectType.getFieldDefinition(eq("nodes"))).thenReturn(fieldDef);
+    when(objectType.getFieldDefinition("nodes")).thenReturn(fieldDef);
 
     when(nonNullType.getWrappedType()).thenReturn(objectType);
 
