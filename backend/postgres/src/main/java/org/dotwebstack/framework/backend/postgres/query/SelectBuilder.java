@@ -604,15 +604,15 @@ class SelectBuilder {
     var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 
-    var columnMapper = createColumnMapper(objectField, table);
+    var columnMapper = createColumnMapper(objectField.getColumn(), table);
 
     objectFieldMapper.register(selectedField.getName(), columnMapper);
 
     return columnMapper.getColumn();
   }
 
-  private ColumnMapper createColumnMapper(PostgresObjectField objectField, Table<Record> table) {
-    var column = column(table, objectField.getColumn()).as(aliasManager.newAlias());
+  private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {
+    var column = column(table, columnName).as(aliasManager.newAlias());
 
     return new ColumnMapper(column);
   }
@@ -692,13 +692,27 @@ class SelectBuilder {
       Table<Record> table) {
     return joinColumns.stream()
         .map(joinColumn -> {
-          var joinField = objectType.getFields()
-              .get(joinColumn.getReferencedField());
-          var columnMapper = createColumnMapper(joinField, table);
-
-          fieldMapper.register(joinField.getName(), columnMapper);
-
+          ColumnMapper columnMapper;
+          if (joinColumn.getReferencedColumn() != null) {
+            columnMapper = getColumnMapper(table, joinColumn.getReferencedColumn());
+          } else {
+            columnMapper = getColumnMapper(table, joinColumn.getReferencedField(), objectType);
+          }
           return columnMapper.getColumn();
         });
+  }
+
+  private ColumnMapper getColumnMapper(Table<Record> table, String referencedField, PostgresObjectType objectType) {
+    var objectField = objectType.getFields()
+        .get(referencedField);
+    ColumnMapper columnMapper = createColumnMapper(objectField.getColumn(), table);
+    fieldMapper.register(objectField.getName(), columnMapper);
+    return columnMapper;
+  }
+
+  private ColumnMapper getColumnMapper(Table<Record> table, String referencedColumn) {
+    ColumnMapper columnMapper = createColumnMapper(referencedColumn, table);
+    fieldMapper.register(referencedColumn, columnMapper);
+    return columnMapper;
   }
 }
