@@ -75,6 +75,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
 
   private String createGeoJson(Geometry geometry) {
     var geoJsonWriter = new GeoJsonWriter();
+    geoJsonWriter.setEncodeCRS(false);
     return geoJsonWriter.write(geometry);
   }
 
