@@ -43,6 +43,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"unchecked", "rawtypes"})
 class SelectBuilderTest {
 
   @Mock
@@ -99,13 +100,18 @@ class SelectBuilderTest {
 
     PostgresObjectType targetType = mock(PostgresObjectType.class);
     when(targetType.getTable()).thenReturn("a");
-    PostgresObjectField current2 = mock(PostgresObjectField.class);
-    when(current2.getTargetType()).thenReturn(targetType);
-    ObjectType objectType = mock(PostgresObjectType.class);
+
     PostgresObjectField field = mock(PostgresObjectField.class);
-    when(field.getColumn()).thenReturn("b");
-    when(objectType.getField(anyString())).thenReturn(Optional.ofNullable(field));
-    when(current2.getObjectType()).thenReturn(objectType);
+    lenient().when(field.getColumn())
+        .thenReturn("b");
+    ObjectType objectType = mock(PostgresObjectType.class);
+    lenient().when(objectType.getField(anyString()))
+        .thenReturn(Optional.ofNullable(field));
+    PostgresObjectField current2 = mock(PostgresObjectField.class);
+    lenient().when(current2.getTargetType())
+        .thenReturn(targetType);
+    lenient().when(current2.getObjectType())
+        .thenReturn(objectType);
 
     JoinColumn joinColumn = mock(JoinColumn.class);
     when(joinColumn.getName()).thenReturn("a");
@@ -129,9 +135,9 @@ class SelectBuilderTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
-        .contains("select  as \nfrom anyTable_Brewery_ctx('b') as \nwhere exists (\n"
-            + "  select 1\n  from a_Brewery_ctx('b') as \n  where (\n    \"b\" = \"a\"\n    and b < 'a'\n    and b = 'b'\n"
-            + "  )\n)\norder by \"a\" asc"));
+        .contains("select  as \nfrom anyTable_Brewery_ctx(\'b\') as \nwhere exists (\n  select 1\n"
+            + "  from a_Brewery_ctx(\'b\') as \n  where (\n    \"b\" = \"a\"\n    and b < \'a\'\n"
+            + "    and b = \'b\'\n  )\n)\norder by \"a\" asc"));
   }
 
   @Test
@@ -395,11 +401,13 @@ class SelectBuilderTest {
     PostgresObjectField objectField = mock(PostgresObjectField.class);
     when(objectField.getJoinColumns()).thenReturn(List.of(joinColumn));
 
-    PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
-    when(objectFieldMock.getMappedByObjectField()).thenReturn(objectField);
-    ObjectType objectType = mock(PostgresObjectType.class);
     PostgresObjectField objectFieldMock2 = mock(PostgresObjectField.class);
     when(objectFieldMock2.getColumn()).thenReturn("a");
+
+    PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
+    when(objectFieldMock.getMappedByObjectField()).thenReturn(objectField);
+
+    ObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getField(anyString())).thenReturn(Optional.of(objectFieldMock2));
     when(objectFieldMock.getObjectType()).thenReturn(objectType);
 
@@ -418,12 +426,10 @@ class SelectBuilderTest {
   }
 
   private void initObjectRequestBuilder() {
-    List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
     PostgresObjectField objectField = mock(PostgresObjectField.class);
     when(objectType.getField(anyString())).thenReturn(Optional.ofNullable(objectField));
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
@@ -432,6 +438,9 @@ class SelectBuilderTest {
 
     FieldRequest fieldRequest = mock(FieldRequest.class);
     when(fieldRequest.getName()).thenReturn("a");
+
+    List<KeyCriteria> keyCriteria = List.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     objectRequestBuilder = ObjectRequest.builder()
         .objectType(objectType)
