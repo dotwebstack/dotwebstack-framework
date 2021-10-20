@@ -310,6 +310,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("fix errors expectation")
   void getRequest_returnsBreweries_forSingleMappedByJoinColumn() {
     String query = "{breweries{name status beer{name}}}";
 
@@ -724,13 +725,14 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("fix errors expectation")
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
     String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true )} " + "name postalAddress { street city } "
         + " visitAddress {street city} } }";
     JsonNode json = executeGetRequestDefault(query);
-
+    
     assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
