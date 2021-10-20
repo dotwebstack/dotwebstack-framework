@@ -28,6 +28,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -68,8 +71,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-@Setter
+@Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class SelectBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
@@ -83,10 +87,7 @@ class SelectBuilder {
 
   private AliasManager aliasManager;
 
-  private SelectBuilder() {}
-
   public static SelectBuilder newSelect() {
-    // TODO null checks on class properties
     return new SelectBuilder();
   }
 
@@ -470,8 +471,6 @@ class SelectBuilder {
           return referencedField.equal(field);
         })
         .collect(Collectors.toList());
-
-    // TODO: JoinTable
   }
 
   @SuppressWarnings("unchecked")
