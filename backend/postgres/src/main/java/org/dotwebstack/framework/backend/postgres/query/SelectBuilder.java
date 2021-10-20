@@ -1,33 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static java.util.function.Predicate.not;
-import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
-import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
-import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
-import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
-import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -67,6 +39,35 @@ import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
+import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
+import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 @Setter
 @Accessors(fluent = true)
