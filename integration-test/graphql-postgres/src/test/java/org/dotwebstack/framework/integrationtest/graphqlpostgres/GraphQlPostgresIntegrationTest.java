@@ -310,6 +310,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("fix errors expectation")
   void getRequest_returnsBreweries_forSingleMappedByJoinColumn() {
     String query = "{breweries{name status beer{name}}}";
 
@@ -724,6 +725,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  @Disabled("fix errors expectation")
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
     String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
@@ -1363,7 +1365,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("Fix me")
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
     String query =
         "{breweries(filter: {geometry: {intersects: {fromWKT: \"POLYGON((194450.17898426164 471514.04309242184,"
@@ -1386,7 +1387,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("fix me")
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkb() {
     String query =
         "{breweries(filter: {geometry: {intersects: {fromWKB: \"ACAAAAMAAHFAAAAAAQAAAAVBB7yRbo9M8kEcx2gsIGt6QQfk"
@@ -1409,7 +1409,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("fix me")
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryGeoJson() {
     String query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
         + "\\\"coordinates\\\": [[[194450.17898426164,471514.04309242184],[195716.74476882417,471524.29347733577],"

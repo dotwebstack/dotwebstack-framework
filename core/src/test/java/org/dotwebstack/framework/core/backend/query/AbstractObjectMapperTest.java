@@ -6,7 +6,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -87,7 +86,7 @@ class AbstractObjectMapperTest {
     var objectFieldMapper = mock(ObjectFieldMapper.class);
     mapper.register("aaa", objectFieldMapper);
     var objectFieldMapper2 = mock(ScalarFieldMapper.class);
-    when(objectFieldMapper.getFieldMapper(eq("bbb"))).thenReturn(objectFieldMapper2);
+    when(objectFieldMapper.getFieldMapper("bbb")).thenReturn(objectFieldMapper2);
     mapper.register("bbb", objectFieldMapper2);
 
     List<ObjectField> fieldPath = new ArrayList<>();

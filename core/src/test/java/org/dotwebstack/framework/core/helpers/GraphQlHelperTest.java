@@ -157,7 +157,7 @@ class GraphQlHelperTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("fix me")
   void isObjectField_returnsTrue_forGraphQlObjectType() {
     GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
@@ -206,7 +206,7 @@ class GraphQlHelperTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("fix me")
   void isNestedObjectField_returnsTrue_forIsNested() {
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     Map<String, String> additionalData = new HashMap<>();

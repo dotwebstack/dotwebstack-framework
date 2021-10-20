@@ -51,6 +51,7 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.ext.spatial.GeometryReader;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -516,9 +517,9 @@ class SelectBuilder {
     }
 
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      Map<String, Object> mapValue = (Map<String, Object>) value;
+      Map<String, String> mapValue = (Map<String, String>) value;
 
-      Geometry geometry = readGeometry((String) mapValue.get(SpatialConstants.FROM_WKT));
+      Geometry geometry = GeometryReader.readGeometry(mapValue);
 
       Field<Geometry> geoField = DSL.val(geometry)
           .cast(GEOMETRY_DATATYPE);
