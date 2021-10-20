@@ -66,11 +66,10 @@ public class Query {
 
     for (var index = 0; index < params.size(); index++) {
       executeSpec = executeSpec.bind(index, Objects.requireNonNull(params.get(index)
-        .getValue()));
+          .getValue()));
     }
 
-    return executeSpec
-        .fetch()
+    return executeSpec.fetch()
         .all()
         .map(rowMapper);
   }
@@ -84,10 +83,10 @@ public class Query {
 
   private List<Param<?>> getParams(SelectQuery<Record> selectQuery) {
     return selectQuery.getParams()
-      .values()
-      .stream()
-      .filter(Predicate.not(Param::isInline))
-      .collect(Collectors.toList());
+        .values()
+        .stream()
+        .filter(Predicate.not(Param::isInline))
+        .collect(Collectors.toList());
   }
 
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {

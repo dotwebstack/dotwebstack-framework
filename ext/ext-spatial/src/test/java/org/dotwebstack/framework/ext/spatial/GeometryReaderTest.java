@@ -21,19 +21,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GeometryReaderTest {
 
-  private final GeometryReader geometryReader = new GeometryReader();
-
   @Test
   void readGeometry_for2dWkt_returns2dGeometry() {
     var wkt = "POINT (194936.73 470973.96)";
     Map<String, String> data = Map.of(FROM_WKT, wkt);
 
-    Geometry geometry = geometryReader.readGeometry(data);
+    Geometry geometry = GeometryReader.readGeometry(data);
 
     assertThat(geometry, instanceOf(Point.class));
-    assertThat(geometry.getCoordinate().getX(), is(194936.73));
-    assertThat(geometry.getCoordinate().getY(), is(470973.96));
-    assertThat(Double.isNaN(geometry.getCoordinate().getZ()), is(true));
+    assertThat(geometry.getCoordinate()
+        .getX(), is(194936.73));
+    assertThat(geometry.getCoordinate()
+        .getY(), is(470973.96));
+    assertThat(Double.isNaN(geometry.getCoordinate()
+        .getZ()), is(true));
     assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
@@ -42,12 +43,15 @@ class GeometryReaderTest {
     var wkt = "POINT (194936.73 470973.96 0.0)";
     Map<String, String> data = Map.of(FROM_WKT, wkt);
 
-    Geometry geometry = geometryReader.readGeometry(data);
+    Geometry geometry = GeometryReader.readGeometry(data);
 
     assertThat(geometry, instanceOf(Point.class));
-    assertThat(geometry.getCoordinate().getX(), is(194936.73));
-    assertThat(geometry.getCoordinate().getY(), is(470973.96));
-    assertThat(geometry.getCoordinate().getZ(), is(0.0));
+    assertThat(geometry.getCoordinate()
+        .getX(), is(194936.73));
+    assertThat(geometry.getCoordinate()
+        .getY(), is(470973.96));
+    assertThat(geometry.getCoordinate()
+        .getZ(), is(0.0));
     assertThat(geometry.getSRID(), is(SRID_RDNAP));
   }
 
@@ -56,38 +60,34 @@ class GeometryReaderTest {
     var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
     Map<String, String> data = Map.of(FROM_WKB, wkb);
 
-    Geometry geometry = geometryReader.readGeometry(data);
+    Geometry geometry = GeometryReader.readGeometry(data);
 
     assertThat(geometry, instanceOf(Point.class));
-    assertThat(geometry.getCoordinate().getX(), is(194936.73));
-    assertThat(geometry.getCoordinate().getY(), is(470973.96));
-    assertThat(Double.isNaN(geometry.getCoordinate().getZ()), is(true));
+    assertThat(geometry.getCoordinate()
+        .getX(), is(194936.73));
+    assertThat(geometry.getCoordinate()
+        .getY(), is(470973.96));
+    assertThat(Double.isNaN(geometry.getCoordinate()
+        .getZ()), is(true));
     assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
   @Test
   void readGeometry_forGeoJson_returnsGeometry() {
-    var geoJson = "{\n"
-      + "  \"type\": \"Point\",\n"
-      + "  \"coordinates\": [\n"
-      + "    194936.73,\n"
-      + "    470973.96\n"
-      + "  ],\n"
-      + "  \"crs\": {\n"
-      + "    \"type\": \"name\",\n"
-      + "    \"properties\": {\n"
-      + "      \"name\": \"EPSG:28992\"\n"
-      + "    }\n"
-      + "  }\n"
-      + "}";
+    var geoJson = "{\n" + "  \"type\": \"Point\",\n" + "  \"coordinates\": [\n" + "    194936.73,\n" + "    470973.96\n"
+        + "  ],\n" + "  \"crs\": {\n" + "    \"type\": \"name\",\n" + "    \"properties\": {\n"
+        + "      \"name\": \"EPSG:28992\"\n" + "    }\n" + "  }\n" + "}";
     Map<String, String> data = Map.of(FROM_GEOJSON, geoJson);
 
-    Geometry geometry = geometryReader.readGeometry(data);
+    Geometry geometry = GeometryReader.readGeometry(data);
 
     assertThat(geometry, instanceOf(Point.class));
-    assertThat(geometry.getCoordinate().getX(), is(194936.73));
-    assertThat(geometry.getCoordinate().getY(), is(470973.96));
-    assertThat(Double.isNaN(geometry.getCoordinate().getZ()), is(true));
+    assertThat(geometry.getCoordinate()
+        .getX(), is(194936.73));
+    assertThat(geometry.getCoordinate()
+        .getY(), is(470973.96));
+    assertThat(Double.isNaN(geometry.getCoordinate()
+        .getZ()), is(true));
     assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
@@ -97,7 +97,7 @@ class GeometryReaderTest {
     Map<String, String> data = Map.of(FROM_WKT, wkt);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      geometryReader.readGeometry(data);
+      GeometryReader.readGeometry(data);
     });
   }
 
@@ -107,7 +107,7 @@ class GeometryReaderTest {
     Map<String, String> data = Map.of(FROM_WKB, wkb);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      geometryReader.readGeometry(data);
+      GeometryReader.readGeometry(data);
     });
   }
 
@@ -117,7 +117,7 @@ class GeometryReaderTest {
     Map<String, String> data = Map.of(FROM_GEOJSON, geoJson);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      geometryReader.readGeometry(data);
+      GeometryReader.readGeometry(data);
     });
   }
 
@@ -128,7 +128,7 @@ class GeometryReaderTest {
     Map<String, String> data = Map.of(FROM_WKT, wkt, FROM_WKB, wkb);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      geometryReader.readGeometry(data);
+      GeometryReader.readGeometry(data);
     });
   }
 
@@ -137,7 +137,7 @@ class GeometryReaderTest {
     Map<String, String> data = Collections.emptyMap();
 
     assertThrows(IllegalArgumentException.class, () -> {
-      geometryReader.readGeometry(data);
+      GeometryReader.readGeometry(data);
     });
   }
 }

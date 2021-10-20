@@ -68,7 +68,6 @@ import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Setter
 @Accessors(fluent = true)
@@ -85,11 +84,7 @@ class SelectBuilder {
 
   private AliasManager aliasManager;
 
-  @Autowired
-  private GeometryReader geometryReader;
-
-  private SelectBuilder() {
-  }
+  private SelectBuilder() {}
 
   public static SelectBuilder newSelect() {
     // TODO null checks on class properties
@@ -525,7 +520,7 @@ class SelectBuilder {
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
       Map<String, String> mapValue = (Map<String, String>) value;
 
-      Geometry geometry = geometryReader.readGeometry(mapValue);
+      Geometry geometry = GeometryReader.readGeometry(mapValue);
 
       Field<Geometry> geoField = DSL.val(geometry)
           .cast(GEOMETRY_DATATYPE);
