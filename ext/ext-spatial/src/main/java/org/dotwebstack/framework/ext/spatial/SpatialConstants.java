@@ -2,6 +2,10 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
+  static final int SRID_RD = 28992;
+
+  static final int SRID_RDNAP = 7415;
+
   private SpatialConstants() {}
 
   // ObjectTypes
@@ -30,9 +34,9 @@ public class SpatialConstants {
 
   public static final String FROM_WKT = "fromWKT";
 
-  static final String FROM_WKB = "fromWKB";
-
   public static final String FROM_GEOJSON = "fromGeoJSON";
+
+  public static final String FROM_WKB = "fromWKB";
 
   public static final String WITHIN = "within";
 

@@ -82,16 +82,16 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
     var typeName = Scalars.GraphQLString.getName();
 
     return newInputObjectDefinition().name(GEOMETRY_INPUT)
-        .inputValueDefinition(newInputValueDefinition().name(FROM_WKT)
-            .type(newTypeName(typeName).build())
-            .build())
-        .inputValueDefinition(newInputValueDefinition().name(FROM_WKB)
-            .type(newTypeName(typeName).build())
-            .build())
-        .inputValueDefinition(newInputValueDefinition().name(FROM_GEOJSON)
-            .type(newTypeName(typeName).build())
-            .build())
-        .build();
+      .inputValueDefinition(newInputValueDefinition().name(FROM_WKT)
+        .type(newTypeName(typeName).build())
+        .build())
+      .inputValueDefinition(newInputValueDefinition().name(FROM_WKB)
+        .type(newTypeName(typeName).build())
+        .build())
+      .inputValueDefinition(newInputValueDefinition().name(FROM_GEOJSON)
+        .type(newTypeName(typeName).build())
+        .build())
+      .build();
   }
 
   private InputObjectTypeDefinition createGeometryFilterType() {
