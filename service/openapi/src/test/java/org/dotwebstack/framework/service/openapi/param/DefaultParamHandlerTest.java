@@ -525,7 +525,7 @@ class DefaultParamHandlerTest {
     when(schema.getFormat()).thenReturn(format);
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"rawtypes"})
   private void mockObjectParameter(String name, Map<String, String> propertyTypes, String format, boolean explode,
       Parameter.StyleEnum style) {
     when(parameter.getName()).thenReturn(name);

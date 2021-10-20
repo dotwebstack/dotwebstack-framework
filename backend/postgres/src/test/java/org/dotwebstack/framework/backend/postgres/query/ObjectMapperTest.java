@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked"})
 class ObjectMapperTest {
 
   private ObjectMapper mapper;

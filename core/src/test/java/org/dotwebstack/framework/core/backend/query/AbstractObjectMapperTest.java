@@ -18,7 +18,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({"unchecked"})
 class AbstractObjectMapperTest {
 
   private RowMapper<Map<String, Object>> mapper;
