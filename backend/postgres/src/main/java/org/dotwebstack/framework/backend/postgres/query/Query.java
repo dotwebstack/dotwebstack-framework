@@ -2,7 +2,11 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
@@ -10,6 +14,7 @@ import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.jooq.Param;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.conf.ParamType;
@@ -51,11 +56,20 @@ public class Query {
   }
 
   public Flux<Map<String, Object>> execute(DatabaseClient databaseClient) {
-    var queryString = selectQuery.getSQL(ParamType.INLINED);
+    var queryString = selectQuery.getSQL(ParamType.NAMED);
+    List<Param<?>> params = getParams(selectQuery);
 
+    LOG.debug("Binding variables: {}", params);
     LOG.debug("Executing query: {}", queryString);
 
-    return databaseClient.sql(queryString)
+    DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(queryString);
+
+    for (var index = 0; index < params.size(); index++) {
+      executeSpec = executeSpec.bind(index, Objects.requireNonNull(params.get(index)
+        .getValue()));
+    }
+
+    return executeSpec
         .fetch()
         .all()
         .map(rowMapper);
@@ -66,6 +80,14 @@ public class Query {
     return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY))
         .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(),
             groupedFlux.filter(row -> !row.containsKey(EXISTS_KEY) || getNestedMap(row, EXISTS_KEY).size() > 0)));
+  }
+
+  private List<Param<?>> getParams(SelectQuery<Record> selectQuery) {
+    return selectQuery.getParams()
+      .values()
+      .stream()
+      .filter(Predicate.not(Param::isInline))
+      .collect(Collectors.toList());
   }
 
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {
