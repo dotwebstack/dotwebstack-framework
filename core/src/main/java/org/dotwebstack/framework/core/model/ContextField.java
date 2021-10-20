@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @NoArgsConstructor
 public class ContextField {
-  @NonNull
+  @NotBlank
   private String type;
 
   @JsonProperty("default")
