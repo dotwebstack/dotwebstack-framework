@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -134,8 +135,8 @@ class SelectBuilderTest {
     var result = selectBuilder.build(collectionRequestBuilder.build(), null);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .contains("select  as \nfrom anyTable_Brewery_ctx(\'b\') as \nwhere exists (\n  select 1\n"
+    assertThat(result.toString(),
+        is("select  as \nfrom anyTable_Brewery_ctx(\'b\') as \nwhere exists (\n  select 1\n"
             + "  from a_Brewery_ctx(\'b\') as \n  where (\n    \"b\" = \"a\"\n    and b < \'a\'\n"
             + "    and b = \'b\'\n  )\n)\norder by \"a\" asc"));
   }
