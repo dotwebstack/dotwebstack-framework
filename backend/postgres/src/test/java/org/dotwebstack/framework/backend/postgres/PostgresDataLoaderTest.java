@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.jooq.conf.ParamType.INLINED;
 import static org.jooq.conf.ParamType.NAMED;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -132,7 +131,7 @@ class PostgresDataLoaderTest {
     when(fetchSpec.all()).thenReturn(Flux.just(data));
 
     SelectQuery<?> query = mock(SelectQuery.class);
-    when(query.getSQL(INLINED)).thenReturn("");
+    when(query.getSQL(NAMED)).thenReturn("");
 
     SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
         .query(query)
@@ -176,7 +175,7 @@ class PostgresDataLoaderTest {
     when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
 
     SelectQuery<?> query = mock(SelectQuery.class);
-    when(query.getSQL(INLINED)).thenReturn("");
+    when(query.getSQL(NAMED)).thenReturn("");
 
     SelectQueryBuilderResult selectQueryBuilderResult = SelectQueryBuilderResult.builder()
         .query(query)
@@ -214,7 +213,7 @@ class PostgresDataLoaderTest {
     when(fetchSpec.all()).thenReturn(Flux.fromIterable(data));
 
     SelectQuery<?> query = mock(SelectQuery.class);
-    when(query.getSQL(INLINED)).thenReturn("");
+    when(query.getSQL(NAMED)).thenReturn("");
 
     KeyCondition keyCondition = ColumnKeyCondition.builder()
         .valueMap(Map.of("identifier", "id-1"))

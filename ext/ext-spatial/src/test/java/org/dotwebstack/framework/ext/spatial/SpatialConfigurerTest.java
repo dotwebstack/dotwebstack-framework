@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
@@ -58,7 +59,7 @@ class SpatialConfigurerTest {
   @Test
   @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addGeometryDef_always() {
-    List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT);
+    List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT, AS_GEOJSON);
 
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 

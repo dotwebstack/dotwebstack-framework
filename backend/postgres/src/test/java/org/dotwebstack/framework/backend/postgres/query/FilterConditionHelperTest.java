@@ -117,9 +117,9 @@ class FilterConditionHelperTest {
 
   @ParameterizedTest
   @CsvSource(delimiterString = ";",
-      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))",
-          "WITHIN;(ST_Within(ST_GeomFromText('POINT (1 1)'), \"t1\".\"test_column\"))",
-          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)')))"})
+      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", cast('POINT (1 1)' as geometry)))",
+          "WITHIN;(ST_Within(cast('POINT (1 1)' as geometry), \"t1\".\"test_column\"))",
+          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", cast('POINT (1 1)' as geometry)))"})
   void createCondition_returnsValue_forGeometryCriteria(String filterOperator, String expected) throws ParseException {
     var wkt = "POINT (1 1)";
 
@@ -129,6 +129,7 @@ class FilterConditionHelperTest {
         .fieldPath(fieldPath)
         .filterOperator(GeometryFilterOperator.valueOf(filterOperator))
         .geometry(wktReader.read(wkt))
+        .crs("EPSG:28992")
         .build();
 
     var result = filterConditionHelper.createCondition(filterCriteria, fromTable, objectSelectContext, objectRequest);
@@ -139,9 +140,9 @@ class FilterConditionHelperTest {
 
   @ParameterizedTest
   @CsvSource(delimiterString = ";",
-      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))",
-          "WITHIN;(ST_Within(ST_GeomFromText('POINT (1 1)',4258), \"t1\".\"test_column\"))",
-          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", ST_GeomFromText('POINT (1 1)',4258)))"})
+      value = {"CONTAINS;(ST_Contains(\"t1\".\"test_column\", cast('POINT (1 1)' as geometry)))",
+          "WITHIN;(ST_Within(cast('POINT (1 1)' as geometry), \"t1\".\"test_column\"))",
+          "INTERSECTS;(ST_Intersects(\"t1\".\"test_column\", cast('POINT (1 1)' as geometry)))"})
   void createCondition_returnsValue_forGeometryCriteriaWithCrs(String filterOperator, String expected)
       throws ParseException {
     var wkt = "POINT (1 1)";

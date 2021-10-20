@@ -2,6 +2,7 @@ package org.dotwebstack.framework.ext.spatial;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
@@ -68,6 +69,18 @@ class SpatialConfigurationTest {
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
     when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_WKT));
+
+    Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
+
+    assertThat(canProvideDataFetcher, is(notNullValue()));
+    assertThat(canProvideDataFetcher, is(Boolean.TRUE));
+  }
+
+  @Test
+  void providesDataFetcher_returnsTrue_forAsGeoJson() {
+    when(environment.getFieldType()).thenReturn(createOutputType(false));
+    when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
+    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_GEOJSON));
 
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 

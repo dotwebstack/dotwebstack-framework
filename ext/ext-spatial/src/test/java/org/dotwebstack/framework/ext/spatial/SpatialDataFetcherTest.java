@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.ext.spatial;
 
 import static org.dotwebstack.framework.ext.spatial.GeometryType.POINT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
@@ -56,6 +57,7 @@ class SpatialDataFetcherTest {
 
     WKTReader reader = new WKTReader();
     geometry = reader.read(geometryString);
+    geometry.setSRID(28992);
   }
 
   @Test
@@ -139,7 +141,23 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("00000000014017eac6e4232933404a1bcbd2b403c4"));
+    assertThat(stringValue, is("ACAAAAEAAHFAQBfqxuQjKTNAShvL0rQDxA=="));
+  }
+
+  @Test
+  void get_returnsValue_forAsGeoJson() {
+    when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn(AS_GEOJSON);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
+
+    Object value = spatialDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(value, is(notNullValue()));
+    assertThat(value, instanceOf(String.class));
+    String stringValue = (String) value;
+    assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769]}"));
   }
 
   @Test

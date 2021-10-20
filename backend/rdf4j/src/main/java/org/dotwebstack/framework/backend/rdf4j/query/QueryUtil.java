@@ -15,18 +15,21 @@ import org.locationtech.jts.io.WKTReader;
 
 public class QueryUtil {
 
+  private static final int WGS84_CRS = 4326;
+
   private static final IRI GEOMETRY_IRI = SimpleValueFactory.getInstance()
       .createIRI("http://www.opengis.net/ont/geosparql#wktLiteral");
 
   private QueryUtil() {}
-
 
   public static Geometry parseGeometryOrNull(String wktString) {
 
     if (Objects.nonNull(wktString)) {
       var reader = new WKTReader();
       try {
-        return reader.read(wktString);
+        var geometry = reader.read(wktString);
+        geometry.setSRID(WGS84_CRS);
+        return geometry;
       } catch (ParseException ignore) {
         throw illegalArgumentException("invalid wkt string");
       }

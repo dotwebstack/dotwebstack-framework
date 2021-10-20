@@ -29,7 +29,8 @@ public class SpatialConfiguration {
           return false;
         }
 
-        List<String> fieldNames = List.of(SpatialConstants.TYPE, SpatialConstants.AS_WKB, SpatialConstants.AS_WKT);
+        List<String> fieldNames = List.of(SpatialConstants.TYPE, SpatialConstants.AS_WKB, SpatialConstants.AS_WKT,
+            SpatialConstants.AS_GEOJSON);
         return environment.getParentType()
             .getName()
             .equals(GEOMETRY)

@@ -139,7 +139,9 @@ class QueryBuilderTest {
             "query with missing required path"),
         Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
             Map.of("o3_prop1", "val1", "o3_prop3", "val2", "o3_prop2", "val3"), loadVariables("query4_expression.txt"),
-            "query with expression and required path"));
+            "query with expression and required path"),
+        Arguments.arguments("/query9", "query9", loadQuery("query9.txt"), Map.of(), null,
+            "query with required fields"));
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {
