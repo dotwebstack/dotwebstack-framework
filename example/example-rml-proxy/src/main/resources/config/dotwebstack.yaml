@@ -1,7 +1,3 @@
-settings:
-  graphql:
-    proxy: localhostProxy
-
 features:
   - paging
 

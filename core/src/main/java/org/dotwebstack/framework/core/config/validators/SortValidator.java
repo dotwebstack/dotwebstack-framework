@@ -4,15 +4,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Component
+@ConditionalOnBean(DotWebStackConfiguration.class)
 public class SortValidator implements DotWebStackConfigurationValidator {
 
   @Override

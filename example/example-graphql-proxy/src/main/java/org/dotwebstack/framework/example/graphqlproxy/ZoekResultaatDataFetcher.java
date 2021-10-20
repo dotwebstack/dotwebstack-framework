@@ -24,6 +24,7 @@ public class ZoekResultaatDataFetcher implements DataFetcher<CompletionStage<Zoe
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CompletionStage<ZoekResultaat> get(DataFetchingEnvironment environment) {
     var queryString = AstPrinter.printAst(createQuery());
 
@@ -39,9 +40,8 @@ public class ZoekResultaatDataFetcher implements DataFetcher<CompletionStage<Zoe
   }
 
   private Document createQuery() {
-    var arguments = List.of(
-        Argument.newArgument("identificatie", StringValue.of("0200010000130331"))
-            .build());
+    var arguments = List.of(Argument.newArgument("identificatie", StringValue.of("0200010000130331"))
+        .build());
 
     var selectionSet = SelectionSet.newSelectionSet()
         .selection(Field.newField("verblijfsobject")

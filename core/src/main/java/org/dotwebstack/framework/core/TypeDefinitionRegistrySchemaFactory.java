@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.AbstractFieldConfiguration;
 import org.dotwebstack.framework.core.config.AbstractTypeConfiguration;
 import org.dotwebstack.framework.core.config.ContextConfiguration;
@@ -52,12 +51,13 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Component
+@ConditionalOnBean(DotWebStackConfiguration.class)
 public class TypeDefinitionRegistrySchemaFactory {
+
   private static final String QUERY_TYPE_NAME = "Query";
 
   private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";

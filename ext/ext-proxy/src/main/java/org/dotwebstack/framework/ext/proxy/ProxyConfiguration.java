@@ -2,7 +2,6 @@ package org.dotwebstack.framework.ext.proxy;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
-import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -23,9 +22,19 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 class ProxyConfiguration {
 
+  private final ProxyConfigurationProperties configurationProperties;
+
+  private final WebClient.Builder webClientBuilder;
+
+  public ProxyConfiguration(ProxyConfigurationProperties configurationProperties, WebClient.Builder webClientBuilder) {
+    this.configurationProperties = configurationProperties;
+    this.webClientBuilder = webClientBuilder;
+  }
+
   @Bean
   @Primary
-  public GraphQL graphql(RemoteExecutor remoteExecutor) {
+  public GraphQLSchema schema() {
+    var remoteExecutor = createRemoteExecutor();
     var schema = loadSchema(remoteExecutor);
 
     var subschema = Subschema.builder()
@@ -33,17 +42,13 @@ class ProxyConfiguration {
         .executor(remoteExecutor)
         .build();
 
-    var wrappedSchema = SchemaWrapper.wrap(subschema);
-
-    return GraphQL.newGraphQL(wrappedSchema)
-        .build();
+    return SchemaWrapper.wrap(subschema);
   }
 
-  @Bean
-  public RemoteExecutor remoteExecutor(ProxyConfigurationProperties properties, WebClient.Builder webClientBuilder) {
-    var endpoint = properties.getEndpoint();
+  private RemoteExecutor createRemoteExecutor() {
+    var endpoint = configurationProperties.getEndpoint();
 
-    Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(properties.getBearerAuth())
+    Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(configurationProperties.getBearerAuth())
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
     var webClient = webClientBuilder.defaultHeaders(headerBuilder)

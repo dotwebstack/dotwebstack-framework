@@ -13,24 +13,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
 import org.dotwebstack.framework.core.config.FieldConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Slf4j
 @Configuration
 public class GraphqlConfiguration {
 
   @Bean
+  @ConditionalOnBean(DotWebStackConfiguration.class)
   public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories,
       DotWebStackConfiguration dotWebStackConfiguration) {
-
     var blockedFields = BlockedFields.newBlock()
         .addPatterns(createBlockPatterns(dotWebStackConfiguration))
         .build();
@@ -63,6 +61,7 @@ public class GraphqlConfiguration {
 
   @Profile("!test")
   @Bean
+  @ConditionalOnBean(DotWebStackConfiguration.class)
   public TypeDefinitionRegistry typeDefinitionRegistry(
       TypeDefinitionRegistrySchemaFactory typeDefinitionRegistryFactory) {
     return typeDefinitionRegistryFactory.createTypeDefinitionRegistry();
@@ -73,5 +72,4 @@ public class GraphqlConfiguration {
     return GraphQL.newGraphQL(graphqlSchema)
         .build();
   }
-
 }

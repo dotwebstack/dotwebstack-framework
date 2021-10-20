@@ -7,8 +7,6 @@ server:
   port: 8081
 
 dotwebstack:
-  graphql:
-    proxies:
-      localhostProxy:
-        uri: ${PROXY_URL:localhost:8080}
-        bearerAuth: ${PROXY_BEARER_AUTH:secret}
+  proxy:
+    endpoint: ${PROXY_URL:localhost:8080}
+    bearerAuth: ${PROXY_BEARER_AUTH:secret}
