@@ -732,7 +732,7 @@ class GraphQlPostgresIntegrationTest {
         + "tastes : stringJoin( field : \"taste\", distinct : true )} " + "name postalAddress { street city } "
         + " visitAddress {street city} } }";
     JsonNode json = executeGetRequestDefault(query);
-    
+
     assertThat(json.has(ERRORS), is(false));
 
     Map<String, Object> data = getDataFromJsonNode(json);
