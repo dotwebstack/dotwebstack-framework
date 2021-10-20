@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -28,8 +31,9 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 
-@Setter
+@Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class GraphPatternBuilder {
 
   private ObjectRequest objectRequest;
@@ -46,14 +50,11 @@ class GraphPatternBuilder {
 
   private final Map<Variable, Set<? extends Value>> valuesMap = new HashMap<>();
 
-  private GraphPatternBuilder() {}
-
   public static GraphPatternBuilder newGraphPattern() {
     return new GraphPatternBuilder();
   }
 
   public GraphPattern build() {
-    // TODO null checks on class properties
     var typeVar = SparqlBuilder.var(aliasManager.newAlias());
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);

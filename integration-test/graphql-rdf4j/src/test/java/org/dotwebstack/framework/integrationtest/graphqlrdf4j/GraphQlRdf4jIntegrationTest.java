@@ -97,8 +97,9 @@ class GraphQlRdf4jIntegrationTest {
         hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
-                ImmutableMap.of("type", "POINT", "asWKB", "00000000014017eac6e4232933404a1bcbd2b403c4", "asWKT",
-                    "POINT (5.979274334569982 52.21715768613606)"))));
+                ImmutableMap.of("type", "POINT", "asWKB", "ACAAAAEAABDmQBfqxuQjKTNAShvL0rQDxA==", "asWKT",
+                    "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON",
+                    "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769]}"))));
   }
 
   @Test

@@ -28,6 +28,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -69,8 +72,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-@Setter
+@Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class SelectBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
@@ -84,10 +88,7 @@ class SelectBuilder {
 
   private AliasManager aliasManager;
 
-  private SelectBuilder() {}
-
   public static SelectBuilder newSelect() {
-    // TODO null checks on class properties
     return new SelectBuilder();
   }
 
@@ -148,16 +149,16 @@ class SelectBuilder {
   private void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
     ObjectRequest objectRequest = collectionRequest.getObjectRequest();
 
-    for (int index = 0; index < sortCriteria.getFields()
+    for (int index = 0; index < sortCriteria.getFieldPath()
         .size(); index++) {
-      ObjectField sortField = sortCriteria.getFields()
+      ObjectField sortField = sortCriteria.getFieldPath()
           .get(index);
 
-      if (index == (sortCriteria.getFields()
+      if (index == (sortCriteria.getFieldPath()
           .size() - 1)) {
         findOrAddScalarField(objectRequest, sortField);
       } else {
-        ObjectField nextSortField = sortCriteria.getFields()
+        ObjectField nextSortField = sortCriteria.getFieldPath()
             .get(index + 1);
         objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
@@ -471,8 +472,6 @@ class SelectBuilder {
           return referencedField.equal(field);
         })
         .collect(Collectors.toList());
-
-    // TODO: JoinTable
   }
 
   @SuppressWarnings("unchecked")
@@ -556,7 +555,7 @@ class SelectBuilder {
   }
 
   private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
-    List<ObjectField> fieldPath = sortCriteria.getFields();
+    List<ObjectField> fieldPath = sortCriteria.getFieldPath();
     var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
     var sortField = column(null, leafFieldMapper.getAlias());

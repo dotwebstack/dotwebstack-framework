@@ -9,10 +9,10 @@ import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
-import org.springframework.stereotype.Component;
 
-@Component
-public class AggregateFieldHelper {
+public final class AggregateFieldHelper {
+
+  private AggregateFieldHelper() {}
 
   public static final Predicate<AggregateField> isStringJoin =
       aggregateField -> JOIN.equals(aggregateField.getFunctionType());
