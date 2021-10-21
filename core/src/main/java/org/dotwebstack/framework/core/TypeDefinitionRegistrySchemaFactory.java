@@ -212,7 +212,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return objectType.getSortableBy()
         .keySet()
         .stream()
-        .map(key -> newEnumValueDefinition().name(key.toUpperCase())
+        .map(key -> newEnumValueDefinition().name(formatSortEnumName(key))
             .build())
         .collect(Collectors.toList());
   }
@@ -464,9 +464,10 @@ public class TypeDefinitionRegistrySchemaFactory {
 
       var firstSortableByArgument = objectType.getSortableBy()
           .keySet()
-          .iterator()
-          .next()
-          .toUpperCase();
+          .stream()
+          .findFirst()
+          .map(this::formatSortEnumName)
+          .orElseThrow();
 
       var inputValueDefinition = newInputValueDefinition().name(SORT_ARGUMENT_NAME)
           .type(newType(orderName))
@@ -478,6 +479,10 @@ public class TypeDefinitionRegistrySchemaFactory {
     }
 
     return Optional.empty();
+  }
+
+  private String formatSortEnumName(String enumName) {
+    return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, enumName);
   }
 
   private String formatContextTypeName(String contextName) {

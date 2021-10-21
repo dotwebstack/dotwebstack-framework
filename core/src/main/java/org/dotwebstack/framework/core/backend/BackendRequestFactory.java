@@ -14,6 +14,7 @@ import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListF
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
+import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -301,12 +302,10 @@ public class BackendRequestFactory {
       return List.of();
     }
 
-    // TODO fix compound names
     var sortableByConfig = objectType.getSortableBy()
         .entrySet()
         .stream()
-        .filter(entry -> entry.getKey()
-            .toUpperCase()
+        .filter(entry -> formatSortEnumName(entry.getKey()).toUpperCase()
             .equals(sortArgument))
         .findFirst()
         .map(Map.Entry::getValue)
@@ -318,6 +317,10 @@ public class BackendRequestFactory {
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
+  }
+
+  private String formatSortEnumName(String enumName) {
+    return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, enumName);
   }
 
   private List<ObjectField> createObjectFieldPath(ObjectType<?> objectType, String path) {
