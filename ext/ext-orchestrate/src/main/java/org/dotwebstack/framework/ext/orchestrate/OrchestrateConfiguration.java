@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.ext.proxy;
+package org.dotwebstack.framework.ext.orchestrate;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 

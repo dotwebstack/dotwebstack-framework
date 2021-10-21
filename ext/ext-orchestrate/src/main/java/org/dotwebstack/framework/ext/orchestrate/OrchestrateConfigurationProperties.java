@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.ext.proxy;
+package org.dotwebstack.framework.ext.orchestrate;
 
 import java.net.URI;
 import lombok.Data;
