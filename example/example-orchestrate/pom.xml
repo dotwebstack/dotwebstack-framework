@@ -10,7 +10,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>example-graphql-proxy</artifactId>
+  <artifactId>example-graphql-orchestrate</artifactId>
 
   <dependencies>
     <dependency>

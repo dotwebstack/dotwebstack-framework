@@ -1,12 +1,11 @@
 logging:
   level:
+    root: INFO
     org.dotwebstack: DEBUG
 
 server:
   port: 8081
 
 dotwebstack:
-  graphql:
-    proxies:
-      localhostProxy:
-        uri: http://localhost:8080
+  orchestrate:
+    endpoint: ${PROXY_URL:localhost:8080}
