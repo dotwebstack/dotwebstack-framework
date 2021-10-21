@@ -40,19 +40,4 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
     return new BackendDataFetcher(backendLoader, requestFactory);
   }
-
-  // // TODO: move to util class?
-  // private static Optional<String> getTypeName(GraphQLType outputType) {
-  // GraphQLType rawType = outputType;
-  //
-  // while (!GraphQLTypeUtil.isNotWrapped(rawType)) {
-  // rawType = GraphQLTypeUtil.unwrapOne(rawType);
-  // }
-  //
-  // if (rawType instanceof GraphQLNamedOutputType) {
-  // return Optional.of(((GraphQLNamedOutputType) rawType).getName());
-  // }
-  //
-  // return Optional.empty();
-  // }
 }
