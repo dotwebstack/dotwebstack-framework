@@ -87,7 +87,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .map(joinCondition -> getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey()))
           .collect(Collectors.toList());
 
-      if (!completableFutures.isEmpty() && completableFutures.size() > 0) {
+      if (!completableFutures.isEmpty()) {
         if (completableFutures.size() == 1) {
           return completableFutures.get(0);
         }
@@ -126,25 +126,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
       return backendLoader.batchLoadMany(collectionBatchRequest, requestContext)
           .flatMap(group -> group.collectList()
-              .map(rows -> Tuples.of(manipulateKey(group.key()), rows)))
+              .map(rows -> Tuples.of(group.key(), rows)))
           .collectMap(Tuple2::getT1, Tuple2::getT2)
           .toFuture();
     };
 
     return DataLoaderFactory.newMappedDataLoader(batchLoader);
-  }
-
-  private Map<String, Object> manipulateKey(Map<String, Object> key) {
-    // TODO: Tijdelijke workaround: Equals check faalt omdat numerieke bij de eerste query als Long word
-    // opgehaald en in tweede query als Int
-    return key.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
-          var v = entry.getValue();
-          if (v instanceof Integer) {
-            return ((Integer) v).longValue();
-          }
-          return v;
-        }));
   }
 }
