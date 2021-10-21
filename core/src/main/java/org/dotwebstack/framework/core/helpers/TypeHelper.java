@@ -4,7 +4,6 @@ import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
-import graphql.Scalars;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.OperationDefinition;
@@ -16,7 +15,7 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import java.util.List;
+import java.util.Optional;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
@@ -42,25 +41,6 @@ public class TypeHelper {
     } else {
       throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
     }
-  }
-
-  public static Type unwrapNonNullType(@NonNull Type<?> type) {
-    if (type instanceof NonNullType) {
-      return (Type) type.getChildren()
-          .get(0);
-    }
-    return type;
-  }
-
-  public static Type unwrapType(@NonNull Type<?> type) {
-    if (type instanceof ListType) {
-      return (Type) type.getChildren()
-          .get(0);
-    }
-    if (type instanceof NonNullType) {
-      return ((NonNullType) type).getType();
-    }
-    return type;
   }
 
   public static GraphQLType unwrapConnectionType(GraphQLType type) {
@@ -90,21 +70,6 @@ public class TypeHelper {
     return type;
   }
 
-  public static String getTypeString(@NonNull Type<?> type) {
-    var builder = new StringBuilder();
-    if (type instanceof ListType) {
-      builder.append("[");
-      builder.append(getTypeString(unwrapType(type)));
-      builder.append("]");
-    } else if (type instanceof NonNullType) {
-      builder.append(getTypeString(unwrapType(type)));
-      builder.append("!");
-    } else {
-      builder.append(((TypeName) type).getName());
-    }
-    return builder.toString();
-  }
-
   public static String getTypeName(@NonNull Type<?> type) {
     if (type instanceof NonNullType) {
       return getTypeName(((NonNullType) type).getType());
@@ -117,36 +82,15 @@ public class TypeHelper {
     }
   }
 
-  public static String getTypeName(@NonNull GraphQLType type) {
+  public static Optional<String> getTypeName(GraphQLType type) {
     if (type instanceof GraphQLList) {
       return getTypeName(((GraphQLList) type).getWrappedType());
     } else if (type instanceof GraphQLNonNull) {
       return getTypeName(((GraphQLNonNull) type).getWrappedType());
     } else if (type instanceof GraphQLNamedType) {
-      return ((GraphQLNamedType) type).getName();
+      return Optional.of(((GraphQLNamedType) type).getName());
     } else {
-      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      return Optional.empty();
     }
-  }
-
-  public static NonNullType createNonNullType(@NonNull GraphQLType type) {
-    TypeName optionalType = TypeName.newTypeName(getTypeName(type))
-        .build();
-    return NonNullType.newNonNullType(optionalType)
-        .build();
-  }
-
-  public static boolean isNumericType(String type) {
-    if (type == null) {
-      return false;
-    }
-
-    List<String> numericType = List.of(Scalars.GraphQLFloat.getName(), Scalars.GraphQLInt.getName());
-    return numericType.contains(type);
-  }
-
-  public static boolean isTextType(String type) {
-    return Scalars.GraphQLString.getName()
-        .equals(type);
   }
 }

@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.SelectedField;
@@ -33,9 +34,10 @@ public class AggregateHelper {
       return false;
     }
 
-    var typeName = TypeHelper.getTypeName(selectedField.getType());
-
-    return AggregateConstants.AGGREGATE_TYPE.equals(typeName);
+    return TypeHelper.getTypeName(selectedField.getType())
+        .map(AggregateConstants.AGGREGATE_TYPE::equals)
+        .orElseThrow(() -> illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, selectedField.getType()
+            .getClass()));
   }
 
   public static boolean isAggregate(ObjectField objectField) {
