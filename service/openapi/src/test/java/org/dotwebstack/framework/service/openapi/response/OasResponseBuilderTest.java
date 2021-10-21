@@ -22,11 +22,9 @@ class OasResponseBuilderTest {
   void build_succeeds() {
     OasFieldBuilder builder = new OasFieldBuilder(this.openApi);
 
-    assertDoesNotThrow(() -> {
-      openApi.getComponents()
-          .getSchemas()
-          .forEach((key, value) -> builder.build(value));
-    });
+    assertDoesNotThrow(() -> openApi.getComponents()
+        .getSchemas()
+        .forEach((key, value) -> builder.build(value)));
   }
 
 }

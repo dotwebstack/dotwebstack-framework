@@ -45,7 +45,7 @@ public class PebbleTemplatingConfiguration {
 
     this.templatesResource = ResourceLoaderUtils.getResource(TEMPLATES_LOCATION);
 
-    this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[extensions.size()]))
+    this.pebbleEngine = new PebbleEngine.Builder().extension(extensions.toArray(new Extension[0]))
         .loader(getTemplateLoader())
         .build();
   }

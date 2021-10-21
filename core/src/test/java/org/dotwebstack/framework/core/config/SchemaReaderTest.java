@@ -1,15 +1,11 @@
 package org.dotwebstack.framework.core.config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.TestHelper;
-import org.dotwebstack.framework.core.model.Schema;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,10 +35,14 @@ class SchemaReaderTest {
   }
 
   @Test
-  void read_returnsSchema_forConfigFile() throws IOException {
-    var result = schemaReader.read("dotwebstack/dotwebstack-queries.yaml");
+  void read_returnsSchema_forConfigFile() {
+    String configFile = "dotwebstack/dotwebstack-objecttypes.yaml";
 
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Schema);
+    var result = schemaReader.read(configFile);
+    assertThat(result.getObjectTypes()
+        .get("Brewery")
+        .getFields()
+        .get("identifier")
+        .getType(), CoreMatchers.is("ID"));
   }
 }

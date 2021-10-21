@@ -9,8 +9,7 @@ import org.dotwebstack.framework.core.model.ObjectField;
 @Builder
 public class SortCriteria {
 
-  // TODO rename to fieldPath
-  private final List<ObjectField> fields;
+  private final List<ObjectField> fieldPath;
 
   private final SortDirection direction;
 }

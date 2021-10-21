@@ -29,6 +29,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -49,6 +52,7 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.ext.spatial.GeometryReader;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -69,8 +73,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-@Setter
+@Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class SelectBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
@@ -89,7 +94,6 @@ class SelectBuilder {
   private SelectBuilder() {}
 
   public static SelectBuilder newSelect() {
-    // TODO null checks on class properties
     return new SelectBuilder();
   }
 
@@ -154,16 +158,16 @@ class SelectBuilder {
   private void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
     ObjectRequest objectRequest = collectionRequest.getObjectRequest();
 
-    for (int index = 0; index < sortCriteria.getFields()
+    for (int index = 0; index < sortCriteria.getFieldPath()
         .size(); index++) {
-      ObjectField sortField = sortCriteria.getFields()
+      ObjectField sortField = sortCriteria.getFieldPath()
           .get(index);
 
-      if (index == (sortCriteria.getFields()
+      if (index == (sortCriteria.getFieldPath()
           .size() - 1)) {
         findOrAddScalarField(objectRequest, sortField);
       } else {
-        ObjectField nextSortField = sortCriteria.getFields()
+        ObjectField nextSortField = sortCriteria.getFieldPath()
             .get(index + 1);
         objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
@@ -468,8 +472,6 @@ class SelectBuilder {
           return referencedField.equal(field);
         })
         .collect(Collectors.toList());
-
-    // TODO: JoinTable
   }
 
   @SuppressWarnings("unchecked")
@@ -515,9 +517,9 @@ class SelectBuilder {
     }
 
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      Map<String, Object> mapValue = (Map<String, Object>) value;
+      Map<String, String> mapValue = (Map<String, String>) value;
 
-      Geometry geometry = readGeometry((String) mapValue.get(SpatialConstants.FROM_WKT));
+      Geometry geometry = GeometryReader.readGeometry(mapValue);
 
       Field<Geometry> geoField = DSL.val(geometry)
           .cast(GEOMETRY_DATATYPE);
@@ -553,7 +555,7 @@ class SelectBuilder {
   }
 
   private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
-    List<ObjectField> fieldPath = sortCriteria.getFields();
+    List<ObjectField> fieldPath = sortCriteria.getFieldPath();
     var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
     var sortField = column(null, leafFieldMapper.getAlias());
@@ -602,15 +604,15 @@ class SelectBuilder {
     var objectField = objectType.getField(selectedField.getName())
         .orElseThrow(() -> illegalStateException("Object field '{}' not found.", selectedField.getName()));
 
-    var columnMapper = createColumnMapper(objectField, table);
+    var columnMapper = createColumnMapper(objectField.getColumn(), table);
 
     objectFieldMapper.register(selectedField.getName(), columnMapper);
 
     return columnMapper.getColumn();
   }
 
-  private ColumnMapper createColumnMapper(PostgresObjectField objectField, Table<Record> table) {
-    var column = column(table, objectField.getColumn()).as(aliasManager.newAlias());
+  private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {
+    var column = column(table, columnName).as(aliasManager.newAlias());
 
     return new ColumnMapper(column);
   }
@@ -692,13 +694,27 @@ class SelectBuilder {
       Table<Record> table) {
     return joinColumns.stream()
         .map(joinColumn -> {
-          var joinField = objectType.getFields()
-              .get(joinColumn.getReferencedField());
-          var columnMapper = createColumnMapper(joinField, table);
-
-          fieldMapper.register(joinField.getName(), columnMapper);
-
+          ColumnMapper columnMapper;
+          if (joinColumn.getReferencedColumn() != null) {
+            columnMapper = getColumnMapper(table, joinColumn.getReferencedColumn());
+          } else {
+            columnMapper = getColumnMapper(table, joinColumn.getReferencedField(), objectType);
+          }
           return columnMapper.getColumn();
         });
+  }
+
+  private ColumnMapper getColumnMapper(Table<Record> table, String referencedField, PostgresObjectType objectType) {
+    var objectField = objectType.getFields()
+        .get(referencedField);
+    ColumnMapper columnMapper = createColumnMapper(objectField.getColumn(), table);
+    fieldMapper.register(objectField.getName(), columnMapper);
+    return columnMapper;
+  }
+
+  private ColumnMapper getColumnMapper(Table<Record> table, String referencedColumn) {
+    ColumnMapper columnMapper = createColumnMapper(referencedColumn, table);
+    fieldMapper.register(referencedColumn, columnMapper);
+    return columnMapper;
   }
 }

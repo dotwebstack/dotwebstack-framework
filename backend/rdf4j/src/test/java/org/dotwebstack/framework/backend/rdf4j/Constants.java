@@ -30,9 +30,9 @@ public final class Constants {
 
   // Properties
 
-  public static String RDF4J_PREFIX = "http://rdf4j.org/schema/rdf4j#";
+  public static final String RDF4J_PREFIX = "http://rdf4j.org/schema/rdf4j#";
 
-  public static IRI SHACH_SHAPE_GRAPH = VF.createIRI(RDF4J_PREFIX, "SHACLShapeGraph");
+  public static final IRI SHACH_SHAPE_GRAPH = VF.createIRI(RDF4J_PREFIX, "SHACLShapeGraph");
 
   public static final IRI SHAPE_GRAPH = VF.createIRI("https://github.com/dotwebstack/beer/shapes");
 

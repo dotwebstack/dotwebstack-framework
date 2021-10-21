@@ -19,7 +19,7 @@ import java.util.Optional;
 public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   @Override
-  public Object get(DataFetchingEnvironment environment) throws Exception {
+  public Object get(DataFetchingEnvironment environment) {
     int firstArgumentValue = getFirstArgumentValue(environment);
     int offsetArgumentValue = getOffsetArgumentValue(environment);
 

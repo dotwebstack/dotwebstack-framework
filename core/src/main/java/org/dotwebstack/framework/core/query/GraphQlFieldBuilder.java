@@ -51,7 +51,7 @@ public class GraphQlFieldBuilder {
     return result;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"unchecked"})
   private List<GraphQlField> getGraphQlFields(FieldDefinition fieldDefinition,
       Map<String, GraphQlField> typeNameFieldMap) {
     var type = fieldDefinition.getType();
@@ -91,7 +91,6 @@ public class GraphQlFieldBuilder {
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("rawtypes")
   private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
     GraphQlArgument.GraphQlArgumentBuilder builder = GraphQlArgument.builder();
 

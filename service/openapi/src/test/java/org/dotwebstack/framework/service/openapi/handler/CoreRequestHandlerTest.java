@@ -28,7 +28,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +47,6 @@ import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
-import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoContentException;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
@@ -124,8 +122,6 @@ class CoreRequestHandlerTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
-  private GraphQlQueryBuilder queryBuilder;
-
   private final OpenAPI openApi = TestResources.openApi();
 
   private final ParamHandlerRouter paramHandlerRouter = new ParamHandlerRouter(Collections.emptyList(), this.openApi);
@@ -158,7 +154,7 @@ class CoreRequestHandlerTest {
 
     org.dotwebstack.framework.core.model.Schema schema = mock(org.dotwebstack.framework.core.model.Schema.class);
     when(schema.usePaging()).thenReturn(true);
-    queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
+    GraphQlQueryBuilder queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
 
     coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
         List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,
@@ -222,7 +218,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getOkResponseTest() throws Exception {
+  void getOkResponseTest() {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
@@ -236,7 +232,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getRedirectResponseTest() throws Exception {
+  void getRedirectResponseTest() {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
@@ -253,7 +249,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getParameterValidationExceptionTest() throws URISyntaxException {
+  void getParameterValidationExceptionTest() {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "{\"key\" : \"value\" }");
 
@@ -270,7 +266,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void shouldThrowNotFoundExceptionTest() throws URISyntaxException {
+  void shouldThrowNotFoundExceptionTest() {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", null);
 
@@ -324,8 +320,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void getResponse_passesHttpOperationAsContext_forUntemplatedResponseMapping()
-      throws URISyntaxException, GraphQlErrorException, BadRequestException {
+  void getResponse_passesHttpOperationAsContext_forUntemplatedResponseMapping() throws GraphQlErrorException {
     Map<Object, Object> data = new HashMap<>();
     data.put("query6", "data");
 
@@ -508,7 +503,7 @@ class CoreRequestHandlerTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void resolveParameters_returnsValues_fromRequestBody() throws BadRequestException {
+  void resolveParameters_returnsValues_fromRequestBody() {
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query1")
         .getPost()
@@ -528,7 +523,7 @@ class CoreRequestHandlerTest {
   }
 
   @Test
-  void resolveParameters_returnsValues_withNullRequestBodyContext() throws BadRequestException {
+  void resolveParameters_returnsValues_withNullRequestBodyContext() {
     var request = mockServerRequest();
     when(this.responseSchemaContext.getRequestBodyContext()).thenReturn(null);
 

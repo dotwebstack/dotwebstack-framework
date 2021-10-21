@@ -65,9 +65,7 @@ class EnumCodecTest {
   void encode_ThrowsException_Always() {
     Object encodedValue = new Object();
 
-    assertThrows(UnsupportedOperationException.class, () -> {
-      codec.encode(encodedValue);
-    });
+    assertThrows(UnsupportedOperationException.class, () -> codec.encode(encodedValue));
   }
 
   @Test

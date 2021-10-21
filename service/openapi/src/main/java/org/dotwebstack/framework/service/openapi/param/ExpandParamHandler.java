@@ -71,7 +71,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"unchecked"})
   public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
     var schema = parameter.getSchema();
 

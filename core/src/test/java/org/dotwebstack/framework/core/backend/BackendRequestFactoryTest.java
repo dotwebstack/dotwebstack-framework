@@ -110,7 +110,7 @@ class BackendRequestFactoryTest {
         .isEmpty());
     assertThat(result.getSortCriterias()
         .get(0)
-        .getFields()
+        .getFieldPath()
         .get(0)
         .getName(), is("name"));
   }

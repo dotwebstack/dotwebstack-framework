@@ -84,13 +84,13 @@ objectTypes:
         nullable: true
         joinColumns:
           - name: postal_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       visitAddress:
         type: Address
         nullable: true
         joinColumns:
           - name: visit_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       beers:
         type: Beer
         list: true
@@ -120,8 +120,6 @@ objectTypes:
   Address:
     table: db.address_v
     fields:
-      identifier_address:
-        type: ID
       street:
         type: String
       city:

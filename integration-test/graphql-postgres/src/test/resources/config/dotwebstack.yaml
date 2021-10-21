@@ -144,13 +144,13 @@ objectTypes:
         nullable: true
         joinColumns:
           - name: postal_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       visitAddress:
         type: Address
         nullable: true
         joinColumns:
           - name: visit_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       beers:
         type: Beer
         list: true
