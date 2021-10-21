@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.ext.orchestrate;
+package org.dotwebstack.framework.ext.orchestrate.config;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 
@@ -6,15 +6,17 @@ import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
+import org.dotwebstack.framework.ext.orchestrate.SubschemaModifier;
+import org.dotwebstack.framework.ext.orchestrate.config.OrchestrateConfigurationProperties.SubschemaProperties;
 import org.dotwebstack.graphql.orchestrate.schema.RemoteExecutor;
 import org.dotwebstack.graphql.orchestrate.schema.SchemaIntrospector;
 import org.dotwebstack.graphql.orchestrate.schema.Subschema;
-import org.dotwebstack.graphql.orchestrate.transform.Transform;
+import org.dotwebstack.graphql.orchestrate.transform.TransformUtils;
 import org.dotwebstack.graphql.orchestrate.wrap.SchemaWrapper;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -28,37 +30,47 @@ class OrchestrateConfiguration {
 
   private final WebClient.Builder webClientBuilder;
 
+  private final Collection<SubschemaModifier> subschemaModifiers;
+
   public OrchestrateConfiguration(OrchestrateConfigurationProperties configurationProperties,
-      WebClient.Builder webClientBuilder) {
+      WebClient.Builder webClientBuilder, Collection<SubschemaModifier> subschemaModifiers) {
     this.configurationProperties = configurationProperties;
     this.webClientBuilder = webClientBuilder;
+    this.subschemaModifiers = subschemaModifiers;
   }
 
   @Bean
   @Primary
-  public GraphQLSchema schema(ObjectProvider<Transform> transform) {
-    var remoteExecutor = createRemoteExecutor();
-    var schema = loadSchema(remoteExecutor);
+  public GraphQLSchema schema() {
+    var rootSubschemaProperties = configurationProperties.getSubschemas()
+        .get(configurationProperties.getRoot());
 
-    var subschema = Subschema.builder()
-        .schema(schema)
-        .executor(remoteExecutor)
-        .transform(transform.getIfAvailable())
-        .build();
-
-    return SchemaWrapper.wrap(subschema);
+    return SchemaWrapper.wrap(createSubschema(configurationProperties.getRoot(), rootSubschemaProperties));
   }
 
-  private RemoteExecutor createRemoteExecutor() {
-    var endpoint = configurationProperties.getEndpoint();
+  private Subschema createSubschema(String key, SubschemaProperties subschemaProperties) {
+    var remoteExecutor = createRemoteExecutor(subschemaProperties);
+    var schema = loadSchema(remoteExecutor);
 
-    Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(configurationProperties.getBearerAuth())
+    var subschema = Subschema.newSubschema()
+        .schema(schema)
+        .executor(remoteExecutor)
+        .build();
+
+    return subschemaModifiers.stream()
+        .reduce(subschema, (acc, modifier) -> modifier.modify(key, subschema), TransformUtils::noopCombiner);
+  }
+
+  private RemoteExecutor createRemoteExecutor(SubschemaProperties subschemaProperties) {
+    var endpoint = subschemaProperties.getEndpoint();
+
+    Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(subschemaProperties.getBearerAuth())
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
     var webClient = webClientBuilder.defaultHeaders(headerBuilder)
         .build();
 
-    return RemoteExecutor.builder()
+    return RemoteExecutor.newExecutor()
         .endpoint(endpoint)
         .webClient(webClient)
         .build();

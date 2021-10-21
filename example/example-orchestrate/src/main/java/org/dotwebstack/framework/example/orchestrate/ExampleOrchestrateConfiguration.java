@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.example.orchestrate;
 
 import java.util.List;
+import org.dotwebstack.framework.ext.orchestrate.SubschemaModifier;
 import org.dotwebstack.graphql.orchestrate.transform.HoistField;
 import org.dotwebstack.graphql.orchestrate.transform.RenameObjectFields;
 import org.dotwebstack.graphql.orchestrate.transform.Transform;
@@ -11,8 +12,9 @@ import org.springframework.context.annotation.Configuration;
 public class ExampleOrchestrateConfiguration {
 
   @Bean
-  public Transform transform() {
-    return createNameTransform().pipe(createHoistTransform());
+  public SubschemaModifier subschemaModifier() {
+    return (key, subschema) -> subschema
+        .transform(builder -> builder.transform(createNameTransform().pipe(createHoistTransform())));
   }
 
   private Transform createNameTransform() {

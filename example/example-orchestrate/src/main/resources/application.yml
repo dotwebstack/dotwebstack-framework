@@ -8,4 +8,7 @@ server:
 
 dotwebstack:
   orchestrate:
-    endpoint: ${PROXY_URL:localhost:8080}
+    root: dbeerpedia
+    subschemas:
+      dbeerpedia:
+        endpoint: ${PROXY_URL:localhost:8080}
