@@ -10,7 +10,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>ext-proxy</artifactId>
+  <artifactId>ext-orchestrate</artifactId>
 
   <dependencies>
     <dependency>

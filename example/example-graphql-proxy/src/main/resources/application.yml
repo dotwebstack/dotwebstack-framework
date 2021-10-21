@@ -7,6 +7,6 @@ server:
   port: 8081
 
 dotwebstack:
-  proxy:
+  orchestrate:
     endpoint: ${PROXY_URL:localhost:8080}
     bearerAuth: ${PROXY_BEARER_AUTH:secret}

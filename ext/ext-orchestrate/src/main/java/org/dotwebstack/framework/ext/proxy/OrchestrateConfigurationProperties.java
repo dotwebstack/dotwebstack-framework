@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "dotwebstack.proxy")
-class ProxyConfigurationProperties {
+@ConfigurationProperties(prefix = "dotwebstack.orchestrate")
+class OrchestrateConfigurationProperties {
 
   private URI endpoint;
 

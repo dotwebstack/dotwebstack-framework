@@ -20,7 +20,7 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>ext-proxy</artifactId>
+      <artifactId>ext-orchestrate</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

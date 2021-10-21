@@ -22,13 +22,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-class ProxyConfiguration {
+class OrchestrateConfiguration {
 
-  private final ProxyConfigurationProperties configurationProperties;
+  private final OrchestrateConfigurationProperties configurationProperties;
 
   private final WebClient.Builder webClientBuilder;
 
-  public ProxyConfiguration(ProxyConfigurationProperties configurationProperties, WebClient.Builder webClientBuilder) {
+  public OrchestrateConfiguration(OrchestrateConfigurationProperties configurationProperties,
+      WebClient.Builder webClientBuilder) {
     this.configurationProperties = configurationProperties;
     this.webClientBuilder = webClientBuilder;
   }
