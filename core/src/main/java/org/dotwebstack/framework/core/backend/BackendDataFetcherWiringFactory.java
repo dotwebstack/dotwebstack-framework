@@ -5,10 +5,12 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
+import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final BackendModule<?> backendModule;
@@ -17,12 +19,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final Schema schema;
 
-  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
-      Schema schema) {
-    this.backendModule = backendModule;
-    this.requestFactory = requestFactory;
-    this.schema = schema;
-  }
+  private final BackendExecutionStepInfo backendExecutionStepInfo;
 
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
@@ -38,6 +35,6 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     var backendLoader = backendModule.getBackendLoaderFactory()
         .create(objectType);
 
-    return new BackendDataFetcher(backendLoader, requestFactory);
+    return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo);
   }
 }

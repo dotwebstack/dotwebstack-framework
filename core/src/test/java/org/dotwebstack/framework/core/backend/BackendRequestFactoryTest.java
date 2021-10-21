@@ -17,7 +17,6 @@ import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.DataFetchingFieldSelectionSetImpl;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import java.time.LocalDate;
@@ -98,7 +97,7 @@ class BackendRequestFactoryTest {
 
     var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
 
-    backendRequestFactory = new BackendRequestFactory(schema);
+    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
 
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetMock);
     assertThat(result, CoreMatchers.is(notNullValue()));
@@ -139,7 +138,7 @@ class BackendRequestFactoryTest {
 
     var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
 
-    backendRequestFactory = new BackendRequestFactory(schema);
+    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
     assertThat(result, CoreMatchers.is(notNullValue()));
@@ -148,35 +147,5 @@ class BackendRequestFactoryTest {
         .getName(), is("addresses"));
     assertThat(result.getObjectField()
         .getType(), is("Address"));
-  }
-
-  @Test
-  void getExecutionStepInfo_returnsExecutionStepInfo_ifPaging() {
-    var envBuilder = new DataFetchingEnvironmentImpl.Builder();
-    var listType = mock(GraphQLList.class);
-    envBuilder.fieldType(listType);
-
-    var executionStepInfo = mock(ExecutionStepInfo.class);
-    var executionStepInfoParent = mock(ExecutionStepInfo.class);
-    lenient().when(executionStepInfoParent.hasParent())
-        .thenReturn(false);
-    var objectType = mock(GraphQLObjectType.class);
-    lenient().when(objectType.getName())
-        .thenReturn("anyName");
-    lenient().when(executionStepInfoParent.getObjectType())
-        .thenReturn(objectType);
-    when(executionStepInfo.getParent()).thenReturn(executionStepInfoParent);
-
-    envBuilder.executionStepInfo(executionStepInfo);
-
-    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
-
-    backendRequestFactory = new BackendRequestFactory(schema);
-
-    var result = backendRequestFactory.getExecutionStepInfo(envBuilder.build());
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof ExecutionStepInfo);
-    assertThat(result.getObjectType()
-        .getName(), is("anyName"));
   }
 }

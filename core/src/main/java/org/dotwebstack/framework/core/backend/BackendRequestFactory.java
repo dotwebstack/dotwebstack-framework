@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.backend;
 
-import static graphql.schema.GraphQLTypeUtil.isList;
-import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
@@ -30,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
@@ -56,13 +55,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Conditional(GraphQlNativeEnabled.class)
+@AllArgsConstructor
 public class BackendRequestFactory {
 
   private final Schema schema;
 
-  public BackendRequestFactory(Schema schema) {
-    this.schema = schema;
-  }
+  private final BackendExecutionStepInfo backendExecutionStepInfo;
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
@@ -119,9 +117,11 @@ public class BackendRequestFactory {
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {
     Map<String, Object> source = environment.getSource();
 
-    var objectField = schema.getObjectType(getExecutionStepInfo(environment).getObjectType()
+    var objectField = schema.getObjectType(backendExecutionStepInfo.getExecutionStepInfo(environment)
+        .getObjectType()
         .getName())
-        .flatMap(objectType -> objectType.getField(getExecutionStepInfo(environment).getField()
+        .flatMap(objectType -> objectType.getField(backendExecutionStepInfo.getExecutionStepInfo(environment)
+            .getField()
             .getName()))
         .orElse(null);
 
@@ -129,21 +129,6 @@ public class BackendRequestFactory {
         .objectField(objectField)
         .source(source)
         .build();
-  }
-
-  // TODO: getExecutionStepInfo verplaatsen naar aparte helper.
-  public ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo;
-
-    var isList = isList(unwrapNonNull(environment.getFieldType()));
-
-    if (schema.usePaging() && isList) {
-      executionStepInfo = environment.getExecutionStepInfo()
-          .getParent();
-    } else {
-      executionStepInfo = environment.getExecutionStepInfo();
-    }
-    return executionStepInfo;
   }
 
   private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {

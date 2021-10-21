@@ -27,17 +27,20 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final BackendRequestFactory requestFactory;
 
-  public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory) {
+  private final BackendExecutionStepInfo backendExecutionStepInfo;
+
+  public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory,
+      BackendExecutionStepInfo backendExecutionStepInfo) {
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
+    this.backendExecutionStepInfo = backendExecutionStepInfo;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
     Map<String, Object> source = environment.getSource();
 
-    // TODO: getExecutionStepInfo verplaatsen naar aparte helper.
-    var executionStepInfo = requestFactory.getExecutionStepInfo(environment);
+    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo((environment));
 
     var fieldName = executionStepInfo.getField()
         .getName();
@@ -112,7 +115,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private DataLoader<Map<String, Object>, List<Map<String, Object>>> createBatchLoader(
       DataFetchingEnvironment environment, RequestContext requestContext) {
-    var executionStepInfo = requestFactory.getExecutionStepInfo(environment);
+    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
     var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 

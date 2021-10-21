@@ -262,7 +262,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       return createListType(type, false);
     }
 
-    return createType(query);
+    return newType(query.getType());
   }
 
   private Type<?> createListType(String type, boolean nullable) {

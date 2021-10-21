@@ -50,6 +50,9 @@ class BackendDataFetcherTest {
   private BackendRequestFactory requestFactory;
 
   @Mock
+  private BackendExecutionStepInfo backendExecutionStepInfo;
+
+  @Mock
   private DataFetchingEnvironment environment;
 
   @InjectMocks
@@ -65,7 +68,8 @@ class BackendDataFetcherTest {
     when(fieldMock.getName()).thenReturn("a");
     ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
     when(executionStepInfo.getField()).thenReturn(fieldMock);
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfo);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfo);
 
     var result = dataFetcher.get(environment);
     assertThat(result, is("bbb"));
@@ -81,7 +85,8 @@ class BackendDataFetcherTest {
         .segment("a");
     when(executionStepInfoMock.getPath()).thenReturn(resultPath);
 
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfoMock);
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
 
     Map<String, Object> source = new HashMap<>();
@@ -138,7 +143,8 @@ class BackendDataFetcherTest {
         .segment("a");
     when(executionStepInfoMock.getPath()).thenReturn(resultPath);
 
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfoMock);
     when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
 
     Map<String, Object> source = new HashMap<>();
@@ -193,7 +199,8 @@ class BackendDataFetcherTest {
     lenient().when(executionStepInfoMock.getPath())
         .thenReturn(resultPath);
 
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfoMock);
     lenient().when(environment.getExecutionStepInfo())
         .thenReturn(executionStepInfoMock);
 
@@ -246,7 +253,8 @@ class BackendDataFetcherTest {
     lenient().when(executionStepInfoMock.getPath())
         .thenReturn(resultPath);
 
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfoMock);
     lenient().when(environment.getExecutionStepInfo())
         .thenReturn(executionStepInfoMock);
 
@@ -293,7 +301,8 @@ class BackendDataFetcherTest {
     ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
     when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
 
-    when(requestFactory.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfoMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfoMock);
 
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))

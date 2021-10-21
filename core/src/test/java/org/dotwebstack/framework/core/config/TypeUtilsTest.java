@@ -13,7 +13,6 @@ import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
 import org.dotwebstack.framework.core.model.ObjectField;
-import org.dotwebstack.framework.core.query.model.Query;
 import org.junit.jupiter.api.Test;
 
 class TypeUtilsTest {
@@ -48,30 +47,6 @@ class TypeUtilsTest {
 
     assertThat(type, instanceOf(NonNullType.class));
     assertListType(TypeUtil.unwrapOne(type));
-  }
-
-  @Test
-  void createType_returnsNonNullType_forQueryIsList() {
-    var configMock = mock(Query.class);
-    doReturn(TYPE_NAME).when(configMock)
-        .getType();
-    doReturn(true).when(configMock)
-        .isList();
-
-    var result = TypeUtils.createType(configMock);
-    assertThat(result, instanceOf(NonNullType.class));
-  }
-
-  @Test
-  void createType_returnsNewType_forQueryIsNotList() {
-    var configMock = mock(Query.class);
-    doReturn(TYPE_NAME).when(configMock)
-        .getType();
-    doReturn(false).when(configMock)
-        .isList();
-
-    var result = TypeUtils.createType(configMock);
-    assertTypeName(result);
   }
 
   @Test
