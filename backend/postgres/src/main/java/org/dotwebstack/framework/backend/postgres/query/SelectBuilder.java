@@ -68,8 +68,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 
 @Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
@@ -135,12 +133,13 @@ class SelectBuilder {
     throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings("squid:S2637")
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
     var objectType = getObjectType(objectRequest);
 
     var dataTable =
         ofNullable(objectType.getTable()).map(tableName -> findTable(tableName, objectRequest.getContextCriteria()))
-            .map(tableO -> tableO.as(aliasManager.newAlias()))
+            .map(table -> table.as(aliasManager.newAlias()))
             .orElse(null);
 
     return createDataQuery(objectRequest, dataTable);
@@ -534,15 +533,6 @@ class SelectBuilder {
     }
 
     throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
-  }
-
-  private Geometry readGeometry(String wkt) {
-    var wktReader = new WKTReader();
-    try {
-      return wktReader.read(wkt);
-    } catch (ParseException e) {
-      throw illegalArgumentException("The filter input WKT is invalid!", e);
-    }
   }
 
   public List<SortField<Object>> createSortConditions(List<SortCriteria> sortCriterias) {

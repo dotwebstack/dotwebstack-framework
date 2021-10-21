@@ -5,15 +5,11 @@ import static graphql.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.ConfigurationCondition;
 
 @ExtendWith(MockitoExtension.class)
-public class GraphQlNativeDisabledTest {
-
-  @Spy
-  private GraphQlNativeDisabled condition;
+class GraphQlNativeDisabledTest {
 
   @Test
   void initConditionObject() {
