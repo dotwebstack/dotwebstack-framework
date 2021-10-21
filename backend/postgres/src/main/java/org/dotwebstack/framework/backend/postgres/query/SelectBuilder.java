@@ -29,8 +29,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -75,7 +73,6 @@ import org.locationtech.jts.io.WKTReader;
 
 @Setter(onMethod = @__({@NonNull}))
 @Accessors(fluent = true)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class SelectBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
