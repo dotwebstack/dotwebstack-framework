@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
@@ -233,16 +234,6 @@ public class BackendRequestFactory {
         .stream()
         .map(selectedField -> createAggregateField(objectType, selectedField))
         .collect(Collectors.toList());
-
-    // String fieldPathPrefix = fieldConfigurationPair.getSelectedField()
-    // .getFullyQualifiedName()
-    // .concat("/");
-    // TypeConfiguration<?> aggregateTypeConfiguration = fieldConfigurationPair.getFieldConfiguration()
-    // .getTypeConfiguration();
-    // return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration,
-    // selectionSet)
-    // .map(this::createAggregateFieldConfiguration)
-    // .collect(Collectors.toList());
   }
 
   private AggregateField createAggregateField(ObjectType<?> objectType, SelectedField selectedField) {
@@ -250,7 +241,7 @@ public class BackendRequestFactory {
     var type = getAggregateScalarType(selectedField);
     var distinct = isDistinct(selectedField);
 
-    // validate(fieldConfigurationPair.getFieldConfiguration(), aggregateField);
+    validate(schema.getEnumerations(), objectType, selectedField);
 
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
@@ -272,7 +263,6 @@ public class BackendRequestFactory {
         .separator(separator)
         .build();
   }
-
 
   private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
     return arguments.stream()
