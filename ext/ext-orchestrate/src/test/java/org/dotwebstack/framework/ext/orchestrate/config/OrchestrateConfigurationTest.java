@@ -30,9 +30,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 class OrchestrateConfigurationTest {
 
-  static final String ROOT_KEY = "dbeerpedia";
+  public static final String ROOT_KEY = "dbeerpedia";
 
-  private final static MockWebServer mockWebServer = new MockWebServer();
+  private static final MockWebServer mockWebServer = new MockWebServer();
 
   private final OrchestrateConfigurationProperties configurationProperties = new OrchestrateConfigurationProperties();
 
