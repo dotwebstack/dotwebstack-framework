@@ -10,7 +10,6 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isNestedObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
@@ -25,7 +24,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,8 +94,7 @@ public class BackendRequestFactory {
             .getArguments(), executionStepInfo.getArguments()))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
-        .nestedObjectFields(getNestedObjectFields(selectionSet))
-        .selectedObjectListFields(getObjectListFields(selectionSet, executionStepInfo))
+        .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
         .build();
@@ -112,8 +109,7 @@ public class BackendRequestFactory {
             .getArguments(), selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
-        .nestedObjectFields(getNestedObjectFields(selectedField.getSelectionSet()))
-        .selectedObjectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
+        .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
         .contextCriteria(createContextCriteria(executionStepInfo))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
@@ -192,15 +188,6 @@ public class BackendRequestFactory {
         .name(selectedField.getName())
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
         .build();
-  }
-
-  private Map<FieldRequest, Collection<FieldRequest>> getNestedObjectFields(
-      DataFetchingFieldSelectionSet selectionSet) {
-    return selectionSet.getImmediateFields()
-        .stream()
-        .filter(isNestedObjectField)
-        .collect(Collectors.toMap(this::mapToFieldRequest,
-            selectedField -> getScalarFields(selectedField.getSelectionSet())));
   }
 
   private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,

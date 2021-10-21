@@ -22,7 +22,7 @@ public class ObjectRequest implements Request {
   private final Map<FieldRequest, ObjectRequest> objectFields = new HashMap<>();
 
   @Builder.Default
-  private final Map<FieldRequest, CollectionRequest> selectedObjectListFields = new HashMap<>();
+  private final Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
 
   @Builder.Default
   private final List<AggregateObjectRequest> aggregateObjectFields = new ArrayList<>();
@@ -30,8 +30,8 @@ public class ObjectRequest implements Request {
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
-  @Builder.Default
-  protected final Map<FieldRequest, Collection<FieldRequest>> nestedObjectFields = new HashMap<>();
+  // @Builder.Default
+  // protected final Map<FieldRequest, Collection<FieldRequest>> nestedObjectFields = new HashMap<>();
 
   private final ContextCriteria contextCriteria;
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
@@ -83,6 +84,8 @@ class SelectBuilder {
 
   private AliasManager aliasManager;
 
+  private Table<Record> parentTable;
+
   private SelectBuilder() {}
 
   public static SelectBuilder newSelect() {
@@ -133,7 +136,11 @@ class SelectBuilder {
 
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
     var objectType = getObjectType(objectRequest);
-    var dataTable = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(aliasManager.newAlias());
+
+    var dataTable =
+        ofNullable(objectType.getTable()).map(tableName -> findTable(tableName, objectRequest.getContextCriteria()))
+            .map(tableO -> tableO.as(aliasManager.newAlias()))
+            .orElse(null);
 
     return createDataQuery(objectRequest, dataTable);
   }
@@ -210,16 +217,22 @@ class SelectBuilder {
 
   private SelectQuery<Record> createDataQuery(ObjectRequest objectRequest, Table<Record> table) {
     var objectType = getObjectType(objectRequest);
-    var dataQuery = dslContext.selectQuery(table);
+    var dataQuery = dslContext.selectQuery();
+
+    Table<Record> selectTable = (table != null) ? table : parentTable;
+
+    if (table != null) {
+      dataQuery.addFrom(table);
+    }
 
     objectRequest.getKeyCriteria()
         .stream()
-        .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, table))
+        .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, selectTable))
         .forEach(dataQuery::addConditions);
 
     objectRequest.getScalarFields()
         .stream()
-        .map(selectedField -> processScalarField(selectedField, objectType, table, fieldMapper))
+        .map(selectedField -> processScalarField(selectedField, objectType, selectTable, fieldMapper))
         .forEach(dataQuery::addSelect);
 
     objectRequest.getObjectFields()
@@ -228,29 +241,13 @@ class SelectBuilder {
         .flatMap(entry -> createNestedSelect(objectRequest, entry.getKey(), entry.getValue(), table))
         .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect));
 
-    objectRequest.getNestedObjectFields()
-        .forEach((key, value) -> {
-          var objectField = objectType.getFields()
-              .get(key.getName());
-
-          var nestedObjectMapper = new ObjectMapper();
-
-          fieldMapper.register(objectField.getName(), nestedObjectMapper);
-
-          value.stream()
-              .map(selectedField -> processScalarField(selectedField, objectField.getTargetType(), table,
-                  nestedObjectMapper))
-              .forEach(dataQuery::addSelect);
-        });
-
     objectRequest.getAggregateObjectFields()
         .stream()
-        .flatMap(aggregateObjectFieldConfiguration -> processAggregateObjectField(objectRequest,
-            aggregateObjectFieldConfiguration, table))
+        .flatMap(aggregateObjectField -> processAggregateObjectField(objectRequest, aggregateObjectField, table))
         .collect(Collectors.toList())
         .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect));
 
-    objectRequest.getSelectedObjectListFields()
+    objectRequest.getObjectListFields()
         .entrySet()
         .stream()
         .flatMap(entry -> processObjectListFields(objectRequest, entry.getKey()
@@ -261,7 +258,8 @@ class SelectBuilder {
   }
 
   private void addSubSelect(SelectQuery<Record> selectQuery, Select<Record> nestedSelectQuery) {
-    var nestedTable = nestedSelectQuery.asTable(aliasManager.newAlias());
+    var nestedTable = nestedSelectQuery.asTable()
+        .as(aliasManager.newAlias());
 
     var lateralTable = DSL.lateral(nestedTable);
     selectQuery.addSelect(DSL.field(String.format("\"%s\".*", lateralTable.getName())));
@@ -577,10 +575,10 @@ class SelectBuilder {
       return;
     }
 
-    Optional<Integer> offset = Optional.ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME)))
-        .map(Integer.class::cast);
-    Optional<Integer> first = Optional.ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME)))
-        .map(Integer.class::cast);
+    Optional<Integer> offset =
+        ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME))).map(Integer.class::cast);
+    Optional<Integer> first =
+        ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME))).map(Integer.class::cast);
 
     if (offset.isPresent() && first.isPresent()) {
       selectQuery.addLimit(offset.get(), first.get());
@@ -617,27 +615,29 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, FieldRequest selectedField,
+  private Stream<SelectQuery<Record>> createNestedSelect(ObjectRequest objectRequest, FieldRequest fieldRequest,
       ObjectRequest nestedObjectRequest, Table<Record> table) {
     var nestedObjectAlias = aliasManager.newAlias();
     var nestedObjectMapper = new ObjectMapper(nestedObjectAlias);
 
-    fieldMapper.register(selectedField.getName(), nestedObjectMapper);
+    fieldMapper.register(fieldRequest.getName(), nestedObjectMapper);
 
     var nestedSelect = SelectBuilder.newSelect()
         .requestContext(requestContext)
         .fieldMapper(nestedObjectMapper)
         .aliasManager(aliasManager)
+        .parentTable(table)
         .build(nestedObjectRequest);
 
     nestedSelect.addSelect(DSL.field("1")
         .as(nestedObjectAlias));
 
-    if (!selectedField.isList()) {
+    if (!fieldRequest.isList() && !nestedObjectRequest.getObjectType()
+        .isNested()) {
       nestedSelect.addLimit(1);
     }
 
-    var objectField = getObjectField(objectRequest, selectedField.getName());
+    var objectField = getObjectField(objectRequest, fieldRequest.getName());
 
     join(table, objectField, null).forEach(nestedSelect::addConditions);
 

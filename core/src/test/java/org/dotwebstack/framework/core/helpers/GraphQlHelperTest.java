@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isNestedObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
@@ -185,58 +184,6 @@ class GraphQlHelperTest {
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
     var r = isObjectField.test(selectedFieldMock);
-    assertThat(r, is(false));
-  }
-
-  @Test
-  void isObjectField_returnsFalse_forIsNested() {
-    ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
-    Map<String, String> additionalData = new HashMap<>();
-    additionalData.put("isNested", "b");
-    when(definitionMock.getAdditionalData()).thenReturn(additionalData);
-
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
-    when(objectMock.getDefinition()).thenReturn(definitionMock);
-
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
-
-    var r = isObjectField.test(selectedFieldMock);
-    assertThat(r, is(false));
-  }
-
-  @Test
-  @Disabled
-  void isNestedObjectField_returnsTrue_forIsNested() {
-    ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
-    Map<String, String> additionalData = new HashMap<>();
-    additionalData.put("isNested", "b");
-    when(definitionMock.getAdditionalData()).thenReturn(additionalData);
-
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
-    when(objectMock.getDefinition()).thenReturn(definitionMock);
-
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
-
-    var r = isNestedObjectField.test(selectedFieldMock);
-    assertThat(r, is(true));
-  }
-
-  @Test
-  void isNestedObjectField_returnsFalse_forNotIsNested() {
-    ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
-    Map<String, String> additionalData = new HashMap<>();
-    additionalData.put("a", "b");
-    when(definitionMock.getAdditionalData()).thenReturn(additionalData);
-
-    GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
-    when(objectMock.getDefinition()).thenReturn(definitionMock);
-
-    SelectedField selectedFieldMock = mock(SelectedField.class);
-    when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
-
-    var r = isNestedObjectField.test(selectedFieldMock);
     assertThat(r, is(false));
   }
 

@@ -63,17 +63,7 @@ public class GraphQlHelper {
 
     return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
         && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && !additionalData.containsKey(GraphQlConstants.IS_NESTED)
         && !additionalData.containsKey(GraphQlConstants.IS_CONNECTION_TYPE) && !unwrappedType.getName()
-            .equals(AggregateConstants.AGGREGATE_TYPE);
-  };
-
-  public static final Predicate<SelectedField> isNestedObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-
-    return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_NESTED) && !unwrappedType.getName()
             .equals(AggregateConstants.AGGREGATE_TYPE);
   };
 

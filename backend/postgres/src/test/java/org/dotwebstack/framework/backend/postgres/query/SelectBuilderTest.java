@@ -35,6 +35,7 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -94,6 +95,7 @@ class SelectBuilderTest {
   }
 
   @Test
+  @Disabled
   void createFilterCondition_returnsCondition_forManyCriterias() {
     initSortCriteriaList(SortDirection.ASC);
     initCollectionRequest();
