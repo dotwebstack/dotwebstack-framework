@@ -4,7 +4,6 @@ import java.util.MissingFormatArgumentException;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.NotImplementedException;
 
 public class ExceptionHelper {
 

@@ -83,7 +83,8 @@ class OrchestrateConfigurationTest {
 
   private SubschemaProperties createSubschema() {
     var subschemaProperties = new SubschemaProperties();
-    subschemaProperties.setEndpoint(URI.create(String.format("http://%s:%d", mockWebServer.getHostName(), mockWebServer.getPort())));
+    subschemaProperties
+        .setEndpoint(URI.create(String.format("http://%s:%d", mockWebServer.getHostName(), mockWebServer.getPort())));
     return subschemaProperties;
   }
 
