@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
 
 import com.google.common.collect.Lists;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +39,7 @@ public class OasToGraphQlHelper {
   }
 
   public static Optional<Field> toQueryField(@NonNull String queryName, @NonNull ResponseTemplate responseTemplate,
-      @NonNull Map<String, Object> inputParams, @NonNull List<String> requiredFields, boolean pagingEnabled) {
+      @NonNull Map<String, Object> inputParams, @NonNull List<String> requiredFields, GraphQLSchema schema) {
     var responseObject = responseTemplate.getResponseField();
 
     if (responseObject == null) {
@@ -59,7 +62,11 @@ public class OasToGraphQlHelper {
     rootField.setCollectionNode(rootResponseObject.isArray() && !(((OasArrayField) rootResponseObject).getContent()
         .isScalar()));
 
-    if (pagingEnabled) {
+    var outputType = schema.getQueryType()
+        .getFieldDefinition(queryName)
+        .getType();
+
+    if (unwrapNonNull(outputType) instanceof GraphQLObjectType) {
       addPagingNodes(rootField);
     }
 

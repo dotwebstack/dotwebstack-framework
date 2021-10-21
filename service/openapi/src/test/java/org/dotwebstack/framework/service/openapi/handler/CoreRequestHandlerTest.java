@@ -23,6 +23,10 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
@@ -42,8 +46,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -126,6 +128,9 @@ class CoreRequestHandlerTest {
   @Mock
   private EnvironmentProperties environmentProperties;
 
+  @Mock
+  private GraphQLSchema schema;
+
   private GraphQlQueryBuilder queryBuilder;
 
   private final OpenAPI openApi = TestResources.openApi();
@@ -158,9 +163,18 @@ class CoreRequestHandlerTest {
         .build();
     when(this.responseSchemaContext.getDwsQuerySettings()).thenReturn(graphqlBinding);
 
-    DotWebStackConfiguration dwsConfig = mock(DotWebStackConfiguration.class);
-    when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
-    queryBuilder = new GraphQlQueryBuilder(dwsConfig, jexlEngine);
+    var queryTypeMock = mock(GraphQLObjectType.class);
+
+    when(schema.getQueryType()).thenReturn(queryTypeMock);
+
+    when(queryTypeMock.getFieldDefinition(any())).thenReturn(GraphQLFieldDefinition.newFieldDefinition()
+        .name("query6")
+        .type(GraphQLList.list(GraphQLObjectType.newObject()
+            .name("Obj2")
+            .build()))
+        .build());
+
+    queryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
 
     coreRequestHandler = spy(new CoreRequestHandler(openApi, httpMethodOperation, responseSchemaContext, graphQl,
         List.of(responseMapper), jsonResponseMapper, templateResponseMapper, paramHandlerRouter,

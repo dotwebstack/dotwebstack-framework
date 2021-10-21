@@ -16,8 +16,7 @@ public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static List<ResponseWriteContext> createObjectContext(@NonNull ResponseWriteContext parentContext,
-      boolean pagingEnabled) {
+  public static List<ResponseWriteContext> createObjectContext(@NonNull ResponseWriteContext parentContext) {
     OasObjectField oasObjectField = (OasObjectField) parentContext.getOasField();
     return oasObjectField.getFields()
         .entrySet()
@@ -25,15 +24,15 @@ public class ResponseWriteContextHelper {
         .map(e -> {
           String identifier = e.getKey();
           OasField child = e.getValue();
-          return unwrapSubSchema(parentContext, identifier, child, pagingEnabled);
+          return unwrapSubSchema(parentContext, identifier, child);
         })
         .collect(Collectors.toList());
   }
 
 
   private static ResponseWriteContext unwrapSubSchema(ResponseWriteContext parentContext, String childIdentifier,
-      OasField child, boolean pagingEnabled) {
-    Object data = unpackCollectionData(parentContext.getData(), child, pagingEnabled);
+      OasField child) {
+    Object data = unpackCollectionData(parentContext.getData(), child);
     Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
     if (!child.isTransient() && data instanceof Map) {
@@ -114,12 +113,12 @@ public class ResponseWriteContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static Object unpackCollectionData(Object data, OasField field, boolean pagingEnabled) {
-    if (pagingEnabled && data instanceof Map && field.isArray()) {
+  public static Object unpackCollectionData(Object data, OasField field) {
+    if (data instanceof Map && field.isArray()) {
       Map<String, ?> dataMap = (Map<String, ?>) data;
       return dataMap.containsKey("nodes") ? dataMap.get("nodes") : dataMap;
     }
+
     return data;
   }
-
 }

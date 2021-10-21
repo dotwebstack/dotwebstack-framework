@@ -23,8 +23,6 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -54,15 +52,12 @@ public class JsonResponseMapper {
 
   private final TypeConverterRouter typeConverterRouter;
 
-  private final boolean pagingEnabled;
-
   public JsonResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
-      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter, DotWebStackConfiguration dwsConfig) {
+      EnvironmentProperties properties, TypeConverterRouter typeConverterRouter) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.properties = properties;
     this.typeConverterRouter = typeConverterRouter;
-    this.pagingEnabled = dwsConfig.isFeatureEnabled(Feature.PAGING);
   }
 
   public Mono<String> toResponse(@NonNull Object input) {
@@ -168,7 +163,7 @@ public class JsonResponseMapper {
     if (result.isEmpty()) {
       return null;
     }
-    List<ResponseWriteContext> children = createObjectContext(parentContext, pagingEnabled);
+    List<ResponseWriteContext> children = createObjectContext(parentContext);
 
     /*
      * Objects with an identifying field that have no data are considered null. An identifying field is
@@ -196,7 +191,7 @@ public class JsonResponseMapper {
 
   @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(ResponseWriteContext parentContext, String path) {
-    Object data = unpackCollectionData(parentContext.getData(), parentContext.getOasField(), pagingEnabled);
+    Object data = unpackCollectionData(parentContext.getData(), parentContext.getOasField());
     if (Objects.isNull(data)) {
       return mapDefaultArrayToResponse((OasArrayField) parentContext.getOasField(), path);
     } else if (data instanceof List) {
@@ -302,7 +297,7 @@ public class JsonResponseMapper {
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext, String path) {
     Map<String, Object> result = new HashMap<>();
 
-    List<ResponseWriteContext> childContexts = createObjectContext(parentContext, pagingEnabled);
+    List<ResponseWriteContext> childContexts = createObjectContext(parentContext);
     childContexts.forEach(child -> addDataToResponse(path, result, child.getIdentifier(), child));
 
     return createResponseObject(result, parentContext, path);
@@ -317,7 +312,7 @@ public class JsonResponseMapper {
   }
 
   private void validateRequiredProperties(ResponseWriteContext context, String path, Map<String, Object> data) {
-    List<ResponseWriteContext> responseWriteContexts = createObjectContext(context, pagingEnabled);
+    List<ResponseWriteContext> responseWriteContexts = createObjectContext(context);
 
     responseWriteContexts.forEach(writeContext -> {
       String childIdentifier = writeContext.getIdentifier();

@@ -22,6 +22,11 @@
       <artifactId>ext-rml</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>ext-orchestrate</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
