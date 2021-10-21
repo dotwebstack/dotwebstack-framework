@@ -349,6 +349,7 @@
           <version>0.8.5</version>
           <configuration>
             <excludes>
+              <exclude>org/dotwebstack/framework/backend/rdf4j/**/*</exclude>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
               <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
