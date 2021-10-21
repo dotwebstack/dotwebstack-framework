@@ -38,10 +38,6 @@ public class ExceptionHelper {
     return newArguments;
   }
 
-  public static NotImplementedException notImplementedException(String message, Object... arguments) {
-    return new NotImplementedException(formatMessage(message, arguments), findCause(arguments));
-  }
-
   public static IllegalStateException illegalStateException(String message, Object... arguments) {
     return new IllegalStateException(formatMessage(message, arguments), findCause(arguments));
   }

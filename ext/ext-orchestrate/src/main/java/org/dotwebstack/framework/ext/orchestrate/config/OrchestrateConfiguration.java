@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.ext.orchestrate.config;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
-
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -9,6 +7,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Consumer;
+import lombok.SneakyThrows;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.dotwebstack.framework.ext.orchestrate.SubschemaModifier;
 import org.dotwebstack.framework.ext.orchestrate.config.OrchestrateConfigurationProperties.SubschemaProperties;
@@ -76,16 +75,10 @@ class OrchestrateConfiguration {
         .build();
   }
 
+  @SneakyThrows
   private GraphQLSchema loadSchema(RemoteExecutor remoteExecutor) {
-    TypeDefinitionRegistry typeDefinitionRegistry;
-
-    try {
-      // TODO: custom exception
-      typeDefinitionRegistry = SchemaIntrospector.introspectSchema(remoteExecutor)
-          .get();
-    } catch (Exception e) {
-      throw internalServerErrorException(e);
-    }
+    TypeDefinitionRegistry typeDefinitionRegistry = SchemaIntrospector.introspectSchema(remoteExecutor)
+        .get();
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.newRuntimeWiring()
         .scalar(CoreScalars.DATE)
