@@ -18,7 +18,7 @@ class RootSubschemaExistsValidatorTest {
   @Mock
   private static ConstraintValidatorContext context;
 
-  private static final RootSubschemaExistsValidator validator = new RootSubschemaExistsValidator();
+  private static final RootSubschemaExistsValidator VALIDATOR = new RootSubschemaExistsValidator();
 
   @Test
   void isValid_returnsTrue_whenRootKeyFound() {
@@ -26,7 +26,7 @@ class RootSubschemaExistsValidatorTest {
     configurationProperties.setRoot(ROOT_KEY);
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, new SubschemaProperties()));
 
-    var isValid = validator.isValid(configurationProperties, context);
+    var isValid = VALIDATOR.isValid(configurationProperties, context);
 
     MatcherAssert.assertThat(isValid, is(true));
   }
@@ -37,7 +37,7 @@ class RootSubschemaExistsValidatorTest {
     configurationProperties.setRoot("foo");
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, new SubschemaProperties()));
 
-    var isValid = validator.isValid(configurationProperties, context);
+    var isValid = VALIDATOR.isValid(configurationProperties, context);
 
     MatcherAssert.assertThat(isValid, is(false));
   }

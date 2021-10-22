@@ -32,7 +32,7 @@ class OrchestrateConfigurationTest {
 
   public static final String ROOT_KEY = "dbeerpedia";
 
-  private static final MockWebServer mockWebServer = new MockWebServer();
+  private static final MockWebServer MOCK_WEB_SERVER = new MockWebServer();
 
   private final OrchestrateConfigurationProperties configurationProperties = new OrchestrateConfigurationProperties();
 
@@ -43,12 +43,12 @@ class OrchestrateConfigurationTest {
 
   @BeforeAll
   static void beforeAll() throws IOException {
-    mockWebServer.start();
+    MOCK_WEB_SERVER.start();
   }
 
   @AfterAll
   static void afterAll() throws IOException {
-    mockWebServer.shutdown();
+    MOCK_WEB_SERVER.shutdown();
   }
 
   @Test
@@ -57,7 +57,7 @@ class OrchestrateConfigurationTest {
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
     var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
 
-    mockWebServer.enqueue(new MockResponse().addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    MOCK_WEB_SERVER.enqueue(new MockResponse().addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .setBody(getIntrospectionResponseBody()));
 
     var schema = orchestrateConfiguration.schema();
@@ -76,7 +76,7 @@ class OrchestrateConfigurationTest {
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
     var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
 
-    mockWebServer.enqueue(new MockResponse().setResponseCode(INTERNAL_SERVER_ERROR.value()));
+    MOCK_WEB_SERVER.enqueue(new MockResponse().setResponseCode(INTERNAL_SERVER_ERROR.value()));
 
     assertThrows(ExecutionException.class, orchestrateConfiguration::schema);
   }
@@ -84,7 +84,7 @@ class OrchestrateConfigurationTest {
   private SubschemaProperties createSubschema() {
     var subschemaProperties = new SubschemaProperties();
     subschemaProperties
-        .setEndpoint(URI.create(String.format("http://%s:%d", mockWebServer.getHostName(), mockWebServer.getPort())));
+        .setEndpoint(URI.create(String.format("http://%s:%d", MOCK_WEB_SERVER.getHostName(), MOCK_WEB_SERVER.getPort())));
     return subschemaProperties;
   }
 
