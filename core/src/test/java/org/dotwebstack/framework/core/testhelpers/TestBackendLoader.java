@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core;
+package org.dotwebstack.framework.core.testhelpers;
 
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.BackendLoader;

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core;
+package org.dotwebstack.framework.core.testhelpers;
 
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;

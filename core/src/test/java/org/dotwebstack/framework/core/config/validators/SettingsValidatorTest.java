@@ -6,12 +6,12 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.TestObjectType;
 import org.dotwebstack.framework.core.model.GraphQlSettings;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.model.Settings;
 import org.dotwebstack.framework.core.model.Subscription;
 import org.dotwebstack.framework.core.query.model.Query;
+import org.dotwebstack.framework.core.testhelpers.TestObjectType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

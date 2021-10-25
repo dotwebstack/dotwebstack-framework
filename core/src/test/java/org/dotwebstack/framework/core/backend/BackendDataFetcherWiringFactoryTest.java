@@ -13,11 +13,11 @@ import static org.mockito.Mockito.when;
 import graphql.schema.GraphQLNamedOutputType;
 import graphql.schema.idl.FieldWiringEnvironment;
 import java.util.NoSuchElementException;
-import org.dotwebstack.framework.core.TestBackendLoaderFactory;
-import org.dotwebstack.framework.core.TestBackendModule;
-import org.dotwebstack.framework.core.TestHelper;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
+import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
+import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class BackendDataFetcherWiringFactoryTest {
   @BeforeEach
   void doBeforeEach() {
     BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
-    SchemaReader schemaReader = new SchemaReader(TestHelper.createObjectMapper());
+    SchemaReader schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
     Schema schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
     dataFetcher = new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema, backendExecutionStepInfo);
   }

@@ -5,13 +5,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.TestHelper;
 import org.dotwebstack.framework.core.config.SchemaReader;
+import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.junit.jupiter.api.Test;
 
 class SortValidatorTest {
 
-  private final SchemaReader dwsReader = new SchemaReader(TestHelper.createObjectMapper());
+  private final SchemaReader dwsReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
 
   @Test
   void validate_throwsNoException_withValidSortableByFields() {

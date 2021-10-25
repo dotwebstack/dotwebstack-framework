@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.TestHelper;
+import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class SchemaReaderTest {
 
   @BeforeEach
   void doBefore() {
-    objectMapper = TestHelper.createObjectMapper();
+    objectMapper = TestHelper.createSimpleObjectMapper();
     schemaReader = new SchemaReader(objectMapper);
   }
 

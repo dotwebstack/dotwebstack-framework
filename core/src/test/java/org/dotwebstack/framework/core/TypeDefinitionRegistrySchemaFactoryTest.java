@@ -38,6 +38,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -55,7 +56,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
   @BeforeEach
   void doBefore() {
-    schemaReader = new SchemaReader(TestHelper.createObjectMapper());
+    schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
   }
 
   @Test
