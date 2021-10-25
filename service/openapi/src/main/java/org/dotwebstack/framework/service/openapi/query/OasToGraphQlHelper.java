@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getPathString;
 import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.isExpanded;
@@ -62,11 +63,14 @@ public class OasToGraphQlHelper {
     rootField.setCollectionNode(rootResponseObject.isArray() && !(((OasArrayField) rootResponseObject).getContent()
         .isScalar()));
 
-    var outputType = schema.getQueryType()
-        .getFieldDefinition(queryName)
-        .getType();
+    var queryField = schema.getQueryType()
+        .getFieldDefinition(queryName);
 
-    if (unwrapNonNull(outputType) instanceof GraphQLObjectType) {
+    if (queryField == null) {
+      throw illegalStateException("Query field '{}' not found", queryName);
+    }
+
+    if (unwrapNonNull(queryField.getType()) instanceof GraphQLObjectType) {
       addPagingNodes(rootField);
     }
 
