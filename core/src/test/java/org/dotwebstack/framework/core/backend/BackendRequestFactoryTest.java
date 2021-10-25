@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.backend;
 
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
@@ -14,29 +15,38 @@ import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.DataFetchingFieldSelectionSetImpl;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.SelectedField;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dotwebstack.framework.core.TestHelper;
 import org.dotwebstack.framework.core.config.SchemaReader;
+import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
+import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
+import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
+import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
 class BackendRequestFactoryTest {
+
+  @Mock
+  private DatabaseClient databaseClient;
 
   private SchemaReader schemaReader;
 
@@ -44,62 +54,41 @@ class BackendRequestFactoryTest {
 
   @BeforeEach
   void doBefore() {
-    schemaReader = new SchemaReader(TestHelper.createObjectMapper());
+    schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
   }
 
   @Test
   void createCollectionRequest_returnsCollectionRequest_Brewery() {
-    DataFetchingEnvironmentImpl.Builder envBuilder = new DataFetchingEnvironmentImpl.Builder();
-    var typeMock = mock(GraphQLObjectType.class);
-    lenient().when(typeMock.getName())
-        .thenReturn("Brewery");
-    envBuilder.fieldType(typeMock);
+    BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
+    var testHelper = new TestHelper(backendModule);
+    var schema = testHelper.getSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
+    backendModule.init(schema.getObjectTypes());
 
-    var fieldSelectionSet = mock(DataFetchingFieldSelectionSetImpl.class);
-    envBuilder.selectionSet(fieldSelectionSet);
+    GraphQLObjectType namedType = mock(GraphQLObjectType.class);
+    when(namedType.getName()).thenReturn("Aggregate");
 
-    var executionStepInfo = mock(ExecutionStepInfo.class);
-    var resultPath = ResultPath.rootPath()
-        .segment("a");
-    lenient().when(executionStepInfo.getPath())
-        .thenReturn(resultPath);
-    var objectType = mock(GraphQLObjectType.class);
-    lenient().when(objectType.getName())
-        .thenReturn("Brewery");
+    SelectedField selectedField = mock(SelectedField.class);
+    when(selectedField.getArguments()).thenReturn(Map.of(AggregateConstants.FIELD_ARGUMENT, "name"));
+    when(selectedField.getName()).thenReturn(STRING_JOIN_FIELD);
 
-    lenient().when(executionStepInfo.getType())
-        .thenReturn(objectType);
+    DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
+    when(selectionSet.getImmediateFields()).thenReturn(List.of(selectedField));
 
-    var date = LocalDate.of(2021, 1, 1);
-    Map<String, Object> data = new HashMap<>();
-    Map<String, Object> argument = Map.of("name", "name");
-    data.put("key", new DateSupplier(false, date));
-    Map<String, Object> arguments = new HashMap<>();
-    arguments.put("arg", Map.of("arg1", data));
-    arguments.put("filter", argument);
-    lenient().when(executionStepInfo.getArguments())
-        .thenReturn(arguments);
-    lenient().when(executionStepInfo.getArgument(eq("filter")))
-        .thenReturn(argument);
-    lenient().when(executionStepInfo.getArgument(eq("sort")))
-        .thenReturn("NAME");
 
-    var fieldDefinitionBuilder = GraphQLFieldDefinition.newFieldDefinition();
-    List<GraphQLArgument> argumentList = new ArrayList<>();
-    fieldDefinitionBuilder.arguments(argumentList);
-    fieldDefinitionBuilder.name("a");
-    fieldDefinitionBuilder.description("any");
-    fieldDefinitionBuilder.type(mock(GraphQLOutputType.class));
-    when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinitionBuilder.build());
+    SelectedField selectedFieldParent = mock(SelectedField.class);
+    when(selectedFieldParent.getName()).thenReturn("beerAgg");
+    GraphQLList graphQlList = mock(GraphQLList.class);
+    when(graphQlList.getWrappedType()).thenReturn(namedType);
+    when(selectedFieldParent.getType()).thenReturn(graphQlList);
+    when(selectedFieldParent.getSelectionSet()).thenReturn(selectionSet);
 
-    envBuilder.executionStepInfo(executionStepInfo);
-    var selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
+    var selectionSetParent = mock(DataFetchingFieldSelectionSet.class);
+    when(selectionSetParent.getImmediateFields()).thenReturn(List.of(selectedFieldParent));
 
-    var schema = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-
+    var executionStepInfo = initExecutionStepInfoMock();
     backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
-    var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetMock);
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof CollectionRequest);
     assertThat(result.getObjectRequest()
@@ -113,6 +102,7 @@ class BackendRequestFactoryTest {
         .get(0)
         .getName(), is("name"));
   }
+
 
   @Test
   void createRequestContext_returnsRequestContext_whithObjectFieldType_Address() {
@@ -147,5 +137,43 @@ class BackendRequestFactoryTest {
         .getName(), is("addresses"));
     assertThat(result.getObjectField()
         .getType(), is("Address"));
+  }
+
+  private ExecutionStepInfo initExecutionStepInfoMock() {
+    var executionStepInfo = mock(ExecutionStepInfo.class);
+    var resultPath = ResultPath.rootPath()
+        .segment("a");
+    lenient().when(executionStepInfo.getPath())
+        .thenReturn(resultPath);
+    var objectType = mock(GraphQLObjectType.class);
+    lenient().when(objectType.getName())
+        .thenReturn("Brewery");
+
+    lenient().when(executionStepInfo.getType())
+        .thenReturn(objectType);
+
+    var date = LocalDate.of(2021, 1, 1);
+    Map<String, Object> data = new HashMap<>();
+    Map<String, Object> argument = Map.of("name", "name");
+    data.put("key", new DateSupplier(false, date));
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("arg", Map.of("arg1", data));
+    arguments.put("filter", argument);
+    lenient().when(executionStepInfo.getArguments())
+        .thenReturn(arguments);
+    lenient().when(executionStepInfo.getArgument(eq("filter")))
+        .thenReturn(argument);
+    lenient().when(executionStepInfo.getArgument(eq("sort")))
+        .thenReturn("NAME");
+
+    var fieldDefinitionBuilder = GraphQLFieldDefinition.newFieldDefinition();
+    List<GraphQLArgument> argumentList = new ArrayList<>();
+    fieldDefinitionBuilder.arguments(argumentList);
+    fieldDefinitionBuilder.name("a");
+    fieldDefinitionBuilder.description("any");
+    fieldDefinitionBuilder.type(mock(GraphQLOutputType.class));
+    when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinitionBuilder.build());
+
+    return executionStepInfo;
   }
 }
