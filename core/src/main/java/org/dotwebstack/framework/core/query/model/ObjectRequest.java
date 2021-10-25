@@ -30,8 +30,5 @@ public class ObjectRequest implements Request {
   @Builder.Default
   private final List<KeyCriteria> keyCriteria = new ArrayList<>();
 
-  // @Builder.Default
-  // protected final Map<FieldRequest, Collection<FieldRequest>> nestedObjectFields = new HashMap<>();
-
   private final ContextCriteria contextCriteria;
 }

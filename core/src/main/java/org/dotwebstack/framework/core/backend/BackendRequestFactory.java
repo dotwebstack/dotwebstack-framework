@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.core.backend;
 
-import static graphql.schema.GraphQLTypeUtil.isList;
-import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
@@ -15,6 +14,7 @@ import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListF
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
+import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
@@ -55,13 +56,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Conditional(GraphQlNativeEnabled.class)
+@AllArgsConstructor
 public class BackendRequestFactory {
 
   private final Schema schema;
 
-  public BackendRequestFactory(Schema schema) {
-    this.schema = schema;
-  }
+  private final BackendExecutionStepInfo backendExecutionStepInfo;
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
@@ -118,9 +118,11 @@ public class BackendRequestFactory {
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {
     Map<String, Object> source = environment.getSource();
 
-    var objectField = schema.getObjectType(getExecutionStepInfo(environment).getObjectType()
+    var objectField = schema.getObjectType(backendExecutionStepInfo.getExecutionStepInfo(environment)
+        .getObjectType()
         .getName())
-        .flatMap(objectType -> objectType.getField(getExecutionStepInfo(environment).getField()
+        .flatMap(objectType -> objectType.getField(backendExecutionStepInfo.getExecutionStepInfo(environment)
+            .getField()
             .getName()))
         .orElse(null);
 
@@ -128,21 +130,6 @@ public class BackendRequestFactory {
         .objectField(objectField)
         .source(source)
         .build();
-  }
-
-  // TODO: getExecutionStepInfo verplaatsen naar aparte helper.
-  public ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo;
-
-    var isList = isList(unwrapNonNull(environment.getFieldType()));
-
-    if (schema.usePaging() && isList) {
-      executionStepInfo = environment.getExecutionStepInfo()
-          .getParent();
-    } else {
-      executionStepInfo = environment.getExecutionStepInfo();
-    }
-    return executionStepInfo;
   }
 
   private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {
@@ -233,16 +220,6 @@ public class BackendRequestFactory {
         .stream()
         .map(selectedField -> createAggregateField(objectType, selectedField))
         .collect(Collectors.toList());
-
-    // String fieldPathPrefix = fieldConfigurationPair.getSelectedField()
-    // .getFullyQualifiedName()
-    // .concat("/");
-    // TypeConfiguration<?> aggregateTypeConfiguration = fieldConfigurationPair.getFieldConfiguration()
-    // .getTypeConfiguration();
-    // return getAggregateFieldConfigurationPairs(fieldPathPrefix, aggregateTypeConfiguration,
-    // selectionSet)
-    // .map(this::createAggregateFieldConfiguration)
-    // .collect(Collectors.toList());
   }
 
   private AggregateField createAggregateField(ObjectType<?> objectType, SelectedField selectedField) {
@@ -250,7 +227,7 @@ public class BackendRequestFactory {
     var type = getAggregateScalarType(selectedField);
     var distinct = isDistinct(selectedField);
 
-    // validate(fieldConfigurationPair.getFieldConfiguration(), aggregateField);
+    validate(schema.getEnumerations(), objectType, selectedField);
 
     String separator = null;
     if (aggregateFunctionType == AggregateFunctionType.JOIN) {
@@ -272,7 +249,6 @@ public class BackendRequestFactory {
         .separator(separator)
         .build();
   }
-
 
   private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
     return arguments.stream()
@@ -326,12 +302,10 @@ public class BackendRequestFactory {
       return List.of();
     }
 
-    // TODO fix compound names
     var sortableByConfig = objectType.getSortableBy()
         .entrySet()
         .stream()
-        .filter(entry -> entry.getKey()
-            .toUpperCase()
+        .filter(entry -> formatSortEnumName(entry.getKey()).toUpperCase()
             .equals(sortArgument))
         .findFirst()
         .map(Map.Entry::getValue)
@@ -343,6 +317,10 @@ public class BackendRequestFactory {
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
+  }
+
+  private String formatSortEnumName(String enumName) {
+    return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, enumName);
   }
 
   private List<ObjectField> createObjectFieldPath(ObjectType<?> objectType, String path) {

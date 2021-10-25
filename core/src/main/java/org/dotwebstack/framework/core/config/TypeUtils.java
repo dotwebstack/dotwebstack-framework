@@ -8,7 +8,6 @@ import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Subscription;
-import org.dotwebstack.framework.core.query.model.Query;
 
 public final class TypeUtils {
 
@@ -34,24 +33,14 @@ public final class TypeUtils {
         .build();
   }
 
-  public static Type<?> createType(String key, ObjectType<?> objectType) {
+  public static Type<NonNullType> createType(String key, ObjectType<?> objectType) {
     var fieldConfig = objectType.getFields()
         .get(key);
     return TypeUtils.newNonNullableType(fieldConfig.getType());
   }
 
-  public static Type<?> createType(Subscription subscription) {
+  public static Type<NonNullType> createType(Subscription subscription) {
     return TypeUtils.newNonNullableType(subscription.getType());
-  }
-
-  public static Type<?> createType(Query query) {
-    var type = query.getType();
-
-    if (query.isList()) {
-      return TypeUtils.newNonNullableListType(type);
-    }
-
-    return TypeUtils.newType(type);
   }
 
   public static Type<?> createType(ObjectField objectField) {

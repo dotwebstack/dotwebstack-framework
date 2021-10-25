@@ -1244,7 +1244,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeers_forSortNameDescQuery() {
-    String query = "{beers(sort: NAMEDESC){ identifier_beer name }}";
+    String query = "{beers(sort: NAME_DESC){ identifier_beer name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1268,7 +1268,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBeers_forSortQueryWithNestedFieldPath() {
-    String query = "{beers(sort: BREWERYCITY){ identifier_beer name }}";
+    String query = "{beers(sort: BREWERY_CITY){ identifier_beer name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1292,7 +1292,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_forNestedSortQuery() {
-    String query = "{breweries { identifier_brewery name beers(sort: NAMEDESC){ identifier_beer name }} }";
+    String query = "{breweries { identifier_brewery name beers(sort: NAME_DESC){ identifier_beer name }} }";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 

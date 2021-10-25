@@ -1,16 +1,16 @@
 package org.dotwebstack.framework.core.backend;
 
+import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
+
 import graphql.schema.DataFetcher;
-import graphql.schema.GraphQLNamedOutputType;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
-import java.util.Optional;
+import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final BackendModule<?> backendModule;
@@ -19,12 +19,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final Schema schema;
 
-  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
-      Schema schema) {
-    this.backendModule = backendModule;
-    this.requestFactory = requestFactory;
-    this.schema = schema;
-  }
+  private final BackendExecutionStepInfo backendExecutionStepInfo;
 
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
@@ -40,21 +35,6 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     var backendLoader = backendModule.getBackendLoaderFactory()
         .create(objectType);
 
-    return new BackendDataFetcher(backendLoader, requestFactory);
-  }
-
-  // TODO: move to util class?
-  private static Optional<String> getTypeName(GraphQLType outputType) {
-    GraphQLType rawType = outputType;
-
-    while (!GraphQLTypeUtil.isNotWrapped(rawType)) {
-      rawType = GraphQLTypeUtil.unwrapOne(rawType);
-    }
-
-    if (rawType instanceof GraphQLNamedOutputType) {
-      return Optional.of(((GraphQLNamedOutputType) rawType).getName());
-    }
-
-    return Optional.empty();
+    return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo);
   }
 }

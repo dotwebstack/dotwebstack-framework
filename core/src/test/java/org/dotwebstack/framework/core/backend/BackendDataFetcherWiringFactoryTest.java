@@ -36,6 +36,9 @@ class BackendDataFetcherWiringFactoryTest {
   private FieldWiringEnvironment environment;
 
   @Mock
+  private BackendExecutionStepInfo backendExecutionStepInfo;
+
+  @Mock
   private DatabaseClient databaseClient;
 
   private BackendDataFetcherWiringFactory dataFetcher;
@@ -45,7 +48,7 @@ class BackendDataFetcherWiringFactoryTest {
     BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
     SchemaReader schemaReader = new SchemaReader(TestHelper.createObjectMapper());
     Schema schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
-    dataFetcher = new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema);
+    dataFetcher = new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema, backendExecutionStepInfo);
   }
 
   @Test
