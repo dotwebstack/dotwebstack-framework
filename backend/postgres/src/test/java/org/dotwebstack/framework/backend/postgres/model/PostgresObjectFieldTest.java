@@ -33,13 +33,13 @@ public class PostgresObjectFieldTest {
     PostgresObjectField mappedByObjectField = mock(PostgresObjectField.class);
     objectField.setMappedByObjectField(mappedByObjectField);
     JoinColumn joinColumn = mock(JoinColumn.class);
-    objectField.setJoinColumns(List.of(joinColumn, joinColumn));
+    List<JoinColumn> list = List.of(joinColumn, joinColumn);
+    objectField.setJoinColumns(list);
     JoinTable joinTable = mock(JoinTable.class);
     objectField.setJoinTable(joinTable);
     objectField.setMappedBy("fff");
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     objectField.setTargetType(objectType);
-    List<JoinColumn> list = List.of(joinColumn, joinColumn);
 
     assertThat(objectField.getMappedByObjectField(), CoreMatchers.is(mappedByObjectField));
     assertThat(objectField.getJoinColumns(), CoreMatchers.is(list));
