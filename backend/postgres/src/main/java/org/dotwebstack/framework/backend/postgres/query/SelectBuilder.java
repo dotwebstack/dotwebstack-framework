@@ -5,11 +5,7 @@ import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
-import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
-import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
@@ -21,13 +17,11 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
@@ -54,7 +48,6 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
 import org.jooq.Record;
-import org.jooq.RowN;
 import org.jooq.SQLDialect;
 import org.jooq.Select;
 import org.jooq.SelectFieldOrAsterisk;
@@ -119,23 +112,15 @@ class SelectBuilder {
       return dataQuery;
     }
 
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
-
-    if (objectField.getMappedByObjectField() != null) {
-      objectField = objectField.getMappedByObjectField();
-    }
-
-    if (!objectField.getJoinColumns()
-        .isEmpty()) {
-      return batchJoin(dataQuery, dataTable, joinCriteria, objectField.getJoinColumns());
-    }
-
-    if (objectField.getJoinTable() != null) {
-      var targetObjectType = getObjectType(collectionRequest.getObjectRequest());
-      return batchJoin(dataQuery, dataTable, joinCriteria, targetObjectType);
-    }
-
-    throw new UnsupportedOperationException();
+    return BatchJoinBuilder.newBatchJoining()
+        .requestContext(requestContext)
+        .aliasManager(aliasManager)
+        .fieldMapper(fieldMapper)
+        .dataQuery(dataQuery)
+        .table(dataTable)
+        .joinCriteria(joinCriteria)
+        .objectRequest(collectionRequest.getObjectRequest())
+        .build();
   }
 
   @SuppressWarnings("squid:S2637")
@@ -290,91 +275,6 @@ class SelectBuilder {
       query.addJoin(DSL.unnest(DSL.field(DSL.name(table.getName(), columnName), String[].class))
           .as(columnAlias), JoinType.CROSS_JOIN);
     }
-  }
-
-
-  private SelectQuery<Record> batchJoin(SelectQuery<Record> dataQuery, Table<Record> dataTable,
-      JoinCriteria joinCriteria, List<JoinColumn> joinColumns) {
-    var objectType = (PostgresObjectType) requestContext.getObjectField()
-        .getObjectType();
-
-    // Create virtual table with static key values
-    var keyTable = createValuesTable(objectType, joinColumns, joinCriteria.getKeys());
-
-    var batchQuery = dslContext.selectQuery(keyTable);
-
-    dataQuery.addConditions(createJoinConditions(dataTable, keyTable, joinColumns, objectType));
-
-    addExists(dataQuery, joinColumns, dataTable);
-
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
-    batchQuery.addSelect(DSL.asterisk());
-
-    return batchQuery;
-  }
-
-  private SelectQuery<Record> batchJoin(SelectQuery<Record> dataQuery, Table<Record> dataTable,
-      JoinCriteria joinCriteria, PostgresObjectType targetObjectType) {
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
-    var objectType = (PostgresObjectType) objectField.getObjectType();
-    var joinTable = objectField.getJoinTable();
-
-    // Create virtual table with static key values
-    var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());
-
-    var junctionTable = DSL.table(joinTable.getName())
-        .as(aliasManager.newAlias());
-
-    dataQuery.addFrom(junctionTable);
-    dataQuery.addConditions(createJoinConditions(junctionTable, keyTable, joinTable.getJoinColumns(), objectType));
-
-    addExists(dataQuery, joinTable.getJoinColumns(), junctionTable);
-
-    dataQuery.addConditions(
-        createJoinConditions(junctionTable, dataTable, joinTable.getInverseJoinColumns(), targetObjectType));
-
-    var batchQuery = dslContext.selectQuery(keyTable);
-
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
-    batchQuery.addSelect(DSL.asterisk());
-
-    return batchQuery;
-  }
-
-  private void addExists(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
-    var existsColumnNames = joinColumns.stream()
-        .map(JoinColumn::getName)
-        .collect(Collectors.toList());
-
-    existsColumnNames.stream()
-        .map(existsColumn -> QueryHelper.column(table, existsColumn))
-        .forEach(dataQuery::addSelect);
-
-    // Register field mapper for exist row columns
-    fieldMapper.register(EXISTS_KEY, row -> existsColumnNames.stream()
-        .filter(key -> !Objects.isNull(row.get(key)))
-        .collect(Collectors.toMap(Function.identity(), row::get, (prev, next) -> next, HashMap::new)));
-  }
-
-  private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,
-      Collection<Map<String, Object>> keys) {
-    var keyColumnNames = joinColumns.stream()
-        .map(joinColumn -> columnName(joinColumn, objectType))
-        .collect(Collectors.toList());
-
-    var keyTableRows = keys.stream()
-        .map(joinKey -> keyColumnNames.stream()
-            .map(joinKey::get)
-            .toArray())
-        .map(DSL::row)
-        .toArray(RowN[]::new);
-
-    // Register field mapper for grouping rows per key
-    fieldMapper.register(GROUP_KEY, row -> keyColumnNames.stream()
-        .collect(Collectors.toMap(Function.identity(), row::get)));
-
-    return DSL.values(keyTableRows)
-        .as(aliasManager.newAlias(), keyColumnNames.toArray(String[]::new));
   }
 
   private void addPagingCriteria(SelectQuery<Record> selectQuery) {
