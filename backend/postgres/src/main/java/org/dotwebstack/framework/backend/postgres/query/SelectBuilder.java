@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
@@ -12,13 +13,12 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSortFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.Collection;
@@ -30,9 +30,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
@@ -40,8 +40,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -52,13 +50,8 @@ import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.ext.spatial.GeometryReader;
-import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.DataType;
-import org.jooq.Field;
 import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.RowN;
@@ -66,29 +59,28 @@ import org.jooq.SQLDialect;
 import org.jooq.Select;
 import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectQuery;
-import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.DefaultDataType;
-import org.locationtech.jts.geom.Geometry;
 
-@Setter(onMethod = @__({@NonNull}))
+@Setter
 @Accessors(fluent = true)
 class SelectBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
-  private static final DataType<Geometry> GEOMETRY_DATATYPE =
-      new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
-
+  @NotNull
   private RequestContext requestContext;
 
+  @NotNull
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
+  @NotNull
   private AliasManager aliasManager;
 
+  @NotNull
   private Table<Record> parentTable;
 
+  @NotNull
   private Map<String, String> scalarReferences = new HashMap<>();
 
   private SelectBuilder() {}
@@ -98,6 +90,8 @@ class SelectBuilder {
   }
 
   public SelectQuery<Record> build(CollectionRequest collectionRequest, JoinCriteria joinCriteria) {
+    validateFields(this);
+
     addSortFields(collectionRequest);
 
     var objectType = (PostgresObjectType) collectionRequest.getObjectRequest()
@@ -107,14 +101,18 @@ class SelectBuilder {
         .getContextCriteria());
     var dataQuery = createDataQuery(collectionRequest.getObjectRequest(), dataTable);
 
-    createSortConditions(collectionRequest.getSortCriterias()).forEach(dataQuery::addOrderBy);
+    SortBuilder.newSorting()
+        .sortCriterias(collectionRequest.getSortCriterias())
+        .fieldMapper(fieldMapper)
+        .build()
+        .forEach(dataQuery::addOrderBy);
 
-    collectionRequest.getFilterCriterias()
-        .stream()
-        .map(filterCriteria -> createFilterCondition(collectionRequest.getObjectRequest(), filterCriteria.getFieldPath()
-            .stream()
-            .map(PostgresObjectField.class::cast)
-            .collect(Collectors.toList()), filterCriteria.getValue(), dataTable))
+    FilterConditionBuilder.newFiltering()
+        .aliasManager(aliasManager)
+        .filterCriterias(collectionRequest.getFilterCriterias())
+        .table(dataTable)
+        .objectRequest(collectionRequest.getObjectRequest())
+        .build()
         .forEach(dataQuery::addConditions);
 
     addPagingCriteria(dataQuery);
@@ -144,6 +142,8 @@ class SelectBuilder {
 
   @SuppressWarnings("squid:S2637")
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
+    validateFields(this);
+
     var objectType = getObjectType(objectRequest);
 
     var dataTable =
@@ -152,71 +152,6 @@ class SelectBuilder {
             .orElse(null);
 
     return createDataQuery(objectRequest, dataTable);
-  }
-
-
-  private void addSortFields(CollectionRequest collectionRequest) {
-    collectionRequest.getSortCriterias()
-        .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
-  }
-
-  private void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
-    ObjectRequest objectRequest = collectionRequest.getObjectRequest();
-
-    for (int index = 0; index < sortCriteria.getFieldPath()
-        .size(); index++) {
-      ObjectField sortField = sortCriteria.getFieldPath()
-          .get(index);
-
-      if (index == (sortCriteria.getFieldPath()
-          .size() - 1)) {
-        findOrAddScalarField(objectRequest, sortField);
-      } else {
-        ObjectField nextSortField = sortCriteria.getFieldPath()
-            .get(index + 1);
-        objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
-      }
-    }
-  }
-
-  private ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields, ObjectField objectField,
-      ObjectField nextObjectField) {
-    return objectFields.entrySet()
-        .stream()
-        .filter(field -> field.getKey()
-            .getName()
-            .equals(objectField.getName()))
-        .map(Map.Entry::getValue)
-        .findFirst()
-        .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
-  }
-
-  private ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields, ObjectField objectField,
-      ObjectField nextObjectField) {
-    ObjectRequest objectRequest = ObjectRequest.builder()
-        .objectType(nextObjectField.getObjectType())
-        .build();
-    FieldRequest field = FieldRequest.builder()
-        .name(objectField.getName())
-        .build();
-    objectFields.put(field, objectRequest);
-    return objectRequest;
-  }
-
-  private void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
-    Optional<FieldRequest> scalarField = objectRequest.getScalarFields()
-        .stream()
-        .filter(field -> field.getName()
-            .equals(objectField.getName()))
-        .findFirst();
-
-    if (scalarField.isEmpty()) {
-      FieldRequest field = FieldRequest.builder()
-          .name(objectField.getName())
-          .build();
-      objectRequest.getScalarFields()
-          .add(field);
-    }
   }
 
   private Table<Record> createTable(PostgresObjectType objectType, ContextCriteria contextCriteria) {
@@ -242,14 +177,6 @@ class SelectBuilder {
         .stream()
         .map(selectedField -> processScalarField(selectedField, objectType, selectTable, fieldMapper))
         .forEach(dataQuery::addSelect);
-
-    objectRequest.getObjectFields()
-        .entrySet()
-        .stream()
-        .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
-            .getName()), entry.getValue(), selectTable))
-        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect, objectRequest.getObjectType()
-            .isNested()));
 
     objectRequest.getAggregateObjectFields()
         .stream()
@@ -339,7 +266,11 @@ class SelectBuilder {
     aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
         aliasedAggregateTable));
 
-    join(table, objectField, null).forEach(subSelect::addConditions);
+    JoinBuilder.newJoin()
+        .table(table)
+        .current(objectField)
+        .build()
+        .forEach(subSelect::addConditions);
 
     return subSelect;
   }
@@ -448,155 +379,6 @@ class SelectBuilder {
         .as(aliasManager.newAlias(), keyColumnNames.toArray(String[]::new));
   }
 
-  public Condition createFilterCondition(ObjectRequest objectRequest, List<PostgresObjectField> fieldPath,
-      Map<String, Object> value, Table<Record> table) {
-    var current = fieldPath.get(0);
-
-    if (fieldPath.size() > 1) {
-      var rest = fieldPath.subList(1, fieldPath.size());
-
-      if (current.getTargetType()
-          .isNested()) {
-        return createFilterCondition(objectRequest, rest, value, table);
-      }
-
-      var filterTable =
-          findTable(((PostgresObjectType) current.getTargetType()).getTable(), objectRequest.getContextCriteria())
-              .as(aliasManager.newAlias());
-
-      var filterQuery = dslContext.selectQuery(filterTable);
-
-      filterQuery.addSelect(DSL.val(1));
-
-      join(table, current, filterTable).forEach(filterQuery::addConditions);
-
-      var nestedCondition = createFilterCondition(objectRequest, rest, value, filterTable);
-
-      filterQuery.addConditions(nestedCondition);
-
-      return DSL.exists(filterQuery);
-    }
-
-    var conditions = value.entrySet()
-        .stream()
-        .map(entry -> createFilterValue(entry.getKey(), current, entry.getValue()))
-        .collect(Collectors.toList());
-
-    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
-  }
-
-  private List<Condition> join(Table<Record> table, PostgresObjectField current, Table<Record> relatedTable) {
-    // Inverted mapped by
-    if (current.getMappedByObjectField() != null) {
-      var mappedByObjectField = current.getMappedByObjectField();
-      return mappedByObjectField.getJoinColumns()
-          .stream()
-          .map(joinColumn -> {
-            var field = column(relatedTable, joinColumn.getName());
-            var referencedField = column(table, joinColumn, (PostgresObjectType) current.getObjectType());
-            return referencedField.equal(field);
-          })
-          .collect(Collectors.toList());
-    }
-
-    // Normal join column
-    return current.getJoinColumns()
-        .stream()
-        .map(joinColumn -> {
-          var field = column(table, joinColumn.getName());
-          var referencedField = column(relatedTable, joinColumn, (PostgresObjectType) current.getTargetType());
-          return referencedField.equal(field);
-        })
-        .collect(Collectors.toList());
-  }
-
-  @SuppressWarnings("unchecked")
-  private Condition createFilterValue(String filterField, PostgresObjectField objectField, Object value) {
-    Field<Object> field = DSL.field(objectField.getColumn());
-
-    if (FilterConstants.EQ_FIELD.equals(filterField)) {
-      return field.eq(DSL.val(value));
-    }
-
-    if (FilterConstants.LT_FIELD.equals(filterField)) {
-      return field.lt(DSL.val(value));
-    }
-
-    if (FilterConstants.LTE_FIELD.equals(filterField)) {
-      return field.le(DSL.val(value));
-    }
-
-    if (FilterConstants.GT_FIELD.equals(filterField)) {
-      return field.gt(DSL.val(value));
-    }
-
-    if (FilterConstants.GTE_FIELD.equals(filterField)) {
-      return field.ge(DSL.val(value));
-    }
-
-    if (FilterConstants.IN_FIELD.equals(filterField)) {
-      List<Object> list = (List<Object>) value;
-      return field.in(list);
-    }
-
-    if (FilterConstants.NOT_FIELD.equals(filterField)) {
-      Map<String, Object> mapValue = (Map<String, Object>) value;
-
-      var conditions = mapValue.entrySet()
-          .stream()
-          .map(entry -> createFilterValue(entry.getKey(), objectField, entry.getValue()))
-          .collect(Collectors.toList());
-
-      var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
-
-      return DSL.not(condition);
-    }
-
-    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      Map<String, String> mapValue = (Map<String, String>) value;
-
-      Geometry geometry = GeometryReader.readGeometry(mapValue);
-
-      Field<Geometry> geoField = DSL.val(geometry)
-          .cast(GEOMETRY_DATATYPE);
-
-      switch (filterField) {
-        case SpatialConstants.CONTAINS:
-          return DSL.condition("ST_Contains({0}, {1})", field, geoField);
-        case SpatialConstants.WITHIN:
-          return DSL.condition("ST_Within({0}, {1})", geoField, field);
-        case SpatialConstants.INTERSECTS:
-          return DSL.condition("ST_Intersects({0}, {1})", field, geoField);
-        default:
-          throw illegalArgumentException("Unsupported geometry filter operation");
-      }
-    }
-
-    throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
-  }
-
-  public List<SortField<Object>> createSortConditions(List<SortCriteria> sortCriterias) {
-    return sortCriterias.stream()
-        .map(this::createSortCondition)
-        .collect(Collectors.toList());
-  }
-
-  private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
-    List<ObjectField> fieldPath = sortCriteria.getFieldPath();
-    var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
-
-    var sortField = column(null, leafFieldMapper.getAlias());
-
-    switch (sortCriteria.getDirection()) {
-      case ASC:
-        return sortField.asc();
-      case DESC:
-        return sortField.desc();
-      default:
-        throw unsupportedOperationException("Unsupported direction: {}", sortCriteria.getDirection());
-    }
-  }
-
   private void addPagingCriteria(SelectQuery<Record> selectQuery) {
     var source = requestContext.getSource();
 
@@ -676,7 +458,11 @@ class SelectBuilder {
     }
 
     if (!objectType.isNested()) {
-      join(table, objectField, null).forEach(select::addConditions);
+      JoinBuilder.newJoin()
+          .table(table)
+          .current(objectField)
+          .build()
+          .forEach(select::addConditions);
     }
 
     return Stream.of(select);
