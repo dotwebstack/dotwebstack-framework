@@ -11,6 +11,7 @@ import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.language.Value;
+import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
@@ -54,7 +55,8 @@ public class GraphQlHelper {
 
   public static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLScalarType || isScalarType(unwrappedType);
+    return unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType
+        || isScalarType(unwrappedType);
   };
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
