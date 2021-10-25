@@ -12,7 +12,6 @@ import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
-import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
@@ -33,9 +32,6 @@ class QueryTest {
 
   @Mock
   private DatabaseClient databaseClient;
-
-  @Mock
-  private RowMapper<Map<String, Object>> rowMapper;
 
   @Mock
   private SelectQuery<Record> selectQuery;
