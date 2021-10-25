@@ -2,10 +2,12 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.Collections;
 import java.util.Map;
+import lombok.Getter;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
 
 public class ObjectMapper extends AbstractObjectMapper<Map<String, Object>> {
 
+  @Getter
   private String alias;
 
   public ObjectMapper() {}

@@ -110,7 +110,7 @@ class SelectBuilderTest {
     lenient().when(objectType.getField(anyString()))
         .thenReturn(Optional.ofNullable(field));
     PostgresObjectField current2 = mock(PostgresObjectField.class);
-    lenient().when(current2.getTargetType())
+    lenient().when((PostgresObjectType) current2.getTargetType())
         .thenReturn(targetType);
     lenient().when(current2.getObjectType())
         .thenReturn(objectType);

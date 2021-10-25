@@ -23,4 +23,6 @@ public interface ObjectField {
   String getAggregationOf();
 
   ObjectType<?> getAggregationOfType();
+
+  ObjectType<?> getTargetType();
 }

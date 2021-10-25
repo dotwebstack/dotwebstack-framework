@@ -24,6 +24,8 @@ public abstract class AbstractObjectField implements ObjectField {
   @Valid
   protected ObjectType<?> aggregationOfType;
 
+  private ObjectType<?> targetType;
+
   @Valid
   protected List<FieldArgument> arguments = new ArrayList<>();
 }

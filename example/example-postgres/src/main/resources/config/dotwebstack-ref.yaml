@@ -96,7 +96,7 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredients_identifier
-              referencedField: identifier
+              referencedField: ref.identifier
       taste:
         type: Taste
         list: true
@@ -198,7 +198,7 @@ objectTypes:
 
   IngredientRef:
     fields:
-      identificatie:
+      identifier:
         type: String
 
   Ingredient:
