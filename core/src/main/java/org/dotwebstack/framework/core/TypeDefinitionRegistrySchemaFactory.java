@@ -249,8 +249,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (objectField.isList() && schema.getObjectTypes()
         .containsKey(objectField.getType())) {
 
-      return createListType(type, objectField.isNullable(), objectField.getTargetType()
-          .isNested());
+      return createListType(type, objectField.isNullable());
     }
 
     return createType(objectField);
@@ -260,14 +259,14 @@ public class TypeDefinitionRegistrySchemaFactory {
     var type = query.getType();
 
     if (query.isList()) {
-      return createListType(type, false, false);
+      return createListType(type, false);
     }
 
     return newType(query.getType());
   }
 
-  private Type<?> createListType(String type, boolean nullable, boolean forceList) {
-    if (schema.usePaging() && !forceList) {
+  private Type<?> createListType(String type, boolean nullable) {
+    if (schema.usePaging()) {
       var connectionTypeName = createConnectionName(type);
       return newNonNullType(newType(connectionTypeName))
           .additionalData(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString())
