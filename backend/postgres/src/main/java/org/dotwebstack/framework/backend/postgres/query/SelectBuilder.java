@@ -542,11 +542,13 @@ class SelectBuilder {
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {
     return joinColumns.stream()
-        .collect(HashMap::new,
-            (map, joinColumn) -> map.put(joinColumn.getReferencedField(),
-                fieldMapper.getFieldMapper(joinColumn.getReferencedField())
-                    .apply(row)),
-            HashMap::putAll);
+        .collect(HashMap::new, (map, joinColumn) -> {
+          var key = (joinColumn.getReferencedField() != null ? joinColumn.getReferencedField()
+              : joinColumn.getReferencedColumn());
+
+          map.put(key, fieldMapper.getFieldMapper(key)
+              .apply(row));
+        }, HashMap::putAll);
   }
 
   private List<SelectFieldOrAsterisk> selectJoinColumns(PostgresObjectType objectType, List<JoinColumn> joinColumns,
