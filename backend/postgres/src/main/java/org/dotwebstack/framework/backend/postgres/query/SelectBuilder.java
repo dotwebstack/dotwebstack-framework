@@ -11,9 +11,6 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSortFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
-import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
@@ -106,7 +103,10 @@ class SelectBuilder {
         .build()
         .forEach(dataQuery::addConditions);
 
-    addPagingCriteria(dataQuery);
+    PagingBuilder.newPaging()
+        .requestContext(requestContext)
+        .dataQuery(dataQuery)
+        .build();
 
     if (joinCriteria == null) {
       return dataQuery;
@@ -274,23 +274,6 @@ class SelectBuilder {
         .isList()) {
       query.addJoin(DSL.unnest(DSL.field(DSL.name(table.getName(), columnName), String[].class))
           .as(columnAlias), JoinType.CROSS_JOIN);
-    }
-  }
-
-  private void addPagingCriteria(SelectQuery<Record> selectQuery) {
-    var source = requestContext.getSource();
-
-    if (source == null) {
-      return;
-    }
-
-    Optional<Integer> offset =
-        ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME))).map(Integer.class::cast);
-    Optional<Integer> first =
-        ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME))).map(Integer.class::cast);
-
-    if (offset.isPresent() && first.isPresent()) {
-      selectQuery.addLimit(offset.get(), first.get());
     }
   }
 
