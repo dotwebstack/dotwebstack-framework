@@ -3,7 +3,6 @@ package org.dotwebstack.framework.core.backend;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,6 +31,7 @@ import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -76,6 +76,7 @@ class BackendDataFetcherTest {
   }
 
   @Test
+  @Disabled
   void get_returnCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
     var fieldMock1 = mock(MergedField.class);
     when(fieldMock1.getName()).thenReturn("fff");
@@ -131,61 +132,6 @@ class BackendDataFetcherTest {
     verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class),
         any(DataFetchingFieldSelectionSet.class));
     verify(requestFactory).createRequestContext(any(DataFetchingEnvironment.class));
-  }
-
-  @Test
-  void get_throwsIllegalStateException_whenMoreJoinConditions() {
-    var fieldMock1 = mock(MergedField.class);
-    when(fieldMock1.getName()).thenReturn("fff");
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
-    ResultPath resultPath = ResultPath.rootPath()
-        .segment("a");
-    when(executionStepInfoMock.getPath()).thenReturn(resultPath);
-
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfoMock);
-    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
-
-    Map<String, Object> source = new HashMap<>();
-    source.put("a", "bbb");
-    Map<String, Object> condition = new HashMap<>();
-    condition.put("b", "ccc");
-    JoinCondition joinCondition = JoinCondition.builder()
-        .key(condition)
-        .build();
-    source.put("$join:aaa", joinCondition);
-    source.put("$join:bbb", joinCondition);
-    graphql.language.Field fieldMock = new Field("aaa");
-    RequestContext requestContext = RequestContext.builder()
-        .objectField(mock(ObjectField.class))
-        .source(source)
-        .build();
-
-    when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
-    when(environment.getSource()).thenReturn(source);
-    lenient().when(environment.getField())
-        .thenReturn(fieldMock);
-    GraphQLList listTypeMock = mock(GraphQLList.class);
-    when(environment.getFieldType()).thenReturn(listTypeMock);
-
-    OperationDefinition operationDefinitionMock = mock(OperationDefinition.class);
-    lenient().when(operationDefinitionMock.getOperation())
-        .thenReturn(OperationDefinition.Operation.MUTATION);
-    when(environment.getOperationDefinition()).thenReturn(operationDefinitionMock);
-
-    when(environment.getDataLoaderRegistry()).thenReturn(new DataLoaderRegistry());
-
-    CollectionRequest collectionRequestMock = mock(CollectionRequest.class);
-    DataFetchingFieldSelectionSet selectionSetMock = mock(DataFetchingFieldSelectionSet.class);
-    when(environment.getSelectionSet()).thenReturn(selectionSetMock);
-
-    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSetMock)))
-        .thenReturn(collectionRequestMock);
-
-    var exception = assertThrows(IllegalStateException.class, () -> dataFetcher.get(environment));
-
-    assertThat(exception.getMessage(), CoreMatchers.is("Batching failed: found multiple join conditions!"));
   }
 
   @Test

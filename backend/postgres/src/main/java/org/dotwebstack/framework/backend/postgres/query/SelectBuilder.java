@@ -240,7 +240,7 @@ class SelectBuilder {
 
     objectRequest.getScalarFields()
         .stream()
-        .map(selectedField -> processScalarField(selectedField, objectType, selectTable))
+        .map(selectedField -> processScalarField(selectedField, objectType, selectTable, fieldMapper))
         .forEach(dataQuery::addSelect);
 
     objectRequest.getObjectFields()
@@ -379,6 +379,7 @@ class SelectBuilder {
     addExists(dataQuery, joinColumns, dataTable);
 
     batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
+    batchQuery.addSelect(DSL.asterisk());
 
     return batchQuery;
   }
@@ -406,6 +407,7 @@ class SelectBuilder {
     var batchQuery = dslContext.selectQuery(keyTable);
 
     batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
+    batchQuery.addSelect(DSL.asterisk());
 
     return batchQuery;
   }
@@ -617,7 +619,7 @@ class SelectBuilder {
     return keyCriteria.getValues()
         .entrySet()
         .stream()
-        .map(entry -> objectType.getField(entry.getKey())
+        .map(entry -> Optional.of(objectType.getField(entry.getKey()))
             .map(PostgresObjectField::getColumn)
             .map(column -> column(table, column).equal(entry.getValue()))
             .orElseThrow())
@@ -625,9 +627,8 @@ class SelectBuilder {
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
-      Table<Record> table) {
-    var objectField = objectType.getField(fieldRequest.getName())
-        .orElseThrow(() -> illegalStateException("Object field '{}' not found.", fieldRequest.getName()));
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+    var objectField = objectType.getField(fieldRequest.getName());
 
     String column;
 
@@ -640,7 +641,7 @@ class SelectBuilder {
 
     var columnMapper = createColumnMapper(column, table);
 
-    fieldMapper.register(fieldRequest.getName(), columnMapper);
+    parentMapper.register(fieldRequest.getName(), columnMapper);
 
     return columnMapper.getColumn();
   }
@@ -727,7 +728,7 @@ class SelectBuilder {
     var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
 
     // Provide join info for child data fetcher
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(nestedObjectField.getName()), row -> JoinCondition.builder()
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
         .key(getJoinColumnValues(nestedObjectField.getJoinColumns(), row))
         .build());
 
@@ -757,9 +758,11 @@ class SelectBuilder {
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {
     return joinColumns.stream()
-        .collect(Collectors.toMap(JoinColumn::getReferencedField,
-            joinColumn -> fieldMapper.getFieldMapper(joinColumn.getReferencedField())
-                .apply(row)));
+        .collect(HashMap::new,
+            (map, joinColumn) -> map.put(joinColumn.getReferencedField(),
+                fieldMapper.getFieldMapper(joinColumn.getReferencedField())
+                    .apply(row)),
+            HashMap::putAll);
   }
 
   private List<SelectFieldOrAsterisk> selectJoinColumns(PostgresObjectType objectType, List<JoinColumn> joinColumns,
@@ -778,8 +781,8 @@ class SelectBuilder {
   }
 
   private ColumnMapper getColumnMapper(Table<Record> table, String referencedField, PostgresObjectType objectType) {
-    var objectField = objectType.getFields()
-        .get(referencedField);
+    var objectField = objectType.getField(referencedField);
+
     ColumnMapper columnMapper = createColumnMapper(objectField.getColumn(), table);
     fieldMapper.register(objectField.getName(), columnMapper);
     return columnMapper;

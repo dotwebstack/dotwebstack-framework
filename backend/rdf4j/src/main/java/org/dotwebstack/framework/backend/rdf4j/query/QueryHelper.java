@@ -58,7 +58,6 @@ class QueryHelper {
       throw illegalArgumentException("Object type has wrong type.");
     }
 
-    return ((Rdf4jObjectType) objectType).getField(name)
-        .orElseThrow(() -> illegalArgumentException("Object field {} not found", name));
+    return ((Rdf4jObjectType) objectType).getField(name);
   }
 }
