@@ -380,7 +380,7 @@ class SelectBuilder {
       CollectionRequest collectionRequest, Table<Record> table) {
 
     if (objectField.getJoinTable() != null) {
-      return handleJoinTable(objectField, collectionRequest.getObjectRequest(), table);
+      return handleJoinTable(objectField, table);
     }
 
     if (objectField.getMappedBy() != null) {
@@ -407,8 +407,7 @@ class SelectBuilder {
             .collect(Collectors.toList());
   }
 
-  private List<ObjectListFieldResult> handleJoinTable(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+  private List<ObjectListFieldResult> handleJoinTable(PostgresObjectField objectField, Table<Record> table) {
     var joinTable = objectField.getJoinTable();
 
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()

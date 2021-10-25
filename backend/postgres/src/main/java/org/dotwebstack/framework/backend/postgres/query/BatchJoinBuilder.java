@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
@@ -67,6 +68,8 @@ class BatchJoinBuilder {
   }
 
   SelectQuery<Record> build() {
+    validateFields(this);
+
     var objectField = (PostgresObjectField) requestContext.getObjectField();
 
     if (objectField.getMappedByObjectField() != null) {

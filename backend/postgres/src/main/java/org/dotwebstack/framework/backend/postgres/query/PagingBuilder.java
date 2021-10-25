@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
@@ -30,6 +31,7 @@ class PagingBuilder {
   }
 
   void build() {
+    validateFields(this);
     addPagingCriteria();
   }
 
