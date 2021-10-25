@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -108,7 +107,7 @@ class SelectBuilderTest {
         .thenReturn("b");
     ObjectType objectType = mock(PostgresObjectType.class);
     lenient().when(objectType.getField(anyString()))
-        .thenReturn(Optional.ofNullable(field));
+        .thenReturn(field);
     PostgresObjectField current2 = mock(PostgresObjectField.class);
     lenient().when((PostgresObjectType) current2.getTargetType())
         .thenReturn(targetType);
@@ -406,7 +405,7 @@ class SelectBuilderTest {
     when(objectFieldMock.getMappedByObjectField()).thenReturn(objectField);
 
     ObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getField(anyString())).thenReturn(Optional.of(objectFieldMock2));
+    when(objectType.getField(anyString())).thenReturn(objectFieldMock2);
     when(objectFieldMock.getObjectType()).thenReturn(objectType);
 
     when(requestContext.getObjectField()).thenReturn(objectFieldMock);
@@ -427,7 +426,7 @@ class SelectBuilderTest {
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
     PostgresObjectField objectField = mock(PostgresObjectField.class);
-    when(objectType.getField(anyString())).thenReturn(Optional.ofNullable(objectField));
+    when(objectType.getField(anyString())).thenReturn(objectField);
 
     Map<String, Object> mapValues = Map.of("a", "b");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);

@@ -61,7 +61,7 @@ class QueryHelperTest {
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     PostgresObjectField field = mock(PostgresObjectField.class);
     when(field.getColumn()).thenReturn("arg");
-    when(objectType.getField(any(String.class))).thenReturn(java.util.Optional.of(field));
+    when(objectType.getField(any(String.class))).thenReturn(field);
 
     var result = createJoinConditions(junctionTable, referencedTable, joinColumns, objectType);
     assertThat(result.size(), is(1));

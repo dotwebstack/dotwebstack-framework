@@ -11,7 +11,8 @@ public interface SchemaValidator {
 
   default Optional<ObjectField> getField(Schema schema, String objectTypeName, String[] fieldPath) {
     Optional<ObjectField> field = schema.getObjectType(objectTypeName)
-        .flatMap(type -> type.getField(fieldPath[0]));
+        .map(type -> type.getFields()
+            .get(fieldPath[0]));
 
     if (field.isPresent()) {
       if (fieldPath.length > 1) {

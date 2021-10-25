@@ -45,7 +45,6 @@ class QueryHelper {
 
   private static String getColumnNameOfReferencedField(JoinColumn joinColumn, PostgresObjectType objectType) {
     return objectType.getField(joinColumn.getReferencedField())
-        .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", joinColumn.getReferencedField()))
         .getColumn();
   }
 
@@ -60,8 +59,7 @@ class QueryHelper {
   }
 
   public static PostgresObjectField getObjectField(ObjectRequest objectRequest, String name) {
-    return getObjectType(objectRequest).getField(name)
-        .orElseThrow(() -> illegalArgumentException("Object field '{}' not found.", name));
+    return getObjectType(objectRequest).getField(name);
   }
 
   public static List<Condition> createJoinConditions(Table<Record> junctionTable, Table<Record> referencedTable,

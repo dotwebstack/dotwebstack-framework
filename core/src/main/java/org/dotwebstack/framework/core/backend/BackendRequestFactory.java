@@ -121,7 +121,7 @@ public class BackendRequestFactory {
     var objectField = schema.getObjectType(backendExecutionStepInfo.getExecutionStepInfo(environment)
         .getObjectType()
         .getName())
-        .flatMap(objectType -> objectType.getField(backendExecutionStepInfo.getExecutionStepInfo(environment)
+        .map(objectType -> objectType.getField(backendExecutionStepInfo.getExecutionStepInfo(environment)
             .getField()
             .getName()))
         .orElse(null);
@@ -329,7 +329,7 @@ public class BackendRequestFactory {
 
     for (var segment : path.split("\\.")) {
       var field = Optional.ofNullable(current)
-          .flatMap(o -> o.getField(segment))
+          .map(o -> o.getField(segment))
           .orElseThrow();
 
       current = schema.getObjectType(field.getType())

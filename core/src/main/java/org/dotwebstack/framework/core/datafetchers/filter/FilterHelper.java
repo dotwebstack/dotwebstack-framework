@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +30,7 @@ public final class FilterHelper {
 
     var fieldName = StringUtils.substringBefore(fieldPath, ".");
 
-    var objectField = objectType.getField(fieldName)
-        .orElseThrow(() -> invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName));
+    var objectField = objectType.getField(fieldName);
 
     if (nested) {
       var nestedObjectType = schema.getObjectType(objectField.getType())
