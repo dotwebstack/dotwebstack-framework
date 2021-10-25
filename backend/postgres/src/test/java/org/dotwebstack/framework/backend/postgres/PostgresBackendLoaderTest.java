@@ -3,19 +3,28 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.backend.postgres.query.Query;
+import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -26,6 +35,8 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
+import org.jooq.Record;
+import org.jooq.SelectQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -52,7 +63,6 @@ class PostgresBackendLoaderTest {
   }
 
   @Test
-  @Disabled("fix me")
   void loadSingle_returnsMonoObject() {
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
@@ -61,48 +71,33 @@ class PostgresBackendLoaderTest {
         .source(source)
         .build();
 
-    List<KeyCriteria> keyCriteria = List.of();
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getTable()).thenReturn("anyTable");
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
-
-    Map<String, Object> mapValues = Map.of("a", "b");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
-    ObjectRequest request = ObjectRequest.builder()
-        .objectType(objectType)
-        .objectFields(objectFields)
-        .keyCriteria(keyCriteria)
-        .contextCriteria(contextCriteria)
-        .build();
-
     FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Map.of("@@@", "ccc")));
+    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
+    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
+    when(anotherSpec.fetch()).thenReturn(fetchSpec);
     DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.fetch()).thenReturn(fetchSpec);
+    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
     when(databaseClient.sql(anyString())).thenReturn(spec);
+  
+    ObjectRequest objectRequest = initObjectRequest();
 
-    var res = backendLoader.loadSingle(request, requestContext);
+    var res = backendLoader.loadSingle(objectRequest, requestContext);
+  
     assertThat(res, CoreMatchers.is(notNullValue()));
     assertTrue(res instanceof Mono);
-    res.doOnNext(result -> assertThat(result.get("@@@"), is("ccc")))
+    res.doOnNext(result -> assertTrue(result.isEmpty()))
         .subscribe();
   }
 
   @Test
-  @Disabled("fix me")
   void loadMany_returnsFluxObject() {
     FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Map.of("@@@", "ccc")));
+    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
+    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
+    when(anotherSpec.fetch()).thenReturn(fetchSpec);
     DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.fetch()).thenReturn(fetchSpec);
+    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
     when(databaseClient.sql(anyString())).thenReturn(spec);
-
-    org.dotwebstack.framework.backend.postgres.query.Query queryMock =
-        mock(org.dotwebstack.framework.backend.postgres.query.Query.class);
-    lenient().when(queryMock.execute(eq(databaseClient)))
-        .thenReturn(Flux.just(Map.of("@@@", "ccc")));
 
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
@@ -110,23 +105,9 @@ class PostgresBackendLoaderTest {
         .objectField(mock(ObjectField.class))
         .source(source)
         .build();
-
-    List<KeyCriteria> keyCriteria = List.of();
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getTable()).thenReturn("anyTable");
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
-
-    Map<String, Object> mapValues = Map.of("a", "b");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
-    ObjectRequest objectRequest = ObjectRequest.builder()
-        .objectType(objectType)
-        .objectFields(objectFields)
-        .keyCriteria(keyCriteria)
-        .contextCriteria(contextCriteria)
-        .build();
-
+  
+    ObjectRequest objectRequest = initObjectRequest();
+    
     CollectionRequest request = CollectionRequest.builder()
         .objectRequest(objectRequest)
         .sortCriterias(List.of())
@@ -136,7 +117,7 @@ class PostgresBackendLoaderTest {
     var res = backendLoader.loadMany(request, requestContext);
     assertThat(res, CoreMatchers.is(notNullValue()));
     assertTrue(res instanceof Flux);
-    res.doOnNext(result -> assertThat(result.get("@@@"), is(null)))
+    res.doOnNext(result -> assertTrue(result.isEmpty()))
         .subscribe();
   }
 
@@ -157,22 +138,8 @@ class PostgresBackendLoaderTest {
         .objectField(objectFieldMock)
         .source(source)
         .build();
-
-    List<KeyCriteria> keyCriteria = List.of();
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getTable()).thenReturn("anyTable");
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
-
-    Map<String, Object> mapValues = Map.of("a", "b");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
-    ObjectRequest objectRequest = ObjectRequest.builder()
-        .objectType(objectType)
-        .objectFields(objectFields)
-        .keyCriteria(keyCriteria)
-        .contextCriteria(contextCriteria)
-        .build();
+  
+    ObjectRequest objectRequest = initObjectRequest();
 
     CollectionRequest collectionRequest = CollectionRequest.builder()
         .objectRequest(objectRequest)
@@ -190,5 +157,24 @@ class PostgresBackendLoaderTest {
     assertThat(res, CoreMatchers.is(notNullValue()));
     assertTrue(res instanceof Flux);
   }
-
+  
+  private ObjectRequest initObjectRequest() {
+    List<KeyCriteria> keyCriteria = List.of();
+    PostgresObjectType objectType = mock(PostgresObjectType.class);
+    when(objectType.getTable()).thenReturn("anyTable");
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
+    
+    Map<String, Object> mapValues = Map.of("a", "bbb");
+    ContextCriteria contextCriteria = mock(ContextCriteria.class);
+    when(contextCriteria.getValues()).thenReturn(mapValues);
+    when(contextCriteria.getName()).thenReturn("Brewery");
+    
+    return ObjectRequest.builder()
+        .objectType(objectType)
+        .objectFields(objectFields)
+        .keyCriteria(keyCriteria)
+        .contextCriteria(contextCriteria)
+        .build();
+    
+  }
 }
