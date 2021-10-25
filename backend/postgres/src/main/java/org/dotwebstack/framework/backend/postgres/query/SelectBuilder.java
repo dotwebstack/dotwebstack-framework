@@ -77,10 +77,8 @@ class SelectBuilder {
   @NotNull
   private AliasManager aliasManager;
 
-  @NotNull
   private Table<Record> parentTable;
 
-  @NotNull
   private Map<String, String> scalarReferences = new HashMap<>();
 
   private SelectBuilder() {}

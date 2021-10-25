@@ -148,7 +148,6 @@ class PostgresBackendLoaderTest {
   }
 
   private ObjectRequest initObjectRequest() {
-    List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
     Map<FieldRequest, ObjectRequest> objectFields = Map.of();
@@ -157,6 +156,8 @@ class PostgresBackendLoaderTest {
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
+
+    List<KeyCriteria> keyCriteria = List.of();
 
     return ObjectRequest.builder()
         .objectType(objectType)

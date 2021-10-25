@@ -4,9 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +52,7 @@ class PostgresBackendModuleTest {
         .toExternalForm();
 
     Schema schema = testHelper.getSchema(localUrl);
-    var objectTypes = (Map<String, ObjectType<?>>) schema.getObjectTypes();
+    var objectTypes = schema.getObjectTypes();
 
     postgresBackendModule.init(objectTypes);
   }

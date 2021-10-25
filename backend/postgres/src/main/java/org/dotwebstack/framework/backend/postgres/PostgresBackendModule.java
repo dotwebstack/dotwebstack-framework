@@ -10,6 +10,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
   }
 
   @Override
-  public void init(Map<String, ObjectType<?>> objectTypes) {
+  public void init(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
     var postgresObjectTypes = objectTypes.values()
         .stream()
         .map(PostgresObjectType.class::cast)

@@ -35,7 +35,7 @@ class QueryTest {
   private DatabaseClient databaseClient;
 
   @Mock
-  private RowMapper rowMapper;
+  private RowMapper<Map<String, Object>> rowMapper;
 
   @Mock
   private SelectQuery<Record> selectQuery;
@@ -78,7 +78,6 @@ class QueryTest {
   }
 
   private ObjectRequest initObjectRequest() {
-    List<KeyCriteria> keyCriteria = List.of();
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
     Map<FieldRequest, ObjectRequest> objectFields = Map.of();
@@ -87,6 +86,8 @@ class QueryTest {
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
+
+    List<KeyCriteria> keyCriteria = List.of();
 
     return ObjectRequest.builder()
         .objectType(objectType)
