@@ -7,7 +7,7 @@ import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-public class JoinTableTest {
+class JoinTableTest {
 
   @Test
   void setProperties() {

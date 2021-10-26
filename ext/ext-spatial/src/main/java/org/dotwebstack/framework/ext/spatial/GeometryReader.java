@@ -21,6 +21,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeometryReader {
 
+  private GeometryReader() {}
+
   public static Geometry readGeometry(Map<String, String> data) {
     validateGeometryFilters(data);
 

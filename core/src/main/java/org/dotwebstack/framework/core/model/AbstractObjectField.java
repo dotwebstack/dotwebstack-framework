@@ -9,7 +9,7 @@ import lombok.Data;
 public abstract class AbstractObjectField implements ObjectField {
 
   @Valid
-  protected ObjectType<?> objectType;
+  protected ObjectType<? extends ObjectField> objectType;
 
   protected String name;
 
@@ -22,9 +22,9 @@ public abstract class AbstractObjectField implements ObjectField {
   protected String aggregationOf;
 
   @Valid
-  protected ObjectType<?> aggregationOfType;
+  protected ObjectType<? extends ObjectField> aggregationOfType;
 
-  private ObjectType<?> targetType;
+  private ObjectType<? extends ObjectField> targetType;
 
   @Valid
   protected List<FieldArgument> arguments = new ArrayList<>();

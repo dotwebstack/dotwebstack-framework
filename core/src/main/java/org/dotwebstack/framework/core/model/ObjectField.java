@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface ObjectField {
 
-  ObjectType<?> getObjectType();
+  ObjectType<? extends ObjectField> getObjectType();
 
-  void setObjectType(ObjectType<?> objectType);
+  void setObjectType(ObjectType<? extends ObjectField> objectType);
 
   String getName();
 
@@ -22,7 +22,7 @@ public interface ObjectField {
 
   String getAggregationOf();
 
-  ObjectType<?> getAggregationOfType();
+  ObjectType<? extends ObjectField> getAggregationOfType();
 
-  ObjectType<?> getTargetType();
+  ObjectType<? extends ObjectField> getTargetType();
 }

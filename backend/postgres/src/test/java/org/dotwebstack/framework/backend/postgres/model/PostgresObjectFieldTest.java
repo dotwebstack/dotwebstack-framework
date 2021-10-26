@@ -7,9 +7,9 @@ import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-public class PostgresObjectFieldTest {
+class PostgresObjectFieldTest {
 
-  private PostgresObjectField objectField = new PostgresObjectField();
+  private final PostgresObjectField objectField = new PostgresObjectField();
 
   @Test
   void getColumn_returnsColumn() {

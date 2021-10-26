@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
@@ -57,5 +58,12 @@ class PostgresBackendModuleTest {
     Map<String, ObjectType<?>> objectTypes = schema.getObjectTypes();
 
     postgresBackendModule.init(objectTypes);
+
+    assertThat(objectTypes, notNullValue());
+
+    var brewery = (PostgresObjectType) objectTypes.get("Brewery");
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getFields()
+        .get("beerAgg"), notNullValue());
   }
 }

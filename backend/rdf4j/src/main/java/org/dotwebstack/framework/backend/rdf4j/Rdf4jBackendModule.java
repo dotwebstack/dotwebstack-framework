@@ -28,6 +28,6 @@ class Rdf4jBackendModule implements BackendModule<Rdf4jObjectType> {
 
   @Override
   public void init(Map<String, ObjectType<?>> objectTypes) {
-
+    // No init needed
   }
 }

@@ -6,7 +6,7 @@ import io.r2dbc.postgresql.client.SSLMode;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-public class PostgresPropertiesTest {
+class PostgresPropertiesTest {
 
   @Test
   void initObject_returnsProperties() {

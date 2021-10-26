@@ -10,7 +10,6 @@ import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -35,12 +34,12 @@ public class Query {
 
   private final SelectQuery selectQuery;
 
-  public Query(ObjectRequest objectRequest, RequestContext requestContext, NodeShape nodeShape) {
-    selectQuery = createSelect(objectRequest, requestContext, nodeShape);
+  public Query(ObjectRequest objectRequest, NodeShape nodeShape) {
+    selectQuery = createSelect(objectRequest, nodeShape);
   }
 
-  public Query(CollectionRequest collectionRequest, RequestContext requestContext, NodeShape nodeShape) {
-    selectQuery = createSelect(collectionRequest, requestContext, nodeShape);
+  public Query(CollectionRequest collectionRequest, NodeShape nodeShape) {
+    selectQuery = createSelect(collectionRequest, nodeShape);
   }
 
   public Flux<Map<String, Object>> execute(RepositoryConnection connection) {
@@ -55,9 +54,8 @@ public class Query {
         .map(rowMapper);
   }
 
-  private SelectQuery createSelect(CollectionRequest collectionRequest, RequestContext requestContext,
-      NodeShape nodeShape) {
-    var query = createSelect(collectionRequest.getObjectRequest(), requestContext, nodeShape);
+  private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
+    var query = createSelect(collectionRequest.getObjectRequest(), nodeShape);
     var sortCriterias = collectionRequest.getSortCriterias();
 
     if (!sortCriterias.isEmpty()) {
@@ -67,7 +65,7 @@ public class Query {
     return query;
   }
 
-  private SelectQuery createSelect(ObjectRequest objectRequest, RequestContext requestContext, NodeShape nodeShape) {
+  private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
     return Queries.SELECT()
         .where(createPattern(objectRequest, nodeShape));
   }

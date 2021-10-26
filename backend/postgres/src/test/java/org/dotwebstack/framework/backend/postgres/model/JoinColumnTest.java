@@ -5,7 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
-public class JoinColumnTest {
+class JoinColumnTest {
 
   @Test
   void setProperties() {

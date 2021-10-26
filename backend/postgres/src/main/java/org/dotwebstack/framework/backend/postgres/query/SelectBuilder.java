@@ -5,10 +5,13 @@ import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
+import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
+import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSortFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
@@ -89,22 +92,19 @@ class SelectBuilder {
         .getContextCriteria());
     var dataQuery = createDataQuery(collectionRequest.getObjectRequest(), dataTable);
 
-    SortBuilder.newSorting()
-        .sortCriterias(collectionRequest.getSortCriterias())
+    newSorting().sortCriterias(collectionRequest.getSortCriterias())
         .fieldMapper(fieldMapper)
         .build()
         .forEach(dataQuery::addOrderBy);
 
-    FilterConditionBuilder.newFiltering()
-        .aliasManager(aliasManager)
+    newFiltering().aliasManager(aliasManager)
         .filterCriterias(collectionRequest.getFilterCriterias())
         .table(dataTable)
         .objectRequest(collectionRequest.getObjectRequest())
         .build()
         .forEach(dataQuery::addConditions);
 
-    PagingBuilder.newPaging()
-        .requestContext(requestContext)
+    newPaging().requestContext(requestContext)
         .dataQuery(dataQuery)
         .build();
 
@@ -351,8 +351,8 @@ class SelectBuilder {
 
   private Map<String, String> createScalarReferences(PostgresObjectField objectField) {
     Map<String, String> nestedScalarReferences;
-    if (objectField.getJoinColumns()
-        .size() > 0) {
+    if (!objectField.getJoinColumns()
+        .isEmpty()) {
       nestedScalarReferences = objectField.getJoinColumns()
           .stream()
           .collect(Collectors.toMap(JoinColumn::getReferencedField, JoinColumn::getName));

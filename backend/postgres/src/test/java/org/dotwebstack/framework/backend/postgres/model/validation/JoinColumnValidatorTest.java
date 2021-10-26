@@ -8,9 +8,9 @@ import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.junit.jupiter.api.Test;
 
-public class JoinColumnValidatorTest {
+class JoinColumnValidatorTest {
 
-  private JoinColumnValidator validator = new JoinColumnValidator();
+  private final JoinColumnValidator validator = new JoinColumnValidator();
 
   @Test
   void isValid_returnsTrue() {
