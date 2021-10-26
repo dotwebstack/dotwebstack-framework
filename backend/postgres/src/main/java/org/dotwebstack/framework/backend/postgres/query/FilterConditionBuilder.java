@@ -31,7 +31,7 @@ import org.locationtech.jts.geom.Geometry;
 
 @Accessors(fluent = true)
 @Setter
-public class FilterConditionBuilder {
+class FilterConditionBuilder {
 
   private static final DataType<Geometry> GEOMETRY_DATATYPE =
       new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");

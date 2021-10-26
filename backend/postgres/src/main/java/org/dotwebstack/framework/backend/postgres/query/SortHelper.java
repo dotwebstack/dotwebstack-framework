@@ -12,7 +12,7 @@ final class SortHelper {
 
   private SortHelper() {}
 
-  public static void addSortFields(CollectionRequest collectionRequest) {
+  static void addSortFields(CollectionRequest collectionRequest) {
     collectionRequest.getSortCriterias()
         .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
   }
