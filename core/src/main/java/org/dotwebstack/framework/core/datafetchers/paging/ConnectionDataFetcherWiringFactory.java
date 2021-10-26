@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 
-  public ConnectionDataFetcherWiringFactory() {}
-
   @Override
   public boolean providesDataFetcher(FieldWiringEnvironment environment) {
     return environment.getFieldDefinition()

@@ -94,7 +94,7 @@ class SelectBuilderTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("fix me")
   void createFilterCondition_returnsCondition_forManyCriterias() {
     initSortCriteriaList(SortDirection.ASC);
     initCollectionRequest();

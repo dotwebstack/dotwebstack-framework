@@ -40,7 +40,6 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @Testcontainers
-@Disabled
 class RmlPostgresIntegrationTest {
 
   @Autowired
