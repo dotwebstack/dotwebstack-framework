@@ -21,7 +21,6 @@ import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -46,8 +45,6 @@ class GraphPatternBuilder {
 
   private AliasManager aliasManager;
 
-  private RequestContext requestContext;
-
   private final Map<Variable, Set<? extends Value>> valuesMap = new HashMap<>();
 
   public static GraphPatternBuilder newGraphPattern() {
@@ -58,8 +55,6 @@ class GraphPatternBuilder {
     var typeVar = SparqlBuilder.var(aliasManager.newAlias());
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
-
-    // createJoinPatterns().forEach(subPatterns::add);
 
     objectRequest.getKeyCriteria()
         .stream()
@@ -85,21 +80,6 @@ class GraphPatternBuilder {
 
     return graphPattern;
   }
-
-  // TODO: Join patterns
-  // private Stream<GraphPattern> createJoinPatterns() {
-  // var source = requestContext.getSource();
-  //
-  // if (source == null) {
-  // return Stream.empty();
-  // }
-  //
-  // var parentField = objectRequest.getParentField();
-  // var joinCondition = (JoinCondition) source.get(JOIN_KEY_PREFIX.concat(parentField.getName()));
-  //
-  // return Stream.of(GraphPatterns.tp(joinCondition.getResource(), joinCondition.getPredicate(),
-  // subject));
-  // }
 
   private Stream<GraphPattern> createPattern(KeyCriteria keyCriteria) {
     return keyCriteria.getValues()

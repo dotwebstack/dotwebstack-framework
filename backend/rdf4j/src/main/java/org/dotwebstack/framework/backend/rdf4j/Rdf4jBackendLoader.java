@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import java.util.Map;
 import org.dotwebstack.framework.backend.rdf4j.query.Query;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -46,7 +48,6 @@ public class Rdf4jBackendLoader implements BackendLoader {
   @Override
   public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> batchLoadMany(
       CollectionBatchRequest collectionBatchRequest, RequestContext context) {
-    // TODO
-    return Flux.empty();
+    throw unsupportedOperationException("Not supported yet");
   }
 }

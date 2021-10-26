@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.GraphPatternBuilder.newGraphPattern;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.List;
@@ -73,8 +74,7 @@ public class Query {
   private GraphPattern createPattern(ObjectRequest objectRequest, NodeShape nodeShape) {
     var subject = SparqlBuilder.var(aliasManager.newAlias());
 
-    return GraphPatternBuilder.newGraphPattern()
-        .objectRequest(objectRequest)
+    return newGraphPattern().objectRequest(objectRequest)
         .nodeShape(nodeShape)
         .subject(subject)
         .fieldMapper(rowMapper)
