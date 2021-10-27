@@ -4,6 +4,10 @@ import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
+import org.dotwebstack.framework.core.model.FieldArgument;
+import org.dotwebstack.framework.core.model.ObjectField;
+import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Subscription;
 
 public final class TypeUtils {
 
@@ -29,46 +33,34 @@ public final class TypeUtils {
         .build();
   }
 
-  public static Type<?> createType(String key,
-      AbstractTypeConfiguration<? extends AbstractFieldConfiguration> typeConfiguration) {
-    AbstractFieldConfiguration fieldConfig = typeConfiguration.getFields()
+  public static Type<NonNullType> createType(String key, ObjectType<?> objectType) {
+    var fieldConfig = objectType.getFields()
         .get(key);
     return TypeUtils.newNonNullableType(fieldConfig.getType());
   }
 
-  public static Type<?> createType(SubscriptionConfiguration subscriptionConfiguration) {
-    return TypeUtils.newNonNullableType(subscriptionConfiguration.getType());
+  public static Type<NonNullType> createType(Subscription subscription) {
+    return TypeUtils.newNonNullableType(subscription.getType());
   }
 
-  public static Type<?> createType(QueryConfiguration queryConfiguration) {
-    var type = queryConfiguration.getType();
+  public static Type<?> createType(ObjectField objectField) {
+    var type = objectField.getType();
 
-    if (queryConfiguration.isList()) {
-      return TypeUtils.newNonNullableListType(type);
+    if (objectField.isList()) {
+      return objectField.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
     }
 
-    return TypeUtils.newType(type);
+    return objectField.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
-  public static Type<?> createType(FieldConfiguration fieldConfiguration) {
-    var type = fieldConfiguration.getType();
+  public static Type<?> createType(FieldArgument fieldArgument) {
+    var type = fieldArgument.getType();
 
-    if (fieldConfiguration.isList()) {
-      return fieldConfiguration.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
+    if (fieldArgument.isList()) {
+      return fieldArgument.isNullable() ? TypeUtils.newListType(type) : TypeUtils.newNonNullableListType(type);
     }
 
-    return fieldConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
-  }
-
-  public static Type<?> createType(FieldArgumentConfiguration fieldArgumentConfiguration) {
-    var type = fieldArgumentConfiguration.getType();
-
-    if (fieldArgumentConfiguration.isList()) {
-      return fieldArgumentConfiguration.isNullable() ? TypeUtils.newListType(type)
-          : TypeUtils.newNonNullableListType(type);
-    }
-
-    return fieldArgumentConfiguration.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
+    return fieldArgument.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
 }

@@ -12,7 +12,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 
 @Getter
 @RequiredArgsConstructor
-public class GraphPatternWithValues implements GraphPattern {
+class GraphPatternWithValues implements GraphPattern {
 
   private final GraphPattern graphPattern;
 
@@ -29,8 +29,9 @@ public class GraphPatternWithValues implements GraphPattern {
   }
 
   private String valueExpr(Variable variable, Set<? extends Value> values) {
-    return String.format("VALUES %s {%s}%n", variable.getQueryString(), values.stream()
+    return String.format("VALUES %s {%s}", variable.getQueryString(), values.stream()
         .map(QueryStringUtil::valueToString)
-        .collect(Collectors.joining(" ")));
+        .collect(Collectors.joining(" ")))
+        .concat("\n");
   }
 }

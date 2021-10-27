@@ -10,40 +10,40 @@ subscriptions:
   brewerySubscription:
     type: Brewery
 
-context:
-  fields:
-    validOn:
-      type: Date
-      default: NOW
-    availableOn:
-      type: DateTime
-      default: NOW
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
 
 queries:
   beer:
     type: Beer
-    keys:
-      - field: identifier
+    context: history
   beerCollection:
     type: Beer
     list: true
+    context: history
   brewery:
     type: Brewery
     keys:
-      - field: identifier
+      - identifier
+    context: history
   breweryCollection:
     type: Brewery
     list: true
+    context: history
 
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     filters:
       breweryCity:
         field: brewery.visitAddress.city
-    keys:
-      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -66,7 +66,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: identifier
+            referencedField: record_id
       ingredients:
         type: Ingredient
         list: true
@@ -93,10 +93,7 @@ objectTypes:
         list: true
 
   Brewery:
-    backend: postgres
     table: dbeerpedia.breweries
-    keys:
-      - field: identifier
     sortableBy:
       name:
         - field: name
@@ -158,10 +155,7 @@ objectTypes:
 
 
   Ingredient:
-    backend: postgres
     table: dbeerpedia.ingredients
-    keys:
-      - field: identifier
     fields:
       identifier:
         type: ID
@@ -171,10 +165,7 @@ objectTypes:
         type: Float
 
   Address:
-    backend: postgres
     table: dbeerpedia.addresses
-    keys:
-      - field: identifier
     fields:
       identifier:
         type: ID
@@ -184,9 +175,6 @@ objectTypes:
         type: String
 
   History:
-    backend: postgres
-    keys:
-      - field: identifier
     fields:
       age:
         type: Int

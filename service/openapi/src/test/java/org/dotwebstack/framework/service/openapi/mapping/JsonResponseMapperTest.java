@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
-import org.dotwebstack.framework.core.config.Feature;
 import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.conversion.LocalDateTypeConverter;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
@@ -70,17 +68,17 @@ class JsonResponseMapperTest {
   private Schema<String> mockSchema;
 
   @Mock
-  private DotWebStackConfiguration dwsConfig;
+  private org.dotwebstack.framework.core.model.Schema schema;
 
   @BeforeEach
   void setup() {
     when(openApiProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(dwsConfig.isFeatureEnabled(Feature.PAGING)).thenReturn(true);
+    when(schema.usePaging()).thenReturn(true);
 
     TypeConverterRouter typeConverterRouter = new TypeConverterRouter(
         List.of(new ZonedDateTimeTypeConverter(openApiProperties), new LocalDateTypeConverter(openApiProperties)));
-    this.jsonResponseMapper = new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties,
-        typeConverterRouter, dwsConfig);
+    this.jsonResponseMapper =
+        new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter, schema);
   }
 
   @Test

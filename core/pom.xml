@@ -70,6 +70,11 @@
       <groupId>io.projectreactor.netty</groupId>
       <artifactId>reactor-netty-http</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-r2dbc</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

@@ -14,7 +14,6 @@
 
   <modules>
     <module>rdf4j</module>
-    <module>json</module>
     <module>postgres</module>
   </modules>
 

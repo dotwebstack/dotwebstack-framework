@@ -12,6 +12,7 @@ import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.junit.jupiter.api.Test;
 
 class TypeUtilsTest {
@@ -49,27 +50,60 @@ class TypeUtilsTest {
   }
 
   @Test
-  void createType_ReturnsNonNullType() {
-    var configMock = mock(QueryConfiguration.class);
-    doReturn(TYPE_NAME).when(configMock)
+  void createType_returnsNewType_for_ObjectFieldIsNotList_and_isNullable() {
+    var objectField = mock(ObjectField.class);
+    doReturn(TYPE_NAME).when(objectField)
         .getType();
-    doReturn(true).when(configMock)
+    doReturn(false).when(objectField)
         .isList();
+    doReturn(true).when(objectField)
+        .isNullable();
 
-    var result = TypeUtils.createType(configMock);
+    var result = TypeUtils.createType(objectField);
+    assertThat(result, instanceOf(TypeName.class));
+    assertTypeName(result);
+  }
+
+  @Test
+  void createType_returnsNewType_for_ObjectFieldIsNotList_and_isNotNullable() {
+    var objectField = mock(ObjectField.class);
+    doReturn(TYPE_NAME).when(objectField)
+        .getType();
+    doReturn(false).when(objectField)
+        .isList();
+    doReturn(false).when(objectField)
+        .isNullable();
+
+    var result = TypeUtils.createType(objectField);
     assertThat(result, instanceOf(NonNullType.class));
   }
 
   @Test
-  void createType_ReturnsNewType() {
-    var configMock = mock(QueryConfiguration.class);
-    doReturn(TYPE_NAME).when(configMock)
+  void createType_returnsNewType_for_ObjectFieldIsList_and_isNullable() {
+    var objectField = mock(ObjectField.class);
+    doReturn(TYPE_NAME).when(objectField)
         .getType();
-    doReturn(false).when(configMock)
+    doReturn(true).when(objectField)
         .isList();
+    doReturn(true).when(objectField)
+        .isNullable();
 
-    var result = TypeUtils.createType(configMock);
-    assertTypeName(result);
+    var result = TypeUtils.createType(objectField);
+    assertThat(result, instanceOf(ListType.class));
+  }
+
+  @Test
+  void createType_returnsNewType_for_ObjectFieldIsList_and_isNotNullable() {
+    var objectField = mock(ObjectField.class);
+    doReturn(TYPE_NAME).when(objectField)
+        .getType();
+    doReturn(true).when(objectField)
+        .isList();
+    doReturn(false).when(objectField)
+        .isNullable();
+
+    var result = TypeUtils.createType(objectField);
+    assertThat(result, instanceOf(NonNullType.class));
   }
 
   private static void assertTypeName(Type<?> type) {

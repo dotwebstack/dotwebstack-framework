@@ -51,7 +51,6 @@
   beer_id:1295f4c1-846b-440c-b302-80bbc1f9f3a9 a beer_def:Beer ;
     beer_def:identifier "1295f4c1-846b-440c-b302-80bbc1f9f3a9";
     schema:name "Beer 2" ;
-    beer_def:abv 4.7 ;
     beer_def:brewery brewery_id:d3654375-95fa-46b4-8529-08b0f777bd6b ;
   .
 

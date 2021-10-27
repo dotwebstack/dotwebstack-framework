@@ -1,39 +1,95 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.datafetchers.GenericDataFetcher;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
+import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Name;
+import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-public class QueryHelper {
+class QueryHelper {
 
   private QueryHelper() {}
 
-  public static Field<Object> field(Table<?> table, String columnName) {
-    return DSL.field(DSL.name(table.getName(), columnName));
+  private static Name name(Table<Record> table, String columnName) {
+    if (table == null) {
+      return DSL.name(columnName);
+    }
+    return DSL.name(table.getName(), columnName);
   }
 
-  public static UnaryOperator<Map<String, Object>> createMapAssembler(
-      Map<String, Function<Map<String, Object>, Object>> assembleFns, AtomicReference<String> checkNullAlias,
-      boolean isUseNullMapWhenNotFound) {
-    return row -> {
-      if (StringUtils.isNotEmpty(checkNullAlias.get()) && row.get(checkNullAlias.get()) == null) {
-        if (isUseNullMapWhenNotFound) {
-          return GenericDataFetcher.NULL_MAP;
-        }
-        return null;
-      }
+  public static Field<Object> column(Table<Record> table, String columnName) {
+    return DSL.field(name(table, columnName));
+  }
 
-      return assembleFns.entrySet()
-          .stream()
-          .collect(HashMap::new, (acc, entry) -> acc.put(entry.getKey(), entry.getValue()
-              .apply(row)), HashMap::putAll);
-    };
+  public static Field<Object> column(Table<Record> table, JoinColumn joinColumn, PostgresObjectType objectType) {
+    return DSL.field(name(table, columnName(joinColumn, objectType)));
+  }
+
+  public static String columnName(JoinColumn joinColumn, PostgresObjectType objectType) {
+    return Optional.ofNullable(joinColumn.getReferencedColumn())
+        .orElseGet(() -> getColumnNameOfReferencedField(joinColumn, objectType));
+  }
+
+  private static String getColumnNameOfReferencedField(JoinColumn joinColumn, PostgresObjectType objectType) {
+    return objectType.getField(joinColumn.getReferencedField())
+        .getColumn();
+  }
+
+  public static PostgresObjectType getObjectType(ObjectRequest objectRequest) {
+    var objectType = objectRequest.getObjectType();
+
+    if (!(objectType instanceof PostgresObjectType)) {
+      throw illegalArgumentException("Object type has wrong type.");
+    }
+
+    return (PostgresObjectType) objectType;
+  }
+
+  public static PostgresObjectField getObjectField(ObjectRequest objectRequest, String name) {
+    return getObjectType(objectRequest).getField(name);
+  }
+
+  public static List<Condition> createJoinConditions(Table<Record> junctionTable, Table<Record> referencedTable,
+      List<JoinColumn> joinColumns, PostgresObjectType objectType) {
+    return joinColumns.stream()
+        .map(joinColumn -> column(junctionTable, joinColumn.getName())
+            .equal(column(referencedTable, joinColumn, objectType)))
+        .collect(Collectors.toList());
+  }
+
+  public static Table<Record> findTable(String name, ContextCriteria contextCriteria) {
+    if (contextCriteria != null) {
+      return createTable(name, contextCriteria);
+    }
+
+    return DSL.table(DSL.name(name.split("\\.")));
+  }
+
+  private static Table<Record> createTable(String name, ContextCriteria contextCriteria) {
+    AtomicInteger atomicInteger = new AtomicInteger(0);
+
+    String bindingKeys = contextCriteria.getValues()
+        .keySet()
+        .stream()
+        .map(key -> String.format("{%d}", atomicInteger.getAndIncrement()))
+        .collect(Collectors.joining(","));
+
+    Object[] bindingValues = new ArrayList<>(contextCriteria.getValues()
+        .values()).toArray(Object[]::new);
+
+    return DSL.table(String.format("%s_%s_ctx(%s)", name, contextCriteria.getName(), bindingKeys), bindingValues);
   }
 }

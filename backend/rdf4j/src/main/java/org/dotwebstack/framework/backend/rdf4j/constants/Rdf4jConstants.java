@@ -10,5 +10,4 @@ public class Rdf4jConstants {
   public static final String DOTWEBSTACK_NAMESPACE = "http://www.dotwebstack.org/";
 
   public static final IRI DOTWEBSTACK_INHERITS = IriHelper.createIri(DOTWEBSTACK_NAMESPACE + "inherits");
-
 }

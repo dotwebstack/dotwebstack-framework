@@ -34,8 +34,6 @@ import reactor.test.StepVerifier;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RequestBodyHandlerTest {
 
-  private OpenAPI openApi;
-
   private DefaultRequestBodyHandler requestBodyHandler;
 
   private RequestBody requestBody;
@@ -44,9 +42,9 @@ class RequestBodyHandlerTest {
 
   @BeforeEach
   void setup() {
-    this.openApi = TestResources.openApi();
+    OpenAPI openApi = TestResources.openApi();
     this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, new Jackson2ObjectMapperBuilder());
-    this.requestBody = this.openApi.getPaths()
+    this.requestBody = openApi.getPaths()
         .get("/query4")
         .getGet()
         .getRequestBody();
@@ -54,7 +52,7 @@ class RequestBodyHandlerTest {
   }
 
   @Test
-  void getValue_returns_Map_forValidJson() throws BadRequestException {
+  void getValue_returns_Map_forValidJson() {
     Map<String, Object> expected = new HashMap<>();
     ArrayList<String> expectedList = new ArrayList<>();
     expectedList.add("value1");

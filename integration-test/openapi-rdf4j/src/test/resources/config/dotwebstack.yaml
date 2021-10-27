@@ -10,7 +10,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: rdf4j
     keys:
       - identifier
     fields:
@@ -26,7 +25,6 @@ objectTypes:
         type: Brewery
 
   Brewery:
-    backend: rdf4j
     keys:
       - identifier
     fields:
@@ -48,7 +46,6 @@ objectTypes:
         type: Boolean
 
   Address:
-    backend: rdf4j
     keys:
       - identifier
     fields:
@@ -63,7 +60,6 @@ objectTypes:
         type: String
 
   Ingredient:
-    backend: rdf4j
     keys:
       - identifier
     fields:

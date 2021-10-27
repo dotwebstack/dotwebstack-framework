@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.condition.GraphQlNativeDisabled;
-import org.dotwebstack.framework.core.config.DotWebStackConfiguration;
+import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +38,8 @@ public class GraphQlProxyConfig {
   }
 
   @Bean
-  public HttpClient proxyHttpClient(@NonNull DotWebStackConfiguration dotWebStackConfiguration) {
-    String proxyName = dotWebStackConfiguration.getSettings()
+  public HttpClient proxyHttpClient(@NonNull Schema schema) {
+    String proxyName = schema.getSettings()
         .getGraphql()
         .getProxy();
 

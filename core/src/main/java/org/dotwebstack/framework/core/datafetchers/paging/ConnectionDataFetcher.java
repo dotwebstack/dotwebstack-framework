@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
+import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
@@ -11,28 +12,30 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   @Override
-  public Object get(DataFetchingEnvironment environment) throws Exception {
+  public Object get(DataFetchingEnvironment environment) {
     int firstArgumentValue = getFirstArgumentValue(environment);
     int offsetArgumentValue = getOffsetArgumentValue(environment);
 
     validateArgumentValues(firstArgumentValue, offsetArgumentValue);
 
-    PagingDataFetcherContext localContext = PagingDataFetcherContext.builder()
-        .first(firstArgumentValue)
-        .offset(offsetArgumentValue)
-        .parentLocalContext(environment.getLocalContext())
-        .parentSource(environment.getSource())
-        .build();
+    Map<String, Object> data = new HashMap<>();
+    data.put(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), offsetArgumentValue);
+    data.put(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), firstArgumentValue);
+    data.put(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue);
+
+    if (environment.getSource() != null) {
+      data.putAll(environment.getSource());
+    }
 
     return DataFetcherResult.newResult()
-        .data(Map.of(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue))
-        .localContext(localContext)
+        .data(data)
         .build();
   }
 

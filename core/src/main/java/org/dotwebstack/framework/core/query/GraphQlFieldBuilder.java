@@ -51,7 +51,7 @@ public class GraphQlFieldBuilder {
     return result;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({"unchecked"})
   private List<GraphQlField> getGraphQlFields(FieldDefinition fieldDefinition,
       Map<String, GraphQlField> typeNameFieldMap) {
     var type = fieldDefinition.getType();
@@ -91,7 +91,6 @@ public class GraphQlFieldBuilder {
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("rawtypes")
   private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
     GraphQlArgument.GraphQlArgumentBuilder builder = GraphQlArgument.builder();
 
@@ -101,12 +100,14 @@ public class GraphQlFieldBuilder {
 
     Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
     String baseTypeName = TypeHelper.getTypeName(baseType);
-    var typeDefinition = this.registry.getType(baseType)
-        .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
 
     builder.name(inputValueDefinition.getName())
         .type(inputValueDefinitionType)
         .baseType(baseTypeName);
+
+    var typeDefinition = this.registry.getType(baseType)
+        .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
+
     if (typeDefinition instanceof InputObjectTypeDefinition) {
       builder.children(((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions()
           .stream()

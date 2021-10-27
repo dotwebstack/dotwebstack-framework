@@ -33,7 +33,7 @@ class OpenapiPostgresIntegrationTest {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
-  static TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
+  static final TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
       .withClasspathResourceMapping("config/model", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY);
 
   private static class TestPostgreSqlContainer extends PostgreSQLContainer<TestPostgreSqlContainer> {
@@ -94,5 +94,4 @@ class OpenapiPostgresIntegrationTest {
 
     assertEquals(expectedObj, actualObj);
   }
-
 }

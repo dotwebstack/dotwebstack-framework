@@ -1,35 +1,49 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
-import org.dotwebstack.framework.core.config.TypeConfiguration;
+import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Schema;
 
 public final class FilterHelper {
 
   private FilterHelper() {}
 
-  public static String getTypeNameForFilter(Map<String, String> fieldFilterMap, TypeConfiguration<?> typeConfiguration,
+  public static String getTypeNameForFilter(Schema schema, Map<String, String> fieldFilterMap, ObjectType<?> objectType,
       String filterName, FilterConfiguration filterConfiguration) {
-    String fieldName;
-
+    String fieldPath;
     if (filterConfiguration.getField() != null) {
-      fieldName = filterConfiguration.getField();
+      fieldPath = filterConfiguration.getField();
     } else {
-      fieldName = filterName;
+      fieldPath = filterName;
     }
 
-    var typeConfigurationForField = typeConfiguration.getField(fieldName);
-    if (typeConfigurationForField.isEmpty()) {
-      throw invalidConfigurationException("Filter '{}' doesn't match existing field!", filterName);
+    return getTypeNameForFilter(schema, fieldFilterMap, objectType, fieldPath, filterName);
+  }
+
+  private static String getTypeNameForFilter(Schema schema, Map<String, String> fieldFilterMap,
+      ObjectType<?> objectType, String fieldPath, String filterName) {
+    var nested = fieldPath.contains(".");
+
+    var fieldName = StringUtils.substringBefore(fieldPath, ".");
+
+    var objectField = objectType.getField(fieldName);
+
+    if (nested) {
+      var nestedObjectType = schema.getObjectType(objectField.getType())
+          .orElseThrow();
+      var rest = StringUtils.substringAfter(fieldPath, ".");
+
+      return getTypeNameForFilter(schema, fieldFilterMap, nestedObjectType, rest, filterName);
+
+    } else {
+      var type = objectField.getType();
+
+      return getTypeNameForFilter(fieldFilterMap, type);
     }
-
-    var type = typeConfigurationForField.get()
-        .getType();
-
-    return getTypeNameForFilter(fieldFilterMap, type);
   }
 
   public static String getTypeNameForFilter(Map<String, String> fieldFilterMap, String typeName) {

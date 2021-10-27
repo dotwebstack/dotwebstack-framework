@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.conversion;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("rawtypes")
 public class TypeConverterRouter {
 
-  private List<TypeConverter> typeConverters = new ArrayList<>();
+  private List<TypeConverter> typeConverters;
 
   public TypeConverterRouter(List<TypeConverter> typeConverters) {
     this.typeConverters = typeConverters;

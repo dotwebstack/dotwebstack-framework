@@ -28,7 +28,6 @@ subscriptions:
 objectTypes:
   Beer:
     table: db.beer
-    backend: postgres
     keys:
       - identifier_beer
     fields:
@@ -107,7 +106,6 @@ objectTypes:
           direction: ASC
 
   Ingredient:
-    backend: postgres
     table: db.ingredient
     keys:
       - identifier_ingredient
@@ -135,7 +133,6 @@ objectTypes:
               referencedField: identifier_beer
 
   Brewery:
-    backend: postgres
     table: db.brewery
     keys:
       - identifier_brewery
@@ -185,7 +182,6 @@ objectTypes:
           direction: ASC
 
   Address:
-    backend: postgres
     table: db.address
     keys:
       - identifier_address
@@ -198,7 +194,6 @@ objectTypes:
         type: String
 
   History:
-    backend: postgres
     keys:
       - identifier_brewery
     fields:
