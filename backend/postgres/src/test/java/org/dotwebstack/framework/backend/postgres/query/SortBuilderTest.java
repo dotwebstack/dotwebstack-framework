@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Map;
@@ -17,24 +15,11 @@ import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class SortBuilderTest {
-
-  private ObjectFieldMapper<Map<String, Object>> fieldMapper;
-
-  private List<SortCriteria> sortCriteriaList;
-
-  private SortBuilder sortBuilder;
-
-  @BeforeEach
-  void setUp() {
-    fieldMapper = mock(ObjectFieldMapper.class);
-    sortBuilder = newSorting();
-  }
 
   @ParameterizedTest
   @CsvSource({"ASC", "DESC"})
@@ -85,7 +70,7 @@ class SortBuilderTest {
   }
 
   private ObjectFieldMapper<Map<String, Object>> createRowMapper() {
-    ObjectFieldMapper<Map<String, Object>> rowMapper = new RowMapper();
+    ObjectFieldMapper<Map<String, Object>> rowMapper = new RowMapper<>();
 
     rowMapper.register("fieldOne", new ColumnMapper(DSL.field("x2")
         .as("x2")));
