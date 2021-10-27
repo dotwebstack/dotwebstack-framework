@@ -1,27 +1,27 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Map;
+import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
+import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
-import org.hamcrest.CoreMatchers;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-@ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
 class SortBuilderTest {
 
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
@@ -36,57 +36,75 @@ class SortBuilderTest {
     sortBuilder = newSorting();
   }
 
-  @Test
-  void build_returnsList_forAscSortCriteria() {
-    initSortCriteriaList(SortDirection.ASC);
+  @ParameterizedTest
+  @CsvSource({"ASC", "DESC"})
+  void build_returnsList_forSortCriteria(String sortDirection) {
+    List<SortCriteria> sortCriterias = createSortCriterias(sortDirection);
 
-    var result = sortBuilder.sortCriterias(sortCriteriaList)
-        .fieldMapper(fieldMapper)
+    ObjectFieldMapper<Map<String, Object>> rowMapper = createRowMapper();
+
+    var result = SortBuilder.newSorting()
+        .sortCriterias(sortCriterias)
+        .fieldMapper(rowMapper)
         .build();
 
     assertThat(result.get(0)
-        .toString(), CoreMatchers.is("\"a\" asc"));
+        .toString(), is(String.format("\"x2\" %s", sortDirection.toLowerCase())));
+    assertThat(result.get(1)
+        .toString(), is(String.format("\"x3\" %s", sortDirection.toLowerCase())));
+  }
+
+  private List<SortCriteria> createSortCriterias(String sortDirection) {
+    SortCriteria sortCriteria = SortCriteria.builder()
+        .fieldPath(createFieldPath())
+        .direction(SortDirection.valueOf(sortDirection))
+        .build();
+
+    SortCriteria nestedSortCriteria = SortCriteria.builder()
+        .fieldPath(createNestedFieldPath())
+        .direction(SortDirection.valueOf(sortDirection))
+        .build();
+
+    return List.of(sortCriteria, nestedSortCriteria);
+  }
+
+  private List<ObjectField> createFieldPath() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName("fieldOne");
+    return List.of(objectField);
+  }
+
+  private List<ObjectField> createNestedFieldPath() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName("fieldTwo");
+
+    PostgresObjectField nestedObjectField = new PostgresObjectField();
+    nestedObjectField.setName("nestedField");
+
+    return List.of(objectField, nestedObjectField);
+  }
+
+  private ObjectFieldMapper<Map<String, Object>> createRowMapper() {
+    ObjectFieldMapper<Map<String, Object>> rowMapper = new RowMapper();
+
+    rowMapper.register("fieldOne", new ColumnMapper(DSL.field("x2")
+        .as("x2")));
+
+    ObjectFieldMapper<Map<String, Object>> objectMapper = new ObjectMapper("x1");
+    objectMapper.register("nestedField", new ColumnMapper(DSL.field("x3")
+        .as("x3")));
+    rowMapper.register("fieldTwo", objectMapper);
+
+    return rowMapper;
   }
 
   @Test
-  void build_returnsList_forDescSortCriteria() {
-    initSortCriteriaList(SortDirection.DESC);
+  void build_throwsException_forMissingFields() {
+    SortBuilder builder = SortBuilder.newSorting();
+    var exception = assertThrows(ConstraintViolationException.class, builder::build);
 
-    var result = sortBuilder.sortCriterias(sortCriteriaList)
-        .fieldMapper(fieldMapper)
-        .build();
-
-    assertThat(result.get(0)
-        .toString(), CoreMatchers.is("\"a\" desc"));
+    assertThat(exception.getMessage(),
+        startsWith("class org.dotwebstack.framework.backend.postgres.query.SortBuilder has validation errors (2):"));
   }
 
-  private void initSortCriteriaList(SortDirection direction) {
-    ObjectFieldMapper objectFieldMapper = mock(ObjectFieldMapper.class);
-    ObjectFieldMapper objectFieldMapper2 = mock(ObjectFieldMapper.class);
-    lenient().when(objectFieldMapper2.getFieldMapper(any(String.class)))
-        .thenReturn(objectFieldMapper);
-    lenient().when(objectFieldMapper2.getFieldMapper(any(String.class)))
-        .thenReturn(objectFieldMapper);
-    lenient().when(fieldMapper.getFieldMapper("a"))
-        .thenReturn(objectFieldMapper2);
-
-    PostgresObjectField sortCriteriaField = mock(PostgresObjectField.class);
-    lenient().when(sortCriteriaField.getColumn())
-        .thenReturn("a");
-    lenient().when(sortCriteriaField.getName())
-        .thenReturn("a");
-    var fieldPath = List.of((ObjectField) sortCriteriaField);
-
-    SortCriteria.SortCriteriaBuilder sortCriteria = SortCriteria.builder()
-        .fieldPath(fieldPath)
-        .direction(direction);
-    sortCriteriaList = List.of(sortCriteria.build());
-
-    ScalarFieldMapper<Map<String, Object>> leafFieldMapper = mock(ScalarFieldMapper.class);
-    lenient().when(leafFieldMapper.getAlias())
-        .thenReturn("a");
-
-    lenient().when(fieldMapper.getLeafFieldMapper(fieldPath))
-        .thenReturn(leafFieldMapper);
-  }
 }
