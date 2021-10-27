@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.core.query.model.RequestContext;
@@ -24,7 +25,9 @@ class PagingBuilderTest {
 
   @Test
   void build_addLimit_forPaging() {
-    RequestContext context = RequestContext.builder().source(Map.of(OFFSET_KEY, 1, FIRST_KEY, 10)).build();
+    RequestContext context = RequestContext.builder()
+        .source(Map.of(OFFSET_KEY, 1, FIRST_KEY, 10))
+        .build();
 
     SelectQuery<Record> dataQuery = dslContext.selectQuery();
 
@@ -34,27 +37,35 @@ class PagingBuilderTest {
         .build();
 
     assertThat(dataQuery.getSQL(), is("select 1 limit ? offset ?"));
-    assertThat(dataQuery.getBindValues().get(0), is(10L));
-    assertThat(dataQuery.getBindValues().get(1), is(1L));
+    assertThat(dataQuery.getBindValues()
+        .get(0), is(10L));
+    assertThat(dataQuery.getBindValues()
+        .get(1), is(1L));
   }
 
   @Test
   void build_noLimitAddition_forNullSource() {
-    RequestContext context = RequestContext.builder().source(null).build();
+    RequestContext context = RequestContext.builder()
+        .source(null)
+        .build();
 
     testNoLimitAddition(context);
   }
 
   @Test
   void build_noLimitAddition_forMissingLimit() {
-    RequestContext context = RequestContext.builder().source(Map.of(FIRST_KEY, 10)).build();
+    RequestContext context = RequestContext.builder()
+        .source(Map.of(FIRST_KEY, 10))
+        .build();
 
     testNoLimitAddition(context);
   }
 
   @Test
   void build_noLimitAddition_forMissingOffset() {
-    RequestContext context = RequestContext.builder().source(Map.of(OFFSET_KEY, 1)).build();
+    RequestContext context = RequestContext.builder()
+        .source(Map.of(OFFSET_KEY, 1))
+        .build();
 
     testNoLimitAddition(context);
   }

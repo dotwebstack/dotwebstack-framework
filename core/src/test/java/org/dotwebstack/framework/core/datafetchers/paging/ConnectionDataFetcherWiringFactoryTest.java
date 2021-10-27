@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 
 import graphql.language.FieldDefinition;
 import graphql.schema.idl.FieldWiringEnvironment;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,14 +25,15 @@ class ConnectionDataFetcherWiringFactoryTest {
   }
 
   @Test
-  @Disabled("fix me")
   void providesDataFetcher_returnsTrue_forConnectionObject() {
     var fieldWiringEnvironment = mock(FieldWiringEnvironment.class);
 
     var fieldDefinition = mock(FieldDefinition.class);
     when(fieldWiringEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
-    var type = newTypeName("testType").build();
+    var type = newTypeName("testType").additionalData(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString())
+        .build();
+
     when(fieldDefinition.getType()).thenReturn(type);
 
     assertThat(wiringFactory.providesDataFetcher(fieldWiringEnvironment), CoreMatchers.equalTo(Boolean.TRUE));
