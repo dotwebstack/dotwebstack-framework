@@ -28,7 +28,6 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class GraphQlHelperTest {
@@ -156,18 +155,17 @@ class GraphQlHelperTest {
   }
 
   @Test
-  @Disabled("fix me")
   void isObjectField_returnsTrue_forGraphQlObjectType() {
     GraphQLUnmodifiedType objectMock = mock(GraphQLObjectType.class);
     ObjectTypeDefinition definitionMock = mock(ObjectTypeDefinition.class);
     when(definitionMock.getAdditionalData()).thenReturn(Map.of("a", "b"));
     when(objectMock.getDefinition()).thenReturn(definitionMock);
+    when(objectMock.getName()).thenReturn("not Aggregate");
 
     SelectedField selectedFieldMock = mock(SelectedField.class);
     when(selectedFieldMock.getType()).thenReturn((GraphQLOutputType) objectMock);
 
-    var r = isObjectField.test(selectedFieldMock);
-    assertThat(r, is(true));
+    assertThat(isObjectField.test(selectedFieldMock), is(true));
   }
 
   @Test
