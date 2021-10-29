@@ -436,7 +436,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       return requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValues(request, requestBodyContext, requestBody, result)
           .map(values -> {
-            values.forEach(result::put);
+            result.putAll(values);
             return result;
           });
     }

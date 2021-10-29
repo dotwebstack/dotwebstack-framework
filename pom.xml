@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.47-SNAPSHOT</version>
+  <version>0.3.48-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -350,6 +350,7 @@
           <version>0.8.5</version>
           <configuration>
             <excludes>
+              <exclude>org/dotwebstack/framework/backend/rdf4j/**/*</exclude>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
               <exclude>org/dotwebstack/framework/test/**/*</exclude>
               <exclude>org/dotwebstack/framework/integration-test/**/*</exclude>
@@ -382,7 +383,7 @@
                       <limit>
                         <counter>INSTRUCTION</counter>
                         <value>COVEREDRATIO</value>
-                        <minimum>0.5</minimum>
+                        <minimum>0.3</minimum>
                       </limit>
                     </limits>
                     <excludes />

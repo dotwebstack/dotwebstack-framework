@@ -1,33 +1,34 @@
 features:
   - paging
 
-context:
-  fields:
-    validOn:
-      type: Date
-      default: NOW
-    availableOn:
-      type: DateTime
-      default: NOW
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
 
 queries:
   beers:
     type: Beer
+    context: history
     list: true
   beer:
     type: Beer
+    context: history
     keys:
       - identifier_beer
   breweries:
     type: Brewery
+    context: history
     list: true
 
 objectTypes:
   Beer:
     table: db.beer_v
-    backend: postgres
-    keys:
-      - identifier_beer
     fields:
       identifier_beer:
         type: ID
@@ -68,10 +69,7 @@ objectTypes:
           direction: ASC
 
   Brewery:
-    backend: postgres
     table: db.brewery_v
-    keys:
-      - identifier_brewery
     fields:
       identifier_brewery:
         type: ID
@@ -86,13 +84,13 @@ objectTypes:
         nullable: true
         joinColumns:
           - name: postal_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       visitAddress:
         type: Address
         nullable: true
         joinColumns:
           - name: visit_address
-            referencedField: identifier_address
+            referencedColumn: identifier_address
       beers:
         type: Beer
         list: true
@@ -120,22 +118,14 @@ objectTypes:
           direction: ASC
 
   Address:
-    backend: postgres
     table: db.address_v
-    keys:
-      - identifier_address
     fields:
-      identifier_address:
-        type: ID
       street:
         type: String
       city:
         type: String
 
   History:
-    backend: postgres
-    keys:
-      - identifier_brewery
     fields:
       age:
         type: Int

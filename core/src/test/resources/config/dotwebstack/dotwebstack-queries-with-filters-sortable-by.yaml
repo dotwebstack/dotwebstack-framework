@@ -1,0 +1,121 @@
+queries:
+  brewery:
+    type: Brewery
+    keys:
+      - identifier
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Beer:
+    table: dbeerpedia.beers
+    filters:
+      name:
+        field: name
+      breweryCity:
+        field: brewery.visitAddress.city
+      ingredientName:
+        field: ingredients.name
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      retired:
+        type: Boolean
+      brewery:
+        type: Brewery
+        joinColumns:
+          - name: brewery
+            referencedField: record_id
+      ingredients:
+        type: Ingredient
+        list: true
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      ingredientAgg:
+        aggregationOf: Ingredient
+        type: Ingredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      taste:
+        type: Taste
+        list: true
+
+
+  Brewery:
+    keys:
+      - identifier
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      inceptionYear:
+        type: Int
+      status:
+        type: String
+      addresses:
+        type: Address
+        list: true
+        nullable: true
+        arguments:
+          - name: addressType
+            type: String
+            nullable: true
+            list: true
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+    filters:
+      name:
+        field: name
+      abv:
+        field: abv
+      inceptionYear:
+        field: inceptionYear
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      address:
+        - field: visitAddress.city
+          direction: ASC
+        - field: visitAddress.street
+          direction: ASC
+
+  Ingredient:
+    table: dbeerpedia.ingredients
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float

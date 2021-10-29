@@ -24,7 +24,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: x
     keys:
       - identifier
     fields:
@@ -38,7 +37,6 @@ objectTypes:
       name: {}
       soldPerYear: {}
   Brewery:
-    backend: x
     keys:
       - identifier
     fields:

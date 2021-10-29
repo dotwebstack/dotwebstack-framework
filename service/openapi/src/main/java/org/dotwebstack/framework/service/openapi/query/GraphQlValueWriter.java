@@ -36,7 +36,7 @@ public class GraphQlValueWriter {
       sb.append("]");
     } else if (value instanceof Integer || value instanceof Long || value instanceof Double || value instanceof Float
         || value instanceof Short) {
-      sb.append(value.toString());
+      sb.append(value);
     } else {
       throw ExceptionHelper.illegalArgumentException("GraphpQl query builder does not support serialization of type {}",
           value.getClass()

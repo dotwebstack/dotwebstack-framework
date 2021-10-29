@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
 import static graphql.schema.GraphQLArgument.newArgument;
+import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -57,11 +58,8 @@ class ConnectionDataFetcherTest {
 
     var dataFetcherResult = (DataFetcherResult<?>) result;
 
-    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 20)));
-    assertThat(dataFetcherResult.getLocalContext(), equalTo(PagingDataFetcherContext.builder()
-        .first(2)
-        .offset(20)
-        .build()));
+    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 20,
+        PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), 20, PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), 2)));
   }
 
   @Test
@@ -74,11 +72,8 @@ class ConnectionDataFetcherTest {
 
     var dataFetcherResult = (DataFetcherResult<?>) result;
 
-    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 0)));
-    assertThat(dataFetcherResult.getLocalContext(), equalTo(PagingDataFetcherContext.builder()
-        .first(10)
-        .offset(0)
-        .build()));
+    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 0,
+        PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), 0, PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), 10)));
   }
 
   @Test

@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>ext</artifactId>
-    <version>0.3.47-SNAPSHOT</version>
+    <version>0.3.48-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,6 +29,7 @@
       <groupId>org.locationtech.jts.io</groupId>
       <artifactId>jts-io-common</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>

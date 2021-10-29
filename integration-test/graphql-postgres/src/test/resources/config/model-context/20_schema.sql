@@ -59,14 +59,14 @@ CREATE TABLE db.beer_v (
   CONSTRAINT beer_pkey PRIMARY KEY (record_id)
 );
 
-CREATE FUNCTION db.brewery_v_ctx(date,timestamp with time zone) RETURNS SETOF db.brewery_v AS $$
+CREATE FUNCTION db.brewery_v_history_ctx(date,timestamp with time zone) RETURNS SETOF db.brewery_v AS $$
    SELECT * FROM db.brewery_v WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
 $$ language SQL immutable;
 
-CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_v AS $$
+CREATE FUNCTION db.beer_v_history_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_v AS $$
    SELECT * FROM db.beer_v WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
 $$ language SQL immutable;
 
-CREATE FUNCTION db.address_v_ctx(date,timestamp with time zone) RETURNS SETOF db.address_v AS $$
+CREATE FUNCTION db.address_v_history_ctx(date,timestamp with time zone) RETURNS SETOF db.address_v AS $$
    SELECT * FROM db.address_v
 $$ language SQL immutable;

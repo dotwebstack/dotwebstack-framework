@@ -41,4 +41,5 @@ public class AggregateConstants {
 
   public static final Set<String> NUMERIC_FUNCTIONS = Set.of(INT_SUM_FIELD, INT_MIN_FIELD, INT_MAX_FIELD, INT_AVG_FIELD,
       FLOAT_SUM_FIELD, FLOAT_MIN_FIELD, FLOAT_MAX_FIELD, FLOAT_AVG_FIELD);
+
 }

@@ -12,7 +12,6 @@ shape:
 
 objectTypes:
   Beer:
-    backend: rdf4j
     keys:
       - identifier
     fields:
@@ -22,7 +21,6 @@ objectTypes:
         type: String
 
   Brewery:
-    backend: rdf4j
     keys:
       - identifier
     fields:

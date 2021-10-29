@@ -12,15 +12,14 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.INT_SUM_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.config.FieldConfiguration;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 
@@ -35,16 +34,14 @@ public class AggregateHelper {
       return false;
     }
 
-    GraphQLObjectType objectType = selectedField.getObjectTypes()
-        .stream()
-        .findFirst()
-        .orElseThrow(() -> illegalStateException("No object type found for selected field."));
-
-    return AggregateConstants.AGGREGATE_TYPE.equals(TypeHelper.getTypeName(objectType));
+    return TypeHelper.getTypeName(selectedField.getType())
+        .map(AggregateConstants.AGGREGATE_TYPE::equals)
+        .orElseThrow(() -> illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, selectedField.getType()
+            .getClass()));
   }
 
-  public static boolean isAggregate(FieldConfiguration fieldConfiguration) {
-    return !StringUtils.isEmpty(fieldConfiguration.getAggregationOf());
+  public static boolean isAggregate(ObjectField objectField) {
+    return !StringUtils.isEmpty(objectField.getAggregationOf());
   }
 
   public static ScalarType getAggregateScalarType(SelectedField selectedField) {

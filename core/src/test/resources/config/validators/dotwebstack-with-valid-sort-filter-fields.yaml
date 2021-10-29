@@ -1,6 +1,5 @@
 objectTypes:
   Brewery:
-    backend: test
     keys:
       - identifier
     fields:
@@ -35,7 +34,6 @@ objectTypes:
         mappedBy: brewery
 
   Beer:
-    backend: test
     keys:
       - identifier
     fields:
@@ -45,7 +43,6 @@ objectTypes:
         type: String
 
   Address:
-    backend: test
     keys:
       - identifier
     fields:

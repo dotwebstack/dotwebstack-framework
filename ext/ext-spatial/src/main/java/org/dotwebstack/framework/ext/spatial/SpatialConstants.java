@@ -2,11 +2,15 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
+  static final int SRID_RD = 28992;
+
+  static final int SRID_RDNAP = 7415;
+
   private SpatialConstants() {}
 
   // ObjectTypes
 
-  static final String GEOMETRY = "Geometry";
+  public static final String GEOMETRY = "Geometry";
 
   static final String GEOMETRY_INPUT = "GeometryInput";
 
@@ -28,17 +32,17 @@ public class SpatialConstants {
 
   static final String AS_GEOJSON = "asGeoJSON";
 
-  static final String FROM_WKT = "fromWKT";
+  public static final String FROM_WKT = "fromWKT";
 
-  static final String FROM_WKB = "fromWKB";
+  public static final String FROM_GEOJSON = "fromGeoJSON";
 
-  static final String FROM_GEOJSON = "fromGeoJSON";
+  public static final String FROM_WKB = "fromWKB";
 
-  static final String WITHIN = "within";
+  public static final String WITHIN = "within";
 
-  static final String CONTAINS = "contains";
+  public static final String CONTAINS = "contains";
 
-  static final String INTERSECTS = "intersects";
+  public static final String INTERSECTS = "intersects";
 
   // GeometryTypes
 

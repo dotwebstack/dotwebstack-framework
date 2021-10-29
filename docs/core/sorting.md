@@ -19,7 +19,6 @@ queries:
 
 objectTypes:
   Beer:
-    backend: x
     keys:
       - identifier
     fields:
@@ -39,7 +38,6 @@ objectTypes:
         - field: identifier
           direction: ASC
   Brewery:
-    backend: x
     keys:
       - identifier
     fields:

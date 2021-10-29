@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.3.47-SNAPSHOT</version>
+    <version>0.3.48-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -14,7 +14,6 @@
 
   <modules>
     <module>rdf4j</module>
-    <module>json</module>
     <module>postgres</module>
   </modules>
 

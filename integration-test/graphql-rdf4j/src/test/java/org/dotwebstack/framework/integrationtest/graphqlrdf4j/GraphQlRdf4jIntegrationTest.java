@@ -53,7 +53,7 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsMap_ForObjectQueryField() {
+  void graphQlQuery_ReturnsMap_ForObjectQueryField() {
     String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -69,7 +69,7 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test()
-  void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() {
+  void graphQlQuery_ReturnsMap_ForObjectQueryNestedField() {
     String query = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -84,8 +84,8 @@ class GraphQlRdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
-    String query = "{ brewery(identifier: \"123\") { identifier, name, geometry { type, asWKT, asWKB, asGeoJSON }}}";
+  void graphQlQuery_ReturnsGeometry_ForObjectQueryNestedField() {
+    String query = "{ brewery(identifier: \"123\") { identifier, name, geometry { type, asWKT, asWKB asGeoJSON }}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -95,15 +95,15 @@ class GraphQlRdf4jIntegrationTest {
         hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
-                ImmutableMap.of("type", "POINT", "asWKB", "ACAAAAEAABDmQBfqxuQjKTNAShvL0rQDxA==", "asWKT",
-                    "POINT (5.979274334569982 52.21715768613606)", "asGeoJSON",
+                ImmutableMap.of("type", "POINT", "asWKT", "POINT (5.979274334569982 52.21715768613606)", "asWKB",
+                    "ACAAAAEAAAAAQBfqxuQjKTNAShvL0rQDxA==", "asGeoJSON",
                     "{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769]}"))));
   }
 
   @Test
   void graphQlQuery_ReturnsBreweryWithGeometryType_forGeometryType() {
-    String query = "{ brewery(identifier: \"123\") { identifier, name, geometry(type : MULTIPOINT) "
-        + "{ type, asWKB, asWKT, asGeoJSON }}}";
+    String query =
+        "{ brewery(identifier: \"123\") { identifier, name, geometry(type : MULTIPOINT) { type, asWKT, asWKB }}}";
 
     ExecutionResult result = graphQL.execute(query);
 
@@ -113,9 +113,8 @@ class GraphQlRdf4jIntegrationTest {
         hasEntry(BREWERY_FIELD,
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
-                ImmutableMap.of("type", "MULTIPOINT", "asWKB", "ACAAAAQAABDmAAAAAQAgAAABAAAQ5kAX6sbkIykzQEoby9K0A8Q=",
-                    "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))", "asGeoJSON",
-                    "{\"type\":\"MultiPoint\",\"coordinates\":[[5.97927433,52.21715769]]}"))));
+                ImmutableMap.of("type", "MULTIPOINT", "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))",
+                    "asWKB", "ACAAAAQAAAAAAAAAAQAgAAABAAAAAEAX6sbkIykzQEoby9K0A8Q="))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {

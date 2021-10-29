@@ -4,7 +4,6 @@
 
 ```yaml
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     keys:
       - identifier
@@ -37,7 +36,6 @@ the reference entity:
 ```yaml
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     keys:
       - identifier
@@ -51,7 +49,6 @@ objectTypes:
             referencedField: identifier
 
   Brewery:
-    backend: postgres
     table: dbeerpedia.breweries
     keys:
       - identifier
@@ -76,7 +73,6 @@ We can easily use the `mappedBy` configuration property to do so. So, let's defi
 ```yaml
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     keys:
       - identifier
@@ -90,7 +86,6 @@ objectTypes:
             referencedField: identifier
 
   Brewery:
-    backend: postgres
     table: dbeerpedia.breweries
     keys:
       - identifier
@@ -115,7 +110,6 @@ jointable.
 ```yaml
 objectTypes:
   Beer:
-    backend: postgres
     table: dbeerpedia.beers
     keys:
       - identifier
@@ -135,7 +129,6 @@ objectTypes:
               referencedField: identifier
 
   Ingredient:
-    backend: postgres
     table: dbeerpedia.ingredients
     keys:
       - identifier
@@ -278,7 +271,6 @@ queries:
 objectTypes:
   Beer:
     table: db.beer_v
-    backend: postgres
     keys:
       - identifier_beer
     fields:

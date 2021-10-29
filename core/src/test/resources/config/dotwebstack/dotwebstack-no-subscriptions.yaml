@@ -1,6 +1,5 @@
 objectTypes:
   Brewery:
-    backend: test
     keys:
       - identifier
     fields:

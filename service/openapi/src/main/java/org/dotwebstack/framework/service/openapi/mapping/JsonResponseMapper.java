@@ -353,7 +353,7 @@ public class JsonResponseMapper {
           ((Map<String, Object>) data).entrySet()
               .stream()
               .filter(entry -> !(entry.getValue() instanceof Map))
-              .forEach(entry -> context.set(fieldsBuilder.toString() + entry.getKey(), entry.getValue()));
+              .forEach(entry -> context.set(fieldsBuilder + entry.getKey(), entry.getValue()));
           fieldsBuilder.append("_parent.");
         });
 
@@ -362,7 +362,7 @@ public class JsonResponseMapper {
         .stream()
         .map(FieldContext::getInput)
         .forEach(input -> {
-          input.forEach((key, value) -> context.set(argsBuilder.toString() + key, value));
+          input.forEach((key, value) -> context.set(argsBuilder + key, value));
           argsBuilder.append("_parent.");
         });
 

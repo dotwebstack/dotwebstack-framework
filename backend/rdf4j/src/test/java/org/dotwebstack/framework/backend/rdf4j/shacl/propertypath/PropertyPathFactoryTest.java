@@ -50,7 +50,7 @@ public class PropertyPathFactoryTest {
     final PropertyPath propertyPath = createPropertyPath(Constants.BREWERY_FOUNDED_SHAPE);
 
     assertTrue(propertyPath instanceof PredicatePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(Constants.BREWERY_FOUNDED_PATH)));
+    assertThat(resolveIris(propertyPath), equalTo(List.of(Constants.BREWERY_FOUNDED_PATH)));
   }
 
   @Test

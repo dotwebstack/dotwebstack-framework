@@ -50,7 +50,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
-  static GraphQlPostgresWithPagingIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =
+  static final GraphQlPostgresWithPagingIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =
       new GraphQlPostgresWithPagingIntegrationTest.TestPostgreSqlContainer()
           .withClasspathResourceMapping("config/model", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY);
 

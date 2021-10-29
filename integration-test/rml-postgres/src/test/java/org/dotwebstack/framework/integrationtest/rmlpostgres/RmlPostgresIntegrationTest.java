@@ -45,7 +45,7 @@ class RmlPostgresIntegrationTest {
   private WebTestClient client;
 
   @Container
-  static TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
+  static final TestPostgreSqlContainer postgreSqlContainer = new TestPostgreSqlContainer()
       .withClasspathResourceMapping("config/model", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY);
 
   private static class TestPostgreSqlContainer extends PostgreSQLContainer<TestPostgreSqlContainer> {
@@ -57,11 +57,11 @@ class RmlPostgresIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @ParameterizedTest

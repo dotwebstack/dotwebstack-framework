@@ -19,8 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TransientParamHandlerTest {
 
-  private OpenAPI openApi;
-
   private ParamHandler paramHandler;
 
   @Mock
@@ -28,8 +26,8 @@ class TransientParamHandlerTest {
 
   @BeforeEach
   public void setup() {
-    this.openApi = TestResources.openApi();
-    this.paramHandler = new TransientParamHandler(this.openApi);
+    OpenAPI openApi = TestResources.openApi();
+    this.paramHandler = new TransientParamHandler(openApi);
   }
 
   @Test
