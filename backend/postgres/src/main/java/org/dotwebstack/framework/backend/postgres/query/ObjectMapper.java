@@ -18,7 +18,7 @@ public class ObjectMapper extends AbstractObjectMapper<Map<String, Object>> {
   @Override
   public Map<String, Object> apply(Map<String, Object> row) {
     if (alias != null && row.get(alias) == null) {
-      return null;
+      return null; //nosonar
     }
 
     return super.apply(row);

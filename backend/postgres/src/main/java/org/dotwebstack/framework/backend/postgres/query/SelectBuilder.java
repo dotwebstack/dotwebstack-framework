@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
@@ -252,16 +253,21 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
-        .tableCreator(tableName -> {
-          var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
-
-          subSelect.addFrom(requestedTable);
-          return requestedTable;
-        })
+        .tableCreator(createTableCreator(subSelect, contextCriteria))
         .build()
         .forEach(subSelect::addConditions);
 
     return subSelect;
+  }
+
+  private Function<String, Table<Record>> createTableCreator(SelectQuery<Record> query,
+      ContextCriteria contextCriteria) {
+    return tableName -> {
+      var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
+
+      query.addFrom(requestedTable);
+      return requestedTable;
+    };
   }
 
   private void processAggregateField(AggregateField aggregateField, ObjectMapper aggregateMapper, SelectQuery<?> query,
@@ -347,13 +353,7 @@ class SelectBuilder {
     if (!objectType.isNested()) {
       newJoin().table(table)
           .current(objectField)
-          .tableCreator(tableName -> {
-            var requestedTable = QueryHelper.findTable(tableName, objectRequest.getContextCriteria())
-                .as(aliasManager.newAlias());
-
-            select.addFrom(requestedTable);
-            return requestedTable;
-          })
+          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria()))
           .build()
           .forEach(select::addConditions);
     }
