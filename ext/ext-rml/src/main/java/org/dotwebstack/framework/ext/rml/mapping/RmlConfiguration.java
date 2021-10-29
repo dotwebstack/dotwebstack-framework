@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.Setter;
-import org.dotwebstack.framework.core.config.YamlPropertySourceFactory;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
@@ -23,12 +22,9 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@ConfigurationProperties(prefix = "rml")
-@PropertySource(value = "classpath:config/${dotwebstack.config:dotwebstack.yaml}",
-    factory = YamlPropertySourceFactory.class)
+@ConfigurationProperties(prefix = "dotwebstack.rml")
 @Setter
 public class RmlConfiguration {
 

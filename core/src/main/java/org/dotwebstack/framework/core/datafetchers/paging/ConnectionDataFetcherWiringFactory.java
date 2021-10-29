@@ -3,13 +3,13 @@ package org.dotwebstack.framework.core.datafetchers.paging;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Component
+@Conditional(OnLocalSchema.class)
 public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 
   @Override

@@ -25,6 +25,7 @@ import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
+import graphql.GraphQL;
 import graphql.execution.InputMapDefinesTooManyFieldsException;
 import graphql.execution.NonNullableValueCoercedAsNullException;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -47,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
-import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
 import org.dotwebstack.framework.core.templating.TemplateResponseMapper;
@@ -89,7 +89,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final ResponseSchemaContext responseSchemaContext;
 
-  private final GraphQlService graphQL;
+  private final GraphQL graphQL;
 
   private final List<ResponseMapper> responseMappers;
 
@@ -108,7 +108,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private final GraphQlQueryBuilder graphQlQueryBuilder;
 
   public CoreRequestHandler(OpenAPI openApi, HttpMethodOperation httpMethodOperation,
-      ResponseSchemaContext responseSchemaContext, GraphQlService graphQL, List<ResponseMapper> responseMappers,
+      ResponseSchemaContext responseSchemaContext, GraphQL graphQL, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, TemplateResponseMapper templateResponseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter, JexlHelper jexlHelper,
       EnvironmentProperties properties, GraphQlQueryBuilder queryBuilder) {

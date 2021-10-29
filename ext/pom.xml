@@ -5,14 +5,15 @@
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
     <version>0.3.48-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>ext</artifactId>
   <packaging>pom</packaging>
 
   <modules>
+    <module>ext-orchestrate</module>
     <module>ext-spatial</module>
     <module>ext-rml</module>
   </modules>
-
 </project>

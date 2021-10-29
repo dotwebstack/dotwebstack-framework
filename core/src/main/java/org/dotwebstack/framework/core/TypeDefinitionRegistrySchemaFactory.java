@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -57,9 +56,10 @@ import org.dotwebstack.framework.core.query.model.Query;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Component
+@Conditional(OnLocalSchema.class)
 public class TypeDefinitionRegistrySchemaFactory {
+
   private static final String QUERY_TYPE_NAME = "Query";
 
   private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";

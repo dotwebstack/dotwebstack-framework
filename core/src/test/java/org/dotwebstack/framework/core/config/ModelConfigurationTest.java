@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.config;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,9 +9,7 @@ import java.util.List;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.validators.FilterValidator;
 import org.dotwebstack.framework.core.config.validators.SchemaValidator;
-import org.dotwebstack.framework.core.config.validators.SettingsValidator;
 import org.dotwebstack.framework.core.config.validators.SortValidator;
-import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.hamcrest.CoreMatchers;
@@ -37,7 +34,7 @@ class ModelConfigurationTest {
   void setUp() {
     BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
     modelConfiguration = new ModelConfiguration(backendModule);
-    validatorList = List.of(new FilterValidator(), new SettingsValidator(), new SortValidator());
+    validatorList = List.of(new FilterValidator(), new SortValidator());
   }
 
   @Test
@@ -52,6 +49,5 @@ class ModelConfigurationTest {
     var result = modelConfiguration.schema(localUrl, validatorList);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Schema);
   }
 }

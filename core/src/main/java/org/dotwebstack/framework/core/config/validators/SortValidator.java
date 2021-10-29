@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -14,8 +14,8 @@ import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Component
+@Conditional(OnLocalSchema.class)
 public class SortValidator implements SchemaValidator {
 
   @Override

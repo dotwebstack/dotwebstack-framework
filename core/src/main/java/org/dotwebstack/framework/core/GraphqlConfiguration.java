@@ -11,21 +11,19 @@ import java.util.Collection;
 import java.util.List;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-@Conditional(GraphQlNativeEnabled.class)
 @Slf4j
 @Configuration
 public class GraphqlConfiguration {
 
   @Bean
-  public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+  @Conditional(OnLocalSchema.class)
+  public GraphQLSchema graphQlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories) {
-
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
@@ -39,6 +37,7 @@ public class GraphqlConfiguration {
 
   @Profile("!test")
   @Bean
+  @Conditional(OnLocalSchema.class)
   public TypeDefinitionRegistry typeDefinitionRegistry(
       TypeDefinitionRegistrySchemaFactory typeDefinitionRegistryFactory) {
     return typeDefinitionRegistryFactory.createTypeDefinitionRegistry();
@@ -49,5 +48,4 @@ public class GraphqlConfiguration {
     return GraphQL.newGraphQL(graphqlSchema)
         .build();
   }
-
 }

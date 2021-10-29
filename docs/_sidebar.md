@@ -8,7 +8,6 @@
   - [Filtering](core/filtering.md)
   - [Sorting](core/sorting.md)
   - [Paging](core/paging.md)
-  - [GraphQL Proxy](core/graphqlproxy.md)
   
 - Backend modules
 
@@ -23,6 +22,7 @@
 
 - Extension modules
 
+  - [Orchestrate](ext/orchestrate.md)
   - [Spatial](ext/spatial.md)
   - [Pebble templating](ext/templating-pebble.md)
   - [RML (for RDF responses)](ext/rml.md)

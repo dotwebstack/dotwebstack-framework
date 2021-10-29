@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.query.paging.PagingHelper.addPaging;
 
+import graphql.schema.GraphQLSchema;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.service.openapi.query.filter.FilterHelper;
 import org.dotwebstack.framework.service.openapi.query.model.Field;
 import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
@@ -22,12 +22,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class GraphQlQueryBuilder {
 
-  private final boolean pagingEnabled;
+  private final GraphQLSchema schema;
 
   private final JexlEngine jexlEngine;
 
-  public GraphQlQueryBuilder(@NonNull Schema schema, @NonNull JexlEngine jexlEngine) {
-    this.pagingEnabled = schema.usePaging();
+  public GraphQlQueryBuilder(GraphQLSchema schema, @NonNull JexlEngine jexlEngine) {
+    this.schema = schema;
     this.jexlEngine = jexlEngine;
   }
 
@@ -48,8 +48,7 @@ public class GraphQlQueryBuilder {
     } else {
       ResponseTemplate okResponse = getOkResponse(responseSchemaContext);
       List<String> requiredFields = responseSchemaContext.getRequiredFields();
-      rootField =
-          OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, requiredFields, this.pagingEnabled);
+      rootField = OasToGraphQlHelper.toQueryField(queryName, okResponse, inputParams, requiredFields, schema);
     }
 
     if (rootField.isEmpty()) {

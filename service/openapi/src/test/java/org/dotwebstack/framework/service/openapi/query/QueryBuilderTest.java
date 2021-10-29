@@ -7,8 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import java.io.IOException;
@@ -22,7 +28,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
@@ -46,7 +51,7 @@ class QueryBuilderTest {
   private static OpenAPI openApi;
 
   @Mock
-  private Schema config;
+  private GraphQLSchema schema;
 
   private JexlEngine jexlEngine;
 
@@ -66,10 +71,10 @@ class QueryBuilderTest {
   @MethodSource("queryBuilderArgs")
   void queryBuilder_returnsExpectedQuery(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
-    when(config.usePaging()).thenReturn(true);
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
+    mockQueryCollectionWithPaging(queryName);
     Optional<QueryInput> queryInput =
-        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
+        new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -84,9 +89,9 @@ class QueryBuilderTest {
   void queryBuilder_returnsExpectedQuery_forNoPagingConfig(String path, String queryName, String expectedQuery,
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
-    when(config.usePaging()).thenReturn(false);
+    mockQueryCollection(queryName);
     Optional<QueryInput> queryInput =
-        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
+        new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
     String query = queryInput.map(QueryInput::getQuery)
         .orElseThrow();
 
@@ -94,6 +99,34 @@ class QueryBuilderTest {
     if (varString != null) {
       assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
     }
+  }
+
+  private void mockQueryCollection(String queryName) {
+    var queryTypeMock = mock(GraphQLObjectType.class);
+    lenient().when(schema.getQueryType())
+        .thenReturn(queryTypeMock);
+
+    lenient().when(queryTypeMock.getFieldDefinition(any()))
+        .thenReturn(GraphQLFieldDefinition.newFieldDefinition()
+            .name(queryName)
+            .type(GraphQLList.list(GraphQLObjectType.newObject()
+                .name("Obj2")
+                .build()))
+            .build());
+  }
+
+  private void mockQueryCollectionWithPaging(String queryName) {
+    var queryTypeMock = mock(GraphQLObjectType.class);
+    lenient().when(schema.getQueryType())
+        .thenReturn(queryTypeMock);
+
+    lenient().when(queryTypeMock.getFieldDefinition(any()))
+        .thenReturn(GraphQLFieldDefinition.newFieldDefinition()
+            .name(queryName)
+            .type(GraphQLObjectType.newObject()
+                .name("Obj2")
+                .build())
+            .build());
   }
 
   private String getVariablesString(QueryInput queryInput) {
@@ -154,7 +187,7 @@ class QueryBuilderTest {
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
     assertDoesNotThrow(
-        () -> new GraphQlQueryBuilder(config, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
+        () -> new GraphQlQueryBuilder(schema, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -163,7 +196,7 @@ class QueryBuilderTest {
     Set<String> queriedPaths = Set.of("beers", "breweries", "beers.name", "beers.identifier");
 
     assertDoesNotThrow(
-        () -> new GraphQlQueryBuilder(config, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
+        () -> new GraphQlQueryBuilder(schema, jexlEngine).validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
 
   @Test
@@ -171,7 +204,7 @@ class QueryBuilderTest {
     Set<String> requiredPaths = Set.of("breweries", "beers", "beers.identifier", "beers.name");
     Set<String> queriedPaths = Set.of("beers", "beers.name", "beers.identifier");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder(config, jexlEngine);
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.validateRequiredPathsQueried(requiredPaths, queriedPaths));
   }
@@ -180,7 +213,7 @@ class QueryBuilderTest {
   void validate_throwsInvalidConfigurationException_withNoResponseTemplate() {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query14", "query1");
 
-    var graphQlQueryBuilder = new GraphQlQueryBuilder(config, jexlEngine);
+    var graphQlQueryBuilder = new GraphQlQueryBuilder(schema, jexlEngine);
     Map<String, Object> inputParams = Map.of();
     assertThrows(InvalidConfigurationException.class,
         () -> graphQlQueryBuilder.toQueryInput(responseSchemaContext, inputParams));
@@ -191,7 +224,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName(null);
-    Optional<String> query = new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -202,7 +235,7 @@ class QueryBuilderTest {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1");
     responseSchemaContext.getDwsQuerySettings()
         .setQueryName("");
-    Optional<String> query = new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
+    Optional<String> query = new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, Map.of())
         .map(QueryInput::getQuery);
 
     assertTrue(query.isEmpty());
@@ -211,8 +244,9 @@ class QueryBuilderTest {
   @Test
   void toQuery_addKey_forPost() throws IOException {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext("/query1", "query1", HttpMethod.POST);
+    mockQueryCollection("query1");
     String query =
-        new GraphQlQueryBuilder(config, jexlEngine).toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
+        new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, Map.of("argument1", "id1"))
             .map(QueryInput::getQuery)
             .orElseThrow();
 
@@ -259,5 +293,4 @@ class QueryBuilderTest {
     return IOUtils.toString(QueryBuilderTest.class.getClassLoader()
         .getResourceAsStream("variables/" + name), StandardCharsets.UTF_8);
   }
-
 }

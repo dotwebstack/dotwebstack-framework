@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.v3.oas.models.media.Schema;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -64,21 +63,14 @@ class JsonResponseMapperTest {
   @Mock
   private OpenApiProperties.DateFormatProperties dateFormatProperties;
 
-  @Mock
-  private Schema<String> mockSchema;
-
-  @Mock
-  private org.dotwebstack.framework.core.model.Schema schema;
-
   @BeforeEach
   void setup() {
     when(openApiProperties.getDateproperties()).thenReturn(dateFormatProperties);
-    when(schema.usePaging()).thenReturn(true);
 
     TypeConverterRouter typeConverterRouter = new TypeConverterRouter(
         List.of(new ZonedDateTimeTypeConverter(openApiProperties), new LocalDateTypeConverter(openApiProperties)));
     this.jsonResponseMapper =
-        new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter, schema);
+        new JsonResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, properties, typeConverterRouter);
   }
 
   @Test

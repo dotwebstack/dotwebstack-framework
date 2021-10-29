@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
+import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.graphql.GraphQlService;
 import org.dotwebstack.framework.core.helpers.ResourceLoaderUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.mapping.ResponseMapper;
@@ -58,7 +58,7 @@ public class OpenApiConfiguration {
 
   private final InputStream openApiStream;
 
-  private final GraphQlService graphQl;
+  private final GraphQL graphQl;
 
   private final List<ResponseMapper> responseMappers;
 
@@ -78,13 +78,13 @@ public class OpenApiConfiguration {
 
   private final GraphQlQueryBuilder graphQlQueryBuilder;
 
-  public OpenApiConfiguration(OpenAPI openApi, GraphQlService graphQlService, List<ResponseMapper> responseMappers,
+  public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, List<ResponseMapper> responseMappers,
       JsonResponseMapper jsonResponseMapper, ParamHandlerRouter paramHandlerRouter, InputStream openApiStream,
       List<TemplateResponseMapper> templateResponseMappers, RequestBodyHandlerRouter requestBodyHandlerRouter,
       OpenApiProperties openApiProperties, JexlEngine jexlEngine, EnvironmentProperties environmentProperties,
       GraphQlQueryBuilder graphQlQueryBuilder) {
     this.openApi = openApi;
-    this.graphQl = graphQlService;
+    this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMappers = responseMappers;
     this.jsonResponseMapper = jsonResponseMapper;

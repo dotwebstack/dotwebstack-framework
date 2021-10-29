@@ -30,9 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
-import org.dotwebstack.framework.core.condition.GraphQlNativeEnabled;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -56,13 +55,17 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
-@Conditional(GraphQlNativeEnabled.class)
-@AllArgsConstructor
+@Conditional(OnLocalSchema.class)
 public class BackendRequestFactory {
 
   private final Schema schema;
 
   private final BackendExecutionStepInfo backendExecutionStepInfo;
+
+  public BackendRequestFactory(Schema schema, BackendExecutionStepInfo backendExecutionStepInfo) {
+    this.schema = schema;
+    this.backendExecutionStepInfo = backendExecutionStepInfo;
+  }
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {

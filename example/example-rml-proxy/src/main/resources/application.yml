@@ -6,9 +6,15 @@ server:
   port: 8081
 
 dotwebstack:
-  graphql:
-    proxies:
-      localhostProxy:
-        uri: http://localhost:8080
+  rml:
+    namespacePrefixes:
+      beer: http://dotwebstack.org/def/beer#
+      foaf: http://xmlns.com/foaf/0.1/
+      gsp: http://www.opengis.net/ont/geosparql#
+  orchestrate:
+    root: dbeerpedia
+    subschemas:
+      dbeerpedia:
+        endpoint: ${PROXY_URL:localhost:8080}
   template:
     baseUrl: http://localhost:8081
