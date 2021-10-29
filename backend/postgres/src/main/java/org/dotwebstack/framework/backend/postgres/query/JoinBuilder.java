@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -17,14 +20,14 @@ import org.jooq.Table;
 @Accessors(fluent = true)
 @Setter
 class JoinBuilder {
-
-  @NotNull
-  private Table<Record> table;
-
   @NotNull
   private PostgresObjectField current;
 
+  private Table<Record> table;
+
   private Table<Record> relatedTable;
+
+  private Function<String, Table<Record>> tableCreator;
 
   private JoinBuilder() {}
 
@@ -37,25 +40,38 @@ class JoinBuilder {
 
     // Inverted mapped by
     if (current.getMappedByObjectField() != null) {
-      var mappedByObjectField = current.getMappedByObjectField();
-      return mappedByObjectField.getJoinColumns()
-          .stream()
-          .map(joinColumn -> {
-            var field = column(relatedTable, joinColumn.getName());
-            var referencedField = column(table, joinColumn, (PostgresObjectType) current.getObjectType());
-            return referencedField.equal(field);
-          })
+      return newJoin().table(relatedTable)
+          .relatedTable(table)
+          .current(current.getMappedByObjectField())
+          .tableCreator(tableCreator)
+          .build();
+    }
+
+    if (!current.getJoinColumns()
+        .isEmpty()) {
+      // Normal join column
+      return createJoinConditions(table, relatedTable, current.getJoinColumns(),
+          (PostgresObjectType) current.getTargetType());
+    }
+
+    if (current.getJoinTable() != null) {
+      var joinTable = current.getJoinTable();
+
+      var junctionTable = tableCreator.apply(joinTable.getName());
+
+      var leftSide = createJoinConditions(junctionTable, table, joinTable.getJoinColumns(),
+          (PostgresObjectType) current.getObjectType());
+
+      var targetType =
+          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
+
+      var rightSide = createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
+          (PostgresObjectType) targetType);
+
+      return Stream.concat(leftSide.stream(), rightSide.stream())
           .collect(Collectors.toList());
     }
 
-    // Normal join column
-    return current.getJoinColumns()
-        .stream()
-        .map(joinColumn -> {
-          var field = column(table, joinColumn.getName());
-          var referencedField = column(relatedTable, joinColumn, (PostgresObjectType) current.getTargetType());
-          return referencedField.equal(field);
-        })
-        .collect(Collectors.toList());
+    throw illegalArgumentException("Object field '{}' has no relation configuration!", current.getName());
   }
 }

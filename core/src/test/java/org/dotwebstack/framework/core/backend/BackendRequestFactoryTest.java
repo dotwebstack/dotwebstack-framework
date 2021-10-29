@@ -4,7 +4,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
-import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
@@ -90,11 +88,10 @@ class BackendRequestFactoryTest {
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof CollectionRequest);
     assertThat(result.getObjectRequest()
         .getObjectType()
         .getName(), is("Brewery"));
-    assertTrue(!result.getFilterCriterias()
+    assertFalse(result.getFilterCriterias()
         .isEmpty());
     assertThat(result.getSortCriterias()
         .get(0)
@@ -132,7 +129,6 @@ class BackendRequestFactoryTest {
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof RequestContext);
     assertThat(result.getObjectField()
         .getName(), is("addresses"));
     assertThat(result.getObjectField()

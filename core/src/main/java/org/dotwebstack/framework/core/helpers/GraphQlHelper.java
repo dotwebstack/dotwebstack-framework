@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.helpers;
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.Optional.ofNullable;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
@@ -91,5 +92,13 @@ public class GraphQlHelper {
     return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
         .map(Node::getAdditionalData)
         .orElse(Map.of());
+  }
+
+  public static ExecutionStepInfo getRequestStepInfo(ExecutionStepInfo executionStepInfo) {
+    if (executionStepInfo.hasParent() && executionStepInfo.getParent()
+        .hasParent()) {
+      return getRequestStepInfo(executionStepInfo.getParent());
+    }
+    return executionStepInfo;
   }
 }

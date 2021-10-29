@@ -121,6 +121,8 @@ objectTypes:
       historyAge:
         field: history.age
     fields:
+      record_id:
+        type: Int
       identifier:
         type: ID
       name:
