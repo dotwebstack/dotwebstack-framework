@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBu
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
@@ -258,16 +258,6 @@ class SelectBuilder {
         .forEach(subSelect::addConditions);
 
     return subSelect;
-  }
-
-  private Function<String, Table<Record>> createTableCreator(SelectQuery<Record> query,
-      ContextCriteria contextCriteria) {
-    return tableName -> {
-      var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
-
-      query.addFrom(requestedTable);
-      return requestedTable;
-    };
   }
 
   private void processAggregateField(AggregateField aggregateField, ObjectMapper aggregateMapper, SelectQuery<?> query,

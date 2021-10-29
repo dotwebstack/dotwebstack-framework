@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -16,6 +17,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
@@ -91,4 +93,15 @@ class QueryHelper {
 
     return DSL.table(String.format("%s_%s_ctx(%s)", name, contextCriteria.getName(), bindingKeys), bindingValues);
   }
+
+  public static Function<String, Table<Record>> createTableCreator(SelectQuery<?> query,
+      ContextCriteria contextCriteria) {
+    return tableName -> {
+      var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
+
+      query.addFrom(requestedTable);
+      return requestedTable;
+    };
+  }
+
 }

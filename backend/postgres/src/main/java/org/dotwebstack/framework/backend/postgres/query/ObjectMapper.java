@@ -16,9 +16,10 @@ public class ObjectMapper extends AbstractObjectMapper<Map<String, Object>> {
   }
 
   @Override
+  @SuppressWarnings("squid:S1168")
   public Map<String, Object> apply(Map<String, Object> row) {
     if (alias != null && row.get(alias) == null) {
-      return null; // nosonar
+      return null;
     }
 
     return super.apply(row);
