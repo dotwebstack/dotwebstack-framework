@@ -1,15 +1,18 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
@@ -235,6 +238,36 @@ class GraphQlHelperTest {
 
     var r = isIntrospectionField.test(selectedFieldMock);
     assertThat(r, is(false));
+  }
+
+  @Test
+  void getRequestStepInfo_returnsRequestStepInfo_forNestedExceptionStepInfo() {
+    ExecutionStepInfo root = mock(ExecutionStepInfo.class);
+
+    ExecutionStepInfo request = mock(ExecutionStepInfo.class);
+    when(request.getParent()).thenReturn(root);
+    when(request.hasParent()).thenReturn(true);
+
+    ExecutionStepInfo nested = mock(ExecutionStepInfo.class);
+    when(nested.getParent()).thenReturn(request);
+    when(nested.hasParent()).thenReturn(true);
+
+    var actual = getRequestStepInfo(nested);
+
+    assertThat(actual, equalTo(request));
+  }
+
+  @Test
+  void getRequestStepInfo_returnsExisting_forRequestStepInfo() {
+    ExecutionStepInfo root = mock(ExecutionStepInfo.class);
+
+    ExecutionStepInfo request = mock(ExecutionStepInfo.class);
+    when(request.getParent()).thenReturn(root);
+    when(request.hasParent()).thenReturn(true);
+
+    var actual = getRequestStepInfo(request);
+
+    assertThat(actual, equalTo(request));
   }
 
 }

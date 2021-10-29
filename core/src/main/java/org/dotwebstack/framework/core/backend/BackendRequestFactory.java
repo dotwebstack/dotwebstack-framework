@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -95,7 +96,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
-        .contextCriteria(createContextCriteria(getContextExecutionStepInfo(executionStepInfo)))
+        .contextCriteria(createContextCriteria(getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
         .build();
   }
@@ -110,7 +111,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
-        .contextCriteria(createContextCriteria(getContextExecutionStepInfo(executionStepInfo)))
+        .contextCriteria(createContextCriteria(getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
   }
@@ -130,14 +131,6 @@ public class BackendRequestFactory {
         .objectField(objectField)
         .source(source)
         .build();
-  }
-
-  private ExecutionStepInfo getContextExecutionStepInfo(ExecutionStepInfo executionStepInfo) {
-    if (executionStepInfo.hasParent() && executionStepInfo.getParent()
-        .hasParent()) {
-      return getContextExecutionStepInfo(executionStepInfo.getParent());
-    }
-    return executionStepInfo;
   }
 
   private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {
