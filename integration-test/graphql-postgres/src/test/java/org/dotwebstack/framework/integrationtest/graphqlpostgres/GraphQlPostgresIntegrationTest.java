@@ -109,11 +109,11 @@ class GraphQlPostgresIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test
@@ -310,7 +310,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("fix errors expectation")
   void getRequest_returnsBreweries_forSingleMappedByJoinColumn() {
     String query = "{breweries{name status beer{name}}}";
 
@@ -725,7 +724,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("fix errors expectation")
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
     String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "

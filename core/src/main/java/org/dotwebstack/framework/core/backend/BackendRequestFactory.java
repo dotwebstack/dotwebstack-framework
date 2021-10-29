@@ -95,7 +95,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
-        .contextCriteria(createContextCriteria(executionStepInfo))
+        .contextCriteria(createContextCriteria(getContextExecutionStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
         .build();
   }
@@ -110,7 +110,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
-        .contextCriteria(createContextCriteria(executionStepInfo))
+        .contextCriteria(createContextCriteria(getContextExecutionStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
   }
@@ -130,6 +130,14 @@ public class BackendRequestFactory {
         .objectField(objectField)
         .source(source)
         .build();
+  }
+
+  private ExecutionStepInfo getContextExecutionStepInfo(ExecutionStepInfo executionStepInfo) {
+    if (executionStepInfo.hasParent() && executionStepInfo.getParent()
+        .hasParent()) {
+      return getContextExecutionStepInfo(executionStepInfo.getParent());
+    }
+    return executionStepInfo;
   }
 
   private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {

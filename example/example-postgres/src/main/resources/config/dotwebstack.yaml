@@ -60,6 +60,17 @@ objectTypes:
         joinColumns:
           - name: brewery
             referencedField: record_id
+      ingredient:
+        type: Ingredient
+        nullable: true
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
       ingredients:
         type: Ingredient
         list: true
@@ -143,6 +154,10 @@ objectTypes:
         joinColumns:
           - name: visit_address
             referencedField: identifier
+      beer:
+        type: Beer
+        nullable: true
+        mappedBy: brewery
       beers:
         type: Beer
         list: true

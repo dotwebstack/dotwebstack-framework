@@ -130,7 +130,6 @@ public class TypeDefinitionRegistrySchemaFactory {
               .isEmpty()) {
             typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType));
           }
-
         });
   }
 

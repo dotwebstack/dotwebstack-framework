@@ -116,7 +116,7 @@ class BatchJoinBuilder {
     // Create virtual table with static key values
     var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());
 
-    var junctionTable = DSL.table(joinTable.getName())
+    var junctionTable = QueryHelper.findTable(joinTable.getName(), objectRequest.getContextCriteria())
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);

@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
+import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
@@ -249,9 +250,14 @@ class SelectBuilder {
     aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
         aliasedAggregateTable));
 
-    JoinBuilder.newJoin()
-        .table(table)
+    newJoin().table(table)
         .current(objectField)
+        .tableCreator(tableName -> {
+          var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
+
+          subSelect.addFrom(requestedTable);
+          return requestedTable;
+        })
         .build()
         .forEach(subSelect::addConditions);
 
@@ -339,9 +345,15 @@ class SelectBuilder {
     }
 
     if (!objectType.isNested()) {
-      JoinBuilder.newJoin()
-          .table(table)
+      newJoin().table(table)
           .current(objectField)
+          .tableCreator(tableName -> {
+            var requestedTable = QueryHelper.findTable(tableName, objectRequest.getContextCriteria())
+                .as(aliasManager.newAlias());
+
+            select.addFrom(requestedTable);
+            return requestedTable;
+          })
           .build()
           .forEach(select::addConditions);
     }

@@ -1,14 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.FieldMapper;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,8 +25,7 @@ class ObjectMapperTest {
     Map<String, Object> row = Map.of("aa", Map.of("b", "c"));
 
     var result = mapper.apply(row);
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Map);
+    assertThat(result, is(notNullValue()));
     assertThat(result.size(), is(1));
   }
 
@@ -38,7 +36,8 @@ class ObjectMapperTest {
     Map<String, Object> row = Map.of("bbb", Map.of("b", "c"));
 
     var result = mapper.apply(row);
-    assertTrue(result.isEmpty());
+
+    assertThat(result, is(nullValue()));
   }
 
   @Test
@@ -48,8 +47,7 @@ class ObjectMapperTest {
     Map<String, Object> row = Map.of("bbb", Map.of("b", "c"));
 
     var result = mapper.apply(row);
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Map);
+    assertThat(result, is(notNullValue()));
     assertThat(result.size(), is(1));
   }
 }

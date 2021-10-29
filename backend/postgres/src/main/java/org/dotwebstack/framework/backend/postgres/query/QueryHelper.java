@@ -62,11 +62,10 @@ class QueryHelper {
     return getObjectType(objectRequest).getField(name);
   }
 
-  public static List<Condition> createJoinConditions(Table<Record> junctionTable, Table<Record> referencedTable,
+  public static List<Condition> createJoinConditions(Table<Record> table, Table<Record> referencedTable,
       List<JoinColumn> joinColumns, PostgresObjectType objectType) {
     return joinColumns.stream()
-        .map(joinColumn -> column(junctionTable, joinColumn.getName())
-            .equal(column(referencedTable, joinColumn, objectType)))
+        .map(joinColumn -> column(table, joinColumn.getName()).equal(column(referencedTable, joinColumn, objectType)))
         .collect(Collectors.toList());
   }
 
