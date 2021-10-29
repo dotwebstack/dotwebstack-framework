@@ -52,7 +52,7 @@ class OrchestrateConfigurationTest {
   }
 
   @Test
-  void graphQLSchema_wrapsUnmodifiedSchema_ifNoModifiersPresent() {
+  void graphQlSchema_wrapsUnmodifiedSchema_ifNoModifiersPresent() {
     configurationProperties.setRoot(ROOT_KEY);
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
     var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
@@ -60,7 +60,7 @@ class OrchestrateConfigurationTest {
     MOCK_WEB_SERVER.enqueue(new MockResponse().addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .setBody(getIntrospectionResponseBody()));
 
-    var schema = orchestrateConfiguration.graphQLSchema();
+    var schema = orchestrateConfiguration.graphQlSchema();
 
     assertThat(schema, notNullValue());
     assertThat(schema.getObjectType("Brewery"), notNullValue());
@@ -71,14 +71,14 @@ class OrchestrateConfigurationTest {
   }
 
   @Test
-  void graphQLSchema_throwsException_ifIntrospectionFails() {
+  void graphQlSchema_throwsException_ifIntrospectionFails() {
     configurationProperties.setRoot(ROOT_KEY);
     configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
     var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
 
     MOCK_WEB_SERVER.enqueue(new MockResponse().setResponseCode(INTERNAL_SERVER_ERROR.value()));
 
-    assertThrows(ExecutionException.class, orchestrateConfiguration::graphQLSchema);
+    assertThrows(ExecutionException.class, orchestrateConfiguration::graphQlSchema);
   }
 
   private SubschemaProperties createSubschema() {

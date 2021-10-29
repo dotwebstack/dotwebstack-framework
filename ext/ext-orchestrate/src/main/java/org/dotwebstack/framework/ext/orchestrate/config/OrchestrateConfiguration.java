@@ -40,7 +40,7 @@ class OrchestrateConfiguration {
 
   @Bean
   @Primary
-  public GraphQLSchema graphQLSchema() {
+  public GraphQLSchema graphQlSchema() {
     var rootSubschemaProperties = configurationProperties.getSubschemas()
         .get(configurationProperties.getRoot());
 
