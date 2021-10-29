@@ -17,6 +17,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.validators.SchemaValidator;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -24,9 +25,11 @@ import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Conditional(OnLocalSchema.class)
 public class ModelConfiguration {
 
   private final BackendModule<?> backendModule;

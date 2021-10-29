@@ -22,7 +22,7 @@ public class GraphqlConfiguration {
 
   @Bean
   @Conditional(OnLocalSchema.class)
-  public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+  public GraphQLSchema graphQLSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories) {
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
