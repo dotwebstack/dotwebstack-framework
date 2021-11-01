@@ -29,7 +29,7 @@ Subschema properties are:
 ## Transforms
 
 In case the schema needs to be modified to match certain requirements, a subschema can be modified. To do so, a bean 
-implementing `SchemaModifier` must be provided. For example:
+implementing `SubschemaModifier` could be provided. For example:
 
 ```java
 @Configuration

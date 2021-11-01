@@ -13,7 +13,7 @@ Documentation website: https://dotwebstack.org/dotwebstack-framework/
 
 ## Links
 
-* SonarCloud: https://sonarcloud.io/dashboard/index/org.dotwebstack.framework:dotwebstack-framework
+* SonarCloud: https://sonarcloud.io/project/overview?id=org.dotwebstack.framework%3Adotwebstack-framework
 
 ## License
 
