@@ -17,7 +17,7 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
   protected String name;
 
   @Valid
-  protected Map<String, T> fields;
+  protected Map<String, T> fields = new HashMap<>();
 
   @Valid
   protected Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
@@ -27,6 +27,11 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
 
   public T getField(String name) {
     return ofNullable(fields.get(name))
-        .orElseThrow(() -> illegalArgumentException("Field '{}' doesn't exist in objectType '{}'", name, getName()));
+        .orElseThrow(() -> illegalArgumentException("Field '{}' does not exist in object type '{}'.", name, getName()));
+  }
+
+  @Override
+  public boolean isNested() {
+    return false;
   }
 }

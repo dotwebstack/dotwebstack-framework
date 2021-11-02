@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -12,6 +13,7 @@ import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
+import org.dotwebstack.framework.core.model.AbstractObjectType;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.junit.jupiter.api.Test;
 
@@ -104,6 +106,15 @@ class TypeUtilsTest {
 
     var result = TypeUtils.createType(objectField);
     assertThat(result, instanceOf(NonNullType.class));
+  }
+
+  @Test
+  void createType_throwsException_forNonExistingField() {
+    var objectType = new AbstractObjectType<>() {};
+    objectType.setName(TYPE_NAME);
+
+    assertThrows(IllegalArgumentException.class, () -> TypeUtils.createType("foo", objectType),
+        "Field 'foo' does not exist in object type 'Brewery'.");
   }
 
   private static void assertTypeName(Type<?> type) {

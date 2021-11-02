@@ -165,28 +165,6 @@ class TypeHelperTest {
         Arguments.of(false, null, NullPointerException.class));
   }
 
-  private static Stream<Arguments> getTypeStringArguments() {
-    TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
-        .build();
-    Type listType = ListType.newListType(intType)
-        .build();
-    Type nonNullType = NonNullType.newNonNullType(intType)
-        .build();
-
-    TypeName floatType = TypeName.newTypeName(Scalars.GraphQLFloat.getName())
-        .build();
-    Type nonNullFloatType = NonNullType.newNonNullType(floatType)
-        .build();
-    ListType floatListType = ListType.newListType(nonNullFloatType)
-        .build();
-    Type listNonNullType = NonNullType.newNonNullType(floatListType)
-        .build();
-
-    return Stream.of(Arguments.of("[Int]", listType), Arguments.of("Int!", nonNullType),
-        Arguments.of("[Float!]", floatListType), Arguments.of("[Float!]!", listNonNullType),
-        Arguments.of("Float", floatType));
-  }
-
   private static Stream<Arguments> getTypeNameArguments() {
     TypeName intType = TypeName.newTypeName(Scalars.GraphQLInt.getName())
         .build();
