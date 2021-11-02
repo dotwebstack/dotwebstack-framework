@@ -5,6 +5,7 @@ import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.language.TypeName.newTypeName;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
@@ -33,7 +34,6 @@ import graphql.Scalars;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.ObjectTypeDefinition;
-import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Map;
 import lombok.NonNull;
@@ -59,12 +59,12 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
   }
 
   private ObjectTypeDefinition createGeometryObjectDefinition() {
-    TypeName stringType = newTypeName(Scalars.GraphQLString.getName()).build();
+    var stringType = newNonNullType(newTypeName(Scalars.GraphQLString.getName()).build()).build();
 
     return newObjectTypeDefinition().name(GEOMETRY)
         .additionalData(GraphQlConstants.IS_SCALAR, Boolean.TRUE.toString())
         .fieldDefinition(newFieldDefinition().name(TYPE)
-            .type(newTypeName(GEOMETRY_TYPE).build())
+            .type(newNonNullType(newTypeName(GEOMETRY_TYPE).build()).build())
             .build())
         .fieldDefinition(newFieldDefinition().name(AS_WKB)
             .type(stringType)
