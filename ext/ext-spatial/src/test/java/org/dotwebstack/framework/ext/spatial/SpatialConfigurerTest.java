@@ -12,13 +12,15 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOLYGO
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
+import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -42,16 +44,17 @@ class SpatialConfigurerTest {
   @Test
   @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addEnumDef_always() {
-    List<String> enumValues = List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON);
-
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY_TYPE);
     assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(EnumTypeDefinition.class));
-    EnumTypeDefinition enumTypeDefinition = (EnumTypeDefinition) optional.get();
 
-    for (EnumValueDefinition enumValue : enumTypeDefinition.getEnumValueDefinitions()) {
+    List<String> enumValues = List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON);
+    List<EnumValueDefinition> enumValueDefs = ((EnumTypeDefinition) optional.get()).getEnumValueDefinitions();
+    assertThat(enumValueDefs.size(), equalTo(enumValues.size()));
+
+    for (EnumValueDefinition enumValue : enumValueDefs) {
       assertThat(enumValues.contains(enumValue.getName()), is(Boolean.TRUE));
     }
   }
@@ -59,17 +62,19 @@ class SpatialConfigurerTest {
   @Test
   @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addGeometryDef_always() {
-    List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT, AS_GEOJSON);
-
     spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY);
     assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(ObjectTypeDefinition.class));
-    ObjectTypeDefinition enumTypeDefinition = (ObjectTypeDefinition) optional.get();
 
-    for (FieldDefinition field : enumTypeDefinition.getFieldDefinitions()) {
+    List<String> fieldNames = List.of(TYPE, AS_WKB, AS_WKT, AS_GEOJSON);
+    List<FieldDefinition> geometryFieldDefs = ((ObjectTypeDefinition) optional.get()).getFieldDefinitions();
+    assertThat(geometryFieldDefs.size(), equalTo(fieldNames.size()));
+
+    for (FieldDefinition field : geometryFieldDefs) {
       assertThat(fieldNames.contains(field.getName()), is(Boolean.TRUE));
+      assertThat(field.getType(), instanceOf(NonNullType.class));
     }
   }
 }
