@@ -18,8 +18,6 @@ queries:
 
 objectTypes:
   Beer:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -49,8 +47,6 @@ objectTypes:
             list: true
 
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -94,8 +90,6 @@ objectTypes:
         type: Geometry
 
   Address:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -103,22 +97,16 @@ objectTypes:
         type: String
 
   Ingredient:
-    keys:
-      - name
     fields:
       name:
         type: String
 
   Supplement:
-    keys:
-      - name
     fields:
       name:
         type: String
 
   BeerType:
-    keys:
-      - name
     fields:
       name:
         type: String

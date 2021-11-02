@@ -20,8 +20,6 @@ queries:
 
 objectTypes:
   Beer:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -30,8 +28,6 @@ objectTypes:
       brewery:
         type: Brewery
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID

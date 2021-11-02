@@ -6,13 +6,10 @@ queries:
     type: Beer
     keys:
       - identifier
-    nullable: true
 
 objectTypes:
   Beer:
     table: db.beer
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -92,8 +89,6 @@ objectTypes:
 
   Ingredient:
     table: db.ingredient
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -118,8 +113,6 @@ objectTypes:
 
   Brewery:
     table: db.brewery
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -171,8 +164,6 @@ objectTypes:
 
   Address:
     table: db.address
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -182,8 +173,6 @@ objectTypes:
         type: String
 
   History:
-    keys:
-      - identifier
     fields:
       age:
         type: Int

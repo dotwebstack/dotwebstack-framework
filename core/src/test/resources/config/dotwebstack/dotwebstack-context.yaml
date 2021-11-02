@@ -14,8 +14,6 @@ queries:
 
 objectTypes:
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -53,8 +51,6 @@ objectTypes:
         mappedBy: brewery
 
   Beer:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -62,8 +58,6 @@ objectTypes:
         type: String
 
   Address:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID

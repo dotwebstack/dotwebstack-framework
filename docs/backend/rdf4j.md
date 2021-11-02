@@ -12,8 +12,6 @@ shape:
 
 objectTypes:
   Beer:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -21,8 +19,6 @@ objectTypes:
         type: String
 
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
