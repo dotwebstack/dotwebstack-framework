@@ -10,8 +10,6 @@ queries:
 
 objectTypes:
   Beer:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -25,8 +23,6 @@ objectTypes:
         type: Brewery
 
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -46,8 +42,6 @@ objectTypes:
         type: Boolean
 
   Address:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -60,8 +54,6 @@ objectTypes:
         type: String
 
   Ingredient:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
