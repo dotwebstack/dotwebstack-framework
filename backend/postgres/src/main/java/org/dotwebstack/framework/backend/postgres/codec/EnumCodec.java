@@ -48,9 +48,4 @@ class EnumCodec implements Codec<String> {
   public Parameter encodeNull() {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  public Class<?> type() {
-    return String.class;
-  }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.zalando.problem.ProblemModule;
+import org.zalando.problem.jackson.ProblemModule;
 
 @Configuration
 public class JacksonConfiguration {

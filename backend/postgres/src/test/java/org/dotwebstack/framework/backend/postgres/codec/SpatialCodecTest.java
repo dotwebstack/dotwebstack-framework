@@ -116,11 +116,4 @@ class SpatialCodecTest {
 
     assertThat(result.getClass(), is(Parameter.class));
   }
-
-  @Test
-  void type_returnsGeometry_always() {
-    Class<?> type = codec.type();
-
-    assertThat(type, is(Geometry.class));
-  }
 }

@@ -52,7 +52,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.boot.version>2.5.5</spring.boot.version>
+    <spring.boot.version>2.5.6</spring.boot.version>
     <rdf4j.version>3.7.3</rdf4j.version>
     <graphql.java.version>17.3</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.6</graphql.java.orchestrate.version>
@@ -60,15 +60,16 @@
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
-    <swagger-parser.version>2.0.27</swagger-parser.version>
-    <lombok.version>1.18.20</lombok.version>
+    <swagger-parser.version>2.0.28</swagger-parser.version>
+    <lombok.version>1.18.22</lombok.version>
     <guava.version>31.0.1-jre</guava.version>
-    <problem.spring.webflux.version>0.26.2</problem.spring.webflux.version>
+    <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
     <json-path.version>2.6.0</json-path.version>
-    <testcontainers.version>1.16.0</testcontainers.version>
+    <testcontainers.version>1.16.2</testcontainers.version>
     <postgis-jdbc.version>2.5.1</postgis-jdbc.version>
     <jts-io-common.version>1.18.2</jts-io-common.version>
     <carml.version>0.4.0-beta-2</carml.version>
+    <apiguardian.version>1.1.2</apiguardian.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
@@ -109,13 +110,6 @@
         <groupId>org.zalando</groupId>
         <artifactId>problem-spring-webflux</artifactId>
         <version>${problem.spring.webflux.version}</version>
-        <exclusions>
-          <exclusion>
-            <!-- Unused dependency, causing version conflict on org.apiguardian:apiguardian-api -->
-            <groupId>org.zalando</groupId>
-            <artifactId>faux-pas</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.graphql-java</groupId>
@@ -194,6 +188,12 @@
         <groupId>com.taxonic.carml</groupId>
         <artifactId>carml-logical-source-resolver-jsonpath-jayway-jackson</artifactId>
         <version>${carml.version}</version>
+      </dependency>
+      <dependency>
+        <!-- Explicit dependency to prevent version conflicts -->
+        <groupId>org.apiguardian</groupId>
+        <artifactId>apiguardian-api</artifactId>
+        <version>${apiguardian.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

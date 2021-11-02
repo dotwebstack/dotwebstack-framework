@@ -65,9 +65,4 @@ class SpatialCodec implements Codec<Geometry> {
   public Parameter encodeNull() {
     return new Parameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY), Parameter.NULL_VALUE);
   }
-
-  @Override
-  public Class<?> type() {
-    return Geometry.class;
-  }
 }

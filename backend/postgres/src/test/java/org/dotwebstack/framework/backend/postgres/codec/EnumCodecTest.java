@@ -72,11 +72,4 @@ class EnumCodecTest {
   void encodeNull_ThrowsException_Always() {
     assertThrows(UnsupportedOperationException.class, codec::encodeNull);
   }
-
-  @Test
-  void type_ReturnsString_Always() {
-    Class<?> type = codec.type();
-
-    assertThat(type, is(String.class));
-  }
 }
