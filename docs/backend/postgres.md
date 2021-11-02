@@ -5,8 +5,6 @@
 ```yaml
   Beer:
     table: dbeerpedia.beers
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -37,8 +35,6 @@ the reference entity:
 objectTypes:
   Beer:
     table: dbeerpedia.beers
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -50,8 +46,6 @@ objectTypes:
 
   Brewery:
     table: dbeerpedia.breweries
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -74,8 +68,6 @@ We can easily use the `mappedBy` configuration property to do so. So, let's defi
 objectTypes:
   Beer:
     table: dbeerpedia.beers
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -87,8 +79,6 @@ objectTypes:
 
   Brewery:
     table: dbeerpedia.breweries
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -111,8 +101,6 @@ jointable.
 objectTypes:
   Beer:
     table: dbeerpedia.beers
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -130,8 +118,6 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -263,7 +249,6 @@ queries:
     type: Beer
     keys:
       - identifier_beer
-    nullable: true
   breweries:
     type: Brewery
     list: true
@@ -271,8 +256,6 @@ queries:
 objectTypes:
   Beer:
     table: db.beer_v
-    keys:
-      - identifier_beer
     fields:
       identifier_beer:
         type: ID

@@ -68,8 +68,6 @@ objectTypes:
 
 
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID

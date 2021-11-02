@@ -5,8 +5,6 @@ queries:
 
 objectTypes:
   Brewery:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID
@@ -28,8 +26,6 @@ objectTypes:
           direction: ASC
 
   Address:
-    keys:
-      - identifier
     fields:
       identifier:
         type: ID

@@ -34,8 +34,7 @@ public final class TypeUtils {
   }
 
   public static Type<NonNullType> createType(String key, ObjectType<?> objectType) {
-    var fieldConfig = objectType.getFields()
-        .get(key);
+    var fieldConfig = objectType.getField(key);
     return TypeUtils.newNonNullableType(fieldConfig.getType());
   }
 
