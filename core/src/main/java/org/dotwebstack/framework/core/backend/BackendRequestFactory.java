@@ -107,10 +107,13 @@ public class BackendRequestFactory {
   private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
     ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
 
+    var arguments = selectedField.getFieldDefinitions()
+        .get(0)
+        .getArguments();
+
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
-            .getArguments(), selectedField.getArguments()))
+        .keyCriteria(createKeyCriteria(arguments, selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))

@@ -11,7 +11,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import org.dotwebstack.framework.core.config.EnumerationConfiguration;
-import org.dotwebstack.framework.core.query.model.Query;
 
 @Data
 public class Schema {
