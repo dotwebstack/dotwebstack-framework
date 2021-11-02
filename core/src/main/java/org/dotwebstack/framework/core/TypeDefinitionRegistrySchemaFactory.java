@@ -66,9 +66,11 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private static final String GEOMETRY_TYPE = "Geometry";
 
-  private static final String GEOMETRY_ARGUMENT_NAME = "type";
+  private static final String GEOMETRY_SRID_ARGUMENT_NAME = "srid";
 
-  private static final String GEOMETRY_ARGUMENT_TYPE = "GeometryType";
+  private static final String GEOMETRY_TYPE_ARGUMENT_NAME = "type";
+
+  private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
 
   private final Schema schema;
 
@@ -279,11 +281,10 @@ public class TypeDefinitionRegistrySchemaFactory {
     }
   }
 
-
   private List<InputValueDefinition> createInputValueDefinitions(ObjectField objectField) {
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
     if (GEOMETRY_TYPE.equals(objectField.getType())) {
-      inputValueDefinitions.add(createGeometryInputValueDefinition());
+      inputValueDefinitions.addAll(createGeometryArguments());
     }
 
     objectField.getArguments()
@@ -548,9 +549,19 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private InputValueDefinition createGeometryInputValueDefinition() {
-    return newInputValueDefinition().name(GEOMETRY_ARGUMENT_NAME)
-        .type(newType(GEOMETRY_ARGUMENT_TYPE))
+  private List<InputValueDefinition> createGeometryArguments() {
+    return List.of(createGeometrySridArgument(), createGeometryTypeArgument());
+  }
+
+  private InputValueDefinition createGeometrySridArgument() {
+    return newInputValueDefinition().name(GEOMETRY_SRID_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLInt.getName()))
+        .build();
+  }
+
+  private InputValueDefinition createGeometryTypeArgument() {
+    return newInputValueDefinition().name(GEOMETRY_TYPE_ARGUMENT_NAME)
+        .type(newType(GEOMETRY_TYPE_ARGUMENT_TYPE))
         .build();
   }
 

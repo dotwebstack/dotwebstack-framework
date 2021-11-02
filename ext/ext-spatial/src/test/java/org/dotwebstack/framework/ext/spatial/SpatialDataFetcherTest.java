@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.ext.spatial.GeometryType.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -90,6 +91,22 @@ class SpatialDataFetcherTest {
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
     assertThat(stringValue, is("POINT"));
+  }
+
+  @Test
+  void get_returnsValue_forSrid() {
+    when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn(SRID);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
+
+    Object value = spatialDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(value, is(notNullValue()));
+    assertThat(value, instanceOf(int.class));
+    int intValue = (int) value;
+    assertThat(intValue, is(28992));
   }
 
   @Test
