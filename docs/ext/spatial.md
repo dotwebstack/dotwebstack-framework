@@ -21,6 +21,7 @@ Geometry is a predefined GraphQL Object Type and GeometryType an Enum type.
 ```graphql
 type Geometry{
   type: GeometryType!
+  srid: Int!
   asWKB: String!
   asWKT: String!
   asGeoJSON: String!
@@ -90,6 +91,27 @@ Conversions that are possible:
 - `Polygon` => `MultiPolygon`, `Point` (centroid)
 - `MultiPolygon` => `Point` (centroid)
 
+### Geometry repojection
+
+It is possible to reproject to another spatial reference system. For reprojection see the configuration below and 
+different backends for support.
+
+Query example:
+
+```graphql
+{
+  breweries {
+    identifier
+    name
+    geometry(srid: 28992) {
+      type
+      srid
+      asWKT
+    }
+  }
+}
+```
+
 ## Filtering
 
 An field of type `Geometry` can be filtered with the following filter operations. 
@@ -122,13 +144,16 @@ query {
 
 ## Configuration
 
-### CRS
-
-The source CRS can be configured within the `dotwebstack.yml` as follows:
+In the `dotwebstack.yml` every supported srid can be configured. Example configuration:
 
 ```yaml
 spatial:
-  sourceCrs: EPSG:4258
+  srid:
+    28992:
+      dimensions: 2
+    7415:
+      dimensions: 3
+      equivalent: 28992
 ```
 
-When filtering on a `Geometry` field, the CRS must match the `sourceCrs`. There is currently no support for reprojection of a `Geometry` field.
+A three dimensional geometry can be reprojected to a two dimensional geometry when the property `equivalent` is configured.
