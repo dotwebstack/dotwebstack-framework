@@ -6,7 +6,7 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import org.dotwebstack.framework.core.OnLocalSchema;
-import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
@@ -14,16 +14,17 @@ import org.springframework.stereotype.Component;
 @Conditional(OnLocalSchema.class)
 public class BackendExecutionStepInfo {
 
-  private final boolean usePaging;
-
-  public BackendExecutionStepInfo(Schema schema) {
-    usePaging = schema.usePaging();
-  }
-
   public ExecutionStepInfo getExecutionStepInfo(DataFetchingEnvironment environment) {
     ExecutionStepInfo executionStepInfo;
 
-    var isList = isList(unwrapNonNull(environment.getFieldType()));
+    var type = unwrapNonNull(environment.getFieldType());
+
+    var isList = isList(type);
+
+    var usePaging = environment.getFieldDefinition()
+        .getDefinition()
+        .getAdditionalData()
+        .containsKey(GraphQlConstants.IS_PAGING_NODE);
 
     if (usePaging && isList) {
       executionStepInfo = environment.getExecutionStepInfo()
