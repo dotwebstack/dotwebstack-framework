@@ -87,11 +87,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addFilterTypes(typeDefinitionRegistry);
     addSortTypes(typeDefinitionRegistry);
     addContextTypes(typeDefinitionRegistry);
-
-    if (schema.usePaging()) {
-      addConnectionTypes(typeDefinitionRegistry);
-    }
-
+    addConnectionTypes(typeDefinitionRegistry);
     addQueryTypes(typeDefinitionRegistry);
     addSubscriptionTypes(typeDefinitionRegistry);
 
@@ -172,6 +168,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newObjectTypeDefinition().name(connectionName)
         .fieldDefinition(newFieldDefinition().name(PagingConstants.NODES_FIELD_NAME)
             .type(newNonNullableListType(objectType.getName()))
+            .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
             .build())
         .fieldDefinition(newFieldDefinition().name(PagingConstants.OFFSET_FIELD_NAME)
             .type(newNonNullableType(Scalars.GraphQLInt.getName()))
@@ -248,7 +245,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (objectField.isList() && schema.getObjectTypes()
         .containsKey(objectField.getType())) {
 
-      return createListType(type, objectField.isNullable());
+      return createListType(type, objectField.isPageable(), objectField.isNullable());
     }
 
     return createType(objectField);
@@ -258,14 +255,14 @@ public class TypeDefinitionRegistrySchemaFactory {
     var type = query.getType();
 
     if (query.isList()) {
-      return createListType(type, false);
+      return createListType(type, query.isPageable(), false);
     }
 
     return newType(query.getType());
   }
 
-  private Type<?> createListType(String type, boolean nullable) {
-    if (schema.usePaging()) {
+  private Type<?> createListType(String type, boolean pageable, boolean nullable) {
+    if (pageable) {
       var connectionTypeName = createConnectionName(type);
       return newNonNullType(newType(connectionTypeName))
           .additionalData(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString())
@@ -499,7 +496,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createPagingArguments(Query query) {
-    if (query.isList()) {
+    if (query.isList() && query.isPageable()) {
       return Stream.concat(createFirstArgument().stream(), createOffsetArgument().stream())
           .collect(Collectors.toList());
     }
@@ -508,26 +505,19 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private Optional<InputValueDefinition> createFirstArgument() {
-    if (schema.usePaging()) {
-      return Optional.of(newInputValueDefinition().name(PagingConstants.FIRST_ARGUMENT_NAME)
-          .type(newType(Scalars.GraphQLInt.getName()))
-          .defaultValue(IntValue.newIntValue(PagingConstants.FIRST_DEFAULT_VALUE)
-              .build())
-          .build());
-    }
-
-    return Optional.empty();
+    return Optional.of(newInputValueDefinition().name(PagingConstants.FIRST_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLInt.getName()))
+        .defaultValue(IntValue.newIntValue(PagingConstants.FIRST_DEFAULT_VALUE)
+            .build())
+        .build());
   }
 
   private Optional<InputValueDefinition> createOffsetArgument() {
-    if (schema.usePaging()) {
-      return Optional.of(newInputValueDefinition().name(PagingConstants.OFFSET_ARGUMENT_NAME)
-          .type(newType(Scalars.GraphQLInt.getName()))
-          .defaultValue(IntValue.newIntValue(PagingConstants.OFFSET_DEFAULT_VALUE)
-              .build())
-          .build());
-    }
-    return Optional.empty();
+    return Optional.of(newInputValueDefinition().name(PagingConstants.OFFSET_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLInt.getName()))
+        .defaultValue(IntValue.newIntValue(PagingConstants.OFFSET_DEFAULT_VALUE)
+            .build())
+        .build());
   }
 
   private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType) {

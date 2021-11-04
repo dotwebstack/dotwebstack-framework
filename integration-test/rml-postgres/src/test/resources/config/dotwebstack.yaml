@@ -1,6 +1,3 @@
-features:
-  - paging
-
 queries:
   beer:
     type: Beer
@@ -29,6 +26,7 @@ objectTypes:
       ingredients:
         type: Ingredient
         list: true
+        pageable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -137,6 +135,7 @@ objectTypes:
       beers:
         type: Beer
         list: true
+        pageable: true
         nullable: true
         mappedBy: brewery
       beer:

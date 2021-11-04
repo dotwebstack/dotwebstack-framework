@@ -94,7 +94,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  void typeDefinitionRegistry_registerQueries_whenConfiguredWithPagingFeature() {
+  void typeDefinitionRegistry_registerQueries_whenConfiguredWithPaging() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
 
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
@@ -442,7 +442,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  @Disabled("Context is veranderd, test dient aangepast te worden")
   void typeDefinitionRegistry_registerContext_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-context.yaml");
 
@@ -450,10 +449,10 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Context")
+    assertThat(registry.getType("HistoryContext")
         .map(Object::toString)
         .orElseThrow(),
-        equalTo(newInputObjectDefinition().name("Context")
+        equalTo(newInputObjectDefinition().name("HistoryContext")
             .inputValueDefinition(newInputValueDefinition().name("validOn")
                 .type(newNonNullableType("Date"))
                 .defaultValue(newStringValue("NOW").build())
@@ -479,7 +478,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         equalTo(newFieldDefinition().name("breweryCollection")
             .type(newNonNullableListType("Brewery"))
             .inputValueDefinition(newInputValueDefinition().name("context")
-                .type(newType("Context"))
+                .type(newType("HistoryContext"))
                 .defaultValue(ObjectValue.newObjectValue()
                     .build())
                 .build())

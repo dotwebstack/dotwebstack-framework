@@ -1,6 +1,3 @@
-features:
-  - paging
-
 spatial:
   sourceCrs: EPSG:28992
 

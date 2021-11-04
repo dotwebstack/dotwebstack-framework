@@ -1,16 +1,18 @@
-context:
-  fields:
-    validOn:
-      type: Date
-      default: NOW
-    availableOn:
-      type: DateTime
-      default: NOW
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
 
 queries:
   breweryCollection:
     type: Brewery
     list: true
+    context: history
 
 objectTypes:
   Brewery:
