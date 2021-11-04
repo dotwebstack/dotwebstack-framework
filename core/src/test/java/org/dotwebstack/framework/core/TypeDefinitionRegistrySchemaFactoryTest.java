@@ -391,7 +391,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  @Disabled("Dient bekeken te worden")
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
@@ -409,12 +408,17 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(fieldDefinitions.size(), is(6));
 
     var geometryFieldDefinition = fieldDefinitions.get(1);
-    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
+    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 2);
 
-    var geometryInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+    var geometrySridInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
         .get(0);
-    assertThat(geometryInputValueDefinition.getName(), is("type"));
-    assertType(geometryInputValueDefinition.getType(), "GeometryType");
+    assertThat(geometrySridInputValueDefinition.getName(), is("srid"));
+    assertType(geometrySridInputValueDefinition.getType(), "Int");
+
+    var geometryTypeInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(geometryTypeInputValueDefinition.getName(), is("type"));
+    assertType(geometryTypeInputValueDefinition.getType(), "GeometryType");
 
     var addressesFieldDefinition = fieldDefinitions.get(2);
     assertThat(addressesFieldDefinition.getName(), is("addresses"));
@@ -438,7 +442,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
     var beerAggFieldDefinition = fieldDefinitions.get(5);
-    assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
+    assertThat(beerAggFieldDefinition.getName(), is("beerAgg"));
+    assertType(beerAggFieldDefinition.getType(), "Aggregate");
+    assertThat(beerAggFieldDefinition.getInputValueDefinitions(), empty());
   }
 
   @Test

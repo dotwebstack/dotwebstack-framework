@@ -26,6 +26,8 @@ public class SpatialConstants {
 
   static final String TYPE = "type";
 
+  public static final String SRID = "srid";
+
   static final String AS_WKT = "asWKT";
 
   static final String AS_WKB = "asWKB";

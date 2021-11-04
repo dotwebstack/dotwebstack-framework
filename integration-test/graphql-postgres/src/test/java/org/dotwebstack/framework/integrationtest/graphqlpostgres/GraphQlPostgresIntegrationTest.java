@@ -450,7 +450,7 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_ReturnsBreweryWithNestedGeometry_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name geometry{type asWKT asWKB asGeoJSON}}}";
+        + "{name geometry{type srid asWKT asWKB asGeoJSON}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -465,8 +465,9 @@ class GraphQlPostgresIntegrationTest {
     assertThat(brewery.containsKey(GEOMETRY), is(true));
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
-    assertThat(geometry.size(), is(4));
+    assertThat(geometry.size(), is(5));
     assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(28992));
     assertThat(geometry.get("asWKT"),
         is("POLYGON ((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
             + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
@@ -478,6 +479,71 @@ class GraphQlPostgresIntegrationTest {
         is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462],"
             + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
             + "[194914.71909166,470984.86365462]]]}"));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometry_forReprojection() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7931){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7931));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON Z((5.971386264 52.225493786 1.123, 5.972054135 52.225493787 1.123, 5.972054135 52.225280197 1.123, "
+            + "5.971386264 52.225280196 1.123, 5.971386264 52.225493786 1.123))"));
+    assertThat(geometry.get("asWKB"),
+        is("AKAAAAMAAB77AAAAAQAAAAVAF+KzFK6njUBKHNz6+ikeP/H3ztkWhytAF+NiKL8Q90BKHNz6/E7fP/H3ztkWhytAF+NiKL8Q90BK"
+            + "HNX7Q0aVP/H3ztkWhytAF+KzFK6njUBKHNX7QSDUP/H3ztkWhytAF+KzFK6njUBKHNz6+ikeP/H3ztkWhys="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":"
+            + "[[[5.97138626,52.22549379,1.123],[5.97205414,52.22549379,1.123],[5.97205414,52.2252802,1.123],"
+            + "[5.97138626,52.2252802,1.123],[5.97138626,52.22549379,1.123]]]}"));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometry_forReprojectionTo2d() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 9067){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(9067));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((5.971386264 52.225493786, 5.972054135 52.225493787, 5.972054135 52.225280197, "
+            + "5.971386264 52.225280196, 5.971386264 52.225493786))"));
+    assertThat(geometry.get("asWKB"),
+        is("ACAAAAMAACNrAAAAAQAAAAVAF+KzFK6njUBKHNz6+ikeQBfjYii/EPdAShzc+vxO30AX42IovxD3QEoc1ftDRpVAF+KzFK6njUBK"
+            + "HNX7QSDUQBfisxSup41AShzc+vopHg=="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[5.97138626,52.22549379,1.123],[5.97205414,52.22549379,1.123],"
+            + "[5.97205414,52.2252802,1.123],[5.97138626,52.2252802,1.123],[5.97138626,52.22549379,1.123]]]}"));
   }
 
   @Test

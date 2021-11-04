@@ -27,6 +27,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.WITHIN;
 
@@ -60,11 +61,15 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   private ObjectTypeDefinition createGeometryObjectDefinition() {
     var stringType = newNonNullType(newTypeName(Scalars.GraphQLString.getName()).build()).build();
+    var intType = newNonNullType(newTypeName(Scalars.GraphQLInt.getName()).build()).build();
 
     return newObjectTypeDefinition().name(GEOMETRY)
         .additionalData(GraphQlConstants.IS_SCALAR, Boolean.TRUE.toString())
         .fieldDefinition(newFieldDefinition().name(TYPE)
             .type(newNonNullType(newTypeName(GEOMETRY_TYPE).build()).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(SRID)
+            .type(intType)
             .build())
         .fieldDefinition(newFieldDefinition().name(AS_WKB)
             .type(stringType)

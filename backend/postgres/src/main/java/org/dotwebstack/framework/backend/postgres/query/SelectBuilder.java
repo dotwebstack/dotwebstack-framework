@@ -46,6 +46,7 @@ import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
@@ -296,7 +297,6 @@ class SelectBuilder {
     var objectField = objectType.getField(fieldRequest.getName());
 
     String column;
-
     if (objectType.isNested() && scalarReferences.size() > 0) {
       column = ofNullable(scalarReferences.get(fieldRequest.getName()))
           .orElseThrow(() -> illegalStateException("Missing scalar reference for field '{}", fieldRequest.getName()));
@@ -304,11 +304,26 @@ class SelectBuilder {
       column = objectField.getColumn();
     }
 
-    var columnMapper = createColumnMapper(column, table);
+    ColumnMapper columnMapper;
+    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+      columnMapper = createSpatialColumnMapper(column, table, objectField, fieldRequest);
+    } else {
+      columnMapper = createColumnMapper(column, table);
+    }
 
     parentMapper.register(fieldRequest.getName(), columnMapper);
 
     return columnMapper.getColumn();
+  }
+
+  private SpatialColumnMapper createSpatialColumnMapper(String columnName, Table<Record> table,
+      PostgresObjectField objectField, FieldRequest fieldRequest) {
+    String spatialColumnName = SpatialHelper.getColummName(columnName, objectField, fieldRequest);
+
+    var column = column(table, spatialColumnName).as(aliasManager.newAlias());
+    var requestedSrid = SpatialHelper.getRequestedSrid(fieldRequest);
+
+    return new SpatialColumnMapper(column, objectField.getSpatialReferenceSystems(), requestedSrid);
   }
 
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {
@@ -316,7 +331,6 @@ class SelectBuilder {
 
     return new ColumnMapper(column);
   }
-
 
   private Stream<SelectQuery<Record>> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table) {
