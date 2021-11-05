@@ -391,7 +391,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  @Disabled("Dient bekeken te worden")
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
@@ -406,7 +405,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(6));
+    assertThat(fieldDefinitions.size(), is(7));
 
     var geometryFieldDefinition = fieldDefinitions.get(1);
     assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
@@ -432,12 +431,18 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertType(visitAddressFieldDefinition.getType(), "Address");
     assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beersFieldDefinition = fieldDefinitions.get(4);
+    var beerFieldDefinition = fieldDefinitions.get(4);
+    assertThat(beerFieldDefinition.getName(), is("beer"));
+    assertType(beerFieldDefinition.getType(), "Beer");
+    assertThat(beerFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var beersFieldDefinition = fieldDefinitions.get(5);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(5);
+    var beerAggFieldDefinition = fieldDefinitions.get(6);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
   }
 

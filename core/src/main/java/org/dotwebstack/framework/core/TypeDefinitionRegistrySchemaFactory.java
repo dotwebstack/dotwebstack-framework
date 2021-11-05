@@ -25,6 +25,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
+import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
@@ -230,7 +231,8 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     if (StringUtils.isBlank(objectField.getType())) {
       if (AggregateHelper.isAggregate(objectField)) {
-        type = TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE);
+        type = NonNullType.newNonNullType(TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE))
+            .build();
       } else {
         return Optional.empty();
       }
