@@ -408,12 +408,17 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(fieldDefinitions.size(), is(7));
 
     var geometryFieldDefinition = fieldDefinitions.get(1);
-    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
+    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 2);
 
-    var geometryInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+    var geometrySridInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
         .get(0);
-    assertThat(geometryInputValueDefinition.getName(), is("type"));
-    assertType(geometryInputValueDefinition.getType(), "GeometryType");
+    assertThat(geometrySridInputValueDefinition.getName(), is("srid"));
+    assertType(geometrySridInputValueDefinition.getType(), "Int");
+
+    var geometryTypeInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(geometryTypeInputValueDefinition.getName(), is("type"));
+    assertType(geometryTypeInputValueDefinition.getType(), "GeometryType");
 
     var addressesFieldDefinition = fieldDefinitions.get(2);
     assertThat(addressesFieldDefinition.getName(), is("addresses"));

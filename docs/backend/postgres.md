@@ -272,6 +272,30 @@ CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.be
 $$ language SQL immutable;
 ```
 
+### Spatial
+When the Extension module: `ext-spatial` is enabled it is possible to add next to the default `ext-spatial` configuration
+extra postgres config for Geometry column mapping. The property `columnSuffix` can be used to accomplish this. Every Geometry 
+field will have a suffix concatenated for the corresponding srid.
+
+Example configuration:
+
+```yaml
+spatial:
+  srid:
+    28992:
+      dimensions: 2
+    7415:
+      dimensions: 3
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      columnSuffix: _etrs89
+      equivalent: 9067
+```
+
 ## PostGIS
 
 Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are

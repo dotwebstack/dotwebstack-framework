@@ -6,9 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Map;
+import java.util.Optional;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,8 +35,15 @@ class PostgresBackendModuleTest {
   @BeforeEach
   void doBeforeEach() {
     backendLoaderFactory = new PostgresBackendLoaderFactory(databaseClient);
-    postgresBackendModule = new PostgresBackendModule(backendLoaderFactory);
+    postgresBackendModule = new PostgresBackendModule(getSpatial(), backendLoaderFactory);
     testHelper = new TestHelper(postgresBackendModule);
+  }
+
+  private Optional<Spatial> getSpatial() {
+    var spatial = new Spatial();
+    var srs = new PostgresSpatialReferenceSystem();
+    spatial.setReferenceSystems(Map.of(7415, srs));
+    return Optional.of(spatial);
   }
 
   @Test

@@ -181,6 +181,7 @@ public class BackendRequestFactory {
     return FieldRequest.builder()
         .name(selectedField.getName())
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
+        .arguments(selectedField.getArguments())
         .build();
   }
 

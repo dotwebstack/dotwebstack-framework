@@ -6,24 +6,23 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TY
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Base64;
 import java.util.Objects;
+import lombok.AllArgsConstructor;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
+@AllArgsConstructor
 public class SpatialDataFetcher implements DataFetcher<Object> {
 
   private final TypeEnforcer typeEnforcer;
-
-  public SpatialDataFetcher(TypeEnforcer typeEnforcer) {
-    this.typeEnforcer = typeEnforcer;
-  }
 
   @Override
   public Object get(DataFetchingEnvironment dataFetchingEnvironment) {
@@ -36,6 +35,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
     }
 
     var geometry = (Geometry) dataFetchingEnvironment.getSource();
+
     String fieldName = dataFetchingEnvironment.getFieldDefinition()
         .getName();
 
@@ -48,6 +48,8 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
     }
 
     switch (fieldName) {
+      case SRID:
+        return geometry.getSRID();
       case TYPE:
         return geometry.getGeometryType()
             .toUpperCase();

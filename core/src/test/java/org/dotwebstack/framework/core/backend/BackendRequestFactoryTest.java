@@ -72,7 +72,6 @@ class BackendRequestFactoryTest {
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(selectionSet.getImmediateFields()).thenReturn(List.of(selectedField));
 
-
     SelectedField selectedFieldParent = mock(SelectedField.class);
     when(selectedFieldParent.getName()).thenReturn("beerAgg");
     GraphQLList graphQlList = mock(GraphQLList.class);
@@ -99,7 +98,6 @@ class BackendRequestFactoryTest {
         .get(0)
         .getName(), is("name"));
   }
-
 
   @Test
   void createRequestContext_returnsRequestContext_whithObjectFieldType_Address() {

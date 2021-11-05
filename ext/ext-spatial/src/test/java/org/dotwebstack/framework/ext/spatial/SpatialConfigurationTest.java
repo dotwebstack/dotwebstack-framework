@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,62 +43,43 @@ class SpatialConfigurationTest {
 
   @Test
   void providesDataFetcher_returnsTrue_forType() {
-    when(environment.getFieldType()).thenReturn(createOutputType(false));
-    when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
-    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(TYPE));
+    providesDataFetcher_returnsTrue_for(TYPE, Boolean.TRUE);
+  }
 
-    Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
-
-    assertThat(canProvideDataFetcher, is(notNullValue()));
-    assertThat(canProvideDataFetcher, is(Boolean.TRUE));
+  @Test
+  void providesDataFetcher_returnsTrue_forSrid() {
+    providesDataFetcher_returnsTrue_for(SRID, Boolean.TRUE);
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forAsWkb() {
-    when(environment.getFieldType()).thenReturn(createOutputType(false));
-    when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
-    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_WKB));
-
-    Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
-
-    assertThat(canProvideDataFetcher, is(notNullValue()));
-    assertThat(canProvideDataFetcher, is(Boolean.TRUE));
+    providesDataFetcher_returnsTrue_for(AS_WKB, Boolean.TRUE);
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forAsWkt() {
-    when(environment.getFieldType()).thenReturn(createOutputType(false));
-    when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
-    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_WKT));
-
-    Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
-
-    assertThat(canProvideDataFetcher, is(notNullValue()));
-    assertThat(canProvideDataFetcher, is(Boolean.TRUE));
+    providesDataFetcher_returnsTrue_for(AS_WKT, Boolean.TRUE);
   }
 
   @Test
   void providesDataFetcher_returnsTrue_forAsGeoJson() {
-    when(environment.getFieldType()).thenReturn(createOutputType(false));
-    when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
-    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(AS_GEOJSON));
-
-    Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
-
-    assertThat(canProvideDataFetcher, is(notNullValue()));
-    assertThat(canProvideDataFetcher, is(Boolean.TRUE));
+    providesDataFetcher_returnsTrue_for(AS_GEOJSON, Boolean.TRUE);
   }
 
   @Test
   void providesDataFetcher_returnsFalse_unknownFieldName() {
+    providesDataFetcher_returnsTrue_for("monkey", Boolean.FALSE);
+  }
+
+  private void providesDataFetcher_returnsTrue_for(String type, Boolean result) {
     when(environment.getFieldType()).thenReturn(createOutputType(false));
     when(environment.getParentType()).thenReturn(createParentDefinition(GEOMETRY));
-    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition("monkey"));
+    when(environment.getFieldDefinition()).thenReturn(createFieldDefinition(type));
 
     Boolean canProvideDataFetcher = wiringFactory.providesDataFetcher(environment);
 
     assertThat(canProvideDataFetcher, is(notNullValue()));
-    assertThat(canProvideDataFetcher, is(Boolean.FALSE));
+    assertThat(canProvideDataFetcher, is(result));
   }
 
   @Test
