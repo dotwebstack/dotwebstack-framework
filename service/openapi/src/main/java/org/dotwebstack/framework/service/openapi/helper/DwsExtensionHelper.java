@@ -166,8 +166,8 @@ public class DwsExtensionHelper {
       Map<String, String> paging = (Map<String, String>) settingsMap.get("paging");
       if (paging != null) {
         builder.paging(QueryPaging.builder()
-            .firstParam(paging.get("first"))
-            .offsetParam(paging.get("offset"))
+            .pageParam(paging.get("page"))
+            .pageSizeParam(paging.get("pageSize"))
             .build());
       }
     } else {

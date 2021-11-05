@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,19 +87,16 @@ class QueryBuilderTest {
 
   @ParameterizedTest(name = "{5}")
   @MethodSource("queryBuilderArgsNoPaging")
-  void queryBuilder_returnsExpectedQuery_forNoPagingConfig(String path, String queryName, String expectedQuery,
+  void queryBuilder_throwsException_forNoPagingConfig(String path, String queryName, String expectedExceptionMessage,
       Map<String, Object> inputParams, String varString, String displayName) {
     ResponseSchemaContext responseSchemaContext = getResponseSchemaContext(path, queryName);
     mockQueryCollection(queryName);
-    Optional<QueryInput> queryInput =
-        new GraphQlQueryBuilder(schema, jexlEngine).toQueryInput(responseSchemaContext, inputParams);
-    String query = queryInput.map(QueryInput::getQuery)
-        .orElseThrow();
+    GraphQlQueryBuilder builder = new GraphQlQueryBuilder(schema, jexlEngine);
 
-    assertThat(query, equalToCompressingWhiteSpace(expectedQuery));
-    if (varString != null) {
-      assertEquals(varString, getVariablesString(queryInput.orElseThrow()));
-    }
+    IllegalArgumentException illegalArgumentException =
+        assertThrows(IllegalArgumentException.class, () -> builder.toQueryInput(responseSchemaContext, inputParams));
+
+    assertThat(illegalArgumentException.getMessage(), is(expectedExceptionMessage));
   }
 
   private void mockQueryCollection(String queryName) {
@@ -157,8 +155,8 @@ class QueryBuilderTest {
             loadVariables("query4.txt"), "query with filter"),
         Arguments.arguments("/query4", "query4", loadQuery("query4_no_filter.txt"), Map.of(), null,
             "query filter not added for missing param value"),
-        Arguments.arguments("/query17", "query17", loadQuery("query17.txt"), Map.of(), null,
-            "query with paging without offset/first input"),
+        // Arguments.arguments("/query17", "query17", loadQuery("query17.txt"), Map.of(), null,
+        // "query with paging without offset/first input"),
         Arguments.arguments("/query17", "query17", loadQuery("query17_with_input.txt"),
             Map.of("pageSize", "10", "page", "2", "pageSize2", "20", "page2", "1"), null,
             "query with paging with offset/first input"),
@@ -172,12 +170,14 @@ class QueryBuilderTest {
         Arguments.arguments("/query4", "query4", loadQuery("query4.txt"),
             Map.of("o3_prop1", "val1", "o3_prop3", "val2", "o3_prop2", "val3"), loadVariables("query4_expression.txt"),
             "query with expression and required path"),
-        Arguments.arguments("/query9", "query9", loadQuery("query9.txt"), Map.of(), null,
-            "query with required fields"));
+        Arguments.arguments("/query9", "query9", loadQuery("query9.txt"), Map.of(), null, "query with required fields"),
+        Arguments.arguments("/query21", "query21", loadQuery("query21.txt"),
+            Map.of("page", "1", "pageSize", "10", "o21_prop1", "val1", "o21_prop3", "val2"),
+            loadVariables("query21.txt"), "query with paging and filter"));
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {
-    return Stream.of(Arguments.arguments("/query17", "query17", loadQuery("query17_no_paging.txt"), Map.of(), null,
+    return Stream.of(Arguments.arguments("/query17", "query17", "pageSize not provided", Map.of(), null,
         "query with paging without offset/first input"));
   }
 

@@ -169,6 +169,32 @@ components:
         o19_prop4:
           type: string
 
+    Object21:
+      type: object
+      x-dws-envelope: true
+      required:
+        - objects
+      properties:
+        objects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object21b'
+
+    Object21b:
+      type: object
+      required:
+        - o21_prop1
+        - o21_prop2
+        - o21_prop3
+      properties:
+        o21_prop1:
+          type: string
+        o21_prop2:
+          type: number
+          nullable: true
+        o21_prop3:
+          type: integer
+
   headers:
     HeaderRef:
       schema:
@@ -529,8 +555,8 @@ paths:
       x-dws-query:
         field: query17
         paging:
-          first: $query.pageSize
-          offset: $query.page
+          pageSize: $query.pageSize
+          page: $query.page
       parameters:
         - name: pageSize
           in: query
@@ -597,3 +623,36 @@ paths:
           description: OK
           content:
             text/turtle: {}
+  /query21:
+    get:
+      x-dws-query:
+        field: query21
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+        filters:
+          query21:
+            type: PropFilter
+            fields:
+              o21_prop1:
+                eq: $query.o21_prop1
+      parameters:
+        - name: o21_prop1
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object21'

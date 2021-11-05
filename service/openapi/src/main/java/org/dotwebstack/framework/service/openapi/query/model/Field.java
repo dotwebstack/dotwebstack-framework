@@ -36,24 +36,24 @@ public class Field {
   public void writeAsString(@NonNull StringBuilder sb, int depth) {
     indent(sb, depth);
     sb.append(name);
-    if (arguments != null && !arguments.isEmpty()) {
-      sb.append("(");
-      String prefix = "";
-      for (Map.Entry<String, Object> e : arguments.entrySet()) {
-        sb.append(prefix);
-        sb.append(e.getKey())
-            .append(": ");
-        GraphQlValueWriter.write(e.getValue(), sb);
-        prefix = ", ";
+    boolean hasArguments = arguments != null && !arguments.isEmpty();
+    boolean hasFilter = filterId != null;
+
+    if (hasArguments || hasFilter) {
+      List<String> serializedArguments = new ArrayList<>();
+      if (hasArguments) {
+        for (Map.Entry<String, Object> e : arguments.entrySet()) {
+          StringBuilder argBuilder = new StringBuilder();
+          GraphQlValueWriter.write(e.getValue(), argBuilder);
+          serializedArguments.add(String.format("%s: %s", e.getKey(), argBuilder));
+        }
       }
-      sb.append(")");
-    } else if (filterId != null) {
-      sb.append("(");
-      sb.append("filter: ")
-          .append("$")
-          .append(filterId);
-      sb.append(")");
+      if (hasFilter) {
+        serializedArguments.add(String.format("filter: $%s", filterId));
+      }
+      sb.append(String.format("(%s)", String.join(", ", serializedArguments)));
     }
+
     if (selectionSet != null) {
       sb.append(selectionSet);
     } else if (children != null && !children.isEmpty()) {
