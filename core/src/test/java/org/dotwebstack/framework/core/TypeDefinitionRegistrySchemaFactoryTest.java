@@ -41,7 +41,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
