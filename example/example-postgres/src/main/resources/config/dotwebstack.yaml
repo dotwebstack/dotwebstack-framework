@@ -1,6 +1,3 @@
-features:
-  - paging
-
 spatial:
   srid:
     28992:
@@ -178,6 +175,7 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
+        pageable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery

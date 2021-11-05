@@ -63,11 +63,11 @@ class GraphQlPostgresWithPagingIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test
@@ -235,22 +235,22 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   private JsonNode executeGetRequestDefault(String query) {
-    return executeGetRequest(query, "", "");
+    return executeGetRequest(query);
   }
 
-  private JsonNode executeGetRequest(String query, String operationName, String variables) {
+  private JsonNode executeGetRequest(String query) {
     UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/");
 
     if (!StringUtils.isBlank(query)) {
       uriBuilder.queryParam("query", query);
     }
 
-    if (!StringUtils.isBlank(operationName)) {
-      uriBuilder.queryParam("operationName", operationName);
+    if (!StringUtils.isBlank("")) {
+      uriBuilder.queryParam("operationName", "");
     }
 
-    if (!StringUtils.isBlank(variables)) {
-      uriBuilder.queryParam("variables", variables);
+    if (!StringUtils.isBlank("")) {
+      uriBuilder.queryParam("variables", "");
     }
 
     var result = client.get()

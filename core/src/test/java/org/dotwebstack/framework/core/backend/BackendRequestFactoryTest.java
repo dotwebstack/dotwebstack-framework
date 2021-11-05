@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.backend;
 
 import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -12,9 +13,11 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
+import graphql.language.FieldDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironmentImpl;
@@ -60,7 +63,7 @@ class BackendRequestFactoryTest {
   @Test
   void createObjectRequest_returnsObjectRequest_forBeerWithKey() {
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     var outputType = GraphQLObjectType.newObject()
         .name("Beer")
@@ -128,7 +131,7 @@ class BackendRequestFactoryTest {
     when(selectionSetParent.getImmediateFields()).thenReturn(List.of(selectedFieldParent));
 
     var executionStepInfo = initExecutionStepInfoMock();
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
@@ -167,8 +170,15 @@ class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
 
+    envBuilder.fieldDefinition(newFieldDefinition().name("field")
+        .type(Scalars.GraphQLID)
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
+            .build())
+        .build());
+
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
 
@@ -206,7 +216,7 @@ class BackendRequestFactoryTest {
     lenient().when(executionStepInfo.getArgument(eq("sort")))
         .thenReturn("NAME");
 
-    var fieldDefinitionBuilder = GraphQLFieldDefinition.newFieldDefinition();
+    var fieldDefinitionBuilder = newFieldDefinition();
     List<GraphQLArgument> argumentList = new ArrayList<>();
     fieldDefinitionBuilder.arguments(argumentList);
     fieldDefinitionBuilder.name("a");
