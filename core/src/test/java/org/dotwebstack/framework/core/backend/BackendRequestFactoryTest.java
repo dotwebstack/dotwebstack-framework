@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.Scalars.GraphQLString;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -13,6 +15,8 @@ import static org.mockito.Mockito.when;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
+import graphql.language.InputValueDefinition;
+import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
@@ -26,13 +30,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,21 +49,63 @@ class BackendRequestFactoryTest {
   @Mock
   private DatabaseClient databaseClient;
 
-  private SchemaReader schemaReader;
-
-  private BackendRequestFactory backendRequestFactory;
+  private TestHelper testHelper;
 
   @BeforeEach
-  void doBefore() {
-    schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
+  void setUp() {
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
+    testHelper = new TestHelper(backendModule);
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequest_forBeerWithKey() {
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+
+    var outputType = GraphQLObjectType.newObject()
+        .name("Beer")
+        .build();
+
+    var argumentDefinition = GraphQLArgument.newArgument()
+        .name("identifier")
+        .type(GraphQLString)
+        .definition(InputValueDefinition.newInputValueDefinition()
+            .type(new TypeName(GraphQLString.getName()))
+            .additionalData(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())
+            .build())
+        .build();
+
+    var fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name("beer")
+        .type(outputType)
+        .argument(argumentDefinition)
+        .build();
+
+    Map<String, Object> arguments = Map.of("identifier", "foo");
+
+    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
+        .fieldDefinition(fieldDefinition)
+        .type(outputType)
+        .arguments(arguments)
+        .build();
+
+    var selectionset = mock(DataFetchingFieldSelectionSet.class);
+
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, selectionset);
+    assertThat(objectRequest, is(notNullValue()));
+
+    var objectType = objectRequest.getObjectType();
+    assertThat(objectType.getName(), is("Beer"));
+
+    var keyCriteria = objectRequest.getKeyCriteria();
+    assertThat(keyCriteria.size(), is(1));
+    assertThat(keyCriteria.get(0)
+        .getValues(), is(equalTo(arguments)));
   }
 
   @Test
   void createCollectionRequest_returnsCollectionRequest_Brewery() {
-    BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
-    var testHelper = new TestHelper(backendModule);
-    var schema = testHelper.getSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-    backendModule.init(schema.getObjectTypes());
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
 
     GraphQLObjectType namedType = mock(GraphQLObjectType.class);
     when(namedType.getName()).thenReturn("Aggregate");
@@ -83,10 +128,11 @@ class BackendRequestFactoryTest {
     when(selectionSetParent.getImmediateFields()).thenReturn(List.of(selectedFieldParent));
 
     var executionStepInfo = initExecutionStepInfoMock();
-    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
-    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertThat(result, is(notNullValue()));
     assertThat(result.getObjectRequest()
         .getObjectType()
         .getName(), is("Brewery"));
@@ -121,12 +167,12 @@ class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
 
-    var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
-
-    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(schema));
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
-    assertThat(result, CoreMatchers.is(notNullValue()));
+
+    assertThat(result, is(notNullValue()));
     assertThat(result.getObjectField()
         .getName(), is("addresses"));
     assertThat(result.getObjectField()

@@ -45,15 +45,13 @@ public class TestHelper {
         .registerModule(deserializerModule);
   }
 
-  public void initObjecTypes(String pathToConfigFile) {
-    Schema schema = getSchema(pathToConfigFile);
-    backendModule.init(schema.getObjectTypes());
-  }
-
-  public Schema getSchema(String pathToConfigFile) {
+  public Schema loadSchema(String pathToConfigFile) {
     var objectMapper = createObjectMapper();
+    var schema = new SchemaReader(objectMapper).read(pathToConfigFile);
 
-    return new SchemaReader(objectMapper).read(pathToConfigFile);
+    backendModule.init(schema.getObjectTypes());
+
+    return schema;
   }
 
   private ObjectMapper createObjectMapper() {
