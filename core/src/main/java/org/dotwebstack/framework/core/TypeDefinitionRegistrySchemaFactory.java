@@ -25,6 +25,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
+import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
@@ -50,9 +51,9 @@ import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.model.Subscription;
-import org.dotwebstack.framework.core.query.model.Query;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
@@ -167,6 +168,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private ObjectTypeDefinition createConnectionTypeDefinition(ObjectType<?> objectType) {
     var connectionName = createConnectionName(objectType.getName());
+
     return newObjectTypeDefinition().name(connectionName)
         .fieldDefinition(newFieldDefinition().name(PagingConstants.NODES_FIELD_NAME)
             .type(newNonNullableListType(objectType.getName()))
@@ -225,9 +227,11 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private Optional<FieldDefinition> createFieldDefinition(ObjectField objectField) {
     Type<?> type;
+
     if (StringUtils.isBlank(objectField.getType())) {
       if (AggregateHelper.isAggregate(objectField)) {
-        type = TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE);
+        type = NonNullType.newNonNullType(TypeUtils.newType(AggregateConstants.AGGREGATE_TYPE))
+            .build();
       } else {
         return Optional.empty();
       }
@@ -280,9 +284,17 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private List<InputValueDefinition> createInputValueDefinitions(ObjectField objectField) {
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+
     if (GEOMETRY_TYPE.equals(objectField.getType())) {
       inputValueDefinitions.addAll(createGeometryArguments());
     }
+
+    schema.getObjectType(objectField.getType())
+        .ifPresent(objectType -> objectField.getKeys()
+            .stream()
+            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType,
+                Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
+            .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
         .stream()
@@ -301,7 +313,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       createInputValueDefinitionForSortableByObject(objectField.getType(), objectType)
           .ifPresent(inputValueDefinitions::add);
 
-      if (objectField.isList()) {
+      if (objectField.isPageable() && objectField.isList()) {
         createFirstArgument().ifPresent(inputValueDefinitions::add);
         createOffsetArgument().ifPresent(inputValueDefinitions::add);
       }
@@ -312,7 +324,6 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private void addQueryTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
-
     var queryFieldDefinitions = schema.getQueries()
         .entrySet()
         .stream()
@@ -328,7 +339,6 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private void addSubscriptionTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
-
     var subscriptionFieldDefinitions = schema.getSubscriptions()
         .entrySet()
         .stream()
@@ -384,7 +394,6 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private FieldDefinition createQueryFieldDefinition(String queryName, Query query) {
-
     var objectType = schema.getObjectType(query.getType())
         .orElseThrow();
 
@@ -568,7 +577,6 @@ public class TypeDefinitionRegistrySchemaFactory {
         .type(newType("String"))
         .build();
   }
-
 
   private String createConnectionName(String objectTypeName) {
     return String.format("%sConnection", StringUtils.capitalize(objectTypeName));

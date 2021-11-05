@@ -8,10 +8,17 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import org.dotwebstack.framework.core.CoreConfigurer;
+import org.dotwebstack.framework.core.TypeDefinitionRegistrySchemaFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.SchemaReader;
+import org.dotwebstack.framework.core.datafetchers.filter.CoreFilterConfigurer;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -45,15 +52,26 @@ public class TestHelper {
         .registerModule(deserializerModule);
   }
 
-  public void initObjecTypes(String pathToConfigFile) {
-    Schema schema = getSchema(pathToConfigFile);
+  public Schema loadSchema(String pathToConfigFile) {
+    var objectMapper = createObjectMapper();
+    var schema = new SchemaReader(objectMapper).read(pathToConfigFile);
+
     backendModule.init(schema.getObjectTypes());
+
+    return schema;
   }
 
-  public Schema getSchema(String pathToConfigFile) {
-    var objectMapper = createObjectMapper();
+  public static GraphQLSchema schemaToGraphQl(Schema schema) {
+    var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(schema, List.of(new CoreFilterConfigurer()))
+        .createTypeDefinitionRegistry();
 
-    return new SchemaReader(objectMapper).read(pathToConfigFile);
+    var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
+
+    var coreConfigurer = new CoreConfigurer();
+    coreConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry);
+    coreConfigurer.configureRuntimeWiring(runtimeWiringBuilder);
+
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }
 
   private ObjectMapper createObjectMapper() {

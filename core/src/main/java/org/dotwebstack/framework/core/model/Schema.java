@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.EnumerationConfiguration;
-import org.dotwebstack.framework.core.query.model.Query;
 
 @Data
 public class Schema {

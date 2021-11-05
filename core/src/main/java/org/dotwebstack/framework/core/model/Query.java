@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.query.model;
+package org.dotwebstack.framework.core.model;
 
 import java.util.ArrayList;
 import java.util.List;
