@@ -1,5 +1,21 @@
 spatial:
-  sourceCrs: EPSG:28992
+  srid:
+    28992:
+      dimensions: 2
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
+    7931:
+      dimensions: 3
+      columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
+      equivalent: 9067
 
 subscriptions:
   beerSubscription:
@@ -53,38 +69,12 @@ objectTypes:
       retired:
         type: Boolean
       brewery:
-        type: Brewery
-        joinColumns:
-          - name: brewery
-            referencedField: record_id
-      breweryRelation:
-        type: BreweryRelation
+        type: BeerBrewery
         joinColumns:
           - name: brewery
             referencedField: ref.record_id
       ingredients:
-        type: Ingredient
-        list: true
-        joinTable:
-          name: dbeerpedia.beers_ingredients
-          joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: identifier
-      ingredientAgg:
-        aggregationOf: Ingredient
-        joinTable:
-          name: dbeerpedia.beers_ingredients
-          joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: identifier
-      ingredientRelations:
-        type: IngredientRelation
+        type: BeerIngredient
         list: true
         joinTable:
           name: dbeerpedia.beers_ingredients
@@ -98,10 +88,13 @@ objectTypes:
         type: Taste
         list: true
 
-  BreweryRelation:
+  BeerBrewery:
     fields:
       ref:
         type: BreweryRef
+      node:
+        type: Brewery
+        keyField: ref
 
   BreweryRef:
     fields:
@@ -144,7 +137,7 @@ objectTypes:
         field: relatedTo.status
     fields:
       record_id:
-        type: ID
+        type: Int
       identifier:
         type: String
       name:
@@ -188,10 +181,14 @@ objectTypes:
             - name: brewery_related_to_identifier
               referencedField: identifier
 
-  IngredientRelation:
+  BeerIngredient:
     fields:
-      ref:
+      refs:
         type: IngredientRef
+        list: true
+      nodes:
+        type: Ingredient
+        list: true
 
   IngredientRef:
     fields:

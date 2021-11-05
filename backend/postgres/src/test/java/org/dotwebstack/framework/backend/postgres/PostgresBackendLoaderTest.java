@@ -157,12 +157,9 @@ class PostgresBackendLoaderTest {
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
 
-    List<KeyCriteria> keyCriteria = List.of();
-
     return ObjectRequest.builder()
         .objectType(objectType)
         .objectFields(objectFields)
-        .keyCriteria(keyCriteria)
         .contextCriteria(contextCriteria)
         .build();
 

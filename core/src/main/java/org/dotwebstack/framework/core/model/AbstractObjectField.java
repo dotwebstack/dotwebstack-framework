@@ -23,6 +23,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected String aggregationOf;
 
+  protected String keyField;
+
   @Valid
   protected ObjectType<? extends ObjectField> aggregationOfType;
 

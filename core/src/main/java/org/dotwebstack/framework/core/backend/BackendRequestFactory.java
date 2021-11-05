@@ -24,11 +24,8 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
@@ -255,17 +252,19 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
-    return arguments.stream()
+  private KeyCriteria createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+    var keys = arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
         .filter(argument -> argumentMap.containsKey(argument.getName()))
-        .map(argument -> Map.of(argument.getName(), argumentMap.get(argument.getName())))
-        .map(values -> KeyCriteria.builder()
-            .values(values)
-            .build())
-        .collect(Collectors.toList());
+        .map(argument -> Map.entry(argument.getName(), argumentMap.get(argument.getName())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
+
+    if (keys.size() > 0) {
+      return KeyCriteria.builder().values(keys).build();
+    }
+    return null;
   }
 
   private List<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map<String, Object> filterArgument) {
@@ -277,8 +276,7 @@ public class BackendRequestFactory {
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
         .map(filterName -> {
-          var filterConfiguration = objectType.getFilters()
-              .get(filterName);
+          var filterConfiguration = objectType.getFilters().get(filterName);
 
           var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 

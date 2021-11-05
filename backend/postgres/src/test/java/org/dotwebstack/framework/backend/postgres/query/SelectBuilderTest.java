@@ -436,14 +436,12 @@ class SelectBuilderTest {
     FieldRequest fieldRequest = mock(FieldRequest.class);
     when(fieldRequest.getName()).thenReturn("a");
 
-    List<KeyCriteria> keyCriteria = List.of();
     Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     objectRequestBuilder = ObjectRequest.builder()
         .objectType(objectType)
         .objectFields(objectFields)
         .scalarFields(List.of(fieldRequest))
-        .keyCriteria(keyCriteria)
         .contextCriteria(contextCriteria);
   }
 

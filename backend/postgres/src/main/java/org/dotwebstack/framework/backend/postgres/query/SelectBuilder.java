@@ -5,6 +5,8 @@ import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
+import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
+import static org.dotwebstack.framework.backend.postgres.query.BatchSingleJoinBuilder.newBatchSingleJoin;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
@@ -19,11 +21,7 @@ import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_P
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
@@ -31,21 +29,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.query.model.AggregateField;
-import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
-import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ContextCriteria;
-import org.dotwebstack.framework.core.query.model.FieldRequest;
-import org.dotwebstack.framework.core.query.model.JoinCondition;
-import org.dotwebstack.framework.core.query.model.JoinCriteria;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.*;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -115,7 +105,7 @@ class SelectBuilder {
       return dataQuery;
     }
 
-    return BatchJoinBuilder.newBatchJoining()
+    return newBatchJoining()
         .requestContext(requestContext)
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
@@ -123,6 +113,17 @@ class SelectBuilder {
         .table(dataTable)
         .joinCriteria(joinCriteria)
         .objectRequest(collectionRequest.getObjectRequest())
+        .build();
+  }
+
+  public SelectQuery<Record> build(BatchRequest batchRequest) {
+    var dataQuery = build(batchRequest.getObjectRequest());
+
+    return newBatchSingleJoin()
+        .aliasManager(aliasManager)
+        .fieldMapper(fieldMapper)
+        .dataQuery(dataQuery)
+        .keys(batchRequest.getKeys())
         .build();
   }
 
@@ -154,10 +155,7 @@ class SelectBuilder {
       dataQuery.addFrom(table);
     }
 
-    objectRequest.getKeyCriteria()
-        .stream()
-        .map(keyCriteria -> createKeyConditions(keyCriteria, objectType, selectTable))
-        .forEach(dataQuery::addConditions);
+    createKeyConditions(objectRequest.getKeyCriteria(),objectType,selectTable).forEach(dataQuery::addConditions);
 
     objectRequest.getScalarFields()
         .stream()
@@ -282,6 +280,9 @@ class SelectBuilder {
 
   private List<Condition> createKeyConditions(KeyCriteria keyCriteria, PostgresObjectType objectType,
       Table<Record> table) {
+    if (keyCriteria == null) {
+      return List.of();
+    }
     return keyCriteria.getValues()
         .entrySet()
         .stream()
@@ -292,9 +293,19 @@ class SelectBuilder {
         .collect(Collectors.toList());
   }
 
-  private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
+  private List<SelectFieldOrAsterisk> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
       Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
     var objectField = objectType.getField(fieldRequest.getName());
+
+    List<SelectFieldOrAsterisk> result = new ArrayList<>();
+
+    if (StringUtils.isNotBlank(objectField.getKeyField())){
+      var keyFieldRequest = FieldRequest.builder()
+          .name(objectField.getName())
+          .build();
+
+      result.addAll(processScalarField(keyFieldRequest,objectType,table,parentMapper));
+    }
 
     String column;
     if (objectType.isNested() && scalarReferences.size() > 0) {
@@ -313,7 +324,9 @@ class SelectBuilder {
 
     parentMapper.register(fieldRequest.getName(), columnMapper);
 
-    return columnMapper.getColumn();
+    result.add(columnMapper.getColumn());
+
+    return result;
   }
 
   private SpatialColumnMapper createSpatialColumnMapper(String columnName, Table<Record> table,
@@ -334,8 +347,21 @@ class SelectBuilder {
 
   private Stream<SelectQuery<Record>> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table) {
+
+    if (objectField.getKeyField() != null){
+      var keyObjectField = (PostgresObjectField) objectField.getObjectType().getField(objectField.getKeyField());
+      var keyObjectRequest = ObjectRequest.builder()
+          .objectType(keyObjectField.getTargetType())
+          .scalarFields(keyObjectField.getTargetType().getFields().keySet()
+              .stream().map(fieldName -> FieldRequest.builder().name(fieldName).build())
+              .collect(Collectors.toList()))
+          .build();
+
+      return createNestedSelect(keyObjectField,keyObjectRequest,table);
+    }
+
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    var objectType = objectRequest.getObjectType();
+    var objectType = (PostgresObjectType) objectRequest.getObjectType();
 
     fieldMapper.register(objectField.getName(), objectMapper);
 
@@ -354,7 +380,7 @@ class SelectBuilder {
       select.addLimit(1);
     }
 
-    if (!objectType.isNested()) {
+    if (!objectType.isNested() && !objectField.getObjectType().isNested()) {
       newJoin().table(table)
           .current(objectField)
           .tableCreator(createTableCreator(select, objectRequest.getContextCriteria()))

@@ -1,14 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.applyCardinality;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.createTypePatterns;
 import static org.dotwebstack.framework.backend.rdf4j.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -56,7 +54,7 @@ class GraphPatternBuilder {
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
 
-    objectRequest.getKeyCriteria()
+    ofNullable(objectRequest.getKeyCriteria())
         .stream()
         .flatMap(this::createPattern)
         .forEach(subPatterns::add);
