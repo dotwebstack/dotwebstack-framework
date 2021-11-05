@@ -87,12 +87,6 @@ objectTypes:
             type: String
             nullable: true
             list: true
-      beer:
-        type: Beer
-        mappedBy: brewery
-        nullable: true
-        keys:
-          - identifier
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery

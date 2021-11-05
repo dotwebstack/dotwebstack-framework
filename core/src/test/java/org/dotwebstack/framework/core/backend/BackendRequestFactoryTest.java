@@ -1,10 +1,8 @@
 package org.dotwebstack.framework.core.backend;
 
-import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,12 +16,9 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
 import graphql.language.FieldDefinition;
-import graphql.language.InputValueDefinition;
-import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
@@ -62,48 +57,44 @@ class BackendRequestFactoryTest {
 
   @Test
   void createObjectRequest_returnsObjectRequest_forBeerWithKey() {
-    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var graphQlSchema = TestHelper.schemaToGraphQl(schema);
 
-    var outputType = GraphQLObjectType.newObject()
-        .name("Beer")
-        .build();
+    var breweryFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("brewery");
 
-    var argumentDefinition = GraphQLArgument.newArgument()
-        .name("identifier")
-        .type(GraphQLString)
-        .definition(InputValueDefinition.newInputValueDefinition()
-            .type(new TypeName(GraphQLString.getName()))
-            .additionalData(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())
-            .build())
-        .build();
-
-    var fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name("beer")
-        .type(outputType)
-        .argument(argumentDefinition)
-        .build();
-
-    Map<String, Object> arguments = Map.of("identifier", "foo");
+    var beerFieldDefinition = graphQlSchema.getObjectType("Brewery")
+        .getFieldDefinition("beer");
 
     var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
-        .fieldDefinition(fieldDefinition)
-        .type(outputType)
-        .arguments(arguments)
+        .fieldDefinition(breweryFieldDefinition)
+        .type(breweryFieldDefinition.getType())
         .build();
 
-    var selectionset = mock(DataFetchingFieldSelectionSet.class);
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    var beerSelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    var beerField = mock(SelectedField.class);
 
-    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, selectionset);
+    when(beerField.getType()).thenReturn(beerFieldDefinition.getType());
+    when(beerField.getFieldDefinitions()).thenReturn(List.of(beerFieldDefinition));
+    when(beerField.getSelectionSet()).thenReturn(beerSelectionSet);
+    when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
+    when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
+
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+
     assertThat(objectRequest, is(notNullValue()));
 
-    var objectType = objectRequest.getObjectType();
-    assertThat(objectType.getName(), is("Beer"));
+    var objectFields = objectRequest.getObjectFields();
+    assertThat(objectFields.size(), is(1));
 
-    var keyCriteria = objectRequest.getKeyCriteria();
+    var keyCriteria = objectFields.values()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .getKeyCriteria();
     assertThat(keyCriteria.size(), is(1));
-    assertThat(keyCriteria.get(0)
-        .getValues(), is(equalTo(arguments)));
   }
 
   @Test
