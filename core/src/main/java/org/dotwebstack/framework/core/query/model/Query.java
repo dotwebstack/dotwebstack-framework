@@ -15,5 +15,7 @@ public class Query {
 
   private boolean list = false;
 
+  private boolean pageable = false;
+
   private String context;
 }

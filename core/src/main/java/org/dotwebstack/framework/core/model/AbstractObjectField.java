@@ -19,6 +19,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected boolean nullable = false;
 
+  protected boolean pageable = false;
+
   protected String aggregationOf;
 
   @Valid

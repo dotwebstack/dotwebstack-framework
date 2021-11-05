@@ -18,6 +18,8 @@ public interface ObjectField {
 
   boolean isNullable();
 
+  boolean isPageable();
+
   List<FieldArgument> getArguments();
 
   String getAggregationOf();
