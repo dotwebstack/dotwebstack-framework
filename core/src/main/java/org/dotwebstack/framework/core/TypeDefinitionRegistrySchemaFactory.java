@@ -313,7 +313,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       createInputValueDefinitionForSortableByObject(objectField.getType(), objectType)
           .ifPresent(inputValueDefinitions::add);
 
-      if (objectField.isList()) {
+      if (objectField.isPageable() && objectField.isList()) {
         createFirstArgument().ifPresent(inputValueDefinitions::add);
         createOffsetArgument().ifPresent(inputValueDefinitions::add);
       }
