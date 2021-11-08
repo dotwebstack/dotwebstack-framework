@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;

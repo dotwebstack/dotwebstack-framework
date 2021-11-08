@@ -156,8 +156,6 @@ class QueryBuilderTest {
             loadVariables("query4.txt"), "query with filter"),
         Arguments.arguments("/query4", "query4", loadQuery("query4_no_filter.txt"), Map.of(), null,
             "query filter not added for missing param value"),
-        // Arguments.arguments("/query17", "query17", loadQuery("query17.txt"), Map.of(), null,
-        // "query with paging without offset/first input"),
         Arguments.arguments("/query17", "query17", loadQuery("query17_with_input.txt"),
             Map.of("pageSize", "10", "page", "2", "pageSize2", "20", "page2", "1"), null,
             "query with paging with offset/first input"),
