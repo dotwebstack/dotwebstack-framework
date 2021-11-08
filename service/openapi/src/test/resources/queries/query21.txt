@@ -1,0 +1,9 @@
+query Query($filter0: PropFilter){
+ query21(offset: 0, first: 10, filter: $filter0) {
+  nodes {
+   o21_prop1
+   o21_prop2
+   o21_prop3
+  }
+ }
+}

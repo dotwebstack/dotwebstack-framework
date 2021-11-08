@@ -1,5 +1,5 @@
 query Query{
- query17(offset: 2, first: 10) {
+ query17(offset: 10, first: 10) {
   nodes {
    o18_prop1 {
     nodes {

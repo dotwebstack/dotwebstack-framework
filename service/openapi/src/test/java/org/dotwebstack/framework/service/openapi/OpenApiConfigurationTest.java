@@ -188,14 +188,14 @@ class OpenApiConfigurationTest {
 
     openApiConfiguration.route(openApi);
 
-    assertEquals(19, optionsAnswer.getResults()
+    assertEquals(20, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, times(20)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(21)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         any(RequestBodyContextBuilder.class), argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
-    assertEquals(20, actualHttpMethodOperations.size());
+    assertEquals(21, actualHttpMethodOperations.size());
 
     assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
         .getHttpMethod());
