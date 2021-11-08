@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query.paging;
 
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import java.util.Map;
@@ -8,10 +10,6 @@ import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryPaging;
 
 public class PagingHelper {
-
-  static final String FIRST = "first";
-
-  static final String OFFSET = "offset";
 
   private PagingHelper() {}
 
@@ -38,7 +36,7 @@ public class PagingHelper {
 
         query.getField()
             .getArguments()
-            .put(FIRST, first);
+            .put(FIRST_ARGUMENT_NAME, first);
       } else {
         throw parameterValidationException("pageSize parameter value not provided");
       }
@@ -46,7 +44,7 @@ public class PagingHelper {
       if (pageString != null) {
         query.getField()
             .getArguments()
-            .put(OFFSET, getOffsetValue(pageString, first));
+            .put(OFFSET_FIELD_NAME, getOffsetValue(pageString, first));
       } else {
         throw parameterValidationException("page parameter value not provided");
       }

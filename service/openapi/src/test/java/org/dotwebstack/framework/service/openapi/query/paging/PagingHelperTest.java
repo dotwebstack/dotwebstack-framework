@@ -1,12 +1,11 @@
 package org.dotwebstack.framework.service.openapi.query.paging;
 
-import static org.dotwebstack.framework.service.openapi.query.paging.PagingHelper.FIRST;
-import static org.dotwebstack.framework.service.openapi.query.paging.PagingHelper.OFFSET;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
@@ -112,10 +111,10 @@ class PagingHelperTest {
 
     assertThat(query.getField()
         .getArguments()
-        .get(FIRST), is(42));
+        .get(FIRST_ARGUMENT_NAME), is(42));
     assertThat(query.getField()
         .getArguments()
-        .get(OFFSET), is(0));
+        .get(OFFSET_FIELD_NAME), is(0));
   }
 
   @Test
@@ -129,9 +128,9 @@ class PagingHelperTest {
 
     assertThat(query.getField()
         .getArguments()
-        .get(FIRST), is(42));
+        .get(FIRST_ARGUMENT_NAME), is(42));
     assertThat(query.getField()
         .getArguments()
-        .get(OFFSET), is(84));
+        .get(OFFSET_FIELD_NAME), is(84));
   }
 }
