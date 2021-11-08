@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query.paging;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import java.util.Map;
 import lombok.NonNull;
@@ -8,6 +8,10 @@ import org.dotwebstack.framework.service.openapi.query.model.GraphQlQuery;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.QueryPaging;
 
 public class PagingHelper {
+
+  static final String FIRST = "first";
+
+  static final String OFFSET = "offset";
 
   private PagingHelper() {}
 
@@ -21,33 +25,47 @@ public class PagingHelper {
 
       int first;
       if (pageSizeString != null) {
-        first = Integer.parseInt(pageSizeString);
+        try {
+          first = Integer.parseInt(pageSizeString);
+        } catch (NumberFormatException numberFormatException) {
+          throw parameterValidationException("pageSize parameter value should be an integer 1 or higher, but was {}",
+              pageSizeString);
+        }
+
+        if (first < 1) {
+          throw parameterValidationException("pageSize parameter value should be 1 or higher, but was {}", first);
+        }
+
         query.getField()
             .getArguments()
-            .put("first", first);
+            .put(FIRST, first);
       } else {
-        // TODO badRequest
-        throw illegalArgumentException("pageSize not provided");
+        throw parameterValidationException("pageSize parameter value not provided");
       }
 
       if (pageString != null) {
         query.getField()
             .getArguments()
-            .put("offset", getOffsetValue(pageString, first));
+            .put(OFFSET, getOffsetValue(pageString, first));
       } else {
-        // TODO badRequest
-        throw illegalArgumentException("page not provided");
+        throw parameterValidationException("page parameter value not provided");
       }
     }
   }
 
   private static int getOffsetValue(String pageString, int first) {
-    int page = Integer.parseInt(pageString);
+    int page;
+    try {
+      page = Integer.parseInt(pageString);
+    } catch (NumberFormatException numberFormatException) {
+      throw parameterValidationException("page parameter value should be an integer 1 or higher, but was {}",
+          pageString);
+    }
+
     int offset = 0;
 
     if (page < 1) {
-      // TODO badRequest
-      throw illegalArgumentException("TODo");
+      throw parameterValidationException("page parameter value should be 1 or higher, but was {}", page);
     }
 
     if (page > 1) {

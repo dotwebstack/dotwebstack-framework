@@ -42,10 +42,10 @@ public class Field {
     if (hasArguments || hasFilter) {
       List<String> serializedArguments = new ArrayList<>();
       if (hasArguments) {
-        for (Map.Entry<String, Object> e : arguments.entrySet()) {
+        for (var argEntry : arguments.entrySet()) {
           StringBuilder argBuilder = new StringBuilder();
-          GraphQlValueWriter.write(e.getValue(), argBuilder);
-          serializedArguments.add(String.format("%s: %s", e.getKey(), argBuilder));
+          GraphQlValueWriter.write(argEntry.getValue(), argBuilder);
+          serializedArguments.add(String.format("%s: %s", argEntry.getKey(), argBuilder));
         }
       }
       if (hasFilter) {
@@ -58,7 +58,7 @@ public class Field {
       sb.append(selectionSet);
     } else if (children != null && !children.isEmpty()) {
       sb.append(" {\n");
-      children.forEach(c -> c.writeAsString(sb, depth + 1));
+      children.forEach(child -> child.writeAsString(sb, depth + 1));
       indent(sb, depth);
       sb.append("}");
     }

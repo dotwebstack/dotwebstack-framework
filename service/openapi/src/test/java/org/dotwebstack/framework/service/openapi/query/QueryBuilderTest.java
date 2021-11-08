@@ -32,6 +32,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -93,10 +94,10 @@ class QueryBuilderTest {
     mockQueryCollection(queryName);
     GraphQlQueryBuilder builder = new GraphQlQueryBuilder(schema, jexlEngine);
 
-    IllegalArgumentException illegalArgumentException =
-        assertThrows(IllegalArgumentException.class, () -> builder.toQueryInput(responseSchemaContext, inputParams));
+    ParameterValidationException parameterValidationException = assertThrows(ParameterValidationException.class,
+        () -> builder.toQueryInput(responseSchemaContext, inputParams));
 
-    assertThat(illegalArgumentException.getMessage(), is(expectedExceptionMessage));
+    assertThat(parameterValidationException.getMessage(), is(expectedExceptionMessage));
   }
 
   private void mockQueryCollection(String queryName) {
@@ -177,7 +178,7 @@ class QueryBuilderTest {
   }
 
   private static Stream<Arguments> queryBuilderArgsNoPaging() throws IOException {
-    return Stream.of(Arguments.arguments("/query17", "query17", "pageSize not provided", Map.of(), null,
+    return Stream.of(Arguments.arguments("/query17", "query17", "pageSize parameter value not provided", Map.of(), null,
         "query with paging without offset/first input"));
   }
 
