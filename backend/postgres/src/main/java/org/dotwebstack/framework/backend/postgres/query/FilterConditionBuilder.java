@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
@@ -90,6 +91,7 @@ class FilterConditionBuilder {
       JoinBuilder.newJoin()
           .table(table)
           .current(current)
+          .tableCreator(createTableCreator(filterQuery, objectRequest.getContextCriteria()))
           .relatedTable(filterTable)
           .build()
           .forEach(filterQuery::addConditions);
