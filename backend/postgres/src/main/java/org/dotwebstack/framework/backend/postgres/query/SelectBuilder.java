@@ -10,11 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.BatchSingleJoinBu
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.*;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSortFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
@@ -365,6 +361,27 @@ class SelectBuilder {
 
     fieldMapper.register(objectField.getName(), objectMapper);
 
+    List<SelectQuery<Record>> result = new ArrayList<>();
+
+    if (objectRequest.getObjectType().isNested() && objectField.getJoinTable() != null) {
+      var query = dslContext.selectQuery(findTable(objectField.getJoinTable().getName(),objectRequest.getContextCriteria()));
+
+      objectField.getJoinTable().getInverseJoinColumns()
+          .forEach(joinColumn -> {
+            var field = DSL.field(joinColumn.getName());
+
+            var fieldAgg = DSL.arrayAgg(field).as(aliasManager.newAlias());
+
+            query.addSelect(fieldAgg);
+
+            scalarReferences.put(joinColumn.getReferencedField(),fieldAgg.getName());
+          });
+
+      createJoinConditions(null,table,objectField.getJoinTable().getJoinColumns(), (PostgresObjectType) objectField.getObjectType()).forEach(query::addConditions);
+
+      result.add(query);
+    }
+
     var select = SelectBuilder.newSelect()
         .requestContext(requestContext)
         .fieldMapper(objectMapper)
@@ -388,18 +405,21 @@ class SelectBuilder {
           .forEach(select::addConditions);
     }
 
-    return Stream.of(select);
+    result.add(select);
+
+    return result.stream();
   }
 
   private Map<String, String> createScalarReferences(PostgresObjectField objectField) {
-    Map<String, String> nestedScalarReferences;
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      nestedScalarReferences = objectField.getJoinColumns()
+      return objectField.getJoinColumns()
           .stream()
           .collect(Collectors.toMap(JoinColumn::getReferencedField, JoinColumn::getName));
+    }else if (objectField.getJoinTable() != null) {
+      return scalarReferences;
     } else {
-      nestedScalarReferences = scalarReferences.entrySet()
+      return scalarReferences.entrySet()
           .stream()
           .filter(entry -> entry.getKey()
               .startsWith(String.format("%s.", objectField.getName())))
@@ -407,7 +427,6 @@ class SelectBuilder {
               entry.getValue()))
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
-    return nestedScalarReferences;
   }
 
   @Builder

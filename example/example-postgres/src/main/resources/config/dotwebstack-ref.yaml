@@ -46,17 +46,18 @@ objectTypes:
     filters:
       name:
         field: name
-      breweryCity:
-        field: brewery.visitAddress.city
-      ingredientName:
-        field: ingredients.name
+        # op geneste objecten kan je niet filteren
+#      breweryCity:
+#        field: brewery.visitAddress.city
+#      ingredientName:
+#        field: ingredients.name
     sortableBy:
       name:
         - field: name
           direction: ASC
-      breweryCity:
-        - field: brewery.visitAddress.city
-          direction: ASC
+#      breweryCity:
+#        - field: brewery.visitAddress.city
+#          direction: ASC
     fields:
       identifier:
         type: ID
@@ -75,7 +76,6 @@ objectTypes:
             referencedField: ref.record_id
       ingredients:
         type: BeerIngredient
-        list: true
         joinTable:
           name: dbeerpedia.beers_ingredients
           joinColumns:
@@ -83,7 +83,7 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredients_identifier
-              referencedField: ref.identifier
+              referencedField: refs.identifier
       taste:
         type: Taste
         list: true
