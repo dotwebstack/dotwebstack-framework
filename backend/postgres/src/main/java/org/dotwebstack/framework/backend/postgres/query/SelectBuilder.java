@@ -254,7 +254,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
-        .tableCreator(createTableCreator(subSelect, contextCriteria))
+        .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
         .forEach(subSelect::addConditions);
 
@@ -357,7 +357,7 @@ class SelectBuilder {
     if (!objectType.isNested()) {
       newJoin().table(table)
           .current(objectField)
-          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria()))
+          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
           .build()
           .forEach(select::addConditions);
     }
