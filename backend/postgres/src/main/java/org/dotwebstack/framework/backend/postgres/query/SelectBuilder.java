@@ -123,15 +123,19 @@ class SelectBuilder {
         .build();
   }
 
-  @SuppressWarnings("squid:S2637")
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
+    return build(objectRequest, aliasManager.newAlias());
+  }
+
+  @SuppressWarnings("squid:S2637")
+  public SelectQuery<Record> build(ObjectRequest objectRequest, String tableAlias) {
     validateFields(this);
 
     var objectType = getObjectType(objectRequest);
 
     var dataTable =
         ofNullable(objectType.getTable()).map(tableName -> findTable(tableName, objectRequest.getContextCriteria()))
-            .map(table -> table.as(aliasManager.newAlias()))
+            .map(table -> table.as(tableAlias))
             .orElse(null);
 
     return createDataQuery(objectRequest, dataTable);
@@ -248,7 +252,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
-        .tableCreator(createTableCreator(subSelect, contextCriteria))
+        .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
         .forEach(subSelect::addConditions);
 
@@ -342,7 +346,7 @@ class SelectBuilder {
   }
 
   private Stream<SelectQuery<Record>> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+      Table<Record> parentTable) {
 
     if (objectField.getKeyField() != null){
       var keyObjectField = (PostgresObjectField) objectField.getObjectType().getField(objectField.getKeyField());
@@ -355,40 +359,19 @@ class SelectBuilder {
 
       return createNestedSelect(keyObjectField,keyObjectRequest,table);
     }
-
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     var objectType = (PostgresObjectType) objectRequest.getObjectType();
 
     fieldMapper.register(objectField.getName(), objectMapper);
 
-    List<SelectQuery<Record>> result = new ArrayList<>();
+    var tableName = aliasManager.newAlias();
 
-    if (objectRequest.getObjectType().isNested() && objectField.getJoinTable() != null) {
-      var query = dslContext.selectQuery(findTable(objectField.getJoinTable().getName(),objectRequest.getContextCriteria()));
-
-      objectField.getJoinTable().getInverseJoinColumns()
-          .forEach(joinColumn -> {
-            var field = DSL.field(joinColumn.getName());
-
-            var fieldAgg = DSL.arrayAgg(field).as(aliasManager.newAlias());
-
-            query.addSelect(fieldAgg);
-
-            scalarReferences.put(joinColumn.getReferencedField(),fieldAgg.getName());
-          });
-
-      createJoinConditions(null,table,objectField.getJoinTable().getJoinColumns(), (PostgresObjectType) objectField.getObjectType()).forEach(query::addConditions);
-
-      result.add(query);
-    }
-
-    var select = SelectBuilder.newSelect()
-        .requestContext(requestContext)
+    var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
         .aliasManager(aliasManager)
-        .parentTable(table)
+        .parentTable(parentTable)
         .scalarReferences(createScalarReferences(objectField))
-        .build(objectRequest);
+        .build(objectRequest, tableName);
 
     select.addSelect(DSL.field("1")
         .as(objectMapper.getAlias()));
@@ -398,9 +381,10 @@ class SelectBuilder {
     }
 
     if (!objectType.isNested() && !objectField.getObjectType().isNested()) {
-      newJoin().table(table)
+      newJoin().table(parentTable)
+          .relatedTable(DSL.table(tableName))
           .current(objectField)
-          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria()))
+          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
           .build()
           .forEach(select::addConditions);
     }

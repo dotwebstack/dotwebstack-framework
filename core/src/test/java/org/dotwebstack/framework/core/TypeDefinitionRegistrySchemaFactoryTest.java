@@ -41,7 +41,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -405,7 +404,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(6));
+    assertThat(fieldDefinitions.size(), is(7));
 
     var geometryFieldDefinition = fieldDefinitions.get(1);
     assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 2);
@@ -436,15 +435,19 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertType(visitAddressFieldDefinition.getType(), "Address");
     assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beersFieldDefinition = fieldDefinitions.get(4);
+    var beerFieldDefinition = fieldDefinitions.get(4);
+    assertThat(beerFieldDefinition.getName(), is("beer"));
+    assertType(beerFieldDefinition.getType(), "Beer");
+    assertThat(beerFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var beersFieldDefinition = fieldDefinitions.get(5);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(5);
-    assertThat(beerAggFieldDefinition.getName(), is("beerAgg"));
-    assertType(beerAggFieldDefinition.getType(), "Aggregate");
-    assertThat(beerAggFieldDefinition.getInputValueDefinitions(), empty());
+    var beerAggFieldDefinition = fieldDefinitions.get(6);
+    assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
   }
 
   @Test

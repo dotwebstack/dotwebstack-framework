@@ -3,8 +3,8 @@ package org.dotwebstack.framework.core.backend;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -28,14 +28,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,21 +47,59 @@ class BackendRequestFactoryTest {
   @Mock
   private DatabaseClient databaseClient;
 
-  private SchemaReader schemaReader;
-
-  private BackendRequestFactory backendRequestFactory;
+  private TestHelper testHelper;
 
   @BeforeEach
-  void doBefore() {
-    schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
+  void setUp() {
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
+    testHelper = new TestHelper(backendModule);
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequest_forBeerWithKey() {
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var graphQlSchema = TestHelper.schemaToGraphQl(schema);
+
+    var breweryFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("brewery");
+
+    var beerFieldDefinition = graphQlSchema.getObjectType("Brewery")
+        .getFieldDefinition("beer");
+
+    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
+        .fieldDefinition(breweryFieldDefinition)
+        .type(breweryFieldDefinition.getType())
+        .build();
+
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    var beerSelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    var beerField = mock(SelectedField.class);
+
+    when(beerField.getType()).thenReturn(beerFieldDefinition.getType());
+    when(beerField.getFieldDefinitions()).thenReturn(List.of(beerFieldDefinition));
+    when(beerField.getSelectionSet()).thenReturn(beerSelectionSet);
+    when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
+    when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
+
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+
+    assertThat(objectRequest, is(notNullValue()));
+
+    var objectFields = objectRequest.getObjectFields();
+    assertThat(objectFields.size(), is(1));
+
+    var keyCriteria = objectFields.values()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .getKeyCriteria();
+    assertThat(keyCriteria.size(), is(1));
   }
 
   @Test
   void createCollectionRequest_returnsCollectionRequest_Brewery() {
-    BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
-    var testHelper = new TestHelper(backendModule);
-    var schema = testHelper.getSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
-    backendModule.init(schema.getObjectTypes());
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
 
     GraphQLObjectType namedType = mock(GraphQLObjectType.class);
     when(namedType.getName()).thenReturn("Aggregate");
@@ -86,10 +122,12 @@ class BackendRequestFactoryTest {
     when(selectionSetParent.getImmediateFields()).thenReturn(List.of(selectedFieldParent));
 
     var executionStepInfo = initExecutionStepInfoMock();
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+
     backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
-    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertThat(result, is(notNullValue()));
     assertThat(result.getObjectRequest()
         .getObjectType()
         .getName(), is("Brewery"));
@@ -130,13 +168,21 @@ class BackendRequestFactoryTest {
             .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
             .build())
         .build());
+    envBuilder.fieldDefinition(newFieldDefinition().name("field")
+        .type(Scalars.GraphQLID)
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
+            .build())
+        .build());
 
     var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
 
-    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
-    assertThat(result, CoreMatchers.is(notNullValue()));
+
+    assertThat(result, is(notNullValue()));
     assertThat(result.getObjectField()
         .getName(), is("addresses"));
     assertThat(result.getObjectField()
