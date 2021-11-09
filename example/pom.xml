@@ -17,5 +17,6 @@
     <module>example-orchestrate</module>
     <module>example-rdf4j</module>
     <module>example-rml-proxy</module>
+    <module>example-openapi</module>
   </modules>
 </project>
