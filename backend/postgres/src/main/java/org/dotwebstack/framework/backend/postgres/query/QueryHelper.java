@@ -105,5 +105,4 @@ class QueryHelper {
       return requestedTable;
     };
   }
-
 }
