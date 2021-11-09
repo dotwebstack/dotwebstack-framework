@@ -126,15 +126,19 @@ class SelectBuilder {
         .build();
   }
 
-  @SuppressWarnings("squid:S2637")
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
+    return build(objectRequest, aliasManager.newAlias());
+  }
+
+  @SuppressWarnings("squid:S2637")
+  public SelectQuery<Record> build(ObjectRequest objectRequest, String tableAlias) {
     validateFields(this);
 
     var objectType = getObjectType(objectRequest);
 
     var dataTable =
         ofNullable(objectType.getTable()).map(tableName -> findTable(tableName, objectRequest.getContextCriteria()))
-            .map(table -> table.as(aliasManager.newAlias()))
+            .map(table -> table.as(tableAlias))
             .orElse(null);
 
     return createDataQuery(objectRequest, dataTable);
@@ -254,7 +258,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
-        .tableCreator(createTableCreator(subSelect, contextCriteria))
+        .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
         .forEach(subSelect::addConditions);
 
@@ -333,19 +337,20 @@ class SelectBuilder {
   }
 
   private Stream<SelectQuery<Record>> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+      Table<Record> parentTable) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     var objectType = objectRequest.getObjectType();
 
     fieldMapper.register(objectField.getName(), objectMapper);
 
-    var select = SelectBuilder.newSelect()
-        .requestContext(requestContext)
+    var tableName = aliasManager.newAlias();
+
+    var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
         .aliasManager(aliasManager)
-        .parentTable(table)
+        .parentTable(parentTable)
         .scalarReferences(createScalarReferences(objectField))
-        .build(objectRequest);
+        .build(objectRequest, tableName);
 
     select.addSelect(DSL.field("1")
         .as(objectMapper.getAlias()));
@@ -355,9 +360,10 @@ class SelectBuilder {
     }
 
     if (!objectType.isNested()) {
-      newJoin().table(table)
+      newJoin().table(parentTable)
+          .relatedTable(DSL.table(tableName))
           .current(objectField)
-          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria()))
+          .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
           .build()
           .forEach(select::addConditions);
     }
