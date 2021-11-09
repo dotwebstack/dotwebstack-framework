@@ -91,7 +91,7 @@ class FilterConditionBuilder {
       JoinBuilder.newJoin()
           .table(table)
           .current(current)
-          .tableCreator(createTableCreator(filterQuery, objectRequest.getContextCriteria()))
+          .tableCreator(createTableCreator(filterQuery, objectRequest.getContextCriteria(), aliasManager))
           .relatedTable(filterTable)
           .build()
           .forEach(filterQuery::addConditions);
