@@ -150,16 +150,12 @@ public class JsonResponseMapper {
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, OasObjectField oasField, String newPath) {
 
-    if (oasField.isRequired() || oasField.isDwsTransient()
-        || isExpanded(writeContext.getParameters(), removeRoot(newPath)) || oasField.getIncludeExpression() != null) {
+    if (oasField.isRequired() || oasField.isTransient() || isExpanded(writeContext.getParameters(), removeRoot(newPath))
+        || oasField.getIncludeExpression() != null) {
       if (oasField.isEnvelope()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
       return mapObjectDataToResponse(writeContext, newPath);
-    }
-    if (oasField.isEnvelope()) {
-      LOG.warn("field '{}' is an envelope but is not a required field, so won't be serialized",
-          writeContext.getIdentifier());
     }
     return null;
   }
