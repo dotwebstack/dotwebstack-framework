@@ -12,3 +12,4 @@ dotwebstack:
     password: postgres
     database: postgres
     schema: dbeerpedia
+  base_url: localhost:8080

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
@@ -39,6 +41,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class JsonResponseMapper {
 
   private static final Map<String, Class<?>> TYPE_CLASS_MAPPING =
@@ -154,6 +157,11 @@ public class JsonResponseMapper {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
       return mapObjectDataToResponse(writeContext, newPath);
+    }
+    if (oasField.isEnvelope()) {
+      throw invalidConfigurationException(
+          "Envelope without required fields configured for field {}, with properties:%n  {}",
+          writeContext.getIdentifier(), oasField);
     }
     return null;
   }
