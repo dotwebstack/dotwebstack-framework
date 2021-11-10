@@ -9,7 +9,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>example-postgres</artifactId>
+  <artifactId>example-openapi</artifactId>
 
   <dependencies>
     <dependency>
@@ -19,7 +19,7 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-graphql</artifactId>
+      <artifactId>service-openapi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
