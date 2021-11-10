@@ -1,0 +1,6 @@
+query Query {
+  breweryCollection {
+    identifier
+    name
+  }
+}

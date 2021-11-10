@@ -1,0 +1,50 @@
+openapi: 3.0.2
+
+info:
+  title: DBeerpedia
+  version: 3.0.0
+
+paths:
+  /breweries:
+    get:
+      x-dws-query:
+        field: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+
+components:
+  schemas:
+    Brewery:
+      type: object
+      required:
+        - identifier
+        - name
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
