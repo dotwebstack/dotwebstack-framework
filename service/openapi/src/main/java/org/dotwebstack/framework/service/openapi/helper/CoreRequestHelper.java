@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class CoreRequestHelper {
         .collect(Collectors.toList());
 
     if (!nonExistentVariables.isEmpty()) {
-      throw invalidConfigurationException("The following request {} parameters are not allowed on this endpoint: {}",
+      throw parameterValidationException("The following request {} parameters are not allowed on this endpoint: {}",
           type, nonExistentVariables);
     }
   }
@@ -48,7 +48,7 @@ public class CoreRequestHelper {
         .orElse(0);
 
     if (contentLength > 0) {
-      throw invalidConfigurationException("A request body is not allowed for this request");
+      throw parameterValidationException("A request body is not allowed for this request");
     }
   }
 
