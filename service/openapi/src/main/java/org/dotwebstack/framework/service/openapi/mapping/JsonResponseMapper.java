@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredOrExpandedAndNullOrEmpty;
@@ -159,9 +158,8 @@ public class JsonResponseMapper {
       return mapObjectDataToResponse(writeContext, newPath);
     }
     if (oasField.isEnvelope()) {
-      throw invalidConfigurationException(
-          "Envelope without required fields configured for field {}, with properties:%n  {}",
-          writeContext.getIdentifier(), oasField);
+      LOG.warn("field '{}' is an envelope but is not a required field, so won't be serialized",
+          writeContext.getIdentifier());
     }
     return null;
   }
