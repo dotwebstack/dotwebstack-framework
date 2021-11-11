@@ -28,12 +28,12 @@ public final class PostgresSpatialHelper {
   }
 
   private static Integer determineSridForColumnName(PostgresSpatial spatial, Integer requestedSrid) {
-    return determineSridFromSRS(spatial, requestedSrid).or(() -> determineSridFromEquivalents(spatial, requestedSrid))
+    return determineSridFromSrs(spatial, requestedSrid).or(() -> determineSridFromEquivalents(spatial, requestedSrid))
         .orElseThrow(() -> illegalArgumentException("Srid {} is unknown. Valid srid values are {}.", requestedSrid,
             getValidSrids(spatial)));
   }
 
-  private static Optional<Integer> determineSridFromSRS(PostgresSpatial spatial, Integer requestedSrid) {
+  private static Optional<Integer> determineSridFromSrs(PostgresSpatial spatial, Integer requestedSrid) {
     return Optional.ofNullable(spatial.getSpatialReferenceSystems())
         .filter(spatialReferenceSystems -> spatialReferenceSystems.containsKey(requestedSrid))
         .map(spatialReferenceSystems -> requestedSrid);

@@ -18,8 +18,8 @@ CREATE TABLE db.brewery (
   status db.brewery_status NOT NULL,
   postal_address character varying REFERENCES db.address (identifier_address),
   visit_address character varying REFERENCES db.address (identifier_address),
-  geometry geometry NOT NULL,
-  geometry_7931 geometry NOT NULL,
+  geometry geometry(GeometryZ, 28992) NOT NULL,
+  geometry_7931 geometry(GeometryZ, 7931) NOT NULL,
   his_age INT NOT NULL,
   his_history character varying NOT NULL,
   multinational boolean NOT NULL
