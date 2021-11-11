@@ -21,6 +21,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -254,6 +255,15 @@ class DefaultParamHandlerTest {
     Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     assertEquals(42, result.get());
+  }
+
+  @Test
+  void getValue_returnsValue_forTypeBigInteger() {
+    mockParameterHeader("test_integer", "42", TYPE_INTEGER, null, null, false, Parameter.StyleEnum.SIMPLE);
+
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
+
+    assertEquals(BigInteger.valueOf(42), result.get());
   }
 
   @Test
