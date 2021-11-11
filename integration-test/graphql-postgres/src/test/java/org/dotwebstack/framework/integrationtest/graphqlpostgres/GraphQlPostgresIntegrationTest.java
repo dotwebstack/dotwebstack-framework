@@ -1432,10 +1432,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
-    String query =
-        "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: \"POLYGON((194450.17898426164 471514.04309242184,"
-            + "195716.74476882417 471524.29347733577,195724.91952857617 470529.87463413755,194458.099519217 "
-            + "470519.6228124658,194450.17898426164 471514.04309242184))\"}}}) { identifier_brewery name geometry { srid asWKT } }}";
+    String query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
+        + "\"POLYGON((194450.17898426164 471514.04309242184,195716.74476882417 471524.29347733577,"
+        + "195724.91952857617 470529.87463413755,194458.099519217 470519.6228124658,194450.17898426164 "
+        + "471514.04309242184))\"}}}) { identifier_brewery name geometry { srid asWKT } }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
