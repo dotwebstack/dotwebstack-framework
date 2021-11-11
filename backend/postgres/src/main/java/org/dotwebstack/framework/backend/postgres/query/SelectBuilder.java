@@ -258,6 +258,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
+        .relatedTable(aliasedAggregateTable)
         .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
         .forEach(subSelect::addConditions);
