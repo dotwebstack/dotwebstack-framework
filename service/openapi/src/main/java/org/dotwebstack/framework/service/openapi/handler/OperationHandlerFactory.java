@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
-import org.dotwebstack.framework.service.openapi.query.QueryFactory;
+import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
@@ -24,11 +24,11 @@ public class OperationHandlerFactory {
 
   private final GraphQL graphQL;
 
-  private final QueryFactory queryFactory;
+  private final QueryMapper queryMapper;
 
-  public OperationHandlerFactory(GraphQL graphQL, QueryFactory queryFactory) {
+  public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper) {
     this.graphQL = graphQL;
-    this.queryFactory = queryFactory;
+    this.queryMapper = queryMapper;
   }
 
   public HandlerFunction<ServerResponse> create(Operation operation) {
@@ -41,7 +41,7 @@ public class OperationHandlerFactory {
 
     return serverRequest -> Mono.just(serverRequest)
         .flatMap(requestInputHandler)
-        .map(queryFactory::create)
+        .map(queryMapper::map)
         .flatMap(this::execute)
         .flatMap(this::mapResponse);
   }

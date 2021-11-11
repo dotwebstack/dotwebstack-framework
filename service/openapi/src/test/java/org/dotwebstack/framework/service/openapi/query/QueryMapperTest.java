@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class QueryFactoryTest {
+class QueryMapperTest {
 
   private static final String MEDIA_TYPE_JSON = "application/json";
 
@@ -30,7 +30,7 @@ class QueryFactoryTest {
 
   private static OpenAPI openApi;
 
-  private static QueryFactory queryFactory;
+  private static QueryMapper queryFactory;
 
   @BeforeAll
   static void beforeAll() {
@@ -38,7 +38,7 @@ class QueryFactoryTest {
         .resolve("dbeerpedia.yaml")
         .getPath());
 
-    queryFactory = new QueryFactory(openApi, loadSchema());
+    queryFactory = new QueryMapper(openApi, loadSchema());
   }
 
   @ParameterizedTest
@@ -56,18 +56,18 @@ class QueryFactoryTest {
         .preferredMediaType(mediaTypeKey)
         .build();
 
-    var executionInput = queryFactory.create(operationRequest);
+    var executionInput = queryFactory.map(operationRequest);
 
     assertThat(executionInput.getQuery(), is(equalTo(loadQuery("collection"))));
   }
 
   private static String loadQuery(String name) throws IOException {
-    return IOUtils.toString(Objects.requireNonNull(QueryFactoryTest.class.getClassLoader()
+    return IOUtils.toString(Objects.requireNonNull(QueryMapperTest.class.getClassLoader()
         .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8);
   }
 
   private static GraphQLSchema loadSchema() {
-    var typeDefinitionRegistry = new SchemaParser().parse(Objects.requireNonNull(QueryFactoryTest.class.getClassLoader()
+    var typeDefinitionRegistry = new SchemaParser().parse(Objects.requireNonNull(QueryMapperTest.class.getClassLoader()
         .getResourceAsStream("config/schema.graphql")));
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.MOCKED_WIRING);

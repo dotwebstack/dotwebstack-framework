@@ -28,18 +28,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @SuppressWarnings("rawtypes")
-public class QueryFactory {
+public class QueryMapper {
 
   private final OpenAPI openApi;
 
   private final GraphQLSchema graphQlSchema;
 
-  public QueryFactory(OpenAPI openApi, GraphQLSchema graphQlSchema) {
+  public QueryMapper(OpenAPI openApi, GraphQLSchema graphQlSchema) {
     this.openApi = openApi;
     this.graphQlSchema = graphQlSchema;
   }
 
-  public ExecutionInput create(OperationRequest operationRequest) {
+  public ExecutionInput map(OperationRequest operationRequest) {
     var operationContext = operationRequest.getContext();
     var dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(operationContext.getOperation());
 
@@ -52,7 +52,7 @@ public class QueryFactory {
         .get(operationRequest.getPreferredMediaType())
         .getSchema();
 
-    var queryField = createField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType());
+    var queryField = mapField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType());
 
     var query = OperationDefinition.newOperationDefinition()
         .name("Query")
@@ -66,13 +66,13 @@ public class QueryFactory {
         .build();
   }
 
-  private Stream<Field> createFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
+  private Stream<Field> mapFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
     if (schema.get$ref() != null) {
-      return createFields(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition);
+      return mapFields(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition);
     }
 
     if (schema instanceof ArraySchema) {
-      return createFields(((ArraySchema) schema).getItems(), fieldDefinition);
+      return mapFields(((ArraySchema) schema).getItems(), fieldDefinition);
     }
 
     if (!(schema instanceof ObjectSchema)) {
@@ -83,7 +83,7 @@ public class QueryFactory {
       return schema.getProperties()
           .entrySet()
           .stream()
-          .flatMap(entry -> createFields(entry.getValue(), fieldDefinition));
+          .flatMap(entry -> mapFields(entry.getValue(), fieldDefinition));
     }
 
     var fieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -95,7 +95,7 @@ public class QueryFactory {
     return schema.getProperties()
         .entrySet()
         .stream()
-        .map(entry -> createField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType));
+        .map(entry -> mapField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType));
   }
 
   private boolean isEnvelope(Schema<?> schema) {
@@ -104,7 +104,7 @@ public class QueryFactory {
         .orElse(false);
   }
 
-  private Field createField(String name, Schema<?> schema, GraphQLObjectType objectType) {
+  private Field mapField(String name, Schema<?> schema, GraphQLObjectType objectType) {
     var fieldDefinition = Optional.ofNullable(objectType.getFieldDefinition(name))
         .orElseThrow(
             () -> invalidConfigurationException("Field '{}' not found for `{}` type.", name, objectType.getName()));
@@ -112,7 +112,7 @@ public class QueryFactory {
     var rawFieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (rawFieldType instanceof GraphQLObjectType) {
-      return new Field(name, new SelectionSet(createFields(schema, fieldDefinition).collect(Collectors.toList())));
+      return new Field(name, new SelectionSet(mapFields(schema, fieldDefinition).collect(Collectors.toList())));
     }
 
     return new Field(name);
