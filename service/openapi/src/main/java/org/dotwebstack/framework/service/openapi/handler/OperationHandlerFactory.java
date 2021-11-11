@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.springframework.stereotype.Component;
@@ -32,10 +33,14 @@ public class OperationHandlerFactory {
 
   private final Collection<BodyMapper> bodyMappers;
 
-  public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper, Collection<BodyMapper> bodyMappers) {
+  private final ParameterResolverFactory parameterResolverFactory;
+
+  public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper, Collection<BodyMapper> bodyMappers,
+      ParameterResolverFactory parameterResolverFactory) {
     this.graphQL = graphQL;
     this.queryMapper = queryMapper;
     this.bodyMappers = bodyMappers;
+    this.parameterResolverFactory = parameterResolverFactory;
   }
 
   public HandlerFunction<ServerResponse> create(Operation operation) {
@@ -59,16 +64,14 @@ public class OperationHandlerFactory {
   private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
       OperationContext operationContext) {
     var contentNegotiator = createContentNegotiator(operationContext);
+    var parameterResolver = parameterResolverFactory.create(operationContext.getOperation());
 
-    return serverRequest -> resolveParameters(serverRequest).map(parameters -> OperationRequest.builder()
-        .context(operationContext)
-        .parameters(parameters)
-        .preferredMediaType(contentNegotiator.negotiate(serverRequest))
-        .build());
-  }
-
-  private Mono<Map<String, Object>> resolveParameters(ServerRequest serverRequest) {
-    return Mono.just(Map.of());
+    return serverRequest -> parameterResolver.resolveParameters(serverRequest)
+        .map(parameters -> OperationRequest.builder()
+            .context(operationContext)
+            .parameters(parameters)
+            .preferredMediaType(contentNegotiator.negotiate(serverRequest))
+            .build());
   }
 
   private Mono<ExecutionResult> execute(ExecutionInput executionInput) {
