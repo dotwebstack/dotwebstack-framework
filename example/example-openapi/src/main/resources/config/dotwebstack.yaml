@@ -1,0 +1,226 @@
+features:
+  - paging
+
+spatial:
+  srid:
+    28992:
+      dimensions: 2
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
+    7931:
+      dimensions: 3
+      columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
+      equivalent: 9067
+
+queries:
+  beer:
+    type: Beer
+    keys:
+      - identifier
+  beerCollection:
+    type: Beer
+    list: true
+    pageable: true
+  brewery:
+    type: Brewery
+    keys:
+      - identifier
+  breweryCollection:
+    type: Brewery
+    list: true
+    pageable: true
+
+objectTypes:
+  Beer:
+    table: dbeerpedia.beers
+    filters:
+      name:
+        field: name
+      breweryCity:
+        field: brewery.visitAddress.city
+      ingredientName:
+        field: ingredients.name
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      breweryCity:
+        - field: brewery.visitAddress.city
+          direction: ASC
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      retired:
+        type: Boolean
+      brewery:
+        type: Brewery
+        joinColumns:
+          - name: brewery
+            referencedColumn: record_id
+      ingredient:
+        type: Ingredient
+        nullable: true
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      ingredients:
+        type: Ingredient
+        list: true
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      ingredientAgg:
+        aggregationOf: Ingredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: identifier
+      taste:
+        type: Taste
+        list: true
+
+  Brewery:
+    table: dbeerpedia.breweries
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      address:
+        - field: postalAddress.street
+          direction: ASC
+        - field: postalAddress.city
+          direction: ASC
+      historyAge:
+        - field: history.age
+          direction: ASC
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalStreet:
+        field: postalAddress.street
+      postalCity:
+        field: postalAddress.city
+      visitStreet:
+        field: visitAddress.street
+      visitCity:
+        field: visitAddress.city
+      historyAge:
+        field: history.age
+      beerName:
+        field: beers.name
+      relatedToName:
+        field: relatedTo.name
+      relatedToStatus:
+        field: relatedTo.status
+    fields:
+      identifier:
+        type: String
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+        nullable: true
+      postalAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+      beer:
+        type: Beer
+        nullable: true
+        mappedBy: brewery
+        keys:
+          - identifier
+      beers:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: brewery
+        pageable: true
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+      history:
+        type: History
+      relatedTo:
+        type: Brewery
+        list: true
+        joinTable:
+          name: dbeerpedia.breweries__related_to
+          joinColumns:
+            - name: brewery_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: brewery_related_to_identifier
+              referencedField: identifier
+
+  Ingredient:
+    table: dbeerpedia.ingredients
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float
+
+  Address:
+    table: dbeerpedia.addresses
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
+  History:
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

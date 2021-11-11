@@ -35,7 +35,6 @@ queries:
     type: Brewery
     list: true
 
-
 objectTypes:
   Beer:
     table: dbeerpedia.beers
@@ -68,7 +67,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: record_id
+            referencedColumn: record_id
       ingredient:
         type: Ingredient
         nullable: true
@@ -140,8 +139,6 @@ objectTypes:
       relatedToStatus:
         field: relatedTo.status
     fields:
-      record_id:
-        type: ID
       identifier:
         type: String
       name:
@@ -167,6 +164,8 @@ objectTypes:
         type: Beer
         nullable: true
         mappedBy: brewery
+        keys:
+          - identifier
       beers:
         type: Beer
         list: true

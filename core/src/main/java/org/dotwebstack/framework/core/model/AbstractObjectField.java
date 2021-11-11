@@ -15,6 +15,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected String type;
 
+  protected List<String> keys = new ArrayList<>();
+
   protected boolean isList = false;
 
   protected boolean nullable = false;
