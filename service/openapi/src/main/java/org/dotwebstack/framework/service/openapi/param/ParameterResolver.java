@@ -47,6 +47,9 @@ public class ParameterResolver {
   }
 
   public Mono<Map<String, Object>> resolveParameters(ServerRequest serverRequest) {
+    if (responseSchemaContext == null) {
+      return Mono.just(Map.of());
+    }
     var result = resolveUrlAndHeaderParameters(serverRequest);
 
     if (requestBody != null) {
