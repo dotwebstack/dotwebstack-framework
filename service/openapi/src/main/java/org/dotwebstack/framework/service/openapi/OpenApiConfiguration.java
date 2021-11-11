@@ -39,7 +39,6 @@ import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.dotwebstack.framework.service.openapi.response.dwssettings.DwsQuerySettings;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,7 +48,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-@Configuration
+// @Configuration
 public class OpenApiConfiguration {
 
   private static final String STATIC_ASSETS_LOCATION = "assets/";
@@ -111,7 +110,7 @@ public class OpenApiConfiguration {
     return new HttpAdviceTrait();
   }
 
-//  @Bean
+  @Bean
   public RouterFunction<ServerResponse> route(@NonNull OpenAPI openApi) {
     RouterFunctions.Builder routerFunctions = RouterFunctions.route();
 

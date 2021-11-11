@@ -9,6 +9,16 @@ paths:
     get:
       x-dws-query:
         field: breweryCollection
+      parameters:
+        - name: expand
+          in: query
+          x-dws-type: expand
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - postalAddress
       responses:
         200:
           description: OK

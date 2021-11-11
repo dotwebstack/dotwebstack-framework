@@ -6,11 +6,15 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.Operation;
+import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
+import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
@@ -26,9 +30,12 @@ public class OperationHandlerFactory {
 
   private final QueryMapper queryMapper;
 
-  public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper) {
+  private final Collection<BodyMapper> bodyMappers;
+
+  public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper, Collection<BodyMapper> bodyMappers) {
     this.graphQL = graphQL;
     this.queryMapper = queryMapper;
+    this.bodyMappers = bodyMappers;
   }
 
   public HandlerFunction<ServerResponse> create(Operation operation) {
@@ -37,13 +44,16 @@ public class OperationHandlerFactory {
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
+    var mediaTypeContentMappers = createMediaTypeBodyMappers(operationContext);
     var requestInputHandler = createOperationRequestHandler(operationContext);
 
-    return serverRequest -> Mono.just(serverRequest)
-        .flatMap(requestInputHandler)
-        .map(queryMapper::map)
-        .flatMap(this::execute)
-        .flatMap(this::mapResponse);
+    return serverRequest -> requestInputHandler.apply(serverRequest)
+        .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
+            .flatMap(this::execute)
+            .flatMap(executionResult -> mediaTypeContentMappers.get(operationRequest.getPreferredMediaType())
+                .map(operationRequest, executionResult)
+                .flatMap(content -> ServerResponse.ok()
+                    .body(BodyInserters.fromValue(content)))));
   }
 
   private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
@@ -68,11 +78,6 @@ public class OperationHandlerFactory {
     return Mono.fromFuture(graphQL.executeAsync(executionInput));
   }
 
-  private Mono<ServerResponse> mapResponse(ExecutionResult executionResult) {
-    return ServerResponse.ok()
-        .body(BodyInserters.fromValue(Map.of()));
-  }
-
   private ContentNegotiator createContentNegotiator(OperationContext operationContext) {
     // TODO Real negotiation
     return serverRequest -> operationContext.getSuccessResponse()
@@ -81,5 +86,20 @@ public class OperationHandlerFactory {
         .stream()
         .findFirst()
         .orElseThrow(() -> notAcceptableException("None of the acceptable media type is supported."));
+  }
+
+  private Map<String, BodyMapper> createMediaTypeBodyMappers(OperationContext operationContext) {
+    return operationContext.getSuccessResponse()
+        .getContent()
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> findBodyMapper(entry.getKey(), operationContext)));
+  }
+
+  private BodyMapper findBodyMapper(String mediaTypeKey, OperationContext operationContext) {
+    return bodyMappers.stream()
+        .filter(responseMapper -> responseMapper.supports(mediaTypeKey, operationContext))
+        .findFirst()
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not find response mapper."));
   }
 }

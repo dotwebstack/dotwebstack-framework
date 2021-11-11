@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait;
 
 @Configuration
 @Slf4j
@@ -24,6 +25,11 @@ class RouterConfiguration {
 
   public RouterConfiguration(OperationHandlerFactory operationHandlerFactory) {
     this.operationHandlerFactory = operationHandlerFactory;
+  }
+
+  @Bean
+  public HttpAdviceTrait httpAdviceTrait() {
+    return new HttpAdviceTrait() {};
   }
 
   @Bean
@@ -43,8 +49,8 @@ class RouterConfiguration {
         .entrySet()
         .stream()
         .filter(entry -> isDwsRoute(entry.getValue()))
-        .forEach(entry -> builder.route(matchRoute(path, entry.getKey()),
-            operationHandlerFactory.create(entry.getValue())));
+        .forEach(
+            entry -> builder.route(matchRoute(path, entry.getKey()), operationHandlerFactory.create(entry.getValue())));
 
     return builder.build();
   }
