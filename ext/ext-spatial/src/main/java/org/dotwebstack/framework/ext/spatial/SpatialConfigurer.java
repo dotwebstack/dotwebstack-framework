@@ -101,6 +101,9 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   private InputObjectTypeDefinition createGeometryFilterType() {
     return newInputObjectDefinition().name(GEOMETRY_FILTER)
+        .inputValueDefinition(newInputValueDefinition().name(SRID)
+            .type(newTypeName(Scalars.GraphQLInt.getName()).build())
+            .build())
         .inputValueDefinition(newInputValueDefinition().name(WITHIN)
             .type(newTypeName(GEOMETRY_INPUT).build())
             .build())

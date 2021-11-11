@@ -5,10 +5,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.LinkedHashMap;
+import com.google.common.collect.HashBiMap;
 import java.util.Map;
-import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
-import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
+import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
@@ -76,9 +75,14 @@ class SpatialColumnMapperTest {
   private SpatialColumnMapper createMapper(Integer requestedSrid) {
     Field<Object> geometryColumn = DSL.field("testTable", "testGeometryColumn")
         .as("testGeometry");
-    Map<Integer, SpatialReferenceSystem> spatialReferenceSystems = createSpatialReferenceSystems();
 
-    return new SpatialColumnMapper(geometryColumn, spatialReferenceSystems, requestedSrid);
+    PostgresSpatial spatial = PostgresSpatial.builder()
+        .srid(7415)
+        .spatialReferenceSystems(HashBiMap.create(Map.of(7415, "geometry", 7931, "geometry_etrs89")))
+        .equivalents(HashBiMap.create(Map.of(7415, 28992)))
+        .build();
+
+    return new SpatialColumnMapper(geometryColumn, spatial, requestedSrid);
   }
 
   private Geometry createGeometry(Integer srid) {
@@ -87,18 +91,4 @@ class SpatialColumnMapperTest {
     return geom;
   }
 
-  private Map<Integer, SpatialReferenceSystem> createSpatialReferenceSystems() {
-    Map<Integer, SpatialReferenceSystem> srsMap = new LinkedHashMap<>();
-    srsMap.put(7415, createSpatialReferenceSystem(28992));
-    srsMap.put(28992, createSpatialReferenceSystem(null));
-    srsMap.put(7931, createSpatialReferenceSystem(null));
-
-    return srsMap;
-  }
-
-  private PostgresSpatialReferenceSystem createSpatialReferenceSystem(Integer equivalent) {
-    var srs = new PostgresSpatialReferenceSystem();
-    srs.setEquivalent(equivalent);
-    return srs;
-  }
 }
