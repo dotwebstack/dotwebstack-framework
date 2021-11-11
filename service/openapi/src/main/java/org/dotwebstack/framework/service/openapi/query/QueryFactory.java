@@ -26,6 +26,7 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("rawtypes")
 public class QueryFactory {
 
   private final OpenAPI openApi;
@@ -103,10 +104,15 @@ public class QueryFactory {
 
   private Field createField(String name, Schema<?> schema, GraphQLObjectType objectType) {
     var fieldDefinition = Optional.ofNullable(objectType.getFieldDefinition(name))
-        .orElseThrow(() -> invalidConfigurationException("Object field '{}' not found.", name));
+        .orElseThrow(
+            () -> invalidConfigurationException("Field '{}' not found for `{}` type.", name, objectType.getName()));
 
-    var nestedFields = createFields(schema, fieldDefinition).collect(Collectors.toList());
+    var rawFieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
-    return nestedFields.isEmpty() ? new Field(name) : new Field(name, new SelectionSet(nestedFields));
+    if (rawFieldType instanceof GraphQLObjectType) {
+      return new Field(name, new SelectionSet(createFields(schema, fieldDefinition).collect(Collectors.toList())));
+    }
+
+    return new Field(name);
   }
 }
