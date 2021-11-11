@@ -205,17 +205,16 @@ components:
           type: string
         name:
           type: string
-          nullable: true
         ingredients:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Beer'
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
+#        class:
+#          type: string
+#          x-dws-default: 'Beer'
     BreweryCollection:
       type: object
       x-dws-envelope: true
@@ -258,21 +257,22 @@ components:
           type: string
         name:
           type: string
-          nullable: true
-        address:
+        postalAddress:
+          $ref: '#/components/schemas/Address'
+        visitAddress:
           $ref: '#/components/schemas/Address'
         beers:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
-        hasBeers:
-          type: boolean
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Brewery'
+#        hasBeers:
+#          type: boolean
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+#        class:
+#          type: string
+#          x-dws-default: 'Brewery'
     Ingredient:
       type: object
       required:
@@ -282,19 +282,18 @@ components:
           type: string
         name:
           type: string
-          nullable: true
     Address:
       type: object
-      nullable: true
       required:
-        - subject
-        - streetAddress
+        - identifier
+        - street
+        - city
       properties:
-        subject:
+        identifier:
           type: string
-        postalCode:
+        street:
           type: string
-        streetAddress:
+        city:
           type: string
     GeoBody:
       type: object

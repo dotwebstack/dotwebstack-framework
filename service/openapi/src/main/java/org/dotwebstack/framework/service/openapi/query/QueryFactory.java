@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -61,6 +62,7 @@ public class QueryFactory {
 
     return ExecutionInput.newExecutionInput()
         .query(AstPrinter.printAst(query))
+        .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
   }
 

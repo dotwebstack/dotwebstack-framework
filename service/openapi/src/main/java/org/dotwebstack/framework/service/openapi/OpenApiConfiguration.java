@@ -111,7 +111,7 @@ public class OpenApiConfiguration {
     return new HttpAdviceTrait();
   }
 
-  @Bean
+//  @Bean
   public RouterFunction<ServerResponse> route(@NonNull OpenAPI openApi) {
     RouterFunctions.Builder routerFunctions = RouterFunctions.route();
 
