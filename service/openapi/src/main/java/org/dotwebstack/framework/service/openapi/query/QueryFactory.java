@@ -28,13 +28,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryFactory {
 
-  private final OpenAPI openAPI;
+  private final OpenAPI openApi;
 
-  private final GraphQLSchema graphQLSchema;
+  private final GraphQLSchema graphQlSchema;
 
-  public QueryFactory(OpenAPI openAPI, GraphQLSchema graphQLSchema) {
-    this.openAPI = openAPI;
-    this.graphQLSchema = graphQLSchema;
+  public QueryFactory(OpenAPI openApi, GraphQLSchema graphQlSchema) {
+    this.openApi = openApi;
+    this.graphQlSchema = graphQlSchema;
   }
 
   public ExecutionInput create(OperationRequest operationRequest) {
@@ -51,7 +51,7 @@ public class QueryFactory {
         .getSchema();
 
     var queryField =
-        createField(dwsQuerySettings.getQueryName(), responseSchema, graphQLSchema.getQueryType()).orElseThrow(
+        createField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType()).orElseThrow(
             () -> invalidConfigurationException("Query field '{}' not found.", dwsQuerySettings.getQueryName()));
 
     var query = OperationDefinition.newOperationDefinition()
@@ -67,7 +67,7 @@ public class QueryFactory {
 
   private Stream<Field> createFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
     if (schema.get$ref() != null) {
-      return createFields(SchemaResolver.resolveSchema(openAPI, schema.get$ref()), fieldDefinition);
+      return createFields(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition);
     }
 
     if (schema instanceof ArraySchema) {
