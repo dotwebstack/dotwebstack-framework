@@ -48,3 +48,14 @@ components:
           type: string
         name:
           type: string
+        postalAddress:
+          $ref: '#/components/schemas/Address'
+    Address:
+      type: object
+      required:
+        - street
+      properties:
+        street:
+          type: string
+        postalCode:
+          type: string

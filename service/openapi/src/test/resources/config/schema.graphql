@@ -9,4 +9,10 @@ type Query {
 type Brewery {
   identifier: ID!
   name: String!
+  postalAddress: Address
+}
+
+type Address {
+  street: String!
+  postalCode: String
 }

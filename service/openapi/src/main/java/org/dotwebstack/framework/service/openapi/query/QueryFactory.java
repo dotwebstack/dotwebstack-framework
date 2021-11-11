@@ -50,9 +50,7 @@ public class QueryFactory {
         .get(operationRequest.getPreferredMediaType())
         .getSchema();
 
-    var queryField =
-        createField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType()).orElseThrow(
-            () -> invalidConfigurationException("Query field '{}' not found.", dwsQuerySettings.getQueryName()));
+    var queryField = createField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType());
 
     var query = OperationDefinition.newOperationDefinition()
         .name("Query")
@@ -94,7 +92,7 @@ public class QueryFactory {
     return schema.getProperties()
         .entrySet()
         .stream()
-        .flatMap(entry -> createField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType).stream());
+        .map(entry -> createField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType));
   }
 
   private boolean isEnvelope(Schema<?> schema) {
@@ -103,12 +101,12 @@ public class QueryFactory {
         .orElse(false);
   }
 
-  private Optional<Field> createField(String name, Schema<?> schema, GraphQLObjectType objectType) {
-    return Optional.ofNullable(objectType.getFieldDefinition(name))
-        .map(fieldDefinition -> {
-          var nestedFields = createFields(schema, fieldDefinition).collect(Collectors.toList());
+  private Field createField(String name, Schema<?> schema, GraphQLObjectType objectType) {
+    var fieldDefinition = Optional.ofNullable(objectType.getFieldDefinition(name))
+        .orElseThrow(() -> invalidConfigurationException("Object field '{}' not found.", name));
 
-          return nestedFields.isEmpty() ? new Field(name) : new Field(name, new SelectionSet(nestedFields));
-        });
+    var nestedFields = createFields(schema, fieldDefinition).collect(Collectors.toList());
+
+    return nestedFields.isEmpty() ? new Field(name) : new Field(name, new SelectionSet(nestedFields));
   }
 }
