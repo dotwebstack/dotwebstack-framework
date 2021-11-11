@@ -16,14 +16,12 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
+import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,19 +38,11 @@ public class QueryMapper {
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
-    var operationContext = operationRequest.getContext();
-    var dwsQuerySettings = DwsExtensionHelper.getDwsQuerySettings(operationContext.getOperation());
+    var queryProperties = operationRequest.getContext()
+        .getQueryProperties();
 
-    if (dwsQuerySettings.getSelectionSet() != null) {
-      throw new UnsupportedOperationException();
-    }
-
-    var responseSchema = operationContext.getSuccessResponse()
-        .getContent()
-        .get(operationRequest.getPreferredMediaType())
-        .getSchema();
-
-    var queryField = mapField(dwsQuerySettings.getQueryName(), responseSchema, graphQlSchema.getQueryType());
+    var queryField =
+        mapField(queryProperties.getField(), operationRequest.getResponseSchema(), graphQlSchema.getQueryType());
 
     var query = OperationDefinition.newOperationDefinition()
         .name("Query")
@@ -79,7 +69,7 @@ public class QueryMapper {
       return Stream.empty();
     }
 
-    if (isEnvelope(schema)) {
+    if (MapperUtils.isEnvelope(schema)) {
       return schema.getProperties()
           .entrySet()
           .stream()
@@ -98,17 +88,8 @@ public class QueryMapper {
         .map(entry -> mapField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType));
   }
 
-  private boolean isEnvelope(Schema<?> schema) {
-    return Optional.ofNullable(schema.getExtensions())
-        .map(extensions -> Boolean.TRUE.equals(extensions.get(OasConstants.X_DWS_ENVELOPE)))
-        .orElse(false);
-  }
-
   private Field mapField(String name, Schema<?> schema, GraphQLObjectType objectType) {
-    var fieldDefinition = Optional.ofNullable(objectType.getFieldDefinition(name))
-        .orElseThrow(
-            () -> invalidConfigurationException("Field '{}' not found for `{}` type.", name, objectType.getName()));
-
+    var fieldDefinition = MapperUtils.getObjectField(objectType, name);
     var rawFieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (rawFieldType instanceof GraphQLObjectType) {

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
+import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -41,6 +42,7 @@ public class OperationHandlerFactory {
   public HandlerFunction<ServerResponse> create(Operation operation) {
     var operationContext = OperationContext.builder()
         .operation(operation)
+        .queryProperties(QueryProperties.fromOperation(operation))
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 

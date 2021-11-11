@@ -1,13 +1,18 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class MapperUtils {
 
@@ -28,5 +33,17 @@ public class MapperUtils {
         .collect(MapperUtils.collectExactlyOne())
         .orElseThrow(
             () -> invalidOpenApiConfigurationException("Operation does not contain exactly one success response."));
+  }
+
+  public static boolean isEnvelope(Schema<?> schema) {
+    return Optional.ofNullable(schema.getExtensions())
+        .map(extensions -> Boolean.TRUE.equals(extensions.get(OasConstants.X_DWS_ENVELOPE)))
+        .orElse(false);
+  }
+
+  public static GraphQLFieldDefinition getObjectField(GraphQLObjectType objectType, String fieldName) {
+    return Optional.ofNullable(objectType.getFieldDefinition(fieldName))
+        .orElseThrow(() -> invalidConfigurationException("Field '{}' not found for `{}` type.", fieldName,
+            objectType.getName()));
   }
 }
