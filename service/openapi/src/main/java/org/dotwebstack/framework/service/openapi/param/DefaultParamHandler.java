@@ -214,7 +214,7 @@ public class DefaultParamHandler implements ParamHandler {
   private void validateInteger(Object paramValue, Parameter parameter) {
     try {
       if (!(paramValue instanceof Integer)) {
-        Long.valueOf((String) paramValue);
+        Long.valueOf(String.valueOf(paramValue));
       }
     } catch (ClassCastException | NumberFormatException exception) {
       throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",

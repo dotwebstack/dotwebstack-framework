@@ -140,6 +140,8 @@ paths:
     get:
       x-dws-query:
         field: brewery
+        requiredFields:
+          - identifier
         keys:
           identifier: $path.identifier
       parameters:
@@ -253,6 +255,8 @@ components:
       required:
         - identifier
         - name
+        - _links
+#        - beers
       properties:
         identifier:
           type: string
@@ -267,9 +271,22 @@ components:
             $ref: '#/components/schemas/Beer'
         hasBeers:
           type: boolean
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+                  type: string
+                  format: uri
         class:
           type: string
           x-dws-default: 'Brewery'
