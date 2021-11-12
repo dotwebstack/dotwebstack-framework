@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.invertOnList;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
@@ -18,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
@@ -78,12 +80,17 @@ class BatchJoinBuilder {
 
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return batchJoin(objectField.getJoinColumns());
+      return batchJoin(invertOnList(objectField, objectField.getJoinColumns()));
     }
 
-    if (objectField.getJoinTable() != null) {
+    var joinTable = joinCriteria.getJoinCondition()
+        .getJoinTable() != null
+            ? (JoinTable) joinCriteria.getJoinCondition()
+                .getJoinTable()
+            : objectField.getJoinTable();
+    if (joinTable != null) {
       var targetObjectType = getObjectType(objectRequest);
-      return batchJoin(targetObjectType);
+      return batchJoin(joinTable, targetObjectType);
     }
 
     throw new UnsupportedOperationException();
@@ -108,10 +115,9 @@ class BatchJoinBuilder {
     return batchQuery;
   }
 
-  private SelectQuery<Record> batchJoin(PostgresObjectType targetObjectType) {
+  private SelectQuery<Record> batchJoin(JoinTable joinTable, PostgresObjectType targetObjectType) {
     var objectField = (PostgresObjectField) requestContext.getObjectField();
     var objectType = (PostgresObjectType) objectField.getObjectType();
-    var joinTable = objectField.getJoinTable();
 
     // Create virtual table with static key values
     var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());

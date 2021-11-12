@@ -54,8 +54,7 @@ class GraphPatternBuilder {
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
 
-    ofNullable(objectRequest.getKeyCriteria())
-        .stream()
+    ofNullable(objectRequest.getKeyCriteria()).stream()
         .flatMap(this::createPattern)
         .forEach(subPatterns::add);
 

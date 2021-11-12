@@ -24,7 +24,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
@@ -91,7 +90,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
+        .keyCriterias(createKeyCriteria(executionStepInfo.getFieldDefinition()
             .getArguments(), executionStepInfo.getArguments()))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
@@ -110,7 +109,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(arguments, selectedField.getArguments()))
+        .keyCriterias(createKeyCriteria(arguments, selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -255,7 +254,7 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private KeyCriteria createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+  private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
     var keys = arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
@@ -265,9 +264,11 @@ public class BackendRequestFactory {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
 
     if (keys.size() > 0) {
-      return KeyCriteria.builder().values(keys).build();
+      return List.of(KeyCriteria.builder()
+          .values(keys)
+          .build());
     }
-    return null;
+    return new ArrayList<>();
   }
 
   private List<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map<String, Object> filterArgument) {
@@ -279,7 +280,8 @@ public class BackendRequestFactory {
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
         .map(filterName -> {
-          var filterConfiguration = objectType.getFilters().get(filterName);
+          var filterConfiguration = objectType.getFilters()
+              .get(filterName);
 
           var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 

@@ -33,7 +33,8 @@ public class TestBackendLoader implements BackendLoader {
   }
 
   @Override
-  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest, RequestContext requestContext) {
+  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest,
+      RequestContext requestContext) {
     return null;
   }
 }

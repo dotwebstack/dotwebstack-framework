@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.backend;
 
 import java.util.Map;
-
 import org.dotwebstack.framework.core.query.model.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
@@ -17,5 +16,6 @@ public interface BackendLoader {
   Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> batchLoadMany(
       CollectionBatchRequest collectionBatchRequest, RequestContext context);
 
-  Flux<Tuple2<Map<String,Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest, RequestContext requestContext);
+  Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest,
+      RequestContext requestContext);
 }

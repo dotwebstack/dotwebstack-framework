@@ -9,4 +9,6 @@ import lombok.Getter;
 public class JoinCondition {
 
   private final Map<String, Object> key;
+
+  private final Object joinTable;
 }

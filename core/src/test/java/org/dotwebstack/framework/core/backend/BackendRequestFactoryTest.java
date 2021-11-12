@@ -3,8 +3,7 @@ package org.dotwebstack.framework.core.backend;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -89,12 +88,13 @@ class BackendRequestFactoryTest {
     var objectFields = objectRequest.getObjectFields();
     assertThat(objectFields.size(), is(1));
 
-    var keyCriteria = objectFields.values()
+    var keyCriterias = objectFields.values()
         .stream()
         .findFirst()
         .orElseThrow()
-        .getKeyCriteria();
-    assertThat(keyCriteria.size(), is(1));
+        .getKeyCriterias();
+
+    assertThat(keyCriterias, hasSize(1));
   }
 
   @Test
@@ -174,8 +174,6 @@ class BackendRequestFactoryTest {
             .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
             .build())
         .build());
-
-    var schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
 
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());

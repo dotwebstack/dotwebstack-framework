@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
-import static org.dotwebstack.framework.backend.postgres.query.BatchSingleJoinBuilder.newBatchSingleJoin;
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
@@ -90,7 +88,7 @@ public class Query {
 
   @SuppressWarnings("unchecked")
   public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> executeBatchSingle(DatabaseClient databaseClient) {
-    return execute(databaseClient).map(row -> Tuples.of((Map<String, Object>) row.get(GROUP_KEY),row));
+    return execute(databaseClient).map(row -> Tuples.of((Map<String, Object>) row.get(GROUP_KEY), row));
   }
 
   private List<Param<?>> getParams(SelectQuery<Record> selectQuery) {
@@ -102,8 +100,7 @@ public class Query {
   }
 
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {
-    return newSelect()
-        .requestContext(requestContext)
+    return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .build(collectionRequest, null);
@@ -112,24 +109,21 @@ public class Query {
   private SelectQuery<Record> createSelect(CollectionBatchRequest collectionBatchRequest) {
     var collectionRequest = collectionBatchRequest.getCollectionRequest();
 
-    return newSelect()
-        .requestContext(requestContext)
+    return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
   private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {
-    return newSelect()
-        .requestContext(requestContext)
+    return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .build(objectRequest);
   }
 
   private SelectQuery<Record> createSelect(BatchRequest batchRequest) {
-    return newSelect()
-        .requestContext(requestContext)
+    return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .build(batchRequest);

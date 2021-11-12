@@ -1,21 +1,20 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.jooq.*;
 import org.jooq.impl.DSL;
-
-import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
-import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 
 @Accessors(fluent = true)
 @Setter
@@ -33,10 +32,9 @@ public class BatchSingleJoinBuilder {
   private SelectQuery<Record> dataQuery;
 
   @NotNull
-  private Set<Map<String,Object>> keys;
+  private Set<Map<String, Object>> keys;
 
-  private BatchSingleJoinBuilder() {
-  }
+  private BatchSingleJoinBuilder() {}
 
   static BatchSingleJoinBuilder newBatchSingleJoin() {
     return new BatchSingleJoinBuilder();
@@ -45,16 +43,19 @@ public class BatchSingleJoinBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    var keyColumnNames = keys.stream().findFirst()
+    var keyColumnNames = keys.stream()
+        .findFirst()
         .stream()
-        .flatMap(map -> map.keySet().stream())
+        .flatMap(map -> map.keySet()
+            .stream())
         .collect(Collectors.toList());
 
     // Create virtual table with static key values
     var keyTable = createValuesTable(keyColumnNames, keys);
 
     keyColumnNames.stream()
-        .map(columnName -> QueryHelper.column(null, columnName).equal(QueryHelper.column(keyTable, columnName)))
+        .map(columnName -> QueryHelper.column(null, columnName)
+            .equal(QueryHelper.column(keyTable, columnName)))
         .forEach(dataQuery::addConditions);
 
     var batchQuery = dslContext.selectQuery(keyTable);

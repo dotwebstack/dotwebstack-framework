@@ -27,21 +27,24 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.query.model.AggregateField;
+import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
+import org.dotwebstack.framework.core.query.model.BatchRequest;
+import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.JoinCondition;
+import org.dotwebstack.framework.core.query.model.JoinCriteria;
+import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
-import org.jooq.JoinType;
-import org.jooq.Record;
-import org.jooq.SQLDialect;
-import org.jooq.Select;
-import org.jooq.SelectFieldOrAsterisk;
-import org.jooq.SelectQuery;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 
 @Setter
@@ -101,8 +104,7 @@ class SelectBuilder {
       return dataQuery;
     }
 
-    return newBatchJoining()
-        .requestContext(requestContext)
+    return newBatchJoining().requestContext(requestContext)
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
         .dataQuery(dataQuery)
@@ -115,8 +117,7 @@ class SelectBuilder {
   public SelectQuery<Record> build(BatchRequest batchRequest) {
     var dataQuery = build(batchRequest.getObjectRequest());
 
-    return newBatchSingleJoin()
-        .aliasManager(aliasManager)
+    return newBatchSingleJoin().aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
         .dataQuery(dataQuery)
         .keys(batchRequest.getKeys())
@@ -155,7 +156,18 @@ class SelectBuilder {
       dataQuery.addFrom(table);
     }
 
-    createKeyConditions(objectRequest.getKeyCriteria(),objectType,selectTable).forEach(dataQuery::addConditions);
+    List<Condition> keyConditions = objectRequest.getKeyCriterias()
+        .stream()
+        .flatMap(keyCriteria -> createKeyCondition(keyCriteria, objectType, selectTable).stream())
+        .collect(Collectors.toList());
+
+    if (keyConditions.size() > 0) {
+      if (keyConditions.size() == 1) {
+        dataQuery.addConditions(keyConditions.get(0));
+      } else {
+        dataQuery.addConditions(DSL.or(keyConditions));
+      }
+    }
 
     objectRequest.getScalarFields()
         .stream()
@@ -174,8 +186,15 @@ class SelectBuilder {
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getValue(), selectTable))
-        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect, objectRequest.getObjectType()
-            .isNested()));
+        .map(nestedSelectResult -> {
+          if (nestedSelectResult.selectQuery != null) {
+            addSubSelect(dataQuery, nestedSelectResult.selectQuery, objectRequest.getObjectType()
+                .isNested());
+          }
+          return nestedSelectResult.selectFieldOrAsterisk;
+        })
+        .filter(Objects::nonNull)
+        .forEach(dataQuery::addSelect);
 
     objectRequest.getObjectListFields()
         .entrySet()
@@ -278,19 +297,20 @@ class SelectBuilder {
     }
   }
 
-  private List<Condition> createKeyConditions(KeyCriteria keyCriteria, PostgresObjectType objectType,
+  private Optional<Condition> createKeyCondition(KeyCriteria keyCriteria, PostgresObjectType objectType,
       Table<Record> table) {
     if (keyCriteria == null) {
-      return List.of();
+      return Optional.empty();
     }
-    return keyCriteria.getValues()
+
+    return Optional.of(DSL.and(keyCriteria.getValues()
         .entrySet()
         .stream()
         .map(entry -> Optional.of(objectType.getField(entry.getKey()))
             .map(PostgresObjectField::getColumn)
             .map(column -> column(table, column).equal(entry.getValue()))
             .orElseThrow())
-        .collect(Collectors.toList());
+        .collect(Collectors.toList())));
   }
 
   private List<SelectFieldOrAsterisk> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
@@ -299,12 +319,12 @@ class SelectBuilder {
 
     List<SelectFieldOrAsterisk> result = new ArrayList<>();
 
-    if (StringUtils.isNotBlank(objectField.getKeyField())){
+    if (StringUtils.isNotBlank(objectField.getKeyField())) {
       var keyFieldRequest = FieldRequest.builder()
           .name(objectField.getName())
           .build();
 
-      result.addAll(processScalarField(keyFieldRequest,objectType,table,parentMapper));
+      result.addAll(processScalarField(keyFieldRequest, objectType, table, parentMapper));
     }
 
     String column;
@@ -345,20 +365,81 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectQuery<Record>> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
+  private Stream<ObjectListFieldResult> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> parentTable) {
 
-    if (objectField.getKeyField() != null){
-      var keyObjectField = (PostgresObjectField) objectField.getObjectType().getField(objectField.getKeyField());
+    // get key field for batch-single
+    if (objectField.getKeyField() != null) {
+      var keyObjectField = (PostgresObjectField) objectField.getObjectType()
+          .getField(objectField.getKeyField());
       var keyObjectRequest = ObjectRequest.builder()
           .objectType(keyObjectField.getTargetType())
-          .scalarFields(keyObjectField.getTargetType().getFields().keySet()
-              .stream().map(fieldName -> FieldRequest.builder().name(fieldName).build())
+          .scalarFields(keyObjectField.getTargetType()
+              .getFields()
+              .keySet()
+              .stream()
+              .map(fieldName -> FieldRequest.builder()
+                  .name(fieldName)
+                  .build())
               .collect(Collectors.toList()))
           .build();
 
-      return createNestedSelect(keyObjectField,keyObjectRequest,table);
+      return createNestedSelect(keyObjectField, keyObjectRequest, parentTable);
     }
+
+    // Relation object implementation
+    if (objectField.getTargetType()
+        .isNested() && objectField.getJoinTable() != null) {
+
+      ObjectFieldMapper<Map<String, Object>> nestedFieldMapper = new ObjectMapper();
+
+      fieldMapper.register(objectField.getName(), nestedFieldMapper);
+
+      return objectRequest.getObjectListFields()
+          .keySet()
+          .stream()
+          .flatMap(fieldRequest -> {
+            var joinTable = objectField.getJoinTable();
+
+            // Asked for reference
+            if (joinTable.getInverseJoinColumns()
+                .stream()
+                .anyMatch(joinColumn -> joinColumn.getReferencedField()
+                    .startsWith(fieldRequest.getName()))) {
+              var objectType = (PostgresObjectType) objectField.getObjectType();
+
+              var query = dslContext.selectQuery(findTable(joinTable.getName(), objectRequest.getContextCriteria()));
+
+              Map<String, String> identifyingObjectMapping = createIdentifyingObjectMapping(joinTable, query);
+
+              createJoinConditions(null, parentTable, joinTable.getJoinColumns(), objectType)
+                  .forEach(query::addConditions);
+
+              fieldMapper.register(objectField.getName(), new IdentifyingObjectMapper(identifyingObjectMapping));
+
+              return Stream.of(ObjectListFieldResult.builder()
+                  .selectQuery(query)
+                  .build());
+            }
+
+            // Asked for joinTable
+            objectRequest.getObjectListFields()
+                .get(fieldRequest);
+
+            nestedFieldMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()), row -> JoinCondition.builder()
+                .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
+                .joinTable(JoinHelper.resolveJoinTable((PostgresObjectType) objectField.getObjectType(), joinTable))
+                .build());
+
+            // TODO: dit kan nog eventueel herbruikbaar worden
+            return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(),
+                parentTable).stream()
+                    .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
+                        .selectFieldOrAsterisk(selectFieldOrAsterisk)
+                        .build());
+          });
+    }
+
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     var objectType = (PostgresObjectType) objectRequest.getObjectType();
 
@@ -380,7 +461,8 @@ class SelectBuilder {
       select.addLimit(1);
     }
 
-    if (!objectType.isNested() && !objectField.getObjectType().isNested()) {
+    if (!objectType.isNested() && !objectField.getObjectType()
+        .isNested()) {
       newJoin().table(parentTable)
           .relatedTable(DSL.table(tableName))
           .current(objectField)
@@ -389,9 +471,25 @@ class SelectBuilder {
           .forEach(select::addConditions);
     }
 
-    result.add(select);
+    return Stream.of(ObjectListFieldResult.builder()
+        .selectQuery(select)
+        .build());
+  }
 
-    return result.stream();
+  private Map<String, String> createIdentifyingObjectMapping(JoinTable joinTable, SelectQuery<Record> query) {
+    Map<String, String> mapping = joinTable.getInverseJoinColumns()
+        .stream()
+        .collect(Collectors.toMap(JoinColumn::getReferencedField, joinColumn -> {
+          var alias = aliasManager.newAlias();
+
+          var field = DSL.field(joinColumn.getName());
+
+          query.addSelect(DSL.arrayAgg(field)
+              .as(alias));
+
+          return alias;
+        }));
+    return mapping;
   }
 
   private Map<String, String> createScalarReferences(PostgresObjectField objectField) {
@@ -400,7 +498,7 @@ class SelectBuilder {
       return objectField.getJoinColumns()
           .stream()
           .collect(Collectors.toMap(JoinColumn::getReferencedField, JoinColumn::getName));
-    }else if (objectField.getJoinTable() != null) {
+    } else if (objectField.getJoinTable() != null) {
       return scalarReferences;
     } else {
       return scalarReferences.entrySet()
@@ -432,6 +530,28 @@ class SelectBuilder {
       return handleJoinMappedBy(collectionRequest, objectField, table);
     }
 
+    if (objectField.getJoinColumns() != null) {
+      // Provide join info for child data fetcher
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
+          .key(objectField.getJoinColumns()
+              .stream()
+              .collect(HashMap::new, (map, joinColumn) -> {
+                var key = joinColumn.getName();
+                map.put(key, fieldMapper.getFieldMapper(key)
+                    .apply(row));
+              }, HashMap::putAll))
+          .build());
+
+      return objectField.getJoinColumns()
+          .stream()
+          .map(JoinColumn::getName)
+          .map(columnName -> getColumnMapper(table, columnName).getColumn())
+          .map(field -> ObjectListFieldResult.builder()
+              .selectFieldOrAsterisk(field)
+              .build())
+          .collect(Collectors.toList());
+    }
+
     return List.of();
   }
 
@@ -452,14 +572,14 @@ class SelectBuilder {
             .collect(Collectors.toList());
   }
 
-  private List<ObjectListFieldResult> handleJoinTable(PostgresObjectField objectField, Table<Record> table) {
+  private List<ObjectListFieldResult> handleJoinTable(PostgresObjectField objectField, Table<Record> parentTable) {
     var joinTable = objectField.getJoinTable();
 
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
         .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
         .build());
 
-    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table)
+    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), parentTable)
         .stream()
         .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
             .selectFieldOrAsterisk(selectFieldOrAsterisk)

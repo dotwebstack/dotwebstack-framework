@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.ext.spatial.model.validation;
 
+import static java.util.Optional.ofNullable;
+
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
-
-import static java.util.Optional.ofNullable;
 
 public class EquivalentValidator implements ConstraintValidator<ValidEquivalent, Map<Integer, SpatialReferenceSystem>> {
 
@@ -18,9 +17,9 @@ public class EquivalentValidator implements ConstraintValidator<ValidEquivalent,
   @Override
   public boolean isValid(Map<Integer, SpatialReferenceSystem> spatialReferenceSystems,
       ConstraintValidatorContext context) {
-    return ofNullable(spatialReferenceSystems)
-        .stream()
-        .flatMap(v -> v.values().stream())
+    return ofNullable(spatialReferenceSystems).stream()
+        .flatMap(v -> v.values()
+            .stream())
         .filter(Objects::nonNull)
         .filter(srs -> srs.getEquivalent() != null)
         .allMatch(srs -> hasValidEquivalent(spatialReferenceSystems, srs));

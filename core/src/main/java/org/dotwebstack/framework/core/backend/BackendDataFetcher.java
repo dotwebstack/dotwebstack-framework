@@ -11,10 +11,8 @@ import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-
 import org.dataloader.DataLoader;
 import org.dataloader.MappedBatchLoader;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.query.model.*;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -58,7 +56,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
-        return getOrCreateBatchLoader(environment, () -> createManyBatchLoader(environment,requestContext)).load(joinCondition.getKey());
+        return getOrCreateBatchLoader(environment,
+            () -> createManyBatchLoader(environment, requestContext, joinCondition)).load(joinCondition.getKey());
       }
 
       var result = backendLoader.loadMany(collectionRequest, requestContext)
@@ -74,16 +73,20 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
-    var keyField = requestContext.getObjectField().getKeyField();
-    if (source != null && source.containsKey(keyField)){
-      var key = getNestedMap(source,keyField);
-      return getOrCreateBatchLoader(environment, () -> createSingleBatchLoader(environment,requestContext)).load(key);
+    var keyField = requestContext.getObjectField()
+        .getKeyField();
+
+    if (source != null && source.containsKey(keyField)) {
+      var key = getNestedMap(source, keyField);
+      return getOrCreateBatchLoader(environment, () -> createSingleBatchLoader(environment, requestContext)).load(key);
     } else {
-      return backendLoader.loadSingle(objectRequest, requestContext).toFuture();
+      return backendLoader.loadSingle(objectRequest, requestContext)
+          .toFuture();
     }
   }
 
-  private <K,V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment, Supplier<DataLoader<K,V>> supplier) {
+  private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
+      Supplier<DataLoader<K, V>> supplier) {
     // Create separate data loader for every unique path, since every path can have different arguments
     // or selection
     var dataLoaderKey = String.join("/", environment.getExecutionStepInfo()
@@ -95,7 +98,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
   }
 
   private DataLoader<Map<String, Object>, List<Map<String, Object>>> createManyBatchLoader(
-      DataFetchingEnvironment environment, RequestContext requestContext) {
+      DataFetchingEnvironment environment, RequestContext requestContext, JoinCondition joinCondition) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
     var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
@@ -105,6 +108,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .collectionRequest(collectionRequest)
           .joinCriteria(JoinCriteria.builder()
               .keys(keys)
+              .joinCondition(joinCondition)
               .build())
           .build();
 
@@ -118,7 +122,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
     return newMappedDataLoader(batchLoader);
   }
 
-  private DataLoader<Map<String,Object>, Map<String,Object>> createSingleBatchLoader(DataFetchingEnvironment environment, RequestContext requestContext) {
+  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
+      DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());

@@ -42,8 +42,9 @@ public class PostgresBackendLoader implements BackendLoader {
   }
 
   @Override
-  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest, RequestContext requestContext) {
-    var query = new Query(batchRequest,requestContext);
+  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest,
+      RequestContext requestContext) {
+    var query = new Query(batchRequest, requestContext);
 
     return query.executeBatchSingle(databaseClient);
   }

@@ -46,18 +46,10 @@ objectTypes:
     filters:
       name:
         field: name
-        # op geneste objecten kan je niet filteren
-#      breweryCity:
-#        field: brewery.visitAddress.city
-#      ingredientName:
-#        field: ingredients.name
     sortableBy:
       name:
         - field: name
           direction: ASC
-#      breweryCity:
-#        - field: brewery.visitAddress.city
-#          direction: ASC
     fields:
       identifier:
         type: ID
@@ -163,7 +155,9 @@ objectTypes:
         type: Beer
         list: true
         nullable: true
-        mappedBy: brewery
+        joinColumns:
+          - name: record_id
+            referencedField: brewery
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
@@ -197,6 +191,8 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
+    filters:
+      name: {}
     fields:
       identifier:
         type: ID
