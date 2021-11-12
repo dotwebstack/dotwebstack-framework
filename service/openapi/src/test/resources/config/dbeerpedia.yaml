@@ -46,6 +46,93 @@ paths:
                         items:
                           $ref: '#/components/schemas/Brewery'
 
+  /breweries-all-of:
+    get:
+      x-dws-query:
+        field: breweryCollection
+      parameters:
+        - name: expand
+          in: query
+          x-dws-type: expand
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryAllOf'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BreweryAllOf'
+  /breweries-one-of:
+    get:
+      x-dws-query:
+        field: breweryCollection
+      parameters:
+        - name: expand
+          in: query
+          x-dws-type: expand
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryOneOf'
+  /breweries-any-of:
+    get:
+      x-dws-query:
+        field: breweryCollection
+      parameters:
+        - name: expand
+          in: query
+          x-dws-type: expand
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryAnyOf'
+
 components:
   schemas:
     Brewery:
@@ -69,3 +156,69 @@ components:
           type: string
         postalCode:
           type: string
+
+    BreweryAllOf:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'
+    Nameable:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    Addressable:
+      type: object
+      properties:
+        postalAddress:
+          $ref: '#/components/schemas/Address'
+    AddressAllOf:
+      type: object
+      required:
+        - street
+      allOf:
+        - $ref: '#/components/schemas/HasStreet'
+        - type: object
+          properties:
+            postalCode:
+              type: string
+    HasStreet:
+      type: object
+      properties:
+        street:
+          type: string
+
+    BreweryOneOf:
+      type: object
+      oneOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'
+
+    BreweryAnyOf:
+      type: object
+      anyOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'

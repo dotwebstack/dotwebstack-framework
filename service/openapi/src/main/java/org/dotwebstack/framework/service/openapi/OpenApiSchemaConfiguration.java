@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.util.ResolverFully;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -32,8 +33,12 @@ public class OpenApiSchemaConfiguration {
 
   @Bean
   public OpenAPI openApi() {
-    return new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
+    OpenAPI openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
         .resolve(SPEC_FILENAME)
         .getPath());
+
+    new ResolverFully().resolveFully(openApi);
+
+    return openApi;
   }
 }

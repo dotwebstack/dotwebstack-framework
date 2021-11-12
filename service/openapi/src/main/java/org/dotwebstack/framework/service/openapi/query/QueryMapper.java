@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import graphql.ExecutionInput;
@@ -16,6 +17,7 @@ import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
@@ -24,7 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.springframework.stereotype.Component;
 
@@ -61,15 +62,15 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
-    if (schema.get$ref() != null) {
-      return mapFields(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition);
-    }
-
     if (schema instanceof ArraySchema) {
       return mapFields(((ArraySchema) schema).getItems(), fieldDefinition);
     }
 
     if (!(schema instanceof ObjectSchema)) {
+      if (schema instanceof ComposedSchema) {
+        validateComposedSchema((ComposedSchema) schema);
+      }
+
       return Stream.empty();
     }
 
@@ -132,6 +133,21 @@ public class QueryMapper {
 
   private String paramKeyFromPath(String path) {
     return path.substring(path.lastIndexOf(".") + 1);
+  }
+
+  private void validateComposedSchema(ComposedSchema composedSchema) {
+    String construct;
+    if (composedSchema.getOneOf() != null) {
+      construct = "oneOf";
+    } else if (composedSchema.getAnyOf() != null) {
+      construct = "anyOf";
+    } else if (composedSchema.getAllOf() != null) {
+      throw illegalStateException(
+          "Encountered allOf construct. This is unexpected because the OpenAPI spec should already be fully resolved.");
+    } else {
+      throw illegalStateException("Unknown composition construct {} encountered for schema:%n{}", composedSchema);
+    }
+    throw invalidConfigurationException("Unsupported composition construct {} used.", construct);
   }
 
 }
