@@ -11,6 +11,7 @@ import graphql.GraphQL;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -54,21 +55,16 @@ public class OperationHandlerFactory {
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
-    var bodyMapperMap = createBodyMapperMap(operationContext);
-    var requestInputHandler = createOperationRequestHandler(operationContext);
+    var requestHandler = createRequestHandler(operationContext);
+    var responseHandler = createResponseHandler(operationContext);
 
-    return serverRequest -> requestInputHandler.apply(serverRequest)
+    return serverRequest -> requestHandler.apply(serverRequest)
         .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
             .flatMap(this::execute)
-            .flatMap(executionResult -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
-                .map(operationRequest, executionResult)
-                .flatMap(content -> ServerResponse.ok()
-                    .contentType(operationRequest.getPreferredMediaType())
-                    .body(BodyInserters.fromValue(content)))
-                .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")))));
+            .flatMap(executionResult -> responseHandler.apply(executionResult, operationRequest)));
   }
 
-  private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
+  private Function<ServerRequest, Mono<OperationRequest>> createRequestHandler(
       OperationContext operationContext) {
     var contentNegotiator = createContentNegotiator(operationContext);
     var parameterResolver = parameterResolverFactory.create(operationContext.getOperation());
@@ -79,6 +75,17 @@ public class OperationHandlerFactory {
             .parameters(parameters)
             .preferredMediaType(contentNegotiator.negotiate(serverRequest))
             .build());
+  }
+
+  private BiFunction<ExecutionResult, OperationRequest, Mono<ServerResponse>> createResponseHandler(OperationContext operationContext) {
+    var bodyMapperMap = createBodyMapperMap(operationContext);
+
+    return (executionResult, operationRequest) -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
+        .map(operationRequest, executionResult)
+        .flatMap(content -> ServerResponse.ok()
+            .contentType(operationRequest.getPreferredMediaType())
+            .body(BodyInserters.fromValue(content)))
+        .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
   }
 
   private Mono<ExecutionResult> execute(ExecutionInput executionInput) {
