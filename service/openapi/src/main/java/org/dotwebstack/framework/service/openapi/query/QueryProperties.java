@@ -14,6 +14,8 @@ public class QueryProperties {
 
   private Paging paging;
 
+  private Map<String, String> keys = new HashMap<>();
+
   private Map<String, Map<String, Object>> filters = new HashMap<>();
 
   public static QueryProperties fromOperation(Operation operation) {
