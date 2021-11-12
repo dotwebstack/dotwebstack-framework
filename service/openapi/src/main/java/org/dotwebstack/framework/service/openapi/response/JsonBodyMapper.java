@@ -58,7 +58,7 @@ public class JsonBodyMapper implements BodyMapper {
 
     var body = mapSchema(operationRequest.getResponseSchema(), queryField, data.get(queryField.getName()));
 
-    return Mono.just(body);
+    return Mono.justOrEmpty(body);
   }
 
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
