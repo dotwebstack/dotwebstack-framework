@@ -10,9 +10,11 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.dataloader.DataLoader;
 import org.dataloader.MappedBatchLoader;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
@@ -77,8 +79,10 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
-    var keyField = requestContext.getObjectField()
-        .getKeyField();
+    var keyField = Optional.of(requestContext)
+        .map(RequestContext::getObjectField)
+        .map(ObjectField::getKeyField)
+        .orElse(null);
 
     if (source != null && source.containsKey(keyField)) {
       var key = getNestedMap(source, keyField);
