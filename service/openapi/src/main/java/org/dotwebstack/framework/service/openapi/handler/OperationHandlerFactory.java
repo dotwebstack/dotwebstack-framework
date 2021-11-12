@@ -118,6 +118,10 @@ public class OperationHandlerFactory {
       var acceptableMediaTypes = serverRequest.headers()
           .accept();
 
+      if (acceptableMediaTypes.isEmpty()) {
+        return supportedMediaTypes.get(0);
+      }
+
       MediaType.sortByQualityValue(acceptableMediaTypes);
 
       for (MediaType requestedMediaType : acceptableMediaTypes) {
