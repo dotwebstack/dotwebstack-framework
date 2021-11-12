@@ -52,16 +52,16 @@ public class JsonBodyMapper implements BodyMapper {
             .getField());
 
     Map<String, Object> data = executionResult.getData();
+    if (data == null) {
+      return Mono.empty();
+    }
+
     var body = mapSchema(operationRequest.getResponseSchema(), queryField, data.get(queryField.getName()));
 
     return Mono.just(body);
   }
 
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (data == null) {
-      return null;
-    }
-
     if (schema.get$ref() != null) {
       return mapSchema(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition, data);
     }

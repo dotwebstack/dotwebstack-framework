@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
@@ -61,7 +62,8 @@ public class OperationHandlerFactory {
             .flatMap(executionResult -> mediaTypeContentMappers.get(operationRequest.getPreferredMediaType())
                 .map(operationRequest, executionResult)
                 .flatMap(content -> ServerResponse.ok()
-                    .body(BodyInserters.fromValue(content)))));
+                    .body(BodyInserters.fromValue(content)))
+                .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")))));
   }
 
   private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
