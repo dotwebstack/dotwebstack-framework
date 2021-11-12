@@ -117,7 +117,8 @@ public class OperationHandlerFactory {
         .getContent()
         .entrySet()
         .stream()
-        .collect(Collectors.toMap(entry -> MediaType.valueOf(entry.getKey()), entry -> findBodyMapper(entry.getKey(), operationContext)));
+        .collect(Collectors.toMap(entry -> MediaType.valueOf(entry.getKey()),
+            entry -> findBodyMapper(entry.getKey(), operationContext)));
   }
 
   private BodyMapper findBodyMapper(String mediaTypeKey, OperationContext operationContext) {
