@@ -13,7 +13,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import org.dataloader.DataLoader;
 import org.dataloader.MappedBatchLoader;
-import org.dotwebstack.framework.core.query.model.*;
+import org.dotwebstack.framework.core.query.model.BatchRequest;
+import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
+import org.dotwebstack.framework.core.query.model.JoinCondition;
+import org.dotwebstack.framework.core.query.model.JoinCriteria;
+import org.dotwebstack.framework.core.query.model.RequestContext;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 

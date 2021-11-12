@@ -13,7 +13,13 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.JoinType;
+import org.jooq.Record;
+import org.jooq.RowN;
+import org.jooq.SQLDialect;
+import org.jooq.SelectQuery;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 @Accessors(fluent = true)
