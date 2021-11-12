@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -25,9 +24,8 @@ public class TransientParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
-      @NonNull ResponseSchemaContext responseSchemaContext) {
-    return super.getValue(request, parameter, responseSchemaContext);
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
+    return super.getValue(request, parameter);
   }
 
   @Override

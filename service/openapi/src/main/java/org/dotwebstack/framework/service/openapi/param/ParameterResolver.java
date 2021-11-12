@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -15,17 +16,14 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 public class ParameterResolver {
-  private RequestBody requestBody;
+  private final RequestBody requestBody;
 
   private final RequestBodyContext requestBodyContext;
-
-  private final ResponseSchemaContext responseSchemaContext;
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
@@ -35,21 +33,23 @@ public class ParameterResolver {
 
   private static final String REQUEST_URI = "request_uri";
 
+  private final List<Parameter> parameters;
+
+  private final Map<String, String> dwsParameters;
+
   public ParameterResolver(RequestBody requestBody, RequestBodyContext requestBodyContext,
-      ResponseSchemaContext responseSchemaContext, RequestBodyHandlerRouter requestBodyHandlerRouter,
-      ParamHandlerRouter paramHandlerRouter, JexlEngine jexlEngine) {
+      RequestBodyHandlerRouter requestBodyHandlerRouter, ParamHandlerRouter paramHandlerRouter, JexlEngine jexlEngine,
+      List<Parameter> parameters, Map<String, String> dwsParameters) {
     this.requestBody = requestBody;
     this.requestBodyContext = requestBodyContext;
-    this.responseSchemaContext = responseSchemaContext;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.paramHandlerRouter = paramHandlerRouter;
     this.jexlHelper = new JexlHelper(jexlEngine);
+    this.parameters = parameters;
+    this.dwsParameters = dwsParameters;
   }
 
   public Mono<Map<String, Object>> resolveParameters(ServerRequest serverRequest) {
-    if (responseSchemaContext == null) {
-      return Mono.just(Map.of());
-    }
     var result = resolveUrlAndHeaderParameters(serverRequest);
 
     if (requestBody != null) {
@@ -63,26 +63,23 @@ public class ParameterResolver {
 
     validateRequestBodyNonexistent(serverRequest);
 
-    return Mono
-        .just(addEvaluatedDwsParameters(result, responseSchemaContext.getDwsParameters(), serverRequest, jexlHelper));
+    return Mono.just(addEvaluatedDwsParameters(result, dwsParameters, serverRequest, jexlHelper));
   }
 
   Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
-    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+    if (Objects.nonNull(parameters)) {
       result.put(REQUEST_URI, request.uri()
           .toString());
 
-      validateParameterExistence("query", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "query"),
-          request.queryParams()
-              .keySet());
-      validateParameterExistence("path", getParameterNamesOfType(this.responseSchemaContext.getParameters(), "path"),
-          request.pathVariables()
-              .keySet());
+      validateParameterExistence("query", getParameterNamesOfType(parameters, "query"), request.queryParams()
+          .keySet());
+      validateParameterExistence("path", getParameterNamesOfType(parameters, "path"), request.pathVariables()
+          .keySet());
 
-      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
+      for (Parameter parameter : parameters) {
         var handler = paramHandlerRouter.getParamHandler(parameter);
-        handler.getValue(request, parameter, responseSchemaContext)
+        handler.getValue(request, parameter)
             .ifPresent(value -> result.put(handler.getParameterName(parameter), value));
       }
     }
