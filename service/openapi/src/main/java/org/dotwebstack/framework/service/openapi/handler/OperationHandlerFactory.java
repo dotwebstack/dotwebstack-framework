@@ -54,29 +54,18 @@ public class OperationHandlerFactory {
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
-    var bodyMapperMap = createMediaTypeBodyMappers(operationContext);
+    var bodyMapperMap = createBodyMapperMap(operationContext);
     var requestInputHandler = createOperationRequestHandler(operationContext);
 
     return serverRequest -> requestInputHandler.apply(serverRequest)
         .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
             .flatMap(this::execute)
-            .flatMap(this::handleErrors)
             .flatMap(executionResult -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
                 .map(operationRequest, executionResult)
                 .flatMap(content -> ServerResponse.ok()
                     .contentType(operationRequest.getPreferredMediaType())
                     .body(BodyInserters.fromValue(content)))
                 .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")))));
-  }
-
-  private Mono<ExecutionResult> handleErrors(ExecutionResult executionResult) {
-    if (executionResult.isDataPresent()) {
-      return Mono.just(executionResult);
-    }
-
-    LOG.error("GraphQL query returned errors: {}", executionResult.getErrors());
-
-    return Mono.error(internalServerErrorException());
   }
 
   private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
@@ -96,7 +85,18 @@ public class OperationHandlerFactory {
     LOG.debug("Executing query:\n{}", executionInput.getQuery());
     LOG.debug("Query variables:\n{}", executionInput.getVariables());
 
-    return Mono.fromFuture(graphQL.executeAsync(executionInput));
+    return Mono.fromFuture(graphQL.executeAsync(executionInput))
+        .flatMap(this::handleErrors);
+  }
+
+  private Mono<ExecutionResult> handleErrors(ExecutionResult executionResult) {
+    if (executionResult.isDataPresent()) {
+      return Mono.just(executionResult);
+    }
+
+    LOG.error("GraphQL query returned errors: {}", executionResult.getErrors());
+
+    return Mono.error(internalServerErrorException());
   }
 
   private ContentNegotiator createContentNegotiator(OperationContext operationContext) {
@@ -125,7 +125,7 @@ public class OperationHandlerFactory {
     };
   }
 
-  private Map<MediaType, BodyMapper> createMediaTypeBodyMappers(OperationContext operationContext) {
+  private Map<MediaType, BodyMapper> createBodyMapperMap(OperationContext operationContext) {
     return operationContext.getSuccessResponse()
         .getContent()
         .entrySet()
