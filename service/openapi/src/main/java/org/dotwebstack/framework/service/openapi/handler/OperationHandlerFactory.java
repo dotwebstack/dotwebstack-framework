@@ -54,16 +54,17 @@ public class OperationHandlerFactory {
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
-    var mediaTypeBodyMappers = createMediaTypeBodyMappers(operationContext);
+    var bodyMapperMap = createMediaTypeBodyMappers(operationContext);
     var requestInputHandler = createOperationRequestHandler(operationContext);
 
     return serverRequest -> requestInputHandler.apply(serverRequest)
         .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
             .flatMap(this::execute)
             .flatMap(this::handleErrors)
-            .flatMap(executionResult -> mediaTypeBodyMappers.get(operationRequest.getPreferredMediaType())
+            .flatMap(executionResult -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
                 .map(operationRequest, executionResult)
                 .flatMap(content -> ServerResponse.ok()
+                    .contentType(operationRequest.getPreferredMediaType())
                     .body(BodyInserters.fromValue(content)))
                 .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")))));
   }
