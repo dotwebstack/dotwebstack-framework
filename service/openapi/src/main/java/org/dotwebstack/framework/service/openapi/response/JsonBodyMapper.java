@@ -27,6 +27,7 @@ import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -52,10 +53,6 @@ public class JsonBodyMapper implements BodyMapper {
             .getField());
 
     Map<String, Object> data = executionResult.getData();
-    if (data == null) {
-      return Mono.empty();
-    }
-
     var body = mapSchema(operationRequest.getResponseSchema(), queryField, data.get(queryField.getName()));
 
     return Mono.justOrEmpty(body);
@@ -180,13 +177,15 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   @Override
-  public boolean supports(String mediaTypeKey, OperationContext operationContext) {
+  public boolean supports(MediaType mediaType, OperationContext operationContext) {
+    var mediaTypeString = mediaType.toString();
+
     var schema = operationContext.getSuccessResponse()
         .getContent()
-        .get(mediaTypeKey)
+        .get(mediaTypeString)
         .getSchema();
 
-    return schema != null && MEDIA_TYPE_PATTERN.matcher(mediaTypeKey)
+    return schema != null && MEDIA_TYPE_PATTERN.matcher(mediaTypeString)
         .matches();
   }
 }

@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 
@@ -12,7 +14,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
@@ -53,17 +54,28 @@ public class OperationHandlerFactory {
         .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
-    var mediaTypeContentMappers = createMediaTypeBodyMappers(operationContext);
+    var mediaTypeBodyMappers = createMediaTypeBodyMappers(operationContext);
     var requestInputHandler = createOperationRequestHandler(operationContext);
 
     return serverRequest -> requestInputHandler.apply(serverRequest)
         .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
             .flatMap(this::execute)
-            .flatMap(executionResult -> mediaTypeContentMappers.get(operationRequest.getPreferredMediaType())
+            .flatMap(this::handleErrors)
+            .flatMap(executionResult -> mediaTypeBodyMappers.get(operationRequest.getPreferredMediaType())
                 .map(operationRequest, executionResult)
                 .flatMap(content -> ServerResponse.ok()
                     .body(BodyInserters.fromValue(content)))
                 .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")))));
+  }
+
+  private Mono<ExecutionResult> handleErrors(ExecutionResult executionResult) {
+    if (executionResult.isDataPresent()) {
+      return Mono.just(executionResult);
+    }
+
+    LOG.error("GraphQL query returned errors: {}", executionResult.getErrors());
+
+    return Mono.error(internalServerErrorException());
   }
 
   private Function<ServerRequest, Mono<OperationRequest>> createOperationRequestHandler(
@@ -118,13 +130,13 @@ public class OperationHandlerFactory {
         .entrySet()
         .stream()
         .collect(Collectors.toMap(entry -> MediaType.valueOf(entry.getKey()),
-            entry -> findBodyMapper(entry.getKey(), operationContext)));
+            entry -> findBodyMapper(MediaType.valueOf(entry.getKey()), operationContext)));
   }
 
-  private BodyMapper findBodyMapper(String mediaTypeKey, OperationContext operationContext) {
+  private BodyMapper findBodyMapper(MediaType mediaType, OperationContext operationContext) {
     return bodyMappers.stream()
-        .filter(responseMapper -> responseMapper.supports(mediaTypeKey, operationContext))
+        .filter(responseMapper -> responseMapper.supports(mediaType, operationContext))
         .findFirst()
-        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Could not find response mapper."));
+        .orElseThrow(() -> invalidConfigurationException("Could not find body mapper."));
   }
 }
