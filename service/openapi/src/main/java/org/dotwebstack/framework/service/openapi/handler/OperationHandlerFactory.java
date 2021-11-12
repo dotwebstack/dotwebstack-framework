@@ -64,8 +64,7 @@ public class OperationHandlerFactory {
             .flatMap(executionResult -> responseHandler.apply(executionResult, operationRequest)));
   }
 
-  private Function<ServerRequest, Mono<OperationRequest>> createRequestHandler(
-      OperationContext operationContext) {
+  private Function<ServerRequest, Mono<OperationRequest>> createRequestHandler(OperationContext operationContext) {
     var contentNegotiator = createContentNegotiator(operationContext);
     var parameterResolver = parameterResolverFactory.create(operationContext.getOperation());
 
@@ -77,7 +76,8 @@ public class OperationHandlerFactory {
             .build());
   }
 
-  private BiFunction<ExecutionResult, OperationRequest, Mono<ServerResponse>> createResponseHandler(OperationContext operationContext) {
+  private BiFunction<ExecutionResult, OperationRequest, Mono<ServerResponse>> createResponseHandler(
+      OperationContext operationContext) {
     var bodyMapperMap = createBodyMapperMap(operationContext);
 
     return (executionResult, operationRequest) -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
