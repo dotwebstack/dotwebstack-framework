@@ -93,7 +93,7 @@ public class JsonBodyMapper implements BodyMapper {
     throw invalidConfigurationException("Schema type '{}' not supported.", schema.getName());
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Map<String, Object> mapObjectSchema(ObjectSchema schema, GraphQLFieldDefinition fieldDefinition,
       Object data) {
     if (MapperUtils.isEnvelope(schema)) {
