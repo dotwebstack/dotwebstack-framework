@@ -13,6 +13,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -20,13 +21,15 @@ import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.MediaType;
 
 class QueryMapperTest {
 
-  private static final String MEDIA_TYPE_JSON = "application/json";
+  private static final MediaType MEDIA_TYPE_JSON = MediaType.APPLICATION_JSON;
 
-  private static final String MEDIA_TYPE_JSON_HAL = "application/hal+json";
+  private static final MediaType MEDIA_TYPE_JSON_HAL = MediaType.valueOf("application/hal+json");
 
   private static OpenAPI openApi;
 
@@ -41,24 +44,31 @@ class QueryMapperTest {
     queryFactory = new QueryMapper(openApi, loadSchema());
   }
 
+  static Stream<Arguments> arguments() {
+    return Stream.of(
+        Arguments.of("/breweries", MEDIA_TYPE_JSON, "collection"),
+        Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, "collection"));
+  }
+
   @ParameterizedTest
-  @ValueSource(strings = {MEDIA_TYPE_JSON, MEDIA_TYPE_JSON_HAL})
-  void create(String mediaTypeKey) throws IOException {
+  @MethodSource("arguments")
+  void create(String path, MediaType preferredMediaType, String query) throws IOException {
     var operation = openApi.getPaths()
-        .get("/breweries")
+        .get(path)
         .getGet();
 
     var operationRequest = OperationRequest.builder()
         .context(OperationContext.builder()
             .operation(operation)
             .successResponse(MapperUtils.getSuccessResponse(operation))
+            .queryProperties(QueryProperties.fromOperation(operation))
             .build())
-        .preferredMediaType(mediaTypeKey)
+        .preferredMediaType(preferredMediaType)
         .build();
 
     var executionInput = queryFactory.map(operationRequest);
 
-    assertThat(executionInput.getQuery(), is(equalTo(loadQuery("collection"))));
+    assertThat(executionInput.getQuery(), is(equalTo(loadQuery(query))));
   }
 
   private static String loadQuery(String name) throws IOException {

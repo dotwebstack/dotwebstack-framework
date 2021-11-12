@@ -5,6 +5,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.springframework.http.MediaType;
 
 @Builder
 @Getter
@@ -18,12 +19,12 @@ public class OperationRequest {
   private final Map<String, Object> parameters = Map.of();
 
   @NonNull
-  private final String preferredMediaType;
+  private final MediaType preferredMediaType;
 
   public Schema<?> getResponseSchema() {
     return context.getSuccessResponse()
         .getContent()
-        .get(preferredMediaType)
+        .get(preferredMediaType.toString())
         .getSchema();
   }
 }

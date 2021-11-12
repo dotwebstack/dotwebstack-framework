@@ -17,6 +17,7 @@ import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
@@ -84,21 +85,37 @@ public class OperationHandlerFactory {
   }
 
   private ContentNegotiator createContentNegotiator(OperationContext operationContext) {
-    // TODO Real negotiation
-    return serverRequest -> operationContext.getSuccessResponse()
+    var supportedMediaTypes = operationContext.getSuccessResponse()
         .getContent()
         .keySet()
         .stream()
-        .findFirst()
-        .orElseThrow(() -> notAcceptableException("None of the acceptable media type is supported."));
+        .map(MediaType::valueOf)
+        .collect(Collectors.toList());
+
+    return serverRequest -> {
+      var acceptableMediaTypes = serverRequest.headers()
+          .accept();
+
+      MediaType.sortByQualityValue(acceptableMediaTypes);
+
+      for (MediaType requestedMediaType : acceptableMediaTypes) {
+        for (MediaType supportedMediaType : supportedMediaTypes) {
+          if (requestedMediaType.isCompatibleWith(supportedMediaType)) {
+            return supportedMediaType;
+          }
+        }
+      }
+
+      throw notAcceptableException("None of the acceptable media type is supported.");
+    };
   }
 
-  private Map<String, BodyMapper> createMediaTypeBodyMappers(OperationContext operationContext) {
+  private Map<MediaType, BodyMapper> createMediaTypeBodyMappers(OperationContext operationContext) {
     return operationContext.getSuccessResponse()
         .getContent()
         .entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> findBodyMapper(entry.getKey(), operationContext)));
+        .collect(Collectors.toMap(entry -> MediaType.valueOf(entry.getKey()), entry -> findBodyMapper(entry.getKey(), operationContext)));
   }
 
   private BodyMapper findBodyMapper(String mediaTypeKey, OperationContext operationContext) {
