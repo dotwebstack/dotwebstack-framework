@@ -21,12 +21,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Beer'
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
+#        class:
+#          type: string
+#          x-dws-default: 'Beer'
     BreweryCollection:
       type: object
       x-dws-envelope: true
@@ -44,21 +44,21 @@ components:
               type: array
               items:
                $ref: '#/components/schemas/Brewery'
-        _links:
-          x-dws-envelope: true
-          type: object
-          required:
-            - self
-          properties:
-            self:
-              x-dws-envelope: true
-              type: object
-              required:
-                - href
-              properties:
-                href:
-                  type: string
-                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+#        _links:
+#          x-dws-envelope: true
+#          type: object
+#          required:
+#            - self
+#          properties:
+#            self:
+#              x-dws-envelope: true
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  type: string
+#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
@@ -69,50 +69,47 @@ components:
           type: string
         name:
           type: string
-          nullable: true
-        address:
-          $ref: '#/components/schemas/Address'
-        beers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Beer'
-        hasBeers:
-          type: boolean
+#        address:
+#          $ref: '#/components/schemas/Address'
+#        beers:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Beer'
+#        hasBeers:
+#          type: boolean
         postalCode:
           type: string
-          nullable: true
         founded:
           type: string
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
-        countries:
-          type: array
-          x-dws-default: ['Netherlands','Belgium']
-          items:
-            type: string
-        class:
-          type: string
-          x-dws-default: 'Brewery'
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+#        countries:
+#          type: array
+#          x-dws-default: ['Netherlands','Belgium']
+#          items:
+#            type: string
+#        class:
+#          type: string
+#          x-dws-default: 'Brewery'
     Ingredient:
       type: object
       required:
-        - name
+        - identifier
       properties:
         identifier:
           type: string
         name:
           type: string
-          nullable: true
     Address:
       type: object
       nullable: true
       required:
-        - subject
+#        - subject
         - streetAddress
       properties:
-        subject:
-          type: string
+#        subject:
+#          type: string
         postalCode:
           type: string
         streetAddress:

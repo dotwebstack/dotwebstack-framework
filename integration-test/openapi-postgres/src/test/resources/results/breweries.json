@@ -2,30 +2,41 @@
   "_embedded": {
     "breweries": [
       {
+        "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c11666",
         "name": "Brewery S",
-        "link": "/brewery/28649f76-ddcf-417a-8c1d-8e5012c11666",
-        "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c11666"
+        "postalAddress": null,
+        "visitAddress": null
       },
       {
+        "identifier_brewery": "d3654375-95fa-46b4-8529-08b0f777bd6b",
         "name": "Brewery X",
-        "link": "/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b",
-        "identifier_brewery": "d3654375-95fa-46b4-8529-08b0f777bd6b"
+        "postalAddress": {
+          "identifier_address": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+          "street": "Church Street",
+          "city": "Dublin"
+        },
+        "visitAddress": {
+          "identifier_address": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f",
+          "street": "Church Street",
+          "city": "Dublin"
+        }
       },
       {
+        "identifier_brewery": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
         "name": "Brewery Y",
-        "link": "/brewery/6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
-        "identifier_brewery": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9"
+        "postalAddress": {
+          "identifier_address": "3fe6c706-54af-4420-89c4-926ff719236a",
+          "street": "5th Avenue",
+          "city": "New York"
+        },
+        "visitAddress": null
       },
       {
+        "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c31959",
         "name": "Brewery Z",
-        "link": "/brewery/28649f76-ddcf-417a-8c1d-8e5012c31959",
-        "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c31959"
+        "postalAddress": null,
+        "visitAddress": null
       }
     ]
-  },
-  "_links": {
-    "self": {
-      "href": "/breweries"
-    }
   }
 }

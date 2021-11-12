@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Collection;
 import java.util.Map;
@@ -97,11 +98,16 @@ public class OperationHandlerFactory {
   }
 
   private Mono<ExecutionResult> handleErrors(ExecutionResult executionResult) {
-    if (executionResult.isDataPresent()) {
+    var errors = executionResult.getErrors();
+
+    if (errors.isEmpty()) {
       return Mono.just(executionResult);
     }
 
-    LOG.error("GraphQL query returned errors: {}", executionResult.getErrors());
+    LOG.error("GraphQL query returned errors:\n{}", errors.stream()
+        .map(GraphQLError::getMessage)
+        .map("- "::concat)
+        .collect(Collectors.joining("\n")));
 
     return Mono.error(internalServerErrorException());
   }

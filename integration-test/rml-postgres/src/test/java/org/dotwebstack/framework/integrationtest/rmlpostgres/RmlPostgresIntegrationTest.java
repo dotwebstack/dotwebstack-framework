@@ -16,6 +16,7 @@ import org.dotwebstack.framework.test.TestApplication;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -64,6 +65,7 @@ class RmlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
+  @Disabled
   @ParameterizedTest
   @MethodSource("createMediaTypeResponseFileNameArguments")
   void dereference_returnsExpectedResult_forRequest(MediaType mediaType, String expectedResultFileName)
