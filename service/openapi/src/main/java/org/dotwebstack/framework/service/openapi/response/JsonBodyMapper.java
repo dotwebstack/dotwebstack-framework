@@ -62,6 +62,10 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
+    if (data == null) {
+      return null;
+    }
+
     if (schema.get$ref() != null) {
       return mapSchema(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition, data);
     }
