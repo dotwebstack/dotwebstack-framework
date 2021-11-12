@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class JsonResponseMapper {
 
   private static final Map<String, Class<?>> TYPE_CLASS_MAPPING =
@@ -148,8 +150,8 @@ public class JsonResponseMapper {
 
   private Object processObject(@NonNull ResponseWriteContext writeContext, OasObjectField oasField, String newPath) {
 
-    if (oasField.isRequired() || oasField.isDwsTransient()
-        || isExpanded(writeContext.getParameters(), removeRoot(newPath)) || oasField.getIncludeExpression() != null) {
+    if (oasField.isRequired() || oasField.isTransient() || isExpanded(writeContext.getParameters(), removeRoot(newPath))
+        || oasField.getIncludeExpression() != null) {
       if (oasField.isEnvelope()) {
         return mapEnvelopeObjectToResponse(writeContext, newPath);
       }
