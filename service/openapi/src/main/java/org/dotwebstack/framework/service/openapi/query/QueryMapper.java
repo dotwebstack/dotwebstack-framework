@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
 import graphql.ExecutionInput;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
@@ -68,7 +66,7 @@ public class QueryMapper {
 
     if (!(schema instanceof ObjectSchema)) {
       if (schema instanceof ComposedSchema) {
-        validateComposedSchema((ComposedSchema) schema);
+        throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
       }
 
       return Stream.empty();
@@ -134,20 +132,4 @@ public class QueryMapper {
   private String paramKeyFromPath(String path) {
     return path.substring(path.lastIndexOf(".") + 1);
   }
-
-  private void validateComposedSchema(ComposedSchema composedSchema) {
-    String construct;
-    if (composedSchema.getOneOf() != null) {
-      construct = "oneOf";
-    } else if (composedSchema.getAnyOf() != null) {
-      construct = "anyOf";
-    } else if (composedSchema.getAllOf() != null) {
-      throw illegalStateException(
-          "Encountered allOf construct. This is unexpected because the OpenAPI spec should already be fully resolved.");
-    } else {
-      throw illegalStateException("Unknown composition construct {} encountered for schema:%n{}", composedSchema);
-    }
-    throw invalidConfigurationException("Unsupported composition construct {} used.", construct);
-  }
-
 }

@@ -82,9 +82,9 @@ class QueryMapperTest {
   static Stream<Arguments> argumentsForExceptions() {
     return Stream.of(
         Arguments.of("/breweries-one-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
-            "Unsupported composition construct oneOf used."),
+            "Unsupported composition construct oneOf / anyOf encountered."),
         Arguments.of("/breweries-any-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
-            "Unsupported composition construct anyOf used."));
+            "Unsupported composition construct oneOf / anyOf encountered."));
   }
 
   @ParameterizedTest
