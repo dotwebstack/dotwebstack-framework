@@ -2,7 +2,9 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.Operation;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.Data;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -17,6 +19,8 @@ public class QueryProperties {
   private Map<String, String> keys = new HashMap<>();
 
   private Map<String, Map<String, Object>> filters = new HashMap<>();
+
+  private List<String> requiredFields = new ArrayList<>();
 
   public static QueryProperties fromOperation(Operation operation) {
     var extension = operation.getExtensions()

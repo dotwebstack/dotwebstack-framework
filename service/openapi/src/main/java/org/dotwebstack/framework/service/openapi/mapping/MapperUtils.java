@@ -4,7 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLFieldsContainer;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -41,9 +41,9 @@ public class MapperUtils {
         .orElse(false);
   }
 
-  public static GraphQLFieldDefinition getObjectField(GraphQLObjectType objectType, String fieldName) {
-    return Optional.ofNullable(objectType.getFieldDefinition(fieldName))
+  public static GraphQLFieldDefinition getObjectField(GraphQLFieldsContainer fieldsContainer, String fieldName) {
+    return Optional.ofNullable(fieldsContainer.getFieldDefinition(fieldName))
         .orElseThrow(() -> invalidConfigurationException("Field '{}' not found for `{}` type.", fieldName,
-            objectType.getName()));
+            fieldsContainer.getName()));
   }
 }

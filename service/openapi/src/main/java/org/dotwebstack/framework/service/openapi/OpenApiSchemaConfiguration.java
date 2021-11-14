@@ -33,7 +33,7 @@ public class OpenApiSchemaConfiguration {
 
   @Bean
   public OpenAPI openApi() {
-    OpenAPI openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
+    var openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
         .resolve(SPEC_FILENAME)
         .getPath());
 

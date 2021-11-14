@@ -7,18 +7,7 @@ info:
 paths:
   /breweries:
     get:
-      x-dws-query:
-        field: breweryCollection
-      parameters:
-        - name: expand
-          in: query
-          x-dws-type: expand
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - postalAddress
+      x-dws-query: breweryCollection
       responses:
         200:
           description: OK
@@ -86,20 +75,10 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/BreweryAllOf'
+
   /breweries-one-of:
     get:
-      x-dws-query:
-        field: breweryCollection
-      parameters:
-        - name: expand
-          in: query
-          x-dws-type: expand
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - postalAddress
+      x-dws-query: breweryCollection
       responses:
         200:
           description: OK
@@ -109,20 +88,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BreweryOneOf'
+
   /breweries-any-of:
     get:
-      x-dws-query:
-        field: breweryCollection
-      parameters:
-        - name: expand
-          in: query
-          x-dws-type: expand
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - postalAddress
+      x-dws-query: breweryCollection
       responses:
         200:
           description: OK

@@ -10,6 +10,7 @@ import graphql.language.SelectionSet;
 import graphql.language.StringValue;
 import graphql.language.Value;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
@@ -59,6 +60,19 @@ public class QueryMapper {
         .build();
   }
 
+  private Field mapField(String name, Schema<?> schema, GraphQLFieldsContainer fieldsContainer,
+      List<Argument> arguments) {
+    var fieldDefinition = MapperUtils.getObjectField(fieldsContainer, name);
+    var selectionSet = mapFields(schema, fieldDefinition).collect(Collectors.toList());
+
+    if (selectionSet.isEmpty()) {
+      return new Field(name);
+    }
+
+    return new Field(name, arguments,
+        new SelectionSet(mapFields(schema, fieldDefinition).collect(Collectors.toList())));
+  }
+
   private Stream<Field> mapFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
     if (schema instanceof ArraySchema) {
       return mapFields(((ArraySchema) schema).getItems(), fieldDefinition);
@@ -89,18 +103,6 @@ public class QueryMapper {
         .entrySet()
         .stream()
         .map(entry -> mapField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType, List.of()));
-  }
-
-  private Field mapField(String name, Schema<?> schema, GraphQLObjectType objectType, List<Argument> arguments) {
-    var fieldDefinition = MapperUtils.getObjectField(objectType, name);
-    var rawFieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-    if (rawFieldType instanceof GraphQLObjectType) {
-      return new Field(name, arguments,
-          new SelectionSet(mapFields(schema, fieldDefinition).collect(Collectors.toList())));
-    }
-
-    return new Field(name);
   }
 
   private List<Argument> createKeyArguments(OperationRequest operationRequest) {
