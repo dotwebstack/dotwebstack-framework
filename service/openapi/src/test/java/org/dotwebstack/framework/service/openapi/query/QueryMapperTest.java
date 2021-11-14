@@ -89,7 +89,7 @@ class QueryMapperTest {
 
   @ParameterizedTest
   @MethodSource("argumentsForExceptions")
-  void map_throwsExceptions_ForInvalidConfiguration(String path, MediaType preferredMediaType, Class<?> exceptionClass,
+  void map_throwsException_ForErrorCases(String path, MediaType preferredMediaType, Class<?> exceptionClass,
       String message) {
     var operation = openApi.getPaths()
         .get(path)
