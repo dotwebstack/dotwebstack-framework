@@ -4,12 +4,18 @@ schema {
 
 type Query {
   breweryCollection: [Brewery!]!
+  breweryPageableCollection(first: Int = 10, offset: Int = 0): BreweryConnection!
+  brewery(identifier: ID!): Brewery
 }
 
 type Brewery {
   identifier: ID!
   name: String!
   postalAddress: Address
+}
+
+type BreweryConnection {
+  nodes: [Brewery!]!
 }
 
 type Address {

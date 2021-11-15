@@ -15,6 +15,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.util.ResolverFully;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
@@ -42,25 +43,29 @@ class QueryMapperTest {
   @BeforeAll
   static void beforeAll() {
     openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
-        .resolve("dbeerpedia.yaml")
+        .resolve("openapi.yaml")
         .getPath());
 
     new ResolverFully().resolveFully(openApi);
 
-    queryFactory = new QueryMapper(openApi, loadSchema());
+    queryFactory = new QueryMapper(loadSchema());
   }
 
   static Stream<Arguments> arguments() {
-    return Stream.of(Arguments.of("/breweries", MEDIA_TYPE_JSON, "collection"),
-        Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, "collection"),
-        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON, "collection"),
-        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON_HAL, "collection"));
+    return Stream.of(Arguments.of("/breweries", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-pageable", MEDIA_TYPE_JSON, Map.of(), "brewery-pageable-collection"),
+        Arguments.of("/breweries-pageable", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-pageable-collection"),
+        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/brewery/{identifier}", MEDIA_TYPE_JSON, Map.of("identifier", "foo"), "brewery"),
+        Arguments.of("/brewery/{identifier}", MEDIA_TYPE_JSON_HAL, Map.of("identifier", "foo"), "brewery"));
   }
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void map_returnsExpectedQuery_ForConfiguration(String path, MediaType preferredMediaType, String query)
-      throws IOException {
+  void map_returnsExpectedQuery_ForConfiguration(String path, MediaType preferredMediaType,
+      Map<String, Object> parameters, String query) throws IOException {
     var operation = openApi.getPaths()
         .get(path)
         .getGet();
@@ -72,6 +77,7 @@ class QueryMapperTest {
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
+        .parameters(parameters)
         .build();
 
     var executionInput = queryFactory.map(operationRequest);
@@ -84,7 +90,9 @@ class QueryMapperTest {
         Arguments.of("/breweries-one-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
         Arguments.of("/breweries-any-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
-            "Unsupported composition construct oneOf / anyOf encountered."));
+            "Unsupported composition construct oneOf / anyOf encountered."),
+        Arguments.of("/breweries-object-mismatch", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
+            "Object schema does not match GraphQL field type (found: String)."));
   }
 
   @ParameterizedTest

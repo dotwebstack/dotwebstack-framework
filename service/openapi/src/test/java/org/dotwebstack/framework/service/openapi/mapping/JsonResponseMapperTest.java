@@ -147,7 +147,6 @@ class JsonResponseMapperTest {
         .block();
 
     String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1_dummy\"";
-    System.out.println(response);
     assertTrue(response.contains(expectedSubString), String
         .format("Expected sub string [%s] not found in " + "returned response [%s]", expectedSubString, response));
   }

@@ -213,12 +213,12 @@ paths:
 #              schema:
 #                type: integer
 #                x-dws-expr: args.page
-  /brewery/{identifier}:
+  /brewery/{identifier_brewery}:
     get:
       x-dws-query:
         field: brewery
-        keys:
-          identifier_brewery: $path.identifier
+#        keys:
+#          identifier_brewery: $path.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -228,7 +228,7 @@ paths:
             items:
               type: string
               enum: ['postalCode', 'beers', 'beers.ingredients']
-        - name: identifier
+        - name: identifier_brewery
           in: path
           required: true
           schema:
