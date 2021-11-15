@@ -83,43 +83,22 @@ public class QueryMapper {
       return new Field(name);
     }
 
-    if (isEnvelope(schema)) {
-      var selections = schema.getProperties()
-          .values()
-          .stream()
-          .flatMap(nestedSchema -> mapEnvelope(nestedSchema, fieldDefinition, parameters))
-          .collect(Collectors.toList());
-
-      return new Field(name, arguments, new SelectionSet(selections));
-    }
-
-    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-    if (!(rawType instanceof GraphQLObjectType)) {
-      throw invalidConfigurationException("Invalid!");
-    }
-
-    var selections = schema.getProperties()
-        .entrySet()
-        .stream()
-        .map(entry -> mapField(entry.getKey(), entry.getValue(),
-            getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters))
-        .collect(Collectors.toList());
+    var selections = mapObjectFields(schema, fieldDefinition, parameters).collect(Collectors.toList());
 
     return new Field(name, arguments, new SelectionSet(selections));
   }
 
-  private Stream<Field> mapEnvelope(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
+  private Stream<Field> mapObjectFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
       Map<String, Object> parameters) {
     if (isEnvelope(schema)) {
       return schema.getProperties()
           .values()
           .stream()
-          .flatMap(nestedSchema -> mapEnvelope(nestedSchema, fieldDefinition, parameters));
+          .flatMap(nestedSchema -> mapObjectFields(nestedSchema, fieldDefinition, parameters));
     }
 
     if (schema instanceof ArraySchema) {
-      return mapEnvelope(((ArraySchema) schema).getItems(), fieldDefinition, parameters);
+      return mapObjectFields(((ArraySchema) schema).getItems(), fieldDefinition, parameters);
     }
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
