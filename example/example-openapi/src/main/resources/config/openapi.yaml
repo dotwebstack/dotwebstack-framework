@@ -133,8 +133,8 @@ paths:
     get:
       x-dws-query:
         field: brewery
-        requiredFields:
-          - identifier
+#        requiredFields:
+#          - identifier
         keys:
           identifier: $path.identifier
       parameters:
@@ -216,6 +216,8 @@ components:
           type: string
     ItemWithIngredients:
       type: object
+#      required:
+#        - ingredients
       properties:
         ingredients:
           type: array
@@ -226,7 +228,7 @@ components:
       x-dws-envelope: true
       required:
         - _embedded
-        - _links
+#        - _links
       properties:
         _embedded:
           x-dws-envelope: true
@@ -238,27 +240,30 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Brewery'
-        _links:
-          x-dws-envelope: true
-          type: object
-          required:
-            - self
-          properties:
-            self:
-              x-dws-envelope: true
-              type: object
-              required:
-                - href
-              properties:
-                href:
-                  type: string
-                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+#        _links:
+#          x-dws-envelope: true
+#          type: object
+#          required:
+#            - self
+#          properties:
+#            self:
+#              x-dws-envelope: true
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  type: string
+#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
         - identifier
         - name
+        - geometry
+        - visitAddress
         - _links
+        - beers
       #        - beers
       properties:
         identifier:
@@ -269,6 +274,8 @@ components:
           $ref: '#/components/schemas/Address'
         visitAddress:
           $ref: '#/components/schemas/Address'
+        history:
+          $ref: '#/components/schemas/History'
         beers:
           type: array
           items:
@@ -315,6 +322,17 @@ components:
         street:
           type: string
         city:
+          type: string
+    History:
+      type: object
+      required:
+        - age
+        - history
+      properties:
+        age:
+          type: integer
+          format: int32
+        history:
           type: string
     GeoBody:
       type: object

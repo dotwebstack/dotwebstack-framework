@@ -110,16 +110,37 @@ public class JsonBodyMapper implements BodyMapper {
       throw invalidConfigurationException("Field type is not compatible with object schema.");
     }
 
+    List<String> requiredProperties = schema.getRequired();
+
     return ((Map<String, Object>) data).entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
+          var property = entry.getKey();
           var nestedSchema = schema.getProperties()
-              .get(entry.getKey());
+              .get(property);
 
           var nestedFieldDefinition = MapperUtils.getObjectField((GraphQLObjectType) fieldType, entry.getKey());
 
-          acc.put(entry.getKey(), mapSchema(nestedSchema, nestedFieldDefinition, entry.getValue()));
+          var mappedValue = mapSchema(nestedSchema, nestedFieldDefinition, entry.getValue());
+
+          if (requiredProperties.contains(property)) {
+            acc.put(property, mappedValue);
+          } else {
+            if (!isNullOrEmpty(mappedValue)) {
+              acc.put(property, mappedValue);
+            }
+          }
         }, HashMap::putAll);
+  }
+
+  private boolean isNullOrEmpty(Object mappedValue) {
+    if (mappedValue == null) {
+      return true;
+    }
+    if (mappedValue instanceof Collection<?>) {
+      return ((Collection<?>) mappedValue).isEmpty();
+    }
+    return false;
   }
 
   @SuppressWarnings("unchecked")
