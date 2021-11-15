@@ -43,7 +43,7 @@ class QueryMapperTest {
   @BeforeAll
   static void beforeAll() {
     openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
-        .resolve("dbeerpedia.yaml")
+        .resolve("openapi.yaml")
         .getPath());
 
     new ResolverFully().resolveFully(openApi);
