@@ -34,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class JsonBodyMapper implements BodyMapper {
 
-  private static final Pattern MEDIA_TYPE_PATTERN = Pattern.compile("^application/([a-z]+\\+)json$");
+  private static final Pattern MEDIA_TYPE_PATTERN = Pattern.compile("^application/([a-z]+\\+)?json$");
 
   private final OpenAPI openApi;
 
@@ -63,8 +63,8 @@ public class JsonBodyMapper implements BodyMapper {
       return null;
     }
 
-    if (schema instanceof ObjectSchema) {
-      return mapObjectSchema((ObjectSchema) schema, fieldDefinition, data);
+    if (schema instanceof ObjectSchema || schema.getType() == null) {
+      return mapObjectSchema(schema, fieldDefinition, data);
     }
 
     if (schema instanceof ArraySchema) {
@@ -91,8 +91,7 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private Map<String, Object> mapObjectSchema(ObjectSchema schema, GraphQLFieldDefinition fieldDefinition,
-      Object data) {
+  private Map<String, Object> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
     if (MapperUtils.isEnvelope(schema)) {
       return schema.getProperties()
           .entrySet()

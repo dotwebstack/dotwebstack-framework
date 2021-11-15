@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
-import graphql.GraphQL;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -45,11 +47,6 @@ public class TestResources {
         .getResourceAsStream(OPEN_API_FILE);
   }
 
-  public static GraphQL graphQl() {
-    return GraphQL.newGraphQL(graphQlSchema())
-        .build();
-  }
-
   public static GraphQLSchema graphQlSchema() {
     var typeDefinitionRegistry = new SchemaParser().parse(Objects.requireNonNull(TestResources.class.getClassLoader()
         .getResourceAsStream("config/schema.graphql")));
@@ -60,6 +57,30 @@ public class TestResources {
   public static String graphQlQuery(String name) throws IOException {
     return IOUtils.toString(Objects.requireNonNull(TestResources.class.getClassLoader()
         .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8);
+  }
+
+  public static Map<String, Object> graphQlResult(String name) {
+    var input = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("results/%s.json", name)));
+
+    var typeRef = new TypeReference<Map<String, Object>>() {};
+
+    try {
+      return new ObjectMapper().readValue(input, typeRef);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static Object body(String name) {
+    var input = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("bodies/%s.json", name)));
+
+    try {
+      return new ObjectMapper().readValue(input, Object.class);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private static String readString(String path) {

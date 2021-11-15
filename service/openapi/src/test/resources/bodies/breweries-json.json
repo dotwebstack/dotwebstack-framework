@@ -1,0 +1,17 @@
+[
+  {
+    "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+    "name": "Brewery X",
+    "postalAddress": {
+      "street": "Church Street",
+      "postalCode": "12345"
+    }
+  },
+  {
+    "identifier": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
+    "name": "Brewery Y",
+    "postalAddress": {
+      "street": "5th Avenue"
+    }
+  }
+]
