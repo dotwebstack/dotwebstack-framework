@@ -32,7 +32,6 @@ public class ParameterResolverFactory {
   }
 
   public ParameterResolver create(@NonNull Operation operation) {
-
     RequestBody requestBody = operation.getRequestBody();
     RequestBodyContext requestBodyContext = new RequestBodyContext(requestBody);
 
@@ -41,8 +40,7 @@ public class ParameterResolverFactory {
 
     Map<String, String> dwsParameters = DwsExtensionHelper.getDwsQueryParameters(operation);
 
-    return new ParameterResolver(requestBody, requestBodyContext, requestBodyHandlerRouter, paramHandlerRouter,
+    return new DefaultParameterResolver(requestBody, requestBodyContext, requestBodyHandlerRouter, paramHandlerRouter,
         jexlEngine, parameters, dwsParameters);
   }
-
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.util.ResolverFully;
-import java.util.List;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,11 +23,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
-import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -89,12 +86,5 @@ class RouterConfigurationTest {
 
     StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/foo")))
         .verifyComplete();
-  }
-
-  private ServerRequest mockRequest(HttpMethod httpMethod, String path) {
-    var serverHttpRequest = MockServerHttpRequest.method(httpMethod, path)
-        .build();
-
-    return ServerRequest.create(MockServerWebExchange.from(serverHttpRequest), List.of());
   }
 }
