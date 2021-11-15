@@ -47,10 +47,8 @@ class RouterConfiguration {
     var builder = RouterFunctions.route();
 
     pathItem.readOperationsMap()
-        .entrySet()
-        .stream()
-        .forEach(
-            entry -> builder.route(matchRoute(path, entry.getKey()), operationHandlerFactory.create(entry.getValue())));
+        .forEach((httpMethod, operation) -> builder.route(matchRoute(path, httpMethod),
+            operationHandlerFactory.create(operation)));
 
     return builder.build();
   }

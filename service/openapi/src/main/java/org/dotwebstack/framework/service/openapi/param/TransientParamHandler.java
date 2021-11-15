@@ -22,6 +22,5 @@ public class TransientParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
-  }
+  public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {}
 }
