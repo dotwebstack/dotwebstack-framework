@@ -437,7 +437,6 @@ class SelectBuilder {
             // Asked for joinTable
             nestedFieldMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()), row -> JoinCondition.builder()
                 .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
-                .joinTable(JoinHelper.resolveJoinTable((PostgresObjectType) objectField.getObjectType(), joinTable))
                 .build());
 
             return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(),

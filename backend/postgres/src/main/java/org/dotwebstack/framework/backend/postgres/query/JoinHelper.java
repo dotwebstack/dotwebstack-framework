@@ -1,12 +1,16 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.model.ObjectType;
+
 
 public class JoinHelper {
 
@@ -43,14 +47,40 @@ public class JoinHelper {
     return joinColumn;
   }
 
+  public static boolean hasNestedReference(PostgresObjectField objectField) {
+    return Optional.of(objectField)
+        .filter(objectField1 -> Optional.of(objectField1)
+            .map(PostgresObjectField::getTargetType)
+            .filter(ObjectType::isNested)
+            .isPresent())
+        .map(PostgresObjectField::getJoinTable)
+        .stream()
+        .anyMatch(JoinHelper::hasNestedReference);
+  }
+
+  private static boolean hasNestedReference(JoinTable joinTable) {
+    return Optional.of(joinTable)
+        .stream()
+        .map(JoinTable::getInverseJoinColumns)
+        .flatMap(Collection::stream)
+        .anyMatch(JoinHelper::hasNestedReference);
+  }
+
+  private static boolean hasNestedReference(JoinColumn joinColumn) {
+    return Optional.of(joinColumn)
+        .map(JoinColumn::getReferencedField)
+        .map(field -> field.contains("."))
+        .isPresent();
+  }
+
   public static JoinTable resolveJoinTable(PostgresObjectType objectType, JoinTable joinTable) {
-    var newJoinTable = new JoinTable();
-    newJoinTable.setName(joinTable.getName());
-    newJoinTable.setJoinColumns(joinTable.getJoinColumns()
+    var result = new JoinTable();
+    result.setName(joinTable.getName());
+    result.setJoinColumns(joinTable.getJoinColumns()
         .stream()
         .map(joinColumn -> resolveReferencedField(joinColumn, objectType))
         .collect(Collectors.toList()));
-    newJoinTable.setInverseJoinColumns(joinTable.getInverseJoinColumns()
+    result.setInverseJoinColumns(joinTable.getInverseJoinColumns()
         .stream()
         .map(joinColumn -> {
           JoinColumn jc = new JoinColumn();
@@ -60,6 +90,6 @@ public class JoinHelper {
         })
         .collect(Collectors.toList()));
 
-    return newJoinTable;
+    return result;
   }
 }

@@ -83,11 +83,7 @@ class BatchJoinBuilder {
       return batchJoin(invertOnList(objectField, objectField.getJoinColumns()));
     }
 
-    var joinTable = joinCriteria.getJoinCondition()
-        .getJoinTable() != null
-            ? (JoinTable) joinCriteria.getJoinCondition()
-                .getJoinTable()
-            : objectField.getJoinTable();
+    var joinTable = objectField.getJoinTable();
     if (joinTable != null) {
       var targetObjectType = getObjectType(objectRequest);
       return batchJoin(joinTable, targetObjectType);

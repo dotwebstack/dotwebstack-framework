@@ -10,6 +10,4 @@ import lombok.Getter;
 public class JoinCriteria {
 
   private final Set<Map<String, Object>> keys;
-
-  private final JoinCondition joinCondition;
 }

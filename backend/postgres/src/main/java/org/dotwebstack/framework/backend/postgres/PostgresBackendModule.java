@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.backend.postgres.query.JoinHelper;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -45,6 +46,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     setMappedByObjectField(objectTypes, allFields);
     setAggredationOfType(objectTypes, allFields);
     setColumnPerSrid(allFields);
+    propagateJoinTable(allFields);
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
@@ -108,5 +110,29 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
   private boolean isGeometryType(PostgresObjectField postgresObjectField) {
     return SpatialConstants.GEOMETRY.equals(postgresObjectField.getType());
   }
+
+  private void propagateJoinTable(List<PostgresObjectField> allFields) {
+    allFields.stream()
+        .filter(JoinHelper::hasNestedReference)
+        .forEach(field -> {
+          Optional.of(field)
+              .stream()
+              .map(PostgresObjectField::getTargetType)
+              .flatMap(objectType -> objectType.getFields()
+                  .values()
+                  .stream())
+              .map(PostgresObjectField.class::cast)
+              .filter(nestedObjectField -> !nestedObjectField.getTargetType()
+                  .isNested())
+              .forEach(nestedField -> {
+                var targetObjectType = (PostgresObjectType) nestedField.getTargetType();
+                var resolvedJoinTable = JoinHelper.resolveJoinTable(targetObjectType, field.getJoinTable());
+
+                nestedField.setJoinTable(resolvedJoinTable);
+              });
+
+        });
+  }
+
 
 }
