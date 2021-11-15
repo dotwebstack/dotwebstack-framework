@@ -1,0 +1,12 @@
+query Query {
+  breweryPageableCollection {
+    nodes {
+      identifier
+      name
+      postalAddress {
+        street
+        postalCode
+      }
+    }
+  }
+}

@@ -54,6 +54,8 @@ class QueryMapperTest {
   static Stream<Arguments> arguments() {
     return Stream.of(Arguments.of("/breweries", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
         Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-pageable", MEDIA_TYPE_JSON, Map.of(), "brewery-pageable-collection"),
+        Arguments.of("/breweries-pageable", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-pageable-collection"),
         Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
         Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
         Arguments.of("/brewery/{identifier}", MEDIA_TYPE_JSON, Map.of("identifier", "foo"), "brewery"),

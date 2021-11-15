@@ -22,7 +22,6 @@ import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,8 +50,7 @@ public class QueryMapper {
 
     var fieldDefinition = getObjectField(graphQlSchema.getQueryType(), fieldName);
 
-    var queryField =
-        mapField(fieldName, operationRequest.getResponseSchema(), fieldDefinition, operationRequest.getParameters());
+    var queryField = mapField(fieldName, operationRequest.getResponseSchema(), fieldDefinition, operationRequest);
 
     var query = OperationDefinition.newOperationDefinition()
         .name(OPERATION_NAME)
@@ -67,15 +65,15 @@ public class QueryMapper {
   }
 
   private Field mapField(String name, Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      Map<String, Object> parameters) {
+      OperationRequest operationRequest) {
     if (schema instanceof ComposedSchema) {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }
 
-    var arguments = mapArguments(fieldDefinition, parameters);
+    var arguments = mapArguments(fieldDefinition, operationRequest);
 
     if (schema instanceof ArraySchema) {
-      return mapField(name, ((ArraySchema) schema).getItems(), fieldDefinition, parameters);
+      return mapField(name, ((ArraySchema) schema).getItems(), fieldDefinition, operationRequest);
     }
 
     // Composed schemas are type-less, but allOf should only be used on objects
@@ -83,22 +81,22 @@ public class QueryMapper {
       return new Field(name);
     }
 
-    var selections = mapObjectFields(schema, fieldDefinition, parameters).collect(Collectors.toList());
+    var selections = mapObjectFields(schema, fieldDefinition, operationRequest).collect(Collectors.toList());
 
     return new Field(name, arguments, new SelectionSet(selections));
   }
 
   private Stream<Field> mapObjectFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      Map<String, Object> parameters) {
+      OperationRequest operationRequest) {
     if (isEnvelope(schema)) {
       return schema.getProperties()
           .values()
           .stream()
-          .flatMap(nestedSchema -> mapObjectFields(nestedSchema, fieldDefinition, parameters));
+          .flatMap(nestedSchema -> mapObjectFields(nestedSchema, fieldDefinition, operationRequest));
     }
 
     if (schema instanceof ArraySchema) {
-      return mapObjectFields(((ArraySchema) schema).getItems(), fieldDefinition, parameters);
+      return mapObjectFields(((ArraySchema) schema).getItems(), fieldDefinition, operationRequest);
     }
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -108,14 +106,26 @@ public class QueryMapper {
           rawType.getName());
     }
 
+    if (fieldDefinition.getArgument("first") != null
+        && ((GraphQLObjectType) rawType).getFieldDefinition("nodes") != null) {
+      var selections =
+          mapObjectFields(schema, ((GraphQLObjectType) rawType).getFieldDefinition("nodes"), operationRequest)
+              .collect(Collectors.toList());
+
+      return Stream
+          .of(new Field("nodes", mapArguments(fieldDefinition, operationRequest), new SelectionSet(selections)));
+    }
+
     return schema.getProperties()
         .entrySet()
         .stream()
         .map(entry -> mapField(entry.getKey(), entry.getValue(),
-            getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters));
+            getObjectField((GraphQLObjectType) rawType, entry.getKey()), operationRequest));
   }
 
-  private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, Map<String, Object> parameters) {
+  private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, OperationRequest operationRequest) {
+    var parameters = operationRequest.getParameters();
+
     return fieldDefinition.getArguments()
         .stream()
         .filter(argument -> !RESERVED_ARGS.contains(argument.getName()))
