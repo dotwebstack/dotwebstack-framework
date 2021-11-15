@@ -95,6 +95,52 @@ paths:
                         items:
                           $ref: '#/components/schemas/Brewery'
 
+  /breweries-pageable-with-params:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [ 10, 20, 50 ]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+
   /breweries-all-of:
     get:
       x-dws-query:

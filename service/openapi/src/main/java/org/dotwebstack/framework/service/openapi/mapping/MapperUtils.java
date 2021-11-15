@@ -1,10 +1,14 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -45,5 +49,11 @@ public class MapperUtils {
     return Optional.ofNullable(fieldsContainer.getFieldDefinition(fieldName))
         .orElseThrow(() -> invalidConfigurationException("Field '{}' not found for `{}` type.", fieldName,
             fieldsContainer.getName()));
+  }
+
+  public static boolean isPageableField(GraphQLFieldDefinition fieldDefinition) {
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+    return fieldDefinition.getArgument(FIRST_ARGUMENT_NAME) != null
+        && ((GraphQLObjectType) rawType).getFieldDefinition(NODES_FIELD_NAME) != null;
   }
 }

@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.collectExactlyOne;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getSuccessResponse;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -10,6 +12,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.Scalars;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import io.swagger.v3.oas.models.Operation;
@@ -111,6 +114,40 @@ class MapperUtilsTest {
     var objectType = createObjectType();
 
     assertThrows(InvalidConfigurationException.class, () -> getObjectField(objectType, "foo"));
+  }
+
+  @Test
+  void isPageableField_returnsFalse_forNonPageableField() {
+    var fieldDefinition = createObjectType().getFieldDefinition("name");
+
+    var pageable = isPageableField(fieldDefinition);
+
+    assertThat(pageable, is(false));
+  }
+
+  @Test
+  void isPageableField_returnsTrue_forPageableField() {
+    var nodesFieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name("nodes")
+        .type(Scalars.GraphQLString)
+        .build();
+
+    var fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name("pageable")
+        .argument(GraphQLArgument.newArgument(GraphQLArgument.newArgument()
+            .name(FIRST_ARGUMENT_NAME)
+            .type(Scalars.GraphQLInt)
+            .build())
+            .build())
+        .type(GraphQLObjectType.newObject()
+            .name("Foo")
+            .field(nodesFieldDefinition)
+            .build())
+        .build();
+
+    var pageable = isPageableField(fieldDefinition);
+
+    assertThat(pageable, is(true));
   }
 
   private static GraphQLObjectType createObjectType() {
