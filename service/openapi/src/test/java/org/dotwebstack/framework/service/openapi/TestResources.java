@@ -2,6 +2,8 @@ package org.dotwebstack.framework.service.openapi;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.ExecutionResult;
+import graphql.ExecutionResultImpl;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -59,14 +61,17 @@ public class TestResources {
         .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8);
   }
 
-  public static Map<String, Object> graphQlResult(String name) {
+  public static ExecutionResult graphQlResult(String name) {
     var input = Objects.requireNonNull(TestResources.class.getClassLoader()
         .getResourceAsStream(String.format("results/%s.json", name)));
 
     var typeRef = new TypeReference<Map<String, Object>>() {};
 
     try {
-      return new ObjectMapper().readValue(input, typeRef);
+      var data = new ObjectMapper().readValue(input, typeRef);
+      return ExecutionResultImpl.newExecutionResult()
+          .data(data)
+          .build();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

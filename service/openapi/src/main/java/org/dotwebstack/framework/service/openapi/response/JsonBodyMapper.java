@@ -2,12 +2,10 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
-import graphql.ExecutionResult;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -23,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
@@ -36,26 +35,20 @@ public class JsonBodyMapper implements BodyMapper {
 
   private static final Pattern MEDIA_TYPE_PATTERN = Pattern.compile("^application/([a-z]+\\+)?json$");
 
-  private final OpenAPI openApi;
-
   private final GraphQLSchema graphQlSchema;
 
-  public JsonBodyMapper(OpenAPI openApi, GraphQLSchema graphQlSchema) {
-    this.openApi = openApi;
+  public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema) {
     this.graphQlSchema = graphQlSchema;
   }
 
   @Override
-  public Mono<Object> map(OperationRequest operationRequest, ExecutionResult executionResult) {
+  public Mono<Object> map(OperationRequest operationRequest, Object result) {
     var queryField = graphQlSchema.getQueryType()
         .getFieldDefinition(operationRequest.getContext()
             .getQueryProperties()
             .getField());
 
-    Map<String, Object> data = executionResult.getData();
-    var body = mapSchema(operationRequest.getResponseSchema(), queryField, data.get(queryField.getName()));
-
-    return Mono.justOrEmpty(body);
+    return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result));
   }
 
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {

@@ -23,6 +23,7 @@ import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
+import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
@@ -69,9 +70,7 @@ class OperationHandlerFactoryTest {
         new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
-    var executionResult = ExecutionResultImpl.newExecutionResult()
-        .data(List.of())
-        .build();
+    var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
@@ -95,9 +94,7 @@ class OperationHandlerFactoryTest {
         new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
-    var executionResult = ExecutionResultImpl.newExecutionResult()
-        .data(List.of())
-        .build();
+    var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
@@ -122,6 +119,26 @@ class OperationHandlerFactoryTest {
 
     StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, APPLICATION_XML, "/breweries")))
         .verifyError(NotAcceptableException.class);
+  }
+
+  @Test
+  void create_createsFailingHandler_ifResourceNotFound() {
+    var operation = createOperation("/brewery/{identifier}", Map.of("identifier", "foo"));
+    when(bodyMapper.supports(any(), any())).thenReturn(true);
+
+    var operationHandlerFactory =
+        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+
+    var executionInput = mock(ExecutionInput.class);
+    var executionResult = TestResources.graphQlResult("brewery-not-found");
+
+    when(queryMapper.map(any())).thenReturn(executionInput);
+    when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    var result = operationHandlerFactory.create(operation);
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/brewery/foo")))
+        .verifyError(NotFoundException.class);
   }
 
   @Test

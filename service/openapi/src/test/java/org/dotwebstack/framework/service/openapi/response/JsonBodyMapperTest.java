@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-import graphql.ExecutionResultImpl;
 import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -32,7 +31,7 @@ class JsonBodyMapperTest {
   @BeforeAll
   static void beforeAll() {
     openApi = TestResources.openApi("openapi.yaml");
-    bodyMapper = new JsonBodyMapper(openApi, TestResources.graphQlSchema());
+    bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema());
   }
 
   static Stream<Arguments> arguments() {
@@ -45,7 +44,7 @@ class JsonBodyMapperTest {
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String result,
+  void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String graphQlResult,
       String expectedBody) {
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))
@@ -53,11 +52,14 @@ class JsonBodyMapperTest {
         .parameters(parameters)
         .build();
 
-    var executionResult = ExecutionResultImpl.newExecutionResult()
-        .data(TestResources.graphQlResult(result))
-        .build();
+    Map<String, Object> data = TestResources.graphQlResult(graphQlResult)
+        .getData();
 
-    StepVerifier.create(bodyMapper.map(operationRequest, executionResult))
+    var result = data.get(operationRequest.getContext()
+        .getQueryProperties()
+        .getField());
+
+    StepVerifier.create(bodyMapper.map(operationRequest, result))
         .assertNext(body -> assertThat(body, is(equalTo(TestResources.body(expectedBody)))))
         .verifyComplete();
   }

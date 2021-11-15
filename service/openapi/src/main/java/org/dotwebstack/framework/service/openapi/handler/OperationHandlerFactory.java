@@ -80,13 +80,20 @@ public class OperationHandlerFactory {
   private BiFunction<ExecutionResult, OperationRequest, Mono<ServerResponse>> createResponseHandler(
       OperationContext operationContext) {
     var bodyMapperMap = createBodyMapperMap(operationContext);
+    var queryField = operationContext.getQueryProperties()
+        .getField();
 
-    return (executionResult, operationRequest) -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
-        .map(operationRequest, executionResult)
-        .flatMap(content -> ServerResponse.ok()
-            .contentType(operationRequest.getPreferredMediaType())
-            .body(BodyInserters.fromValue(content)))
-        .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
+    return (executionResult, operationRequest) -> {
+      Map<String, Object> data = executionResult.getData();
+
+      return Mono.justOrEmpty(data.get(queryField))
+          .flatMap(result -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
+              .map(operationRequest, result))
+          .flatMap(content -> ServerResponse.ok()
+              .contentType(operationRequest.getPreferredMediaType())
+              .body(BodyInserters.fromValue(content)))
+          .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
+    };
   }
 
   private Mono<ExecutionResult> execute(ExecutionInput executionInput) {
