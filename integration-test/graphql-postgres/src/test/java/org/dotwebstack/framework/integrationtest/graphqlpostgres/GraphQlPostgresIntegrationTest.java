@@ -467,18 +467,18 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
     assertThat(geometry.size(), is(5));
     assertThat(geometry.get("type"), is("POLYGON"));
-    assertThat(geometry.get("srid"), is(28992));
+    assertThat(geometry.get("srid"), is(7415));
     assertThat(geometry.get("asWKT"),
-        is("POLYGON ((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
-            + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
-            + "194914.7190916618 470984.86365462304))"));
+        is("POLYGON Z((194914.7190916618 470984.86365462304 3, 194960.3511599757 470985.2315617077 3, "
+            + "194960.54286521868 470961.4676284248 3, 194914.91057804757 470961.0997201087 3, "
+            + "194914.7190916618 470984.86365462304 3))"));
     assertThat(geometry.get("asWKB"),
-        is("ACAAAAMAAHFAAAAAAQAAAAVBB8sVwLMhEkEcvyN0YeCkQQfMgs8s9hpBHL8k7R6DJkEHzIRXybhDQRy+"
-            + "xd7Z/F1BB8sXSN0ktkEcvsRmHQc2QQfLFcCzIRJBHL8jdGHgpA=="));
+        is("AKAAAAMAABz3AAAAAQAAAAVBB8sVwLMhEkEcvyN0YeCkQAgAAAAAAABBB8yCzyz2GkEcvyTtHoMmQAgAAAAAAAB"
+            + "BB8yEV8m4Q0EcvsXe2fxdQAgAAAAAAABBB8sXSN0ktkEcvsRmHQc2QAgAAAAAAABBB8sVwLMhEkEcvyN0YeCkQAgAAAAAAAA="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462],"
-            + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
-            + "[194914.71909166,470984.86365462]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462,3],"
+            + "[194960.35115998,470985.23156171,3],[194960.54286522,470961.46762842,3],"
+            + "[194914.91057805,470961.09972011,3],[194914.71909166,470984.86365462,3]]]}"));
   }
 
   @Test
@@ -567,15 +567,17 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.size(), is(4));
     assertThat(geometry.get("type"), is("MULTIPOLYGON"));
     assertThat(geometry.get("asWKT"),
-        is("MULTIPOLYGON (((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
-            + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
-            + "194914.7190916618 470984.86365462304)))"));
-    assertThat(geometry.get("asWKB"), is("ACAAAAYAAHFAAAAAAQAgAAADAABxQAAAAAEAAAAFQQfLFcCzIRJBHL8jdGHgpEEHzILPLPYaQRy"
-        + "/JO0egyZBB8yEV8m4Q0EcvsXe2fxdQQfLF0jdJLZBHL7EZh0HNkEHyxXAsyESQRy/I3Rh4KQ="));
+        is("MULTIPOLYGON Z(((194914.7190916618 470984.86365462304 3, 194960.3511599757 470985.2315617077 3, "
+            + "194960.54286521868 470961.4676284248 3, 194914.91057804757 470961.0997201087 3, "
+            + "194914.7190916618 470984.86365462304 3)))"));
+    assertThat(geometry.get("asWKB"),
+        is("AKAAAAYAABz3AAAAAQCgAAADAAAc9wAAAAEAAAAFQQfLFcCzIRJBHL8jdGHgpEAIAA"
+            + "AAAAAAQQfMgs8s9hpBHL8k7R6DJkAIAAAAAAAAQQfMhFfJuENBHL7F3tn8XUAIAAAAAAAAQQfLF0jdJLZBHL7EZh0HNkAIAAAAAAAAQ"
+            + "QfLFcCzIRJBHL8jdGHgpEAIAAAAAAAA"));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[194914.71909166,470984.86365462],"
-            + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
-            + "[194914.71909166,470984.86365462]]]]}"));
+        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[194914.71909166,470984.86365462,3],"
+            + "[194960.35115998,470985.23156171,3],[194960.54286522,470961.46762842,3],"
+            + "[194914.91057805,470961.09972011,3],[194914.71909166,470984.86365462,3]]]]}"));
   }
 
   @Test
@@ -1430,10 +1432,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
-    String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKT: \"POLYGON((194450.17898426164 471514.04309242184,"
-            + "195716.74476882417 471524.29347733577,195724.91952857617 470529.87463413755,194458.099519217 "
-            + "470519.6228124658,194450.17898426164 471514.04309242184))\"}}}) { identifier_brewery name }}";
+    String query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
+        + "\"POLYGON((194450.17898426164 471514.04309242184,195716.74476882417 471524.29347733577,"
+        + "195724.91952857617 470529.87463413755,194458.099519217 470519.6228124658,194450.17898426164 "
+        + "471514.04309242184))\"}}}) { identifier_brewery name geometry { srid asWKT } }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 

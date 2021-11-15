@@ -10,6 +10,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.HashBiMap;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Set;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
@@ -266,8 +268,9 @@ class SelectBuilderTest {
     initCollectionRequest();
 
     PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
     when(current.getType()).thenReturn("Geometry");
+    when(current.getSpatial()).thenReturn(createSpatial());
+
     FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
         .fieldPath(List.of(current))
         .value(Map.of("contains", Map.of("fromWKT", "c")));
@@ -287,8 +290,9 @@ class SelectBuilderTest {
     initCollectionRequest();
 
     PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
     when(current.getType()).thenReturn("Geometry");
+    when(current.getSpatial()).thenReturn(createSpatial());
+
     FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
         .fieldPath(List.of(current))
         .value(Map.of("contains", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
@@ -301,7 +305,7 @@ class SelectBuilderTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
-        .endsWith("where (ST_Contains(a, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
+        .endsWith("where (ST_Contains(geometry, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
             + "order by \"a\" asc"));
   }
 
@@ -311,8 +315,9 @@ class SelectBuilderTest {
     initCollectionRequest();
 
     PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
     when(current.getType()).thenReturn("Geometry");
+    when(current.getSpatial()).thenReturn(createSpatial());
+
     FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
         .fieldPath(List.of(current))
         .value(Map.of("within", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
@@ -325,7 +330,7 @@ class SelectBuilderTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
-        .endsWith("where (ST_Within(cast('POINT (5.979274334569982 52.21715768613606)' as geometry), a))\n"
+        .endsWith("where (ST_Within(cast('POINT (5.979274334569982 52.21715768613606)' as geometry), geometry))\n"
             + "order by \"a\" asc"));
   }
 
@@ -335,8 +340,9 @@ class SelectBuilderTest {
     initCollectionRequest();
 
     PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
     when(current.getType()).thenReturn("Geometry");
+    when(current.getSpatial()).thenReturn(createSpatial());
+
     FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
         .fieldPath(List.of(current))
         .value(Map.of("intersects", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
@@ -349,7 +355,7 @@ class SelectBuilderTest {
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result.toString()
-        .endsWith("where (ST_Intersects(a, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
+        .endsWith("where (ST_Intersects(geometry, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
             + "order by \"a\" desc"));
   }
 
@@ -359,8 +365,9 @@ class SelectBuilderTest {
     initCollectionRequest();
 
     PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
     when(current.getType()).thenReturn("Geometry");
+    when(current.getSpatial()).thenReturn(createSpatial());
+
     FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
         .fieldPath(List.of(current))
         .value(Map.of("unknown", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
@@ -479,5 +486,12 @@ class SelectBuilderTest {
         .fieldPath(List.of(current));
 
     return filterCriteriaBuilder;
+  }
+
+  private PostgresSpatial createSpatial() {
+    return PostgresSpatial.builder()
+        .srid(7415)
+        .spatialReferenceSystems(HashBiMap.create(Map.of(7415, "geometry")))
+        .build();
   }
 }

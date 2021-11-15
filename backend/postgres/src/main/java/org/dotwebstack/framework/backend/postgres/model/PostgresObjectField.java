@@ -1,14 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.CaseFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
-import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -26,7 +25,8 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private PostgresObjectField mappedByObjectField;
 
-  private Map<Integer, SpatialReferenceSystem> spatialReferenceSystems;
+  @JsonIgnore
+  private PostgresSpatial spatial;
 
   public String getColumn() {
     // Lazy-determine default column name

@@ -35,7 +35,7 @@ class PostgresBackendModuleTest {
   @BeforeEach
   void doBeforeEach() {
     backendLoaderFactory = new PostgresBackendLoaderFactory(databaseClient);
-    postgresBackendModule = new PostgresBackendModule(getSpatial(), backendLoaderFactory);
+    postgresBackendModule = new PostgresBackendModule(backendLoaderFactory);
     testHelper = new TestHelper(postgresBackendModule);
   }
 

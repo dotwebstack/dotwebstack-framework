@@ -39,6 +39,8 @@ public class SpatialModelConfiguration {
 
     validateSpatialFields(configFile, schema);
 
+    backendModule.init(schema.getSpatial());
+
     return schema.getSpatial();
   }
 
