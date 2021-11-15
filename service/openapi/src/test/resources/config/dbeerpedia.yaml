@@ -35,6 +35,26 @@ paths:
                         items:
                           $ref: '#/components/schemas/Brewery'
 
+  /brewery/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryHAL'
+
   /breweries-all-of:
     get:
       x-dws-query:
@@ -116,6 +136,29 @@ components:
           type: string
         postalAddress:
           $ref: '#/components/schemas/Address'
+
+    BreweryHAL:
+      allOf:
+        - $ref: '#/components/schemas/Brewery'
+        - type: object
+          required:
+            - _links
+          properties:
+            _links:
+              type: object
+              x-dws-envelope: true
+              required:
+                - self
+              properties:
+                self:
+                  type: object
+                  required:
+                    - href
+                  properties:
+                    href:
+                      type: string
+                      format: uri
+
     Address:
       type: object
       required:

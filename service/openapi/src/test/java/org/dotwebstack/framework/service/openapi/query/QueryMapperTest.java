@@ -15,6 +15,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.util.ResolverFully;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
@@ -47,20 +48,22 @@ class QueryMapperTest {
 
     new ResolverFully().resolveFully(openApi);
 
-    queryFactory = new QueryMapper(openApi, loadSchema());
+    queryFactory = new QueryMapper(loadSchema());
   }
 
   static Stream<Arguments> arguments() {
-    return Stream.of(Arguments.of("/breweries", MEDIA_TYPE_JSON, "collection"),
-        Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, "collection"),
-        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON, "collection"),
-        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON_HAL, "collection"));
+    return Stream.of(Arguments.of("/breweries", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-all-of", MEDIA_TYPE_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/brewery/{identifier}", MEDIA_TYPE_JSON, Map.of("identifier", "foo"), "brewery"),
+        Arguments.of("/brewery/{identifier}", MEDIA_TYPE_JSON_HAL, Map.of("identifier", "foo"), "brewery"));
   }
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void map_returnsExpectedQuery_ForConfiguration(String path, MediaType preferredMediaType, String query)
-      throws IOException {
+  void map_returnsExpectedQuery_ForConfiguration(String path, MediaType preferredMediaType,
+      Map<String, Object> parameters, String query) throws IOException {
     var operation = openApi.getPaths()
         .get(path)
         .getGet();
@@ -72,6 +75,7 @@ class QueryMapperTest {
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
+        .parameters(parameters)
         .build();
 
     var executionInput = queryFactory.map(operationRequest);

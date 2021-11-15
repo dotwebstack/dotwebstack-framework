@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
+
 import graphql.ExecutionInput;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
@@ -9,47 +12,50 @@ import graphql.language.OperationDefinition;
 import graphql.language.SelectionSet;
 import graphql.language.StringValue;
 import graphql.language.Value;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 @SuppressWarnings("rawtypes")
 public class QueryMapper {
 
-  private final OpenAPI openApi;
+  private static final String OPERATION_NAME = "Query";
+
+  private static final Set<String> RESERVED_ARGS = Set.of("filter", "sort", "context");
 
   private final GraphQLSchema graphQlSchema;
 
-  public QueryMapper(OpenAPI openApi, GraphQLSchema graphQlSchema) {
-    this.openApi = openApi;
+  public QueryMapper(GraphQLSchema graphQlSchema) {
     this.graphQlSchema = graphQlSchema;
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
-    var queryProperties = operationRequest.getContext()
-        .getQueryProperties();
+    var fieldName = operationRequest.getContext()
+        .getQueryProperties()
+        .getField();
 
-    var queryField = mapField(queryProperties.getField(), operationRequest.getResponseSchema(),
-        graphQlSchema.getQueryType(), createKeyArguments(operationRequest));
+    var fieldDefinition = getObjectField(graphQlSchema.getQueryType(), fieldName);
+
+    var queryField =
+        mapField(fieldName, operationRequest.getResponseSchema(), fieldDefinition, operationRequest.getParameters());
 
     var query = OperationDefinition.newOperationDefinition()
-        .name("Query")
+        .name(OPERATION_NAME)
         .operation(OperationDefinition.Operation.QUERY)
         .selectionSet(new SelectionSet(List.of(queryField)))
         .build();
@@ -60,78 +66,63 @@ public class QueryMapper {
         .build();
   }
 
-  private Field mapField(String name, Schema<?> schema, GraphQLFieldsContainer fieldsContainer,
-      List<Argument> arguments) {
-    var fieldDefinition = MapperUtils.getObjectField(fieldsContainer, name);
-    var selectionSet = mapFields(schema, fieldDefinition).collect(Collectors.toList());
+  private Field mapField(String name, Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> parameters) {
+    if (schema instanceof ComposedSchema) {
+      throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
+    }
 
-    if (selectionSet.isEmpty()) {
+    var arguments = mapArguments(fieldDefinition, parameters);
+
+    if (schema instanceof ArraySchema) {
+      return mapField(name, ((ArraySchema) schema).getItems(), fieldDefinition, parameters);
+    }
+
+    // Composed schemas are type-less, but allOf should only be used on objects
+    if (!(schema instanceof ObjectSchema) && schema.getType() != null) {
       return new Field(name);
     }
 
-    return new Field(name, arguments,
-        new SelectionSet(mapFields(schema, fieldDefinition).collect(Collectors.toList())));
-  }
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
-  private Stream<Field> mapFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
-    if (schema instanceof ArraySchema) {
-      return mapFields(((ArraySchema) schema).getItems(), fieldDefinition);
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw invalidConfigurationException("Invalid!");
     }
 
-    if (!(schema instanceof ObjectSchema)) {
-      if (schema instanceof ComposedSchema) {
-        throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
-      }
+    List<Field> selections;
 
-      return Stream.empty();
-    }
-
-    if (MapperUtils.isEnvelope(schema)) {
-      return schema.getProperties()
+    if (isEnvelope(schema)) {
+      selections = schema.getProperties()
+          .values()
+          .stream()
+          .flatMap(nestedSchema -> ((Schema<?>) nestedSchema).getProperties()
+              .entrySet()
+              .stream()
+              .map(entry -> mapField(entry.getKey(), entry.getValue(), fieldDefinition, parameters)))
+          .collect(Collectors.toList());
+    } else {
+      selections = schema.getProperties()
           .entrySet()
           .stream()
-          .flatMap(entry -> mapFields(entry.getValue(), fieldDefinition));
+          .map(entry -> mapField(entry.getKey(), entry.getValue(),
+              getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters))
+          .collect(Collectors.toList());
     }
 
-    var fieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-    if (!(fieldType instanceof GraphQLObjectType)) {
-      throw invalidConfigurationException("Type is not an object.");
-    }
-
-    return schema.getProperties()
-        .entrySet()
-        .stream()
-        .map(entry -> mapField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType, List.of()));
+    return new Field(name, arguments, new SelectionSet(selections));
   }
 
-  private List<Argument> createKeyArguments(OperationRequest operationRequest) {
-    Map<String, Object> paramKeyValues = operationRequest.getContext()
-        .getQueryProperties()
-        .getKeys()
-        .entrySet()
+  private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, Map<String, Object> parameters) {
+    return fieldDefinition.getArguments()
         .stream()
-        .filter(e -> operationRequest.getParameters()
-            .containsKey(paramKeyFromPath(e.getValue())))
-        .collect(Collectors.toMap(Map.Entry::getKey, e -> operationRequest.getParameters()
-            .get(paramKeyFromPath(e.getValue()))));
-
-    return paramKeyValues.entrySet()
-        .stream()
-        .map(e -> new Argument(e.getKey(), toArgumentValue(e.getValue())))
+        .filter(argument -> !RESERVED_ARGS.contains(argument.getName()))
+        .flatMap(argument -> Stream.ofNullable(parameters.get(argument.getName()))
+            .map(parameterValue -> new Argument(argument.getName(), mapArgument(argument, parameterValue))))
         .collect(Collectors.toList());
   }
 
-  private Value toArgumentValue(Object e) {
-    if (e instanceof String) {
-      return new StringValue((String) e);
-    } else {
-      // TODO: support other types
-      return new StringValue(e.toString());
-    }
-  }
-
-  private String paramKeyFromPath(String path) {
-    return path.substring(path.lastIndexOf(".") + 1);
+  private Value<?> mapArgument(GraphQLArgument argument, Object parameterValue) {
+    // TODO: support other types
+    return StringValue.of(String.valueOf(parameterValue));
   }
 }

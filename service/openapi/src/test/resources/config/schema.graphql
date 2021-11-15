@@ -4,6 +4,7 @@ schema {
 
 type Query {
   breweryCollection: [Brewery!]!
+  brewery(identifier: ID!): Brewery
 }
 
 type Brewery {
