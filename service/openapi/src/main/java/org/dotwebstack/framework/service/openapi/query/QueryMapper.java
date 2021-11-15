@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.query.QueryArgumentUtil.createArguments;
+
 import graphql.ExecutionInput;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
 import graphql.language.Field;
 import graphql.language.OperationDefinition;
 import graphql.language.SelectionSet;
-import graphql.language.StringValue;
-import graphql.language.Value;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
@@ -20,7 +20,6 @@ import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
@@ -46,7 +45,7 @@ public class QueryMapper {
         .getQueryProperties();
 
     var queryField = mapField(queryProperties.getField(), operationRequest.getResponseSchema(),
-        graphQlSchema.getQueryType(), createKeyArguments(operationRequest));
+        graphQlSchema.getQueryType(), createArguments(operationRequest));
 
     var query = OperationDefinition.newOperationDefinition()
         .name("Query")
@@ -103,35 +102,5 @@ public class QueryMapper {
         .entrySet()
         .stream()
         .map(entry -> mapField(entry.getKey(), entry.getValue(), (GraphQLObjectType) fieldType, List.of()));
-  }
-
-  private List<Argument> createKeyArguments(OperationRequest operationRequest) {
-    Map<String, Object> paramKeyValues = operationRequest.getContext()
-        .getQueryProperties()
-        .getKeys()
-        .entrySet()
-        .stream()
-        .filter(e -> operationRequest.getParameters()
-            .containsKey(paramKeyFromPath(e.getValue())))
-        .collect(Collectors.toMap(Map.Entry::getKey, e -> operationRequest.getParameters()
-            .get(paramKeyFromPath(e.getValue()))));
-
-    return paramKeyValues.entrySet()
-        .stream()
-        .map(e -> new Argument(e.getKey(), toArgumentValue(e.getValue())))
-        .collect(Collectors.toList());
-  }
-
-  private Value toArgumentValue(Object e) {
-    if (e instanceof String) {
-      return new StringValue((String) e);
-    } else {
-      // TODO: support other types
-      return new StringValue(e.toString());
-    }
-  }
-
-  private String paramKeyFromPath(String path) {
-    return path.substring(path.lastIndexOf(".") + 1);
   }
 }
