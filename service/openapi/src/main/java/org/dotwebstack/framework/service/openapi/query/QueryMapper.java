@@ -50,8 +50,11 @@ public class QueryMapper {
 
   private final GraphQLSchema graphQlSchema;
 
-  public QueryMapper(GraphQLSchema graphQlSchema) {
+  private final QueryArgumentBuilder queryArgumentBuilder;
+
+  public QueryMapper(GraphQLSchema graphQlSchema, QueryArgumentBuilder queryArgumentBuilder) {
     this.graphQlSchema = graphQlSchema;
+    this.queryArgumentBuilder = queryArgumentBuilder;
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
@@ -148,7 +151,7 @@ public class QueryMapper {
         .collect(Collectors.toList());
 
     if (fieldDefinition.getArgument("filter") != null) {
-      result.addAll(QueryArgumentUtil.createArguments(operationRequest));
+      result.addAll(queryArgumentBuilder.buildArguments(operationRequest));
     }
     return result;
   }

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -29,10 +30,17 @@ class QueryMapperTest {
 
   private static QueryMapper queryFactory;
 
+  private static QueryArgumentBuilder queryArgumentBuilder;
+
   @BeforeAll
   static void beforeAll() {
     openApi = TestResources.openApi("openapi.yaml");
-    queryFactory = new QueryMapper(TestResources.graphQlSchema());
+
+    queryArgumentBuilder = new QueryArgumentBuilder(new JexlBuilder().silent(false)
+        .strict(true)
+        .create());
+
+    queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder);
   }
 
   static Stream<Arguments> arguments() {
