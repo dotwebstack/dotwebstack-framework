@@ -12,6 +12,7 @@ type Brewery {
   identifier: ID!
   name: String!
   postalAddress: Address
+  numberOfEmployees: Int
 }
 
 type BreweryConnection {

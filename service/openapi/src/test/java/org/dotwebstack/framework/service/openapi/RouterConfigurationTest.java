@@ -11,11 +11,7 @@ import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.util.ResolverFully;
-import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,21 +28,12 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class RouterConfigurationTest {
 
-  private static OpenAPI openApi;
+  private final static OpenAPI openApi = TestResources.openApi("openapi-router.yaml");
 
   @Mock
   private OperationHandlerFactory operationHandlerFactory;
 
   private RouterConfiguration routerConfiguration;
-
-  @BeforeAll
-  static void beforeAll() {
-    openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
-        .resolve("openapi-router.yaml")
-        .getPath());
-
-    new ResolverFully().resolveFully(openApi);
-  }
 
   @BeforeEach
   void setUp() {

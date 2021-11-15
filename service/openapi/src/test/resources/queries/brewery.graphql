@@ -6,5 +6,6 @@ query Query {
       street
       postalCode
     }
+    numberOfEmployees
   }
 }

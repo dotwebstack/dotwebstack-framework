@@ -4,5 +4,6 @@
   "postalAddress": {
     "street": "Church Street",
     "postalCode": "12345"
-  }
+  },
+  "numberOfEmployees": 12
 }

@@ -58,7 +58,8 @@ public class TestResources {
 
   public static String graphQlQuery(String name) throws IOException {
     return IOUtils.toString(Objects.requireNonNull(TestResources.class.getClassLoader()
-        .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8);
+        .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8)
+        .trim();
   }
 
   public static ExecutionResult graphQlResult(String name) {

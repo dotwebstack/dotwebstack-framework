@@ -112,7 +112,7 @@ paths:
           in: query
           schema:
             type: integer
-            enum: [ 10, 20, 50 ]
+            enum: [10, 20, 50]
             default: 10
       responses:
         200:
@@ -236,6 +236,7 @@ components:
       required:
         - identifier
         - name
+        - numberOfEmployees
       properties:
         identifier:
           type: string
@@ -243,28 +244,31 @@ components:
           type: string
         postalAddress:
           $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
 
     BreweryHAL:
       allOf:
         - $ref: '#/components/schemas/Brewery'
-#        - type: object
-#          required:
-#            - _links
-#          properties:
-#            _links:
-#              type: object
-#              x-dws-envelope: true
-#              required:
-#                - self
-#              properties:
-#                self:
-#                  type: object
-#                  required:
-#                    - href
-#                  properties:
-#                    href:
-#                      type: string
-#                      format: uri
+    #        - type: object
+    #          required:
+    #            - _links
+    #          properties:
+    #            _links:
+    #              type: object
+    #              x-dws-envelope: true
+    #              required:
+    #                - self
+    #              properties:
+    #                self:
+    #                  type: object
+    #                  required:
+    #                    - href
+    #                  properties:
+    #                    href:
+    #                      type: string
+    #                      format: uri
 
     Address:
       type: object
@@ -288,6 +292,13 @@ components:
               type: string
         - $ref: '#/components/schemas/Nameable'
         - $ref: '#/components/schemas/Addressable'
+        - type: object
+          required:
+            - numberOfEmployees
+          properties:
+            numberOfEmployees:
+              type: integer
+              nullable: true
     Nameable:
       type: object
       required:
