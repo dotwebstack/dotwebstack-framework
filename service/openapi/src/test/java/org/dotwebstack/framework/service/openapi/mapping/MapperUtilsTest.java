@@ -52,8 +52,7 @@ class MapperUtilsTest {
   @Test
   void getSuccessResponse_returnsSuccessResponse_whenExactlyOne() {
     var response200 = new ApiResponse();
-    var operation = createOperation(new ApiResponses()
-        .addApiResponse("200", response200));
+    var operation = createOperation(new ApiResponses().addApiResponse("200", response200));
 
     var successResponse = getSuccessResponse(operation);
 
@@ -62,12 +61,10 @@ class MapperUtilsTest {
 
   @Test
   void getSuccessResponse_throwsException_whenMoeThanOne() {
-    var operation = createOperation(new ApiResponses()
-        .addApiResponse("200", new ApiResponse())
+    var operation = createOperation(new ApiResponses().addApiResponse("200", new ApiResponse())
         .addApiResponse("201", new ApiResponse()));
 
-    assertThrows(InvalidOpenApiConfigurationException.class, () ->
-        getSuccessResponse(operation));
+    assertThrows(InvalidOpenApiConfigurationException.class, () -> getSuccessResponse(operation));
   }
 
   private static Operation createOperation(ApiResponses apiResponses) {
