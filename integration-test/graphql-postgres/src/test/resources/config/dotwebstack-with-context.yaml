@@ -1,3 +1,18 @@
+spatial:
+  srid:
+    28992:
+      dimensions: 2
+    7415:
+      dimensions: 3
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      columnSuffix: _7931
+    7931:
+      dimensions: 3
+      equivalent: 9067
+      columnSuffix: _7931
+
 contexts:
   history:
     fields:
