@@ -3,9 +3,11 @@ package org.dotwebstack.framework.service.openapi.query;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.junit.jupiter.api.Test;
 
@@ -29,5 +31,12 @@ class QueryPropertiesTest {
     var queryProperties = QueryProperties.fromOperation(operation);
 
     assertThat(queryProperties.getField(), is(equalTo("brewery")));
+  }
+
+  @Test
+  void fromOperation_throwsException_whenQueryExtensionsIsAbsent() {
+    var operation = new Operation();
+
+    assertThrows(InvalidConfigurationException.class, () -> QueryProperties.fromOperation(operation));
   }
 }

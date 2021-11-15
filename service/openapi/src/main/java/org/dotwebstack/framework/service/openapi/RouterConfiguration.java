@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
-import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,8 +21,11 @@ class RouterConfiguration {
 
   private final OperationHandlerFactory operationHandlerFactory;
 
-  public RouterConfiguration(OperationHandlerFactory operationHandlerFactory) {
+  private final OpenAPI openApi;
+
+  public RouterConfiguration(@NonNull OperationHandlerFactory operationHandlerFactory, @NonNull OpenAPI openApi) {
     this.operationHandlerFactory = operationHandlerFactory;
+    this.openApi = openApi;
   }
 
   @Bean
@@ -33,7 +34,7 @@ class RouterConfiguration {
   }
 
   @Bean
-  public RouterFunction<ServerResponse> router(@NonNull OpenAPI openApi) {
+  public RouterFunction<ServerResponse> router() {
     var builder = RouterFunctions.route();
 
     openApi.getPaths()
@@ -48,22 +49,16 @@ class RouterConfiguration {
     pathItem.readOperationsMap()
         .entrySet()
         .stream()
-        .filter(entry -> isDwsRoute(entry.getValue()))
         .forEach(
             entry -> builder.route(matchRoute(path, entry.getKey()), operationHandlerFactory.create(entry.getValue())));
 
     return builder.build();
   }
 
-  private RequestPredicate matchRoute(String path, PathItem.HttpMethod httpMethod) {
+  private static RequestPredicate matchRoute(String path, PathItem.HttpMethod httpMethod) {
     var method = HttpMethod.valueOf(httpMethod.name());
 
     return RequestPredicates.path(path)
         .and(RequestPredicates.method(method));
-  }
-
-  private boolean isDwsRoute(Operation operation) {
-    return operation.getExtensions()
-        .containsKey(OasConstants.X_DWS_QUERY);
   }
 }
