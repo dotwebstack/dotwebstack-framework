@@ -204,8 +204,8 @@ paths:
     get:
       x-dws-query:
         field: brewery
-        keys:
-          identifier: $path.identifier
+#        keys:
+#          identifier: $path.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -231,8 +231,8 @@ paths:
     post:
       x-dws-query:
         field: brewery
-        keys:
-          identifier: $body.identifier
+#        keys:
+#          identifier: $body.identifier
       parameters:
         - name: expand
           x-dws-type: expand
