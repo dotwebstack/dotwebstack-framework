@@ -126,12 +126,17 @@ public class QueryMapper {
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, OperationRequest operationRequest) {
     var parameters = operationRequest.getParameters();
 
-    return fieldDefinition.getArguments()
+    List<Argument> result = fieldDefinition.getArguments()
         .stream()
         .filter(argument -> !RESERVED_ARGS.contains(argument.getName()))
         .flatMap(argument -> Stream.ofNullable(parameters.get(argument.getName()))
             .map(parameterValue -> new Argument(argument.getName(), mapArgument(argument, parameterValue))))
         .collect(Collectors.toList());
+
+    if (fieldDefinition.getArgument("filter") != null) {
+      result.addAll(QueryArgumentUtil.createArguments(operationRequest));
+    }
+    return result;
   }
 
   private Value<?> mapArgument(GraphQLArgument argument, Object parameterValue) {
