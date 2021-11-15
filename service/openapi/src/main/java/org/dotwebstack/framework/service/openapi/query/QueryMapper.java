@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
@@ -8,25 +12,31 @@ import graphql.ExecutionInput;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
 import graphql.language.Field;
+import graphql.language.IntValue;
 import graphql.language.OperationDefinition;
 import graphql.language.SelectionSet;
 import graphql.language.StringValue;
 import graphql.language.Value;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,7 +45,8 @@ public class QueryMapper {
 
   private static final String OPERATION_NAME = "Query";
 
-  private static final Set<String> RESERVED_ARGS = Set.of("filter", "sort", "context");
+  private static final Set<String> RESERVED_ARGS =
+      Set.of(FILTER_ARGUMENT_NAME, SORT_ARGUMENT_NAME, CONTEXT_ARGUMENT_NAME);
 
   private final GraphQLSchema graphQlSchema;
 
@@ -106,14 +117,12 @@ public class QueryMapper {
           rawType.getName());
     }
 
-    if (fieldDefinition.getArgument("first") != null
-        && ((GraphQLObjectType) rawType).getFieldDefinition("nodes") != null) {
-      var selections =
-          mapObjectFields(schema, ((GraphQLObjectType) rawType).getFieldDefinition("nodes"), operationRequest)
-              .collect(Collectors.toList());
+    if (MapperUtils.isPageableField(fieldDefinition)) {
+      var nestedFieldDefinition = ((GraphQLObjectType) rawType).getFieldDefinition(NODES_FIELD_NAME);
+      var selections = mapObjectFields(schema, nestedFieldDefinition, operationRequest).collect(Collectors.toList());
 
-      return Stream
-          .of(new Field("nodes", mapArguments(fieldDefinition, operationRequest), new SelectionSet(selections)));
+      return Stream.of(new Field(NODES_FIELD_NAME, mapArguments(nestedFieldDefinition, operationRequest),
+          new SelectionSet(selections)));
     }
 
     return schema.getProperties()
@@ -124,7 +133,12 @@ public class QueryMapper {
   }
 
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, OperationRequest operationRequest) {
-    var parameters = operationRequest.getParameters();
+    var parameters = new HashMap<>(operationRequest.getParameters());
+    if (MapperUtils.isPageableField(fieldDefinition)) {
+      parameters.putAll(QueryPaging.toPagingArguments(operationRequest.getContext()
+          .getQueryProperties()
+          .getPaging(), operationRequest.getParameters()));
+    }
 
     List<Argument> result = fieldDefinition.getArguments()
         .stream()
@@ -140,7 +154,25 @@ public class QueryMapper {
   }
 
   private Value<?> mapArgument(GraphQLArgument argument, Object parameterValue) {
-    // TODO: support other types
+    GraphQLInputType inputType = argument.getType();
+    if (inputType instanceof GraphQLScalarType) {
+      String type = ((GraphQLScalarType) inputType).getName();
+      switch (type) {
+        case "Int":
+          if (parameterValue instanceof Integer) {
+            return IntValue.of((Integer) parameterValue);
+          }
+
+          throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type Int",
+              parameterValue, argument.getName());
+        case "String":
+          return StringValue.of(String.valueOf(parameterValue));
+        default:
+          throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type {}",
+              parameterValue, argument.getName(), type);
+      }
+    }
+
     return StringValue.of(String.valueOf(parameterValue));
   }
 }

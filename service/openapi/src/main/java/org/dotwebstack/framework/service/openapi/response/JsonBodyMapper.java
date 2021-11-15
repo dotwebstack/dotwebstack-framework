@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -61,10 +61,6 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
     if (data == null) {
       return null;
-    }
-
-    if (schema.get$ref() != null) {
-      return mapSchema(SchemaResolver.resolveSchema(openApi, schema.get$ref()), fieldDefinition, data);
     }
 
     if (schema instanceof ObjectSchema) {
@@ -126,13 +122,38 @@ public class JsonBodyMapper implements BodyMapper {
         }, HashMap::putAll);
   }
 
+  @SuppressWarnings("unchecked")
+  private Object unwrapPagedData(Object data) {
+    if (!(data instanceof Map)) {
+      throw invalidConfigurationException("Pageable node is not compatible with object schema.");
+    }
+
+    return ((Map<String, Object>) data).get(PagingConstants.NODES_FIELD_NAME);
+  }
+
+  private GraphQLFieldDefinition unwrapPagedField(GraphQLFieldDefinition fieldDefinition) {
+    var fieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    return MapperUtils.getObjectField((GraphQLObjectType) fieldType, PagingConstants.NODES_FIELD_NAME);
+  }
+
   private List<?> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (!(data instanceof Collection)) {
+    Object dataToMap;
+    GraphQLFieldDefinition fieldDefinitionToMap;
+    if (MapperUtils.isPageableField(fieldDefinition)) {
+      dataToMap = unwrapPagedData(data);
+      fieldDefinitionToMap = unwrapPagedField(fieldDefinition);
+    } else {
+      dataToMap = data;
+      fieldDefinitionToMap = fieldDefinition;
+    }
+
+    if (!(dataToMap instanceof Collection)) {
       throw invalidConfigurationException("Data is not compatible with array schema.");
     }
 
-    return ((Collection<?>) data).stream()
-        .map(item -> mapSchema(schema.getItems(), fieldDefinition, item))
+    return ((Collection<?>) dataToMap).stream()
+        .map(item -> mapSchema(schema.getItems(), fieldDefinitionToMap, item))
         .collect(Collectors.toList());
   }
 
