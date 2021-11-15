@@ -174,18 +174,12 @@ class SelectBuilder {
       dataQuery.addFrom(table);
     }
 
-    List<Condition> keyConditions = objectRequest.getKeyCriterias()
+    List<Condition> keyConditions = Optional.ofNullable(objectRequest.getKeyCriteria())
         .stream()
         .flatMap(keyCriteria -> createKeyCondition(keyCriteria, objectType, selectTable).stream())
         .collect(Collectors.toList());
 
-    if (keyConditions.size() > 0) {
-      if (keyConditions.size() == 1) {
-        dataQuery.addConditions(keyConditions.get(0));
-      } else {
-        dataQuery.addConditions(DSL.or(keyConditions));
-      }
-    }
+    dataQuery.addConditions(keyConditions);
 
     objectRequest.getScalarFields()
         .stream()
@@ -441,15 +435,11 @@ class SelectBuilder {
             }
 
             // Asked for joinTable
-            objectRequest.getObjectListFields()
-                .get(fieldRequest);
-
             nestedFieldMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()), row -> JoinCondition.builder()
                 .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
                 .joinTable(JoinHelper.resolveJoinTable((PostgresObjectType) objectField.getObjectType(), joinTable))
                 .build());
 
-            // TODO: dit kan nog eventueel herbruikbaar worden
             return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(),
                 parentTable).stream()
                     .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
@@ -495,7 +485,7 @@ class SelectBuilder {
   }
 
   private Map<String, String> createIdentifyingObjectMapping(JoinTable joinTable, SelectQuery<Record> query) {
-    Map<String, String> mapping = joinTable.getInverseJoinColumns()
+    return joinTable.getInverseJoinColumns()
         .stream()
         .collect(Collectors.toMap(JoinColumn::getReferencedField, joinColumn -> {
           var alias = aliasManager.newAlias();
@@ -507,7 +497,6 @@ class SelectBuilder {
 
           return alias;
         }));
-    return mapping;
   }
 
   private Map<String, String> createScalarReferences(PostgresObjectField objectField) {

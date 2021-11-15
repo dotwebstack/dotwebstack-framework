@@ -10,6 +10,8 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 
 public class JoinHelper {
 
+  private JoinHelper() {}
+
   public static List<JoinColumn> invertOnList(final PostgresObjectField objectField, List<JoinColumn> joinColumns) {
     return joinColumns.stream()
         .map(joinColumn -> resolveReferencedField(joinColumn, (PostgresObjectType) objectField.getTargetType()))

@@ -3,7 +3,6 @@ package org.dotwebstack.framework.core.backend;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -90,13 +89,13 @@ class BackendRequestFactoryTest {
     var objectFields = objectRequest.getObjectFields();
     assertThat(objectFields.size(), is(1));
 
-    var keyCriterias = objectFields.values()
+    var keyCriteria = objectFields.values()
         .stream()
         .findFirst()
         .orElseThrow()
-        .getKeyCriterias();
+        .getKeyCriteria();
 
-    assertThat(keyCriterias, hasSize(1));
+    assertThat(keyCriteria, notNullValue());
   }
 
   @Test

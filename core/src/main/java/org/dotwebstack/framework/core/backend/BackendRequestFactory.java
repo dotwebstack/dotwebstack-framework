@@ -95,8 +95,8 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriterias(createKeyCriteria(executionStepInfo.getFieldDefinition()
-            .getArguments(), executionStepInfo.getArguments()))
+        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
+            .getArguments(), executionStepInfo.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -114,7 +114,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriterias(createKeyCriteria(arguments, selectedField.getArguments()))
+        .keyCriteria(createKeyCriteria(arguments, selectedField.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -259,7 +259,7 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+  private Optional<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
     var keys = arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
@@ -268,12 +268,11 @@ public class BackendRequestFactory {
         .map(argument -> Map.entry(argument.getName(), argumentMap.get(argument.getName())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
 
-    if (keys.size() > 0) {
-      return List.of(KeyCriteria.builder()
-          .values(keys)
-          .build());
-    }
-    return new ArrayList<>();
+    return Optional.of(keys)
+        .filter(k -> k.size() > 0)
+        .map(k -> KeyCriteria.builder()
+            .values(k)
+            .build());
   }
 
   private List<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map<String, Object> filterArgument) {

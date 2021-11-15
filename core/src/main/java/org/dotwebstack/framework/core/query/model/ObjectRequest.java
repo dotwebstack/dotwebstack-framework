@@ -27,8 +27,7 @@ public class ObjectRequest implements Request {
   @Builder.Default
   private final List<AggregateObjectRequest> aggregateObjectFields = new ArrayList<>();
 
-  @Builder.Default
-  private final List<KeyCriteria> keyCriterias = new ArrayList<>();
+  private final KeyCriteria keyCriteria;
 
   private final ContextCriteria contextCriteria;
 }
