@@ -114,24 +114,21 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
   private void propagateJoinTable(List<PostgresObjectField> allFields) {
     allFields.stream()
         .filter(JoinHelper::hasNestedReference)
-        .forEach(field -> {
-          Optional.of(field)
-              .stream()
-              .map(PostgresObjectField::getTargetType)
-              .flatMap(objectType -> objectType.getFields()
-                  .values()
-                  .stream())
-              .map(PostgresObjectField.class::cast)
-              .filter(nestedObjectField -> !nestedObjectField.getTargetType()
-                  .isNested())
-              .forEach(nestedField -> {
-                var targetObjectType = (PostgresObjectType) nestedField.getTargetType();
-                var resolvedJoinTable = JoinHelper.resolveJoinTable(targetObjectType, field.getJoinTable());
+        .forEach(field -> Optional.of(field)
+            .stream()
+            .map(PostgresObjectField::getTargetType)
+            .flatMap(objectType -> objectType.getFields()
+                .values()
+                .stream())
+            .map(PostgresObjectField.class::cast)
+            .filter(nestedObjectField -> !nestedObjectField.getTargetType()
+                .isNested())
+            .forEach(nestedField -> {
+              var objectType = (PostgresObjectType) field.getObjectType();
+              var resolvedJoinTable = JoinHelper.resolveJoinTable(objectType, field.getJoinTable());
 
-                nestedField.setJoinTable(resolvedJoinTable);
-              });
-
-        });
+              nestedField.setJoinTable(resolvedJoinTable);
+            }));
   }
 
 
