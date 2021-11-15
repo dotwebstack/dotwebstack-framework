@@ -83,33 +83,56 @@ public class QueryMapper {
       return new Field(name);
     }
 
+    if (isEnvelope(schema)) {
+      var selections = schema.getProperties()
+          .values()
+          .stream()
+          .flatMap(nestedSchema -> mapEnvelope(nestedSchema, fieldDefinition, parameters))
+          .collect(Collectors.toList());
+
+      return new Field(name, arguments, new SelectionSet(selections));
+    }
+
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (!(rawType instanceof GraphQLObjectType)) {
       throw invalidConfigurationException("Invalid!");
     }
 
-    List<Field> selections;
-
-    if (isEnvelope(schema)) {
-      selections = schema.getProperties()
-          .values()
-          .stream()
-          .flatMap(nestedSchema -> ((Schema<?>) nestedSchema).getProperties()
-              .entrySet()
-              .stream()
-              .map(entry -> mapField(entry.getKey(), entry.getValue(), fieldDefinition, parameters)))
-          .collect(Collectors.toList());
-    } else {
-      selections = schema.getProperties()
-          .entrySet()
-          .stream()
-          .map(entry -> mapField(entry.getKey(), entry.getValue(),
-              getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters))
-          .collect(Collectors.toList());
-    }
+    var selections = schema.getProperties()
+        .entrySet()
+        .stream()
+        .map(entry -> mapField(entry.getKey(), entry.getValue(),
+            getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters))
+        .collect(Collectors.toList());
 
     return new Field(name, arguments, new SelectionSet(selections));
+  }
+
+  private Stream<Field> mapEnvelope(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> parameters) {
+    if (isEnvelope(schema)) {
+      return schema.getProperties()
+          .values()
+          .stream()
+          .flatMap(nestedSchema -> mapEnvelope(nestedSchema, fieldDefinition, parameters));
+    }
+
+    if (schema instanceof ArraySchema) {
+      return mapEnvelope(((ArraySchema) schema).getItems(), fieldDefinition, parameters);
+    }
+
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw invalidConfigurationException("Invalid!");
+    }
+
+    return schema.getProperties()
+        .entrySet()
+        .stream()
+        .map(entry -> mapField(entry.getKey(), entry.getValue(),
+            getObjectField((GraphQLObjectType) rawType, entry.getKey()), parameters));
   }
 
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition, Map<String, Object> parameters) {

@@ -140,24 +140,24 @@ components:
     BreweryHAL:
       allOf:
         - $ref: '#/components/schemas/Brewery'
-        - type: object
-          required:
-            - _links
-          properties:
-            _links:
-              type: object
-              x-dws-envelope: true
-              required:
-                - self
-              properties:
-                self:
-                  type: object
-                  required:
-                    - href
-                  properties:
-                    href:
-                      type: string
-                      format: uri
+#        - type: object
+#          required:
+#            - _links
+#          properties:
+#            _links:
+#              type: object
+#              x-dws-envelope: true
+#              required:
+#                - self
+#              properties:
+#                self:
+#                  type: object
+#                  required:
+#                    - href
+#                  properties:
+#                    href:
+#                      type: string
+#                      format: uri
 
     Address:
       type: object
