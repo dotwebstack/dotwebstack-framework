@@ -88,7 +88,9 @@ class QueryMapperTest {
         Arguments.of("/breweries-one-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
         Arguments.of("/breweries-any-of", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
-            "Unsupported composition construct oneOf / anyOf encountered."));
+            "Unsupported composition construct oneOf / anyOf encountered."),
+        Arguments.of("/breweries-object-mismatch", MEDIA_TYPE_JSON, InvalidConfigurationException.class,
+            "Object schema does not match GraphQL field type (found: String)."));
   }
 
   @ParameterizedTest

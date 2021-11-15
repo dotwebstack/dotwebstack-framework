@@ -104,7 +104,8 @@ public class QueryMapper {
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (!(rawType instanceof GraphQLObjectType)) {
-      throw invalidConfigurationException("Invalid!");
+      throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
+          rawType.getName());
     }
 
     return schema.getProperties()

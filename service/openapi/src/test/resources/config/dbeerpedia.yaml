@@ -122,6 +122,27 @@ paths:
                 items:
                   $ref: '#/components/schemas/BreweryAnyOf'
 
+  /breweries-object-mismatch:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - identifier
+                    - name
+                  properties:
+                    identifier:
+                      type: string
+                    name:
+                      type: object
+
 components:
   schemas:
     Brewery:
