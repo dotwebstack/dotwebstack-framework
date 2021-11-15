@@ -21,6 +21,7 @@ public class OperationRequest {
   @NonNull
   private final MediaType preferredMediaType;
 
+  @SuppressWarnings("rawtypes")
   public Schema<?> getResponseSchema() {
     return context.getSuccessResponse()
         .getContent()

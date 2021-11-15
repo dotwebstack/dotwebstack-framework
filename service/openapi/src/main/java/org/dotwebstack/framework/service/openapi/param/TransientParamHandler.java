@@ -5,11 +5,9 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
 
 @Component
 public class TransientParamHandler extends DefaultParamHandler {
@@ -24,12 +22,6 @@ public class TransientParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
-    return super.getValue(request, parameter);
-  }
-
-  @Override
   public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
-    return;
   }
 }
