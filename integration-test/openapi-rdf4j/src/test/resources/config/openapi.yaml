@@ -79,6 +79,7 @@ components:
 #          type: boolean
         postalCode:
           type: string
+          nullable: true
         founded:
           type: string
 #        link:
