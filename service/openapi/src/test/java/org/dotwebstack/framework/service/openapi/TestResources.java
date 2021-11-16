@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.schema.GraphQLSchema;
@@ -60,6 +61,12 @@ public class TestResources {
     return IOUtils.toString(Objects.requireNonNull(TestResources.class.getClassLoader()
         .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8)
         .trim();
+  }
+
+  public static Map<?, ?> filter(String name) throws IOException {
+    InputStream is = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("filters/%s.yaml", name)));
+    return new ObjectMapper(new YAMLFactory()).readValue(is, Map.class);
   }
 
   public static ExecutionResult graphQlResult(String name) {

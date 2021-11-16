@@ -119,7 +119,7 @@ public class QueryArgumentBuilder {
     return map.size() == 1 && map.containsKey(OasConstants.X_DWS_EXPR);
   }
 
-  private Value<?> createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
+  protected Value<?> createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
     var expression = (String) map.get(OasConstants.X_DWS_EXPR);
     if (expression.endsWith("!")) {
       expression = expression.substring(0, expression.length() - 1);
@@ -132,7 +132,7 @@ public class QueryArgumentBuilder {
 
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private Value<?> toArgumentValue(Object e) {
+  protected Value<?> toArgumentValue(Object e) {
     if (e instanceof String) {
       return new StringValue((String) e);
     } else if (e instanceof List) {
