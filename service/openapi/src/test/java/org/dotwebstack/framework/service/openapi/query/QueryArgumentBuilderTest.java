@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,10 +48,7 @@ class QueryArgumentBuilderTest {
   @Test
   void buildArguments_returnsExpectedArgument() throws IOException {
     Map<String, Map<String, Object>> filter = (Map<String, Map<String, Object>>) TestResources.filter("filter1");
-    OperationRequest operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
-    when(operationRequest.getContext()
-        .getQueryProperties()
-        .getFilters()).thenReturn(filter);
+    OperationRequest operationRequest = createOperationRequest(filter);
 
     Map<String, Object> parameters = Map.of("p1", "value1", "p2", "value2", "p3", "value3", "p4", "value4");
     when(operationRequest.getParameters()).thenReturn(parameters);
@@ -63,7 +61,33 @@ class QueryArgumentBuilderTest {
         + "\"value3_suffix\", field5 : {not : {field6 : \"value4\"}}}}}}"));
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void buildArguments_throwsExcepction_forUnsupportedType() throws IOException {
+    Map<String, Map<String, Object>> filter =
+        (Map<String, Map<String, Object>>) TestResources.filter("filter_unsupported_type");
+    OperationRequest operationRequest = createOperationRequest(filter);
 
+    assertThrows(IllegalArgumentException.class, () -> queryArgumentBuilder.buildArguments(operationRequest));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void buildArguments_throwsExcepction_forUnsupportedTypeAtRoot() throws IOException {
+    Map<String, Map<String, Object>> filter =
+        (Map<String, Map<String, Object>>) TestResources.filter("filter_unsupported_type_root");
+    OperationRequest operationRequest = createOperationRequest(filter);
+
+    assertThrows(IllegalArgumentException.class, () -> queryArgumentBuilder.buildArguments(operationRequest));
+  }
+
+  private OperationRequest createOperationRequest(Map<String, Map<String, Object>> filter) {
+    OperationRequest operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
+    when(operationRequest.getContext()
+        .getQueryProperties()
+        .getFilters()).thenReturn(filter);
+    return operationRequest;
+  }
 
   @ParameterizedTest
   @MethodSource("argumentObjects")

@@ -4,7 +4,7 @@ filter:
     and:
       field3: $path.p2
       field4:
-        x-dws-expr: $body.p3 + '_suffix'
+        x-dws-expr: $body.p3 + '_suffix'!
       field5:
         not:
           field6: $header.p4
