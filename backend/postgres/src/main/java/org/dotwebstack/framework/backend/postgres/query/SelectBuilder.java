@@ -30,8 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -180,8 +178,7 @@ class SelectBuilder {
       dataQuery.addFrom(table);
     }
 
-    List<Condition> keyConditions = Optional.ofNullable(objectRequest.getKeyCriteria())
-        .stream()
+    List<Condition> keyConditions = ofNullable(objectRequest.getKeyCriteria()).stream()
         .flatMap(keyCriteria -> createKeyCondition(keyCriteria, objectType, selectTable).stream())
         .collect(Collectors.toList());
 
@@ -204,12 +201,12 @@ class SelectBuilder {
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getValue(), selectTable))
-        .map(nestedSelectResult -> {
-          if (nestedSelectResult.selectQuery != null) {
-            addSubSelect(dataQuery, nestedSelectResult.selectQuery, objectRequest.getObjectType()
-                .isNested());
-          }
-          return nestedSelectResult.selectFieldOrAsterisk;
+        .map(selectResult -> {
+          Optional.of(selectResult)
+              .map(SelectResult::getSelectQuery)
+              .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested()));
+
+          return selectResult.getSelectFieldOrAsterisk();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
@@ -223,13 +220,7 @@ class SelectBuilder {
 
           var collectionRequest = entry.getValue();
 
-          return processObjectListFields(objectField, collectionRequest, table).stream()
-              .map(objectListFieldResult -> {
-                if (objectListFieldResult.selectQuery() != null) {
-                  addSubSelect(dataQuery, objectListFieldResult.selectQuery(), false);
-                }
-                return objectListFieldResult.selectFieldOrAsterisk();
-              });
+          return processObjectListFields(objectField, collectionRequest, table).stream();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
@@ -383,26 +374,12 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<ObjectListFieldResult> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> parentTable) {
 
-    // get key field for batch-single
+    // request key field for batch-single
     if (objectField.getKeyField() != null) {
-      var keyObjectField = (PostgresObjectField) objectField.getObjectType()
-          .getField(objectField.getKeyField());
-      var keyObjectRequest = ObjectRequest.builder()
-          .objectType(keyObjectField.getTargetType())
-          .scalarFields(keyObjectField.getTargetType()
-              .getFields()
-              .keySet()
-              .stream()
-              .map(fieldName -> FieldRequest.builder()
-                  .name(fieldName)
-                  .build())
-              .collect(Collectors.toList()))
-          .build();
-
-      return createNestedSelect(keyObjectField, keyObjectRequest, parentTable);
+      return requestKeyField(objectField, parentTable);
     }
 
     // Relation object implementation
@@ -434,7 +411,7 @@ class SelectBuilder {
 
             return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(),
                 parentTable).stream()
-                    .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
+                    .map(selectFieldOrAsterisk -> SelectResult.builder()
                         .selectFieldOrAsterisk(selectFieldOrAsterisk)
                         .build());
           });
@@ -472,12 +449,30 @@ class SelectBuilder {
           .forEach(select::addConditions);
     }
 
-    return Stream.of(ObjectListFieldResult.builder()
+    return Stream.of(SelectResult.builder()
         .selectQuery(select)
         .build());
   }
 
-  private ObjectListFieldResult getReferences(PostgresObjectField objectField, ObjectRequest objectRequest,
+  private Stream<SelectResult> requestKeyField(PostgresObjectField objectField, Table<Record> parentTable) {
+    var keyObjectField = (PostgresObjectField) objectField.getObjectType()
+        .getField(objectField.getKeyField());
+    var keyObjectRequest = ObjectRequest.builder()
+        .objectType(keyObjectField.getTargetType())
+        .scalarFields(keyObjectField.getTargetType()
+            .getFields()
+            .keySet()
+            .stream()
+            .map(fieldName -> FieldRequest.builder()
+                .name(fieldName)
+                .build())
+            .collect(Collectors.toList()))
+        .build();
+
+    return createNestedSelect(keyObjectField, keyObjectRequest, parentTable);
+  }
+
+  private SelectResult getReferences(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> parentTable, ObjectFieldMapper<Map<String, Object>> nestedFieldMapper, FieldRequest fieldRequest) {
     var objectType = (PostgresObjectType) objectField.getObjectType();
     var joinTable = JoinHelper.resolveJoinTable(objectType, objectField.getJoinTable());
@@ -505,7 +500,7 @@ class SelectBuilder {
           arrayObjectMapper.register(joinColumn.getReferencedField(), new ColumnMapper(field.as(alias)));
         });
 
-    return ObjectListFieldResult.builder()
+    return SelectResult.builder()
         .selectQuery(query)
         .build();
   }
@@ -527,15 +522,7 @@ class SelectBuilder {
     }
   }
 
-  @Builder
-  @Getter
-  private static class ObjectListFieldResult {
-    private SelectFieldOrAsterisk selectFieldOrAsterisk;
-
-    private SelectQuery<Record> selectQuery;
-  }
-
-  private List<ObjectListFieldResult> processObjectListFields(PostgresObjectField objectField,
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField,
       CollectionRequest collectionRequest, Table<Record> table) {
 
     if (objectField.getJoinTable() != null) {
@@ -562,16 +549,13 @@ class SelectBuilder {
           .stream()
           .map(JoinColumn::getName)
           .map(columnName -> getColumnMapper(table, columnName).getColumn())
-          .map(field -> ObjectListFieldResult.builder()
-              .selectFieldOrAsterisk(field)
-              .build())
           .collect(Collectors.toList());
     }
 
     return List.of();
   }
 
-  private List<ObjectListFieldResult> handleJoinMappedBy(CollectionRequest collectionRequest,
+  private List<SelectFieldOrAsterisk> handleJoinMappedBy(CollectionRequest collectionRequest,
       PostgresObjectField objectField, Table<Record> table) {
     var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
 
@@ -581,26 +565,17 @@ class SelectBuilder {
         .build());
 
     return selectJoinColumns((PostgresObjectType) nestedObjectField.getTargetType(), nestedObjectField.getJoinColumns(),
-        table).stream()
-            .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
-                .selectFieldOrAsterisk(selectFieldOrAsterisk)
-                .build())
-            .collect(Collectors.toList());
+        table);
   }
 
-  private List<ObjectListFieldResult> handleJoinTable(PostgresObjectField objectField, Table<Record> parentTable) {
+  private List<SelectFieldOrAsterisk> handleJoinTable(PostgresObjectField objectField, Table<Record> parentTable) {
     var joinTable = objectField.getJoinTable();
 
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
         .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
         .build());
 
-    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), parentTable)
-        .stream()
-        .map(selectFieldOrAsterisk -> ObjectListFieldResult.builder()
-            .selectFieldOrAsterisk(selectFieldOrAsterisk)
-            .build())
-        .collect(Collectors.toList());
+    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), parentTable);
   }
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {
