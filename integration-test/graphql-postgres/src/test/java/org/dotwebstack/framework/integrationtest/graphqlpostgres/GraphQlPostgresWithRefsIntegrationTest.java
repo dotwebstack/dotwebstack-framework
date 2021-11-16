@@ -81,7 +81,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithBreweryRef_withJoinColumn() {
+  void getRequest_returnsBeersWithBreweryRef_withJoinColumn() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    brewery {\n" + "      ref {\n"
         + "        identifier_brewery\n" + "      }\n" + "    }\n" + "  }\n" + "}";
 
@@ -94,7 +94,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithBreweryNode_withBatchLoadSingleJoinColumn() {
+  void getRequest_returnsBeersWithBreweryNode_withBatchLoadSingleJoinColumn() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    brewery {\n" + "      node {\n" + "        name\n"
         + "      }\n" + "    }\n" + "  }\n" + "}";
 
@@ -107,7 +107,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithIngredientRefs_withJoinTable() {
+  void getRequest_returnsBeersWithIngredientRefs_withJoinTable() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    ingredients {\n" + "    \trefs {\n"
         + "        code\n" + "      }\n" + "    }\n" + "    \n" + "  }\n" + "}";
 
@@ -122,7 +122,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithIngredientNodes_withBatchLoadManyJoinTable() {
+  void getRequest_returnsBeersWithIngredientNodes_withBatchLoadManyJoinTable() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    ingredients {\n" + "    \tnodes {\n"
         + "        name\n" + "        code\n" + "      }\n" + "    }\n" + "    \n" + "  }\n" + "}";
 

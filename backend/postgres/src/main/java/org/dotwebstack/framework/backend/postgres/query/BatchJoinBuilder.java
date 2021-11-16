@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
@@ -54,7 +55,6 @@ class BatchJoinBuilder {
   @NotNull
   private SelectQuery<Record> dataQuery;
 
-  @NotNull
   private Table<Record> table;
 
   @NotNull
@@ -72,69 +72,79 @@ class BatchJoinBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
-
-    if (objectField.getMappedByObjectField() != null) {
-      objectField = objectField.getMappedByObjectField();
-    }
+    PostgresObjectField objectField = getObjectField();
 
     if (!objectField.getJoinColumns()
         .isEmpty()) {
       return batchJoin(invertOnList(objectField, objectField.getJoinColumns()));
     }
 
-    var joinTable = objectField.getJoinTable();
-    if (joinTable != null) {
-      var targetObjectType = getObjectType(objectRequest);
-      return batchJoin(joinTable, targetObjectType);
+    if (objectField.getJoinTable() != null) {
+      return batchJoin(objectField.getJoinTable(), getObjectType(objectRequest));
     }
 
-    throw new UnsupportedOperationException();
+    return batchJoinWithKeysOnly();
+  }
+
+  private SelectQuery<Record> batchJoinWithKeysOnly() {
+    var keyColumnNames = joinCriteria.getKeys()
+        .stream()
+        .findFirst()
+        .stream()
+        .flatMap(map -> map.keySet()
+            .stream())
+        .collect(Collectors.toList());
+
+    var keyTable = createValuesTable(keyColumnNames, joinCriteria.getKeys());
+
+    keyColumnNames.stream()
+        .map(columnName -> QueryHelper.column(null, columnName)
+            .equal(QueryHelper.column(keyTable, columnName)))
+        .forEach(dataQuery::addConditions);
+
+    return batchJoin(keyTable);
+  }
+
+  private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns, Table<Record> joinConditionTable,
+      PostgresObjectType targetObjectType) {
+    var objectType = (PostgresObjectType) requestContext.getObjectField()
+        .getObjectType();
+
+    var keyTable = createValuesTable(objectType, joinColumns, joinCriteria.getKeys());
+
+    dataQuery.addConditions(createJoinConditions(joinConditionTable, keyTable, joinColumns, targetObjectType));
+
+    addExists(dataQuery, joinColumns, joinConditionTable);
+
+    return batchJoin(keyTable);
+  }
+
+  private SelectQuery<Record> batchJoin(Table<Record> keyTable) {
+    var batchQuery = dslContext.selectQuery(keyTable);
+
+    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
+    batchQuery.addSelect(DSL.asterisk());
+
+    return batchQuery;
   }
 
   private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns) {
     var objectType = (PostgresObjectType) requestContext.getObjectField()
         .getObjectType();
-
-    // Create virtual table with static key values
-    var keyTable = createValuesTable(objectType, joinColumns, joinCriteria.getKeys());
-
-    var batchQuery = dslContext.selectQuery(keyTable);
-
-    dataQuery.addConditions(createJoinConditions(table, keyTable, joinColumns, objectType));
-
-    addExists(dataQuery, joinColumns, table);
-
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
-    batchQuery.addSelect(DSL.asterisk());
-
-    return batchQuery;
+    return batchJoin(joinColumns, table, objectType);
   }
 
   private SelectQuery<Record> batchJoin(JoinTable joinTable, PostgresObjectType targetObjectType) {
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
-    var objectType = (PostgresObjectType) objectField.getObjectType();
-
-    // Create virtual table with static key values
-    var keyTable = createValuesTable(objectType, joinTable.getJoinColumns(), joinCriteria.getKeys());
-
     var junctionTable = QueryHelper.findTable(joinTable.getName(), objectRequest.getContextCriteria())
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);
-    dataQuery.addConditions(createJoinConditions(junctionTable, keyTable, joinTable.getJoinColumns(), objectType));
-
-    addExists(dataQuery, joinTable.getJoinColumns(), junctionTable);
 
     dataQuery
         .addConditions(createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(), targetObjectType));
 
-    var batchQuery = dslContext.selectQuery(keyTable);
-
-    batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
-    batchQuery.addSelect(DSL.asterisk());
-
-    return batchQuery;
+    return batchJoin(joinTable.getJoinColumns(), junctionTable, (PostgresObjectType) requestContext.getObjectField()
+        .getObjectType());
   }
 
   private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,
@@ -150,6 +160,22 @@ class BatchJoinBuilder {
         .map(DSL::row)
         .toArray(RowN[]::new);
 
+    return createValuesTable(keyColumnNames, keyTableRows);
+  }
+
+  private Table<Record> createValuesTable(Collection<String> keyColumnNames, Collection<Map<String, Object>> keys) {
+    var keyTableRows = keys.stream()
+        .map(joinKey -> keyColumnNames.stream()
+            .map(joinKey::get)
+            .toArray())
+        .map(DSL::row)
+        .toArray(RowN[]::new);
+
+    return createValuesTable(keyColumnNames, keyTableRows);
+
+  }
+
+  private Table<Record> createValuesTable(Collection<String> keyColumnNames, RowN[] keyTableRows) {
     // Register field mapper for grouping rows per key
     fieldMapper.register(GROUP_KEY, row -> keyColumnNames.stream()
         .collect(Collectors.toMap(Function.identity(), row::get)));
@@ -171,5 +197,13 @@ class BatchJoinBuilder {
     fieldMapper.register(EXISTS_KEY, row -> existsColumnNames.stream()
         .filter(key -> !Objects.isNull(row.get(key)))
         .collect(Collectors.toMap(Function.identity(), row::get, (prev, next) -> next, HashMap::new)));
+  }
+
+  private PostgresObjectField getObjectField() {
+    var objectField = (PostgresObjectField) requestContext.getObjectField();
+
+    return Optional.of(objectField)
+        .map(PostgresObjectField::getMappedByObjectField)
+        .orElse(objectField);
   }
 }

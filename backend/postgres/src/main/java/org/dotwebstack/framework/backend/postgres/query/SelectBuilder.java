@@ -6,7 +6,6 @@ import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
 import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
-import static org.dotwebstack.framework.backend.postgres.query.BatchSingleJoinBuilder.newBatchSingleJoin;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
@@ -135,10 +134,14 @@ class SelectBuilder {
   public SelectQuery<Record> build(BatchRequest batchRequest) {
     var dataQuery = build(batchRequest.getObjectRequest());
 
-    return newBatchSingleJoin().aliasManager(aliasManager)
+    return newBatchJoining().requestContext(requestContext)
         .fieldMapper(fieldMapper)
         .dataQuery(dataQuery)
-        .keys(batchRequest.getKeys())
+        .joinCriteria(JoinCriteria.builder()
+            .keys(batchRequest.getKeys())
+            .build())
+        .objectRequest(batchRequest.getObjectRequest())
+        .aliasManager(aliasManager)
         .build();
   }
 
