@@ -357,7 +357,7 @@ components:
         - identifier
         - name
         - numberOfEmployees
-        - _links
+        - _embedded
       properties:
         identifier:
           type: string

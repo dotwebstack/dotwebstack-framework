@@ -1,0 +1,11 @@
+{
+  "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+  "name": "Brewery X",
+  "_embedded": {
+    "postalAddress": {
+      "street": "Church Street",
+      "postalCode": "12345"
+    }
+  },
+  "numberOfEmployees": 12
+}

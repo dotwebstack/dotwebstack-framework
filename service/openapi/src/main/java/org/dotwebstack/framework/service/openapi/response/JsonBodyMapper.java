@@ -85,7 +85,7 @@ public class JsonBodyMapper implements BodyMapper {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private Map<String, Object> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (MapperUtils.isEnvelope(schema)) {
+    if (MapperUtils.isEnvelope(schema) && data instanceof Collection) {
       return schema.getProperties()
           .entrySet()
           .stream()
@@ -102,37 +102,31 @@ public class JsonBodyMapper implements BodyMapper {
       throw invalidConfigurationException("Field type is not compatible with object schema.");
     }
 
-    List<String> requiredProperties = schema.getRequired();
+    var dataMap = (Map<String, Object>) data;
 
-    return ((Map<String, Object>) data).entrySet()
+    return schema.getProperties()
+        .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
           var property = entry.getKey();
-          var nestedSchema = schema.getProperties()
-              .get(property);
+          var nestedSchema = entry.getValue();
 
-          var nestedFieldDefinition = MapperUtils.getObjectField((GraphQLObjectType) fieldType, entry.getKey());
+          if (MapperUtils.isEnvelope(nestedSchema)) {
+            var value = mapObjectSchema(nestedSchema, fieldDefinition, data);
 
-          var mappedValue = mapSchema(nestedSchema, nestedFieldDefinition, entry.getValue());
-
-          if (requiredProperties.contains(property)) {
-            acc.put(property, mappedValue);
-          } else {
-            if (!isNullOrEmpty(mappedValue)) {
-              acc.put(property, mappedValue);
+            if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
+              acc.put(property, value);
+              return;
             }
           }
-        }, HashMap::putAll);
-  }
 
-  private boolean isNullOrEmpty(Object mappedValue) {
-    if (mappedValue == null) {
-      return true;
-    }
-    if (mappedValue instanceof Collection<?>) {
-      return ((Collection<?>) mappedValue).isEmpty();
-    }
-    return false;
+          var nestedFieldDefinition = MapperUtils.getObjectField((GraphQLObjectType) fieldType, property);
+          var value = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property));
+
+          if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
+            acc.put(property, value);
+          }
+        }, HashMap::putAll);
   }
 
   @SuppressWarnings("unchecked")

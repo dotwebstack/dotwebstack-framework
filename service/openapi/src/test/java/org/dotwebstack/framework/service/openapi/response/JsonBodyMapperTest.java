@@ -39,7 +39,7 @@ class JsonBodyMapperTest {
         Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection", "breweries-json-hal"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
-            "brewery-json"));
+            "brewery-json-hal"));
   }
 
   @ParameterizedTest
