@@ -28,7 +28,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class RouterConfigurationTest {
 
-  private final static OpenAPI openApi = TestResources.openApi("openapi-router.yaml");
+  private static final OpenAPI openApi = TestResources.openApi("openapi-router.yaml");
 
   @Mock
   private OperationHandlerFactory operationHandlerFactory;

@@ -62,8 +62,8 @@ public class QueryArgumentBuilder {
         .map(entry -> {
           var key = entry.getKey();
           var value = entry.getValue();
-          if (value instanceof Map && isExpression(map)) {
-            var objectValue = createExpressionObjectValue(map, parameters);
+          if (value instanceof Map && isExpression((Map<String, Object>) value)) {
+            var objectValue = createExpressionObjectValue((Map<String, Object>) value, parameters);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof Map) {
             var objectValue = createObjectValue((Map<String, Object>) value, parameters);
@@ -77,18 +77,6 @@ public class QueryArgumentBuilder {
         })
         .filter(Objects::nonNull)
         .collect(Collectors.toList());
-  }
-
-  private boolean isExpression(Map<String, Object> map) {
-    return map.size() == 1 && map.containsKey(OasConstants.X_DWS_EXPR);
-  }
-
-  private Value<?> createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
-    String expression = (String) map.get(OasConstants.X_DWS_EXPR);
-    JexlContext jexlContext = createJexlContext(parameters);
-    String expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, String.class)
-        .orElse(null);
-    return expressionValue != null ? new StringValue(expressionValue) : null;
   }
 
   @SuppressWarnings({"unchecked"})
@@ -119,6 +107,22 @@ public class QueryArgumentBuilder {
     var paramValue = parameters.get(paramKey);
     return paramValue != null ? new ObjectField(key, toArgumentValue(paramValue)) : null;
   }
+
+  private boolean isExpression(Map<String, Object> map) {
+    return map.size() == 1 && map.containsKey(OasConstants.X_DWS_EXPR);
+  }
+
+  private Value<?> createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
+    var expression = (String) map.get(OasConstants.X_DWS_EXPR);
+    if (expression.endsWith("!")) {
+      expression = expression.substring(0, expression.length() - 1);
+    }
+    var jexlContext = createJexlContext(parameters);
+    var expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, String.class)
+        .orElse(null);
+    return expressionValue != null ? new StringValue(expressionValue) : null;
+  }
+
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private Value<?> toArgumentValue(Object e) {
