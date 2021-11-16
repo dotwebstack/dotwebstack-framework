@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,9 +24,8 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
 import org.jooq.Record;
@@ -44,7 +42,12 @@ class BatchJoinBuilder {
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
   @NotNull
-  private RequestContext requestContext;
+  private PostgresObjectField objectField;
+
+  @NotNull
+  private PostgresObjectType targetObjectType;
+
+  private ContextCriteria contextCriteria;
 
   @NotNull
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
@@ -57,11 +60,7 @@ class BatchJoinBuilder {
 
   private Table<Record> table;
 
-  @NotNull
   private JoinCriteria joinCriteria;
-
-  @NotNull
-  private ObjectRequest objectRequest;
 
   private BatchJoinBuilder() {}
 
@@ -80,7 +79,7 @@ class BatchJoinBuilder {
     }
 
     if (objectField.getJoinTable() != null) {
-      return batchJoin(objectField.getJoinTable(), getObjectType(objectRequest));
+      return batchJoin(objectField.getJoinTable(), targetObjectType);
     }
 
     return batchJoinWithKeysOnly();
@@ -107,10 +106,9 @@ class BatchJoinBuilder {
 
   private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns, Table<Record> joinConditionTable,
       PostgresObjectType targetObjectType) {
-    var objectType = (PostgresObjectType) requestContext.getObjectField()
-        .getObjectType();
 
-    var keyTable = createValuesTable(objectType, joinColumns, joinCriteria.getKeys());
+    var keyTable =
+        createValuesTable((PostgresObjectType) objectField.getObjectType(), joinColumns, joinCriteria.getKeys());
 
     dataQuery.addConditions(createJoinConditions(joinConditionTable, keyTable, joinColumns, targetObjectType));
 
@@ -129,13 +127,12 @@ class BatchJoinBuilder {
   }
 
   private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns) {
-    var objectType = (PostgresObjectType) requestContext.getObjectField()
-        .getObjectType();
+    var objectType = (PostgresObjectType) objectField.getObjectType();
     return batchJoin(joinColumns, table, objectType);
   }
 
   private SelectQuery<Record> batchJoin(JoinTable joinTable, PostgresObjectType targetObjectType) {
-    var junctionTable = QueryHelper.findTable(joinTable.getName(), objectRequest.getContextCriteria())
+    var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);
@@ -143,8 +140,7 @@ class BatchJoinBuilder {
     dataQuery
         .addConditions(createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(), targetObjectType));
 
-    return batchJoin(joinTable.getJoinColumns(), junctionTable, (PostgresObjectType) requestContext.getObjectField()
-        .getObjectType());
+    return batchJoin(joinTable.getJoinColumns(), junctionTable, (PostgresObjectType) objectField.getObjectType());
   }
 
   private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,
@@ -200,8 +196,6 @@ class BatchJoinBuilder {
   }
 
   private PostgresObjectField getObjectField() {
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
-
     return Optional.of(objectField)
         .map(PostgresObjectField::getMappedByObjectField)
         .orElse(objectField);
