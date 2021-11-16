@@ -150,7 +150,7 @@ public class QueryMapper {
             .map(parameterValue -> new Argument(argument.getName(), mapArgument(argument, parameterValue))))
         .collect(Collectors.toList());
 
-    if (fieldDefinition.getArgument("filter") != null && fieldDefinition.getName()
+    if (fieldDefinition.getArgument(FILTER_ARGUMENT_NAME) != null && fieldDefinition.getName()
         .equals(operationRequest.getContext()
             .getQueryProperties()
             .getField())) {

@@ -10,6 +10,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -55,7 +56,9 @@ class QueryMapperTest {
         Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of(), "brewery-collection"),
         Arguments.of("/breweries-all-of", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery"),
-        Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"));
+        Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
+        Arguments.of("/breweries-filter", APPLICATION_JSON_HAL, Map.of("name", List.of("breweryname")),
+            "brewery-collection-filter"));
   }
 
   @ParameterizedTest

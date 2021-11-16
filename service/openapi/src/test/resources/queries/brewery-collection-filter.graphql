@@ -1,0 +1,11 @@
+query Query {
+  breweryCollection(filter: {name : {in : ["breweryname"]}}) {
+    identifier
+    name
+    postalAddress {
+      street
+      postalCode
+    }
+    numberOfEmployees
+  }
+}

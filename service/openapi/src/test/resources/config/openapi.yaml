@@ -228,6 +228,29 @@ paths:
                       type: string
                     name:
                       type: object
+  /breweries-filter:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        filters:
+          name:
+            in: $query.name
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
 
 components:
   schemas:
