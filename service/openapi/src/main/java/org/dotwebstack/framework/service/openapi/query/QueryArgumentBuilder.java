@@ -2,14 +2,21 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
+import graphql.language.FloatValue;
+import graphql.language.IntValue;
 import graphql.language.ObjectField;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Value;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import graphql.schema.GraphQLArgument;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlContext;
@@ -136,8 +143,13 @@ public class QueryArgumentBuilder {
           .map(this::toArgumentValue)
           .collect(Collectors.toList());
       return new ArrayValue(values);
-    } else {
-      // TODO: support other types
+    } else if(e instanceof Integer || e instanceof Long){
+      return new IntValue(new BigInteger(e.toString()));
+    }
+    else if(e instanceof Float || e instanceof Double){
+      return new FloatValue(new BigDecimal(e.toString()));
+    }
+    else {
       return new StringValue(e.toString());
     }
   }

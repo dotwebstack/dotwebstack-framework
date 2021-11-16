@@ -238,6 +238,9 @@ paths:
               x-dws-expr: $query.like + '%'
           identifier:
             in: $query.name
+          employees:
+            not:
+              gt: $query.empcount
       parameters:
         - name: name
           in: query
@@ -249,6 +252,10 @@ paths:
           in: query
           schema:
             type: string
+        - name: empcount
+          in: query
+          schema:
+            type: number
       responses:
         200:
           description: OK
