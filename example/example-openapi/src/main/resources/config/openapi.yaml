@@ -270,6 +270,14 @@ components:
           type: string
         name:
           type: string
+#        nameEnvelope:
+#          x-dws-envelope: true
+#          type: object
+#          properties:
+#            name:
+#              type: string
+        status:
+          type: string
         postalAddress:
           $ref: '#/components/schemas/Address'
         visitAddress:
@@ -278,6 +286,7 @@ components:
           $ref: '#/components/schemas/History'
         beers:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/Beer'
     #        hasBeers:
@@ -311,6 +320,7 @@ components:
         name:
           type: string
     Address:
+      nullable: true
       type: object
       required:
         - identifier

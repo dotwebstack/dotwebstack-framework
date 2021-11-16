@@ -1,0 +1,11 @@
+query Query {
+  breweryCollectionMaybe {
+    identifier
+    name
+    postalAddress {
+      street
+      postalCode
+    }
+    numberOfEmployees
+  }
+}

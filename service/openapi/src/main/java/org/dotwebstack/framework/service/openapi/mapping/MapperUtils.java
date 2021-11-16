@@ -56,4 +56,12 @@ public class MapperUtils {
     return fieldDefinition.getArgument(FIRST_ARGUMENT_NAME) != null
         && ((GraphQLObjectType) rawType).getFieldDefinition(NODES_FIELD_NAME) != null;
   }
+
+  public static boolean isQueryField(GraphQLFieldDefinition fieldDefinition,
+      GraphQLFieldsContainer parentFieldsContainer) {
+    return parentFieldsContainer instanceof GraphQLObjectType && parentFieldsContainer.getName()
+        .equals("Query")
+        && parentFieldsContainer.getFields()
+            .contains(fieldDefinition);
+  }
 }

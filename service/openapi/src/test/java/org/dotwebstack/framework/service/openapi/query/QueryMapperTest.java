@@ -58,7 +58,8 @@ class QueryMapperTest {
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/breweries-filter", APPLICATION_JSON_HAL,
-            Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"));
+            Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"),
+        Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"));
   }
 
   @ParameterizedTest
@@ -91,7 +92,20 @@ class QueryMapperTest {
         Arguments.of("/breweries-any-of", APPLICATION_JSON, InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
         Arguments.of("/breweries-object-mismatch", APPLICATION_JSON, InvalidConfigurationException.class,
-            "Object schema does not match GraphQL field type (found: String)."));
+            "Object schema does not match GraphQL field type (found: String)."),
+        Arguments.of("/breweries-string-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+            "Nullability of `status` of type StringSchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/breweries-object-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+            "Nullability of `postalAddress` of type ObjectSchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON,
+            InvalidConfigurationException.class,
+            "Nullability of `beers` of type ObjectSchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON,
+            InvalidConfigurationException.class,
+            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/breweries-maybe-array-maybe-wrapped-object-nullability-exception", APPLICATION_JSON,
+            InvalidConfigurationException.class,
+            "Nullability of `beersMaybe` of type ObjectSchema in response schema is stricter than GraphQL schema."));
   }
 
   @ParameterizedTest

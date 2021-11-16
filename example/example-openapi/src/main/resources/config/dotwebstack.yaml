@@ -141,6 +141,7 @@ objectTypes:
         type: String
       status:
         type: String
+        nullable: true
       geometry:
         type: Geometry
         nullable: true
