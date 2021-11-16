@@ -89,6 +89,9 @@ public class QueryArgumentBuilder {
 
           if (value instanceof String) {
             return filterValueToObjectField(key, (String) value, parameters);
+          } else if (value instanceof Map && isExpression((Map<String, Object>) value)) {
+            var objectValue = createExpressionObjectValue((Map<String, Object>) value, parameters);
+            return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof Map) {
             var childFields = createObjectField((Map<String, Object>) value, parameters);
             return childFields.isEmpty() ? null : new ObjectField(key, new ObjectValue(childFields));

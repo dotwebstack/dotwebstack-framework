@@ -3,17 +3,22 @@ schema {
 }
 
 type Query {
-  breweryCollection(filter: NameFilter): [Brewery!]!
+  breweryCollection(filter: BreweryFilter): [Brewery!]!
   breweryPageableCollection(first: Int = 10, offset: Int = 0): BreweryConnection!
   brewery(identifier: ID!): Brewery
 }
 
-input NameFilter {
-  name: StringFilter
+input BreweryFilter {
+  name: LikeFilter
+  identifier: StringFilter
 }
 
 input StringFilter {
  in: [String]!
+}
+
+input LikeFilter {
+  like: String
 }
 
 type Brewery {

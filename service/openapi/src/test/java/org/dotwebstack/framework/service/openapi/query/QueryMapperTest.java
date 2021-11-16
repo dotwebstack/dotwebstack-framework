@@ -57,7 +57,7 @@ class QueryMapperTest {
         Arguments.of("/breweries-all-of", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
-        Arguments.of("/breweries-filter", APPLICATION_JSON_HAL, Map.of("name", List.of("breweryname")),
+        Arguments.of("/breweries-filter", APPLICATION_JSON_HAL, Map.of("name", List.of("breweryname"), "like", "id1"),
             "brewery-collection-filter"));
   }
 

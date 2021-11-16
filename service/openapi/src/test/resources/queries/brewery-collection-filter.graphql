@@ -1,5 +1,5 @@
 query Query {
-  breweryCollection(filter: {name : {in : ["breweryname"]}}) {
+  breweryCollection(filter: {name : {like : "id1%"}, identifier : {in : ["breweryname"]}}) {
     identifier
     name
     postalAddress {

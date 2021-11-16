@@ -234,6 +234,9 @@ paths:
         field: breweryCollection
         filters:
           name:
+            like:
+              x-dws-expr: $query.like + '%'
+          identifier:
             in: $query.name
       parameters:
         - name: name
@@ -242,6 +245,10 @@ paths:
             type: array
             items:
               type: string
+        - name: like
+          in: query
+          schema:
+            type: string
       responses:
         200:
           description: OK
