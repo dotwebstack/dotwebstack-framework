@@ -99,13 +99,10 @@ class QueryMapperTest {
             "Nullability of `postalAddress` of type ObjectSchema in response schema is stricter than GraphQL schema."),
         Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON,
             InvalidConfigurationException.class,
-            "Nullability of `beers` of type ObjectSchema in response schema is stricter than GraphQL schema."),
+            "Nullability of `beers` of type ArraySchema in response schema is stricter than GraphQL schema."),
         Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON,
             InvalidConfigurationException.class,
-            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-maybe-array-maybe-wrapped-object-nullability-exception", APPLICATION_JSON,
-            InvalidConfigurationException.class,
-            "Nullability of `beersMaybe` of type ObjectSchema in response schema is stricter than GraphQL schema."));
+            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."));
   }
 
   @ParameterizedTest

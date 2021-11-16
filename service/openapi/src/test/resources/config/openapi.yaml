@@ -332,19 +332,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/BreweryMaybeArrayNullabilityException'
 
-  /breweries-maybe-array-maybe-wrapped-object-nullability-exception:
-    get:
-      x-dws-query: breweryCollection
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BreweryMaybeArrayMaybeWrappedObjectNullabilityException'
-
 components:
   schemas:
     Brewery:
@@ -366,26 +353,41 @@ components:
 
     BreweryHAL:
       type: object
-      allOf:
-        - $ref: '#/components/schemas/Brewery'
-    #        - type: object
-    #          required:
-    #            - _links
-    #          properties:
-    #            _links:
-    #              type: object
-    #              x-dws-envelope: true
-    #              required:
-    #                - self
-    #              properties:
-    #                self:
-    #                  type: object
-    #                  required:
-    #                    - href
-    #                  properties:
-    #                    href:
-    #                      type: string
-    #                      format: uri
+      required:
+        - identifier
+        - name
+        - numberOfEmployees
+        - _links
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        _embedded:
+          type: object
+          x-dws-envelope: true
+          required:
+            - postalAddress
+          properties:
+            postalAddress:
+              $ref: '#/components/schemas/AddressNullable'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+#        _links:
+#          type: object
+#          x-dws-envelope: true
+#          required:
+#            - self
+#          properties:
+#            self:
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  type: string
+#                  format: uri
 
     Address:
       type: object
@@ -565,31 +567,6 @@ components:
           nullable: true
         beersMaybe:
           type: array
-          items:
-            $ref: '#/components/schemas/Beer'
-
-    BreweryMaybeArrayMaybeWrappedObjectNullabilityException:
-      type: object
-      required:
-        - identifier
-        - name
-        - numberOfEmployees
-      properties:
-        identifier:
-          type: string
-        name:
-          type: string
-        status:
-          type: string
-          nullable: true
-        postalAddress:
-          $ref: '#/components/schemas/AddressNullable'
-        numberOfEmployees:
-          type: integer
-          nullable: true
-        beersMaybe:
-          type: array
-          nullable: true
           items:
             $ref: '#/components/schemas/Beer'
 

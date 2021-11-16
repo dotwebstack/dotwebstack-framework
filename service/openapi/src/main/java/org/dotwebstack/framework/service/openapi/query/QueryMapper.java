@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
 
 import graphql.ExecutionInput;
 import graphql.language.Argument;
@@ -67,9 +68,9 @@ public class QueryMapper {
 
     var queryType = graphQlSchema.getQueryType();
     var fieldDefinition = getObjectField(queryType, fieldName);
-
-    var queryField =
-        mapField(fieldName, operationRequest.getResponseSchema(), fieldDefinition, queryType, operationRequest);
+    var fieldArguments = mapArguments(fieldDefinition, graphQlSchema.getQueryType(), operationRequest);
+    var queryField = new Field(fieldName, fieldArguments, new SelectionSet(
+        mapSchema(operationRequest.getResponseSchema(), fieldDefinition).collect(Collectors.toList())));
 
     var query = OperationDefinition.newOperationDefinition()
         .name(OPERATION_NAME)
@@ -83,53 +84,25 @@ public class QueryMapper {
         .build();
   }
 
-  private Field mapField(String name, Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
-    if (schema.getType() == null) {
-      throw invalidConfigurationException("No valid `type` specified on schema for property `{}`", name);
-    }
-
+  private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
     if (schema instanceof ComposedSchema) {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }
 
-    if (!isSchemaNullabilityValid(schema, fieldDefinition, parentFieldsContainer)) {
-      throw invalidConfigurationException(
-          "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
-              .getSimpleName());
-    }
-
-    var arguments = mapArguments(fieldDefinition, parentFieldsContainer, operationRequest);
-
     if (schema instanceof ArraySchema) {
-      return mapField(name, ((ArraySchema) schema).getItems(), fieldDefinition, parentFieldsContainer,
-          operationRequest);
+      if (isPageableField(fieldDefinition)) {
+        var nestedFieldDefinition =
+            ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
+        return Stream.of(new Field(NODES_FIELD_NAME, new SelectionSet(
+            mapSchema(((ArraySchema) schema).getItems(), nestedFieldDefinition).collect(Collectors.toList()))));
+      }
+
+      return mapSchema(((ArraySchema) schema).getItems(), fieldDefinition);
     }
 
-    // Composed schemas are type-less, but allOf should only be used on objects
+    // Composed (allOf)-schemas are type-less (not an instance of ObjectSchema)
     if (!(schema instanceof ObjectSchema) && schema.getType() != null) {
-      return new Field(name);
-    }
-
-    var selections =
-        mapObjectFields(schema, fieldDefinition, parentFieldsContainer, operationRequest).collect(Collectors.toList());
-
-    return new Field(name, arguments, new SelectionSet(selections));
-  }
-
-  private Stream<Field> mapObjectFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
-    if (isEnvelope(schema)) {
-      return schema.getProperties()
-          .values()
-          .stream()
-          .flatMap(
-              nestedSchema -> mapObjectFields(nestedSchema, fieldDefinition, parentFieldsContainer, operationRequest));
-    }
-
-    if (schema instanceof ArraySchema) {
-      return mapObjectFields(((ArraySchema) schema).getItems(), fieldDefinition, parentFieldsContainer,
-          operationRequest);
+      return Stream.empty();
     }
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -139,22 +112,50 @@ public class QueryMapper {
           rawType.getName());
     }
 
-    var objectType = (GraphQLObjectType) rawType;
-
-    if (MapperUtils.isPageableField(fieldDefinition)) {
-      var nestedFieldDefinition = objectType.getFieldDefinition(NODES_FIELD_NAME);
-      var selections =
-          mapObjectFields(schema, nestedFieldDefinition, objectType, operationRequest).collect(Collectors.toList());
-
-      return Stream.of(new Field(NODES_FIELD_NAME, mapArguments(nestedFieldDefinition, objectType, operationRequest),
-          new SelectionSet(selections)));
-    }
-
     return schema.getProperties()
         .entrySet()
         .stream()
-        .map(entry -> mapField(entry.getKey(), entry.getValue(), getObjectField(objectType, entry.getKey()), objectType,
-            operationRequest));
+        .flatMap(entry -> mapObjectProperty(entry.getKey(), entry.getValue(), fieldDefinition));
+  }
+
+  private Stream<Field> mapObjectProperty(String name, Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
+    if (isEnvelope(schema)) {
+      return schema.getProperties()
+          .entrySet()
+          .stream()
+          .flatMap(entry -> {
+            var nestedSchema = entry.getValue();
+
+            if (isEnvelope(nestedSchema) || nestedSchema instanceof ArraySchema) {
+              return mapSchema(nestedSchema, fieldDefinition);
+            }
+
+            return mapObjectProperty(entry.getKey(), nestedSchema, fieldDefinition);
+          });
+    }
+
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
+          rawType.getName());
+    }
+
+    var nestedFieldDefinition = getObjectField((GraphQLObjectType) rawType, name);
+
+    if (!isSchemaNullabilityValid(schema, nestedFieldDefinition, (GraphQLObjectType) rawType)) {
+      throw invalidConfigurationException(
+          "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
+              .getSimpleName());
+    }
+
+    var nestedFieldSelections = mapSchema(schema, nestedFieldDefinition).collect(Collectors.toList());
+
+    if (nestedFieldSelections.isEmpty()) {
+      return Stream.of(new Field(name));
+    }
+
+    return Stream.of(new Field(name, new SelectionSet(nestedFieldSelections)));
   }
 
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition,
@@ -213,7 +214,7 @@ public class QueryMapper {
 
     var fieldType = fieldDefinition.getType();
 
-    if (schema instanceof ObjectSchema) {
+    if (schema instanceof ObjectSchema || schema instanceof ArraySchema) {
       // unwrap GraphQL Type in non-nullable List, e.g. [Type]!
       if (fieldType instanceof GraphQLNonNull && ((GraphQLNonNull) fieldType).getWrappedType() instanceof GraphQLList) {
         var listItemType = ((GraphQLList) ((GraphQLNonNull) fieldType).getWrappedType()).getWrappedType();
@@ -234,5 +235,4 @@ public class QueryMapper {
 
     return fieldType instanceof GraphQLNonNull;
   }
-
 }
