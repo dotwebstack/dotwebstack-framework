@@ -31,16 +31,13 @@ class QueryMapperTest {
 
   private static QueryMapper queryFactory;
 
-  private static QueryArgumentBuilder queryArgumentBuilder;
-
   @BeforeAll
   static void beforeAll() {
-    openApi = TestResources.openApi("openapi.yaml");
-
-    queryArgumentBuilder = new QueryArgumentBuilder(new JexlBuilder().silent(false)
+    var queryArgumentBuilder = new QueryArgumentBuilder(new JexlBuilder().silent(false)
         .strict(true)
         .create());
 
+    openApi = TestResources.openApi("openapi.yaml");
     queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder);
   }
 

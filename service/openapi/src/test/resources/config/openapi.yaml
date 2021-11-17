@@ -228,6 +228,10 @@ paths:
                       type: string
                     name:
                       type: object
+                      properties:
+                        surname:
+                          type: string
+
   /breweries-filter:
     get:
       x-dws-query:
@@ -382,6 +386,7 @@ components:
           properties:
             self:
               type: object
+              x-dws-envelope: true
               required:
                 - href
               properties:

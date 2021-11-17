@@ -16,7 +16,9 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import java.util.stream.Stream;
@@ -97,6 +99,56 @@ class MapperUtilsTest {
     var schema = new ObjectSchema();
 
     assertThat(MapperUtils.isEnvelope(schema), is(false));
+  }
+
+  @Test
+  void isExpr_returnsTrue_whenExtensionIsSet() {
+    var schema = new ObjectSchema();
+    schema.addExtension(OasConstants.X_DWS_EXPR, "foo");
+
+    assertThat(MapperUtils.isExpr(schema), is(true));
+  }
+
+  @Test
+  void isExpr_returnsFalse_whenExtensionNotSet() {
+    var schema = new ObjectSchema();
+
+    assertThat(MapperUtils.isExpr(schema), is(false));
+  }
+
+  @Test
+  void isMappable_returnsFalse_whenEnvelope() {
+    var schema = new ObjectSchema();
+    schema.addExtension(OasConstants.X_DWS_ENVELOPE, true);
+
+    assertThat(MapperUtils.isMappable(schema, new ObjectSchema()), is(false));
+  }
+
+  @Test
+  void isMappable_returnsFalse_whenExpr() {
+    var schema = new ObjectSchema();
+    schema.addExtension(OasConstants.X_DWS_EXPR, "foo");
+
+    assertThat(MapperUtils.isMappable(schema, new ObjectSchema()), is(false));
+  }
+
+  @Test
+  void isMappable_returnsFalse_whenArrayWithEnvelopeParent() {
+    var parentSchema = new ObjectSchema();
+    parentSchema.addExtension(OasConstants.X_DWS_ENVELOPE, true);
+
+    assertThat(MapperUtils.isMappable(new ArraySchema(), parentSchema), is(false));
+  }
+
+  @Test
+  void isMappable_returnsFalse_whenArrayWithNonEnvelopeParent() {
+    assertThat(MapperUtils.isMappable(new ArraySchema(), new ObjectSchema()), is(true));
+  }
+
+  @Test
+  void isMappable_returnsFalse_whenOtherCase() {
+    assertThat(MapperUtils.isMappable(new ObjectSchema(), new ObjectSchema()), is(true));
+    assertThat(MapperUtils.isMappable(new StringSchema(), new ObjectSchema()), is(true));
   }
 
   @Test
