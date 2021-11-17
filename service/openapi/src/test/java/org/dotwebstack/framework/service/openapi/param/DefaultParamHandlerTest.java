@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,9 +62,6 @@ class DefaultParamHandlerTest {
 
   @Mock
   private Parameter parameter;
-
-  @Mock
-  private ResponseSchemaContext responseSchemaContext;
 
   @Mock
   private StringSchema schema;
