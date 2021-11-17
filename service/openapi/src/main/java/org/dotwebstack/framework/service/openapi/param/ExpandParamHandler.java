@@ -29,7 +29,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -47,9 +46,8 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
-      @NonNull ResponseSchemaContext responseSchemaContext) {
-    Optional<Object> expandValueOptional = super.getValue(request, parameter, responseSchemaContext);
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
+    Optional<Object> expandValueOptional = super.getValue(request, parameter);
 
     if (expandValueOptional.isPresent()) {
       List<String> allValues = new ArrayList<>();

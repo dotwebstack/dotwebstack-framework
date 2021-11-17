@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -34,9 +33,8 @@ public class SortParamHandler extends DefaultParamHandler {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
-      @NonNull ResponseSchemaContext responseSchemaContext) {
-    Optional<Object> value = super.getValue(request, parameter, responseSchemaContext);
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
+    Optional<Object> value = super.getValue(request, parameter);
 
     if (value.isPresent()) {
       String type = parameter.getSchema()

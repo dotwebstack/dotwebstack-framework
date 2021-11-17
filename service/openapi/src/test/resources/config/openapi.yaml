@@ -1,5 +1,661 @@
 openapi: 3.0.2
 
 info:
-    title: Test
-    version: 3.0.0
+  title: DBeerpedia
+  version: 3.0.0
+
+paths:
+  /breweries:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+
+  /brewery/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryHAL'
+
+  /breweries-pageable:
+    get:
+      x-dws-query: breweryPageableCollection
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [10, 20, 50]
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+
+  /breweries-pageable-with-params:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [10, 20, 50]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+
+  /breweries-all-of:
+    get:
+      x-dws-query:
+        field: breweryCollection
+      parameters:
+        - name: expand
+          in: query
+          x-dws-type: expand
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryAllOf'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BreweryAllOf'
+
+  /breweries-one-of:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryOneOf'
+
+  /breweries-any-of:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryAnyOf'
+
+  /breweries-object-mismatch:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - identifier
+                    - name
+                  properties:
+                    identifier:
+                      type: string
+                    name:
+                      type: object
+                      properties:
+                        surname:
+                          type: string
+
+  /breweries-filter:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        filters:
+          name:
+            like:
+              x-dws-expr: $query.like + '%'
+          identifier:
+            in: $query.name
+          employees:
+            not:
+              gt: $query.empcount
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: like
+          in: query
+          schema:
+            type: string
+        - name: empcount
+          in: query
+          schema:
+            type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+
+  /breweries-maybe:
+    get:
+      x-dws-query: breweryCollectionMaybe
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                nullable: true
+                items:
+                  $ref: '#/components/schemas/Brewery'
+
+  /breweries-string-nullability-exception:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryStringNullabilityException'
+
+  /breweries-object-nullability-exception:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryObjectNullabilityException'
+
+  /breweries-wrapped-object-nullability-exception:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryWrappedObjectNullabilityException'
+
+  /breweries-maybe-array-nullability-exception:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BreweryMaybeArrayNullabilityException'
+
+components:
+  schemas:
+    Brewery:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
+    BreweryHAL:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - _embedded
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        _embedded:
+          type: object
+          x-dws-envelope: true
+          required:
+            - postalAddress
+            - visitAddresses
+          properties:
+            postalAddress:
+              $ref: '#/components/schemas/AddressNullable'
+            visitAddresses:
+              type: array
+              items:
+                $ref: '#/components/schemas/Address'
+
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        _links:
+          type: object
+          x-dws-envelope: true
+          required:
+            - self
+            - beers
+          properties:
+            self:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}`'
+            beers:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
+
+    Address:
+      type: object
+      required:
+        - street
+      properties:
+        street:
+          type: string
+        postalCode:
+          type: string
+
+    AddressNullable:
+      type: object
+      nullable: true
+      required:
+        - street
+      properties:
+        street:
+          type: string
+        postalCode:
+          type: string
+
+    BreweryAllOf:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'
+        - type: object
+          required:
+            - numberOfEmployees
+          properties:
+            numberOfEmployees:
+              type: integer
+              nullable: true
+    Nameable:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+
+    Addressable:
+      type: object
+      properties:
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+
+    AddressAllOf:
+      type: object
+      required:
+        - street
+      allOf:
+        - $ref: '#/components/schemas/HasStreet'
+        - type: object
+          properties:
+            postalCode:
+              type: string
+    HasStreet:
+      type: object
+      properties:
+        street:
+          type: string
+
+    BreweryOneOf:
+      type: object
+      oneOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'
+
+    BreweryAnyOf:
+      type: object
+      anyOf:
+        - type: object
+          required:
+            - identifier
+            - name
+          properties:
+            identifier:
+              type: string
+        - $ref: '#/components/schemas/Nameable'
+        - $ref: '#/components/schemas/Addressable'
+
+    BreweryStringNullabilityException:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
+    BreweryObjectNullabilityException:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          nullable: true
+        postalAddress:
+          $ref: '#/components/schemas/Address'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
+    BreweryWrappedObjectNullabilityException:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          nullable: true
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        beers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beer'
+
+    BreweryMaybeArrayNullabilityException:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          nullable: true
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        beersMaybe:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beer'
+
+    Beer:
+      type: object
+      properties:
+        identifier:
+          type: string

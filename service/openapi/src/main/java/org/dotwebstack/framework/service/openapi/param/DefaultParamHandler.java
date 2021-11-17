@@ -46,7 +46,6 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
-import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
@@ -63,8 +62,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
-      @NonNull ResponseSchemaContext responseSchemaContext) {
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
     Object paramValue;
     switch (parameter.getIn()) {
       case PARAM_PATH_TYPE:

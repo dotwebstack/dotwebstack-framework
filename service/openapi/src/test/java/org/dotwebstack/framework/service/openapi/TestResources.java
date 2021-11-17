@@ -1,24 +1,30 @@
 package org.dotwebstack.framework.service.openapi;
 
-import graphql.language.FieldDefinition;
-import graphql.language.ObjectTypeDefinition;
-import graphql.schema.idl.TypeDefinitionRegistry;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import graphql.ExecutionResult;
+import graphql.ExecutionResultImpl;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.util.ResolverFully;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.io.FileUtils;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
+import org.apache.commons.io.IOUtils;
+import org.dotwebstack.framework.core.ResourceProperties;
 
 public class TestResources {
 
   private static final String OPEN_API_FILE = "config/model/openapi.yml";
-
-  private static final String GRAPH_QL_FILE = "config/schema.graphqls";
 
   private static final String OPEN_API_STRING = readString(OPEN_API_FILE);
 
@@ -29,22 +35,65 @@ public class TestResources {
         .getOpenAPI();
   }
 
+  public static OpenAPI openApi(String name) {
+    var openApi = new OpenAPIV3Parser().read(ResourceProperties.getResourcePath()
+        .resolve(name)
+        .getPath());
+
+    new ResolverFully().resolveFully(openApi);
+
+    return openApi;
+  }
+
   public static InputStream openApiStream() {
     return TestResources.class.getClassLoader()
         .getResourceAsStream(OPEN_API_FILE);
   }
 
-  public static GraphQlField getGraphQlField(TypeDefinitionRegistry typeDefinitionRegistry, String name) {
-    ObjectTypeDefinition objectTypeDefinition = (ObjectTypeDefinition) typeDefinitionRegistry.getType("Query")
-        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Query type not found in graphql schema."));
-    FieldDefinition fieldDefinition = objectTypeDefinition.getFieldDefinitions()
-        .stream()
-        .filter(fieldDefinition1 -> fieldDefinition1.getName()
-            .equals(name))
-        .findFirst()
-        .orElseThrow(() -> ExceptionHelper
-            .invalidConfigurationException("Query field definition '{}' not found in graphql schema.", name));
-    return new GraphQlFieldBuilder(typeDefinitionRegistry).toGraphQlField(fieldDefinition, new HashMap<>());
+  public static GraphQLSchema graphQlSchema() {
+    var typeDefinitionRegistry = new SchemaParser().parse(Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream("config/schema.graphql")));
+
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.MOCKED_WIRING);
+  }
+
+  public static String graphQlQuery(String name) throws IOException {
+    return IOUtils.toString(Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("queries/%s.graphql", name))), StandardCharsets.UTF_8)
+        .trim();
+  }
+
+  public static Map<?, ?> filter(String name) throws IOException {
+    InputStream is = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("filters/%s.yaml", name)));
+    return new ObjectMapper(new YAMLFactory()).readValue(is, Map.class);
+  }
+
+  public static ExecutionResult graphQlResult(String name) {
+    var input = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("results/%s.json", name)));
+
+    var typeRef = new TypeReference<Map<String, Object>>() {};
+
+    try {
+      var data = new ObjectMapper().readValue(input, typeRef);
+      return ExecutionResultImpl.newExecutionResult()
+          .data(data)
+          .build();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  public static Object body(String name) {
+    var input = Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream(String.format("bodies/%s.json", name)));
+
+    try {
+      return new ObjectMapper().readValue(input, Object.class);
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   private static String readString(String path) {
