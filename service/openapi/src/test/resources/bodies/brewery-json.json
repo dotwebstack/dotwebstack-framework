@@ -5,5 +5,11 @@
     "street": "Church Street",
     "postalCode": "12345"
   },
+  "visitAddresses": [
+    {
+      "street": "5th Avenue",
+      "postalCode": "54321"
+    }
+  ],
   "numberOfEmployees": 12
 }

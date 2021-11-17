@@ -3,7 +3,12 @@ query Query {
     nodes {
       identifier
       name
+      aliases
       postalAddress {
+        street
+        postalCode
+      }
+      visitAddresses {
         street
         postalCode
       }

@@ -6,7 +6,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
-import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
 
 import graphql.ExecutionInput;
@@ -105,11 +105,22 @@ public class QueryMapper {
     if (isPageableField(fieldDefinition)) {
       var nestedFieldDefinition =
           ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
+
       return Stream.of(new Field(NODES_FIELD_NAME,
           new SelectionSet(mapSchema(schema.getItems(), nestedFieldDefinition).collect(Collectors.toList()))));
     }
 
-    return mapSchema(schema.getItems(), fieldDefinition);
+    var itemsSchema = schema.getItems();
+
+    if (itemsSchema instanceof ObjectSchema || itemsSchema.getType() == null) {
+      return mapSchema(schema.getItems(), fieldDefinition);
+    }
+
+    if (itemsSchema instanceof ComposedSchema) {
+      throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
+    }
+
+    return Stream.of();
   }
 
   private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
@@ -121,10 +132,6 @@ public class QueryMapper {
 
   private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
       GraphQLFieldDefinition parentFieldDefinition) {
-    if (!isMappable(schema, parentSchema)) {
-      return mapSchema(schema, parentFieldDefinition);
-    }
-
     var rawType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
 
     if (!(rawType instanceof GraphQLObjectType)) {
@@ -132,7 +139,12 @@ public class QueryMapper {
           rawType.getName());
     }
 
-    var fieldDefinition = getObjectField((GraphQLObjectType) rawType, name);
+    var objectType = (GraphQLObjectType) rawType;
+    var fieldDefinition = objectType.getFieldDefinition(name);
+
+    if (fieldDefinition == null || isEnvelope(schema)) {
+      return mapSchema(schema, parentFieldDefinition);
+    }
 
     if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawType)) {
       throw invalidConfigurationException(
@@ -141,7 +153,13 @@ public class QueryMapper {
     }
 
     if (schema instanceof ArraySchema) {
-      return mapSchema(schema, fieldDefinition);
+      var fields = mapArraySchema((ArraySchema) schema, fieldDefinition).collect(Collectors.toList());
+
+      if (fields.isEmpty()) {
+        return Stream.of(new Field(fieldDefinition.getName()));
+      }
+
+      return Stream.of(new Field(fieldDefinition.getName(), new SelectionSet(fields)));
     }
 
     var nestedFields = mapSchema(schema, fieldDefinition).collect(Collectors.toList());

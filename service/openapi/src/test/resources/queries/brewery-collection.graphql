@@ -2,7 +2,12 @@ query Query {
   breweryCollection {
     identifier
     name
+    aliases
     postalAddress {
+      street
+      postalCode
+    }
+    visitAddresses {
       street
       postalCode
     }

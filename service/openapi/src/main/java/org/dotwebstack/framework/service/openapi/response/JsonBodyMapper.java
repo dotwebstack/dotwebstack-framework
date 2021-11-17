@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
 import graphql.schema.GraphQLFieldDefinition;
@@ -82,14 +83,17 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     if (MapperUtils.isEnvelope(schema)) {
+      var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
       return schema.getProperties()
           .entrySet()
           .stream()
           .collect(HashMap::new, (acc, entry) -> {
             var nestedSchema = entry.getValue();
+            var nestedFieldDefinition = rawType.getFieldDefinition(entry.getKey());
             Object nestedValue;
 
-            if (!MapperUtils.isMappable(nestedSchema, schema)) {
+            if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
               nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
             } else {
               if (!(data instanceof Map)) {
@@ -97,7 +101,8 @@ public class JsonBodyMapper implements BodyMapper {
               }
 
               var dataMap = (Map<String, Object>) data;
-              nestedValue = mapSchema(entry.getValue(), fieldDefinition, dataMap.get(entry.getKey()), jexlContext);
+              nestedValue =
+                  mapSchema(entry.getValue(), nestedFieldDefinition, dataMap.get(entry.getKey()), jexlContext);
             }
 
             if (nestedValue != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
@@ -117,8 +122,7 @@ public class JsonBodyMapper implements BodyMapper {
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
           var nestedSchema = entry.getValue();
-          var value =
-              mapObjectSchemaProperty(entry.getKey(), nestedSchema, schema, fieldDefinition, dataMap, jexlContext);
+          var value = mapObjectSchemaProperty(entry.getKey(), nestedSchema, fieldDefinition, dataMap, jexlContext);
 
           if (value != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
             acc.put(entry.getKey(), value);
@@ -126,9 +130,9 @@ public class JsonBodyMapper implements BodyMapper {
         }, HashMap::putAll);
   }
 
-  private Object mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
-      GraphQLFieldDefinition parentFieldDefinition, Map<String, Object> data, JexlContext jexlContext) {
-    if (!isMappable(schema, parentSchema)) {
+  private Object mapObjectSchemaProperty(String name, Schema<?> schema, GraphQLFieldDefinition parentFieldDefinition,
+      Map<String, Object> data, JexlContext jexlContext) {
+    if (!isMappable(schema)) {
       return mapSchema(schema, parentFieldDefinition, data, jexlContext);
     }
 

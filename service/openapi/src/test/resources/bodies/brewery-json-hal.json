@@ -5,12 +5,21 @@
     "postalAddress": {
       "street": "Church Street",
       "postalCode": "12345"
-    }
+    },
+    "visitAddresses": [
+      {
+        "street": "5th Avenue",
+        "postalCode": "54321"
+      }
+    ]
   },
   "numberOfEmployees": 12,
   "_links": {
     "self": {
       "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
+    },
+    "beers": {
+      "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b/beers"
     }
   }
 }

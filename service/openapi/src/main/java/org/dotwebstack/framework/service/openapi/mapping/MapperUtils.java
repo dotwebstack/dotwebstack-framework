@@ -10,7 +10,6 @@ import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
@@ -52,12 +51,8 @@ public class MapperUtils {
         .orElse(false);
   }
 
-  public static boolean isMappable(Schema<?> schema, Schema<?> parentSchema) {
-    if (isEnvelope(schema) || isExpr(schema)) {
-      return false;
-    }
-
-    return !isEnvelope(parentSchema) || !(schema instanceof ArraySchema);
+  public static boolean isMappable(Schema<?> schema) {
+    return !isEnvelope(schema) && !isExpr(schema);
   }
 
   public static GraphQLFieldDefinition getObjectField(GraphQLFieldsContainer fieldsContainer, String fieldName) {

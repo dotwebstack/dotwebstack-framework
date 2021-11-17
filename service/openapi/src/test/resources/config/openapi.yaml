@@ -343,14 +343,24 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
+        - visitAddresses
       properties:
         identifier:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         postalAddress:
           $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
         numberOfEmployees:
           type: integer
           nullable: true
@@ -360,6 +370,7 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
         - _embedded
       properties:
@@ -367,14 +378,24 @@ components:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         _embedded:
           type: object
           x-dws-envelope: true
           required:
             - postalAddress
+            - visitAddresses
           properties:
             postalAddress:
               $ref: '#/components/schemas/AddressNullable'
+            visitAddresses:
+              type: array
+              items:
+                $ref: '#/components/schemas/Address'
+
         numberOfEmployees:
           type: integer
           nullable: true
@@ -383,6 +404,7 @@ components:
           x-dws-envelope: true
           required:
             - self
+            - beers
           properties:
             self:
               type: object
@@ -394,6 +416,16 @@ components:
                   type: string
                   format: uri
                   x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}`'
+            beers:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
 
     Address:
       type: object
@@ -442,11 +474,21 @@ components:
       properties:
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
+
     Addressable:
       type: object
       properties:
         postalAddress:
           $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+
     AddressAllOf:
       type: object
       required:
@@ -494,16 +536,25 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
       properties:
         identifier:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         status:
           type: string
         postalAddress:
           $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
         numberOfEmployees:
           type: integer
           nullable: true
@@ -513,17 +564,26 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
       properties:
         identifier:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         status:
           type: string
           nullable: true
         postalAddress:
           $ref: '#/components/schemas/Address'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
         numberOfEmployees:
           type: integer
           nullable: true
@@ -533,17 +593,26 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
       properties:
         identifier:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         status:
           type: string
           nullable: true
         postalAddress:
           $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
         numberOfEmployees:
           type: integer
           nullable: true
@@ -557,17 +626,26 @@ components:
       required:
         - identifier
         - name
+        - aliases
         - numberOfEmployees
       properties:
         identifier:
           type: string
         name:
           type: string
+        aliases:
+          type: array
+          items:
+            type: string
         status:
           type: string
           nullable: true
         postalAddress:
           $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
         numberOfEmployees:
           type: integer
           nullable: true
