@@ -103,22 +103,25 @@ paths:
         field: breweryCollection
         filters:
           geometry:
+            srid:
+              x-dws-expr: "$header.'content-crs' == 'epsg:28992' ? 7415 : 7931"
             contains:
               fromGeoJSON:
                 x-dws-expr: "json:asString($body._geo.contains)!"
-              Content-CRS: $header.content-crs
             intersects:
               fromGeoJSON:
                 x-dws-expr: "json:asString($body._geo.intersects)!"
-              Content-CRS: $header.content-crs
             within:
               fromGeoJSON:
                 x-dws-expr: "json:asString($body._geo.within)!"
-              Content-CRS: $header.content-crs
       parameters:
         - name: content-crs
           in: header
           schema:
+            default: 'epsg:4258'
+            enum:
+              - 'epsg:4258'
+              - 'epsg:28992'
             type: string
       requestBody:
         $ref: '#/components/requestBodies/GeoBody'

@@ -126,9 +126,9 @@ public class QueryArgumentBuilder {
       expression = expression.substring(0, expression.length() - 1);
     }
     var jexlContext = createJexlContext(parameters);
-    var expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, String.class)
+    var expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, Object.class)
         .orElse(null);
-    return expressionValue != null ? new StringValue(expressionValue) : null;
+    return expressionValue != null ? toArgumentValue(expressionValue) : null;
   }
 
 
