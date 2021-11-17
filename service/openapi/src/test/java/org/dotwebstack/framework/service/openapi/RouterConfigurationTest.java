@@ -3,15 +3,16 @@ package org.dotwebstack.framework.service.openapi;
 import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,8 @@ class RouterConfigurationTest {
 
   @BeforeEach
   void setUp() {
-    routerConfiguration = spy(
-        new RouterConfiguration(operationHandlerFactory, openApi, TestResources.openApiStream(), openApiProperties));
+    routerConfiguration =
+        new RouterConfiguration(operationHandlerFactory, openApi, TestResources.openApiStream(), openApiProperties);
   }
 
   @Test
@@ -81,6 +82,19 @@ class RouterConfigurationTest {
     verify(operationHandlerFactory, times(1)).create(any(Operation.class));
 
     StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/foo")))
+        .verifyComplete();
+  }
+
+  @Test
+  void router_createsApiDocHandler() {
+    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
+
+    when(operationHandlerFactory.create(any(Operation.class))).thenReturn(request -> Mono.empty());
+
+    var routerFunction = routerConfiguration.router();
+
+    StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/openapi.yaml")))
+        .assertNext(handler -> assertThat(handler, isA(OpenApiRequestHandler.class)))
         .verifyComplete();
   }
 }
