@@ -23,7 +23,7 @@ class PostgresSpatialHelperTest {
   void getColumnName_returnsColumnName_forRequestedSrid(int srid, boolean isRequestedBbox, String expectedColumnName) {
     PostgresSpatial spatial = createSpatial();
 
-    var result = PostgresSpatialHelper.getColummName(spatial, srid, isRequestedBbox);
+    var result = PostgresSpatialHelper.getColumnName(spatial, srid, isRequestedBbox);
 
     assertThat(result, is(expectedColumnName));
   }
@@ -33,7 +33,7 @@ class PostgresSpatialHelperTest {
   void getColumnName_returnsColumnName_forNullSrid(boolean isRequestedBbox, String expectedColumnName) {
     PostgresSpatial spatial = createSpatial();
 
-    var result = PostgresSpatialHelper.getColummName(spatial, null, isRequestedBbox);
+    var result = PostgresSpatialHelper.getColumnName(spatial, null, isRequestedBbox);
 
     assertThat(result, is(expectedColumnName));
   }
@@ -43,7 +43,7 @@ class PostgresSpatialHelperTest {
     PostgresSpatial spatial = createSpatial();
 
     var exception =
-        assertThrows(IllegalArgumentException.class, () -> PostgresSpatialHelper.getColummName(spatial, 1234));
+        assertThrows(IllegalArgumentException.class, () -> PostgresSpatialHelper.getColumnName(spatial, 1234));
 
     assertThat(exception.getMessage(), is("Srid 1234 is unknown. Valid srid values are 7415, 7931, 9067, 28992."));
   }

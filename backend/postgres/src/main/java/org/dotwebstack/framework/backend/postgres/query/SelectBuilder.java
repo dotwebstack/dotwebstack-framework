@@ -328,7 +328,7 @@ class SelectBuilder {
     var isRequestedBbox = PostgresSpatialHelper.isRequestedBbox(fieldRequest);
 
     var spatialColumnName =
-        PostgresSpatialHelper.getColummName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
+        PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
     var column = column(table, spatialColumnName).as(aliasManager.newAlias());
 
     return new SpatialColumnMapper(column, objectField.getSpatial(), requestedSrid, isRequestedBbox);

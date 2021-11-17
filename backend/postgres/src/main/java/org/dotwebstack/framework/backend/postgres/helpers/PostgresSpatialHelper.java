@@ -16,11 +16,11 @@ public final class PostgresSpatialHelper {
 
   private PostgresSpatialHelper() {}
 
-  public static String getColummName(PostgresSpatial spatial, Integer requestedSrid) {
-    return getColummName(spatial, requestedSrid, false);
+  public static String getColumnName(PostgresSpatial spatial, Integer requestedSrid) {
+    return getColumnName(spatial, requestedSrid, false);
   }
 
-  public static String getColummName(PostgresSpatial spatial, Integer requestedSrid, boolean isRequestedBbox) {
+  public static String getColumnName(PostgresSpatial spatial, Integer requestedSrid, boolean isRequestedBbox) {
     Integer columnNameSrid = determineSridForColumnName(spatial, getSridOrDefault(spatial, requestedSrid));
 
     if (isRequestedBbox && spatial.getBboxes()

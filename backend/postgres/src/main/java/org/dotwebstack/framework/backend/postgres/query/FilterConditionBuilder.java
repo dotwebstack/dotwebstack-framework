@@ -180,7 +180,7 @@ class FilterConditionBuilder {
 
   private Condition createGeometryFilterCondition(String filterField, PostgresObjectField objectField,
       Map<String, String> value, Integer requestedSrid) {
-    String columnName = PostgresSpatialHelper.getColummName(objectField.getSpatial(), requestedSrid);
+    String columnName = PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid);
     Field<Object> field = DSL.field(columnName);
 
     Geometry geometry = GeometryReader.readGeometry(value);
