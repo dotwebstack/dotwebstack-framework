@@ -4,6 +4,8 @@ logging:
     org.dotwebstack: DEBUG
 
 dotwebstack:
+  openapi:
+    apiDocPublicationPath: /openapi.yaml
   config: dotwebstack.yaml
   postgres:
     host: localhost

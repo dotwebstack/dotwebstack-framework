@@ -5,6 +5,17 @@ info:
   version: 3.0.0
 
 paths:
+#  /noop:
+#    get:
+#      x-dws-operation: false
+#      responses:
+#        200:
+#          description: OK
+#          content:
+#            application/text:
+#              schema:
+#                type: string
+#                default: ok
   /breweries:
     get:
       x-dws-query:
