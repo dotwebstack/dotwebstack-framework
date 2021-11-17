@@ -121,7 +121,7 @@ public class RmlOpenApiConfiguration {
     return Models.parse(mappingInputStream, rdfFormat);
   }
 
-  public static List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
+  private static List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
     HttpMethodOperation.HttpMethodOperationBuilder builder = HttpMethodOperation.builder()
         .name(name);
 

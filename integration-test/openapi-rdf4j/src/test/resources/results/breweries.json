@@ -16,12 +16,14 @@
       {
         "identifier": "1",
         "name": "Heineken Nederland",
-        "founded": "1864-02-15T12:00:00+02:00"
+        "founded": "1864-02-15T12:00:00+02:00",
+        "postalCode": null
       },
       {
         "identifier": "2",
         "name": "Brouwerij De Leckere",
-        "founded": "1997-06-06T00:00:00+02:00"
+        "founded": "1997-06-06T00:00:00+02:00",
+        "postalCode": null
       },
       {
         "identifier": "789",
