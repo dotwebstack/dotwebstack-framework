@@ -85,6 +85,8 @@ class PostgresSpatialBackendModuleTest {
     assertThat(addressSpatial.getSpatialReferenceSystems(),
         allOf(hasEntry(is(7415), is("address_geometry_7415")), hasEntry(is(7931), is("address_geometry"))));
 
+    assertThat(brewerySpatial.getBboxes(), allOf(hasEntry(is(7931), is("brewery_geometry_bbox"))));
+
     assertThat(brewerySpatial.getEquivalents(), allOf(hasEntry(is(7415), is(28892)), hasEntry(is(7931), is(9067))));
     assertThat(addressSpatial.getEquivalents(), allOf(hasEntry(is(7415), is(28892)), hasEntry(is(7931), is(9067))));
   }
@@ -132,9 +134,11 @@ class PostgresSpatialBackendModuleTest {
     var srs7931 = new PostgresSpatialReferenceSystem();
     srs7931.setDimensions(3);
     srs7931.setEquivalent(9067);
+    srs7931.setBboxColumnSuffix("_bbox");
 
     var srs9067 = new PostgresSpatialReferenceSystem();
     srs9067.setDimensions(2);
+    srs9067.setBboxColumnSuffix("_bbox");
 
     var srs7415 = new PostgresSpatialReferenceSystem();
     srs7415.setDimensions(3);
@@ -163,11 +167,14 @@ class PostgresSpatialBackendModuleTest {
 
   private Object[] createRows() {
     var breweryGeometryRow7931 = createRow("brewery_geometry", 7931);
+    var breweryGeometryRowBbox7931 = createRow("brewery_geometry_bbox", 7931);
     var breweryGeometryRow7415 = createRow("brewery_geometry_7415", 7415);
     var addressGeometryRow7931 = createRow("address_geometry", 7931);
     var addressGeometryRow7415 = createRow("address_geometry_7415", 7415);
 
-    return List.of(breweryGeometryRow7931, breweryGeometryRow7415, addressGeometryRow7931, addressGeometryRow7415)
+    return List
+        .of(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
+            addressGeometryRow7415)
         .toArray();
   }
 

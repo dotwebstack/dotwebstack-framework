@@ -112,6 +112,25 @@ Query example:
 }
 ```
 
+### Geometry bounding box
+
+It is possible to retrieve the bounding box for a geometry. The bounding box will be calculated on runtime. See the 
+different backends for support to retrieve the bbox from a storage.
+
+```graphql
+{
+  breweries {
+    identifier
+    name
+    geometry(bbox: true) {
+      type
+      srid
+      asWKT
+    }
+  }
+}
+```
+
 ## Filtering
 
 An field of type `Geometry` can be filtered with the following filter operations. 

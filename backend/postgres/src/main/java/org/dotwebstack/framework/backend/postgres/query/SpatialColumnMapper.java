@@ -16,26 +16,53 @@ class SpatialColumnMapper extends ColumnMapper {
 
   private final Integer requestedSrid;
 
-  public SpatialColumnMapper(Field<Object> column, PostgresSpatial spatial, Integer requestedSrid) {
+  private final boolean isRequestedBbox;
+
+  public SpatialColumnMapper(Field<Object> column, PostgresSpatial spatial, Integer requestedSrid,
+      boolean isRequestedBbox) {
     super(column);
 
     this.spatial = spatial;
     this.requestedSrid = requestedSrid;
+    this.isRequestedBbox = isRequestedBbox;
   }
 
   @Override
   public Object apply(Map<String, Object> row) {
     Object value = super.apply(row);
 
-    return getGeometry(value).filter(this::mustReprojectGeometry)
+    Geometry geometry = getGeometry(value).orElse(null);
+
+    return Optional.ofNullable(geometry)
+        .filter(this::mustReprojectGeometry)
         .map(this::reprojectGeometry)
-        .orElse(value);
+        .orElse(geometry);
   }
 
   private Optional<Geometry> getGeometry(Object value) {
     return Optional.ofNullable(value)
         .filter(Geometry.class::isInstance)
-        .map(Geometry.class::cast);
+        .map(Geometry.class::cast)
+        .map(this::mapToRequestedGeometry);
+  }
+
+  private Geometry mapToRequestedGeometry(Geometry geometry) {
+    if (mustReprojectToBbox(geometry)) {
+      return getEnvelope(geometry);
+    }
+    return geometry;
+  }
+
+  private boolean mustReprojectToBbox(Geometry geometry) {
+    return isRequestedBbox && spatial.getBboxes() != null && !spatial.getBboxes()
+        .containsKey(geometry.getSRID());
+  }
+
+  private Geometry getEnvelope(Geometry geometry) {
+    Geometry geom = geometry.getEnvelope()
+        .copy();
+    geom.setSRID(geometry.getSRID());
+    return geom;
   }
 
   private boolean mustReprojectGeometry(Geometry geometry) {

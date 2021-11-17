@@ -15,4 +15,6 @@ public class PostgresSpatial {
   private BiMap<Integer, String> spatialReferenceSystems;
 
   private BiMap<Integer, Integer> equivalents;
+
+  private BiMap<Integer, String> bboxes;
 }

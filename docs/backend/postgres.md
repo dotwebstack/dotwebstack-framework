@@ -274,8 +274,14 @@ $$ language SQL immutable;
 
 ### Spatial
 When the Extension module: `ext-spatial` is enabled it is possible to add next to the default `ext-spatial` configuration
-extra postgres config for Geometry column mapping. The property `columnSuffix` can be used to accomplish this. Every Geometry 
-field will have a suffix concatenated for the corresponding srid.
+extra postgres config for Geometry column mapping.
+
+The property `columnSuffix` can be used to accomplish this. Every Geometry field will have a suffix concatenated for the
+corresponding srid.
+
+The same is possible for bounding boxes. Default behaviour is runtime calculation, but it is also possible to store the 
+bounding box in a column. The property `bboxColumnSuffix` can be used to accomplish this. Every Geometry field will have 
+a suffix concatenated for the corresponding srid.
 
 Example configuration:
 
@@ -284,9 +290,11 @@ spatial:
   srid:
     28992:
       dimensions: 2
+      bboxColumnSuffix: _bbox
     7415:
       dimensions: 3
       equivalent: 28992
+      bboxColumnSuffix: _bbox
     9067:
       dimensions: 2
       columnSuffix: _etrs89
