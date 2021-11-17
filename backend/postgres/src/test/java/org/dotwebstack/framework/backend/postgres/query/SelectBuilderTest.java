@@ -365,6 +365,71 @@ class SelectBuilderTest {
   }
 
   @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinColumnNode() {
+    var breweryRefType = createObjectType(null, "identifier");
+    var breweryObjectType = createObjectType("brewery", "identifier", "name");
+
+    var breweryObjectRelationType = createObjectType(null, "ref", "node");
+    breweryObjectRelationType.getField("ref")
+        .setTargetType(breweryRefType);
+    breweryObjectRelationType.getField("node")
+        .setTargetType(breweryObjectType);
+    breweryObjectRelationType.getField("node")
+        .setObjectType(breweryObjectRelationType);
+    breweryObjectRelationType.getField("node")
+        .setKeyField("ref");
+
+    var breweryRelationObjectField = createObjectField("breweryRelation");
+    List<JoinColumn> breweryJoinColumns = new ArrayList<>();
+    var breweryJoinColumn = new JoinColumn();
+    breweryJoinColumn.setName("brewery_column");
+    breweryJoinColumn.setReferencedField("identifier");
+    breweryRelationObjectField.setJoinColumns(breweryJoinColumns);
+    breweryRelationObjectField.setTargetType(breweryObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear", "brewery");
+    breweryRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("breweryRelation", breweryRelationObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("breweryRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectType(breweryObjectRelationType)
+                .objectFields(Map.of(FieldRequest.builder()
+                    .name("node")
+                    .build(),
+                    ObjectRequest.builder()
+                        .objectType(breweryObjectType)
+                        .scalarFields(List.of(FieldRequest.builder()
+                            .name("name")
+                            .build()))
+                        .build()))
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x9\".*\n" + "from \"beer\" as \"x1\"\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      \"x8\".*,\n" + "      1 as \"x3\"\n"
+            + "    from (\n" + "      select\n" + "        \"x1\".\"identifier_column\" as \"x7\",\n"
+            + "        1 as \"x5\"\n" + "    ) as \"x8\"\n" + "  ) as \"x9\"\n" + "    on true"));
+  }
+
+  @Test
   void build_returnsSelectQuery_forCollectionRequestWithObjectListMappedBy() {
     var breweryObjectField = createObjectField("brewery");
 
