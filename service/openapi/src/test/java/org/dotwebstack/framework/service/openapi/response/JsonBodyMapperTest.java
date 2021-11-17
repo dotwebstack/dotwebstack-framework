@@ -49,17 +49,13 @@ class JsonBodyMapperTest {
   static Stream<Arguments> arguments() {
     return Stream.of(Arguments.of("/breweries", APPLICATION_JSON, Map.of(), "brewery-collection", "breweries-json"),
         Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection", "breweries-json-hal"),
-        // Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection",
-        // "breweries-json"),
-        // Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL, Map.of(),
-        // "brewery-pageable-collection",
-        // "breweries-json-hal"),
-        Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json")
-    // ,
-    // Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"),
-    // "brewery",
-    // "brewery-json-hal")
-    );
+        Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection",
+            "breweries-json"),
+        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL, Map.of(), "brewery-pageable-collection",
+            "breweries-json-hal"),
+        Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json"),
+        Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
+            "brewery-json-hal"));
   }
 
   @ParameterizedTest
@@ -67,7 +63,7 @@ class JsonBodyMapperTest {
   void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String graphQlResult,
       String expectedBody) {
 
-    when(properties.getAllProperties()).thenReturn(Map.of("base-url", "https://dotwebstack.org"));
+    when(properties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org"));
 
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))

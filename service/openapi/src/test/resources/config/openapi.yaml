@@ -393,7 +393,7 @@ components:
                 href:
                   type: string
                   format: uri
-                  x-dws-expr: '`${env.base-url}/breweries/${fields.identifier}`'
+                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}`'
 
     Address:
       type: object

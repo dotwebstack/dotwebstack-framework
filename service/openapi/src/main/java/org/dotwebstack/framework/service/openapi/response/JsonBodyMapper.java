@@ -1,25 +1,19 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.BooleanSchema;
-import io.swagger.v3.oas.models.media.IntegerSchema;
-import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -81,23 +75,101 @@ public class JsonBodyMapper implements BodyMapper {
       return mapArraySchema((ArraySchema) schema, fieldDefinition, data, jexlContext);
     }
 
-    if (schema instanceof StringSchema) {
-      return mapStringSchema((StringSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
+    return evaluateScalarData(schema, data, jexlContext);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private Object mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
+    if (MapperUtils.isEnvelope(schema)) {
+      return schema.getProperties()
+          .entrySet()
+          .stream()
+          .collect(HashMap::new, (acc, entry) -> {
+            var nestedSchema = entry.getValue();
+            Object nestedValue;
+
+            if (!MapperUtils.isMappable(nestedSchema, schema)) {
+              nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
+            } else {
+              if (!(data instanceof Map)) {
+                throw illegalStateException("Data is not compatible with object schema.");
+              }
+
+              var dataMap = (Map<String, Object>) data;
+              nestedValue = mapSchema(entry.getValue(), fieldDefinition, dataMap.get(entry.getKey()), jexlContext);
+            }
+
+            if (nestedValue != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
+              acc.put(entry.getKey(), nestedValue);
+            }
+          }, HashMap::putAll);
     }
 
-    if (schema instanceof IntegerSchema) {
-      return mapIntegerSchema((IntegerSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
+    if (!(data instanceof Map)) {
+      throw illegalStateException("Data is not compatible with object schema.");
     }
 
-    if (schema instanceof NumberSchema) {
-      return mapNumberSchema((NumberSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
+    var dataMap = (Map<String, Object>) data;
+
+    return schema.getProperties()
+        .entrySet()
+        .stream()
+        .collect(HashMap::new, (acc, entry) -> {
+          var nestedSchema = entry.getValue();
+          var value =
+              mapObjectSchemaProperty(entry.getKey(), nestedSchema, schema, fieldDefinition, dataMap, jexlContext);
+
+          if (value != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
+            acc.put(entry.getKey(), value);
+          }
+        }, HashMap::putAll);
+  }
+
+  private Object mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
+      GraphQLFieldDefinition parentFieldDefinition, Map<String, Object> data, JexlContext jexlContext) {
+    if (!isMappable(schema, parentSchema)) {
+      return mapSchema(schema, parentFieldDefinition, data, jexlContext);
     }
 
-    if (schema instanceof BooleanSchema) {
-      return mapBooleanSchema((BooleanSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
+    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
+    var fieldDefinition = rawType.getFieldDefinition(name);
+
+    updateJexlContext(data, jexlContext);
+
+    return mapSchema(schema, fieldDefinition, data.get(name), jexlContext);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Collection<Object> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
+    if (MapperUtils.isPageableField(fieldDefinition)) {
+      if (!(data instanceof Map)) {
+        throw illegalStateException("Data is not compatible with pageable array schema.");
+      }
+
+      var dataMap = (Map<String, Object>) data;
+      var items = (Collection<Object>) dataMap.get(PagingConstants.NODES_FIELD_NAME);
+
+      if (!(dataMap instanceof Collection)) {
+        throw illegalStateException("Data is not compatible with array schema.");
+      }
+
+      var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+      return items.stream()
+          .map(item -> mapSchema(schema.getItems(), rawType.getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item,
+              jexlContext))
+          .collect(Collectors.toList());
     }
 
-    throw invalidConfigurationException("Schema type '{}' not supported.", schema.getName());
+    if (!(data instanceof Collection)) {
+      throw illegalStateException("Data is not compatible with array schema.");
+    }
+
+    return ((Collection<Object>) data).stream()
+        .map(item -> mapSchema(schema.getItems(), fieldDefinition, item, jexlContext))
+        .collect(Collectors.toList());
   }
 
   private JexlContext createJexlContext(OperationRequest operationRequest) {
@@ -115,137 +187,11 @@ public class JsonBodyMapper implements BodyMapper {
     return result;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private Map<String, Object> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
-    if (MapperUtils.isEnvelope(schema) && data instanceof Collection) {
-      return schema.getProperties()
-          .entrySet()
-          .stream()
-          .collect(Collectors.toMap(Map.Entry::getKey,
-              entry -> mapSchema(entry.getValue(), fieldDefinition, data, jexlContext)));
-    }
-
-    if (!(data instanceof Map)) {
-      throw invalidConfigurationException("Data is not compatible with object schema.");
-    }
-
-    var fieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-    if (!(fieldType instanceof GraphQLObjectType)) {
-      throw invalidConfigurationException("Field type is not compatible with object schema.");
-    }
-
-    var dataMap = (Map<String, Object>) data;
-
-    return schema.getProperties()
-        .entrySet()
-        .stream()
-        .collect(HashMap::new, (acc, entry) -> {
-          var property = entry.getKey();
-          var nestedSchema = entry.getValue();
-
-          if (MapperUtils.isEnvelope(nestedSchema)) {
-            var value = mapObjectSchema(nestedSchema, fieldDefinition, data, jexlContext);
-
-            if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
-              acc.put(property, value);
-              return;
-            }
-          }
-
-          updateJexlContext(dataMap, jexlContext);
-
-          var nestedFieldDefinition = MapperUtils.getObjectField((GraphQLObjectType) fieldType, property);
-          var value = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
-
-          if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
-            acc.put(property, value);
-          }
-        }, HashMap::putAll);
-  }
-
   private void updateJexlContext(Map<String, Object> dataMap, JexlContext jexlContext) {
     dataMap.entrySet()
         .stream()
         .filter(entry -> !(entry.getValue() instanceof Map))
         .forEach(entry -> jexlContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
-  }
-
-  @SuppressWarnings("unchecked")
-  private Object unwrapPagedData(Object data) {
-    if (!(data instanceof Map)) {
-      throw invalidConfigurationException("Pageable node is not compatible with object schema.");
-    }
-
-    return ((Map<String, Object>) data).get(PagingConstants.NODES_FIELD_NAME);
-  }
-
-  private GraphQLFieldDefinition unwrapPagedField(GraphQLFieldDefinition fieldDefinition) {
-    var fieldType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-    return MapperUtils.getObjectField((GraphQLObjectType) fieldType, PagingConstants.NODES_FIELD_NAME);
-  }
-
-  private List<?> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
-    Object dataToMap;
-    GraphQLFieldDefinition fieldDefinitionToMap;
-    if (MapperUtils.isPageableField(fieldDefinition)) {
-      dataToMap = unwrapPagedData(data);
-      fieldDefinitionToMap = unwrapPagedField(fieldDefinition);
-    } else {
-      dataToMap = data;
-      fieldDefinitionToMap = fieldDefinition;
-    }
-
-    if (!(dataToMap instanceof Collection)) {
-      throw invalidConfigurationException("Data is not compatible with array schema.");
-    }
-
-    return ((Collection<?>) dataToMap).stream()
-        .map(item -> mapSchema(schema.getItems(), fieldDefinitionToMap, item, jexlContext))
-        .collect(Collectors.toList());
-  }
-
-  private String mapStringSchema(StringSchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    return data.toString();
-  }
-
-  private Number mapIntegerSchema(IntegerSchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (data instanceof Integer) {
-      return (Integer) data;
-    }
-
-    if (data instanceof BigInteger) {
-      return (BigInteger) data;
-    }
-
-    throw invalidConfigurationException("Data is not compatible with integer schema.");
-  }
-
-  private Number mapNumberSchema(NumberSchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (data instanceof Double) {
-      return (Double) data;
-    }
-
-    if (data instanceof Float) {
-      return (Float) data;
-    }
-
-    if (data instanceof BigDecimal) {
-      return (BigDecimal) data;
-    }
-
-    throw invalidConfigurationException("Data is not compatible with number schema.");
-  }
-
-  private Boolean mapBooleanSchema(BooleanSchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
-    if (!(data instanceof Boolean)) {
-      throw invalidConfigurationException("Data is not compatible with boolean schema.");
-    }
-
-    return (Boolean) data;
   }
 
   private Object evaluateScalarData(Schema<?> schema, Object data, JexlContext jexlContext) {
