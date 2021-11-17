@@ -118,32 +118,17 @@ class SelectBuilder {
       return dataQuery;
     }
 
-    return newBatchJoining().objectField((PostgresObjectField) requestContext.getObjectField())
-        .targetObjectType(getObjectType(collectionRequest.getObjectRequest()))
-        .contextCriteria(collectionRequest.getObjectRequest()
-            .getContextCriteria())
-        .aliasManager(aliasManager)
-        .fieldMapper(fieldMapper)
-        .dataQuery(dataQuery)
-        .table(dataTable)
-        .joinCriteria(joinCriteria)
-        .build();
+    return doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, dataTable, joinCriteria);
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
     var dataQuery = build(batchRequest.getObjectRequest());
 
-    return newBatchJoining().objectField((PostgresObjectField) requestContext.getObjectField())
-        .targetObjectType(getObjectType(batchRequest.getObjectRequest()))
-        .contextCriteria(batchRequest.getObjectRequest()
-            .getContextCriteria())
-        .fieldMapper(fieldMapper)
-        .dataQuery(dataQuery)
-        .joinCriteria(JoinCriteria.builder()
-            .keys(batchRequest.getKeys())
-            .build())
-        .aliasManager(aliasManager)
+    var joinCriteria = JoinCriteria.builder()
+        .keys(batchRequest.getKeys())
         .build();
+
+    return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria);
   }
 
   public SelectQuery<Record> build(ObjectRequest objectRequest) {
@@ -184,18 +169,63 @@ class SelectBuilder {
 
     dataQuery.addConditions(keyConditions);
 
-    objectRequest.getScalarFields()
+    processScalarFields(objectRequest, objectType, dataQuery, selectTable);
+    processAggregateObjectFields(objectRequest, table, dataQuery);
+    processObjectFields(objectRequest, objectType, dataQuery, selectTable);
+    processObjectListFields(objectRequest, table, dataQuery);
+
+    return dataQuery;
+  }
+
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
+
+    if (objectField.getJoinTable() != null) {
+      return handleJoinTable(objectField, table);
+    }
+
+    if (objectField.getMappedByObjectField() != null) {
+      return handleJoinMappedBy(objectField, table);
+    }
+
+    if (objectField.getJoinColumns() != null) {
+      // Provide join info for child data fetcher
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
+          .key(objectField.getJoinColumns()
+              .stream()
+              .collect(HashMap::new, (map, joinColumn) -> {
+                var key = joinColumn.getName();
+                map.put(key, fieldMapper.getFieldMapper(key)
+                    .apply(row));
+              }, HashMap::putAll))
+          .build());
+
+      return objectField.getJoinColumns()
+          .stream()
+          .map(JoinColumn::getName)
+          .map(columnName -> getColumnMapper(table, columnName).getColumn())
+          .collect(Collectors.toList());
+    }
+
+    return List.of();
+  }
+
+  private void processObjectListFields(ObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery) {
+    objectRequest.getObjectListFields()
+        .entrySet()
         .stream()
-        .map(selectedField -> processScalarField(selectedField, objectType, selectTable, fieldMapper))
+        .flatMap(entry -> {
+          var objectField = getObjectField(objectRequest, entry.getKey()
+              .getName());
+
+          return processObjectListFields(objectField, table).stream();
+        })
+        .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
+  }
 
-    objectRequest.getAggregateObjectFields()
-        .stream()
-        .flatMap(aggregateObjectField -> processAggregateObjectField(objectRequest, aggregateObjectField, table))
-        .collect(Collectors.toList())
-        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect, objectRequest.getObjectType()
-            .isNested()));
-
+  private void processObjectFields(ObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable) {
     objectRequest.getObjectFields()
         .entrySet()
         .stream()
@@ -210,20 +240,24 @@ class SelectBuilder {
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
+  }
 
-    objectRequest.getObjectListFields()
-        .entrySet()
+  private void processAggregateObjectFields(ObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery) {
+    objectRequest.getAggregateObjectFields()
         .stream()
-        .flatMap(entry -> {
-          var objectField = getObjectField(objectRequest, entry.getKey()
-              .getName());
+        .flatMap(aggregateObjectField -> processAggregateObjectField(objectRequest, aggregateObjectField, table))
+        .collect(Collectors.toList())
+        .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect, objectRequest.getObjectType()
+            .isNested()));
+  }
 
-          return processObjectListFields(objectField, table).stream();
-        })
-        .filter(Objects::nonNull)
+  private void processScalarFields(ObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable) {
+    objectRequest.getScalarFields()
+        .stream()
+        .map(selectedField -> processScalarField(selectedField, objectType, selectTable, fieldMapper))
         .forEach(dataQuery::addSelect);
-
-    return dataQuery;
   }
 
   private void addSubSelect(SelectQuery<Record> selectQuery, Select<Record> nestedSelectQuery, boolean addFrom) {
@@ -520,38 +554,6 @@ class SelectBuilder {
     }
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
-
-    if (objectField.getJoinTable() != null) {
-      return handleJoinTable(objectField, table);
-    }
-
-    if (objectField.getMappedByObjectField() != null) {
-      return handleJoinMappedBy(objectField, table);
-    }
-
-    if (objectField.getJoinColumns() != null) {
-      // Provide join info for child data fetcher
-      fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-          .key(objectField.getJoinColumns()
-              .stream()
-              .collect(HashMap::new, (map, joinColumn) -> {
-                var key = joinColumn.getName();
-                map.put(key, fieldMapper.getFieldMapper(key)
-                    .apply(row));
-              }, HashMap::putAll))
-          .build());
-
-      return objectField.getJoinColumns()
-          .stream()
-          .map(JoinColumn::getName)
-          .map(columnName -> getColumnMapper(table, columnName).getColumn())
-          .collect(Collectors.toList());
-    }
-
-    return List.of();
-  }
-
   private List<SelectFieldOrAsterisk> handleJoinMappedBy(PostgresObjectField objectField, Table<Record> table) {
     var nestedObjectField = objectField.getMappedByObjectField();
 
@@ -612,5 +614,18 @@ class SelectBuilder {
     ColumnMapper columnMapper = createColumnMapper(referencedColumn, table);
     fieldMapper.register(referencedColumn, columnMapper);
     return columnMapper;
+  }
+
+  private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
+      Table<Record> dataTable, JoinCriteria joinCriteria) {
+    return newBatchJoining().objectField((PostgresObjectField) requestContext.getObjectField())
+        .targetObjectType(getObjectType(objectRequest))
+        .contextCriteria(objectRequest.getContextCriteria())
+        .aliasManager(aliasManager)
+        .fieldMapper(fieldMapper)
+        .dataQuery(dataQuery)
+        .table(dataTable)
+        .joinCriteria(joinCriteria)
+        .build();
   }
 }

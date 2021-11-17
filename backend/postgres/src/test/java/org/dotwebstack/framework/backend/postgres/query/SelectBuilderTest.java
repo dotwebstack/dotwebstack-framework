@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.new
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -44,13 +46,13 @@ class SelectBuilderTest {
   @Mock
   private RequestContext requestContext;
 
-  @Mock
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
   private SelectBuilder selectBuilder;
 
   @BeforeEach
   void doBefore() {
+    fieldMapper = new ObjectMapper();
     selectBuilder = newSelect().aliasManager(new AliasManager())
         .requestContext(requestContext)
         .fieldMapper(fieldMapper);
@@ -288,6 +290,64 @@ class SelectBuilderTest {
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
         + "  \"x1\".\"identifier_column\" as \"x3\"\n" + "from \"brewery\" as \"x1\""));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithObjectListJoinColumn() {
+    var beersObjectField = createObjectField("beers");
+    var beersJoinColumn = new JoinColumn();
+
+    beersJoinColumn.setName("identifier");
+    beersJoinColumn.setReferencedField("brewery_column");
+    beersObjectField.setJoinColumns(List.of(beersJoinColumn));
+
+    var objectType = createObjectType("brewery", "identifier", "name");
+    beersObjectField.setObjectType(objectType);
+
+    var beerObjectType = createObjectType("beer", "identifier", "name");
+
+    var beersObjectRequest = ObjectRequest.builder()
+        .objectType(beerObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .build();
+
+    var beersCollectionRequest = CollectionRequest.builder()
+        .objectRequest(beersObjectRequest)
+        .build();
+
+    objectType.getFields()
+        .put("beers", beersObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectListFields(Map.of(FieldRequest.builder()
+            .name("beers")
+            .build(), beersCollectionRequest))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"identifier\" as \"x3\"\n" + "from \"brewery\" as \"x1\""));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
+    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(JoinCondition.builder()
+        .key(Map.of("identifier", "id-brewery-1"))
+        .build())));
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
   }
 
   @Test
