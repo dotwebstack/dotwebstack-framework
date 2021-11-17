@@ -8,6 +8,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -121,10 +122,12 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     Integer srid = getSrid(geometryTableColumn);
     BiMap<Integer, String> spatialReferenceSystems = getSpatialReferenceSystems(spatial, objectField.getColumn());
     BiMap<Integer, Integer> equivalents = getEquivalents(spatial, spatialReferenceSystems);
+    BiMap<Integer, String> bboxes = getBboxes(spatial, objectField.getColumn());
 
     PostgresSpatial postgresSpatial = PostgresSpatial.builder()
         .spatialReferenceSystems(spatialReferenceSystems)
         .equivalents(equivalents)
+        .bboxes(bboxes)
         .srid(srid)
         .build();
 
@@ -143,19 +146,30 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private BiMap<Integer, String> getSpatialReferenceSystems(Spatial spatial, String geometryColumn) {
+    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getColumnSuffix, spatial, geometryColumn);
+  }
+
+  private BiMap<Integer, String> getBboxes(Spatial spatial, String geometryColumn) {
+    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getBboxColumnSuffix, spatial, geometryColumn);
+  }
+
+  private BiMap<Integer, String> getTableNamesPerSrid(Function<PostgresSpatialReferenceSystem, String> suffixFunc,
+      Spatial spatial, String geometryColumn) {
     return HashBiMap.create(spatial.getReferenceSystems()
         .entrySet()
         .stream()
-        .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), getColumnName(geometryColumn, entry.getValue())))
+        .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(),
+            getColumnName(suffixFunc, geometryColumn, entry.getValue())))
         .filter(entry -> entry.getKey()
             .equals(getSrid(entry.getValue())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
-  private String getColumnName(String geometryColumn, SpatialReferenceSystem srs) {
+  private String getColumnName(Function<PostgresSpatialReferenceSystem, String> suffixFunc, String geometryColumn,
+      SpatialReferenceSystem srs) {
     Optional<String> columnSuffix = Optional.of(srs)
         .map(PostgresSpatialReferenceSystem.class::cast)
-        .map(PostgresSpatialReferenceSystem::getColumnSuffix);
+        .map(suffixFunc);
 
     return columnSuffix.map(geometryColumn::concat)
         .orElse(geometryColumn);

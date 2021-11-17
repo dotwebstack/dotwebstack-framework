@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import graphql.language.BooleanValue;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
@@ -406,18 +407,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(7));
 
-    var geometryFieldDefinition = fieldDefinitions.get(1);
-    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 2);
-
-    var geometrySridInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
-        .get(0);
-    assertThat(geometrySridInputValueDefinition.getName(), is("srid"));
-    assertType(geometrySridInputValueDefinition.getType(), "Int");
-
-    var geometryTypeInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
-        .get(1);
-    assertThat(geometryTypeInputValueDefinition.getName(), is("type"));
-    assertType(geometryTypeInputValueDefinition.getType(), "GeometryType");
+    assertGeometryFieldDefinition(fieldDefinitions.get(1));
 
     var addressesFieldDefinition = fieldDefinitions.get(2);
     assertThat(addressesFieldDefinition.getName(), is("addresses"));
@@ -448,6 +438,27 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var beerAggFieldDefinition = fieldDefinitions.get(6);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
+  }
+
+  private void assertGeometryFieldDefinition(FieldDefinition geometryFieldDefinition) {
+    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 3);
+
+    var geometrySridInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(geometrySridInputValueDefinition.getName(), is("srid"));
+    assertType(geometrySridInputValueDefinition.getType(), "Int");
+
+    var geometryTypeInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(geometryTypeInputValueDefinition.getName(), is("type"));
+    assertType(geometryTypeInputValueDefinition.getType(), "GeometryType");
+
+    var geometryBboxInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(2);
+    assertThat(geometryBboxInputValueDefinition.getName(), is("bbox"));
+    assertType(geometryBboxInputValueDefinition.getType(), "Boolean");
+    assertThat(geometryBboxInputValueDefinition.getDefaultValue(), instanceOf(BooleanValue.class));
+    assertThat(((BooleanValue) geometryBboxInputValueDefinition.getDefaultValue()).isValue(), is(false));
   }
 
   @Test

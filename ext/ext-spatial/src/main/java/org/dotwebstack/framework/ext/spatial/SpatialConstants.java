@@ -20,13 +20,17 @@ public class SpatialConstants {
 
   // ArgumentNames
 
-  static final String ARGUMENT_TYPE = "type";
+  public static final String ARGUMENT_TYPE = "type";
+
+  public static final String ARGUMENT_BBOX = "bbox";
+
+  public static final String ARGUMENT_SRID = "srid";
 
   // FieldNames
 
   static final String TYPE = "type";
 
-  public static final String SRID = "srid";
+  static final String SRID = "srid";
 
   static final String AS_WKT = "asWKT";
 

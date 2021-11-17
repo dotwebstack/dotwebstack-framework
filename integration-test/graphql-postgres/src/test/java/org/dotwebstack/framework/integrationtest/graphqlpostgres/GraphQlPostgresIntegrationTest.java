@@ -469,16 +469,19 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("type"), is("POLYGON"));
     assertThat(geometry.get("srid"), is(7415));
     assertThat(geometry.get("asWKT"),
-        is("POLYGON Z((194914.7190916618 470984.86365462304 3, 194960.3511599757 470985.2315617077 3, "
-            + "194960.54286521868 470961.4676284248 3, 194914.91057804757 470961.0997201087 3, "
-            + "194914.7190916618 470984.86365462304 3))"));
+        is("POLYGON Z((206410.1605 447480.1649 3, 206412.3799 447474.7692 3, 206418.7599 447476.6259 3,"
+            + " 206417.4787 447480.3322 3, 206423.1208 447482.3191 3, 206423.0706 447482.7319 3,"
+            + " 206416.4167 447480.6427 3, 206415.9896 447481.8782 3, 206410.1605 447480.1649 3))"));
     assertThat(geometry.get("asWKB"),
-        is("AKAAAAMAABz3AAAAAQAAAAVBB8sVwLMhEkEcvyN0YeCkQAgAAAAAAABBB8yCzyz2GkEcvyTtHoMmQAgAAAAAAAB"
-            + "BB8yEV8m4Q0EcvsXe2fxdQAgAAAAAAABBB8sXSN0ktkEcvsRmHQc2QAgAAAAAAABBB8sVwLMhEkEcvyN0YeCkQAgAAAAAAAA="));
+        is("AKAAAAMAABz3AAAAAQAAAAlBCTJRSLQ5WEEbT+Co24usQAgAAAAAAABBCTJjCgkC3kEbT8sTqSowQAg"
+            + "AAAAAAABBCTKWFEZzgkEbT9KA6+36QAgAAAAAAABBCTKL1GCqZUEbT+FULDyfQAgAAAAAAABBCTK492X9i0EbT"
+            + "+lGwiaBQAgAAAAAAABBCTK4kJa7mUEbT+rtdzGQQAgAAAAAAABBCTKDVWbPQkEbT+KSH/LlQAgAAAAAAABBCTJ/"
+            + "6rNnoUEbT+eDRtxdQAgAAAAAAABBCTJRSLQ5WEEbT+Co24usQAgAAAAAAAA="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462,3],"
-            + "[194960.35115998,470985.23156171,3],[194960.54286522,470961.46762842,3],"
-            + "[194914.91057805,470961.09972011,3],[194914.71909166,470984.86365462,3]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[206410.1605,447480.1649,3],[206412.3799,447474.7692,3],"
+            + "[206418.7599,447476.6259,3],[206417.4787,447480.3322,3],[206423.1208,447482.3191,3],"
+            + "[206423.0706,447482.7319,3],[206416.4167,447480.6427,3],[206415.9896,447481.8782,3],"
+            + "[206410.1605,447480.1649,3]]]}"));
   }
 
   @Test
@@ -503,15 +506,102 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("type"), is("POLYGON"));
     assertThat(geometry.get("srid"), is(7931));
     assertThat(geometry.get("asWKT"),
-        is("POLYGON Z((5.971386264 52.225493786 1.123, 5.972054135 52.225493787 1.123, 5.972054135 52.225280197 1.123, "
-            + "5.971386264 52.225280196 1.123, 5.971386264 52.225493786 1.123))"));
+        is("POLYGON Z((6.136068105697632 52.01329602598457 1.123, 6.136099621653557 52.01324732611223 1.123,"
+            + " 6.136192828416824 52.013263421838616 1.123, 6.136174723505974 52.013296851405684 1.123,"
+            + " 6.136257201433181 52.01331418524545 1.123, 6.136256530880928 52.01331789963881 1.123,"
+            + " 6.136159300804138 52.01329974037945 1.123, 6.136153265833855 52.01331088356219 1.123,"
+            + " 6.136068105697632 52.01329602598457 1.123))"));
     assertThat(geometry.get("asWKB"),
-        is("AKAAAAMAAB77AAAAAQAAAAVAF+KzFK6njUBKHNz6+ikeP/H3ztkWhytAF+NiKL8Q90BKHNz6/E7fP/H3ztkWhytAF+NiKL8Q90BK"
-            + "HNX7Q0aVP/H3ztkWhytAF+KzFK6njUBKHNX7QSDUP/H3ztkWhytAF+KzFK6njUBKHNz6+ikeP/H3ztkWhys="));
+        is("AKAAAAMAAB77AAAAAQAAAAlAGItVcAAAAEBKAbOvJmKgP/H3ztkWhytAGItdswAAAEBKAbIWoDSrP/"
+            + "H3ztkWhytAGIt2IgAAAEBKAbKdpYPUP/H3ztkWhytAGItxYwAAAEBKAbO2EvauP/H3ztkWhytAGIuHAf///"
+            + "0BKAbRHexneP/H3ztkWhytAGIuG1QAAAEBKAbRmo7M2P/H3ztkWhytAGIttWAAAAEBKAbPOTvzOP/"
+            + "H3ztkWhytAGItrwwAAAEBKAbQryMpNP/H3ztkWhytAGItVcAAAAEBKAbOvJmKgP/H3ztkWhys="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":"
-            + "[[[5.97138626,52.22549379,1.123],[5.97205414,52.22549379,1.123],[5.97205414,52.2252802,1.123],"
-            + "[5.97138626,52.2252802,1.123],[5.97138626,52.22549379,1.123]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01329603,1.123],"
+            + "[6.13609962,52.01324733,1.123],[6.13619283,52.01326342,1.123],[6.13617472,52.01329685,1.123],"
+            + "[6.1362572,52.01331419,1.123],[6.13625653,52.0133179,1.123],[6.1361593,52.01329974,1.123],"
+            + "[6.13615327,52.01331088,1.123],[6.13606811,52.01329603,1.123]]]}"));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometryAsBbox_forPersistedBbox() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7415));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((206410.1605 447474.7692, 206410.1605 447482.7319, 206423.1208 447482.7319, "
+            + "206423.1208 447474.7692, 206410.1605 447474.7692))"));
+    assertThat(geometry.get("asWKB"),
+        is("ACAAAAMAABz3AAAAAQAAAAVBCTJRSLQ5WEEbT8sTqSowQQkyUUi0OVhBG0/q7XcxkEEJMrj3Zf2LQRtP6u13"
+            + "MZBBCTK492X9i0EbT8sTqSowQQkyUUi0OVhBG0/LE6kqMA=="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[206410.1605,447474.7692],[206410.1605,447482.7319],"
+            + "[206423.1208,447482.7319],[206423.1208,447474.7692],[206410.1605,447474.7692]]]}"));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_whenCombinationTypeAndBboxInGeometryArguments() {
+    var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(type: POLYGON, srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(true));
+
+    assertThat(json.get(ERRORS)
+        .get(0)
+        .get("message")
+        .textValue(),
+        is("Exception while fetching data (/brewery) : Type argument is not allowed "
+            + "when argument bbox is true (geometry)."));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometryAsBbox_forNonPersistedBbox() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7931, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7931));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((6.136068105697632 52.01324732611223, 6.136068105697632 52.01331789963881, "
+            + "6.136257201433181 52.01331789963881, 6.136257201433181 52.01324732611223, "
+            + "6.136068105697632 52.01324732611223))"));
+    assertThat(geometry.get("asWKB"), is("ACAAAAMAAB77AAAAAQAAAAVAGItVcAAAAEBKAbIWoDSrQBiLVXAAAABASgG0ZqOzNkAYi4cB////"
+        + "QEoBtGajszZAGIuHAf///0BKAbIWoDSrQBiLVXAAAABASgGyFqA0qw=="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01324733],[6.13606811,52.0133179],"
+            + "[6.1362572,52.0133179],[6.1362572,52.01324733],[6.13606811,52.01324733]]]}"));
   }
 
   @Test
@@ -536,14 +626,20 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("type"), is("POLYGON"));
     assertThat(geometry.get("srid"), is(9067));
     assertThat(geometry.get("asWKT"),
-        is("POLYGON ((5.971386264 52.225493786, 5.972054135 52.225493787, 5.972054135 52.225280197, "
-            + "5.971386264 52.225280196, 5.971386264 52.225493786))"));
+        is("POLYGON ((6.136068105697632 52.01329602598457, 6.136099621653557 52.01324732611223,"
+            + " 6.136192828416824 52.013263421838616, 6.136174723505974 52.013296851405684,"
+            + " 6.136257201433181 52.01331418524545, 6.136256530880928 52.01331789963881,"
+            + " 6.136159300804138 52.01329974037945, 6.136153265833855 52.01331088356219,"
+            + " 6.136068105697632 52.01329602598457))"));
     assertThat(geometry.get("asWKB"),
-        is("ACAAAAMAACNrAAAAAQAAAAVAF+KzFK6njUBKHNz6+ikeQBfjYii/EPdAShzc+vxO30AX42IovxD3QEoc1ftDRpVAF+KzFK6njUBK"
-            + "HNX7QSDUQBfisxSup41AShzc+vopHg=="));
+        is("ACAAAAMAACNrAAAAAQAAAAlAGItVcAAAAEBKAbOvJmKgQBiLXbMAAABASgGyFqA0q0AYi3Yi"
+            + "AAAAQEoBsp2lg9RAGItxYwAAAEBKAbO2EvauQBiLhwH///9ASgG0R3sZ3kAYi4bVAAAAQEoBtGajszZ"
+            + "AGIttWAAAAEBKAbPOTvzOQBiLa8MAAABASgG0K8jKTUAYi1VwAAAAQEoBs68mYqA="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[5.97138626,52.22549379,1.123],[5.97205414,52.22549379,1.123],"
-            + "[5.97205414,52.2252802,1.123],[5.97138626,52.2252802,1.123],[5.97138626,52.22549379,1.123]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01329603,1.123],"
+            + "[6.13609962,52.01324733,1.123],[6.13619283,52.01326342,1.123],[6.13617472,52.01329685,1.123],"
+            + "[6.1362572,52.01331419,1.123],[6.13625653,52.0133179,1.123],[6.1361593,52.01329974,1.123],"
+            + "[6.13615327,52.01331088,1.123],[6.13606811,52.01329603,1.123]]]}"));
   }
 
   @Test
@@ -567,17 +663,19 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.size(), is(4));
     assertThat(geometry.get("type"), is("MULTIPOLYGON"));
     assertThat(geometry.get("asWKT"),
-        is("MULTIPOLYGON Z(((194914.7190916618 470984.86365462304 3, 194960.3511599757 470985.2315617077 3, "
-            + "194960.54286521868 470961.4676284248 3, 194914.91057804757 470961.0997201087 3, "
-            + "194914.7190916618 470984.86365462304 3)))"));
+        is("MULTIPOLYGON Z(((206410.1605 447480.1649 3, 206412.3799 447474.7692 3, 206418.7599 447476.6259 3,"
+            + " 206417.4787 447480.3322 3, 206423.1208 447482.3191 3, 206423.0706 447482.7319 3,"
+            + " 206416.4167 447480.6427 3, 206415.9896 447481.8782 3, 206410.1605 447480.1649 3)))"));
     assertThat(geometry.get("asWKB"),
-        is("AKAAAAYAABz3AAAAAQCgAAADAAAc9wAAAAEAAAAFQQfLFcCzIRJBHL8jdGHgpEAIAA"
-            + "AAAAAAQQfMgs8s9hpBHL8k7R6DJkAIAAAAAAAAQQfMhFfJuENBHL7F3tn8XUAIAAAAAAAAQQfLF0jdJLZBHL7EZh0HNkAIAAAAAAAAQ"
-            + "QfLFcCzIRJBHL8jdGHgpEAIAAAAAAAA"));
+        is("AKAAAAYAABz3AAAAAQCgAAADAAAc9wAAAAEAAAAJQQkyUUi0OVhBG0/gqNuLrEAIAAAAAAAAQQkyYwoJAt5BG0/"
+            + "LE6kqMEAIAAAAAAAAQQkylhRGc4JBG0/SgOvt+kAIAAAAAAAAQQkyi9RgqmVBG0/hVCw8n0AIAAAAAAAAQQkyuPdl/"
+            + "YtBG0/pRsImgUAIAAAAAAAAQQkyuJCWu5lBG0/q7XcxkEAIAAAAAAAAQQkyg1Vmz0JBG0/ikh/"
+            + "y5UAIAAAAAAAAQQkyf+qzZ6FBG0/ng0bcXUAIAAAAAAAAQQkyUUi0OVhBG0/gqNuLrEAIAAAAAAAA"));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[194914.71909166,470984.86365462,3],"
-            + "[194960.35115998,470985.23156171,3],[194960.54286522,470961.46762842,3],"
-            + "[194914.91057805,470961.09972011,3],[194914.71909166,470984.86365462,3]]]]}"));
+        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[206410.1605,447480.1649,3],"
+            + "[206412.3799,447474.7692,3],[206418.7599,447476.6259,3],[206417.4787,447480.3322,3],"
+            + "[206423.1208,447482.3191,3],[206423.0706,447482.7319,3],[206416.4167,447480.6427,3],"
+            + "[206415.9896,447481.8782,3],[206410.1605,447480.1649,3]]]]}"));
   }
 
   @Test
@@ -1433,9 +1531,9 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
     String query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
-        + "\"POLYGON((194450.17898426164 471514.04309242184,195716.74476882417 471524.29347733577,"
-        + "195724.91952857617 470529.87463413755,194458.099519217 470519.6228124658,194450.17898426164 "
-        + "471514.04309242184))\"}}}) { identifier_brewery name geometry { srid asWKT } }}";
+        + "\"POLYGON((206387.0439 447771.0547, 206384.4262 447765.9768, 206389.6081 447763.4587, "
+        + "206392.4175 447767.804, 206391.3745 447770.732, 206387.0439 447771.0547))\"}}})"
+        + " { identifier_brewery name geometry { srid asWKT} }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1449,15 +1547,15 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
   }
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkb() {
     String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKB: \"ACAAAAMAAHFAAAAAAQAAAAVBB7yRbo9M8kEcx2gsIGt6QQfk"
-            + "JfVJW3dBHMeRLIVSnUEH5GdbMcxTQRy4B3+gF2NBB7zQy9C7M0Ect959wo0RQQe8kW6PTPJBHMdoLCBreg==\"}}}) "
-            + "{ identifier_brewery name }}";
+        "{breweries(filter: {geometry: {intersects: {fromWKB: \"AQMAAAABAAAABgAAAEI+6FmYMQlB3EYDOGxUG0Gsi9togzE"
+            + "JQVtCPuhXVBtBZohj3awxCUHrc7XVTVQbQXE9ClfDMQlBqMZLN19UG0Ej2/n+ujEJQXNoke1qVBtBQj7oWZgxCUHcRgM4bFQbQQ"
+            + "==\"}}}) { identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1471,15 +1569,15 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
   }
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryGeoJson() {
     String query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
-        + "\\\"coordinates\\\": [[[194450.17898426164,471514.04309242184],[195716.74476882417,471524.29347733577],"
-        + "[195724.91952857617,470529.87463413755],[194458.099519217,470519.6228124658],"
-        + "[194450.17898426164,471514.04309242184]]],\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
+        + "\\\"coordinates\\\": [[[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"
+        + "[206392.4175,447767.804],[206391.3745,447770.732],[206387.0439,447771.0547]]],"
+        + "\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
         + "{\\\"name\\\":\\\"EPSG:28992\\\"}}}\"}}}) { identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
@@ -1494,7 +1592,7 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
   }
 
   @Test
