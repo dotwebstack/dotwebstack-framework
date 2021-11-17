@@ -12,8 +12,6 @@ public class ArrayObjectMapper implements FieldMapper<Map<String, Object>, List<
 
   protected final Map<String, ColumnMapper> fieldMappers = new HashMap<>();
 
-  public ArrayObjectMapper() {}
-
   public void register(String name, ColumnMapper columnMapper) {
     fieldMappers.put(name, columnMapper);
   }

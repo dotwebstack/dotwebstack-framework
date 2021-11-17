@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class ArrayObjectMapperTest {
 
   @Test
-  public void apply_returnsObject_forRow() {
+  void apply_returnsObject_forRow() {
     Map<String, Object> map = new HashMap<>();
     map.put("x1", new String[] {"foo_id1", "bar_id1"});
     map.put("x2", new String[] {"foo_id2", "bar_id2"});

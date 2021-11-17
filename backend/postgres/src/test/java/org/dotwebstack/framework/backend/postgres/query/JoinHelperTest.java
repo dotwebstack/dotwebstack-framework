@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class JoinHelperTest {
 
   @Test
-  public void invertOnList_inverted_forList() {
+  void invertOnList_inverted_forList() {
     var objectField = new PostgresObjectField();
     objectField.setList(true);
 
@@ -44,7 +44,7 @@ class JoinHelperTest {
   }
 
   @Test
-  public void hasNestedReference_returnsTrue_forObjectField() {
+  void hasNestedReference_returnsTrue_forObjectField() {
     var objectField = new PostgresObjectField();
 
     objectField.setJoinTable(createJoinTable());
@@ -58,7 +58,7 @@ class JoinHelperTest {
   }
 
   @Test
-  public void hasNestedReference_returnsFalse_forObjectField() {
+  void hasNestedReference_returnsFalse_forObjectField() {
     var objectField = new PostgresObjectField();
 
     var targetObjectType = new PostgresObjectType();
@@ -71,7 +71,7 @@ class JoinHelperTest {
   }
 
   @Test
-  public void resolveJoinTable_returnsResolvedJoinTable_forNestedReference() {
+  void resolveJoinTable_returnsResolvedJoinTable_forNestedReference() {
     var fieldref = new PostgresObjectField();
     fieldref.setColumn("fieldrefcolumn");
 
@@ -97,8 +97,6 @@ class JoinHelperTest {
   }
 
   private JoinTable createJoinTable() {
-    var joinTable = new JoinTable();
-
     List<JoinColumn> joinColumns = new ArrayList<>();
     var joinColumn = new JoinColumn();
     joinColumn.setReferencedField("fieldref");
@@ -110,6 +108,7 @@ class JoinHelperTest {
     inverseJoinColumn.setReferencedField("foo.bar");
     inverseJoinColumns.add(inverseJoinColumn);
 
+    var joinTable = new JoinTable();
     joinTable.setJoinColumns(joinColumns);
     joinTable.setInverseJoinColumns(inverseJoinColumns);
 

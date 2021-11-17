@@ -71,15 +71,15 @@ class BatchJoinBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    PostgresObjectField objectField = getObjectField();
+    PostgresObjectField resolvedObjectField = getObjectField();
 
-    if (!objectField.getJoinColumns()
+    if (!resolvedObjectField.getJoinColumns()
         .isEmpty()) {
-      return batchJoin(invertOnList(objectField, objectField.getJoinColumns()));
+      return batchJoin(invertOnList(resolvedObjectField, resolvedObjectField.getJoinColumns()));
     }
 
-    if (objectField.getJoinTable() != null) {
-      return batchJoin(objectField.getJoinTable(), targetObjectType);
+    if (resolvedObjectField.getJoinTable() != null) {
+      return batchJoin(resolvedObjectField.getJoinTable(), targetObjectType);
     }
 
     return batchJoinWithKeysOnly();
