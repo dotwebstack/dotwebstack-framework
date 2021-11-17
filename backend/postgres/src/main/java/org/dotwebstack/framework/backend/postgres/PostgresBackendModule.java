@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 
@@ -50,7 +49,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     var postgresObjectTypes = objectTypes.values()
         .stream()
         .map(PostgresObjectType.class::cast)
-        .filter(not(PostgresObjectType::isNested))
         .collect(Collectors.toList());
 
     return postgresObjectTypes.stream()

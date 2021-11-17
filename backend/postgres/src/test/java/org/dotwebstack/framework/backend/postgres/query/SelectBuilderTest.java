@@ -589,8 +589,8 @@ class SelectBuilderTest {
             + "    select cast(sum(\"x2\".\"weight_column\") as int) as \"x3\"\n" + "    from\n"
             + "      \"ingredient\" as \"x2\",\n" + "      \"beer_ingredient\" as \"x4\"\n" + "    where (\n"
             + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
-            + "      and \"x4\".\"ingredient_identifier\" = \"identifier_column\"\n" + "    )\n" + "  ) as \"x5\"\n"
-            + "    on true"));
+            + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n" + "    )\n"
+            + "  ) as \"x5\"\n" + "    on true"));
   }
 
   @Test
