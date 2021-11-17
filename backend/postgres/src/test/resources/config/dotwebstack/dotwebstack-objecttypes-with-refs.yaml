@@ -1,0 +1,144 @@
+objectTypes:
+  Beer:
+    table: dbeerpedia.beers
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      retired:
+        type: Boolean
+      brewery:
+        type: BeerBrewery
+        joinColumns:
+          - name: brewery
+            referencedField: ref.record_id
+      ingredients:
+        type: BeerIngredient
+        joinTable:
+          name: dbeerpedia.beers_ingredients
+          joinColumns:
+            - name: beers_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: ingredients_identifier
+              referencedField: refs.identifier
+      taste:
+        type: Taste
+        list: true
+
+  BeerBrewery:
+    fields:
+      ref:
+        type: BreweryRef
+      node:
+        type: Brewery
+        keyField: ref
+
+  BreweryRef:
+    fields:
+      record_id:
+        type: Int
+
+  Brewery:
+    table: dbeerpedia.breweries
+    fields:
+      record_id:
+        type: Int
+      identifier:
+        type: String
+      name:
+        type: String
+      status:
+        type: String
+      geometry:
+        type: Geometry
+        nullable: true
+      postalAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: postal_address
+            referencedField: identifier
+      visitAddress:
+        type: Address
+        nullable: true
+        joinColumns:
+          - name: visit_address
+            referencedField: identifier
+      beers:
+        type: Beer
+        list: true
+        nullable: true
+        joinColumns:
+          - name: record_id
+            referencedField: brewery
+      beerAgg:
+        aggregationOf: Beer
+        mappedBy: brewery
+      history:
+        type: History
+      relatedTo:
+        type: Brewery
+        list: true
+        joinTable:
+          name: dbeerpedia.breweries__related_to
+          joinColumns:
+            - name: brewery_identifier
+              referencedField: identifier
+          inverseJoinColumns:
+            - name: brewery_related_to_identifier
+              referencedField: identifier
+
+  BeerIngredient:
+    fields:
+      refs:
+        type: IngredientRef
+        list: true
+      nodes:
+        type: Ingredient
+        list: true
+
+  IngredientRef:
+    fields:
+      identifier:
+        type: String
+
+  Ingredient:
+    table: dbeerpedia.ingredients
+    filters:
+      name: {}
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      weight:
+        type: Float
+
+  Address:
+    table: dbeerpedia.addresses
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+
+  History:
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+
+enumerations:
+  Taste:
+    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]

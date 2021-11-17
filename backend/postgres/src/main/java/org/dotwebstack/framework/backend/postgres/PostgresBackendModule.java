@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
                 .isNested())
             .forEach(nestedField -> {
               var objectType = (PostgresObjectType) field.getObjectType();
-              var resolvedJoinTable = JoinHelper.resolveJoinTable(objectType, field.getJoinTable());
+              var resolvedJoinTable = resolveJoinTable(objectType, field.getJoinTable());
 
               nestedField.setJoinTable(resolvedJoinTable);
             }));

@@ -58,7 +58,33 @@ class PostgresBackendModuleTest {
 
   @Test
   void init_shouldInitFields() throws MalformedURLException {
-    String path = "src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml";
+    Map<String, ObjectType<?>> objectTypes = init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml");
+
+    assertThat(objectTypes, notNullValue());
+
+    var brewery = (PostgresObjectType) objectTypes.get("Brewery");
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getFields()
+        .get("beerAgg"), notNullValue());
+  }
+
+  @Test
+  void init_shouldPropagateJoinTable() throws MalformedURLException {
+    Map<String, ObjectType<?>> objectTypes =
+        init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-refs.yaml");
+
+    assertThat(objectTypes, notNullValue());
+
+    var beerIngredient = (PostgresObjectType) objectTypes.get("BeerIngredient");
+    assertThat(beerIngredient, notNullValue());
+    assertThat(beerIngredient.getFields()
+        .get("nodes"), notNullValue());
+    assertThat(beerIngredient.getFields()
+        .get("nodes")
+        .getJoinTable(), notNullValue());
+  }
+
+  private Map<String, ObjectType<?>> init(String path) throws MalformedURLException {
     File file = new File(path);
     String localUrl = file.toURI()
         .toURL()
@@ -68,12 +94,6 @@ class PostgresBackendModuleTest {
     Map<String, ObjectType<?>> objectTypes = schema.getObjectTypes();
 
     postgresBackendModule.init(objectTypes);
-
-    assertThat(objectTypes, notNullValue());
-
-    var brewery = (PostgresObjectType) objectTypes.get("Brewery");
-    assertThat(brewery, notNullValue());
-    assertThat(brewery.getFields()
-        .get("beerAgg"), notNullValue());
+    return objectTypes;
   }
 }
