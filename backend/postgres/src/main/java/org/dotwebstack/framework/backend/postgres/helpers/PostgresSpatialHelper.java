@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.backend.postgres.helpers;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -9,14 +11,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
-import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 
 public final class PostgresSpatialHelper {
 
   private PostgresSpatialHelper() {}
 
   public static String getColummName(PostgresSpatial spatial, Integer requestedSrid) {
+    return getColummName(spatial, requestedSrid, false);
+  }
+
+  public static String getColummName(PostgresSpatial spatial, Integer requestedSrid, boolean isRequestedBbox) {
     Integer columnNameSrid = determineSridForColumnName(spatial, getSridOrDefault(spatial, requestedSrid));
+
+    if (isRequestedBbox && spatial.getBboxes()
+        .containsKey(columnNameSrid)) {
+      return spatial.getBboxes()
+          .get(columnNameSrid);
+    }
 
     return spatial.getSpatialReferenceSystems()
         .get(columnNameSrid);
@@ -73,11 +84,18 @@ public final class PostgresSpatialHelper {
   }
 
   public static Integer getRequestedSrid(Map<String, Object> arguments) {
-    return Optional.ofNullable(arguments)
-        .filter(args -> args.containsKey(SpatialConstants.SRID))
-        .map(args -> args.get(SpatialConstants.SRID))
-        .map(Integer.class::cast)
-        .orElse(null);
+    return getValueOfArgument(arguments, ARGUMENT_SRID, Integer.class);
   }
 
+  public static Boolean isRequestedBbox(FieldRequest fieldRequest) {
+    return getValueOfArgument(fieldRequest.getArguments(), ARGUMENT_BBOX, Boolean.class);
+  }
+
+  private static <T> T getValueOfArgument(Map<String, Object> arguments, String argumentKey, Class<T> returnType) {
+    return Optional.ofNullable(arguments)
+        .filter(args -> args.containsKey(argumentKey))
+        .map(args -> args.get(argumentKey))
+        .map(returnType::cast)
+        .orElse(null);
+  }
 }

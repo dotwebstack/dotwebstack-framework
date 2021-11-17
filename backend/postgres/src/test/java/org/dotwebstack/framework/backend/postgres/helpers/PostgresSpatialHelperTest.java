@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.helpers;
 
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -9,36 +11,31 @@ import com.google.common.collect.HashBiMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
-import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class PostgresSpatialHelperTest {
 
-  @Test
-  void getColumnName_returnsColumnName_forRequestedSrid() {
+  @ParameterizedTest
+  @CsvSource({"7415, false, geometry", "7415, true, geometry_bbox", "7931, false, geometry_etrs89",
+      "7931, true, geometry_etrs89"})
+  void getColumnName_returnsColumnName_forRequestedSrid(int srid, boolean isRequestedBbox, String expectedColumnName) {
     PostgresSpatial spatial = createSpatial();
 
-    var result = PostgresSpatialHelper.getColummName(spatial, 7415);
+    var result = PostgresSpatialHelper.getColummName(spatial, srid, isRequestedBbox);
 
-    assertThat(result, is("geometry"));
+    assertThat(result, is(expectedColumnName));
   }
 
-  @Test
-  void getColumnName_returnsColumnName_forNullSrid() {
+  @ParameterizedTest
+  @CsvSource({"false, geometry", "true, geometry_bbox"})
+  void getColumnName_returnsColumnName_forNullSrid(boolean isRequestedBbox, String expectedColumnName) {
     PostgresSpatial spatial = createSpatial();
 
-    var result = PostgresSpatialHelper.getColummName(spatial, null);
+    var result = PostgresSpatialHelper.getColummName(spatial, null, isRequestedBbox);
 
-    assertThat(result, is("geometry"));
-  }
-
-  @Test
-  void getColumnName_returnsColumnName_forEquivalentSrid() {
-    PostgresSpatial spatial = createSpatial();
-
-    var result = PostgresSpatialHelper.getColummName(spatial, 28992);
-
-    assertThat(result, is("geometry"));
+    assertThat(result, is(expectedColumnName));
   }
 
   @Test
@@ -48,7 +45,7 @@ class PostgresSpatialHelperTest {
     var exception =
         assertThrows(IllegalArgumentException.class, () -> PostgresSpatialHelper.getColummName(spatial, 1234));
 
-    assertThat(exception.getMessage(), is("Srid 1234 is unknown. Valid srid values are 7415, 28992."));
+    assertThat(exception.getMessage(), is("Srid 1234 is unknown. Valid srid values are 7415, 7931, 9067, 28992."));
   }
 
   @Test
@@ -61,7 +58,7 @@ class PostgresSpatialHelperTest {
   }
 
   @Test
-  void etSridOfColumnName_throwsException_whenColumnNameDoesNotExist() {
+  void getSridOfColumnName_throwsException_whenColumnNameDoesNotExist() {
     PostgresSpatial spatial = createSpatial();
 
     var exception =
@@ -71,9 +68,31 @@ class PostgresSpatialHelperTest {
   }
 
   @Test
+  void getRequestedSrid_returnsSrid_whenArgumentsHasBbox() {
+    var fieldRequest = FieldRequest.builder()
+        .arguments(Map.of(ARGUMENT_BBOX, true))
+        .build();
+
+    var result = PostgresSpatialHelper.isRequestedBbox(fieldRequest);
+
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void getRequestedSrid_returnsNull_whenArgumentsHasNoBbox() {
+    var fieldRequest = FieldRequest.builder()
+        .arguments(Map.of())
+        .build();
+
+    var result = PostgresSpatialHelper.isRequestedBbox(fieldRequest);
+
+    assertThat(result, is(nullValue()));
+  }
+
+  @Test
   void getRequestedSrid_returnsSrid_whenArgumentsHasSrid() {
     var fieldRequest = FieldRequest.builder()
-        .arguments(Map.of(SpatialConstants.SRID, 28992))
+        .arguments(Map.of(ARGUMENT_SRID, 28992))
         .build();
 
     var result = PostgresSpatialHelper.getRequestedSrid(fieldRequest);
@@ -95,8 +114,9 @@ class PostgresSpatialHelperTest {
   private PostgresSpatial createSpatial() {
     return PostgresSpatial.builder()
         .srid(7415)
-        .spatialReferenceSystems(HashBiMap.create(Map.of(7415, "geometry")))
-        .equivalents(HashBiMap.create(Map.of(7415, 28992)))
+        .spatialReferenceSystems(HashBiMap.create(Map.of(7415, "geometry", 7931, "geometry_etrs89")))
+        .equivalents(HashBiMap.create(Map.of(7415, 28992, 7931, 9067)))
+        .bboxes(HashBiMap.create(Map.of(7415, "geometry_bbox")))
         .build();
   }
 }

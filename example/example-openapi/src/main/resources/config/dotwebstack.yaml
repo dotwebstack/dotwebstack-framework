@@ -13,11 +13,9 @@ spatial:
     9067:
       dimensions: 2
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
     7931:
       dimensions: 3
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
       equivalent: 9067
 
 queries:

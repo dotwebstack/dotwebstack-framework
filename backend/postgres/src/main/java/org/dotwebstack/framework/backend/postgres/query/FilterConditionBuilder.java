@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelpe
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 
 import java.util.List;
 import java.util.Map;
@@ -171,7 +172,7 @@ class FilterConditionBuilder {
     return ((Map<String, Object>) value).entrySet()
         .stream()
         .filter(entry -> !entry.getKey()
-            .equals(SpatialConstants.SRID))
+            .equals(ARGUMENT_SRID))
         .map(entry -> createGeometryFilterCondition(entry.getKey(), objectField, (Map<String, String>) entry.getValue(),
             requestedSrid))
         .collect(Collectors.toList());

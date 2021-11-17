@@ -18,6 +18,7 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 
 import com.google.common.base.CaseFormat;
 import graphql.Scalars;
+import graphql.language.BooleanValue;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
@@ -70,6 +71,8 @@ public class TypeDefinitionRegistrySchemaFactory {
   private static final String GEOMETRY_SRID_ARGUMENT_NAME = "srid";
 
   private static final String GEOMETRY_TYPE_ARGUMENT_NAME = "type";
+
+  private static final String GEOMETRY_BBOX_ARGUMENT_NAME = "bbox";
 
   private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
 
@@ -549,7 +552,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createGeometryArguments() {
-    return List.of(createGeometrySridArgument(), createGeometryTypeArgument());
+    return List.of(createGeometrySridArgument(), createGeometryTypeArgument(), createGeometryBboxArgument());
   }
 
   private InputValueDefinition createGeometrySridArgument() {
@@ -561,6 +564,13 @@ public class TypeDefinitionRegistrySchemaFactory {
   private InputValueDefinition createGeometryTypeArgument() {
     return newInputValueDefinition().name(GEOMETRY_TYPE_ARGUMENT_NAME)
         .type(newType(GEOMETRY_TYPE_ARGUMENT_TYPE))
+        .build();
+  }
+
+  private InputValueDefinition createGeometryBboxArgument() {
+    return newInputValueDefinition().name(GEOMETRY_BBOX_ARGUMENT_NAME)
+        .type(newType(Scalars.GraphQLBoolean.getName()))
+        .defaultValue(BooleanValue.of(false))
         .build();
   }
 

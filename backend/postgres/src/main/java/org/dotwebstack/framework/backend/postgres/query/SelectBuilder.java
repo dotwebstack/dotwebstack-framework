@@ -325,10 +325,13 @@ class SelectBuilder {
   private SpatialColumnMapper createSpatialColumnMapper(Table<Record> table, PostgresObjectField objectField,
       FieldRequest fieldRequest) {
     var requestedSrid = PostgresSpatialHelper.getRequestedSrid(fieldRequest);
-    var spatialColumnName = PostgresSpatialHelper.getColummName(objectField.getSpatial(), requestedSrid);
+    var isRequestedBbox = PostgresSpatialHelper.isRequestedBbox(fieldRequest);
+
+    var spatialColumnName =
+        PostgresSpatialHelper.getColummName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
     var column = column(table, spatialColumnName).as(aliasManager.newAlias());
 
-    return new SpatialColumnMapper(column, objectField.getSpatial(), requestedSrid);
+    return new SpatialColumnMapper(column, objectField.getSpatial(), requestedSrid, isRequestedBbox);
   }
 
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {
