@@ -176,12 +176,11 @@ Filters are configured with an optional map `x-dws-query.filters`. The map conta
     x-dws-query:
       field: breweries
       filters:
-        <fieldPath1>: <filterConfig>
-        <fieldPath2>: <filterConfig>
+        <filterConfig>
 ```
-A `fieldPath` key supports the `.` notation for nested filters and map to a `<filterConfig>` which can be used to supports any filter structure as described in [filtering](../core/filtering.md).
+`<filterConfig>` is a map which can be used to supports any filter structure as described in [filtering](../core/filtering.md).
 
-The following describes a `BreweryFilter` type filter on the `breweries` node on the `name` field:
+The following describes a filter on the `breweries` field:
 ```yaml
     x-dws-query:
       field: breweries
