@@ -218,9 +218,7 @@ class SelectBuilder {
           var objectField = getObjectField(objectRequest, entry.getKey()
               .getName());
 
-          var collectionRequest = entry.getValue();
-
-          return processObjectListFields(objectField, collectionRequest, table).stream();
+          return processObjectListFields(objectField, table).stream();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
@@ -522,15 +520,14 @@ class SelectBuilder {
     }
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField,
-      CollectionRequest collectionRequest, Table<Record> table) {
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
 
     if (objectField.getJoinTable() != null) {
       return handleJoinTable(objectField, table);
     }
 
     if (objectField.getMappedByObjectField() != null) {
-      return handleJoinMappedBy(collectionRequest, objectField, table);
+      return handleJoinMappedBy(objectField, table);
     }
 
     if (objectField.getJoinColumns() != null) {
@@ -555,8 +552,7 @@ class SelectBuilder {
     return List.of();
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinMappedBy(CollectionRequest collectionRequest,
-      PostgresObjectField objectField, Table<Record> table) {
+  private List<SelectFieldOrAsterisk> handleJoinMappedBy(PostgresObjectField objectField, Table<Record> table) {
     var nestedObjectField = objectField.getMappedByObjectField();
 
     // Provide join info for child data fetcher
