@@ -60,6 +60,7 @@ class BatchJoinBuilder {
 
   private Table<Record> table;
 
+  @NotNull
   private JoinCriteria joinCriteria;
 
   private BatchJoinBuilder() {}

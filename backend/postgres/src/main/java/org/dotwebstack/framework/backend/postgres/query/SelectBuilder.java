@@ -315,7 +315,7 @@ class SelectBuilder {
     return Optional.of(DSL.and(keyCriteria.getValues()
         .entrySet()
         .stream()
-        .map(entry -> Optional.of(objectType.getField(entry.getKey()))
+        .map(entry -> Optional.ofNullable(objectType.getField(entry.getKey()))
             .map(PostgresObjectField::getColumn)
             .map(column -> column(table, column).equal(entry.getValue()))
             .orElseThrow())
@@ -529,7 +529,7 @@ class SelectBuilder {
       return handleJoinTable(objectField, table);
     }
 
-    if (objectField.getMappedBy() != null) {
+    if (objectField.getMappedByObjectField() != null) {
       return handleJoinMappedBy(collectionRequest, objectField, table);
     }
 
@@ -557,7 +557,7 @@ class SelectBuilder {
 
   private List<SelectFieldOrAsterisk> handleJoinMappedBy(CollectionRequest collectionRequest,
       PostgresObjectField objectField, Table<Record> table) {
-    var nestedObjectField = getObjectField(collectionRequest.getObjectRequest(), objectField.getMappedBy());
+    var nestedObjectField = objectField.getMappedByObjectField();
 
     // Provide join info for child data fetcher
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
