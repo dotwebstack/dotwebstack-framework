@@ -7,5 +7,10 @@
       "postalCode": "12345"
     }
   },
-  "numberOfEmployees": 12
+  "numberOfEmployees": 12,
+  "_links": {
+    "self": {
+      "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
+    }
+  }
 }

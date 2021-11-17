@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
@@ -22,9 +24,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -37,8 +44,15 @@ public class JsonBodyMapper implements BodyMapper {
 
   private final GraphQLSchema graphQlSchema;
 
-  public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema) {
+  private final JexlHelper jexlHelper;
+
+  private final EnvironmentProperties environmentProperties;
+
+  public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull JexlEngine jexlEngine,
+      @NonNull EnvironmentProperties environmentProperties) {
     this.graphQlSchema = graphQlSchema;
+    this.jexlHelper = new JexlHelper(jexlEngine);
+    this.environmentProperties = environmentProperties;
   }
 
   @Override
@@ -48,48 +62,68 @@ public class JsonBodyMapper implements BodyMapper {
             .getQueryProperties()
             .getField());
 
-    return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result));
+    var jexlContext = createJexlContext(operationRequest);
+
+    return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result, jexlContext));
   }
 
-  private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
+  private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
     if (data == null) {
       return null;
     }
 
     if (schema instanceof ObjectSchema || schema.getType() == null) {
-      return mapObjectSchema(schema, fieldDefinition, data);
+      return mapObjectSchema(schema, fieldDefinition, data, jexlContext);
     }
 
     if (schema instanceof ArraySchema) {
-      return mapArraySchema((ArraySchema) schema, fieldDefinition, data);
+      return mapArraySchema((ArraySchema) schema, fieldDefinition, data, jexlContext);
     }
 
     if (schema instanceof StringSchema) {
-      return mapStringSchema((StringSchema) schema, fieldDefinition, data);
+      return mapStringSchema((StringSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
     }
 
     if (schema instanceof IntegerSchema) {
-      return mapIntegerSchema((IntegerSchema) schema, fieldDefinition, data);
+      return mapIntegerSchema((IntegerSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
     }
 
     if (schema instanceof NumberSchema) {
-      return mapNumberSchema((NumberSchema) schema, fieldDefinition, data);
+      return mapNumberSchema((NumberSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
     }
 
     if (schema instanceof BooleanSchema) {
-      return mapBooleanSchema((BooleanSchema) schema, fieldDefinition, data);
+      return mapBooleanSchema((BooleanSchema) schema, fieldDefinition, evaluateScalarData(schema, data, jexlContext));
     }
 
     throw invalidConfigurationException("Schema type '{}' not supported.", schema.getName());
   }
 
+  private JexlContext createJexlContext(OperationRequest operationRequest) {
+    Map<String, Object> parameters = operationRequest.getParameters();
+    MapContext result = new MapContext();
+
+    result.set("$body", parameters);
+    result.set("$query", parameters);
+    result.set("$path", parameters);
+    result.set("$header", parameters);
+
+    environmentProperties.getAllProperties()
+        .forEach((prop, value) -> result.set(String.format("env.%s", prop), value));
+
+    return result;
+  }
+
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private Map<String, Object> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data) {
+  private Map<String, Object> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
     if (MapperUtils.isEnvelope(schema) && data instanceof Collection) {
       return schema.getProperties()
           .entrySet()
           .stream()
-          .collect(Collectors.toMap(Map.Entry::getKey, entry -> mapSchema(entry.getValue(), fieldDefinition, data)));
+          .collect(Collectors.toMap(Map.Entry::getKey,
+              entry -> mapSchema(entry.getValue(), fieldDefinition, data, jexlContext)));
     }
 
     if (!(data instanceof Map)) {
@@ -112,7 +146,7 @@ public class JsonBodyMapper implements BodyMapper {
           var nestedSchema = entry.getValue();
 
           if (MapperUtils.isEnvelope(nestedSchema)) {
-            var value = mapObjectSchema(nestedSchema, fieldDefinition, data);
+            var value = mapObjectSchema(nestedSchema, fieldDefinition, data, jexlContext);
 
             if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
               acc.put(property, value);
@@ -120,13 +154,22 @@ public class JsonBodyMapper implements BodyMapper {
             }
           }
 
+          updateJexlContext(dataMap, jexlContext);
+
           var nestedFieldDefinition = MapperUtils.getObjectField((GraphQLObjectType) fieldType, property);
-          var value = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property));
+          var value = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
 
           if (Boolean.TRUE.equals(nestedSchema.getNullable()) || value != null) {
             acc.put(property, value);
           }
         }, HashMap::putAll);
+  }
+
+  private void updateJexlContext(Map<String, Object> dataMap, JexlContext jexlContext) {
+    dataMap.entrySet()
+        .stream()
+        .filter(entry -> !(entry.getValue() instanceof Map))
+        .forEach(entry -> jexlContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
   }
 
   @SuppressWarnings("unchecked")
@@ -144,7 +187,8 @@ public class JsonBodyMapper implements BodyMapper {
     return MapperUtils.getObjectField((GraphQLObjectType) fieldType, PagingConstants.NODES_FIELD_NAME);
   }
 
-  private List<?> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data) {
+  private List<?> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
     Object dataToMap;
     GraphQLFieldDefinition fieldDefinitionToMap;
     if (MapperUtils.isPageableField(fieldDefinition)) {
@@ -160,7 +204,7 @@ public class JsonBodyMapper implements BodyMapper {
     }
 
     return ((Collection<?>) dataToMap).stream()
-        .map(item -> mapSchema(schema.getItems(), fieldDefinitionToMap, item))
+        .map(item -> mapSchema(schema.getItems(), fieldDefinitionToMap, item, jexlContext))
         .collect(Collectors.toList());
   }
 
@@ -202,6 +246,34 @@ public class JsonBodyMapper implements BodyMapper {
     }
 
     return (Boolean) data;
+  }
+
+  private Object evaluateScalarData(Schema<?> schema, Object data, JexlContext jexlContext) {
+    if (schema.getExtensions() != null && schema.getExtensions()
+        .containsKey(X_DWS_EXPR)) {
+
+      Object defaultValue = schema.getDefault();
+
+      String expression = schema.getExtensions()
+          .get(X_DWS_EXPR)
+          .toString();
+
+      String fallBackValue = schema.getExtensions()
+          .containsKey(X_DWS_EXPR_FALLBACK_VALUE)
+              ? schema.getExtensions()
+                  .get(X_DWS_EXPR_FALLBACK_VALUE)
+                  .toString()
+              : null;
+
+      return this.jexlHelper.evaluateScriptWithFallback(expression, fallBackValue, jexlContext, Object.class)
+          .orElse(defaultValue);
+    }
+
+    if (data == null) {
+      return schema.getDefault();
+    }
+
+    return data;
   }
 
   @Override

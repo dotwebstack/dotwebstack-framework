@@ -374,20 +374,21 @@ components:
         numberOfEmployees:
           type: integer
           nullable: true
-#        _links:
-#          type: object
-#          x-dws-envelope: true
-#          required:
-#            - self
-#          properties:
-#            self:
-#              type: object
-#              required:
-#                - href
-#              properties:
-#                href:
-#                  type: string
-#                  format: uri
+        _links:
+          type: object
+          x-dws-envelope: true
+          required:
+            - self
+          properties:
+            self:
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: '`${env.base-url}/breweries/${fields.identifier}`'
 
     Address:
       type: object

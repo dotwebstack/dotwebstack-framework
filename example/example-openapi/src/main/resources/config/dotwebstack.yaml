@@ -29,7 +29,7 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-    pageable: true
+#    pageable: true
 
 objectTypes:
   Beer:
@@ -141,7 +141,6 @@ objectTypes:
         type: String
       status:
         type: String
-        nullable: true
       geometry:
         type: Geometry
         nullable: true
