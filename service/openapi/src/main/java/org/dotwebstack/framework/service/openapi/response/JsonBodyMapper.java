@@ -151,7 +151,7 @@ public class JsonBodyMapper implements BodyMapper {
       var dataMap = (Map<String, Object>) data;
       var items = (Collection<Object>) dataMap.get(PagingConstants.NODES_FIELD_NAME);
 
-      if (!(dataMap instanceof Collection)) {
+      if (!(items instanceof Collection)) {
         throw illegalStateException("Data is not compatible with array schema.");
       }
 
