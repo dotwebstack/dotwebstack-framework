@@ -424,7 +424,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled("enable when body params are implemented")
+  @Disabled("enable when body params and field expressions are implemented")
   void openApiRequest_returnsBrewery_forRequestWithBodyParams() throws IOException {
     String result = this.webClient.post()
         .uri("/brewery_post?expand=postalCode")

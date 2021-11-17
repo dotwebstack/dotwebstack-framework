@@ -53,6 +53,7 @@ class OpenapiPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
+  @Disabled("Disabled until expand is supported")
   @Test
   void breweries_returnsExpectedResult() throws IOException {
     String result = client.get()
