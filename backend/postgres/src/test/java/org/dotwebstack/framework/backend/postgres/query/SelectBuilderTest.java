@@ -5,9 +5,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -238,6 +240,131 @@ class SelectBuilderTest {
   }
 
   @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinTableRefs() {
+    var ingredientRefType = createObjectType(null, "identifier");
+    var ingredientObjectType = createObjectType("ingredient", "name");
+
+    var ingredientObjectRelationType = createObjectType(null, "refs", "nodes");
+    ingredientObjectRelationType.getField("refs")
+        .setTargetType(ingredientRefType);
+    ingredientObjectRelationType.getField("nodes")
+        .setTargetType(ingredientObjectType);
+
+    var ingredientRelationObjectField = createObjectField("ingredientRelation");
+    ingredientRelationObjectField.setJoinTable(createIngredientsJoinTableForRelationObject());
+    ingredientRelationObjectField.setTargetType(ingredientObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+    ingredientRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredientRelation", ingredientRelationObjectField);
+
+    Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
+    objectListFields.put(FieldRequest.builder()
+        .name("refs")
+        .build(),
+        CollectionRequest.builder()
+            .objectRequest(ObjectRequest.builder()
+                .objectType(ingredientRefType)
+                .scalarFields(List.of(FieldRequest.builder()
+                    .name("identifier")
+                    .build()))
+                .build())
+            .build());
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("ingredientRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectListFields(objectListFields)
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x5\".*\n"
+        + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
+        + "    select array_agg(ingredient_identifier) as \"x4\"\n" + "    from \"beer_ingredient\" as \"x3\"\n"
+        + "    where \"x3\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n" + "  ) as \"x5\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinTableNodes() {
+    var ingredientRefType = createObjectType(null, "identifier");
+    var ingredientObjectType = createObjectType("ingredient", "name");
+
+    var ingredientObjectRelationType = createObjectType(null, "refs", "nodes");
+    ingredientObjectRelationType.getField("refs")
+        .setTargetType(ingredientRefType);
+    ingredientObjectRelationType.getField("nodes")
+        .setTargetType(ingredientObjectType);
+
+    var ingredientRelationObjectField = createObjectField("ingredientRelation");
+    ingredientRelationObjectField.setJoinTable(createIngredientsJoinTableForRelationObject());
+    ingredientRelationObjectField.setTargetType(ingredientObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+    ingredientRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredientRelation", ingredientRelationObjectField);
+
+    Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
+    objectListFields.put(FieldRequest.builder()
+        .name("nodes")
+        .build(),
+        CollectionRequest.builder()
+            .objectRequest(ObjectRequest.builder()
+                .objectType(ingredientObjectType)
+                .scalarFields(List.of(FieldRequest.builder()
+                    .name("name")
+                    .build()))
+                .build())
+            .build());
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("ingredientRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectListFields(objectListFields)
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"identifier_column\" as \"x3\"\n" + "from \"beer\" as \"x1\""));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
+    assertThat(fieldMapperResult, hasKey("ingredientRelation"));
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
+  }
+
+  @Test
   void build_returnsSelectQuery_forCollectionRequestWithObjectListMappedBy() {
     var breweryObjectField = createObjectField("brewery");
 
@@ -458,7 +585,15 @@ class SelectBuilderTest {
     return objectType;
   }
 
+  private JoinTable createIngredientsJoinTableForRelationObject() {
+    return createIngredientsJoinTable("refs.identifier");
+  }
+
   private JoinTable createIngredientsJoinTable() {
+    return createIngredientsJoinTable("identifier");
+  }
+
+  private JoinTable createIngredientsJoinTable(String referencedField) {
     var joinTable = new JoinTable();
     joinTable.setName("beer_ingredient");
 
@@ -471,7 +606,7 @@ class SelectBuilderTest {
     List<JoinColumn> inverseJoinColumns = new ArrayList<>();
     var inverseJoinColumn = new JoinColumn();
     inverseJoinColumn.setName("ingredient_identifier");
-    inverseJoinColumn.setReferencedField("identifier");
+    inverseJoinColumn.setReferencedField(referencedField);
     inverseJoinColumns.add(inverseJoinColumn);
 
     joinTable.setJoinColumns(joinColumns);
