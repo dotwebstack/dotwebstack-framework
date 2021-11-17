@@ -2,8 +2,10 @@ package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import java.io.InputStream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +25,16 @@ class RouterConfiguration {
 
   private final OpenAPI openApi;
 
-  public RouterConfiguration(@NonNull OperationHandlerFactory operationHandlerFactory, @NonNull OpenAPI openApi) {
+  private final InputStream openApiStream;
+
+  private final OpenApiProperties openApiProperties;
+
+  public RouterConfiguration(@NonNull OperationHandlerFactory operationHandlerFactory, @NonNull OpenAPI openApi,
+      @NonNull InputStream openApiStream, @NonNull OpenApiProperties openApiProperties) {
     this.operationHandlerFactory = operationHandlerFactory;
     this.openApi = openApi;
+    this.openApiStream = openApiStream;
+    this.openApiProperties = openApiProperties;
   }
 
   @Bean
@@ -40,6 +49,7 @@ class RouterConfiguration {
     openApi.getPaths()
         .forEach((path, pathItem) -> builder.add(routePath(path, pathItem)));
 
+    builder.add(routeApiDocs());
     return builder.build();
   }
 
@@ -59,4 +69,12 @@ class RouterConfiguration {
     return RequestPredicates.path(path)
         .and(RequestPredicates.method(method));
   }
+
+  private RouterFunction<ServerResponse> routeApiDocs() {
+    var builder = RouterFunctions.route();
+    builder.route(matchRoute(openApiProperties.getApiDocPublicationPath(), PathItem.HttpMethod.GET),
+        new OpenApiRequestHandler(openApiStream));
+    return builder.build();
+  }
+
 }

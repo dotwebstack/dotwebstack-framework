@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,13 +32,17 @@ class RouterConfigurationTest {
   private static final OpenAPI openApi = TestResources.openApi("openapi-router.yaml");
 
   @Mock
+  private OpenApiProperties openApiProperties;
+
+  @Mock
   private OperationHandlerFactory operationHandlerFactory;
 
   private RouterConfiguration routerConfiguration;
 
   @BeforeEach
   void setUp() {
-    routerConfiguration = new RouterConfiguration(operationHandlerFactory, openApi);
+    routerConfiguration = spy(
+        new RouterConfiguration(operationHandlerFactory, openApi, TestResources.openApiStream(), openApiProperties));
   }
 
   @Test
@@ -48,6 +53,8 @@ class RouterConfigurationTest {
 
   @Test
   void router_returnsHandler_whenPathMatches() {
+    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
+
     HandlerFunction<ServerResponse> operationHandler = request -> ServerResponse.ok()
         .contentType(MediaType.APPLICATION_JSON)
         .body(BodyInserters.fromValue("[]"));
@@ -65,6 +72,8 @@ class RouterConfigurationTest {
 
   @Test
   void router_returnsNoHandler_whenPathNotFound() {
+    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
+
     when(operationHandlerFactory.create(any(Operation.class))).thenReturn(request -> Mono.empty());
 
     var routerFunction = routerConfiguration.router();
