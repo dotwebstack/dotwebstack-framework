@@ -1,0 +1,15 @@
+{
+  "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+  "name": "Brewery X",
+  "postalAddress": {
+    "street": "Church Street",
+    "postalCode": "12345"
+  },
+  "visitAddresses": [
+    {
+      "street": "5th Avenue",
+      "postalCode": "54321"
+    }
+  ],
+  "numberOfEmployees": 12
+}

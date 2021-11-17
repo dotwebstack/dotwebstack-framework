@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelpe
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
@@ -103,16 +105,24 @@ class FilterConditionBuilder {
       return DSL.exists(filterQuery);
     }
 
-    var conditions = value.entrySet()
-        .stream()
-        .map(entry -> createFilterCondition(entry.getKey(), current, entry.getValue()))
-        .collect(Collectors.toList());
+    var conditions = createFilterCondition(current, value);
 
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
   }
 
+  private List<Condition> createFilterCondition(PostgresObjectField objectField, Map<String, Object> value) {
+    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+      return createGeometryFilterCondition(objectField, value);
+    }
+
+    return value.entrySet()
+        .stream()
+        .map(entry -> createComparisonFilterCondition(entry.getKey(), objectField, entry.getValue()))
+        .collect(Collectors.toList());
+  }
+
   @SuppressWarnings("unchecked")
-  private Condition createFilterCondition(String filterField, PostgresObjectField objectField, Object value) {
+  private Condition createComparisonFilterCondition(String filterField, PostgresObjectField objectField, Object value) {
     Field<Object> field = DSL.field(objectField.getColumn());
 
     if (FilterConstants.EQ_FIELD.equals(filterField)) {
@@ -144,26 +154,38 @@ class FilterConditionBuilder {
       return createNotCondition(objectField, (Map<String, Object>) value);
     }
 
-    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      return createGeometryCondition(filterField, (Map<String, String>) value, field);
-    }
-
     throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
   }
 
   private Condition createNotCondition(PostgresObjectField objectField, Map<String, Object> value) {
-    var conditions = value.entrySet()
-        .stream()
-        .map(entry -> createFilterCondition(entry.getKey(), objectField, entry.getValue()))
-        .collect(Collectors.toList());
+    var conditions = createFilterCondition(objectField, value);
 
     var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
 
     return DSL.not(condition);
   }
 
-  private Condition createGeometryCondition(String filterField, Map<String, String> value, Field<Object> field) {
+  @SuppressWarnings("unchecked")
+  private List<Condition> createGeometryFilterCondition(PostgresObjectField objectField, Object value) {
+    Integer requestedSrid = PostgresSpatialHelper.getRequestedSrid((Map<String, Object>) value);
+
+    return ((Map<String, Object>) value).entrySet()
+        .stream()
+        .filter(entry -> !entry.getKey()
+            .equals(ARGUMENT_SRID))
+        .map(entry -> createGeometryFilterCondition(entry.getKey(), objectField, (Map<String, String>) entry.getValue(),
+            requestedSrid))
+        .collect(Collectors.toList());
+  }
+
+  private Condition createGeometryFilterCondition(String filterField, PostgresObjectField objectField,
+      Map<String, String> value, Integer requestedSrid) {
+    String columnName = PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid);
+    Field<Object> field = DSL.field(columnName);
+
     Geometry geometry = GeometryReader.readGeometry(value);
+    Integer columnSrid = PostgresSpatialHelper.getSridOfColumnName(objectField.getSpatial(), columnName);
+    geometry.setSRID(columnSrid);
 
     Field<Geometry> geoField = DSL.val(geometry)
         .cast(GEOMETRY_DATATYPE);

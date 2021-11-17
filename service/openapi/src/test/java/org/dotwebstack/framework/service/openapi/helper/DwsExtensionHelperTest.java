@@ -4,7 +4,6 @@ import static graphql.Assert.assertTrue;
 import static java.util.Collections.emptyMap;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQuerySettings;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.TestResources;
@@ -96,46 +94,6 @@ class DwsExtensionHelperTest {
         .getGet();
 
     assertEquals(emptyMap(), getDwsQueryParameters(getShortForm));
-  }
-
-  @Test
-  void getDwsRequiredFields_returnsEmptyList_withoutRequiredFields() {
-    Operation operation = TestResources.openApi()
-        .getPaths()
-        .get("/query8")
-        .getGet();
-
-    assertEquals(List.of(), getDwsQuerySettings(operation).getRequiredFields());
-  }
-
-  @Test
-  void getDwsRequiredFields_returnsFields_whenPresent() {
-    Operation operation = TestResources.openApi()
-        .getPaths()
-        .get("/query9")
-        .getGet();
-
-    assertEquals(List.of("o2_prop1", "field1"), getDwsQuerySettings(operation).getRequiredFields());
-  }
-
-  @Test
-  void getDwsRequiredFields_returnsEmptyList_withoutDwsQuery() {
-    Operation operation = TestResources.openApi()
-        .getPaths()
-        .get("/query10")
-        .getGet();
-
-    assertEquals(List.of(), getDwsQuerySettings(operation).getRequiredFields());
-  }
-
-  @Test
-  void getDwsSelectionSet_returnsEmptyList_withoutDwsQuery() {
-    Operation operation = TestResources.openApi()
-        .getPaths()
-        .get("/query20")
-        .getGet();
-
-    assertEquals("selectionSetTest", getDwsQuerySettings(operation).getSelectionSet());
   }
 
   @Test

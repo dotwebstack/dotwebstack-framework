@@ -61,7 +61,7 @@ public class ExceptionRuleHelper {
           .build(),
       ExceptionRule.builder()
           .exception(InvalidConfigurationException.class)
-          .responseStatus(BAD_REQUEST)
+          .responseStatus(INTERNAL_SERVER_ERROR)
           .title("Bad configuration")
           .build(),
       ExceptionRule.builder()

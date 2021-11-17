@@ -30,11 +30,12 @@ objectTypes:
         type: String
       founded:
         type: String
-      address:
-        type: Address
-        nullable: true
+#      address:
+#        type: Address
+#        nullable: true
       postalCode:
         type: String
+        nullable: true
       beers:
         type: Beer
         mappedBy: brewery
@@ -45,8 +46,8 @@ objectTypes:
     fields:
       identifier:
         type: ID
-      subject:
-        type: String
+#      subject:
+#        type: String
       postalCode:
         type: String
         nullable: true

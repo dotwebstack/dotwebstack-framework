@@ -1,23 +1,16 @@
-features:
-  - paging
-
 spatial:
   srid:
     28992:
       dimensions: 2
-      bboxColumnSuffix: _bbox
     7415:
       dimensions: 3
-      bboxColumnSuffix: _bbox
       equivalent: 28992
     9067:
       dimensions: 2
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
     7931:
       dimensions: 3
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
       equivalent: 9067
 
 queries:
@@ -28,7 +21,7 @@ queries:
   beerCollection:
     type: Beer
     list: true
-    pageable: true
+#    pageable: true
   brewery:
     type: Brewery
     keys:
@@ -36,7 +29,7 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-    pageable: true
+#    pageable: true
 
 objectTypes:
   Beer:
@@ -174,7 +167,7 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
-        pageable: true
+#        pageable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery

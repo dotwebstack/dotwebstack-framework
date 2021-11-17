@@ -16,6 +16,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
+import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -31,15 +32,20 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final BackendExecutionStepInfo backendExecutionStepInfo;
 
+  private final List<GraphQlValidator> graphQlValidators;
+
   public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory,
-      BackendExecutionStepInfo backendExecutionStepInfo) {
+      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators) {
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
+    this.graphQlValidators = graphQlValidators;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
+    graphQlValidators.forEach(validator -> validator.validate(environment));
+
     Map<String, Object> source = environment.getSource();
 
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo((environment));

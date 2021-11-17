@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
@@ -17,6 +18,12 @@ public class EquivalentValidator implements ConstraintValidator<ValidEquivalent,
   @Override
   public boolean isValid(Map<Integer, SpatialReferenceSystem> spatialReferenceSystems,
       ConstraintValidatorContext context) {
+    return Optional.ofNullable(spatialReferenceSystems)
+        .map(this::isValid)
+        .orElse(true);
+  }
+
+  private boolean isValid(Map<Integer, SpatialReferenceSystem> spatialReferenceSystems) {
     return ofNullable(spatialReferenceSystems).stream()
         .flatMap(v -> v.values()
             .stream())
@@ -27,8 +34,9 @@ public class EquivalentValidator implements ConstraintValidator<ValidEquivalent,
 
   private boolean hasValidEquivalent(Map<Integer, SpatialReferenceSystem> spatialReferenceSystems,
       SpatialReferenceSystem srs) {
-    return hasThreeDimensions(srs) && spatialReferenceSystems.containsKey(srs.getEquivalent())
-        && hasTwoDimensions(spatialReferenceSystems.get(srs.getEquivalent()));
+    SpatialReferenceSystem equivalentSrs = spatialReferenceSystems.get(srs.getEquivalent());
+
+    return hasThreeDimensions(srs) && equivalentSrs != null && hasTwoDimensions(equivalentSrs);
   }
 
   private boolean hasTwoDimensions(SpatialReferenceSystem srs) {

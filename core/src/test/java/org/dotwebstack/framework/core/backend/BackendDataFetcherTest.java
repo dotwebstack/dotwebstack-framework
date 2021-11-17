@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
@@ -54,6 +55,9 @@ class BackendDataFetcherTest {
 
   @Mock
   private DataFetchingEnvironment environment;
+
+  @Mock
+  private List<GraphQlValidator> graphQlValidators;
 
   @InjectMocks
   private BackendDataFetcher dataFetcher;

@@ -33,6 +33,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -312,6 +313,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .current(objectField)
+        .relatedTable(aliasedAggregateTable)
         .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
         .forEach(subSelect::addConditions);
@@ -378,7 +380,7 @@ class SelectBuilder {
 
     ColumnMapper columnMapper;
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      columnMapper = createSpatialColumnMapper(column, table, objectField, fieldRequest);
+      columnMapper = createSpatialColumnMapper(table, objectField, fieldRequest);
     } else {
       columnMapper = createColumnMapper(column, table);
     }
@@ -390,14 +392,16 @@ class SelectBuilder {
     return result;
   }
 
-  private SpatialColumnMapper createSpatialColumnMapper(String columnName, Table<Record> table,
-      PostgresObjectField objectField, FieldRequest fieldRequest) {
-    String spatialColumnName = SpatialHelper.getColummName(columnName, objectField, fieldRequest);
+  private SpatialColumnMapper createSpatialColumnMapper(Table<Record> table, PostgresObjectField objectField,
+      FieldRequest fieldRequest) {
+    var requestedSrid = PostgresSpatialHelper.getRequestedSrid(fieldRequest);
+    var isRequestedBbox = PostgresSpatialHelper.isRequestedBbox(fieldRequest);
 
+    var spatialColumnName =
+        PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
     var column = column(table, spatialColumnName).as(aliasManager.newAlias());
-    var requestedSrid = SpatialHelper.getRequestedSrid(fieldRequest);
 
-    return new SpatialColumnMapper(column, objectField.getSpatialReferenceSystems(), requestedSrid);
+    return new SpatialColumnMapper(column, objectField.getSpatial(), requestedSrid, isRequestedBbox);
   }
 
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {

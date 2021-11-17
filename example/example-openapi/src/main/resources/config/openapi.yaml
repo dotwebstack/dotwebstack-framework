@@ -5,6 +5,17 @@ info:
   version: 3.0.0
 
 paths:
+#  /noop:
+#    get:
+#      x-dws-operation: false
+#      responses:
+#        200:
+#          description: OK
+#          content:
+#            application/text:
+#              schema:
+#                type: string
+#                default: ok
   /breweries:
     get:
       x-dws-query:
@@ -13,12 +24,8 @@ paths:
           pageSize: $query.pageSize
           page: $query.page
         filters:
-          breweries:
-            type: GeoFilter
-            fields:
-              geometry:
-                contains:
-                  fromGeoJson: $post._geo
+          name:
+            in: $query.name
       parameters:
         - name: expand
           x-dws-type: expand
@@ -27,7 +34,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class']
+              enum: [ 'address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class' ]
         - name: name
           in: query
           explode: false
@@ -104,28 +111,28 @@ paths:
     #                x-dws-expr: args.page
     post:
       x-dws-query:
-        field: breweries
+        field: breweryCollection
         filters:
-          breweries:
-            type: BreweryFilter
-            fields:
-              geometry:
-                contains:
-                  fromGeoJSON:
-                    x-dws-expr: "json:asString($body._geo.contains)!"
-                  Content-CRS: $header.content-crs
-                intersects:
-                  fromGeoJSON:
-                    x-dws-expr: "json:asString($body._geo.intersects)!"
-                  Content-CRS: $header.content-crs
-                within:
-                  fromGeoJSON:
-                    x-dws-expr: "json:asString($body._geo.within)!"
-                  Content-CRS: $header.content-crs
+          geometry:
+            srid:
+              x-dws-expr: "$header.'content-crs' == 'epsg:28992' ? 7415 : 7931"
+            contains:
+              fromGeoJSON:
+                x-dws-expr: "json:asString($body._geo.contains)!"
+            intersects:
+              fromGeoJSON:
+                x-dws-expr: "json:asString($body._geo.intersects)!"
+            within:
+              fromGeoJSON:
+                x-dws-expr: "json:asString($body._geo.within)!"
       parameters:
         - name: content-crs
           in: header
           schema:
+            default: 'epsg:4258'
+            enum:
+              - 'epsg:4258'
+              - 'epsg:28992'
             type: string
       requestBody:
         $ref: '#/components/requestBodies/GeoBody'
@@ -140,6 +147,8 @@ paths:
     get:
       x-dws-query:
         field: brewery
+#        requiredFields:
+#          - identifier
         keys:
           identifier: $path.identifier
       parameters:
@@ -150,7 +159,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['postalCode', 'beers', 'beers.ingredients']
+              enum: [ 'postalCode', 'beers', 'beers.ingredients' ]
         - name: identifier
           in: path
           required: true
@@ -174,7 +183,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['postalCode', 'beers', 'beers.ingredients']
+              enum: [ 'postalCode', 'beers', 'beers.ingredients' ]
       requestBody:
         content:
           application/json:
@@ -197,31 +206,43 @@ components:
   schemas:
     Beer:
       type: object
+      allOf:
+        - type: object
+          required:
+            - identifier
+          properties:
+            identifier:
+              type: string
+        #            link:
+        #              type: string
+        #              x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
+        #            class:
+        #              type: string
+        #              x-dws-default: 'Beer'
+        - $ref: '#/components/schemas/NamedItem'
+        - $ref: '#/components/schemas/ItemWithIngredients'
+    NamedItem:
+      type: object
       required:
-        - identifier
         - name
       properties:
-        identifier:
-          type: string
         name:
           type: string
-          nullable: true
+    ItemWithIngredients:
+      type: object
+#      required:
+#        - ingredients
+      properties:
         ingredients:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Beer'
     BreweryCollection:
       type: object
       x-dws-envelope: true
       required:
         - _embedded
-        - _links
+#        - _links
       properties:
         _embedded:
           x-dws-envelope: true
@@ -233,46 +254,77 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Brewery'
-        _links:
-          x-dws-envelope: true
-          type: object
-          required:
-            - self
-          properties:
-            self:
-              x-dws-envelope: true
-              type: object
-              required:
-                - href
-              properties:
-                href:
-                  type: string
-                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+#        _links:
+#          x-dws-envelope: true
+#          type: object
+#          required:
+#            - self
+#          properties:
+#            self:
+#              x-dws-envelope: true
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  type: string
+#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
         - identifier
         - name
+        - geometry
+        - visitAddress
+        - _links
+        - beers
+      #        - beers
       properties:
         identifier:
           type: string
         name:
           type: string
-          nullable: true
-        address:
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+#        nameEnvelope:
+#          x-dws-envelope: true
+#          type: object
+#          properties:
+#            name:
+#              type: string
+        status:
+          type: string
+        postalAddress:
           $ref: '#/components/schemas/Address'
+        visitAddress:
+          $ref: '#/components/schemas/Address'
+        history:
+          $ref: '#/components/schemas/History'
         beers:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/Beer'
-        hasBeers:
-          type: boolean
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Brewery'
+#        hasBeers:
+#          type: boolean
+#        _links:
+#          x-dws-envelope: true
+#          type: object
+#          required:
+#            - self
+#          properties:
+#            self:
+#              x-dws-envelope: true
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+#                  type: string
+#                  format: uri
+    #        class:
+    #          type: string
+    #          x-dws-default: 'Brewery'
     Ingredient:
       type: object
       required:
@@ -282,19 +334,30 @@ components:
           type: string
         name:
           type: string
-          nullable: true
     Address:
-      type: object
       nullable: true
+      type: object
       required:
-        - subject
-        - streetAddress
+        - identifier
+        - street
+        - city
       properties:
-        subject:
+        identifier:
           type: string
-        postalCode:
+        street:
           type: string
-        streetAddress:
+        city:
+          type: string
+    History:
+      type: object
+      required:
+        - age
+        - history
+      properties:
+        age:
+          type: integer
+          format: int32
+        history:
           type: string
     GeoBody:
       type: object

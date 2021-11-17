@@ -1,0 +1,16 @@
+query Query {
+  brewery(identifier: "foo") {
+    identifier
+    name
+    aliases
+    postalAddress {
+      street
+      postalCode
+    }
+    visitAddresses {
+      street
+      postalCode
+    }
+    numberOfEmployees
+  }
+}

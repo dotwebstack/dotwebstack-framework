@@ -1,0 +1,16 @@
+filter:
+  field1: $query.p1
+  field2:
+    and:
+      field3: $path.p2
+      field4:
+        x-dws-expr: $body.p3 + '_suffix'!
+      field5:
+        not:
+          field6: $header.p4
+      field7:
+        field8: $path.missing
+      field10:
+        field11:
+          x-dws-expr: $path.missing
+
