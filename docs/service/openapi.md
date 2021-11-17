@@ -171,17 +171,6 @@ The filter configuration is mapped to the graphQL filter specified for that fiel
 * `query`
 For instance, `$path.name` refers to the `name` parameter that occurs in the path.
 
-<!-- ### Keys
-Keys are configured with an optional map `x-dws-query.keys`, specifying the GraphQL ID field name and an input parameter. If the parameter value is provided, the key will be added to the GraphQL query.
-The following will add an `identifier` key field to the GraphQL query and populate it with the `identifier` path variable if provided:
-```yaml
-    x-dws-query:
-      field: brewery
-      keys:
-        identifier: $path.identifier
-```
-The key supportes the `.` notation for nested nodes. -->
-
 Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL query field.
 ```yaml
     x-dws-query:
