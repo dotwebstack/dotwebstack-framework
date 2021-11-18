@@ -71,7 +71,6 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled("enable when expand is implemented")
   void openApiRequest_ReturnsBrewery_withExpandedPostalCode() throws IOException {
     String result = webClient.get()
         .uri("/brewery/123?expand=postalCode")

@@ -2,5 +2,5 @@
   "identifier": "123",
   "postalCode": "2841 XB",
   "name": "Brouwerij 1923",
-  "link": "https://github.com/dotwebstack/api/v1/brewery/123"
+  "founded": "2018-05-30T09:30:10+02:00"
 }

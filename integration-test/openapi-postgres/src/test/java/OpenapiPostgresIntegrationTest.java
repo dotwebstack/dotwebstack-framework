@@ -53,7 +53,6 @@ class OpenapiPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
-  @Disabled("Disabled until expand is supported")
   @Test
   void breweries_returnsExpectedResult() throws IOException {
     String result = client.get()
@@ -64,6 +63,18 @@ class OpenapiPostgresIntegrationTest {
         .getResponseBody();
 
     assertResult(result, "breweries.json");
+  }
+
+  @Test
+  void breweries_returnsExpectedResult_withExpanded() throws IOException {
+    String result = client.get()
+        .uri("/breweries?expand=postalAddress")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    assertResult(result, "breweries_postalAddress.json");
   }
 
   @Test
