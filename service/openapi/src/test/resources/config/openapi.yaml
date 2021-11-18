@@ -44,6 +44,14 @@ paths:
           required: true
           schema:
             type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
       responses:
         200:
           description: OK
@@ -386,7 +394,6 @@ components:
           type: object
           x-dws-envelope: true
           required:
-            - postalAddress
             - visitAddresses
           properties:
             postalAddress:

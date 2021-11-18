@@ -159,7 +159,7 @@ paths:
             type: array
             items:
               type: string
-              enum: [ 'postalCode', 'beers', 'beers.ingredients' ]
+              enum: [ 'postalAddress', 'beers', 'beers.ingredients' ]
         - name: identifier
           in: path
           required: true

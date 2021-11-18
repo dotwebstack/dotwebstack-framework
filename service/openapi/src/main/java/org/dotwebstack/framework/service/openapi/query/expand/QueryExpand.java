@@ -36,7 +36,7 @@ public class QueryExpand {
       newEntries[newEntries.length - 1] = key;
       return new QueryExpand(expandable, expanded, newEntries, rootFound);
     }
-    rootFound = (!isEnvelope(schema));
+    rootFound = rootFound || (!isEnvelope(schema));
     return this;
   }
 

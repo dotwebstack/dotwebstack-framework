@@ -52,13 +52,15 @@ class QueryMapperTest {
             "brewery-pageable-collection-with-params"),
         Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of(), "brewery-collection"),
         Arguments.of("/breweries-all-of", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of("x-dws-expand", List.of("postalAddress")),
+            "brewery-collection-expanded"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
+        Arguments.of("/brewery/{identifier}", APPLICATION_JSON,
+            Map.of("identifier", "foo", "x-dws-expand", List.of("postalAddress")), "brewery-expanded"),
         Arguments.of("/breweries-filter", APPLICATION_JSON_HAL,
             Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"),
-        Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"),
-        Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of("x-dws-expand", List.of("postalAddress")),
-            "brewery-collection-expanded"));
+        Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"));
   }
 
   @ParameterizedTest
