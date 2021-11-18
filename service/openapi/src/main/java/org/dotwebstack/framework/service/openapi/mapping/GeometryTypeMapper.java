@@ -11,6 +11,7 @@ import graphql.language.SelectionSet;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import java.util.Map;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +24,7 @@ public class GeometryTypeMapper implements TypeMapper {
   private static final TypeReference<Map<String, Object>> TYPE_REFERENCE = new TypeReference<>() {};
 
   @Override
-  public List<Field> schemaToField(String name, Schema<?> schema) {
+  public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema) {
     if (!"object".equals(schema.getType())) {
       throw invalidConfigurationException("Geometry type expects required an object field (found: {}).",
           schema.getName());
@@ -35,7 +36,7 @@ public class GeometryTypeMapper implements TypeMapper {
   }
 
   @Override
-  public Object fieldToBody(Object data) {
+  public Object fieldToBody(@NonNull Object data) {
     if (!(data instanceof Map)) {
       throw invalidConfigurationException("Geometry type expects a map result.");
     }
