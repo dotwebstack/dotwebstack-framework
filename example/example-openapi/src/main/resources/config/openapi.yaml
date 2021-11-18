@@ -34,7 +34,7 @@ paths:
             type: array
             items:
               type: string
-              enum: [ 'address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class' ]
+              enum: [ 'history', 'beers','beers.class', 'beers.ingredients']
         - name: name
           in: query
           explode: false

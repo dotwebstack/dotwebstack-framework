@@ -40,6 +40,8 @@ import java.util.stream.Stream;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.query.expand.QueryExpand;
+import org.dotwebstack.framework.service.openapi.query.expand.QueryExpandBuilder;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
@@ -69,8 +71,10 @@ public class QueryMapper {
     var queryType = graphQlSchema.getQueryType();
     var fieldDefinition = getObjectField(queryType, fieldName);
     var fieldArguments = mapArguments(fieldDefinition, graphQlSchema.getQueryType(), operationRequest);
-    var queryField = new Field(fieldName, fieldArguments, new SelectionSet(
-        mapSchema(operationRequest.getResponseSchema(), fieldDefinition).collect(Collectors.toList())));
+    var queryField = new Field(fieldName, fieldArguments,
+        new SelectionSet(
+            mapSchema(operationRequest.getResponseSchema(), fieldDefinition, QueryExpandBuilder.build(operationRequest))
+                .collect(Collectors.toList())));
 
     var query = OperationDefinition.newOperationDefinition()
         .name(OPERATION_NAME)
@@ -84,36 +88,37 @@ public class QueryMapper {
         .build();
   }
 
-  private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
+  private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, QueryExpand queryExpand) {
     if (schema instanceof ComposedSchema) {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }
 
     if (schema instanceof ArraySchema) {
-      return mapArraySchema((ArraySchema) schema, fieldDefinition);
+      return mapArraySchema((ArraySchema) schema, fieldDefinition, queryExpand);
     }
 
     // Composed (allOf)-schemas are type-less (not an instance of ObjectSchema)
     if (schema instanceof ObjectSchema || schema.getType() == null) {
-      return mapObjectSchema(schema, fieldDefinition);
+      return mapObjectSchema(schema, fieldDefinition, queryExpand);
     }
 
     return Stream.empty();
   }
 
-  private Stream<Field> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition) {
+  private Stream<Field> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition,
+      QueryExpand queryExpand) {
     if (isPageableField(fieldDefinition)) {
       var nestedFieldDefinition =
           ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
 
-      return Stream.of(new Field(NODES_FIELD_NAME,
-          new SelectionSet(mapSchema(schema.getItems(), nestedFieldDefinition).collect(Collectors.toList()))));
+      return Stream.of(new Field(NODES_FIELD_NAME, new SelectionSet(
+          mapSchema(schema.getItems(), nestedFieldDefinition, queryExpand).collect(Collectors.toList()))));
     }
 
     var itemsSchema = schema.getItems();
 
     if (itemsSchema instanceof ObjectSchema || itemsSchema.getType() == null) {
-      return mapSchema(schema.getItems(), fieldDefinition);
+      return mapSchema(schema.getItems(), fieldDefinition, queryExpand);
     }
 
     if (itemsSchema instanceof ComposedSchema) {
@@ -123,15 +128,17 @@ public class QueryMapper {
     return Stream.of();
   }
 
-  private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
+  private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
+      QueryExpand queryExpand) {
     return schema.getProperties()
         .entrySet()
         .stream()
-        .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition));
+        .flatMap(
+            entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition, queryExpand));
   }
 
   private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
-      GraphQLFieldDefinition parentFieldDefinition) {
+      GraphQLFieldDefinition parentFieldDefinition, QueryExpand queryExpand) {
     var rawType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
 
     if (!(rawType instanceof GraphQLObjectType)) {
@@ -139,11 +146,13 @@ public class QueryMapper {
           rawType.getName());
     }
 
+    queryExpand = queryExpand.appendField(name, schema);
+
     var objectType = (GraphQLObjectType) rawType;
     var fieldDefinition = objectType.getFieldDefinition(name);
 
     if (fieldDefinition == null || isEnvelope(schema)) {
-      return mapSchema(schema, parentFieldDefinition);
+      return mapSchema(schema, parentFieldDefinition, queryExpand);
     }
 
     if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawType)) {
@@ -152,8 +161,12 @@ public class QueryMapper {
               .getSimpleName());
     }
 
+    if (!queryExpand.expanded()) {
+      return Stream.of();
+    }
+
     if (schema instanceof ArraySchema) {
-      var fields = mapArraySchema((ArraySchema) schema, fieldDefinition).collect(Collectors.toList());
+      var fields = mapArraySchema((ArraySchema) schema, fieldDefinition, queryExpand).collect(Collectors.toList());
 
       if (fields.isEmpty()) {
         return Stream.of(new Field(fieldDefinition.getName()));
@@ -162,7 +175,7 @@ public class QueryMapper {
       return Stream.of(new Field(fieldDefinition.getName(), new SelectionSet(fields)));
     }
 
-    var nestedFields = mapSchema(schema, fieldDefinition).collect(Collectors.toList());
+    var nestedFields = mapSchema(schema, fieldDefinition, queryExpand).collect(Collectors.toList());
 
     if (nestedFields.isEmpty()) {
       return Stream.of(new Field(name));
@@ -248,4 +261,5 @@ public class QueryMapper {
 
     return fieldType instanceof GraphQLNonNull;
   }
+
 }
