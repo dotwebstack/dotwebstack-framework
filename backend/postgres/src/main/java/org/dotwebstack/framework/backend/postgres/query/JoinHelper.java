@@ -49,13 +49,17 @@ public class JoinHelper {
 
   public static boolean hasNestedReference(PostgresObjectField objectField) {
     return Optional.of(objectField)
-        .filter(objectField1 -> Optional.of(objectField1)
-            .map(PostgresObjectField::getTargetType)
-            .filter(ObjectType::isNested)
-            .isPresent())
+        .filter(JoinHelper::hasNestedChild)
         .map(PostgresObjectField::getJoinTable)
         .stream()
         .anyMatch(JoinHelper::hasNestedReference);
+  }
+
+  private static boolean hasNestedChild(PostgresObjectField objectField1) {
+    return Optional.of(objectField1)
+        .map(PostgresObjectField::getTargetType)
+        .filter(ObjectType::isNested)
+        .isPresent();
   }
 
   private static boolean hasNestedReference(JoinTable joinTable) {
