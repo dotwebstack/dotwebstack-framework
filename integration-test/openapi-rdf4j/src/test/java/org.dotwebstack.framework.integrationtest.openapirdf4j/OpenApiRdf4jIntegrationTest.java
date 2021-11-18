@@ -36,7 +36,7 @@ class OpenApiRdf4jIntegrationTest {
   @Test
   void openApiRequest_ReturnsBreweries_withDefaultResponse() throws IOException {
     String result = webClient.get()
-        .uri("/breweries")
+        .uri("/breweries?expand=founded")
         .exchange()
         .expectBody(String.class)
         .returnResult()

@@ -29,7 +29,7 @@ public class QueryExpand {
     this.rootFound = rootFound;
   }
 
-  public QueryExpand appendField(String key, Schema schema) {
+  public QueryExpand appendField(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
       String[] newEntries = new String[entries.length + 1];
       System.arraycopy(entries, 0, newEntries, 0, entries.length);

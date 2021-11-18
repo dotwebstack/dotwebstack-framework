@@ -4,13 +4,13 @@
       {
         "identifier": "123",
         "name": "Brouwerij 1923",
-        "postalCode": "2841 XB",
+        "postalCode": null,
         "founded": "2018-05-30T09:30:10+02:00"
       },
       {
         "identifier": "456",
         "name": "Brouwerij Het 58e Genot i.o.",
-        "postalCode": "4881 AZ",
+        "postalCode": null,
         "founded": "2010-05-10T09:30:10+02:00"
       },
       {
@@ -28,7 +28,7 @@
       {
         "identifier": "789",
         "name": "Alfa Brouwerij",
-        "postalCode": "4881 AZ",
+        "postalCode": null,
         "founded": "1870-01-01T00:00:0+02:00"
       }
     ]

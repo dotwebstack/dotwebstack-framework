@@ -42,8 +42,8 @@ class QueryMapperTest {
   }
 
   static Stream<Arguments> arguments() {
-    return Stream.of(Arguments.of("/breweries", APPLICATION_JSON, Map.of(), "brewery-collection"),
-        Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
+    return Stream.of(Arguments.of("/breweries", APPLICATION_JSON, Map.of(), "brewery-collection-expanded"),
+        Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection-expanded"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL, Map.of(), "brewery-pageable-collection"),
         Arguments.of("/breweries-pageable-with-params", APPLICATION_JSON, Map.of("page", "2", "pageSize", "42"),
@@ -56,7 +56,9 @@ class QueryMapperTest {
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/breweries-filter", APPLICATION_JSON_HAL,
             Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"),
-        Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"));
+        Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"),
+        Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of("x-dws-expand", List.of("postalAddress")),
+            "brewery-collection-expanded"));
   }
 
   @ParameterizedTest

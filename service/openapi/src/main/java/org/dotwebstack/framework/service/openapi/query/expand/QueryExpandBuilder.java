@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.query.expand;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -17,16 +18,19 @@ public class QueryExpandBuilder {
     var expandedPathList = (List<String>) operationRequest.getParameters()
         .get(OasConstants.X_DWS_EXPANDED_PARAMS);
     Set<String> expandedPaths = expandedPathList != null ? new HashSet<>(expandedPathList) : Set.of();
-    var expandable = operationRequest.getContext()
+    List<Parameter> parameters = operationRequest.getContext()
         .getOperation()
-        .getParameters()
-        .stream()
-        .map(QueryExpandBuilder::toExpanded)
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElse(Set.of());
+        .getParameters();
+    if (parameters != null) {
+      var expandable = parameters.stream()
+          .map(QueryExpandBuilder::toExpanded)
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse(Set.of());
 
-    return new QueryExpand(expandable, expandedPaths);
+      return new QueryExpand(expandable, expandedPaths);
+    }
+    return new QueryExpand(Set.of(), expandedPaths);
   }
 
   private static Set<String> toExpanded(io.swagger.v3.oas.models.parameters.Parameter p) {
@@ -41,7 +45,7 @@ public class QueryExpandBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  private static Set<String> getEnum(Schema schema) {
+  private static Set<String> getEnum(Schema<?> schema) {
     if (schema instanceof StringSchema) {
       var e = (List<String>) schema.getEnum();
       if (e != null) {
