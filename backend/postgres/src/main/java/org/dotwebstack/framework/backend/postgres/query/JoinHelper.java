@@ -55,13 +55,6 @@ public class JoinHelper {
         .anyMatch(JoinHelper::hasNestedReference);
   }
 
-  private static boolean hasNestedChild(PostgresObjectField objectField1) {
-    return Optional.of(objectField1)
-        .map(PostgresObjectField::getTargetType)
-        .filter(ObjectType::isNested)
-        .isPresent();
-  }
-
   private static boolean hasNestedReference(JoinTable joinTable) {
     return Optional.of(joinTable)
         .stream()
@@ -74,6 +67,13 @@ public class JoinHelper {
     return Optional.of(joinColumn)
         .map(JoinColumn::getReferencedField)
         .map(field -> field.contains("."))
+        .isPresent();
+  }
+
+  private static boolean hasNestedChild(PostgresObjectField objectField1) {
+    return Optional.of(objectField1)
+        .map(PostgresObjectField::getTargetType)
+        .filter(ObjectType::isNested)
         .isPresent();
   }
 
