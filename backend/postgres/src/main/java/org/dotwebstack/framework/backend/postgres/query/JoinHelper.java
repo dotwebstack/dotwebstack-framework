@@ -76,20 +76,28 @@ public class JoinHelper {
   public static JoinTable resolveJoinTable(PostgresObjectType objectType, JoinTable joinTable) {
     var result = new JoinTable();
     result.setName(joinTable.getName());
-    result.setJoinColumns(joinTable.getJoinColumns()
+
+    var joinColumns = joinTable.getJoinColumns()
         .stream()
         .map(joinColumn -> resolveReferencedField(joinColumn, objectType))
-        .collect(Collectors.toList()));
-    result.setInverseJoinColumns(joinTable.getInverseJoinColumns()
+        .collect(Collectors.toList());
+
+    result.setJoinColumns(joinColumns);
+
+    var inverseJoinColumns = joinTable.getInverseJoinColumns()
         .stream()
-        .map(joinColumn -> {
-          JoinColumn jc = new JoinColumn();
-          jc.setName(joinColumn.getName());
-          jc.setReferencedField(StringUtils.substringAfter(joinColumn.getReferencedField(), "."));
-          return jc;
-        })
-        .collect(Collectors.toList()));
+        .map(JoinHelper::resolveJoinColumn)
+        .collect(Collectors.toList());
+
+    result.setInverseJoinColumns(inverseJoinColumns);
 
     return result;
+  }
+
+  private static JoinColumn resolveJoinColumn(JoinColumn joinColumn) {
+    JoinColumn jc = new JoinColumn();
+    jc.setName(joinColumn.getName());
+    jc.setReferencedField(StringUtils.substringAfter(joinColumn.getReferencedField(), "."));
+    return jc;
   }
 }

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -99,20 +100,26 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
   private void propagateJoinTable(List<PostgresObjectField> allFields) {
     allFields.stream()
         .filter(JoinHelper::hasNestedReference)
-        .forEach(field -> Optional.of(field)
-            .stream()
-            .map(PostgresObjectField::getTargetType)
-            .flatMap(objectType -> objectType.getFields()
-                .values()
-                .stream())
-            .map(PostgresObjectField.class::cast)
-            .filter(nestedObjectField -> !nestedObjectField.getTargetType()
-                .isNested())
-            .forEach(nestedField -> {
-              var objectType = (PostgresObjectType) field.getObjectType();
-              var resolvedJoinTable = resolveJoinTable(objectType, field.getJoinTable());
+        .forEach(this::propagateJoinTable);
+  }
 
-              nestedField.setJoinTable(resolvedJoinTable);
-            }));
+  private void propagateJoinTable(PostgresObjectField field) {
+    Optional.of(field)
+        .stream()
+        .map(PostgresObjectField::getTargetType)
+        .map(ObjectType::getFields)
+        .map(Map::values)
+        .flatMap(Collection::stream)
+        .map(PostgresObjectField.class::cast)
+        .filter(nestedObjectField -> !nestedObjectField.getTargetType()
+            .isNested())
+        .forEach(nestedField -> resolveAndSetJoinTable(field, nestedField));
+  }
+
+  private void resolveAndSetJoinTable(PostgresObjectField field, PostgresObjectField nestedField) {
+    var objectType = (PostgresObjectType) field.getObjectType();
+    var resolvedJoinTable = resolveJoinTable(objectType, field.getJoinTable());
+
+    nestedField.setJoinTable(resolvedJoinTable);
   }
 }
