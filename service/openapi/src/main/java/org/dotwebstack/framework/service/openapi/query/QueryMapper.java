@@ -32,14 +32,19 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
@@ -56,9 +61,14 @@ public class QueryMapper {
 
   private final QueryArgumentBuilder queryArgumentBuilder;
 
-  public QueryMapper(GraphQLSchema graphQlSchema, QueryArgumentBuilder queryArgumentBuilder) {
+  private final Map<String, TypeMapper> typeMappers;
+
+  public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
+      @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.queryArgumentBuilder = queryArgumentBuilder;
+    this.typeMappers = typeMappers.stream()
+        .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
@@ -93,8 +103,7 @@ public class QueryMapper {
       return mapArraySchema((ArraySchema) schema, fieldDefinition);
     }
 
-    // Composed (allOf)-schemas are type-less (not an instance of ObjectSchema)
-    if (schema instanceof ObjectSchema || schema.getType() == null) {
+    if ("object".equals(schema.getType())) {
       return mapObjectSchema(schema, fieldDefinition);
     }
 
@@ -112,7 +121,7 @@ public class QueryMapper {
 
     var itemsSchema = schema.getItems();
 
-    if (itemsSchema instanceof ObjectSchema || itemsSchema.getType() == null) {
+    if ("object".equals(itemsSchema.getType())) {
       return mapSchema(schema.getItems(), fieldDefinition);
     }
 
@@ -127,26 +136,34 @@ public class QueryMapper {
     return schema.getProperties()
         .entrySet()
         .stream()
-        .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition));
+        .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), fieldDefinition));
   }
 
-  private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
+  private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema,
       GraphQLFieldDefinition parentFieldDefinition) {
-    var rawType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
+    var rawParentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
 
-    if (!(rawType instanceof GraphQLObjectType)) {
+    if (!(rawParentType instanceof GraphQLObjectType)) {
       throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
-          rawType.getName());
+          rawParentType.getName());
     }
 
-    var objectType = (GraphQLObjectType) rawType;
+    var objectType = (GraphQLObjectType) rawParentType;
     var fieldDefinition = objectType.getFieldDefinition(name);
 
     if (fieldDefinition == null || isEnvelope(schema)) {
       return mapSchema(schema, parentFieldDefinition);
     }
 
-    if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawType)) {
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (typeMappers.containsKey(rawType.getName())) {
+      return typeMappers.get(rawType.getName())
+          .schemaToField(name, schema)
+          .stream();
+    }
+
+    if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawParentType)) {
       throw invalidConfigurationException(
           "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
               .getSimpleName());
