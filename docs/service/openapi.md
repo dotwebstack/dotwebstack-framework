@@ -356,7 +356,7 @@ variables:
   mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query
   field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
-* `args.request_uri`: The requested URI is available via this argument.
+* `args.requestUri`: The requested URI is available via this argument.
 
 In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to
 specify a `fallback` for an `x-dws-expr`:
