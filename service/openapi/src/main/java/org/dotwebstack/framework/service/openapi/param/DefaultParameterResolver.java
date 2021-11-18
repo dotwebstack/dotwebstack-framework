@@ -31,7 +31,7 @@ public class DefaultParameterResolver implements ParameterResolver {
 
   private final JexlHelper jexlHelper;
 
-  private static final String REQUEST_URI = "request_uri";
+  private static final String REQUEST_URI = "requestUri";
 
   private final List<Parameter> parameters;
 
