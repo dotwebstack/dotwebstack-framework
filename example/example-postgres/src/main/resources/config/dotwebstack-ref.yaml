@@ -85,6 +85,7 @@ objectTypes:
       node:
         type: Brewery
         keyField: ref
+        nullable: true
 
   BreweryRef:
     fields:
@@ -158,7 +159,9 @@ objectTypes:
             referencedField: brewery
       beerAgg:
         aggregationOf: Beer
-        mappedBy: brewery
+        joinColumns:
+          - name: record_id
+            referencedField: brewery
       history:
         type: History
       relatedTo:
