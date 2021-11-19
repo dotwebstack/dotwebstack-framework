@@ -4,12 +4,16 @@
     "name": "Brewery X",
     "postalAddress": {
       "street": "Church Street",
-      "postalCode": "12345"
+      "postalCode": "12345",
+      "location": {
+        "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
+      }
     },
     "visitAddresses": [
       {
         "street": "5th Avenue",
-        "postalCode": "54321"
+        "postalCode": "54321",
+        "location": null
       }
     ],
     "numberOfEmployees": 12

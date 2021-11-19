@@ -462,6 +462,8 @@ components:
           type: string
         postalCode:
           type: string
+        location:
+          type: object
 
     AddressNullable:
       type: object
@@ -473,6 +475,8 @@ components:
           type: string
         postalCode:
           type: string
+        location:
+          type: object
 
     BreweryAllOf:
       type: object

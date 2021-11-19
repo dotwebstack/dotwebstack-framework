@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -15,6 +16,7 @@ import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
+import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +45,7 @@ class JsonBodyMapperTest {
     openApi = TestResources.openApi("openapi.yaml");
     bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
         .strict(true)
-        .create(), properties);
+        .create(), properties, List.of(new GeometryTypeMapper()));
   }
 
   static Stream<Arguments> arguments() {

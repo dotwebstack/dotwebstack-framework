@@ -32,14 +32,19 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.dotwebstack.framework.service.openapi.query.expand.QueryExpand;
 import org.dotwebstack.framework.service.openapi.query.expand.QueryExpandBuilder;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
@@ -58,9 +63,14 @@ public class QueryMapper {
 
   private final QueryArgumentBuilder queryArgumentBuilder;
 
-  public QueryMapper(GraphQLSchema graphQlSchema, QueryArgumentBuilder queryArgumentBuilder) {
+  private final Map<String, TypeMapper> typeMappers;
+
+  public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
+                     @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.queryArgumentBuilder = queryArgumentBuilder;
+    this.typeMappers = typeMappers.stream()
+        .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
@@ -98,8 +108,7 @@ public class QueryMapper {
       return mapArraySchema((ArraySchema) schema, fieldDefinition, queryExpand);
     }
 
-    // Composed (allOf)-schemas are type-less (not an instance of ObjectSchema)
-    if (schema instanceof ObjectSchema || schema.getType() == null) {
+    if ("object".equals(schema.getType())) {
       return mapObjectSchema(schema, fieldDefinition, queryExpand);
     }
 
@@ -107,7 +116,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition,
-      QueryExpand queryExpand) {
+                                       QueryExpand queryExpand) {
     if (isPageableField(fieldDefinition)) {
       var nestedFieldDefinition =
           ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
@@ -118,7 +127,7 @@ public class QueryMapper {
 
     var itemsSchema = schema.getItems();
 
-    if (itemsSchema instanceof ObjectSchema || itemsSchema.getType() == null) {
+    if ("object".equals(itemsSchema.getType())) {
       return mapSchema(schema.getItems(), fieldDefinition, queryExpand);
     }
 
@@ -130,7 +139,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      QueryExpand queryExpand) {
+                                        QueryExpand queryExpand) {
     return schema.getProperties()
         .entrySet()
         .stream()
@@ -139,24 +148,32 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
-      GraphQLFieldDefinition parentFieldDefinition, QueryExpand queryExpand) {
-    var rawType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
+                                                GraphQLFieldDefinition parentFieldDefinition, QueryExpand queryExpand) {
+    var rawParentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
 
-    if (!(rawType instanceof GraphQLObjectType)) {
+    if (!(rawParentType instanceof GraphQLObjectType)) {
       throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
-          rawType.getName());
+          rawParentType.getName());
     }
 
     queryExpand = queryExpand.appendField(name, schema);
 
-    var objectType = (GraphQLObjectType) rawType;
+    var objectType = (GraphQLObjectType) rawParentType;
     var fieldDefinition = objectType.getFieldDefinition(name);
 
     if (fieldDefinition == null || isEnvelope(schema)) {
       return mapSchema(schema, parentFieldDefinition, queryExpand);
     }
 
-    if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawType)) {
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (typeMappers.containsKey(rawType.getName())) {
+      return typeMappers.get(rawType.getName())
+          .schemaToField(name, schema)
+          .stream();
+    }
+
+    if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawParentType)) {
       throw invalidConfigurationException(
           "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
               .getSimpleName());
@@ -164,7 +181,7 @@ public class QueryMapper {
 
     if (queryExpand.isExpandable()
         && (Boolean.FALSE == schema.getNullable() && parentSchema.getRequired() != null && parentSchema.getRequired()
-            .contains(name))) {
+        .contains(name))) {
       throw invalidConfigurationException("Expandable field `{}` should be nullable or not required.", queryExpand);
     }
 
@@ -192,7 +209,7 @@ public class QueryMapper {
   }
 
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition,
-      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
+                                      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
     var parameters = new HashMap<>(operationRequest.getParameters());
     if (MapperUtils.isPageableField(fieldDefinition)) {
       parameters.putAll(QueryPaging.toPagingArguments(operationRequest.getContext()
@@ -238,7 +255,7 @@ public class QueryMapper {
   }
 
   private boolean isSchemaNullabilityValid(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      GraphQLFieldsContainer parentFieldsContainer) {
+                                           GraphQLFieldsContainer parentFieldsContainer) {
     var schemaNullable = schema.getNullable() != null && schema.getNullable();
 
     if (schemaNullable) {

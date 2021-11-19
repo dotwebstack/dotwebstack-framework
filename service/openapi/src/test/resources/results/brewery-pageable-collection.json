@@ -6,7 +6,10 @@
         "name": "Brewery X",
         "postalAddress": {
           "street": "Church Street",
-          "postalCode": "12345"
+          "postalCode": "12345",
+          "location": {
+            "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
+          }
         },
         "numberOfEmployees": 12
       },
@@ -15,7 +18,10 @@
         "name": "Brewery Y",
         "postalAddress": {
           "street": "5th Avenue",
-          "postalCode": null
+          "postalCode": null,
+          "location": {
+            "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
+          }
         },
         "numberOfEmployees": null
       },

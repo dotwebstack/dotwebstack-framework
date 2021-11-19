@@ -41,6 +41,11 @@ type BreweryConnection {
 type Address {
   street: String!
   postalCode: String!
+  location: Geometry
+}
+
+type Geometry {
+  asGeoJSON: String!
 }
 
 type Beer {
