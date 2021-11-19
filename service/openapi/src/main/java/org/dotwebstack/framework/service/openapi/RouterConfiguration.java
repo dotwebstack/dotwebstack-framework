@@ -92,7 +92,7 @@ class RouterConfiguration {
         .map(Enum::name)
         .collect(Collectors.joining(", "));
 
-    var serverResponse = ServerResponse.ok()
+    var serverResponse = ServerResponse.noContent()
         .header(HttpHeaders.ALLOW, allowMethods)
         .build();
 
