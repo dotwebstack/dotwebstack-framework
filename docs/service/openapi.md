@@ -216,23 +216,6 @@ A value may be resolved from an expression, using the `x-dws-expr` extension. Th
             x-dws-expr: '$body.name.toUpperCase()'
 ```
 
-## Paging
-The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
-```yaml
-features:
-  - paging
-```
-When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
-```
-  x-dws-query:
-    field: breweries
-    paging:
-      pageSize: $query.pageSize
-      page: $query.page
-```
-The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](../core/paging.md).
-If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
-
 <!-- ## Required fields
 
 In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension
@@ -357,6 +340,7 @@ variables:
   field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
 * `args.requestUri`: The requested URI is available via this argument.
+* `data`: The response data object available during field processing.
 
 In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to
 specify a `fallback` for an `x-dws-expr`:
@@ -369,6 +353,60 @@ x-dws-expr:
 
 when both the expression defined in the `value` and the `fallback` field result in an error or null, dotwebstack falls
 back to the default value defined in the parent schema. If no default is defined, `null` is the default.
+
+## Paging
+The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
+```yaml
+features:
+  - paging
+```
+When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
+```
+  x-dws-query:
+    field: breweries
+    paging:
+      pageSize: $query.pageSize
+      page: $query.page
+```
+The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](core/paging.md).
+If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
+
+To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
+passed available arguments using existing [Response properties expressions](service/openapi?id=response-properties-expression):
+
+- `paging:next(data, args.pageSize, args.requestUri)`
+  generates a next page link, only if a result set's size matches the requested page size.
+- `paging:prev(args.requestUri)`
+  generates a next page link, only from page 2 and up.
+
+Usage example:
+
+```yaml
+_links:
+  type: object
+  x-dws-envelope: true
+  properties:
+    next:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+    prev:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:prev(args.requestUri)"
+```
 
 ## AllOf
 

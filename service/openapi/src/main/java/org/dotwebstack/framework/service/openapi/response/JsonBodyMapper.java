@@ -213,6 +213,8 @@ public class JsonBodyMapper implements BodyMapper {
     environmentProperties.getAllProperties()
         .forEach((prop, value) -> newContext.set(String.format("env.%s", prop), value));
 
+    newContext.set("data", data);
+
     ((Map<String, Object>) data).entrySet()
         .stream()
         .filter(entry -> !(entry.getValue() instanceof Map))

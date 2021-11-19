@@ -83,6 +83,7 @@ paths:
                 x-dws-envelope: true
                 required:
                   - _embedded
+                  - _links
                 properties:
                   _embedded:
                     type: object
@@ -94,6 +95,40 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Brewery'
+                  _links:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - self
+                    properties:
+                      self:
+                        type: object
+                        x-dws-envelope: true
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: args.requestUri
+                      next:
+                        type: object
+                        x-dws-envelope: true
+                        required:
+                          - href
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+                      prev:
+                        type: object
+                        x-dws-envelope: true
+                        required:
+                          - href
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: "paging:prev(args.requestUri)"
 
   /breweries-pageable-with-params:
     get:
@@ -129,6 +164,7 @@ paths:
                 x-dws-envelope: true
                 required:
                   - _embedded
+                  - _links
                 properties:
                   _embedded:
                     type: object
