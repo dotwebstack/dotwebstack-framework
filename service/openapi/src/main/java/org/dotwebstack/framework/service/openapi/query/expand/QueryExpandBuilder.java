@@ -4,17 +4,19 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class QueryExpandBuilder {
+  private QueryExpandBuilder() {}
 
   @SuppressWarnings("unchecked")
-  public static QueryExpand build(OperationRequest operationRequest) {
+  public static QueryExpand build(@NonNull OperationRequest operationRequest) {
     var expandedPathList = (List<String>) operationRequest.getParameters()
         .get(OasConstants.X_DWS_EXPANDED_PARAMS);
     Set<String> expandedPaths = expandedPathList != null ? new HashSet<>(expandedPathList) : Set.of();
@@ -24,7 +26,7 @@ public class QueryExpandBuilder {
     if (parameters != null) {
       var expandable = parameters.stream()
           .map(QueryExpandBuilder::toExpanded)
-          .filter(Objects::nonNull)
+          .filter(s -> !s.isEmpty())
           .findFirst()
           .orElse(Set.of());
 
@@ -33,15 +35,15 @@ public class QueryExpandBuilder {
     return new QueryExpand(Set.of(), expandedPaths);
   }
 
-  private static Set<String> toExpanded(io.swagger.v3.oas.models.parameters.Parameter p) {
-    if (p.getExtensions() != null && p.getExtensions()
+  private static Set<String> toExpanded(Parameter parameter) {
+    if (parameter.getExtensions() != null && parameter.getExtensions()
         .containsKey(OasConstants.X_DWS_TYPE) && OasConstants.X_DWS_EXPAND_TYPE.equals(
-            p.getExtensions()
+            parameter.getExtensions()
                 .get(OasConstants.X_DWS_TYPE))) {
-      var schema = p.getSchema();
+      var schema = parameter.getSchema();
       return getEnum(schema);
     }
-    return null;
+    return Collections.emptySet();
   }
 
   @SuppressWarnings("unchecked")
@@ -55,6 +57,6 @@ public class QueryExpandBuilder {
       var items = ((ArraySchema) schema).getItems();
       return getEnum(items);
     }
-    return null;
+    return Collections.emptySet();
   }
 }

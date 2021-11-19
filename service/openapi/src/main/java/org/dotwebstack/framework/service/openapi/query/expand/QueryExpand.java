@@ -16,10 +16,7 @@ public class QueryExpand {
 
 
   public QueryExpand(Set<String> expandable, Set<String> expanded) {
-    this.expandable = expandable;
-    this.expanded = expanded;
-    entries = new String[] {};
-    rootFound = false;
+    this(expandable, expanded, new String[] {}, false);
   }
 
   public QueryExpand(Set<String> expandable, Set<String> expanded, String[] entries, boolean rootFound) {
@@ -31,13 +28,17 @@ public class QueryExpand {
 
   public QueryExpand appendField(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
-      String[] newEntries = new String[entries.length + 1];
+      var newEntries = new String[entries.length + 1];
       System.arraycopy(entries, 0, newEntries, 0, entries.length);
       newEntries[newEntries.length - 1] = key;
       return new QueryExpand(expandable, expanded, newEntries, rootFound);
     }
     rootFound = rootFound || (!isEnvelope(schema));
     return this;
+  }
+
+  public void appendSchema(Schema<?> schema) {
+    rootFound = rootFound || (!isEnvelope(schema));
   }
 
   public String toString() {
@@ -47,5 +48,9 @@ public class QueryExpand {
   public boolean expanded() {
     var pathString = this.toString();
     return !expandable.contains(pathString) || expanded.contains(pathString);
+  }
+
+  public boolean isExpandable() {
+    return expandable.contains(this.toString());
   }
 }

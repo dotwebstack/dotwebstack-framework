@@ -89,6 +89,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, QueryExpand queryExpand) {
+    queryExpand.appendSchema(schema);
     if (schema instanceof ComposedSchema) {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }
@@ -159,6 +160,12 @@ public class QueryMapper {
       throw invalidConfigurationException(
           "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
               .getSimpleName());
+    }
+
+    if (queryExpand.isExpandable()
+        && (Boolean.FALSE == schema.getNullable() && parentSchema.getRequired() != null && parentSchema.getRequired()
+            .contains(name))) {
+      throw invalidConfigurationException("Expandable field `{}` should be nullable or not required.", queryExpand);
     }
 
     if (!queryExpand.expanded()) {

@@ -88,28 +88,32 @@ class QueryMapperTest {
 
   static Stream<Arguments> argumentsForExceptions() {
     return Stream.of(
-        Arguments.of("/breweries-one-of", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-one-of", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
-        Arguments.of("/breweries-any-of", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-any-of", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
-        Arguments.of("/breweries-object-mismatch", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-object-mismatch", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Object schema does not match GraphQL field type (found: String)."),
-        Arguments.of("/breweries-string-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-string-nullability-exception", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
             "Nullability of `status` of type StringSchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-object-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-object-nullability-exception", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
             "Nullability of `postalAddress` of type ObjectSchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON,
+        Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON, Map.of(),
             InvalidConfigurationException.class,
             "Nullability of `beers` of type ArraySchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON,
+        Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON, Map.of(),
             InvalidConfigurationException.class,
-            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."));
+            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/brewery-invalid-expand", APPLICATION_JSON, Map.of("expand", "identifier"),
+            InvalidConfigurationException.class, "Expandable field `identifier` should be nullable or not required."));
   }
 
   @ParameterizedTest
   @MethodSource("argumentsForExceptions")
-  void map_throwsException_ForErrorCases(String path, MediaType preferredMediaType, Class<?> exceptionClass,
-      String message) {
+  void map_throwsException_ForErrorCases(String path, MediaType preferredMediaType, Map<String, Object> parameters,
+      Class<?> exceptionClass, String message) {
     var operation = openApi.getPaths()
         .get(path)
         .getGet();
@@ -121,6 +125,7 @@ class QueryMapperTest {
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
+        .parameters(parameters)
         .build();
 
     var throwable = assertThrows(RuntimeException.class, () -> queryFactory.map(operationRequest));
