@@ -233,6 +233,43 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
 The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](../core/paging.md).
 If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
+To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be 
+passed available arguments:
+
+- `paging:next(data, args.pageSize, args.requestUri)`
+generates a next page link, only if a result set's size matches the requested page size.
+- `paging:prev(args.requestUri)`
+generates a next page link, only from page 2 and up.
+
+Usage example:
+
+```yaml
+_links:
+  type: object
+  x-dws-envelope: true
+  properties:
+    next:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+    prev:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:prev(args.requestUri)"
+```
+
 <!-- ## Required fields
 
 In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension
