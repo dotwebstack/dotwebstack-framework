@@ -26,7 +26,7 @@ public class GeometryTypeMapper implements TypeMapper {
   @Override
   public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema) {
     if (!"object".equals(schema.getType())) {
-      throw invalidConfigurationException("Geometry type expects required an object field (found: {}).",
+      throw invalidConfigurationException("Geometry type requires an object schema (found: {}).",
           schema.getName());
     }
 
