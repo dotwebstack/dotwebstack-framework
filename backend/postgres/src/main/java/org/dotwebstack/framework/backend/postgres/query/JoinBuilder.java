@@ -50,8 +50,9 @@ class JoinBuilder {
     if (!current.getJoinColumns()
         .isEmpty()) {
       // Normal join column
-      return createJoinConditions(table, relatedTable, current.getJoinColumns(),
-          (PostgresObjectType) current.getTargetType());
+      var targetType =
+          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
+      return createJoinConditions(table, relatedTable, current.getJoinColumns(), (PostgresObjectType) targetType);
     }
 
     if (current.getJoinTable() != null) {
