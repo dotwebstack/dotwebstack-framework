@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,7 +39,9 @@ class QueryMapperTest {
         .create());
 
     openApi = TestResources.openApi("openapi.yaml");
-    queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder);
+
+    queryFactory =
+        new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder, List.of(new GeometryTypeMapper()));
   }
 
   static Stream<Arguments> arguments() {

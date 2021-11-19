@@ -56,4 +56,8 @@ public class ExceptionHelper {
   public static InternalServerErrorException internalServerErrorException() {
     return new InternalServerErrorException("An internal server error has occurred!");
   }
+
+  public static InternalServerErrorException internalServerErrorException(String message, Object... arguments) {
+    return new InternalServerErrorException(formatMessage(message, arguments), findCause(arguments));
+  }
 }

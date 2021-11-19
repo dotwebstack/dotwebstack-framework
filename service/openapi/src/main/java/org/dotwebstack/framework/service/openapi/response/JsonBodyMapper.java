@@ -11,11 +11,11 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -28,6 +28,7 @@ import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -43,11 +44,15 @@ public class JsonBodyMapper implements BodyMapper {
 
   private final EnvironmentProperties environmentProperties;
 
+  private final Map<String, TypeMapper> typeMappers;
+
   public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull JexlEngine jexlEngine,
-      @NonNull EnvironmentProperties environmentProperties) {
+      @NonNull EnvironmentProperties environmentProperties, @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
+    this.typeMappers = typeMappers.stream()
+        .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
   }
 
   @Override
@@ -70,7 +75,7 @@ public class JsonBodyMapper implements BodyMapper {
 
     var newContext = updateJexlContext(data, jexlContext);
 
-    if (schema instanceof ObjectSchema || schema.getType() == null) {
+    if ("object".equals(schema.getType())) {
       return mapObjectSchema(schema, fieldDefinition, data, newContext);
     }
 
@@ -111,6 +116,13 @@ public class JsonBodyMapper implements BodyMapper {
               acc.put(entry.getKey(), nestedValue);
             }
           }, HashMap::putAll);
+    }
+
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (typeMappers.containsKey(rawType.getName())) {
+      return typeMappers.get(rawType.getName())
+          .fieldToBody(data);
     }
 
     if (!(data instanceof Map)) {

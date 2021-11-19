@@ -4,7 +4,11 @@
   "_embedded": {
     "postalAddress": {
       "street": "Church Street",
-      "postalCode": "12345"
+      "postalCode": "12345",
+      "location": {
+        "type": "Point",
+        "coordinates": [5.38720071, 52.15516755]
+      }
     },
     "visitAddresses": [
       {

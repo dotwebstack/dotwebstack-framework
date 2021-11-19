@@ -74,6 +74,8 @@ components:
           $ref: '#/components/schemas/Address'
         visitAddress:
           $ref: '#/components/schemas/Address'
+        geometry:
+          type: object
 #        beers:
 #          type: array
 #          items:

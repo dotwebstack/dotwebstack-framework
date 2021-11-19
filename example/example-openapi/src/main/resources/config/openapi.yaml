@@ -274,7 +274,6 @@ components:
       required:
         - identifier
         - name
-        - geometry
         - visitAddress
         - _links
         - beers
@@ -291,6 +290,8 @@ components:
 #          properties:
 #            name:
 #              type: string
+        geometry:
+          type: object
         status:
           type: string
         postalAddress:
