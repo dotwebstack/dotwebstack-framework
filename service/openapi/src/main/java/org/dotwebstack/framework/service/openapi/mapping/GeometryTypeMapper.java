@@ -26,8 +26,7 @@ public class GeometryTypeMapper implements TypeMapper {
   @Override
   public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema) {
     if (!"object".equals(schema.getType())) {
-      throw invalidConfigurationException("Geometry type requires an object schema (found: {}).",
-          schema.getName());
+      throw invalidConfigurationException("Geometry type requires an object schema (found: {}).", schema.getName());
     }
 
     var field = new Field(name, new SelectionSet(List.of(new Field("asGeoJSON"))));
