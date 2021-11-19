@@ -66,7 +66,7 @@ public class QueryMapper {
   private final Map<String, TypeMapper> typeMappers;
 
   public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
-                     @NonNull Collection<TypeMapper> typeMappers) {
+      @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
@@ -116,7 +116,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition,
-                                       QueryExpand queryExpand) {
+      QueryExpand queryExpand) {
     if (isPageableField(fieldDefinition)) {
       var nestedFieldDefinition =
           ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
@@ -139,7 +139,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-                                        QueryExpand queryExpand) {
+      QueryExpand queryExpand) {
     return schema.getProperties()
         .entrySet()
         .stream()
@@ -148,7 +148,7 @@ public class QueryMapper {
   }
 
   private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
-                                                GraphQLFieldDefinition parentFieldDefinition, QueryExpand queryExpand) {
+      GraphQLFieldDefinition parentFieldDefinition, QueryExpand queryExpand) {
     var rawParentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
 
     if (!(rawParentType instanceof GraphQLObjectType)) {
@@ -181,7 +181,7 @@ public class QueryMapper {
 
     if (queryExpand.isExpandable()
         && (Boolean.FALSE == schema.getNullable() && parentSchema.getRequired() != null && parentSchema.getRequired()
-        .contains(name))) {
+            .contains(name))) {
       throw invalidConfigurationException("Expandable field `{}` should be nullable or not required.", queryExpand);
     }
 
@@ -209,7 +209,7 @@ public class QueryMapper {
   }
 
   private List<Argument> mapArguments(GraphQLFieldDefinition fieldDefinition,
-                                      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
+      GraphQLFieldsContainer parentFieldsContainer, OperationRequest operationRequest) {
     var parameters = new HashMap<>(operationRequest.getParameters());
     if (MapperUtils.isPageableField(fieldDefinition)) {
       parameters.putAll(QueryPaging.toPagingArguments(operationRequest.getContext()
@@ -255,7 +255,7 @@ public class QueryMapper {
   }
 
   private boolean isSchemaNullabilityValid(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-                                           GraphQLFieldsContainer parentFieldsContainer) {
+      GraphQLFieldsContainer parentFieldsContainer) {
     var schemaNullable = schema.getNullable() != null && schema.getNullable();
 
     if (schemaNullable) {

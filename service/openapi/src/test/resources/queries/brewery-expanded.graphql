@@ -6,10 +6,16 @@ query Query {
     postalAddress {
       street
       postalCode
+      location {
+        asGeoJSON
+      }
     }
     visitAddresses {
       street
       postalCode
+      location {
+        asGeoJSON
+      }
     }
     numberOfEmployees
   }

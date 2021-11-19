@@ -4,6 +4,33 @@
       {
         "postalAddress": null,
         "name": "Brewery S",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                5.6062141,
+                51.51790886
+              ],
+              [
+                5.60849934,
+                51.51790886
+              ],
+              [
+                5.60849934,
+                51.51677388
+              ],
+              [
+                5.6062141,
+                51.51677388
+              ],
+              [
+                5.6062141,
+                51.51790886
+              ]
+            ]
+          ]
+        },
         "visitAddress": null,
         "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c11666"
       },
@@ -14,6 +41,33 @@
           "identifier_address": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f"
         },
         "name": "Brewery X",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                5.97138596,
+                52.22549348
+              ],
+              [
+                5.97205383,
+                52.22549348
+              ],
+              [
+                5.97205383,
+                52.22527989
+              ],
+              [
+                5.97138596,
+                52.22527989
+              ],
+              [
+                5.97138596,
+                52.22549348
+              ]
+            ]
+          ]
+        },
         "visitAddress": {
           "city": "Dublin",
           "street": "Church Street",
@@ -28,12 +82,66 @@
           "identifier_address": "3fe6c706-54af-4420-89c4-926ff719236a"
         },
         "name": "Brewery Y",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                6.17194394,
+                51.48699391
+              ],
+              [
+                6.17432574,
+                51.48699391
+              ],
+              [
+                6.17432574,
+                51.48564438
+              ],
+              [
+                6.17194394,
+                51.48564438
+              ],
+              [
+                6.17194394,
+                51.48699391
+              ]
+            ]
+          ]
+        },
         "visitAddress": null,
         "identifier_brewery": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9"
       },
       {
         "postalAddress": null,
         "name": "Brewery Z",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                6.81534412,
+                52.20765373
+              ],
+              [
+                6.81835893,
+                52.20765373
+              ],
+              [
+                6.81835893,
+                52.20645713
+              ],
+              [
+                6.81534412,
+                52.20645713
+              ],
+              [
+                6.81534412,
+                52.20765373
+              ]
+            ]
+          ]
+        },
         "visitAddress": null,
         "identifier_brewery": "28649f76-ddcf-417a-8c1d-8e5012c31959"
       }
