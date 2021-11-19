@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
@@ -90,6 +91,7 @@ class RouterConfigurationTest {
   private void assertOptionsHandler(HandlerFunction<ServerResponse> optionsHandler, ServerRequest serverRequest) {
     StepVerifier.create(optionsHandler.handle(serverRequest))
         .assertNext(serverResponse -> {
+          assertThat(serverResponse.statusCode(), is(HttpStatus.NO_CONTENT));
           var headers = serverResponse.headers();
           var expectedAllow = Set.of(HttpMethod.OPTIONS, HttpMethod.GET);
           assertThat(headers.getAllow(), is(equalTo(expectedAllow)));
