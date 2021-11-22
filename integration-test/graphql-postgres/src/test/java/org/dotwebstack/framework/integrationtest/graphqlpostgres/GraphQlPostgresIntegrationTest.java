@@ -2,6 +2,7 @@ package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static graphql.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.equalToObject;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -9,6 +10,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -819,6 +821,18 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beer1.get(NAME), is("Beer 1"));
     Map<String, Object> beer3 = beers.get(1);
     assertThat(beer3.get(NAME), is("Beer 3"));
+  }
+
+  @Test
+  void getRequest_returnsTheIngredientAndTheBeersItIsPartOf_withMappedByJoinTable() {
+    String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") "
+        + "{name partOfWithMappedBy{name }}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("ingredient"), equalToObject(
+        Map.of("name", "Caramel", "partOfWithMappedBy", List.of(Map.of("name", "Beer 1"), Map.of("name", "Beer 3"))))));
   }
 
   @Test

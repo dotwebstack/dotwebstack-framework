@@ -559,15 +559,28 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinMappedBy(PostgresObjectField objectField, Table<Record> table) {
-    var nestedObjectField = objectField.getMappedByObjectField();
+    var mappedByObjectField = objectField.getMappedByObjectField();
+
+    if (mappedByObjectField.getJoinTable() != null) {
+      // Provide join info for child data fetcher
+      fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
+          .key(getJoinColumnValues(mappedByObjectField.getJoinTable()
+              .getInverseJoinColumns(), row))
+          .build());
+
+      return selectJoinColumns((PostgresObjectType) mappedByObjectField.getTargetType(),
+          mappedByObjectField.getJoinTable()
+              .getInverseJoinColumns(),
+          table);
+    }
 
     // Provide join info for child data fetcher
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-        .key(getJoinColumnValues(nestedObjectField.getJoinColumns(), row))
+        .key(getJoinColumnValues(mappedByObjectField.getJoinColumns(), row))
         .build());
 
-    return selectJoinColumns((PostgresObjectType) nestedObjectField.getTargetType(), nestedObjectField.getJoinColumns(),
-        table);
+    return selectJoinColumns((PostgresObjectType) mappedByObjectField.getTargetType(),
+        mappedByObjectField.getJoinColumns(), table);
   }
 
   private List<SelectFieldOrAsterisk> handleJoinTable(PostgresObjectField objectField, Table<Record> parentTable) {

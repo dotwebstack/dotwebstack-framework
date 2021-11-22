@@ -80,7 +80,7 @@ class BatchJoinBuilder {
     }
 
     if (resolvedObjectField.getJoinTable() != null) {
-      return batchJoin(resolvedObjectField.getJoinTable(), targetObjectType);
+      return batchJoin(objectField, resolvedObjectField.getJoinTable(), targetObjectType);
     }
 
     return batchJoinWithKeysOnly();
@@ -132,16 +132,22 @@ class BatchJoinBuilder {
     return batchJoin(joinColumns, table, objectType);
   }
 
-  private SelectQuery<Record> batchJoin(JoinTable joinTable, PostgresObjectType targetObjectType) {
+  private SelectQuery<Record> batchJoin(PostgresObjectField objectField, JoinTable joinTable,
+      PostgresObjectType targetObjectType) {
     var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);
 
-    dataQuery
-        .addConditions(createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(), targetObjectType));
+    var owningJoinColumns =
+        objectField.getMappedByObjectField() != null ? joinTable.getJoinColumns() : joinTable.getInverseJoinColumns();
 
-    return batchJoin(joinTable.getJoinColumns(), junctionTable, (PostgresObjectType) objectField.getObjectType());
+    var keyJoinColumns =
+        objectField.getMappedByObjectField() != null ? joinTable.getInverseJoinColumns() : joinTable.getJoinColumns();
+
+    dataQuery.addConditions(createJoinConditions(junctionTable, table, owningJoinColumns, targetObjectType));
+
+    return batchJoin(keyJoinColumns, junctionTable, (PostgresObjectType) objectField.getObjectType());
   }
 
   private Table<Record> createValuesTable(PostgresObjectType objectType, List<JoinColumn> joinColumns,
