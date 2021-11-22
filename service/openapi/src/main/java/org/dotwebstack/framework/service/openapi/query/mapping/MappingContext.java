@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import lombok.NonNull;
@@ -21,7 +22,7 @@ public class MappingContext {
 
   private final Set<String> expandedPaths;
 
-  private final String[] path;
+  private final List<String> path;
 
   private boolean rootFound;
 
@@ -53,10 +54,10 @@ public class MappingContext {
   }
 
   public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths) {
-    this(expandablePaths, expandedPaths, new String[] {}, false);
+    this(expandablePaths, expandedPaths, List.of(), false);
   }
 
-  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths, String[] path, boolean rootFound) {
+  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths, List<String> path, boolean rootFound) {
     this.expandablePaths = expandablePaths;
     this.expandedPaths = expandedPaths;
     this.path = path;
@@ -65,8 +66,7 @@ public class MappingContext {
 
   public MappingContext updatePath(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
-      String[] newPath = createNewPath(key);
-      return new MappingContext(expandablePaths, expandedPaths, newPath, rootFound);
+      return new MappingContext(expandablePaths, expandedPaths, createNewPath(key), rootFound);
     }
     rootFound = rootFound || (!isEnvelope(schema));
     return this;
@@ -89,17 +89,15 @@ public class MappingContext {
     return expandablePaths.contains(this.toString());
   }
 
-  private String[] createNewPath(String key) {
-    var newPath = new String[path.length + 1];
-    System.arraycopy(path, 0, newPath, 0, path.length);
-    newPath[newPath.length - 1] = key;
-    return newPath;
+  private List<String> createNewPath(String key) {
+    var newPath = new LinkedList<>(path);
+    newPath.add(key);
+    return Collections.unmodifiableList(newPath);
   }
 
-  private String[] createNewPath() {
-    var newPath = new String[path.length];
-    System.arraycopy(path, 0, newPath, 0, newPath.length);
-    return newPath;
+  private List<String> createNewPath() {
+    var newPath = new LinkedList<>(path);
+    return Collections.unmodifiableList(newPath);
   }
 
   private static Set<String> toExpanded(Parameter parameter) {
