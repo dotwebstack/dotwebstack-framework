@@ -2,9 +2,11 @@ package org.dotwebstack.framework.backend.postgres;
 
 import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +63,9 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     allFields.stream()
         .filter(objectField -> objectTypes.containsKey(objectField.getType()))
         .forEach(objectField -> {
-          var targetType = (PostgresObjectType) objectTypes.get(objectField.getType());
+          var targetType = Optional.ofNullable((PostgresObjectType) objectTypes.get(objectField.getType()))
+              .orElseThrow(() -> invalidConfigurationException("Object type '{}' not found.", objectField.getType()));
+
           objectField.setTargetType(targetType);
         });
   }
@@ -74,10 +78,10 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
           var type = StringUtils.isNotEmpty(objectField.getAggregationOf()) ? objectField.getAggregationOf()
               : objectField.getType();
 
-          var objectType = objectTypes.get(type);
+          var objectType = (PostgresObjectType) Optional.ofNullable(objectTypes.get(type))
+              .orElseThrow(() -> invalidConfigurationException("Object type '{}' not found.", type));
 
-          PostgresObjectField mappedByObjectField = (PostgresObjectField) objectType.getFields()
-              .get(objectField.getMappedBy());
+          var mappedByObjectField = objectType.getField(objectField.getMappedBy());
 
           objectField.setMappedByObjectField(mappedByObjectField);
         });
@@ -88,7 +92,10 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     allFields.stream()
         .filter(AggregateHelper::isAggregate)
         .forEach(objectField -> {
-          var aggregationOfType = (PostgresObjectType) objectTypes.get(objectField.getAggregationOf());
+          var aggregationOfType = (PostgresObjectType) Optional
+              .ofNullable(objectTypes.get(objectField.getAggregationOf()))
+              .orElseThrow(
+                  () -> invalidConfigurationException("Object type '{}' not found.", objectField.getAggregationOf()));
 
           objectField.setAggregationOfType(aggregationOfType);
         });
