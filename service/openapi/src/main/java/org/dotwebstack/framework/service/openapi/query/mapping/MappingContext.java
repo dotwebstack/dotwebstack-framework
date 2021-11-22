@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.query.expand;
+package org.dotwebstack.framework.service.openapi.query.mapping;
 
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 
@@ -35,8 +35,8 @@ public class MappingContext {
     return this;
   }
 
-  public void updatePath(Schema<?> schema) {
-    rootFound = rootFound || (!isEnvelope(schema));
+  public MappingContext updatePath(Schema<?> schema) {
+    return new MappingContext(expandablePaths, expandedPaths, createNewPath(), rootFound || (!isEnvelope(schema)));
   }
 
   public String toString() {
@@ -56,6 +56,12 @@ public class MappingContext {
     var newPath = new String[path.length + 1];
     System.arraycopy(path, 0, newPath, 0, path.length);
     newPath[newPath.length - 1] = key;
+    return newPath;
+  }
+
+  private String[] createNewPath() {
+    var newPath = new String[path.length];
+    System.arraycopy(path, 0, newPath, 0, newPath.length);
     return newPath;
   }
 }

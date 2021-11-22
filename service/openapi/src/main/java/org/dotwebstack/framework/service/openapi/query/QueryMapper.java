@@ -45,8 +45,8 @@ import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
-import org.dotwebstack.framework.service.openapi.query.expand.MappingContext;
-import org.dotwebstack.framework.service.openapi.query.expand.MappingContextBuilder;
+import org.dotwebstack.framework.service.openapi.query.mapping.MappingContext;
+import org.dotwebstack.framework.service.openapi.query.mapping.MappingContextBuilder;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
@@ -99,7 +99,7 @@ public class QueryMapper {
 
   private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
       MappingContext mappingContext) {
-    mappingContext.updatePath(schema);
+    mappingContext = mappingContext.updatePath(schema);
     if (schema instanceof ComposedSchema) {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.query.expand;
+package org.dotwebstack.framework.service.openapi.query.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
