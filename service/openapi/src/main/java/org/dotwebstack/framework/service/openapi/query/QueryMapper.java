@@ -46,7 +46,6 @@ import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.dotwebstack.framework.service.openapi.query.mapping.MappingContext;
-import org.dotwebstack.framework.service.openapi.query.mapping.MappingContextBuilder;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
@@ -81,9 +80,10 @@ public class QueryMapper {
     var queryType = graphQlSchema.getQueryType();
     var fieldDefinition = getObjectField(queryType, fieldName);
     var fieldArguments = mapArguments(fieldDefinition, graphQlSchema.getQueryType(), operationRequest);
-    var queryField = new Field(fieldName, fieldArguments, new SelectionSet(
-        mapSchema(operationRequest.getResponseSchema(), fieldDefinition, MappingContextBuilder.build(operationRequest))
-            .collect(Collectors.toList())));
+    var queryField = new Field(fieldName, fieldArguments,
+        new SelectionSet(
+            mapSchema(operationRequest.getResponseSchema(), fieldDefinition, MappingContext.build(operationRequest))
+                .collect(Collectors.toList())));
 
     var query = OperationDefinition.newOperationDefinition()
         .name(OPERATION_NAME)
@@ -284,13 +284,11 @@ public class QueryMapper {
     return fieldType instanceof GraphQLNonNull;
   }
 
-
   private boolean invalidExpand(String name, Schema<?> schema, Schema<?> parentSchema, MappingContext mappingContext) {
     boolean notNullable = Boolean.FALSE == schema.getNullable();
     boolean required = notNullable && parentSchema.getRequired() != null && parentSchema.getRequired()
         .contains(name);
     return mappingContext.isExpandable() && required && notNullable;
   }
-
 
 }
