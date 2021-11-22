@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import java.util.Set;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,9 +22,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -68,6 +72,30 @@ class RouterConfigurationTest {
 
     StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/breweries")))
         .assertNext(handler -> assertThat(handler, is(operationHandler)))
+        .verifyComplete();
+  }
+
+  @Test
+  void router_returnsOptionsHandler_whenPathMatches() {
+    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
+    when(operationHandlerFactory.create(any(Operation.class))).thenReturn(request -> Mono.empty());
+
+    var routerFunction = routerConfiguration.router();
+    var requestMock = mockRequest(HttpMethod.OPTIONS, "/breweries");
+
+    StepVerifier.create(routerFunction.route(requestMock))
+        .assertNext(handler -> assertOptionsHandler(handler, requestMock))
+        .verifyComplete();
+  }
+
+  private void assertOptionsHandler(HandlerFunction<ServerResponse> optionsHandler, ServerRequest serverRequest) {
+    StepVerifier.create(optionsHandler.handle(serverRequest))
+        .assertNext(serverResponse -> {
+          assertThat(serverResponse.statusCode(), is(HttpStatus.NO_CONTENT));
+          var headers = serverResponse.headers();
+          var expectedAllow = Set.of(HttpMethod.OPTIONS, HttpMethod.GET);
+          assertThat(headers.getAllow(), is(equalTo(expectedAllow)));
+        })
         .verifyComplete();
   }
 

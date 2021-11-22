@@ -44,6 +44,14 @@ paths:
           required: true
           schema:
             type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
       responses:
         200:
           description: OK
@@ -83,6 +91,7 @@ paths:
                 x-dws-envelope: true
                 required:
                   - _embedded
+                  - _links
                 properties:
                   _embedded:
                     type: object
@@ -94,6 +103,40 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Brewery'
+                  _links:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - self
+                    properties:
+                      self:
+                        type: object
+                        x-dws-envelope: true
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: args.requestUri
+                      next:
+                        type: object
+                        x-dws-envelope: true
+                        required:
+                          - href
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+                      prev:
+                        type: object
+                        x-dws-envelope: true
+                        required:
+                          - href
+                        properties:
+                          href:
+                            type: string
+                            format: uri
+                            x-dws-expr: "paging:prev(args.requestUri)"
 
   /breweries-pageable-with-params:
     get:
@@ -129,6 +172,7 @@ paths:
                 x-dws-envelope: true
                 required:
                   - _embedded
+                  - _links
                 properties:
                   _embedded:
                     type: object
@@ -335,6 +379,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BreweryMaybeArrayNullabilityException'
+  /brewery-invalid-expand:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: string
+            enum:
+              - identifier
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
 
 components:
   schemas:
@@ -349,6 +411,7 @@ components:
       properties:
         identifier:
           type: string
+          nullable: false
         name:
           type: string
         aliases:
@@ -386,7 +449,6 @@ components:
           type: object
           x-dws-envelope: true
           required:
-            - postalAddress
             - visitAddresses
           properties:
             postalAddress:
@@ -436,6 +498,8 @@ components:
           type: string
         postalCode:
           type: string
+        location:
+          type: object
 
     AddressNullable:
       type: object
@@ -447,6 +511,8 @@ components:
           type: string
         postalCode:
           type: string
+        location:
+          type: object
 
     BreweryAllOf:
       type: object

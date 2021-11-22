@@ -11,11 +11,11 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -28,6 +28,7 @@ import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
+import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -43,11 +44,15 @@ public class JsonBodyMapper implements BodyMapper {
 
   private final EnvironmentProperties environmentProperties;
 
+  private final Map<String, TypeMapper> typeMappers;
+
   public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull JexlEngine jexlEngine,
-      @NonNull EnvironmentProperties environmentProperties) {
+      @NonNull EnvironmentProperties environmentProperties, @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
+    this.typeMappers = typeMappers.stream()
+        .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
   }
 
   @Override
@@ -68,15 +73,17 @@ public class JsonBodyMapper implements BodyMapper {
       return null;
     }
 
-    if (schema instanceof ObjectSchema || schema.getType() == null) {
-      return mapObjectSchema(schema, fieldDefinition, data, jexlContext);
+    var newContext = updateJexlContext(data, jexlContext);
+
+    if ("object".equals(schema.getType())) {
+      return mapObjectSchema(schema, fieldDefinition, data, newContext);
     }
 
     if (schema instanceof ArraySchema) {
-      return mapArraySchema((ArraySchema) schema, fieldDefinition, data, jexlContext);
+      return mapArraySchema((ArraySchema) schema, fieldDefinition, data, newContext);
     }
 
-    return evaluateScalarData(schema, data, jexlContext);
+    return evaluateScalarData(schema, data, newContext);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -111,6 +118,13 @@ public class JsonBodyMapper implements BodyMapper {
           }, HashMap::putAll);
     }
 
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (typeMappers.containsKey(rawType.getName())) {
+      return typeMappers.get(rawType.getName())
+          .fieldToBody(data);
+    }
+
     if (!(data instanceof Map)) {
       throw illegalStateException("Data is not compatible with object schema.");
     }
@@ -138,8 +152,6 @@ public class JsonBodyMapper implements BodyMapper {
 
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
     var fieldDefinition = rawType.getFieldDefinition(name);
-
-    updateJexlContext(data, jexlContext);
 
     return mapSchema(schema, fieldDefinition, data.get(name), jexlContext);
   }
@@ -177,25 +189,38 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   private JexlContext createJexlContext(OperationRequest operationRequest) {
-    Map<String, Object> parameters = operationRequest.getParameters();
-    MapContext result = new MapContext();
+    var parameters = operationRequest.getParameters();
+    var context = new MapContext();
 
-    result.set("$body", parameters);
-    result.set("$query", parameters);
-    result.set("$path", parameters);
-    result.set("$header", parameters);
+    context.set("args", parameters);
 
     environmentProperties.getAllProperties()
-        .forEach((prop, value) -> result.set(String.format("env.%s", prop), value));
+        .forEach((prop, value) -> context.set(String.format("env.%s", prop), value));
 
-    return result;
+    return context;
   }
 
-  private void updateJexlContext(Map<String, Object> dataMap, JexlContext jexlContext) {
-    dataMap.entrySet()
+  @SuppressWarnings("unchecked")
+  private JexlContext updateJexlContext(Object data, JexlContext jexlContext) {
+    if (!(data instanceof Map)) {
+      return jexlContext;
+    }
+
+    var newContext = new MapContext();
+
+    newContext.set("args", jexlContext.get("args"));
+
+    environmentProperties.getAllProperties()
+        .forEach((prop, value) -> newContext.set(String.format("env.%s", prop), value));
+
+    newContext.set("data", data);
+
+    ((Map<String, Object>) data).entrySet()
         .stream()
         .filter(entry -> !(entry.getValue() instanceof Map))
-        .forEach(entry -> jexlContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
+        .forEach(entry -> newContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
+
+    return newContext;
   }
 
   private Object evaluateScalarData(Schema<?> schema, Object data, JexlContext jexlContext) {

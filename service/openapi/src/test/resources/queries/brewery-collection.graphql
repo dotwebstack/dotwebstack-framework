@@ -3,13 +3,12 @@ query Query {
     identifier
     name
     aliases
-    postalAddress {
-      street
-      postalCode
-    }
     visitAddresses {
       street
       postalCode
+      location {
+        asGeoJSON
+      }
     }
     numberOfEmployees
   }

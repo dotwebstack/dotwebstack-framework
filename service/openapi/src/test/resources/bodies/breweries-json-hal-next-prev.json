@@ -33,5 +33,16 @@
         "numberOfEmployees": null
       }
     ]
+  },
+  "_links": {
+    "next": {
+      "href": "https://dotwebstack.org/api/breweries?page=3"
+    },
+    "prev": {
+      "href": "https://dotwebstack.org/api/breweries?page=1"
+    },
+    "self": {
+      "href": "https://dotwebstack.org/api/breweries?page=2"
+    }
   }
 }

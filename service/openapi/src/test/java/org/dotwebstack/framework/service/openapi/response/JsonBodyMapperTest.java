@@ -8,13 +8,16 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.jexl.PagingFunctions;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
+import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,9 +44,11 @@ class JsonBodyMapperTest {
   @BeforeEach
   void beforeEach() {
     openApi = TestResources.openApi("openapi.yaml");
+    var pagingLinkFunctions = new PagingFunctions();
     bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
         .strict(true)
-        .create(), properties);
+        .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
+        .create(), properties, List.of(new GeometryTypeMapper()));
   }
 
   static Stream<Arguments> arguments() {
@@ -51,8 +56,18 @@ class JsonBodyMapperTest {
         Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection", "breweries-json-hal"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection",
             "breweries-json"),
-        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL, Map.of(), "brewery-pageable-collection",
-            "breweries-json-hal"),
+        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
+            Map.of("requestUri", "https://dotwebstack.org/api/breweries"), "brewery-pageable-collection",
+            "breweries-json-hal-no-next"),
+        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
+            Map.of("requestUri", "https://dotwebstack.org/api/breweries", "pageSize", "10"),
+            "brewery-pageable-collection", "breweries-json-hal-no-next"),
+        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
+            Map.of("requestUri", "https://dotwebstack.org/api/breweries", "pageSize", "3"),
+            "brewery-pageable-collection", "breweries-json-hal-next"),
+        Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
+            Map.of("requestUri", "https://dotwebstack.org/api/breweries?page=2", "pageSize", "3"),
+            "brewery-pageable-collection", "breweries-json-hal-next-prev"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
             "brewery-json-hal"));

@@ -3,13 +3,18 @@ package org.dotwebstack.framework.service.openapi;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -60,7 +65,14 @@ class RouterConfiguration {
         .forEach((httpMethod, operation) -> builder.route(matchRoute(path, httpMethod),
             operationHandlerFactory.create(operation)));
 
+    builder.route(matchRoute(path, PathItem.HttpMethod.OPTIONS), optionsHandler(pathItem));
+
     return builder.build();
+  }
+
+  private RouterFunction<ServerResponse> routeApiDocs() {
+    return RouterFunctions.route(matchRoute(openApiProperties.getApiDocPublicationPath(), PathItem.HttpMethod.GET),
+        new OpenApiRequestHandler(openApiStream));
   }
 
   private static RequestPredicate matchRoute(String path, PathItem.HttpMethod httpMethod) {
@@ -70,11 +82,20 @@ class RouterConfiguration {
         .and(RequestPredicates.method(method));
   }
 
-  private RouterFunction<ServerResponse> routeApiDocs() {
-    var builder = RouterFunctions.route();
-    builder.route(matchRoute(openApiProperties.getApiDocPublicationPath(), PathItem.HttpMethod.GET),
-        new OpenApiRequestHandler(openApiStream));
-    return builder.build();
-  }
+  private static HandlerFunction<ServerResponse> optionsHandler(PathItem pathItem) {
+    var methodSet = new HashSet<>(Set.of(PathItem.HttpMethod.OPTIONS));
 
+    methodSet.addAll(pathItem.readOperationsMap()
+        .keySet());
+
+    var allowMethods = methodSet.stream()
+        .map(Enum::name)
+        .collect(Collectors.joining(", "));
+
+    var serverResponse = ServerResponse.noContent()
+        .header(HttpHeaders.ALLOW, allowMethods)
+        .build();
+
+    return serverRequest -> serverResponse;
+  }
 }

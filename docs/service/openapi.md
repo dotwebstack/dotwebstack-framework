@@ -128,15 +128,8 @@ parameters:
 ```
 
 ## Expand parameter
-
-<!-- By default, only GraphQL fields with the `ID` type and the fields that are marked as `required` in the OpenApi response
-are returned. If a required field in OpenApi is of type `object` in GraphQL, only the child fields of this type with
-the `ID`
-type are returned by default.
-
-It is possible to expand a query with fields that are not returned by default by adding a parameter with
-`x-dws-type: expand`. This parameter can be of type `string` or `array` and the values should refer to a field in
-GraphQL:
+The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
+The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a response object `Brewery`.
 
 ```yaml
 x-dws-type: expand
@@ -144,23 +137,17 @@ name: expand
 in: query
 schema:
   type: array
-  default: [ 'beers' ]
   items:
     type: string
     enum: [ 'beers', 'beers.ingredients', 'beers.supplements' ]
+      responses:
+        ...
+                  $ref: '#/components/schemas/Brewery'
 ```
+A query with `?expand=beers` will indicate that the `beers` property should be retrieved.
+Properties listed as 'expandable' in the enum support the dotted notation for nesting.
 
-In the example the expand parameter is used to include `beers` in the response by default. Since `beers` refers to an
-object field in GraphQL, it means that the fields within `beers` with an `ID` type are returned as well, all other
-fields are not by default. In order to expand the fields that do no have this `ID` type, the user has to provide an
-expand parameter with value `beers.ingredients`. It is possible to expand lower level fields with a dotted notation,
-without explicitly expanding the parent objects. Parent objects are added to the query automatically. This means that
-when you expand the query with `beers.ingredients` it is not necessary to provide a separate expand value for `beers`.
-However, when you add the
-`beers` value too, it is only added once.
-
-In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by
-default with one or more values and to restrict which values can be expanded. -->
+A property marked as 'expandable' should be nullable or not required.
 
 ## Filters
 OpenApi queries may add filter configuration under the vendor extensions `x-dws-query`.
@@ -215,23 +202,6 @@ A value may be resolved from an expression, using the `x-dws-expr` extension. Th
           in:
             x-dws-expr: '$body.name.toUpperCase()'
 ```
-
-## Paging
-The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
-```yaml
-features:
-  - paging
-```
-When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
-```
-  x-dws-query:
-    field: breweries
-    paging:
-      pageSize: $query.pageSize
-      page: $query.page
-```
-The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](../core/paging.md).
-If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
 <!-- ## Required fields
 
@@ -356,7 +326,8 @@ variables:
   mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query
   field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.
-* `args.request_uri`: The requested URI is available via this argument.
+* `args.requestUri`: The requested URI is available via this argument.
+* `data`: The response data object available during field processing.
 
 In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to
 specify a `fallback` for an `x-dws-expr`:
@@ -369,6 +340,60 @@ x-dws-expr:
 
 when both the expression defined in the `value` and the `fallback` field result in an error or null, dotwebstack falls
 back to the default value defined in the parent schema. If no default is defined, `null` is the default.
+
+## Paging
+The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
+```yaml
+features:
+  - paging
+```
+When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
+```
+  x-dws-query:
+    field: breweries
+    paging:
+      pageSize: $query.pageSize
+      page: $query.page
+```
+The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](core/paging.md).
+If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
+
+To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
+passed available arguments using existing [Response properties expressions](service/openapi?id=response-properties-expression):
+
+- `paging:next(data, args.pageSize, args.requestUri)`
+  generates a next page link, only if a result set's size matches the requested page size.
+- `paging:prev(args.requestUri)`
+  generates a next page link, only from page 2 and up.
+
+Usage example:
+
+```yaml
+_links:
+  type: object
+  x-dws-envelope: true
+  properties:
+    next:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+    prev:
+      type: object
+      x-dws-envelope: true
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: uri
+          x-dws-expr: "paging:prev(args.requestUri)"
+```
 
 ## AllOf
 

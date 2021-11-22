@@ -1,5 +1,5 @@
 query Query {
-  breweryCollection(filter: {name : {like : "id1%"}, identifier : {in : ["breweryname"]}, employees : {not : {gt : 10}}}) {
+  breweryCollection {
     identifier
     name
     aliases

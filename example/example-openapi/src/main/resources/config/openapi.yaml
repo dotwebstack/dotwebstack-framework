@@ -34,7 +34,7 @@ paths:
             type: array
             items:
               type: string
-              enum: [ 'address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class' ]
+              enum: [ 'history', 'beers','beers.class', 'beers.ingredients']
         - name: name
           in: query
           explode: false
@@ -159,7 +159,7 @@ paths:
             type: array
             items:
               type: string
-              enum: [ 'postalCode', 'beers', 'beers.ingredients' ]
+              enum: [ 'postalAddress', 'beers', 'beers.ingredients' ]
         - name: identifier
           in: path
           required: true
@@ -274,7 +274,6 @@ components:
       required:
         - identifier
         - name
-        - geometry
         - visitAddress
         - _links
         - beers
@@ -291,6 +290,8 @@ components:
 #          properties:
 #            name:
 #              type: string
+        geometry:
+          type: object
         status:
           type: string
         postalAddress:

@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,12 +39,14 @@ class QueryMapperTest {
         .create());
 
     openApi = TestResources.openApi("openapi.yaml");
-    queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder);
+
+    queryFactory =
+        new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder, List.of(new GeometryTypeMapper()));
   }
 
   static Stream<Arguments> arguments() {
-    return Stream.of(Arguments.of("/breweries", APPLICATION_JSON, Map.of(), "brewery-collection"),
-        Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
+    return Stream.of(Arguments.of("/breweries", APPLICATION_JSON, Map.of(), "brewery-collection-expanded"),
+        Arguments.of("/breweries", APPLICATION_JSON_HAL, Map.of(), "brewery-collection-expanded"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL, Map.of(), "brewery-pageable-collection"),
         Arguments.of("/breweries-pageable-with-params", APPLICATION_JSON, Map.of("page", "2", "pageSize", "42"),
@@ -52,8 +55,12 @@ class QueryMapperTest {
             "brewery-pageable-collection-with-params"),
         Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of(), "brewery-collection"),
         Arguments.of("/breweries-all-of", APPLICATION_JSON_HAL, Map.of(), "brewery-collection"),
+        Arguments.of("/breweries-all-of", APPLICATION_JSON, Map.of("x-dws-expand", List.of("postalAddress")),
+            "brewery-collection-expanded"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery"),
+        Arguments.of("/brewery/{identifier}", APPLICATION_JSON,
+            Map.of("identifier", "foo", "x-dws-expand", List.of("postalAddress")), "brewery-expanded"),
         Arguments.of("/breweries-filter", APPLICATION_JSON_HAL,
             Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"),
         Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"));
@@ -84,28 +91,32 @@ class QueryMapperTest {
 
   static Stream<Arguments> argumentsForExceptions() {
     return Stream.of(
-        Arguments.of("/breweries-one-of", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-one-of", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
-        Arguments.of("/breweries-any-of", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-any-of", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Unsupported composition construct oneOf / anyOf encountered."),
-        Arguments.of("/breweries-object-mismatch", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-object-mismatch", APPLICATION_JSON, Map.of(), InvalidConfigurationException.class,
             "Object schema does not match GraphQL field type (found: String)."),
-        Arguments.of("/breweries-string-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-string-nullability-exception", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
             "Nullability of `status` of type StringSchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-object-nullability-exception", APPLICATION_JSON, InvalidConfigurationException.class,
+        Arguments.of("/breweries-object-nullability-exception", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
             "Nullability of `postalAddress` of type ObjectSchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON,
+        Arguments.of("/breweries-wrapped-object-nullability-exception", APPLICATION_JSON, Map.of(),
             InvalidConfigurationException.class,
             "Nullability of `beers` of type ArraySchema in response schema is stricter than GraphQL schema."),
-        Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON,
+        Arguments.of("/breweries-maybe-array-nullability-exception", APPLICATION_JSON, Map.of(),
             InvalidConfigurationException.class,
-            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."));
+            "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."),
+        Arguments.of("/brewery-invalid-expand", APPLICATION_JSON, Map.of("expand", "identifier"),
+            InvalidConfigurationException.class, "Expandable field `identifier` should be nullable or not required."));
   }
 
   @ParameterizedTest
   @MethodSource("argumentsForExceptions")
-  void map_throwsException_ForErrorCases(String path, MediaType preferredMediaType, Class<?> exceptionClass,
-      String message) {
+  void map_throwsException_ForErrorCases(String path, MediaType preferredMediaType, Map<String, Object> parameters,
+      Class<?> exceptionClass, String message) {
     var operation = openApi.getPaths()
         .get(path)
         .getGet();
@@ -117,6 +128,7 @@ class QueryMapperTest {
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
+        .parameters(parameters)
         .build();
 
     var throwable = assertThrows(RuntimeException.class, () -> queryFactory.map(operationRequest));
