@@ -42,6 +42,8 @@ objectTypes:
         type: ID
       name:
         type: String
+      brewery:
+        type: Brewery
 
   Address:
     fields:
