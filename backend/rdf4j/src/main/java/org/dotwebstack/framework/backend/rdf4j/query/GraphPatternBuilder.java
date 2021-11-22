@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_P
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
@@ -56,7 +57,7 @@ class GraphPatternBuilder {
     var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
     var subPatterns = new ArrayList<>(typePatterns);
 
-    objectRequest.getKeyCriteria()
+    Optional.ofNullable(objectRequest.getKeyCriteria())
         .stream()
         .flatMap(this::createPattern)
         .forEach(subPatterns::add);

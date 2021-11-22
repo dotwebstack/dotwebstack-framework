@@ -69,11 +69,11 @@ class GraphQlPostgresWithContextIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test

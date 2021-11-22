@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.ext.spatial.model.validation;
 
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class EquivalentValidator implements ConstraintValidator<ValidEquivalent,
     return spatialReferenceSystems.values()
         .stream()
         .filter(Objects::nonNull)
-        .filter(srs -> srs.getEquivalent() != null)
+        .filter(srs -> Objects.nonNull(srs.getEquivalent()))
         .allMatch(srs -> hasValidEquivalent(spatialReferenceSystems, srs));
   }
 

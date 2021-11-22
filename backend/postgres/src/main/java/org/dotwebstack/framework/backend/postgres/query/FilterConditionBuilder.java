@@ -105,25 +105,27 @@ class FilterConditionBuilder {
       return DSL.exists(filterQuery);
     }
 
-    var conditions = createFilterCondition(current, value);
+    var conditions = createFilterCondition(current, value, table);
 
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
   }
 
-  private List<Condition> createFilterCondition(PostgresObjectField objectField, Map<String, Object> value) {
+  private List<Condition> createFilterCondition(PostgresObjectField objectField, Map<String, Object> value,
+      Table<Record> table) {
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      return createGeometryFilterCondition(objectField, value);
+      return createGeometryFilterCondition(objectField, value, table);
     }
 
     return value.entrySet()
         .stream()
-        .map(entry -> createComparisonFilterCondition(entry.getKey(), objectField, entry.getValue()))
+        .map(entry -> createComparisonFilterCondition(entry.getKey(), objectField, entry.getValue(), table))
         .collect(Collectors.toList());
   }
 
   @SuppressWarnings("unchecked")
-  private Condition createComparisonFilterCondition(String filterField, PostgresObjectField objectField, Object value) {
-    Field<Object> field = DSL.field(objectField.getColumn());
+  private Condition createComparisonFilterCondition(String filterField, PostgresObjectField objectField, Object value,
+      Table<Record> table) {
+    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
 
     if (FilterConstants.EQ_FIELD.equals(filterField)) {
       return field.eq(DSL.val(value));
@@ -151,14 +153,15 @@ class FilterConditionBuilder {
     }
 
     if (FilterConstants.NOT_FIELD.equals(filterField)) {
-      return createNotCondition(objectField, (Map<String, Object>) value);
+      return createNotCondition(objectField, (Map<String, Object>) value, table);
     }
 
     throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
   }
 
-  private Condition createNotCondition(PostgresObjectField objectField, Map<String, Object> value) {
-    var conditions = createFilterCondition(objectField, value);
+  private Condition createNotCondition(PostgresObjectField objectField, Map<String, Object> value,
+      Table<Record> table) {
+    var conditions = createFilterCondition(objectField, value, table);
 
     var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
 
@@ -166,7 +169,8 @@ class FilterConditionBuilder {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Condition> createGeometryFilterCondition(PostgresObjectField objectField, Object value) {
+  private List<Condition> createGeometryFilterCondition(PostgresObjectField objectField, Object value,
+      Table<Record> table) {
     Integer requestedSrid = PostgresSpatialHelper.getRequestedSrid((Map<String, Object>) value);
 
     return ((Map<String, Object>) value).entrySet()
@@ -174,14 +178,14 @@ class FilterConditionBuilder {
         .filter(entry -> !entry.getKey()
             .equals(ARGUMENT_SRID))
         .map(entry -> createGeometryFilterCondition(entry.getKey(), objectField, (Map<String, String>) entry.getValue(),
-            requestedSrid))
+            requestedSrid, table))
         .collect(Collectors.toList());
   }
 
   private Condition createGeometryFilterCondition(String filterField, PostgresObjectField objectField,
-      Map<String, String> value, Integer requestedSrid) {
+      Map<String, String> value, Integer requestedSrid, Table<Record> table) {
     String columnName = PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid);
-    Field<Object> field = DSL.field(columnName);
+    Field<Object> field = DSL.field(DSL.name(table.getName(), columnName));
 
     Geometry geometry = GeometryReader.readGeometry(value);
     Integer columnSrid = PostgresSpatialHelper.getSridOfColumnName(objectField.getSpatial(), columnName);

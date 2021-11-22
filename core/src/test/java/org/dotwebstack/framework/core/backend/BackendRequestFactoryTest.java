@@ -94,7 +94,8 @@ class BackendRequestFactoryTest {
         .findFirst()
         .orElseThrow()
         .getKeyCriteria();
-    assertThat(keyCriteria.size(), is(1));
+
+    assertThat(keyCriteria, notNullValue());
   }
 
   @Test
@@ -124,6 +125,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = initExecutionStepInfoMock();
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
+    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, is(notNullValue()));
@@ -161,6 +163,12 @@ class BackendRequestFactoryTest {
 
     envBuilder.executionStepInfo(executionStepInfo);
 
+    envBuilder.fieldDefinition(newFieldDefinition().name("field")
+        .type(Scalars.GraphQLID)
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
+            .build())
+        .build());
     envBuilder.fieldDefinition(newFieldDefinition().name("field")
         .type(Scalars.GraphQLID)
         .definition(FieldDefinition.newFieldDefinition()

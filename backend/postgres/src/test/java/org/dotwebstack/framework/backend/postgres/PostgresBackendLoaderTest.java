@@ -22,7 +22,6 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
-import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
@@ -157,12 +156,9 @@ class PostgresBackendLoaderTest {
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
 
-    List<KeyCriteria> keyCriteria = List.of();
-
     return ObjectRequest.builder()
         .objectType(objectType)
         .objectFields(objectFields)
-        .keyCriteria(keyCriteria)
         .contextCriteria(contextCriteria)
         .build();
 

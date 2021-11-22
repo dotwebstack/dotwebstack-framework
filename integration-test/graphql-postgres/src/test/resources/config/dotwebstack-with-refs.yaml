@@ -10,9 +10,11 @@ spatial:
     9067:
       dimensions: 2
       columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
     7931:
       dimensions: 3
       columnSuffix: _etrs89
+      bboxColumnSuffix: _etrs89_bbox
       equivalent: 9067
 
 subscriptions:
@@ -25,14 +27,14 @@ queries:
   beer:
     type: Beer
     keys:
-      - identifier
+      - identifier_beer
   beerCollection:
     type: Beer
     list: true
   brewery:
     type: Brewery
     keys:
-      - identifier
+      - identifier_brewery
   breweryCollection:
     type: Brewery
     list: true
@@ -40,7 +42,7 @@ queries:
 
 objectTypes:
   Beer:
-    table: dbeerpedia.beers
+    table: db.beer
     filters:
       name:
         field: name
@@ -49,7 +51,7 @@ objectTypes:
         - field: name
           direction: ASC
     fields:
-      identifier:
+      identifier_beer:
         type: ID
       name:
         type: String
@@ -63,17 +65,17 @@ objectTypes:
         type: BeerBrewery
         joinColumns:
           - name: brewery
-            referencedField: ref.record_id
+            referencedField: ref.identifier_brewery
       ingredients:
         type: BeerIngredient
         joinTable:
-          name: dbeerpedia.beers_ingredients
+          name: db.beer_ingredient
           joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
+            - name: beer_identifier
+              referencedField: identifier_beer
           inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: refs.identifier
+            - name: ingredient_code
+              referencedField: refs.code
       taste:
         type: Taste
         list: true
@@ -85,15 +87,14 @@ objectTypes:
       node:
         type: Brewery
         keyField: ref
-        nullable: true
 
   BreweryRef:
     fields:
-      record_id:
-        type: Int
+      identifier_brewery:
+        type: String
 
   Brewery:
-    table: dbeerpedia.breweries
+    table: db.brewery
     sortableBy:
       name:
         - field: name
@@ -127,9 +128,7 @@ objectTypes:
       relatedToStatus:
         field: relatedTo.status
     fields:
-      record_id:
-        type: Int
-      identifier:
+      identifier_brewery:
         type: String
       name:
         type: String
@@ -159,16 +158,14 @@ objectTypes:
             referencedField: brewery
       beerAgg:
         aggregationOf: Beer
-        joinColumns:
-          - name: record_id
-            referencedField: brewery
+        mappedBy: brewery
       history:
         type: History
       relatedTo:
         type: Brewery
         list: true
         joinTable:
-          name: dbeerpedia.breweries__related_to
+          name: db.breweries__related_to
           joinColumns:
             - name: brewery_identifier
               referencedField: identifier
@@ -187,23 +184,25 @@ objectTypes:
 
   IngredientRef:
     fields:
-      identifier:
+      code:
         type: String
 
   Ingredient:
-    table: dbeerpedia.ingredients
+    table: db.ingredient
     filters:
       name: {}
     fields:
-      identifier:
+      identifier_ingredient:
         type: ID
       name:
+        type: String
+      code:
         type: String
       weight:
         type: Float
 
   Address:
-    table: dbeerpedia.addresses
+    table: db.address
     fields:
       identifier:
         type: ID

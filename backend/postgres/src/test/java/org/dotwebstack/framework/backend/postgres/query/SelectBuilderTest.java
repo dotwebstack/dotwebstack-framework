@@ -1,497 +1,707 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.HashBiMap;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
-import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.backend.query.ScalarFieldMapper;
-import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
+import org.dotwebstack.framework.core.query.model.AggregateField;
+import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
+import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
+import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SortCriteria;
-import org.dotwebstack.framework.core.query.model.SortDirection;
-import org.hamcrest.CoreMatchers;
+import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
 class SelectBuilderTest {
-
-  @Mock
-  private DatabaseClient databaseClient;
 
   @Mock
   private RequestContext requestContext;
 
-  @Mock
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
-  @Mock
-  private AliasManager aliasManager;
-
-  @InjectMocks
   private SelectBuilder selectBuilder;
 
-  private ObjectRequest.ObjectRequestBuilder objectRequestBuilder;
-
-  private List<SortCriteria> sortCriteriaList;
-
-  private Collection<FieldRequest> scalarFields;
-
-  private CollectionRequest.CollectionRequestBuilder collectionRequestBuilder;
-
   @BeforeEach
-  void setUp() {
-    initObjectRequestBuilder();
+  void doBefore() {
+    fieldMapper = new ObjectMapper();
+    selectBuilder = newSelect().aliasManager(new AliasManager())
+        .requestContext(requestContext)
+        .fieldMapper(fieldMapper);
   }
 
   @Test
-  void build_throwsIllegalStateException_forFilterField() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
+  void build_returnsSelectQuery_forBatchRequest() {
+    var requestObjectField = createObjectField("node");
 
-    PostgresObjectField filterField = mock(PostgresObjectField.class);
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(filterField))
-        .value(Map.of("a", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
+    when(requestContext.getObjectField()).thenReturn(requestObjectField);
 
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    var collectionRequest = collectionRequestBuilder.build();
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
-    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
-
-    assertThat(exception.getMessage(), CoreMatchers.is("Unknown filter filterField 'a'"));
-  }
-
-  @Test
-  @Disabled("fix me")
-  void createFilterCondition_returnsCondition_forManyCriterias() {
-    initSortCriteriaList(SortDirection.ASC);
-    initCollectionRequest();
-
-    PostgresObjectType targetType = mock(PostgresObjectType.class);
-    when(targetType.getTable()).thenReturn("a");
-
-    PostgresObjectField field = mock(PostgresObjectField.class);
-    lenient().when(field.getColumn())
-        .thenReturn("b");
-    ObjectType objectType = mock(PostgresObjectType.class);
-    lenient().when(objectType.getField(anyString()))
-        .thenReturn(field);
-    PostgresObjectField current2 = mock(PostgresObjectField.class);
-    lenient().when((PostgresObjectType) current2.getTargetType())
-        .thenReturn(targetType);
-    lenient().when(current2.getObjectType())
-        .thenReturn(objectType);
-
-    JoinColumn joinColumn = mock(JoinColumn.class);
-    when(joinColumn.getName()).thenReturn("a");
-    when(joinColumn.getReferencedField()).thenReturn("a");
-
-    PostgresObjectField mapped = mock(PostgresObjectField.class);
-    when(mapped.getJoinColumns()).thenReturn(List.of(joinColumn));
-    when(current2.getMappedByObjectField()).thenReturn(mapped);
-
-    PostgresObjectField current1 = mock(PostgresObjectField.class);
-    when(current1.getColumn()).thenReturn("b");
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current2, current1))
-        .value(Map.of("eq", "b", "lt", "a"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .contains("select  as \nfrom anyTable_Brewery_ctx('b') as \nwhere exists (\n  select 1"
-            + "\n  from a_Brewery_ctx('b') as \n  where (\n    \"b\" = \"a\"\n"));
-    assertTrue(result.toString()
-        .contains("and b < 'a'\n"));
-    assertTrue(result.toString()
-        .contains("and b = 'b'\n"));
-  }
-
-  @Test
-
-  void build_returnsSelectQuery_forFilterCondition_Eq() {
-    initSortCriteriaList(SortDirection.ASC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("eq", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a = 'b'\n" + "order by \"a\" asc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_Lt() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("lt", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a < 'b'\n" + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_Lte() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("lte", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a <= 'b'\n" + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_Gt() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("gt", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a > 'b'\n" + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_Gte() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("gte", "b"));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a >= 'b'\n" + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_In() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = initFilterCriteriaBuilder();
-    filterCriteriaBuilder.value(Map.of("in", List.of("a", "b", "c")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteriaBuilder.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where a in (\n" + "  'a', 'b', 'c'\n" + ")\n" + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_throwsException_forFilterConditionGeometry() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getType()).thenReturn("Geometry");
-    when(current.getSpatial()).thenReturn(createSpatial());
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("contains", Map.of("fromWKT", "c")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
-
-    assertThat(exception.getMessage(), CoreMatchers.is("The filter input WKT is invalid!"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_GeometryContains() {
-    initSortCriteriaList(SortDirection.ASC);
-    initCollectionRequest();
-
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getType()).thenReturn("Geometry");
-    when(current.getSpatial()).thenReturn(createSpatial());
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("contains", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where (ST_Contains(geometry, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
-            + "order by \"a\" asc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_GeometryWithin() {
-    initSortCriteriaList(SortDirection.ASC);
-    initCollectionRequest();
-
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getType()).thenReturn("Geometry");
-    when(current.getSpatial()).thenReturn(createSpatial());
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("within", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where (ST_Within(cast('POINT (5.979274334569982 52.21715768613606)' as geometry), geometry))\n"
-            + "order by \"a\" asc"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forFilterCondition_GeometryIntersects() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getType()).thenReturn("Geometry");
-    when(current.getSpatial()).thenReturn(createSpatial());
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("intersects", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var result = selectBuilder.build(collectionRequest, null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .endsWith("where (ST_Intersects(geometry, cast('POINT (5.979274334569982 52.21715768613606)' as geometry)))\n"
-            + "order by \"a\" desc"));
-  }
-
-  @Test
-  void build_throwsException_forFilterConditionGeometryUnknown() {
-    initSortCriteriaList(SortDirection.DESC);
-    initCollectionRequest();
-
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getType()).thenReturn("Geometry");
-    when(current.getSpatial()).thenReturn(createSpatial());
-
-    FilterCriteria.FilterCriteriaBuilder filterCriteria = FilterCriteria.builder()
-        .fieldPath(List.of(current))
-        .value(Map.of("unknown", Map.of("fromWKT", "POINT (5.979274334569982 52.21715768613606)")));
-    List<FilterCriteria> filterCriteriaList = List.of(filterCriteria.build());
-
-    collectionRequestBuilder.filterCriterias(filterCriteriaList);
-    CollectionRequest collectionRequest = collectionRequestBuilder.build();
-
-    var exception = assertThrows(IllegalArgumentException.class, () -> selectBuilder.build(collectionRequest, null));
-
-    assertThat(exception.getMessage(), CoreMatchers.is("Unsupported geometry filter operation"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forJoinCriteriaNull() {
-    initCollectionRequest();
-    collectionRequestBuilder.sortCriterias(List.of())
-        .filterCriterias(List.of());
-
-    var result = selectBuilder.build(collectionRequestBuilder.build(), null);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .contains("from anyTable_Brewery_ctx('b') as"));
-  }
-
-  @Test
-  void build_returnsSelectQuery_forJoinCriteria() {
-    initSortCriteriaList(SortDirection.ASC);
-    initCollectionRequest();
-    collectionRequestBuilder.filterCriterias(List.of());
-
-    JoinColumn joinColumn = mock(JoinColumn.class);
-    when(joinColumn.getReferencedField()).thenReturn("a");
-    PostgresObjectField objectField = mock(PostgresObjectField.class);
-    when(objectField.getJoinColumns()).thenReturn(List.of(joinColumn));
-
-    PostgresObjectField objectFieldMock2 = mock(PostgresObjectField.class);
-    when(objectFieldMock2.getColumn()).thenReturn("a");
-
-    PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
-    when(objectFieldMock.getMappedByObjectField()).thenReturn(objectField);
-
-    ObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getField(anyString())).thenReturn(objectFieldMock2);
-    when(objectFieldMock.getObjectType()).thenReturn(objectType);
-
-    when(requestContext.getObjectField()).thenReturn(objectFieldMock);
-
-    JoinCriteria joinCriteria = mock(JoinCriteria.class);
-    Set<Map<String, Object>> keys = new HashSet<>();
-    keys.add(Map.of("a", "b", "c", "d"));
-    when(joinCriteria.getKeys()).thenReturn(keys);
-
-    var result = selectBuilder.build(collectionRequestBuilder.build(), joinCriteria);
-
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result.toString()
-        .contains("from (values ('b')) as  (\"a\")\n" + "  left outer join lateral (\n" + "    select"));
-  }
-
-  private void initObjectRequestBuilder() {
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
-    when(objectType.getTable()).thenReturn("anyTable");
-    PostgresObjectField objectField = mock(PostgresObjectField.class);
-    when(objectType.getField(anyString())).thenReturn(objectField);
-
-    Map<String, Object> mapValues = Map.of("a", "b");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
-
-    FieldRequest fieldRequest = mock(FieldRequest.class);
-    when(fieldRequest.getName()).thenReturn("a");
-
-    List<KeyCriteria> keyCriteria = List.of();
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
-
-    objectRequestBuilder = ObjectRequest.builder()
+    var objectRequest = ObjectRequest.builder()
         .objectType(objectType)
-        .objectFields(objectFields)
-        .scalarFields(List.of(fieldRequest))
-        .keyCriteria(keyCriteria)
-        .contextCriteria(contextCriteria);
-  }
-
-  private void initSortCriteriaList(SortDirection direction) {
-    PostgresObjectField sortCriteriaField = mock(PostgresObjectField.class);
-    lenient().when(sortCriteriaField.getColumn())
-        .thenReturn("a");
-    lenient().when(sortCriteriaField.getName())
-        .thenReturn("a");
-
-    SortCriteria.SortCriteriaBuilder sortCriteria = SortCriteria.builder()
-        .fieldPath(List.of(sortCriteriaField))
-        .direction(direction);
-    sortCriteriaList = List.of(sortCriteria.build());
-
-    ScalarFieldMapper<Map<String, Object>> leafFieldMapper = mock(ScalarFieldMapper.class);
-    lenient().when(leafFieldMapper.getAlias())
-        .thenReturn("a");
-    lenient().when(fieldMapper.getLeafFieldMapper(any(List.class)))
-        .thenReturn(leafFieldMapper);
-  }
-
-  private void initCollectionRequest() {
-    collectionRequestBuilder = CollectionRequest.builder()
-        .objectRequest(objectRequestBuilder.build())
-        .sortCriterias(sortCriteriaList);
-  }
-
-  private FilterCriteria.FilterCriteriaBuilder initFilterCriteriaBuilder() {
-    PostgresObjectField current = mock(PostgresObjectField.class);
-    when(current.getColumn()).thenReturn("a");
-    FilterCriteria.FilterCriteriaBuilder filterCriteriaBuilder = FilterCriteria.builder()
-        .fieldPath(List.of(current));
-
-    return filterCriteriaBuilder;
-  }
-
-  private PostgresSpatial createSpatial() {
-    return PostgresSpatial.builder()
-        .srid(7415)
-        .spatialReferenceSystems(HashBiMap.create(Map.of(7415, "geometry")))
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build(),
+            FieldRequest.builder()
+                .name("soldPerYear")
+                .build()))
         .build();
+
+    var keys = new HashSet<Map<String, Object>>();
+    keys.add(Map.of("identifier", "id-1"));
+    keys.add(Map.of("identifier", "id-2"));
+
+    var batchRequest = BatchRequest.builder()
+        .objectRequest(objectRequest)
+        .keys(keys)
+        .build();
+
+    var result = selectBuilder.build(batchRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select *\n" + "from (values\n" + "  ('id-2'),\n" + "  ('id-1')\n" + ") as \"x4\" (\"identifier\")\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      \"x1\".\"name_column\" as \"x2\",\n"
+            + "      \"x1\".\"soldPerYear_column\" as \"x3\"\n" + "    from \"beer\" as \"x1\"\n"
+            + "    where \"identifier\" = \"x4\".\"identifier\"\n" + "  ) as \"x5\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forObjectRequest() {
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    var nestedObjectType = createObjectType(null, "age");
+
+    var nestedObject = ObjectRequest.builder()
+        .objectType(nestedObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("age")
+            .build()))
+        .build();
+
+    var nestedObjectField = createObjectField("history");
+    nestedObjectField.setTargetType(nestedObjectType);
+    objectType.getFields()
+        .put("history", nestedObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build(),
+            FieldRequest.builder()
+                .name("soldPerYear")
+                .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("history")
+            .build(), nestedObject))
+        .keyCriteria(KeyCriteria.builder()
+            .values(Map.of("identifier", "id-1"))
+            .build())
+        .build();
+
+    var result = selectBuilder.build(objectRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x7\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
+            + "      \"x1\".\"age_column\" as \"x6\",\n" + "      1 as \"x4\"\n" + "  ) as \"x7\"\n" + "    on true\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forObjectRequestWithContextCriteria() {
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .contextCriteria(createContextCriteria())
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build(),
+            FieldRequest.builder()
+                .name("soldPerYear")
+                .build()))
+        .keyCriteria(KeyCriteria.builder()
+            .values(Map.of("identifier", "id-1"))
+            .build())
+        .build();
+
+    var result = selectBuilder.build(objectRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\"\n"
+            + "from beer_History_ctx('validFrom_value') as \"x1\"\n" + "where \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequest() {
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build(),
+            FieldRequest.builder()
+                .name("soldPerYear")
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"soldPerYear_column\" as \"x3\"\n" + "from \"beer\" as \"x1\""));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithObjectListJoinTable() {
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    var ingredientObjectType = createObjectType("ingredient", "name");
+
+    var ingredientsObjectField = createObjectField("ingredients");
+    ingredientsObjectField.setJoinTable(createIngredientsJoinTable());
+    ingredientsObjectField.setTargetType(ingredientObjectType);
+    ingredientsObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredients", ingredientsObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build(),
+            FieldRequest.builder()
+                .name("soldPerYear")
+                .build()))
+        .objectListFields(Map.of(FieldRequest.builder()
+            .name("ingredients")
+            .build(),
+            CollectionRequest.builder()
+                .objectRequest(ObjectRequest.builder()
+                    .objectType(ingredientObjectType)
+                    .scalarFields(List.of(FieldRequest.builder()
+                        .name("name")
+                        .build()))
+                    .build())
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"identifier_column\" as \"x4\"\n" + "from \"beer\" as \"x1\""));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinTableRefs() {
+    var ingredientRefType = createObjectType(null, "identifier");
+    var ingredientObjectType = createObjectType("ingredient", "name");
+
+    var ingredientObjectRelationType = createObjectType(null, "refs", "nodes");
+    ingredientObjectRelationType.getField("refs")
+        .setTargetType(ingredientRefType);
+    ingredientObjectRelationType.getField("nodes")
+        .setTargetType(ingredientObjectType);
+
+    var ingredientRelationObjectField = createObjectField("ingredientRelation");
+    ingredientRelationObjectField.setJoinTable(createIngredientsJoinTableForRelationObject());
+    ingredientRelationObjectField.setTargetType(ingredientObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+    ingredientRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredientRelation", ingredientRelationObjectField);
+
+    Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
+    objectListFields.put(FieldRequest.builder()
+        .name("refs")
+        .build(),
+        CollectionRequest.builder()
+            .objectRequest(ObjectRequest.builder()
+                .objectType(ingredientRefType)
+                .scalarFields(List.of(FieldRequest.builder()
+                    .name("identifier")
+                    .build()))
+                .build())
+            .build());
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("ingredientRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectListFields(objectListFields)
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x5\".*\n"
+        + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
+        + "    select array_agg(ingredient_identifier) as \"x4\"\n" + "    from \"beer_ingredient\" as \"x3\"\n"
+        + "    where \"x3\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n" + "  ) as \"x5\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinTableNodes() {
+    var ingredientRefType = createObjectType(null, "identifier");
+    var ingredientObjectType = createObjectType("ingredient", "name");
+
+    var ingredientObjectRelationType = createObjectType(null, "refs", "nodes");
+    ingredientObjectRelationType.getField("refs")
+        .setTargetType(ingredientRefType);
+    ingredientObjectRelationType.getField("nodes")
+        .setTargetType(ingredientObjectType);
+
+    var ingredientRelationObjectField = createObjectField("ingredientRelation");
+    ingredientRelationObjectField.setJoinTable(createIngredientsJoinTableForRelationObject());
+    ingredientRelationObjectField.setTargetType(ingredientObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+    ingredientRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredientRelation", ingredientRelationObjectField);
+
+    Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
+    objectListFields.put(FieldRequest.builder()
+        .name("nodes")
+        .build(),
+        CollectionRequest.builder()
+            .objectRequest(ObjectRequest.builder()
+                .objectType(ingredientObjectType)
+                .scalarFields(List.of(FieldRequest.builder()
+                    .name("name")
+                    .build()))
+                .build())
+            .build());
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("ingredientRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectListFields(objectListFields)
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"identifier_column\" as \"x3\"\n" + "from \"beer\" as \"x1\""));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
+    assertThat(fieldMapperResult, hasKey("ingredientRelation"));
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinColumnNode() {
+    var breweryRefType = createObjectType(null, "identifier");
+    var breweryObjectType = createObjectType("brewery", "identifier", "name");
+
+    var breweryObjectRelationType = createObjectType(null, "ref", "node");
+    breweryObjectRelationType.getField("ref")
+        .setTargetType(breweryRefType);
+    breweryObjectRelationType.getField("node")
+        .setTargetType(breweryObjectType);
+    breweryObjectRelationType.getField("node")
+        .setObjectType(breweryObjectRelationType);
+    breweryObjectRelationType.getField("node")
+        .setKeyField("ref");
+
+    var breweryRelationObjectField = createObjectField("breweryRelation");
+    List<JoinColumn> breweryJoinColumns = new ArrayList<>();
+    var breweryJoinColumn = new JoinColumn();
+    breweryJoinColumn.setName("brewery_column");
+    breweryJoinColumn.setReferencedField("identifier");
+    breweryRelationObjectField.setJoinColumns(breweryJoinColumns);
+    breweryRelationObjectField.setTargetType(breweryObjectRelationType);
+
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear", "brewery");
+    breweryRelationObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("breweryRelation", breweryRelationObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("breweryRelation")
+            .build(),
+            ObjectRequest.builder()
+                .objectType(breweryObjectRelationType)
+                .objectFields(Map.of(FieldRequest.builder()
+                    .name("node")
+                    .build(),
+                    ObjectRequest.builder()
+                        .objectType(breweryObjectType)
+                        .scalarFields(List.of(FieldRequest.builder()
+                            .name("name")
+                            .build()))
+                        .build()))
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x9\".*\n" + "from \"beer\" as \"x1\"\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      \"x8\".*,\n" + "      1 as \"x3\"\n"
+            + "    from (\n" + "      select\n" + "        \"x1\".\"identifier_column\" as \"x7\",\n"
+            + "        1 as \"x5\"\n" + "    ) as \"x8\"\n" + "  ) as \"x9\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithObjectListMappedBy() {
+    var breweryObjectField = createObjectField("brewery");
+
+    var breweryJoinColumn = new JoinColumn();
+    breweryJoinColumn.setName("brewery_column");
+    breweryJoinColumn.setReferencedField("identifier");
+
+    var beerObjectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    breweryObjectField.setJoinColumns(List.of(breweryJoinColumn));
+    breweryObjectField.setObjectType(beerObjectType);
+    breweryObjectField.setTargetType(beerObjectType);
+
+    var objectType = createObjectType("brewery", "identifier", "name");
+
+    var beersObjectField = createObjectField("beers");
+    beersObjectField.setMappedByObjectField(breweryObjectField);
+    beersObjectField.setObjectType(objectType);
+
+    var beersObjectRequest = ObjectRequest.builder()
+        .objectType(beerObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .build();
+
+    var beersCollectionRequest = CollectionRequest.builder()
+        .objectRequest(beersObjectRequest)
+        .build();
+
+    objectType.getFields()
+        .put("beers", beersObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectListFields(Map.of(FieldRequest.builder()
+            .name("beers")
+            .build(), beersCollectionRequest))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"identifier_column\" as \"x3\"\n" + "from \"brewery\" as \"x1\""));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithObjectListJoinColumn() {
+    var beersObjectField = createObjectField("beers");
+    var beersJoinColumn = new JoinColumn();
+
+    beersJoinColumn.setName("identifier");
+    beersJoinColumn.setReferencedField("brewery_column");
+    beersObjectField.setJoinColumns(List.of(beersJoinColumn));
+
+    var objectType = createObjectType("brewery", "identifier", "name");
+    beersObjectField.setObjectType(objectType);
+
+    var beerObjectType = createObjectType("beer", "identifier", "name");
+
+    var beersObjectRequest = ObjectRequest.builder()
+        .objectType(beerObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .build();
+
+    var beersCollectionRequest = CollectionRequest.builder()
+        .objectRequest(beersObjectRequest)
+        .build();
+
+    objectType.getFields()
+        .put("beers", beersObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectListFields(Map.of(FieldRequest.builder()
+            .name("beers")
+            .build(), beersCollectionRequest))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+        + "  \"x1\".\"identifier\" as \"x3\"\n" + "from \"brewery\" as \"x1\""));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
+    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(JoinCondition.builder()
+        .key(Map.of("identifier", "id-brewery-1"))
+        .build())));
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithAggregate() {
+    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+
+    var ingredientObjectType = createObjectType("ingredient", "identifier", "name", "weight");
+
+    var ingredientsObjectField = createObjectField("ingredients");
+    ingredientsObjectField.setJoinTable(createIngredientsJoinTable());
+    ingredientsObjectField.setTargetType(ingredientObjectType);
+    ingredientsObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("ingredients", ingredientsObjectField);
+
+    var aggregateObjectField = createObjectField("ingredientAgg");
+    aggregateObjectField.setAggregationOfType(ingredientObjectType);
+    aggregateObjectField.setJoinTable(createIngredientsJoinTable());
+    aggregateObjectField.setObjectType(objectType);
+
+    var aggregateField = AggregateField.builder()
+        .functionType(AggregateFunctionType.SUM)
+        .type(ScalarType.INT)
+        .field(ingredientObjectType.getField("weight"))
+        .build();
+
+    var aggregateObjectRequest = AggregateObjectRequest.builder()
+        .objectField(aggregateObjectField)
+        .aggregateFields(List.of(aggregateField))
+        .build();
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .aggregateObjectFields(List.of(aggregateObjectRequest))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select \"x5\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
+            + "    select cast(sum(\"x2\".\"weight_column\") as int) as \"x3\"\n" + "    from\n"
+            + "      \"ingredient\" as \"x2\",\n" + "      \"beer_ingredient\" as \"x4\"\n" + "    where (\n"
+            + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
+            + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n" + "    )\n"
+            + "  ) as \"x5\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithJoinCriteria() {
+    var beerObjectType = createObjectType("beer", "identifier");
+
+    var requestObjectField = createObjectField("ingredients");
+    requestObjectField.setJoinTable(createIngredientsJoinTable());
+    requestObjectField.setObjectType(beerObjectType);
+
+    when(requestContext.getObjectField()).thenReturn(requestObjectField);
+
+    var objectType = createObjectType("ingredient", "identifier", "name");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var keys = new HashSet<Map<String, Object>>();
+    keys.add(Map.of("identifier_column", "id-beer-1"));
+    keys.add(Map.of("identifier_column", "id-beer-2"));
+
+    var joinCriteria = JoinCriteria.builder()
+        .keys(keys)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, joinCriteria);
+
+    assertThat(result, notNullValue());
+
+    assertThat(result.toString(),
+        equalTo("select *\n" + "from (values\n" + "  ('id-beer-1'),\n" + "  ('id-beer-2')\n"
+            + ") as \"x4\" (\"identifier_column\")\n" + "  left outer join lateral (\n" + "    select\n"
+            + "      \"x1\".\"name_column\" as \"x2\",\n" + "      \"x3\".\"beer_identifier\"\n" + "    from\n"
+            + "      \"ingredient\" as \"x1\",\n" + "      \"beer_ingredient\" as \"x3\"\n" + "    where (\n"
+            + "      \"x3\".\"ingredient_identifier\" = \"x1\".\"identifier_column\"\n"
+            + "      and \"x3\".\"beer_identifier\" = \"x4\".\"identifier_column\"\n" + "    )\n" + "  ) as \"x5\"\n"
+            + "    on true"));
+  }
+
+  private PostgresObjectType createObjectType(String table, String... fields) {
+    var objectType = new PostgresObjectType();
+    objectType.setTable(table);
+
+    var fieldMap = Stream.of(fields)
+        .collect(Collectors.toMap(field -> field, this::createObjectField));
+
+    objectType.setFields(fieldMap);
+
+    return objectType;
+  }
+
+  private JoinTable createIngredientsJoinTableForRelationObject() {
+    return createIngredientsJoinTable("refs.identifier");
+  }
+
+  private JoinTable createIngredientsJoinTable() {
+    return createIngredientsJoinTable("identifier");
+  }
+
+  private JoinTable createIngredientsJoinTable(String referencedField) {
+    var joinTable = new JoinTable();
+    joinTable.setName("beer_ingredient");
+
+    List<JoinColumn> joinColumns = new ArrayList<>();
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("beer_identifier");
+    joinColumn.setReferencedField("identifier");
+    joinColumns.add(joinColumn);
+
+    List<JoinColumn> inverseJoinColumns = new ArrayList<>();
+    var inverseJoinColumn = new JoinColumn();
+    inverseJoinColumn.setName("ingredient_identifier");
+    inverseJoinColumn.setReferencedField(referencedField);
+    inverseJoinColumns.add(inverseJoinColumn);
+
+    joinTable.setJoinColumns(joinColumns);
+    joinTable.setInverseJoinColumns(inverseJoinColumns);
+
+    return joinTable;
+  }
+
+  private PostgresObjectField createObjectField(String name) {
+    var objectField = new PostgresObjectField();
+    objectField.setName(name);
+    objectField.setColumn(String.format("%s_column", name));
+    return objectField;
+  }
+
+  private ContextCriteria createContextCriteria() {
+    return ContextCriteria.builder()
+        .name("History")
+        .context(createContext())
+        .values(Map.of("fieldName", String.format("%s_value", "validFrom")))
+        .build();
+  }
+
+  private Context createContext() {
+    var context = new Context();
+
+    var field = new ContextField();
+    field.setType("String");
+    context.setFields(Map.of("validFrom", field));
+
+    return context;
   }
 }

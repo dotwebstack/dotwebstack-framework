@@ -71,7 +71,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweries_withPagingArguments() {
+  void getRequest_returnsBreweries_withPagingArguments() {
     var query = "{\n" + "    breweries(first: 2, offset: 1) {\n" + "      nodes {\n" + "        identifier_brewery\n"
         + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
 
@@ -91,7 +91,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweries_withPagingAndFilterArguments() {
+  void getRequest_returnsBreweries_withPagingAndFilterArguments() {
     var query =
         "{\n" + "    breweries(first: 2, offset: 1, filter: {name: {not: {eq: \"Brewery Y\"}}}) {\n" + "      nodes {\n"
             + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
@@ -112,7 +112,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweriesWithBeers_withPagingArguments() {
+  void getRequest_returnsBreweriesWithBeers_withPagingArguments() {
     var query = "{\n" + "  breweries(first: 2, offset: 0) {\n" + "    nodes {\n" + "      identifier_brewery\n"
         + "      name\n" + "      beers {\n" + "        nodes {\n" + "          identifier_beer\n" + "          name\n"
         + "        }\n" + "      }\n" + "    }\n" + "    , offset\n" + "  }\n" + "}";
@@ -144,7 +144,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithBrewery_withoutPagingArguments() {
+  void getRequest_returnsBeersWithBrewery_withoutPagingArguments() {
     var query = "{\n" + "  beers {\n" + "    nodes {\n" + "      identifier_beer\n" + "      name\n"
         + "      brewery {\n" + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    }\n"
         + "    , offset\n" + "  }\n" + "}";
