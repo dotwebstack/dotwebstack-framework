@@ -128,7 +128,7 @@ parameters:
 ```
 
 ## Expand parameter
-The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be looked when explicitly request with `expand=<property>`.
+The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
 The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a response object `Brewery`.
 
 ```yaml

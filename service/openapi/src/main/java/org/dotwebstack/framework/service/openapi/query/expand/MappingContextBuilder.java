@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.service.openapi.query.expand;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
+
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -12,27 +15,34 @@ import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
-public class QueryExpandBuilder {
-  private QueryExpandBuilder() {}
+public class MappingContextBuilder {
+  private MappingContextBuilder() {}
 
   @SuppressWarnings("unchecked")
-  public static QueryExpand build(@NonNull OperationRequest operationRequest) {
-    var expandedPathList = (List<String>) operationRequest.getParameters()
-        .get(OasConstants.X_DWS_EXPANDED_PARAMS);
-    Set<String> expandedPaths = expandedPathList != null ? new HashSet<>(expandedPathList) : Set.of();
+  public static MappingContext build(@NonNull OperationRequest operationRequest) {
+
+    var expandedParam = operationRequest.getParameters()
+        .get(X_DWS_EXPANDED_PARAMS);
+    if (expandedParam != null && !(expandedParam instanceof List)) {
+      throw invalidConfigurationException("Parameter {} should be a List, but is a {}", X_DWS_EXPANDED_PARAMS,
+          expandedParam.getClass());
+    }
+
+    Set<String> expandedPaths = expandedParam != null ? new HashSet<>((List<String>) expandedParam) : Set.of();
     List<Parameter> parameters = operationRequest.getContext()
         .getOperation()
         .getParameters();
+
     if (parameters != null) {
       var expandable = parameters.stream()
-          .map(QueryExpandBuilder::toExpanded)
+          .map(MappingContextBuilder::toExpanded)
           .filter(s -> !s.isEmpty())
           .findFirst()
           .orElse(Set.of());
 
-      return new QueryExpand(expandable, expandedPaths);
+      return new MappingContext(expandable, expandedPaths);
     }
-    return new QueryExpand(Set.of(), expandedPaths);
+    return new MappingContext(Set.of(), expandedPaths);
   }
 
   private static Set<String> toExpanded(Parameter parameter) {
