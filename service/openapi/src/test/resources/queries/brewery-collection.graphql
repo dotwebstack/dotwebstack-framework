@@ -3,13 +3,6 @@ query Query {
     identifier
     name
     aliases
-    postalAddress {
-      street
-      postalCode
-      location {
-        asGeoJSON
-      }
-    }
     visitAddresses {
       street
       postalCode

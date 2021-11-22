@@ -128,15 +128,8 @@ parameters:
 ```
 
 ## Expand parameter
-
-<!-- By default, only GraphQL fields with the `ID` type and the fields that are marked as `required` in the OpenApi response
-are returned. If a required field in OpenApi is of type `object` in GraphQL, only the child fields of this type with
-the `ID`
-type are returned by default.
-
-It is possible to expand a query with fields that are not returned by default by adding a parameter with
-`x-dws-type: expand`. This parameter can be of type `string` or `array` and the values should refer to a field in
-GraphQL:
+The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
+The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a response object `Brewery`.
 
 ```yaml
 x-dws-type: expand
@@ -144,23 +137,17 @@ name: expand
 in: query
 schema:
   type: array
-  default: [ 'beers' ]
   items:
     type: string
     enum: [ 'beers', 'beers.ingredients', 'beers.supplements' ]
+      responses:
+        ...
+                  $ref: '#/components/schemas/Brewery'
 ```
+A query with `?expand=beers` will indicate that the `beers` property should be retrieved.
+Properties listed as 'expandable' in the enum support the dotted notation for nesting.
 
-In the example the expand parameter is used to include `beers` in the response by default. Since `beers` refers to an
-object field in GraphQL, it means that the fields within `beers` with an `ID` type are returned as well, all other
-fields are not by default. In order to expand the fields that do no have this `ID` type, the user has to provide an
-expand parameter with value `beers.ingredients`. It is possible to expand lower level fields with a dotted notation,
-without explicitly expanding the parent objects. Parent objects are added to the query automatically. This means that
-when you expand the query with `beers.ingredients` it is not necessary to provide a separate expand value for `beers`.
-However, when you add the
-`beers` value too, it is only added once.
-
-In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by
-default with one or more values and to restrict which values can be expanded. -->
+A property marked as 'expandable' should be nullable or not required.
 
 ## Filters
 OpenApi queries may add filter configuration under the vendor extensions `x-dws-query`.

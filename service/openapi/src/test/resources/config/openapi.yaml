@@ -44,6 +44,14 @@ paths:
           required: true
           schema:
             type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
       responses:
         200:
           description: OK
@@ -371,6 +379,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BreweryMaybeArrayNullabilityException'
+  /brewery-invalid-expand:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: string
+            enum:
+              - identifier
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
 
 components:
   schemas:
@@ -385,6 +411,7 @@ components:
       properties:
         identifier:
           type: string
+          nullable: false
         name:
           type: string
         aliases:
@@ -422,7 +449,6 @@ components:
           type: object
           x-dws-envelope: true
           required:
-            - postalAddress
             - visitAddresses
           properties:
             postalAddress:

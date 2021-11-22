@@ -1,8 +1,15 @@
 query Query {
-  brewery(identifier: "foo") {
+  breweryCollection {
     identifier
     name
     aliases
+    postalAddress {
+      street
+      postalCode
+      location {
+        asGeoJSON
+      }
+    }
     visitAddresses {
       street
       postalCode
