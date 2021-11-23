@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -62,12 +64,20 @@ class RouterConfiguration {
     var builder = RouterFunctions.route();
 
     pathItem.readOperationsMap()
-        .forEach((httpMethod, operation) -> builder.route(matchRoute(path, httpMethod),
-            operationHandlerFactory.create(operation)));
+        .forEach((httpMethod, operation) -> {
+          if (isDwsOperation(operation)) {
+            builder.route(matchRoute(path, httpMethod), operationHandlerFactory.create(operation));
+          }
+        });
 
     builder.route(matchRoute(path, PathItem.HttpMethod.OPTIONS), optionsHandler(pathItem));
 
     return builder.build();
+  }
+
+  private boolean isDwsOperation(Operation operation) {
+    return operation.getExtensions() == null || Boolean.TRUE == operation.getExtensions()
+        .getOrDefault(OasConstants.X_DWS_OPERATION, Boolean.TRUE);
   }
 
   private RouterFunction<ServerResponse> routeApiDocs() {
