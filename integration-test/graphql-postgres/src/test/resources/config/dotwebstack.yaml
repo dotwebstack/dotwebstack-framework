@@ -141,6 +141,11 @@ objectTypes:
           inverseJoinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
+      partOfWithMappedBy:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: ingredients
 
   Brewery:
     table: db.brewery

@@ -180,31 +180,24 @@ class SelectBuilder {
 
   private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
 
-    if (objectField.getJoinTable() != null) {
-      return handleJoinTable(objectField, table);
+    if (objectField.getMappedByObjectField() != null) {
+      var mappedByObjectField = objectField.getMappedByObjectField();
+
+      if (mappedByObjectField.getJoinTable() != null) {
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinTable()
+            .getInverseJoinColumns(), table);
+      } else if (mappedByObjectField.getJoinColumns() != null) {
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table);
+      }
     }
 
-    if (objectField.getMappedByObjectField() != null) {
-      return handleJoinMappedBy(objectField, table);
+    if (objectField.getJoinTable() != null) {
+      return handleJoinColumn(objectField, objectField.getJoinTable()
+          .getJoinColumns(), table);
     }
 
     if (objectField.getJoinColumns() != null) {
-      // Provide join info for child data fetcher
-      fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-          .key(objectField.getJoinColumns()
-              .stream()
-              .collect(HashMap::new, (map, joinColumn) -> {
-                var key = joinColumn.getName();
-                map.put(key, fieldMapper.getFieldMapper(key)
-                    .apply(row));
-              }, HashMap::putAll))
-          .build());
-
-      return objectField.getJoinColumns()
-          .stream()
-          .map(JoinColumn::getName)
-          .map(columnName -> getColumnMapper(table, columnName).getColumn())
-          .collect(Collectors.toList());
+      return handleJoinColumnSource(objectField, table);
     }
 
     return List.of();
@@ -558,26 +551,31 @@ class SelectBuilder {
     }
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinMappedBy(PostgresObjectField objectField, Table<Record> table) {
-    var nestedObjectField = objectField.getMappedByObjectField();
-
-    // Provide join info for child data fetcher
+  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-        .key(getJoinColumnValues(nestedObjectField.getJoinColumns(), row))
+        .key(objectField.getJoinColumns()
+            .stream()
+            .collect(HashMap::new, (map, joinColumn) -> {
+              var key = joinColumn.getName();
+              map.put(key, fieldMapper.getFieldMapper(key)
+                  .apply(row));
+            }, HashMap::putAll))
         .build());
 
-    return selectJoinColumns((PostgresObjectType) nestedObjectField.getTargetType(), nestedObjectField.getJoinColumns(),
-        table);
+    return objectField.getJoinColumns()
+        .stream()
+        .map(JoinColumn::getName)
+        .map(columnName -> getColumnMapper(table, columnName).getColumn())
+        .collect(Collectors.toList());
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinTable(PostgresObjectField objectField, Table<Record> parentTable) {
-    var joinTable = objectField.getJoinTable();
-
+  private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+      Table<Record> table) {
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
-        .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
+        .key(getJoinColumnValues(joinColumns, row))
         .build());
 
-    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), parentTable);
+    return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinColumns, table);
   }
 
   private Map<String, Object> getJoinColumnValues(List<JoinColumn> joinColumns, Map<String, Object> row) {

@@ -36,6 +36,9 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
+  ingredientCollection:
+    type: Ingredient
+    list: true
 
 objectTypes:
   Beer:
@@ -200,6 +203,10 @@ objectTypes:
         type: String
       weight:
         type: Float
+      partOf:
+        type: Beer
+        mappedBy: ingredients
+        list: true
 
   Address:
     table: dbeerpedia.addresses

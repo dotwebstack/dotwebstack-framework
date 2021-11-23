@@ -490,7 +490,7 @@ class SelectBuilderTest {
     var beersJoinColumn = new JoinColumn();
 
     beersJoinColumn.setName("identifier");
-    beersJoinColumn.setReferencedField("brewery_column");
+    beersJoinColumn.setReferencedColumn("brewery_column");
     beersObjectField.setJoinColumns(List.of(beersJoinColumn));
 
     var objectType = createObjectType("brewery", "identifier", "name");
