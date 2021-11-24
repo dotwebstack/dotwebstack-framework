@@ -80,8 +80,7 @@ public class Query {
 
     return executeSpec.fetch()
         .all()
-        .map(rowMapper)
-        .map(m -> m);
+        .map(rowMapper);
   }
 
   @SuppressWarnings("unchecked")
