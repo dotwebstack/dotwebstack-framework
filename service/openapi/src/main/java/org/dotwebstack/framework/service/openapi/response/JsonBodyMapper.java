@@ -11,9 +11,11 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -70,7 +72,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     if (data == null) {
-      return null;
+      return emptyValue(schema);
     }
 
     var newContext = updateJexlContext(data, jexlContext);
@@ -135,13 +137,39 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
+          var property = entry.getKey();
           var nestedSchema = entry.getValue();
-          var value = mapObjectSchemaProperty(entry.getKey(), nestedSchema, fieldDefinition, dataMap, jexlContext);
+          var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
-          if (value != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
+          if (schema.getRequired()
+              .contains(property) || !valueIsEmpty(value)) {
             acc.put(entry.getKey(), value);
           }
         }, HashMap::putAll);
+  }
+
+  private Object emptyValue(Schema<?> schema) {
+    if (Boolean.TRUE.equals(schema.getNullable())) {
+      return null;
+    }
+
+    if (schema instanceof ArraySchema) {
+      return List.of();
+    } else if (schema instanceof ObjectSchema) {
+      return Map.of();
+    } else {
+      return null;
+    }
+  }
+
+  private boolean valueIsEmpty(Object value) {
+    if (value instanceof Collection<?>) {
+      return ((Collection<?>) value).isEmpty();
+    } else if (value instanceof Map<?, ?>) {
+      return ((Map<?, ?>) value).isEmpty();
+    } else {
+      return value == null;
+    }
   }
 
   private Object mapObjectSchemaProperty(String name, Schema<?> schema, GraphQLFieldDefinition parentFieldDefinition,

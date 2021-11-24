@@ -70,7 +70,9 @@ class JsonBodyMapperTest {
             "brewery-pageable-collection", "breweries-json-hal-next-prev"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
-            "brewery-json-hal"));
+            "brewery-json-hal"),
+        Arguments.of("/brewery-nulls/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery",
+            "brewery-json-nulls"));
   }
 
   @ParameterizedTest

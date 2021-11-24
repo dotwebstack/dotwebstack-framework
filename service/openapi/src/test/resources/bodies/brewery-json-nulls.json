@@ -1,6 +1,6 @@
 {
   "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
-  "aliases": [],
+  "aliases": null,
   "postalAddress": {
     "street": "Church Street",
     "postalCode": "12345",
@@ -14,7 +14,7 @@
     {
       "street": "5th Avenue",
       "postalCode": "54321",
-      "location": {}
+      "location": null
     }
   ],
   "numberOfEmployees": 12

@@ -1,6 +1,6 @@
 {
   "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
-  "name": "Brewery X",
+  "aliases": [],
   "_embedded": {
     "postalAddress": {
       "street": "Church Street",
@@ -13,11 +13,11 @@
     "visitAddresses": [
       {
         "street": "5th Avenue",
-        "postalCode": "54321"
+        "postalCode": "54321",
+        "location": {}
       }
     ]
   },
-  "numberOfEmployees": 12,
   "_links": {
     "self": {
       "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
@@ -25,5 +25,7 @@
     "beers": {
       "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b/beers"
     }
-  }
+  },
+  "name": "Brewery X",
+  "numberOfEmployees": 12
 }
