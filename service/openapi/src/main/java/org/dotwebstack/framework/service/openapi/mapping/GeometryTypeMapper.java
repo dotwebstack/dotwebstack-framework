@@ -11,13 +11,22 @@ import graphql.language.SelectionSet;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GeometryTypeMapper implements TypeMapper {
 
+  private static final String OBJECT_TYPE = "object";
+
+  private static final String ARRAY_TYPE = "array";
+
+  private static final List<String> ALLOWED_TYPES = List.of(OBJECT_TYPE, ARRAY_TYPE);
+
   private static final String TYPE_NAME = "Geometry";
+
+  private static final String AS_GEO_JSON_FIELD = "asGeoJSON";
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -25,28 +34,64 @@ public class GeometryTypeMapper implements TypeMapper {
 
   @Override
   public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema) {
-    if (!"object".equals(schema.getType())) {
-      throw invalidConfigurationException("Geometry type requires an object schema (found: {}).", schema.getName());
-    }
+    validateSchemaType(schema);
 
-    var field = new Field(name, new SelectionSet(List.of(new Field("asGeoJSON"))));
+    var field = new Field(name, new SelectionSet(List.of(new Field(AS_GEO_JSON_FIELD))));
 
     return List.of(field);
   }
 
   @Override
-  public Object fieldToBody(@NonNull Object data) {
-    if (!(data instanceof Map)) {
-      throw invalidConfigurationException("Geometry type expects a map result.");
-    }
+  public Object fieldToBody(@NonNull Object data, @NonNull Schema<?> schema) {
+    validateSchemaType(schema);
 
-    @SuppressWarnings("unchecked")
-    var geoJsonString = ((Map<String, String>) data).get("asGeoJSON");
+    if (ARRAY_TYPE.equals(schema.getType())) {
+      return getGeoJsonAsArray(data);
+    } else {
+      return getGeoJsonAsObject(data);
+    }
+  }
+
+  private Object getGeoJsonAsArray(Object obj) {
+    var geoJsonMap = getGeoJsonMap(obj);
+
+    return Optional.of(geoJsonMap)
+        .filter(e -> e.containsKey("geometries"))
+        .map(e -> e.get("geometries"))
+        .orElseThrow(() -> invalidConfigurationException("No key named 'geometries' found in map result."));
+  }
+
+  private Object getGeoJsonAsObject(Object obj) {
+    return getGeoJsonMap(obj);
+  }
+
+  private Map<String, Object> getGeoJsonMap(Object obj) {
+    var data = getGeoJson(obj);
 
     try {
-      return OBJECT_MAPPER.readValue(geoJsonString, TYPE_REFERENCE);
+      return OBJECT_MAPPER.readValue(data, TYPE_REFERENCE);
     } catch (JsonProcessingException e) {
       throw internalServerErrorException("Error while parsing GeoJSON string.", e);
+    }
+  }
+
+  private String getGeoJson(Object obj) {
+    var data = Optional.ofNullable(obj)
+        .filter(Map.class::isInstance)
+        .map(Map.class::cast)
+        .orElseThrow(() -> invalidConfigurationException("Geometry type expects a map result."));
+
+    return Optional.of(data)
+        .filter(e -> e.containsKey(AS_GEO_JSON_FIELD))
+        .map(e -> e.get(AS_GEO_JSON_FIELD))
+        .map(String.class::cast)
+        .orElseThrow(() -> invalidConfigurationException("No key named `asGeoJSON` found in map result."));
+  }
+
+  private void validateSchemaType(Schema<?> schema) {
+    if (!ALLOWED_TYPES.contains(schema.getType())) {
+      throw invalidConfigurationException("Geometry type requires an object or array schema type (found: {}).",
+          schema.getType());
     }
   }
 
