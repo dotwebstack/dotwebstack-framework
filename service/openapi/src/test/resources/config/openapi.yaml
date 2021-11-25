@@ -63,6 +63,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/BreweryHAL'
 
+  /brewery-nulls/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryVisitAddressWithNullableLocation'
+
+  /brewery-required-empty-nullable-envelope/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryRequiredEmptyNullableEnvelope'
+
   /breweries-pageable:
     get:
       x-dws-query: breweryPageableCollection
@@ -499,10 +549,73 @@ components:
                   format: uri
                   x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
 
+    BreweryVisitAddressWithNullableLocation:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          nullable: true
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressNullable'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
+    BreweryRequiredEmptyNullableEnvelope:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliasEnvelope
+        - numberOfEmployees
+        - visitAddresses
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliasEnvelope:
+          nullable: true
+          type: Object
+          properties:
+            aliases:
+              nullable: true
+              type: array
+              items:
+                type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressNullable'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
     Address:
       type: object
       required:
         - street
+        - location
       properties:
         street:
           type: string
@@ -516,12 +629,14 @@ components:
       nullable: true
       required:
         - street
+        - location
       properties:
         street:
           type: string
         postalCode:
           type: string
         location:
+          nullable: true
           type: object
 
     BreweryAllOf:
