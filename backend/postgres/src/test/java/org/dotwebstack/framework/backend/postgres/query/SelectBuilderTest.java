@@ -241,6 +241,57 @@ class SelectBuilderTest {
   }
 
   @Test
+  void build_returnsSelectQuery_forCollectionRequestWithJoinColumnObject() {
+    List<JoinColumn> joinColumns = new ArrayList<>();
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("postalAddress_column");
+    joinColumn.setReferencedColumn("identifier");
+    joinColumns.add(joinColumn);
+
+    var postalAddressObjectField = createObjectField("postalAddress");
+    postalAddressObjectField.setJoinColumns(joinColumns);
+
+    var addressObjectType = createObjectType("address", "identifier", "street", "city");
+    postalAddressObjectField.setTargetType(addressObjectType);
+
+    var objectType = createObjectType("brewery", "identifier", "name");
+    postalAddressObjectField.setObjectType(objectType);
+
+    objectType.getFields()
+        .put("postalAddress", postalAddressObjectField);
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(objectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("postalAddress")
+            .build(),
+            ObjectRequest.builder()
+                .objectType(addressObjectType)
+                .scalarFields(List.of(FieldRequest.builder()
+                    .name("street")
+                    .build()))
+                .build()))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x5\".*\n" + "from \"brewery\" as \"x1\"\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      \"x3\".\"street_column\" as \"x4\",\n"
+            + "      1 as \"x3\"\n" + "    from \"address\" as \"x3\"\n"
+            + "    where \"x1\".\"postalAddress_column\" = \"x3\".\"identifier\"\n" + "    limit 1\n"
+            + "  ) as \"x5\"\n" + "    on true"));
+  }
+
+  @Test
   void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinTableRefs() {
     var ingredientRefType = createObjectType(null, "identifier");
     var ingredientObjectType = createObjectType("ingredient", "name");
