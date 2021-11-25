@@ -107,6 +107,7 @@ public class Query {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
+        .tableAlias(aliasManager.newAlias())
         .build(collectionRequest, null);
   }
 
@@ -116,6 +117,7 @@ public class Query {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
+        .tableAlias(aliasManager.newAlias())
         .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
@@ -123,6 +125,7 @@ public class Query {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
+        .tableAlias(aliasManager.newAlias())
         .build(objectRequest);
   }
 
@@ -130,6 +133,7 @@ public class Query {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
+        .tableAlias(aliasManager.newAlias())
         .build(batchRequest);
   }
 }

@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -97,6 +98,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
   private void propagateJoinTable(List<PostgresObjectField> allFields) {
     allFields.stream()
         .filter(JoinHelper::hasNestedReference)
+        .filter(field -> Objects.nonNull(field.getJoinTable()))
         .forEach(this::propagateJoinTable);
   }
 
@@ -110,7 +112,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .map(PostgresObjectField.class::cast)
         .filter(nestedObjectField -> !nestedObjectField.getTargetType()
             .isNested())
-        .forEach(nestedField -> resolveAndSetJoinTable(field, nestedField));
+        .forEach(nestedObjectField -> resolveAndSetJoinTable(field, nestedObjectField));
   }
 
   private void resolveAndSetJoinTable(PostgresObjectField field, PostgresObjectField nestedField) {
