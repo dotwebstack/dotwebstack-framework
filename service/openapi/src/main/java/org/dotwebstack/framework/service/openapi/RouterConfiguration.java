@@ -76,8 +76,8 @@ class RouterConfiguration {
   }
 
   private boolean isDwsOperation(Operation operation) {
-    return operation.getExtensions() == null || Boolean.TRUE == operation.getExtensions()
-        .getOrDefault(OasConstants.X_DWS_OPERATION, Boolean.TRUE);
+    return operation.getExtensions() != null && operation.getExtensions()
+        .containsKey(OasConstants.X_DWS_QUERY);
   }
 
   private RouterFunction<ServerResponse> routeApiDocs() {

@@ -13,13 +13,6 @@ paths:
           description: OK
   /dws-operation-false:
     get:
-      x-dws-operation: false
-      responses:
-        200:
-          description: OK
-  /dws-operation-true:
-    get:
-      x-dws-operation: true
       responses:
         200:
           description: OK

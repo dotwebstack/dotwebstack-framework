@@ -7,7 +7,6 @@ info:
 paths:
   /noop:
     get:
-      x-dws-operation: false
       responses:
         200:
           description: OK

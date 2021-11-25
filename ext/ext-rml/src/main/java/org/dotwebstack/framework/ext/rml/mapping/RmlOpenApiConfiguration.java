@@ -2,7 +2,6 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isDwsOperation;
 
 import com.taxonic.carml.model.TriplesMap;
 import com.taxonic.carml.util.Models;
@@ -141,5 +140,10 @@ public class RmlOpenApiConfiguration {
     return httpMethodOperations.stream()
         .filter(httpMethodOperation -> isDwsOperation(httpMethodOperation.getOperation()))
         .collect(Collectors.toList());
+  }
+
+  private static boolean isDwsOperation(Operation operation) {
+    return operation.getExtensions() != null && operation.getExtensions()
+        .containsKey(X_DWS_RML_MAPPING);
   }
 }

@@ -68,7 +68,7 @@ class RouterConfigurationTest {
 
     var routerFunction = routerConfiguration.router();
 
-    verify(operationHandlerFactory, times(2)).create(any(Operation.class));
+    verify(operationHandlerFactory, times(1)).create(any(Operation.class));
 
     StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/breweries")))
         .assertNext(handler -> assertThat(handler, is(operationHandler)))
@@ -107,7 +107,7 @@ class RouterConfigurationTest {
 
     var routerFunction = routerConfiguration.router();
 
-    verify(operationHandlerFactory, times(2)).create(any(Operation.class));
+    verify(operationHandlerFactory, times(1)).create(any(Operation.class));
 
     StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/foo")))
         .verifyComplete();
@@ -127,7 +127,7 @@ class RouterConfigurationTest {
   }
 
   @Test
-  void router_returnsNoHandler_withXdwsOperationFalse() {
+  void router_returnsNoHandler_withoutXdwsQueryExtension() {
     when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
 
     when(operationHandlerFactory.create(any(Operation.class))).thenReturn(request -> Mono.empty());
@@ -138,20 +138,4 @@ class RouterConfigurationTest {
         .verifyComplete();
   }
 
-  @Test
-  void router_returnsHandler_withXdwsOperationTrue() {
-    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
-    HandlerFunction<ServerResponse> operationHandler = request -> ServerResponse.ok()
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(BodyInserters.fromValue("[]"));
-
-    when(operationHandlerFactory.create(any(Operation.class))).thenReturn(operationHandler);
-
-    var routerFunction = routerConfiguration.router();
-    var requestMock = mockRequest(HttpMethod.GET, "/dws-operation-true");
-
-    StepVerifier.create(routerFunction.route(requestMock))
-        .assertNext(handler -> assertThat(handler, is(operationHandler)))
-        .verifyComplete();
-  }
 }
