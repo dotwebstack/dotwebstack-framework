@@ -117,12 +117,11 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private void addSpatial(Spatial spatial, String tableName, PostgresObjectField objectField) {
-    var geometryTableColumn = tableName + "." + objectField.getColumn();
-
-    Integer srid = getSrid(geometryTableColumn);
-    BiMap<Integer, String> spatialReferenceSystems = getSpatialReferenceSystems(spatial, objectField.getColumn());
+    Integer srid = getSrid(tableName, objectField.getColumn());
+    BiMap<Integer, String> spatialReferenceSystems =
+        getSpatialReferenceSystems(spatial, tableName, objectField.getColumn());
     BiMap<Integer, Integer> equivalents = getEquivalents(spatial, spatialReferenceSystems);
-    BiMap<Integer, String> bboxes = getBboxes(spatial, objectField.getColumn());
+    BiMap<Integer, String> bboxes = getBboxes(spatial, tableName, objectField.getColumn());
 
     PostgresSpatial postgresSpatial = PostgresSpatial.builder()
         .spatialReferenceSystems(spatialReferenceSystems)
@@ -145,23 +144,24 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
             .getEquivalent())));
   }
 
-  private BiMap<Integer, String> getSpatialReferenceSystems(Spatial spatial, String geometryColumn) {
-    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getColumnSuffix, spatial, geometryColumn);
+  private BiMap<Integer, String> getSpatialReferenceSystems(Spatial spatial, String tableName, String geometryColumn) {
+    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getColumnSuffix, spatial, tableName, geometryColumn);
   }
 
-  private BiMap<Integer, String> getBboxes(Spatial spatial, String geometryColumn) {
-    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getBboxColumnSuffix, spatial, geometryColumn);
+  private BiMap<Integer, String> getBboxes(Spatial spatial, String tableName, String geometryColumn) {
+    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getBboxColumnSuffix, spatial, tableName,
+        geometryColumn);
   }
 
   private BiMap<Integer, String> getTableNamesPerSrid(Function<PostgresSpatialReferenceSystem, String> suffixFunc,
-      Spatial spatial, String geometryColumn) {
+      Spatial spatial, String tableName, String geometryColumn) {
     return HashBiMap.create(spatial.getReferenceSystems()
         .entrySet()
         .stream()
         .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(),
             getColumnName(suffixFunc, geometryColumn, entry.getValue())))
         .filter(entry -> entry.getKey()
-            .equals(getSrid(entry.getValue())))
+            .equals(getSrid(tableName, entry.getValue())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
   }
 
@@ -175,10 +175,12 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .orElse(geometryColumn);
   }
 
-  private Integer getSrid(String spatialTableColumn) {
+  private Integer getSrid(String tableName, String columnName) {
+    var geometryTableColumn = tableName + "." + columnName;
+
     return sridByTableColumn.keySet()
         .stream()
-        .filter(key -> key.endsWith(spatialTableColumn))
+        .filter(key -> key.endsWith(geometryTableColumn))
         .findFirst()
         .map(sridByTableColumn::get)
         .orElse(null);
