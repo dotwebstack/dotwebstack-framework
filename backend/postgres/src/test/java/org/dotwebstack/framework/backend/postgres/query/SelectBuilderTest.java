@@ -37,7 +37,6 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -367,7 +366,6 @@ class SelectBuilderTest {
   }
 
   @Test
-  @Disabled("Fix me")
   void build_returnsSelectQuery_forCollectionRequestWithNestedRelationObjectJoinColumnNode() {
     var breweryRefType = createObjectType(null, "identifier");
     var breweryObjectType = createObjectType("brewery", "identifier", "name");
@@ -382,11 +380,13 @@ class SelectBuilderTest {
     breweryObjectRelationType.getField("node")
         .setKeyField("ref");
 
-    var breweryRelationObjectField = createObjectField("breweryRelation");
     List<JoinColumn> breweryJoinColumns = new ArrayList<>();
     var breweryJoinColumn = new JoinColumn();
     breweryJoinColumn.setName("brewery_column");
-    breweryJoinColumn.setReferencedField("identifier");
+    breweryJoinColumn.setReferencedField("ref.identifier");
+    breweryJoinColumns.add(breweryJoinColumn);
+
+    var breweryRelationObjectField = createObjectField("breweryRelation");
     breweryRelationObjectField.setJoinColumns(breweryJoinColumns);
     breweryRelationObjectField.setTargetType(breweryObjectRelationType);
 
@@ -426,10 +426,8 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x9\".*\n" + "from \"beer\" as \"x1\"\n"
-            + "  left outer join lateral (\n" + "    select\n" + "      \"x8\".*,\n" + "      1 as \"x3\"\n"
-            + "    from (\n" + "      select\n" + "        \"x1\".\"identifier_column\" as \"x7\",\n"
-            + "        1 as \"x5\"\n" + "    ) as \"x8\"\n" + "  ) as \"x9\"\n" + "    on true"));
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"brewery_column\" as \"x3\",\n"
+            + "  \"x1\".\"brewery_column\" as \"x4\"\n" + "from \"beer\" as \"x1\""));
   }
 
   @Test

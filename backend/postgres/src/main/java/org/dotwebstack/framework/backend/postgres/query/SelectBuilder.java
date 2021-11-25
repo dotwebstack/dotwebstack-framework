@@ -407,43 +407,7 @@ class SelectBuilder {
       Table<Record> table) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      var objectMapper = new ObjectMapper(aliasManager.newAlias());
-      fieldMapper.register(objectField.getName(), objectMapper);
-
-      var joinColumn = objectField.getJoinColumns()
-          .stream()
-          .findFirst();
-
-      var keyColumn = joinColumn.map(JoinColumn::getName)
-          .orElseThrow();
-
-      var keyTableField = DSL.field(DSL.name(table.getName(), keyColumn));
-
-      var object = objectRequest.getObjectFields()
-          .keySet()
-          .stream()
-          .flatMap(fieldRequest -> {
-            var objectType = getObjectType(objectRequest);
-            var keyFieldName = objectType.getField(fieldRequest.getName())
-                .getKeyField();
-            if (StringUtils.isNotBlank(keyFieldName)) {
-              var keyObjectField = objectType.getField(keyFieldName);
-              var keyFieldRequest = FieldRequest.builder()
-                  .name(keyFieldName)
-                  .build();
-              return createReferenceObject(objectField, createObjectRequest(keyObjectField), table, objectMapper,
-                  keyFieldRequest);
-            } else {
-              return createReferenceObject(objectField,
-                  createObjectRequest(objectType.getField(fieldRequest.getName())), table, objectMapper, fieldRequest);
-            }
-          });
-
-      return Stream.concat(Stream.of(keyTableField.as(objectMapper.getAlias())), object)
-          .map(field -> SelectResult.builder()
-              .selectFieldOrAsterisk(field)
-              .build())
-          .collect(Collectors.toList());
+      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table);
     }
 
     var objectMapper = new ObjectMapper();
@@ -477,12 +441,61 @@ class SelectBuilder {
         .collect(Collectors.toList());
   }
 
+  private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+      ObjectRequest objectRequest, Table<Record> table) {
+    var objectMapper = new ObjectMapper(aliasManager.newAlias());
+    fieldMapper.register(objectField.getName(), objectMapper);
+
+    var joinColumn = joinColumns.stream()
+        .findFirst();
+
+    var keyColumn = joinColumn.map(JoinColumn::getName)
+        .orElseThrow();
+
+    var keyTableField = DSL.field(DSL.name(table.getName(), keyColumn));
+
+    var object = objectRequest.getObjectFields()
+        .keySet()
+        .stream()
+        .flatMap(fieldRequest -> processReferenceObject(objectField, objectRequest, table, objectMapper, fieldRequest));
+
+    return Stream.concat(Stream.of(keyTableField.as(objectMapper.getAlias())), object)
+        .map(field -> SelectResult.builder()
+            .selectFieldOrAsterisk(field)
+            .build())
+        .collect(Collectors.toList());
+  }
+
   private boolean askedForReference(PostgresObjectField objectField, FieldRequest fieldRequest) {
     return objectField.getJoinTable()
         .getInverseJoinColumns()
         .stream()
         .anyMatch(joinColumn -> joinColumn.getReferencedField()
             .startsWith(fieldRequest.getName()));
+  }
+
+  private Stream<Field<Object>> processReferenceObject(PostgresObjectField objectField, ObjectRequest objectRequest,
+      Table<Record> table, ObjectMapper objectMapper, FieldRequest fieldRequest) {
+    var objectType = getObjectType(objectRequest);
+    var keyFieldName = objectType.getField(fieldRequest.getName())
+        .getKeyField();
+
+    String refFieldName;
+    if (StringUtils.isNotBlank(keyFieldName)) {
+      refFieldName = keyFieldName;
+    } else {
+      refFieldName = fieldRequest.getName();
+    }
+
+    var refFieldRequest = FieldRequest.builder()
+        .name(refFieldName)
+        .build();
+
+    var refObjectField = objectType.getField(refFieldName);
+
+    var refObjectRequest = createObjectRequest(refObjectField);
+
+    return createReferenceObject(objectField, refObjectRequest, table, objectMapper, refFieldRequest);
   }
 
   private Stream<Field<Object>> createReferenceObject(PostgresObjectField objectField, ObjectRequest objectRequest,
