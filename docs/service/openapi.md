@@ -37,6 +37,8 @@ maps to the `default_breweries` GraphQL query:
 default_breweries : [Brewery!]!
 ```
 
+Operations without `x-dws-query` will not be handled by the framework.
+
 Each OK operation response (2xx) should have a reference to the return type using `content.<mediaType>.schema.$ref`. The
 following example specifies that the OK response (200) returns the `Breweries` type:
 
@@ -69,16 +71,6 @@ responses:
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and
 a 'Allow' response header which contains all allowed httpMethods.
 
-<!-- Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. If you want
-DWS to ignore this operation set to `false`. Default value is `true`
-
-```yaml
-paths:
-  /breweries:
-    get:
-      x-dws-operation: false
-```
--->
 ## Operation parameters
 
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The

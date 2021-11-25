@@ -11,3 +11,8 @@ paths:
       responses:
         200:
           description: OK
+  /dws-operation-false:
+    get:
+      responses:
+        200:
+          description: OK
