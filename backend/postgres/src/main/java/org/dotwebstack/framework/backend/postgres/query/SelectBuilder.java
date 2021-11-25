@@ -133,10 +133,7 @@ class SelectBuilder {
   private SelectQuery<Record> createDataQuery(ObjectRequest objectRequest) {
     var objectType = getObjectType(objectRequest);
 
-    Table<Record> table =
-        ofNullable(objectType.getTable()).map(tableName -> findTable(tableName, objectRequest.getContextCriteria()))
-            .map(t -> t.as(tableAlias))
-            .orElse(null);
+    var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
 
     var dataQuery = dslContext.selectQuery(table);
 
