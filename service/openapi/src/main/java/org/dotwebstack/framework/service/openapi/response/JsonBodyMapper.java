@@ -93,33 +93,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     if (MapperUtils.isEnvelope(schema)) {
-      var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-      return schema.getProperties()
-          .entrySet()
-          .stream()
-          .collect(HashMap::new, (acc, entry) -> {
-            var property = entry.getKey();
-            var nestedSchema = entry.getValue();
-            var nestedFieldDefinition = rawType.getFieldDefinition(property);
-            Object nestedValue;
-
-            if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
-              nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
-            } else {
-              if (!(data instanceof Map)) {
-                throw illegalStateException("Data is not compatible with object schema.");
-              }
-
-              var dataMap = (Map<String, Object>) data;
-              nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
-            }
-
-            if ((schema.getRequired() != null && schema.getRequired()
-                .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
-              acc.put(entry.getKey(), nestedValue);
-            }
-          }, HashMap::putAll);
+      return mapEnvelopeObjectSchema(schema, fieldDefinition, data, jexlContext);
     }
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -148,6 +122,40 @@ public class JsonBodyMapper implements BodyMapper {
             acc.put(entry.getKey(), value);
           }
         }, HashMap::putAll);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private Object mapEnvelopeObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
+    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    var envelopeValue = schema.getProperties()
+        .entrySet()
+        .stream()
+        .collect(HashMap::new, (acc, entry) -> {
+          var property = entry.getKey();
+          var nestedSchema = entry.getValue();
+          var nestedFieldDefinition = rawType.getFieldDefinition(property);
+          Object nestedValue;
+
+          if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
+            nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
+          } else {
+            if (!(data instanceof Map)) {
+              throw illegalStateException("Data is not compatible with object schema.");
+            }
+
+            var dataMap = (Map<String, Object>) data;
+            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
+          }
+
+          if ((schema.getRequired() != null && schema.getRequired()
+              .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
+            acc.put(entry.getKey(), nestedValue);
+          }
+        }, HashMap::putAll);
+
+    return valueInEnvelopeIsEmpty(envelopeValue) && Boolean.TRUE.equals(schema.getNullable()) ? null : envelopeValue;
   }
 
   private Object emptyValue(Schema<?> schema) {

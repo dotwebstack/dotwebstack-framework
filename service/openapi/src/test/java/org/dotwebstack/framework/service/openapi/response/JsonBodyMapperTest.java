@@ -72,7 +72,9 @@ class JsonBodyMapperTest {
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
             "brewery-json-hal"),
         Arguments.of("/brewery-nulls/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery",
-            "brewery-json-nulls"));
+            "brewery-json-nulls"),
+        Arguments.of("/brewery-required-empty-nullable-envelope/{identifier}", APPLICATION_JSON,
+            Map.of("identifier", "foo"), "brewery", "brewery-json-required-empty-nullable-envelope"));
   }
 
   @ParameterizedTest
