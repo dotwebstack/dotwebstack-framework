@@ -11,5 +11,8 @@ query Query {
       }
     }
     numberOfEmployees
+    salesAreas {
+      asGeoJSON
+    }
   }
 }

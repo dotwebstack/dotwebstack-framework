@@ -122,7 +122,7 @@ public class JsonBodyMapper implements BodyMapper {
 
     if (typeMappers.containsKey(rawType.getName())) {
       return typeMappers.get(rawType.getName())
-          .fieldToBody(data);
+          .fieldToBody(data, schema);
     }
 
     if (!(data instanceof Map)) {
@@ -159,21 +159,27 @@ public class JsonBodyMapper implements BodyMapper {
   @SuppressWarnings("unchecked")
   private Collection<Object> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
+
+    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (typeMappers.containsKey(rawType.getName())) {
+      return (Collection<Object>) typeMappers.get(rawType.getName())
+          .fieldToBody(data, schema);
+    }
+
     if (MapperUtils.isPageableField(fieldDefinition)) {
       if (!(data instanceof Map)) {
         throw illegalStateException("Data is not compatible with pageable array schema.");
       }
 
       var dataMap = (Map<String, Object>) data;
-      var items = (Collection<Object>) dataMap.get(PagingConstants.NODES_FIELD_NAME);
+      var items = dataMap.get(PagingConstants.NODES_FIELD_NAME);
 
       if (!(items instanceof Collection)) {
         throw illegalStateException("Data is not compatible with array schema.");
       }
 
-      var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-      return items.stream()
+      return ((Collection<Object>) items).stream()
           .map(item -> mapSchema(schema.getItems(), rawType.getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item,
               jexlContext))
           .collect(Collectors.toList());

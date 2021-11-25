@@ -8,7 +8,7 @@ public interface TypeMapper {
 
   List<Field> schemaToField(String name, Schema<?> schema);
 
-  Object fieldToBody(Object data);
+  Object fieldToBody(Object data, Schema<?> schema);
 
   String typeName();
 }

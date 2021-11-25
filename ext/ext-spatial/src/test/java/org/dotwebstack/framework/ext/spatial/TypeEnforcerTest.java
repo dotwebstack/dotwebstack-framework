@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.ext.spatial;
 
 
+import static org.dotwebstack.framework.ext.spatial.GeometryType.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.LINESTRING;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.MULTILINESTRING;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.MULTIPOINT;
@@ -40,6 +41,8 @@ class TypeEnforcerTest {
       + "17.032414286613683 48.84945463293702, 17.010441630363683 48.19457338438695, "
       + "14.791203349113683 48.09927916119722, 14.769230692863683 48.7843473869024)))";
 
+  private final String geometryGeometryCollectionString = "GEOMETRYCOLLECTION(POINT (15.892 48.483))";
+
   private Geometry line;
 
   private Geometry point;
@@ -51,6 +54,8 @@ class TypeEnforcerTest {
   private Geometry multipoint;
 
   private Geometry multipolygon;
+
+  private Geometry geometryCollection;
 
   private TypeEnforcer typeEnforcer;
 
@@ -65,6 +70,7 @@ class TypeEnforcerTest {
     multiline = reader.read(geometryMultilineString);
     multipoint = reader.read(geometryMultipointString);
     multipolygon = reader.read(geometryMultipolygonString);
+    geometryCollection = reader.read(geometryGeometryCollectionString);
   }
 
   @Test
@@ -133,6 +139,7 @@ class TypeEnforcerTest {
     assertThat(multiline, is(typeEnforcer.enforce(MULTILINESTRING, multiline)));
     assertThat(multipoint, is(typeEnforcer.enforce(MULTIPOINT, multipoint)));
     assertThat(multipolygon, is(typeEnforcer.enforce(MULTIPOLYGON, multipolygon)));
+    assertThat(geometryCollection, is(typeEnforcer.enforce(GEOMETRYCOLLECTION, geometryCollection)));
   }
 
   @Test
@@ -158,8 +165,9 @@ class TypeEnforcerTest {
   }
 
   @Test
-  void enforce_throwsException_forNull() {
+  void enforce_throwsException_forUnsupportedTypes() {
     assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(LINESTRING, point));
     assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(POLYGON, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(GEOMETRYCOLLECTION, point));
   }
 }

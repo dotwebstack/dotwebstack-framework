@@ -30,6 +30,7 @@ type Brewery {
   postalAddress: Address
   visitAddresses: [Address!]!
   numberOfEmployees: Int
+  salesAreas: Geometry
   beers: [Beer]!
   beersMaybe: [Beer]
 }
