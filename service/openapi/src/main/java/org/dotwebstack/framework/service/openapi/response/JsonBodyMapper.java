@@ -187,11 +187,9 @@ public class JsonBodyMapper implements BodyMapper {
       return ((Collection<?>) value).isEmpty();
     } else if (value instanceof Map<?, ?>) {
       var valueMap = ((Map<?, ?>) value);
-      return valueMap.values()
-          .isEmpty()
-          || valueMap.values()
-              .stream()
-              .allMatch(Objects::isNull);
+      return valueMap.isEmpty() || valueMap.values()
+          .stream()
+          .allMatch(Objects::isNull);
     } else {
       return value == null;
     }
