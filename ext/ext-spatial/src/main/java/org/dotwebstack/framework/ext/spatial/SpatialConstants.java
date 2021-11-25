@@ -63,4 +63,6 @@ public class SpatialConstants {
   static final String MULTILINESTRING = "MULTILINESTRING";
 
   static final String MULTIPOLYGON = "MULTIPOLYGON";
+
+  static final String GEOMETRYCOLLECTION = "GEOMETRYCOLLECTION";
 }

@@ -458,6 +458,7 @@ components:
         - aliases
         - numberOfEmployees
         - visitAddresses
+        - salesAreas
       properties:
         identifier:
           type: string
@@ -477,6 +478,11 @@ components:
         numberOfEmployees:
           type: integer
           nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
 
     BreweryHAL:
       type: object
@@ -507,10 +513,14 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Address'
-
         numberOfEmployees:
           type: integer
           nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
         _links:
           type: object
           x-dws-envelope: true
@@ -644,10 +654,16 @@ components:
         - type: object
           required:
             - numberOfEmployees
+            - salesAreas
           properties:
             numberOfEmployees:
               type: integer
               nullable: true
+            salesAreas:
+              type: array
+              nullable: true
+              items:
+                type: object
     Nameable:
       type: object
       required:

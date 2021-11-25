@@ -12,6 +12,12 @@
     },
     "name": "Brewery X",
     "visitAddresses": [],
+    "salesAreas": [
+      {
+        "type": "Point",
+        "coordinates": [5.38720071, 52.15516755]
+      }
+    ],
     "numberOfEmployees": 12
   },
   {
@@ -26,6 +32,12 @@
     },
     "name": "Brewery Y",
     "visitAddresses": [],
+    "salesAreas": [
+      {
+        "type": "Point",
+        "coordinates": [5.38720071, 52.15516755]
+      }
+    ],
     "numberOfEmployees": null
   },
   {
@@ -33,6 +45,7 @@
     "aliases": [],
     "name": "Brewery Z",
     "visitAddresses": [],
+    "salesAreas": null,
     "numberOfEmployees": null
   }
 ]

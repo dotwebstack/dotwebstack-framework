@@ -17,6 +17,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSO
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_FILTER;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_INPUT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_TYPE;
@@ -132,6 +133,8 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
         .enumValueDefinition(newEnumValueDefinition().name(MULTILINESTRING)
             .build())
         .enumValueDefinition(newEnumValueDefinition().name(MULTIPOLYGON)
+            .build())
+        .enumValueDefinition(newEnumValueDefinition().name(GEOMETRYCOLLECTION)
             .build())
         .build();
   }

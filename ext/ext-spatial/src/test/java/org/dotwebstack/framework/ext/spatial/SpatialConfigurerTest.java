@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_FILTER;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.LINESTRING;
@@ -56,7 +57,8 @@ class SpatialConfigurerTest {
     assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(EnumTypeDefinition.class));
 
-    List<String> enumValues = List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON);
+    List<String> enumValues =
+        List.of(POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION);
     List<EnumValueDefinition> enumValueDefs = ((EnumTypeDefinition) optional.get()).getEnumValueDefinitions();
     assertThat(enumValueDefs.size(), equalTo(enumValues.size()));
 

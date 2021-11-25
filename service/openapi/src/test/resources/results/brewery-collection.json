@@ -10,7 +10,10 @@
           "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
         }
       },
-      "numberOfEmployees": 12
+      "numberOfEmployees": 12,
+      "salesAreas": {
+        "asGeoJSON": "{\"type\": \"GeometryCollection\", \"geometries\": [{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}]}"
+      }
     },
     {
       "identifier": "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9",
@@ -22,12 +25,17 @@
           "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
         }
       },
-      "numberOfEmployees": null
+      "numberOfEmployees": null,
+      "salesAreas": {
+        "asGeoJSON": "{\"type\": \"GeometryCollection\", \"geometries\": [{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}]}"
+      }
     },
     {
       "identifier": "28649f76-ddcf-417a-8c1d-8e5012c31959",
       "name": "Brewery Z",
-      "numberOfEmployees": null
+      "postalAddress": null,
+      "numberOfEmployees": null,
+      "salesAreas": null
     }
   ]
 }
