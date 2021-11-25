@@ -40,8 +40,6 @@
     ]
   },
   "_links": {
-    "next": {},
-    "prev": {},
     "self": {
       "href": "https://dotwebstack.org/api/breweries"
     }

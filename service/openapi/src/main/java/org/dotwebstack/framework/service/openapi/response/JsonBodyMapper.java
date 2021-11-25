@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -98,8 +99,9 @@ public class JsonBodyMapper implements BodyMapper {
           .entrySet()
           .stream()
           .collect(HashMap::new, (acc, entry) -> {
+            var property = entry.getKey();
             var nestedSchema = entry.getValue();
-            var nestedFieldDefinition = rawType.getFieldDefinition(entry.getKey());
+            var nestedFieldDefinition = rawType.getFieldDefinition(property);
             Object nestedValue;
 
             if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
@@ -110,11 +112,11 @@ public class JsonBodyMapper implements BodyMapper {
               }
 
               var dataMap = (Map<String, Object>) data;
-              nestedValue =
-                  mapSchema(entry.getValue(), nestedFieldDefinition, dataMap.get(entry.getKey()), jexlContext);
+              nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
             }
 
-            if (nestedValue != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
+            if ((schema.getRequired() != null && schema.getRequired()
+                .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
               acc.put(entry.getKey(), nestedValue);
             }
           }, HashMap::putAll);
@@ -141,8 +143,8 @@ public class JsonBodyMapper implements BodyMapper {
           var nestedSchema = entry.getValue();
           var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
-          if (schema.getRequired()
-              .contains(property) || !valueIsEmpty(value)) {
+          if ((schema.getRequired() != null && schema.getRequired()
+              .contains(property)) || !valueIsEmpty(value)) {
             acc.put(entry.getKey(), value);
           }
         }, HashMap::putAll);
@@ -167,6 +169,21 @@ public class JsonBodyMapper implements BodyMapper {
       return ((Collection<?>) value).isEmpty();
     } else if (value instanceof Map<?, ?>) {
       return ((Map<?, ?>) value).isEmpty();
+    } else {
+      return value == null;
+    }
+  }
+
+  private boolean valueInEnvelopeIsEmpty(Object value) {
+    if (value instanceof Collection<?>) {
+      return ((Collection<?>) value).isEmpty();
+    } else if (value instanceof Map<?, ?>) {
+      var valueMap = ((Map<?, ?>) value);
+      return valueMap.values()
+          .isEmpty()
+          || valueMap.values()
+              .stream()
+              .allMatch(Objects::isNull);
     } else {
       return value == null;
     }
