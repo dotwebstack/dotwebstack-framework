@@ -15,6 +15,10 @@ import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class QueryPaging {
 
+  private static final String PAGE_SIZE = "pageSize";
+
+  private static final String PAGE = "page";
+
   public static Map<String, Integer> toPagingArguments(QueryProperties.Paging paging, Map<String, Object> parameters) {
     Map<String, Integer> pagingArguments = new HashMap<>();
     if (paging != null) {
@@ -28,27 +32,13 @@ public class QueryPaging {
             "`page` and `pageSize` parameters are required for paging. Default values should be configured.");
       }
 
-      int pageSize;
-      if (pageSizeValue instanceof Integer) {
-        pageSize = (Integer) pageSizeValue;
-      } else if (pageSizeValue instanceof BigInteger) {
-        pageSize = ((BigInteger) pageSizeValue).intValue();
-      } else {
-        throw invalidConfigurationException("`pageSize` parameter must be configured having type integer.");
-      }
-
-      int page;
-      if (pageValue instanceof Integer) {
-        page = (Integer) pageValue;
-      } else if (pageValue instanceof BigInteger) {
-        page = ((BigInteger) pageValue).intValue();
-      } else {
-        throw invalidConfigurationException("`page` parameter must be configured having type integer.");
-      }
+      var pageSize = getIntValueForArgument(pageSizeValue, PAGE_SIZE);
 
       if (pageSize < 1) {
         throw parameterValidationException("`pageSize` parameter value should be 1 or higher, but was {}.", pageSize);
       }
+
+      var page = getIntValueForArgument(pageValue, PAGE);
 
       pagingArguments.put(FIRST_ARGUMENT_NAME, pageSize);
       pagingArguments.put(OFFSET_FIELD_NAME, getOffsetValue(page, pageSize));
@@ -57,8 +47,18 @@ public class QueryPaging {
     return pagingArguments;
   }
 
+  private static int getIntValueForArgument(Object value, String name) {
+    if (value instanceof Integer) {
+      return (Integer) value;
+    } else if (value instanceof BigInteger) {
+      return ((BigInteger) value).intValue();
+    } else {
+      throw invalidConfigurationException("`{}` parameter must be configured having type integer.", name);
+    }
+  }
+
   private static int getOffsetValue(int page, int pageSize) {
-    int offset = 0;
+    var offset = 0;
 
     if (page < 1) {
       throw parameterValidationException("`page` parameter value should be 1 or higher, but was {}.", page);
