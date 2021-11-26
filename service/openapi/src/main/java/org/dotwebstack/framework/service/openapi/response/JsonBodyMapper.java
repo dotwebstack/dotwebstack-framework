@@ -211,7 +211,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Collection<Object> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
 
-    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (typeMappers.containsKey(rawType.getName())) {
       return (Collection<Object>) typeMappers.get(rawType.getName())
@@ -231,8 +231,8 @@ public class JsonBodyMapper implements BodyMapper {
       }
 
       return ((Collection<Object>) items).stream()
-          .map(item -> mapSchema(schema.getItems(), rawType.getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item,
-              jexlContext))
+          .map(item -> mapSchema(schema.getItems(),
+              ((GraphQLObjectType) rawType).getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item, jexlContext))
           .collect(Collectors.toList());
     }
 

@@ -2,12 +2,12 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.jooq.Field;
-import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateSequenceFilter;
 import org.locationtech.jts.geom.Geometry;
 
 class SpatialColumnMapper extends ColumnMapper {
@@ -85,8 +85,26 @@ class SpatialColumnMapper extends ColumnMapper {
     Geometry geometry2d = geometry.copy();
     geometry2d.setSRID(requestedSrid);
 
-    Arrays.stream(geometry2d.getCoordinates())
-        .forEach(c -> c.setCoordinate(new Coordinate(c.x, c.y)));
+    geometry2d.apply(new CoordinateSequenceFilter() {
+      boolean done = false;
+
+      @Override
+      public void filter(CoordinateSequence seq, int index) {
+        seq.setOrdinate(index, 2, Double.NaN);
+        done = (index == seq.size());
+      }
+
+      @Override
+      public boolean isDone() {
+        return done;
+      }
+
+      @Override
+      public boolean isGeometryChanged() {
+        return true;
+      }
+    });
+    geometry2d.geometryChanged();
 
     return geometry2d;
   }
