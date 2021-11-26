@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigInteger;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
@@ -54,7 +55,18 @@ class QueryPagingTest {
         assertThrows(InvalidConfigurationException.class, () -> QueryPaging.toPagingArguments(paging, parameters));
 
     assertThat(invalidConfigurationException.getMessage(),
-        is("`page` and `pageSize` parameters must be configured having type integer."));
+        is("`pageSize` parameter must be configured having type integer."));
+  }
+
+  @Test
+  void toPagingArguments_throwsParameterValidationException_whenNonIntegerPageProvided() {
+    Map<String, Object> parameters = Map.of("pageSize", 10, "page", "1");
+
+    InvalidConfigurationException invalidConfigurationException =
+        assertThrows(InvalidConfigurationException.class, () -> QueryPaging.toPagingArguments(paging, parameters));
+
+    assertThat(invalidConfigurationException.getMessage(),
+        is("`page` parameter must be configured having type integer."));
   }
 
   @Test
@@ -71,6 +83,16 @@ class QueryPagingTest {
   @Test
   void toPagingArguments_suppliesCorrectFirstAndOffsetOnFirstPage_forPageSize() {
     Map<String, Object> parameters = Map.of("pageSize", 42, "page", 1);
+
+    Map<String, Integer> arguments = QueryPaging.toPagingArguments(paging, parameters);
+
+    assertThat(arguments.get(FIRST_ARGUMENT_NAME), is(42));
+    assertThat(arguments.get(OFFSET_FIELD_NAME), is(0));
+  }
+
+  @Test
+  void toPagingArguments_suppliesCorrectFirstAndOffsetOnFirstPage_forBigIntegerPageAndPageSize() {
+    Map<String, Object> parameters = Map.of("pageSize", BigInteger.valueOf(42), "page", BigInteger.valueOf(1));
 
     Map<String, Integer> arguments = QueryPaging.toPagingArguments(paging, parameters);
 

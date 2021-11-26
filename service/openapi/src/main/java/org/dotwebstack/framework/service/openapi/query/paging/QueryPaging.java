@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -27,12 +28,23 @@ public class QueryPaging {
             "`page` and `pageSize` parameters are required for paging. Default values should be configured.");
       }
 
-      if (!(pageSizeValue instanceof Integer) || !(pageValue instanceof Integer)) {
-        throw invalidConfigurationException("`page` and `pageSize` parameters must be configured having type integer.");
+      int pageSize;
+      if (pageSizeValue instanceof Integer) {
+        pageSize = (Integer) pageSizeValue;
+      } else if (pageSizeValue instanceof BigInteger) {
+        pageSize = ((BigInteger) pageSizeValue).intValue();
+      } else {
+        throw invalidConfigurationException("`pageSize` parameter must be configured having type integer.");
       }
 
-      int pageSize = (Integer) pageSizeValue;
-      int page = (Integer) pageValue;
+      int page;
+      if (pageValue instanceof Integer) {
+        page = (Integer) pageValue;
+      } else if (pageValue instanceof BigInteger) {
+        page = ((BigInteger) pageValue).intValue();
+      } else {
+        throw invalidConfigurationException("`page` parameter must be configured having type integer.");
+      }
 
       if (pageSize < 1) {
         throw parameterValidationException("`pageSize` parameter value should be 1 or higher, but was {}.", pageSize);
