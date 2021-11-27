@@ -26,10 +26,10 @@
   ],
   "_links": {
     "self": {
-      "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
+      "href": "https://dotwebstack.org/api/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
     },
     "beers": {
-      "href": "https://dotwebstack.org/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b/beers"
+      "href": "https://dotwebstack.org/api/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b/beers"
     }
   },
   "name": "Brewery X",

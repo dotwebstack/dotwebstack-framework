@@ -29,7 +29,7 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-#    pageable: true
+    pageable: true
 
 objectTypes:
   Beer:

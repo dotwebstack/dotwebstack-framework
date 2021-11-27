@@ -166,7 +166,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: args.requestUri
+                            x-dws-expr: env.baseUrl + args.requestPathAndQuery
                       next:
                         type: object
                         x-dws-envelope: true
@@ -176,7 +176,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+                            x-dws-expr: "paging:next(data, args.pageSize, env.baseUrl, args.requestPathAndQuery)"
                       prev:
                         type: object
                         x-dws-envelope: true
@@ -186,7 +186,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: "paging:prev(args.requestUri)"
+                            x-dws-expr: "paging:prev(env.baseUrl, args.requestPathAndQuery)"
 
   /breweries-pageable-with-params:
     get:

@@ -23,29 +23,31 @@ public class PagingFunctions implements JexlFunction {
   }
 
   @SuppressWarnings("unchecked")
-  public String next(@NonNull Object data, @NonNull String pageSize, @NonNull String requestUri) {
+  public String next(@NonNull Object data, int pageSize, @NonNull String baseUrl, @NonNull String requestPathAndQuery) {
+    var uri = baseUrl + requestPathAndQuery;
     var nodes = ((Map<String, Object>) data).get(PagingConstants.NODES_FIELD_NAME);
     if (!(nodes instanceof Collection<?>)) {
       throw new InvalidConfigurationException("paging:next JEXL function used on un-pageable field");
     }
 
-    if (((Collection<?>) nodes).size() == Integer.parseInt(pageSize)) {
-      Matcher matcher = PAGE_PATTERN.matcher(requestUri);
+    if (((Collection<?>) nodes).size() == pageSize) {
+      Matcher matcher = PAGE_PATTERN.matcher(uri);
       boolean found = matcher.find();
       if (found) {
         String group = matcher.group(1);
         int page = Integer.parseInt(group);
         return matcher.replaceFirst("page=" + (page + 1));
       } else {
-        return requestUri.contains("?") ? requestUri + "&page=2" : requestUri + "?page=2";
+        return uri.contains("?") ? uri + "&page=2" : uri + "?page=2";
       }
     }
 
     return null;
   }
 
-  public String prev(@NonNull String requestUri) {
-    Matcher matcher = PAGE_PATTERN.matcher(requestUri);
+  public String prev(@NonNull String baseUrl, @NonNull String requestPathAndQuery) {
+    var uri = baseUrl + requestPathAndQuery;
+    Matcher matcher = PAGE_PATTERN.matcher(uri);
     boolean found = matcher.find();
     if (found) {
       String group = matcher.group(1);

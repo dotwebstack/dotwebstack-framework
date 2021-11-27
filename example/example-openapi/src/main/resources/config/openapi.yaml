@@ -66,13 +66,13 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            type: integer
             default: 1
         - name: pageSize
           in: query
           schema:
-            type: string
-            default: 10
+            type: integer
+            default: 2
       #        - name: withAddressSubject
       #          in: query
       #          schema:
@@ -241,7 +241,7 @@ components:
       x-dws-envelope: true
       required:
         - _embedded
-#        - _links
+        - _links
       properties:
         _embedded:
           x-dws-envelope: true
@@ -253,21 +253,41 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Brewery'
-#        _links:
-#          x-dws-envelope: true
-#          type: object
-#          required:
-#            - self
-#          properties:
-#            self:
-#              x-dws-envelope: true
-#              type: object
-#              required:
-#                - href
-#              properties:
-#                href:
-#                  type: string
-#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+            next:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:next(data, args.pageSize, env.dotwebstack.base_url, args.requestPathAndQuery)"
+            prev:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:prev(env.dotwebstack.base_url, args.requestPathAndQuery)"
     Brewery:
       type: object
       required:
