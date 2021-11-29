@@ -304,6 +304,8 @@ components:
           properties:
             identifier:
               type: string
+            abv:
+              type: number
             describedBy:
               type: object
               x-dws-envelope: true
