@@ -29,6 +29,7 @@ import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
@@ -79,11 +80,7 @@ class FilterConditionBuilder {
     var current = (PostgresObjectField) fieldPath.get(0);
 
     if (fieldPath.size() > 1) {
-      var childCriteria = FilterCriteria.builder()
-          .filterType(filterCriteria.getFilterType())
-          .fieldPath(fieldPath.subList(1, fieldPath.size()))
-          .value(filterCriteria.getValue())
-          .build();
+      var childCriteria = createChildCriteria(filterCriteria.getFilterType(), fieldPath, filterCriteria.getValue());
 
       if (current.getTargetType()
           .isNested()) {
@@ -116,6 +113,15 @@ class FilterConditionBuilder {
     }
 
     return createCondition(current, filterCriteria.getFilterType(), filterCriteria.getValue());
+  }
+
+  private FilterCriteria createChildCriteria(FilterType filterType, List<ObjectField> fieldPath,
+      Map<String, Object> value) {
+    return FilterCriteria.builder()
+        .filterType(filterType)
+        .fieldPath(fieldPath.subList(1, fieldPath.size()))
+        .value(value)
+        .build();
   }
 
   private Condition createCondition(PostgresObjectField objectField, FilterType filterType,
@@ -158,15 +164,15 @@ class FilterConditionBuilder {
       return DSL.not(andCondition(conditions));
     }
 
-    throw illegalArgumentException("Unknown filter filterField '%s'", operator);
+    throw illegalArgumentException("Unknown filter field '%s'", operator);
   }
 
   private Optional<Condition> createExactCondition(PostgresObjectField objectField, String operator, Object value) {
-    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
-
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
       return createGeometryCondition(operator, objectField, value);
     }
+
+    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
 
     if (FilterConstants.EQ_FIELD.equals(operator)) {
       return Optional.of(field.eq(DSL.val(value)));
@@ -201,7 +207,7 @@ class FilterConditionBuilder {
       return Optional.of(DSL.not(andCondition(conditions)));
     }
 
-    throw illegalArgumentException("Unknown filter filterField '%s'", operator);
+    throw illegalArgumentException("Unknown filter field '%s'", operator);
   }
 
 
