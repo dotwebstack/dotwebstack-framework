@@ -6,12 +6,13 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE TABLE dbeerpedia.addresses (
   identifier character varying NOT NULL PRIMARY KEY,
   street character varying NOT NULL,
+  street_tsv TSVECTOR NOT NULL,
   city character varying NOT NULL
 );
 
 INSERT INTO dbeerpedia.addresses(identifier, street, city) VALUES
-  ('fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'Church Street', 'Dublin'),
-  ('3fe6c706-54af-4420-89c4-926ff719236a', '5th Avenue', 'New York');
+  ('fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'Church Street', to_tsvector('Ch Chu Chur Churc Church St Str Stre Stree Street'), 'Dublin'),
+  ('3fe6c706-54af-4420-89c4-926ff719236a', '5th Avenue', to_tsvector('5t 5th Av Ave Aven Avenu Avenue'), 'New York');
 
 CREATE TYPE dbeerpedia.brewery_status AS ENUM ('active', 'inactive');
 

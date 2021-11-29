@@ -15,6 +15,8 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private String column;
 
+  private String tsvColumn;
+
   @Valid
   private List<JoinColumn> joinColumns = new ArrayList<>();
 

@@ -24,7 +24,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_for2dWkt_returns2dGeometry() {
     var wkt = "POINT (194936.73 470973.96)";
-    Map<String, String> data = Map.of(FROM_WKT, wkt);
+    Map<String, Object> data = Map.of(FROM_WKT, wkt);
 
     Geometry geometry = GeometryReader.readGeometry(data);
 
@@ -41,7 +41,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_for3dWkt_returns3dGeometry() {
     var wkt = "POINT (194936.73 470973.96 0.0)";
-    Map<String, String> data = Map.of(FROM_WKT, wkt);
+    Map<String, Object> data = Map.of(FROM_WKT, wkt);
 
     Geometry geometry = GeometryReader.readGeometry(data);
 
@@ -58,7 +58,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_forWkb_returnsGeometry() {
     var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
-    Map<String, String> data = Map.of(FROM_WKB, wkb);
+    Map<String, Object> data = Map.of(FROM_WKB, wkb);
 
     Geometry geometry = GeometryReader.readGeometry(data);
 
@@ -77,7 +77,7 @@ class GeometryReaderTest {
     var geoJson = "{\n" + "  \"type\": \"Point\",\n" + "  \"coordinates\": [\n" + "    194936.73,\n" + "    470973.96\n"
         + "  ],\n" + "  \"crs\": {\n" + "    \"type\": \"name\",\n" + "    \"properties\": {\n"
         + "      \"name\": \"EPSG:28992\"\n" + "    }\n" + "  }\n" + "}";
-    Map<String, String> data = Map.of(FROM_GEOJSON, geoJson);
+    Map<String, Object> data = Map.of(FROM_GEOJSON, geoJson);
 
     Geometry geometry = GeometryReader.readGeometry(data);
 
@@ -94,7 +94,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_forIllegalWkt_returnsException() {
     var wkt = "POINT (194936.73 470973.96";
-    Map<String, String> data = Map.of(FROM_WKT, wkt);
+    Map<String, Object> data = Map.of(FROM_WKT, wkt);
 
     assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
   }
@@ -102,7 +102,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_forIllegalWkb_returnsException() {
     var wkb = "blablabla";
-    Map<String, String> data = Map.of(FROM_WKB, wkb);
+    Map<String, Object> data = Map.of(FROM_WKB, wkb);
 
     assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
   }
@@ -110,7 +110,7 @@ class GeometryReaderTest {
   @Test
   void readGeometry_forIllegalGeoJson_returnsException() {
     var geoJson = "blablabla";
-    Map<String, String> data = Map.of(FROM_GEOJSON, geoJson);
+    Map<String, Object> data = Map.of(FROM_GEOJSON, geoJson);
 
     assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
   }
@@ -119,14 +119,14 @@ class GeometryReaderTest {
   void readGeometry_forMultipleFilters_returnsException() {
     var wkt = "POINT (194936.73 470973.96)";
     var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
-    Map<String, String> data = Map.of(FROM_WKT, wkt, FROM_WKB, wkb);
+    Map<String, Object> data = Map.of(FROM_WKT, wkt, FROM_WKB, wkb);
 
     assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
   }
 
   @Test
   void readGeometry_forNoFilter_returnsException() {
-    Map<String, String> data = Collections.emptyMap();
+    Map<String, Object> data = Collections.emptyMap();
 
     assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
   }
