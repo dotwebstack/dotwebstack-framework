@@ -334,11 +334,8 @@ when both the expression defined in the `value` and the `fallback` field result 
 back to the default value defined in the parent schema. If no default is defined, `null` is the default.
 
 ## Paging
-The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
-```yaml
-features:
-  - paging
-```
+The openapi module uses the `dotwebstack.yaml` config file to determine if [paging](core/paging.md) is enabled for a
+GraphQl query field.
 When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
 ```
   x-dws-query:
@@ -347,15 +344,17 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
       pageSize: $query.pageSize
       page: $query.page
 ```
-The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](core/paging.md).
+The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL 
+[paging settings](core/paging.md).
 If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
 To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
-passed available arguments using existing [Response properties expressions](service/openapi?id=response-properties-expression):
+passed available arguments using existing
+[Response properties expressions](service/openapi?id=response-properties-expression):
 
-- `paging:next(data, args.pageSize, args.requestUri)`
+- `paging:next(data, args.pageSize, env.your.api.base-url.here, args.requestPathAndQuery)`
   generates a next page link, only if a result set's size matches the requested page size.
-- `paging:prev(args.requestUri)`
+- `paging:prev(env.your.api.base-url.here, args.requestPathAndQuery)`
   generates a next page link, only from page 2 and up.
 
 Usage example:
@@ -374,7 +373,7 @@ _links:
         href:
           type: string
           format: uri
-          x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+          x-dws-expr: "paging:next(data, args.pageSize, env.your.api.base-url.here, args.requestPathAndQuery)"
     prev:
       type: object
       x-dws-envelope: true
@@ -384,7 +383,7 @@ _links:
         href:
           type: string
           format: uri
-          x-dws-expr: "paging:prev(args.requestUri)"
+          x-dws-expr: "paging:prev(env.your.api.base-url.here, args.requestPathAndQuery)"
 ```
 
 ## AllOf
