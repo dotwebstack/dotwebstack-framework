@@ -23,6 +23,11 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 public class DefaultParameterResolver implements ParameterResolver {
+
+  private static final String REQUEST_URI = "requestUri";
+
+  private static final String REQUEST_PATH_AND_QUERY = "requestPathAndQuery";
+
   private final RequestBody requestBody;
 
   private final RequestBodyContext requestBodyContext;
@@ -32,10 +37,6 @@ public class DefaultParameterResolver implements ParameterResolver {
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final JexlHelper jexlHelper;
-
-  private static final String REQUEST_URI = "requestUri";
-
-  private static final String REQUEST_PATH_AND_QUERY = "requestPathAndQuery";
 
   private final List<Parameter> parameters;
 
@@ -75,12 +76,12 @@ public class DefaultParameterResolver implements ParameterResolver {
 
     var requestUri = request.uri();
 
-    if (Objects.nonNull(parameters)) {
-      result.put(REQUEST_URI, requestUri.toString());
-      result.put(REQUEST_PATH_AND_QUERY, Stream.of(requestUri.getPath(), requestUri.getQuery())
-          .filter(Objects::nonNull)
-          .collect(Collectors.joining("?")));
+    result.put(REQUEST_URI, requestUri.toString());
+    result.put(REQUEST_PATH_AND_QUERY, Stream.of(requestUri.getPath(), requestUri.getQuery())
+        .filter(Objects::nonNull)
+        .collect(Collectors.joining("?")));
 
+    if (Objects.nonNull(parameters) && !parameters.isEmpty()) {
       validateParameterExistence("query", getParameterNamesOfType(parameters, "query"), request.queryParams()
           .keySet());
       validateParameterExistence("path", getParameterNamesOfType(parameters, "path"), request.pathVariables()
