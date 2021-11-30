@@ -265,6 +265,8 @@ components:
           type: object
           required:
             - self
+            - next
+            - prev
           properties:
             self:
               x-dws-envelope: true
@@ -285,6 +287,7 @@ components:
                   type: string
                   format: uri
                   x-dws-expr: "paging:next(data, args.pageSize, env.dotwebstack.base_url, args.requestPathAndQuery)"
+                  nullable: true
             prev:
               type: object
               x-dws-envelope: true
@@ -295,6 +298,7 @@ components:
                   type: string
                   format: uri
                   x-dws-expr: "paging:prev(env.dotwebstack.base_url, args.requestPathAndQuery)"
+                  nullable: true
     Beer:
       type: object
       allOf:
