@@ -45,7 +45,7 @@ public class PostgresConfiguration {
         .username(postgresProperties.getUsername())
         .password(postgresProperties.getPassword())
         .sslMode(postgresProperties.getSslMode())
-        .forceBinary(true);
+        .forceBinary(false); // Disable due to R2DBC bug with numeric values
 
     if (postgresProperties.getOptions() != null) {
       configurationBuilder.options(postgresProperties.getOptions());

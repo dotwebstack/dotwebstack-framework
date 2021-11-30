@@ -21,7 +21,7 @@ queries:
   beerCollection:
     type: Beer
     list: true
-#    pageable: true
+    pageable: true
   brewery:
     type: Brewery
     keys:
@@ -29,7 +29,7 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-#    pageable: true
+    pageable: true
 
 objectTypes:
   Beer:
@@ -99,6 +99,11 @@ objectTypes:
       taste:
         type: Taste
         list: true
+      validStart:
+        type: Date
+      validEnd:
+        type: Date
+        nullable: true
 
   Brewery:
     table: dbeerpedia.breweries
