@@ -195,6 +195,9 @@ objectTypes:
         field: history.age
       beerBreweryName:
         field: beers.brewery.name
+      postalAddressStreet:
+        type: Term
+        field: postalAddress.street
     sortableBy:
       name:
         - field: name

@@ -13,6 +13,8 @@ import org.dotwebstack.framework.core.model.AbstractObjectField;
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectField extends AbstractObjectField {
 
+  private static final String TSV_PREFIX = "_tsv";
+
   private String column;
 
   private String tsvColumn;
@@ -37,5 +39,14 @@ public class PostgresObjectField extends AbstractObjectField {
     }
 
     return column;
+  }
+
+  public String getTsvColumn() {
+    // Lazy-determine default tsv column name
+    if (tsvColumn == null) {
+      tsvColumn = getColumn().concat(TSV_PREFIX);
+    }
+
+    return tsvColumn;
   }
 }

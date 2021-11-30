@@ -10,7 +10,7 @@ CREATE TABLE dbeerpedia.addresses (
   city character varying NOT NULL
 );
 
-INSERT INTO dbeerpedia.addresses(identifier, street, city) VALUES
+INSERT INTO dbeerpedia.addresses(identifier, street, street_tsv, city) VALUES
   ('fcb73181-a1b0-4748-8ae0-b7b51dd6497f', 'Church Street', to_tsvector('Ch Chu Chur Churc Church St Str Stre Stree Street'), 'Dublin'),
   ('3fe6c706-54af-4420-89c4-926ff719236a', '5th Avenue', to_tsvector('5t 5th Av Ave Aven Avenu Avenue'), 'New York');
 

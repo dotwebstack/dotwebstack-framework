@@ -9,6 +9,7 @@ CREATE TYPE db.taste AS ENUM ('MEATY', 'SMOKY', 'WATERY', 'FRUITY', 'SPICY');
 CREATE TABLE db.address (
   identifier_address character varying NOT NULL PRIMARY KEY,
   street character varying NOT NULL,
+  street_tsv TSVECTOR NOT NULL,
   city character varying NOT NULL
 );
 

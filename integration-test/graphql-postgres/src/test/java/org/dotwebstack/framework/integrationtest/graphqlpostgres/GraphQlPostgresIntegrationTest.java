@@ -1611,6 +1611,16 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_returnsBreweries_forTermFilter() {
+    String query = "{breweries(filter: {postalAddressStreet: {eq: \"Ch\"}}) { name }}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data, equalTo(Map.of("breweries", List.of(Map.of("name", "Brewery X")))));
+  }
+
+  @Test
   void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{\n" + "  beers {\n" + "    identifier_beer\n" + "    name\n" + "    ingredients{\n"
         + "      identifier_ingredient\n" + "      name\n" + "    }\n" + "  }\n" + "}\n";
