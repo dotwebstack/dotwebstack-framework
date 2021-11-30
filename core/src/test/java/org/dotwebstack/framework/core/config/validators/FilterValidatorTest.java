@@ -15,23 +15,31 @@ import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.dotwebstack.framework.core.testhelpers.TestObjectField;
 import org.dotwebstack.framework.core.testhelpers.TestObjectType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class FilterValidatorTest {
 
   private final SchemaReader dwsReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
 
+  private FilterValidator filterValidator;
+
+  @BeforeEach
+  void doBefore() {
+    filterValidator = new FilterValidator();
+  }
+
   @Test
   void validate_throwsNoException_withValidFilterFields() {
     var schema = dwsReader.read("validators/dotwebstack-with-valid-filter.yaml");
-    new FilterValidator().validate(schema);
+    filterValidator.validate(schema);
   }
 
   @Test
   void validate_throwsException_withInvalidFilterFields() {
     var schema = dwsReader.read("validators/dotwebstack-with-invalid-filter.yaml");
 
-    var thrown = assertThrows(InvalidConfigurationException.class, () -> new FilterValidator().validate(schema));
+    var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
     assertThat(thrown.getMessage(),
         is("Filter field 'visitAddress.invalid' in object type 'Brewery' can't be resolved to a single scalar type."));
@@ -53,7 +61,7 @@ class FilterValidatorTest {
     var schema = new Schema();
     schema.setObjectTypes(Map.of("testObject", objectType));
 
-    var thrown = assertThrows(InvalidConfigurationException.class, () -> new FilterValidator().validate(schema));
+    var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
     assertThat(thrown.getMessage(), equalTo(
         "Filter 'testFilter' of type 'Term' in object type 'testObject' doesn´t refer to an 'String' field type."));
@@ -78,7 +86,7 @@ class FilterValidatorTest {
     var schema = new Schema();
     schema.setObjectTypes(Map.of("testObject", objectType));
 
-    new FilterValidator().validate(schema);
+    filterValidator.validate(schema);
   }
 
 }
