@@ -11,7 +11,6 @@
   
 - Backend modules
 
-  - [JSON](backend/json.md)
   - [PostgreSQL](backend/postgres.md)
   - [RDF4J](backend/rdf4j.md)
 
