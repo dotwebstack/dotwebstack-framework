@@ -33,6 +33,8 @@ type Brewery {
   salesAreas: Geometry
   beers: [Beer]!
   beersMaybe: [Beer]
+  hiddenField: String!
+  secretField: Float
 }
 
 type BreweryConnection {
