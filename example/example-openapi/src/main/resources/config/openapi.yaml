@@ -135,6 +135,10 @@ paths:
               - 'epsg:4258'
               - 'epsg:28992'
             type: string
+        - name: accept-crs
+          in: header
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/GeoBody'
       responses:

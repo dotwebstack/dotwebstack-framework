@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
@@ -40,8 +41,8 @@ class QueryMapperTest {
 
     openApi = TestResources.openApi("openapi.yaml");
 
-    queryFactory =
-        new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder, List.of(new GeometryTypeMapper()));
+    queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder,
+        List.of(new GeometryTypeMapper(new OpenApiProperties())));
   }
 
   static Stream<Arguments> arguments() {

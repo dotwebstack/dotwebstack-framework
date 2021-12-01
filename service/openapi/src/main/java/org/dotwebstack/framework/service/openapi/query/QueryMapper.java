@@ -208,7 +208,7 @@ public class QueryMapper {
 
     if (typeMappers.containsKey(rawType.getName())) {
       return typeMappers.get(rawType.getName())
-          .schemaToField(name, schema)
+          .schemaToField(name, schema, mappingContext.getParameters())
           .stream();
     }
 

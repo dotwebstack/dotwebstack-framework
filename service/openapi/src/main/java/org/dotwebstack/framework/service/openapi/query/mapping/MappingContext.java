@@ -13,13 +13,20 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
+@Getter
 public class MappingContext {
+
+  private final Map<String, Object> parameters;
+
+  private final Set<String> requiredFields;
+
   private final Set<String> expandablePaths;
 
   private final Set<String> expandedPaths;
@@ -27,9 +34,6 @@ public class MappingContext {
   private final List<String> path;
 
   private boolean rootFound;
-
-  @Getter
-  private final Set<String> requiredFields;
 
   @SuppressWarnings("unchecked")
   public static MappingContext build(@NonNull OperationRequest operationRequest) {
@@ -57,35 +61,39 @@ public class MappingContext {
           .findFirst()
           .orElse(Set.of());
 
-      return new MappingContext(expandable, expandedPaths, requiredFields);
+      return new MappingContext(Collections.unmodifiableMap(operationRequest.getParameters()), requiredFields,
+          expandable, expandedPaths);
     }
-    return new MappingContext(Set.of(), expandedPaths, requiredFields);
+    return new MappingContext(Map.of(), requiredFields, Set.of(), expandedPaths);
   }
 
-  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths, Set<String> requiredFields) {
-    this(expandablePaths, expandedPaths, List.of(), false, requiredFields);
+  public MappingContext(Map<String, Object> parameters, Set<String> requiredFields, Set<String> expandablePaths,
+      Set<String> expandedPaths) {
+    this(parameters, requiredFields, expandablePaths, expandedPaths, List.of(), false);
   }
 
-  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths, List<String> path, boolean rootFound,
-      Set<String> requiredFields) {
+  public MappingContext(Map<String, Object> parameters, Set<String> requiredFields, Set<String> expandablePaths,
+      Set<String> expandedPaths, List<String> path, boolean rootFound) {
+    this.parameters = parameters;
+    this.requiredFields = requiredFields;
     this.expandablePaths = expandablePaths;
     this.expandedPaths = expandedPaths;
     this.path = path;
     this.rootFound = rootFound;
-    this.requiredFields = requiredFields;
   }
 
   public MappingContext updatePath(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
-      return new MappingContext(expandablePaths, expandedPaths, createNewPath(key), rootFound, requiredFields);
+      return new MappingContext(parameters, requiredFields, expandablePaths, expandedPaths, createNewPath(key),
+          rootFound);
     }
     rootFound = rootFound || !isEnvelope(schema);
     return this;
   }
 
   public MappingContext updatePath(Schema<?> schema) {
-    return new MappingContext(expandablePaths, expandedPaths, createNewPath(), rootFound || (!isEnvelope(schema)),
-        requiredFields);
+    return new MappingContext(parameters, requiredFields, expandablePaths, expandedPaths, createNewPath(),
+        rootFound || (!isEnvelope(schema)));
   }
 
   public boolean atBase() {

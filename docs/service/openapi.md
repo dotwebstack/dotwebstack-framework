@@ -563,7 +563,7 @@ pebble, see https://pebbletemplates.io.
 -->
 ## Application properties
 
-<!-- ### OpenApi document publication
+### OpenApi document publication
 
 By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions.
 This way, anyone with access to your API can look up the OpenApi document that describes the API.
@@ -579,7 +579,7 @@ dotwebstack:
   openapi:
     apiDocPublicationPath: /openapi.yaml
 ```
--->
+
 ### Date formats
 
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify the
@@ -593,6 +593,22 @@ dotwebstack:
       datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
       timezone: Europe/Amsterdam
 ```
+
+### Spatial
+Optional configuration for populating the `srid` argument of a GraphQL 'Geometry' type with a parameter value may be added under `dotwebstack.openapi.spatial`.
+The following configuration specifies the `accept-crs` parameter as `srid` input:
+```yaml
+dotwebstack:
+  openapi:
+    spatial:
+      sridParameter:
+        name: accept-crs
+        valueMap:
+          '[epsg:28992]': 7415
+          '[epsg:4258]': 7931
+```
+- `sridParameter.name` specifies the name of the parameter. Depending on the presence of `valueMap`, it may either be a `string` or an `integer`.
+- `sridParameter.valueMap` is an optional String to Integer map. When present, the parameter value should be a `string` and will be translated using this map. If the map is not present, the parameter value will be passed as-is, and should be an `integer` or a `string` with integer format.
 
 <!-- ### Serialization of null fields
 
