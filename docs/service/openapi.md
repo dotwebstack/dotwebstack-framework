@@ -595,7 +595,7 @@ dotwebstack:
 ```
 
 ### Spatial
-Optional configuration for properties that map to a GraphQL 'Geometry' type may be added under `dotwebstack.openapi.spatial`, enabling the population of the `srid` argument of a GraphQL 'Geometry' field.
+Optional configuration for populating the `srid` argument of a GraphQL 'Geometry' type with a parameter value may be added under `dotwebstack.openapi.spatial`.
 The following configuration specifies the `accept-crs` parameter as `srid` input:
 ```yaml
 dotwebstack:
