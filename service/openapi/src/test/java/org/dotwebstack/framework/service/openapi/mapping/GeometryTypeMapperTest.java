@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.AstPrinter;
-import graphql.language.Field;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -61,9 +60,10 @@ class GeometryTypeMapperTest {
   @Test
   void schemaToField_throwsException_forInvalidSchema() {
     var schema = new StringSchema();
+    Map<String, Object> params = Map.of();
 
     Exception exception =
-        assertThrows(InvalidConfigurationException.class, () -> typeMapper.schemaToField("location", schema, Map.of()));
+        assertThrows(InvalidConfigurationException.class, () -> typeMapper.schemaToField("location", schema, params));
 
     assertThat(exception.getMessage(), is("Geometry type requires an object or array schema type (found: string)."));
   }
@@ -145,9 +145,9 @@ class GeometryTypeMapperTest {
 
   @Test
   void schemaToField_passesSrid_whenNoValueMapConfigured() {
-    OpenApiProperties properties = createProperties("AcceptCrs", null);
+    var properties = createProperties("AcceptCrs", null);
 
-    List<Field> fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
+    var fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
         Map.of("AcceptCrs", 1234));
 
     assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
@@ -155,9 +155,9 @@ class GeometryTypeMapperTest {
 
   @Test
   void schemaToField_mapsSrid_whenValueMapConfigured() {
-    OpenApiProperties properties = createProperties("AcceptCrs", Map.of("input", 1234));
+    var properties = createProperties("AcceptCrs", Map.of("input", 1234));
 
-    List<Field> fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
+    var fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
         Map.of("AcceptCrs", "input"));
 
     assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
@@ -165,46 +165,43 @@ class GeometryTypeMapperTest {
 
   @Test
   void schemaToField_throwsException_forInvalidSridInputType() {
-    OpenApiProperties properties = createProperties("AcceptCrs", null);
+    var properties = createProperties("AcceptCrs", null);
 
-    GeometryTypeMapper typeMapper = new GeometryTypeMapper(properties);
-    Schema<?> schema = new Schema<>().type("object");
+    var typeMapper = new GeometryTypeMapper(properties);
+    var schema = new Schema<>().type("object");
     Map<String, Object> params = Map.of("AcceptCrs", new ArrayList<>());
 
     assertThrows(BadRequestException.class, () -> typeMapper.schemaToField("geo", schema, params));
-
   }
 
   @Test
   void schemaToField_throwsException_forInvalidSridInputStringValue() {
-    OpenApiProperties properties = createProperties("AcceptCrs", null);
+    var properties = createProperties("AcceptCrs", null);
 
-    GeometryTypeMapper typeMapper = new GeometryTypeMapper(properties);
-    Schema<?> schema = new Schema<>().type("object");
+    var typeMapper = new GeometryTypeMapper(properties);
+    var schema = new Schema<>().type("object");
     Map<String, Object> params = Map.of("AcceptCrs", "1324s");
 
     assertThrows(BadRequestException.class, () -> typeMapper.schemaToField("geo", schema, params));
-
   }
 
   @Test
   void schemaToField_throwsException_forNonMappeableSridInput() {
-    OpenApiProperties properties = createProperties("AcceptCrs", Map.of("key", 1));
+    var properties = createProperties("AcceptCrs", Map.of("key", 1));
 
-    GeometryTypeMapper typeMapper = new GeometryTypeMapper(properties);
-    Schema<?> schema = new Schema<>().type("object");
+    var typeMapper = new GeometryTypeMapper(properties);
+    var schema = new Schema<>().type("object");
     Map<String, Object> params = Map.of("AcceptCrs", "input");
 
     assertThrows(BadRequestException.class, () -> typeMapper.schemaToField("geo", schema, params));
-
   }
 
   @Test
   void schemaToField_throwsException_forNonMappeableSridInputType() {
-    OpenApiProperties properties = createProperties("AcceptCrs", Map.of("key", 1));
+    var properties = createProperties("AcceptCrs", Map.of("key", 1));
 
-    GeometryTypeMapper typeMapper = new GeometryTypeMapper(properties);
-    Schema<?> schema = new Schema<>().type("object");
+    var typeMapper = new GeometryTypeMapper(properties);
+    var schema = new Schema<>().type("object");
     Map<String, Object> params = Map.of("AcceptCrs", 1);
 
     assertThrows(BadRequestException.class, () -> typeMapper.schemaToField("geo", schema, params));
@@ -212,14 +209,14 @@ class GeometryTypeMapperTest {
   }
 
   private OpenApiProperties createProperties(String sridParamName, Map<String, Integer> valueMap) {
-    OpenApiProperties.SridParameterProperties sridParameter = new OpenApiProperties.SridParameterProperties();
+    var sridParameter = new OpenApiProperties.SridParameterProperties();
     sridParameter.setName(sridParamName);
     sridParameter.setValueMap(valueMap);
 
-    OpenApiProperties.SpatialProperties spatial = new OpenApiProperties.SpatialProperties();
+    var spatial = new OpenApiProperties.SpatialProperties();
     spatial.setSridParameter(sridParameter);
 
-    OpenApiProperties properties = new OpenApiProperties();
+    var properties = new OpenApiProperties();
     properties.setSpatial(spatial);
 
     return properties;
