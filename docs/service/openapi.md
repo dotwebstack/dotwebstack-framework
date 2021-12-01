@@ -88,15 +88,16 @@ paths:
             type: string
 ```
 
-By default, a provided parameter is mapped to the corresponding graphQL field argument. The example above would map the `name` parameter to its graphQL counterpart:
+By default, a provided parameter is mapped to the corresponding graphQL field argument. The example above would map the
+`name` parameter to its graphQL counterpart:
 ```
 breweries(name: String): [Brewery!]!
 ```
 Exceptions to this are the arguments `sort`, `filter` and `context` which are treated separately as described below.
 
-<!--All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for a
-given request, the application will return a `400` response with and a message stating which of the given parameters are
-not allowed.-->
+<!--All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for
+a given request, the application will return a `400` response with and a message stating which of the given parameters
+are not allowed.-->
 
 ## Sort parameter
 
@@ -120,8 +121,11 @@ parameters:
 ```
 
 ## Expand parameter
-The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
-The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a response object `Brewery`.
+The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that
+are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
+
+The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a
+response object `Brewery`.
 
 ```yaml
 x-dws-type: expand
@@ -164,21 +168,24 @@ Will lead to `hiddenField` and `secretField` being added to the selection set of
 
 ## Filters
 OpenApi queries may add filter configuration under the vendor extension `x-dws-query`.
-The filter configuration is mapped to the graphQL filter specified for that field and can make use of parameter values with a key `$<type>.<parametername>` where `type` may be:
+The filter configuration is mapped to the graphQL filter specified for that field and can make use of parameter values
+with a key `$<type>.<parametername>` where `type` may be:
 * `path`
 * `body`
 * `header`
 * `query`
 For instance, `$path.name` refers to the `name` parameter that occurs in the path.
 
-Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL query field.
+Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL
+query field.
 ```yaml
     x-dws-query:
       field: breweries
       filters:
         <filterConfig>
 ```
-`<filterConfig>` is a map which can be used to supports any filter structure as described in [filtering](../core/filtering.md).
+`<filterConfig>` is a map which can be used to supports any filter structure as described in
+[filtering](core/filtering.md).
 
 The following describes a filter on the `breweries` field:
 ```yaml
@@ -188,10 +195,12 @@ The following describes a filter on the `breweries` field:
         name:
           in: $query.name
 ```
-With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
+With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter
+`breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
 
 <!-- #### Required values
-A path value may be annotated with a `!`, indicating that the value is required for the parent element in the path. The following configuration specifies that `$path.name` is required:
+A path value may be annotated with a `!`, indicating that the value is required for the parent element in the path. The
+following configuration specifies that `$path.name` is required:
 ```yaml
     x-dws-query:
       field: breweries
@@ -203,10 +212,12 @@ A path value may be annotated with a `!`, indicating that the value is required 
               in: $query.name
               eq: $path.name!
 ```
-If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is provided.-->
+If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is
+provided.-->
 
 ### Expressions
-A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
+A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate
+the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
 ```yaml
     x-dws-query:
       field: breweries
