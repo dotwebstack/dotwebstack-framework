@@ -48,7 +48,7 @@ class JsonBodyMapperTest {
     bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
         .strict(true)
         .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
-        .create(), properties, List.of(new GeometryTypeMapper()));
+        .create(), properties, List.of(new GeometryTypeMapper(null)));
   }
 
   static Stream<Arguments> arguments() {

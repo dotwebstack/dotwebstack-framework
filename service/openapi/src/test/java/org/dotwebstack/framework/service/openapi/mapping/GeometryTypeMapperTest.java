@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.AstPrinter;
+import graphql.language.Field;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -14,11 +15,12 @@ import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.junit.jupiter.api.Test;
 
 class GeometryTypeMapperTest {
 
-  private static final GeometryTypeMapper typeMapper = new GeometryTypeMapper();
+  private static final GeometryTypeMapper typeMapper = new GeometryTypeMapper(new OpenApiProperties());
 
   @Test
   void schemaToField_selectsAsGeoJson_forObjectSchema() {
@@ -47,7 +49,7 @@ class GeometryTypeMapperTest {
   private void schemaToField_selectsAsGeoJson_forSchema(Schema<?> schema) {
     var name = "location";
 
-    var fields = typeMapper.schemaToField(name, schema);
+    var fields = typeMapper.schemaToField(name, schema, Map.of());
     assertThat(fields.size(), is(1));
 
     var field = fields.get(0);
@@ -59,7 +61,7 @@ class GeometryTypeMapperTest {
     var schema = new StringSchema();
 
     Exception exception =
-        assertThrows(InvalidConfigurationException.class, () -> typeMapper.schemaToField("location", schema));
+        assertThrows(InvalidConfigurationException.class, () -> typeMapper.schemaToField("location", schema, Map.of()));
 
     assertThat(exception.getMessage(), is("Geometry type requires an object or array schema type (found: string)."));
   }
@@ -137,5 +139,39 @@ class GeometryTypeMapperTest {
   @Test
   void typeName_returnsGeometry_always() {
     assertThat(typeMapper.typeName(), is("Geometry"));
+  }
+
+  @Test
+  void sridParameter_isPassed_whenNoValueMapConfigured() {
+    OpenApiProperties properties = createProperties("AcceptCrs", null);
+
+    List<Field> fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
+        Map.of("AcceptCrs", 1234));
+
+    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
+  }
+
+  @Test
+  void sridParameter_isMapped_whenValueMapConfigured() {
+    OpenApiProperties properties = createProperties("AcceptCrs", Map.of("input", 1234));
+
+    List<Field> fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
+        Map.of("AcceptCrs", "input"));
+
+    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
+  }
+
+  private OpenApiProperties createProperties(String sridParamName, Map<String, Integer> valueMap) {
+    OpenApiProperties.SridParameterProperties sridParameter = new OpenApiProperties.SridParameterProperties();
+    sridParameter.setName(sridParamName);
+    sridParameter.setValueMap(valueMap);
+
+    OpenApiProperties.SpatialProperties spatial = new OpenApiProperties.SpatialProperties();
+    spatial.setSridParameter(sridParameter);
+
+    OpenApiProperties properties = new OpenApiProperties();
+    properties.setSpatial(spatial);
+
+    return properties;
   }
 }

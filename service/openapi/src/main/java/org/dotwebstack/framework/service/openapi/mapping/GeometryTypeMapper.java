@@ -2,17 +2,22 @@ package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.language.Argument;
 import graphql.language.Field;
+import graphql.language.IntValue;
 import graphql.language.SelectionSet;
 import io.swagger.v3.oas.models.media.Schema;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.NonNull;
+import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -32,13 +37,22 @@ public class GeometryTypeMapper implements TypeMapper {
 
   private static final TypeReference<Map<String, Object>> TYPE_REFERENCE = new TypeReference<>() {};
 
+  private final OpenApiProperties openApiProperties;
+
+  public GeometryTypeMapper(OpenApiProperties openApiProperties) {
+    this.openApiProperties = openApiProperties;
+  }
+
+
   @Override
-  public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema) {
+  public List<Field> schemaToField(@NonNull String name, @NonNull Schema<?> schema,
+      @NonNull Map<String, Object> parameters) {
     validateSchemaType(schema);
 
-    var field = new Field(name, new SelectionSet(List.of(new Field(AS_GEO_JSON_FIELD))));
+    var builder = Field.newField(name, new SelectionSet(List.of(new Field(AS_GEO_JSON_FIELD))));
+    resolveSridArgument(parameters).ifPresent(a -> builder.arguments(List.of(a)));
 
-    return List.of(field);
+    return List.of(builder.build());
   }
 
   @Override
@@ -99,4 +113,62 @@ public class GeometryTypeMapper implements TypeMapper {
   public String typeName() {
     return TYPE_NAME;
   }
+
+  private Optional<Argument> resolveSridArgument(Map<String, Object> parameters) {
+    var spatial = this.openApiProperties.getSpatial();
+    if (spatial == null) {
+      return Optional.empty();
+    } else {
+      var sridParam = spatial.getSridParameter();
+      var name = sridParam.getName();
+      Object value = parameters.get(name);
+      if (value == null) {
+        return Optional.empty();
+      }
+      if (sridParam.getValueMap() == null) {
+        return resolveSrideFromValue(value);
+      } else {
+        return resolveSridFromValueMap(name, value, sridParam);
+      }
+    }
+  }
+
+  private Optional<Argument> resolveSrideFromValue(Object value) {
+    BigInteger intValue;
+    if (value instanceof String) {
+      try {
+        intValue = new BigInteger((String) value);
+      } catch (NumberFormatException e) {
+        throw badRequestException(
+            "Invalid srid parameter String value '{}', value could not be converted to an Integer", value, e);
+      }
+    } else if (value instanceof Integer) {
+      intValue = BigInteger.valueOf((Integer) value);
+    } else {
+      throw badRequestException("Unsupported srid parameter type [{}], supported types are String, Integer",
+          value.getClass(), value);
+    }
+    return Optional.of(Argument.newArgument("srid", new IntValue(intValue))
+        .build());
+  }
+
+  private Optional<Argument> resolveSridFromValueMap(String name, Object value,
+      OpenApiProperties.SridParameterProperties sridParam) {
+    if (!(value instanceof String)) {
+      throw invalidConfigurationException(
+          "`sridParam.valueMap` is configured, but srid parameter [{}] is not a String but a", name, value.getClass());
+    }
+    var stringValue = (String) value;
+    if (!sridParam.getValueMap()
+        .containsKey(stringValue)) {
+      throw badRequestException("Unsupported srid parameter value [{}], supported values are [{}]", value,
+          sridParam.getValueMap()
+              .keySet());
+    }
+
+    return Optional.of(Argument.newArgument("srid", new IntValue(BigInteger.valueOf(sridParam.getValueMap()
+        .get(stringValue))))
+        .build());
+  }
+
 }

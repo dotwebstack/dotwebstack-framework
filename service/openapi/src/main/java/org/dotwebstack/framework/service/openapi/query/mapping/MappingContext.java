@@ -12,17 +12,22 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
+@Getter
 public class MappingContext {
   private final Set<String> expandablePaths;
 
   private final Set<String> expandedPaths;
 
   private final List<String> path;
+
+  private final Map<String, Object> parameters;
 
   private boolean rootFound;
 
@@ -48,16 +53,18 @@ public class MappingContext {
           .findFirst()
           .orElse(Set.of());
 
-      return new MappingContext(expandable, expandedPaths);
+      return new MappingContext(operationRequest.getParameters(), expandable, expandedPaths);
     }
-    return new MappingContext(Set.of(), expandedPaths);
+    return new MappingContext(Map.of(), Set.of(), expandedPaths);
   }
 
-  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths) {
-    this(expandablePaths, expandedPaths, List.of(), false);
+  public MappingContext(Map<String, Object> parameters, Set<String> expandablePaths, Set<String> expandedPaths) {
+    this(parameters, expandablePaths, expandedPaths, List.of(), false);
   }
 
-  public MappingContext(Set<String> expandablePaths, Set<String> expandedPaths, List<String> path, boolean rootFound) {
+  public MappingContext(Map<String, Object> parameters, Set<String> expandablePaths, Set<String> expandedPaths,
+      List<String> path, boolean rootFound) {
+    this.parameters = parameters;
     this.expandablePaths = expandablePaths;
     this.expandedPaths = expandedPaths;
     this.path = path;
@@ -66,14 +73,15 @@ public class MappingContext {
 
   public MappingContext updatePath(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
-      return new MappingContext(expandablePaths, expandedPaths, createNewPath(key), rootFound);
+      return new MappingContext(parameters, expandablePaths, expandedPaths, createNewPath(key), rootFound);
     }
     rootFound = rootFound || (!isEnvelope(schema));
     return this;
   }
 
   public MappingContext updatePath(Schema<?> schema) {
-    return new MappingContext(expandablePaths, expandedPaths, createNewPath(), rootFound || (!isEnvelope(schema)));
+    return new MappingContext(parameters, expandablePaths, expandedPaths, createNewPath(),
+        rootFound || (!isEnvelope(schema)));
   }
 
   public String toString() {
