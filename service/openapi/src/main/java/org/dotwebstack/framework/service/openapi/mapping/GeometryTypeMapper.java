@@ -126,27 +126,28 @@ public class GeometryTypeMapper implements TypeMapper {
         return Optional.empty();
       }
       if (sridParam.getValueMap() == null) {
-        return resolveSrideFromValue(value);
+        return resolveSridFromValue(name, value);
       } else {
         return resolveSridFromValueMap(name, value, sridParam);
       }
     }
   }
 
-  private Optional<Argument> resolveSrideFromValue(Object value) {
+  private Optional<Argument> resolveSridFromValue(String name, Object value) {
     BigInteger intValue;
     if (value instanceof String) {
       try {
         intValue = new BigInteger((String) value);
       } catch (NumberFormatException e) {
         throw badRequestException(
-            "Invalid srid parameter String value '{}', value could not be converted to an Integer", value, e);
+            "Invalid srid parameter '{}' String value '{}', value could not be converted to an Integer.", name, value,
+            e);
       }
     } else if (value instanceof Integer) {
       intValue = BigInteger.valueOf((Integer) value);
     } else {
-      throw badRequestException("Unsupported srid parameter type [{}], supported types are String, Integer",
-          value.getClass(), value);
+      throw badRequestException("Unsupported srid parameter '{}' type '{}', supported types are 'String', 'Integer'.",
+          name, value.getClass(), value);
     }
     return Optional.of(Argument.newArgument("srid", new IntValue(intValue))
         .build());
@@ -155,13 +156,13 @@ public class GeometryTypeMapper implements TypeMapper {
   private Optional<Argument> resolveSridFromValueMap(String name, Object value,
       OpenApiProperties.SridParameterProperties sridParam) {
     if (!(value instanceof String)) {
-      throw invalidConfigurationException(
-          "`sridParam.valueMap` is configured, but srid parameter [{}] is not a String but a", name, value.getClass());
+      throw badRequestException("Unsupported srid parameter '{}' type '{}', supported type is 'String'.", name,
+          value.getClass());
     }
     var stringValue = (String) value;
     if (!sridParam.getValueMap()
         .containsKey(stringValue)) {
-      throw badRequestException("Unsupported srid parameter value [{}], supported values are [{}]", value,
+      throw badRequestException("Unsupported srid parameter '{}' value '{}', supported values are {}.", name, value,
           sridParam.getValueMap()
               .keySet());
     }
