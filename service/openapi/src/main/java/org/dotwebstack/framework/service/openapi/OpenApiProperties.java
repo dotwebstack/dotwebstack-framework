@@ -3,7 +3,6 @@ package org.dotwebstack.framework.service.openapi;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
