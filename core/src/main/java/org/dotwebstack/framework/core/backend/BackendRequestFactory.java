@@ -344,7 +344,7 @@ public class BackendRequestFactory {
           .map(o -> o.getField(segment))
           .orElseThrow();
 
-      current = schema.getObjectType(field.getType())
+      current = Optional.ofNullable(field.getTargetType())
           .orElse(null);
 
       fieldPath.add(field);
