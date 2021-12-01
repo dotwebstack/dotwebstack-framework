@@ -62,13 +62,4 @@ public class OpenApiProperties {
     private Map<String, Integer> valueMap;
   }
 
-  @PostConstruct
-  private void validate() {
-    if (spatial != null) {
-      validateSpatial();
-    }
-  }
-
-  private void validateSpatial() {}
-
 }

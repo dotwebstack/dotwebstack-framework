@@ -39,7 +39,7 @@ public class GeometryTypeMapper implements TypeMapper {
 
   private final OpenApiProperties openApiProperties;
 
-  public GeometryTypeMapper(OpenApiProperties openApiProperties) {
+  public GeometryTypeMapper(@NonNull OpenApiProperties openApiProperties) {
     this.openApiProperties = openApiProperties;
   }
 
@@ -50,7 +50,7 @@ public class GeometryTypeMapper implements TypeMapper {
     validateSchemaType(schema);
 
     var builder = Field.newField(name, new SelectionSet(List.of(new Field(AS_GEO_JSON_FIELD))));
-    resolveSridArgument(parameters).ifPresent(a -> builder.arguments(List.of(a)));
+    resolveSridArgument(parameters).ifPresent(argument -> builder.arguments(List.of(argument)));
 
     return List.of(builder.build());
   }

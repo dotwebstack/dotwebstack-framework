@@ -53,7 +53,7 @@ public class MappingContext {
           .findFirst()
           .orElse(Set.of());
 
-      return new MappingContext(operationRequest.getParameters(), expandable, expandedPaths);
+      return new MappingContext(Collections.unmodifiableMap(operationRequest.getParameters()), expandable, expandedPaths);
     }
     return new MappingContext(Map.of(), Set.of(), expandedPaths);
   }
