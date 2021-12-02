@@ -224,7 +224,7 @@ Simplified configuration example
 ### Context fields
 
 It is optional to define context fields. Context fields are common to all objects within the query.
-A practical application for context fields is time traveling within a bi-temportal datamodel.
+A practical application for context fields is time traveling within a bi-temporal datamodel.
 
 If there are context fields defined in the configuration, data for each object will be retrieved
 with an context table function named `<table>_ctx` with the context parameters in natural order.
@@ -302,6 +302,20 @@ spatial:
       dimensions: 3
       columnSuffix: _etrs89
       equivalent: 9067
+```
+
+### Text search (TSVECTOR)
+
+When a filter for a `String` field is configured with a `term` type DotWebStack will create an SQL condition for this filter against a TSVECTOR column. The TSVECTOR column can be configured with the optional `tsvColumn` property. Default value: `{$fieldname}_tsv`
+
+```yaml
+objectTypes:
+  Beer:
+    table: db.beer_v
+    fields:
+      name:
+        type: String
+        tsvColumn: name_TSVECTOR
 ```
 
 ## PostGIS
