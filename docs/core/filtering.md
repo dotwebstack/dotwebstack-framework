@@ -3,7 +3,7 @@
 It is possible to make use of filters while quering a list of (nested) objects. 
 
 The following types are currently supported:
-- A `String` field can be filtered on two ways; exact with operators `eq`, `in` and `not` or term based with operators `eq` and `not`.
+- A `String` field can be filtered in two ways; exact, with operators `eq`, `in` and `not` or term based, with operators `eq` and `not`.
 - An `Int` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Float` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
