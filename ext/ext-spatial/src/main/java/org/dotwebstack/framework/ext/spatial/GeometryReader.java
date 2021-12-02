@@ -23,19 +23,19 @@ public class GeometryReader {
 
   private GeometryReader() {}
 
-  public static Geometry readGeometry(Map<String, String> data) {
+  public static Geometry readGeometry(Map<String, Object> data) {
     validateGeometryFilters(data);
 
     if (data.containsKey(FROM_WKT)) {
-      return getGeometryFromWkt(data.get(FROM_WKT));
+      return getGeometryFromWkt((String) data.get(FROM_WKT));
     } else if (data.containsKey(FROM_WKB)) {
-      return getGeometryFromWkb(data.get(FROM_WKB));
+      return getGeometryFromWkb((String) data.get(FROM_WKB));
     } else {
-      return getGeometryFromGeoJson(data.get(FROM_GEOJSON));
+      return getGeometryFromGeoJson((String) data.get(FROM_GEOJSON));
     }
   }
 
-  private static void validateGeometryFilters(Map<String, String> data) {
+  private static void validateGeometryFilters(Map<String, Object> data) {
     var filters = List.of(FROM_WKT, FROM_WKB, FROM_GEOJSON);
 
     var foundFilters = data.keySet()

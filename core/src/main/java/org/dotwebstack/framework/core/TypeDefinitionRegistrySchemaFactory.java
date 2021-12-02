@@ -82,7 +82,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers) {
     this.schema = schema;
-    filterConfigurers.forEach(filterConfigurer -> filterConfigurer.configureFieldFilterMapping(fieldFilterMap));
+    filterConfigurers.forEach(configurer -> configurer.configureFieldFilterMapping(fieldFilterMap));
   }
 
   public TypeDefinitionRegistry createTypeDefinitionRegistry() {
