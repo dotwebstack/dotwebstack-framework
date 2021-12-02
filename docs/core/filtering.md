@@ -78,7 +78,7 @@ query {
 }
 ```
 
-### LowerThen filter
+### LowerThan filter
 
 The `lt` filter operator can be applied with the following query:
 
@@ -91,7 +91,7 @@ query {
 }
 ```
 
-### LowerThenEquals filter
+### LowerThanEquals filter
 
 The `lte` filter operator can be applied with the following query:
 
@@ -104,7 +104,7 @@ query {
 }
 ```
 
-### GreaterThen filter
+### GreaterThan filter
 
 The `gt` filter operator can be applied with the following query:
 
@@ -117,7 +117,7 @@ query {
 }
 ```
 
-### GreaterThenEquals filter
+### GreaterThanEquals filter
 
 The `gte` filter operator can be applied with the following query:
 

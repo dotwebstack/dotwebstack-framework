@@ -447,6 +447,124 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /brewery-required-fields/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - secretField
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /breweries-required-fields:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        requiredFields:
+          - hiddenField
+          - secretField
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+  /breweries-pageable-required-fields:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+        requiredFields:
+          - hiddenField
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [ 10, 20, 50 ]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                  - _links
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+  /brewery-non-existent-required-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - missingField
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /brewery-non-scalar-required-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
 
 components:
   schemas:

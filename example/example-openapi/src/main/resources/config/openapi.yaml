@@ -25,6 +25,8 @@ paths:
         filters:
           name:
             in: $query.name
+        requiredFields:
+          - identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -133,6 +135,10 @@ paths:
               - 'epsg:4258'
               - 'epsg:28992'
             type: string
+        - name: accept-crs
+          in: header
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/GeoBody'
       responses:
@@ -210,6 +216,8 @@ paths:
         filters:
           name:
             in: $query.name
+        requiredFields:
+          - soldPerYear
       parameters:
         - name: name
           in: query
@@ -391,15 +399,15 @@ components:
     Brewery:
       type: object
       required:
-        - identifier
+#        - identifier
         - name
         - visitAddress
         - _links
         - beers
       #        - beers
       properties:
-        identifier:
-          type: string
+#        identifier:
+#          type: string
         name:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'

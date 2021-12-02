@@ -5,8 +5,11 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.dotwebstack.framework.ext.orchestrate.SubschemaModifier;
@@ -41,11 +44,16 @@ class OrchestrateConfiguration {
 
   @Bean
   @Primary
-  public GraphQLSchema graphQlSchema() {
-    var rootSubschemaProperties = configurationProperties.getSubschemas()
-        .get(configurationProperties.getRoot());
+  public GraphQLSchema graphQlSchema(Map<String, Subschema> subschemas) {
+    return SchemaWrapper.wrap(subschemas.get(configurationProperties.getRoot()));
+  }
 
-    return SchemaWrapper.wrap(createSubschema(configurationProperties.getRoot(), rootSubschemaProperties));
+  @Bean
+  public Map<String, Subschema> subschemas() {
+    return configurationProperties.getSubschemas()
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, entry -> createSubschema(entry.getKey(), entry.getValue())));
   }
 
   private Subschema createSubschema(String key, SubschemaProperties subschemaProperties) {

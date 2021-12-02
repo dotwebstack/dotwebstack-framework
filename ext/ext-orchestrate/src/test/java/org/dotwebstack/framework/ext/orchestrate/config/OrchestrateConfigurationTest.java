@@ -53,14 +53,15 @@ class OrchestrateConfigurationTest {
 
   @Test
   void graphQlSchema_wrapsUnmodifiedSchema_ifNoModifiersPresent() {
-    configurationProperties.setRoot(ROOT_KEY);
-    configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
-    var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
-
     MOCK_WEB_SERVER.enqueue(new MockResponse().addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .setBody(getIntrospectionResponseBody()));
 
-    var schema = orchestrateConfiguration.graphQlSchema();
+    configurationProperties.setRoot(ROOT_KEY);
+    configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschemaProperties()));
+    var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
+    var subschemas = orchestrateConfiguration.subschemas();
+
+    var schema = orchestrateConfiguration.graphQlSchema(subschemas);
 
     assertThat(schema, notNullValue());
     assertThat(schema.getObjectType("Brewery"), notNullValue());
@@ -71,17 +72,18 @@ class OrchestrateConfigurationTest {
   }
 
   @Test
-  void graphQlSchema_throwsException_ifIntrospectionFails() {
-    configurationProperties.setRoot(ROOT_KEY);
-    configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschema()));
-    var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
-
+  void subschemas_throwsException_ifIntrospectionFails() {
     MOCK_WEB_SERVER.enqueue(new MockResponse().setResponseCode(INTERNAL_SERVER_ERROR.value()));
 
-    assertThrows(ExecutionException.class, orchestrateConfiguration::graphQlSchema);
+    configurationProperties.setRoot(ROOT_KEY);
+    configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschemaProperties()));
+
+    var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
+
+    assertThrows(ExecutionException.class, orchestrateConfiguration::subschemas);
   }
 
-  private SubschemaProperties createSubschema() {
+  private SubschemaProperties createSubschemaProperties() {
     var subschemaProperties = new SubschemaProperties();
     subschemaProperties.setEndpoint(
         URI.create(String.format("http://%s:%d", MOCK_WEB_SERVER.getHostName(), MOCK_WEB_SERVER.getPort())));
