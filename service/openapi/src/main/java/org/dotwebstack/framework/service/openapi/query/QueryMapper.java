@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static graphql.schema.GraphQLTypeUtil.unwrapAll;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
@@ -21,7 +22,6 @@ import graphql.language.Value;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
-import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
@@ -118,8 +118,7 @@ public class QueryMapper {
   private Stream<Field> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition,
       MappingContext mappingContext) {
     if (isPageableField(fieldDefinition)) {
-      var nestedFieldDefinition =
-          ((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
+      var nestedFieldDefinition = ((GraphQLObjectType) unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
 
       return Stream.of(new Field(NODES_FIELD_NAME, new SelectionSet(
           mapSchema(schema.getItems(), nestedFieldDefinition, mappingContext).collect(Collectors.toList()))));
@@ -204,7 +203,7 @@ public class QueryMapper {
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
-    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+    var rawType = unwrapAll(fieldDefinition.getType());
 
     if (typeMappers.containsKey(rawType.getName())) {
       return typeMappers.get(rawType.getName())
@@ -269,9 +268,9 @@ public class QueryMapper {
   }
 
   private Value<?> mapArgument(GraphQLArgument argument, Object parameterValue) {
-    GraphQLInputType inputType = argument.getType();
+    var inputType = unwrapAll(argument.getType());
     if (inputType instanceof GraphQLScalarType) {
-      String type = ((GraphQLScalarType) inputType).getName();
+      String type = inputType.getName();
       switch (type) {
         case "Int":
           if (parameterValue instanceof Integer) {
@@ -281,6 +280,7 @@ public class QueryMapper {
           throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type Int",
               parameterValue, argument.getName());
         case "String":
+        case "ID":
           return StringValue.of(String.valueOf(parameterValue));
         default:
           throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type {}",
