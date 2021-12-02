@@ -64,7 +64,7 @@ class FilterValidatorTest {
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
     assertThat(thrown.getMessage(), equalTo(
-        "Filter 'testFilter' of type 'Term' in object type 'testObject' doesn´t refer to an 'String' field type."));
+        "Filter 'testFilter' of type 'Term' in object type 'testObject' doesn´t refer to a 'String' field type."));
   }
 
   @Test
