@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHel
 import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
@@ -98,11 +99,14 @@ class SelectBuilder {
         .build()
         .forEach(dataQuery::addOrderBy);
 
-    newFiltering().aliasManager(aliasManager)
-        .filterCriterias(collectionRequest.getFilterCriterias())
-        .table(DSL.table(tableAlias))
-        .objectRequest(collectionRequest.getObjectRequest())
-        .build()
+    collectionRequest.getFilterCriterias()
+        .stream()
+        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+            .filterCriteria(filterCriteria)
+            .table(DSL.table(tableAlias))
+            .contextCriteria(collectionRequest.getObjectRequest()
+                .getContextCriteria())
+            .build())
         .forEach(dataQuery::addConditions);
 
     newPaging().requestContext(requestContext)
@@ -510,8 +514,8 @@ class SelectBuilder {
 
     var result = objectRequest.getScalarFields()
         .stream()
-        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, getObjectType(objectRequest), table,
-            objectMapper))
+        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest,
+            (PostgresObjectType) objectField.getTargetType(), table, objectMapper))
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())
@@ -523,7 +527,7 @@ class SelectBuilder {
   private SelectQuery<Record> getJoinTableReferences(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> parentTable, ObjectFieldMapper<Map<String, Object>> nestedFieldMapper, FieldRequest fieldRequest) {
     var objectType = (PostgresObjectType) objectField.getObjectType();
-    var joinTable = JoinHelper.resolveJoinTable(objectType, objectField.getJoinTable());
+    var joinTable = resolveJoinTable(objectType, objectField.getJoinTable());
 
     var table = findTable(joinTable.getName(), objectRequest.getContextCriteria()).as(aliasManager.newAlias());
 

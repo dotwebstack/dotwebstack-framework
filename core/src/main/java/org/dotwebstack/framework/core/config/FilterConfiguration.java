@@ -6,6 +6,8 @@ import lombok.Data;
 @Data
 public class FilterConfiguration {
 
+  private FilterType type = FilterType.EXACT;
+
   private String field;
 
   @JsonProperty("default")

@@ -289,9 +289,12 @@ public class BackendRequestFactory {
 
           var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 
+          var filterValue = createFilterValue(filterArgument, filterName);
+
           return FilterCriteria.builder()
+              .filterType(filterConfiguration.getType())
               .fieldPath(fieldPath)
-              .value(createFilterValue(filterArgument, filterName))
+              .value(filterValue)
               .build();
 
         })
@@ -344,7 +347,7 @@ public class BackendRequestFactory {
           .map(o -> o.getField(segment))
           .orElseThrow();
 
-      current = schema.getObjectType(field.getType())
+      current = Optional.ofNullable(field.getTargetType())
           .orElse(null);
 
       fieldPath.add(field);

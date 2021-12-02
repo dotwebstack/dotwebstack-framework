@@ -117,6 +117,7 @@ objectTypes:
       status: { }
       geometry: { }
       postalStreet:
+        type: Term
         field: postalAddress.street
       postalCity:
         field: postalAddress.city
@@ -215,6 +216,7 @@ objectTypes:
         type: ID
       street:
         type: String
+        tsvColumn: street_tsv
       city:
         type: String
 

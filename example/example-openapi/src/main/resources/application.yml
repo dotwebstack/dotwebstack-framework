@@ -6,6 +6,11 @@ logging:
 dotwebstack:
   openapi:
     apiDocPublicationPath: /openapi.yaml
+    spatial:
+      sridParameter:
+        name: accept-crs
+        valueMap:
+          '[epsg:28992]': 28992
   config: dotwebstack.yaml
   postgres:
     host: localhost

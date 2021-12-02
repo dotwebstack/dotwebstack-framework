@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,8 @@ public class OpenApiProperties {
 
   private DateFormatProperties dateproperties;
 
+  private SpatialProperties spatial;
+
   @Getter
   @Setter
   public static class DateFormatProperties {
@@ -42,6 +45,20 @@ public class OpenApiProperties {
 
     private String timezone;
 
+  }
+
+  @Getter
+  @Setter
+  public static class SpatialProperties {
+    private SridParameterProperties sridParameter;
+  }
+
+  @Getter
+  @Setter
+  public static class SridParameterProperties {
+    private String name;
+
+    private Map<String, Integer> valueMap;
   }
 
 }
