@@ -63,6 +63,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/BreweryHAL'
 
+  /brewery-nulls/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryVisitAddressWithNullableLocation'
+
+  /brewery-required-empty-nullable-envelope/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expand
+          x-dws-type: expand
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryRequiredEmptyNullableEnvelope'
+
   /breweries-pageable:
     get:
       x-dws-query: breweryPageableCollection
@@ -116,7 +166,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: args.requestUri
+                            x-dws-expr: env.baseUrl + args.requestPathAndQuery
                       next:
                         type: object
                         x-dws-envelope: true
@@ -126,7 +176,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+                            x-dws-expr: "paging:next(data, args.pageSize, env.baseUrl, args.requestPathAndQuery)"
                       prev:
                         type: object
                         x-dws-envelope: true
@@ -136,7 +186,7 @@ paths:
                           href:
                             type: string
                             format: uri
-                            x-dws-expr: "paging:prev(args.requestUri)"
+                            x-dws-expr: "paging:prev(env.baseUrl, args.requestPathAndQuery)"
 
   /breweries-pageable-with-params:
     get:
@@ -397,6 +447,124 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /brewery-required-fields/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - secretField
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /breweries-required-fields:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        requiredFields:
+          - hiddenField
+          - secretField
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+  /breweries-pageable-required-fields:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+        requiredFields:
+          - hiddenField
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [ 10, 20, 50 ]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+            application/hal+json:
+              schema:
+                type: object
+                x-dws-envelope: true
+                required:
+                  - _embedded
+                  - _links
+                properties:
+                  _embedded:
+                    type: object
+                    x-dws-envelope: true
+                    required:
+                      - breweries
+                    properties:
+                      breweries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Brewery'
+  /brewery-non-existent-required-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - missingField
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+  /brewery-non-scalar-required-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+        requiredFields:
+          - hiddenField
+          - postalAddress
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
 
 components:
   schemas:
@@ -499,10 +667,73 @@ components:
                   format: uri
                   x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
 
+    BreweryVisitAddressWithNullableLocation:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          nullable: true
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressNullable'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
+    BreweryRequiredEmptyNullableEnvelope:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliasEnvelope
+        - numberOfEmployees
+        - visitAddresses
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliasEnvelope:
+          nullable: true
+          type: Object
+          properties:
+            aliases:
+              nullable: true
+              type: array
+              items:
+                type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressNullable'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+
     Address:
       type: object
       required:
         - street
+        - location
       properties:
         street:
           type: string
@@ -516,12 +747,14 @@ components:
       nullable: true
       required:
         - street
+        - location
       properties:
         street:
           type: string
         postalCode:
           type: string
         location:
+          nullable: true
           type: object
 
     BreweryAllOf:

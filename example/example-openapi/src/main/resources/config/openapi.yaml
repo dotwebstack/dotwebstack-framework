@@ -5,17 +5,16 @@ info:
   version: 3.0.0
 
 paths:
-#  /noop:
-#    get:
-#      x-dws-operation: false
-#      responses:
-#        200:
-#          description: OK
-#          content:
-#            application/text:
-#              schema:
-#                type: string
-#                default: ok
+  /noop:
+    get:
+      responses:
+        200:
+          description: OK
+          content:
+            application/text:
+              schema:
+                type: string
+                default: ok
   /breweries:
     get:
       x-dws-query:
@@ -26,6 +25,8 @@ paths:
         filters:
           name:
             in: $query.name
+        requiredFields:
+          - identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -67,13 +68,13 @@ paths:
           in: query
           required: false
           schema:
-            type: string
+            type: integer
             default: 1
         - name: pageSize
           in: query
           schema:
-            type: string
-            default: 10
+            type: integer
+            default: 2
       #        - name: withAddressSubject
       #          in: query
       #          schema:
@@ -133,6 +134,10 @@ paths:
             enum:
               - 'epsg:4258'
               - 'epsg:28992'
+            type: string
+        - name: accept-crs
+          in: header
+          schema:
             type: string
       requestBody:
         $ref: '#/components/requestBodies/GeoBody'
@@ -201,9 +206,103 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /beers:
+    get:
+      x-dws-query:
+        field: beerCollection
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+        filters:
+          name:
+            in: $query.name
+        requiredFields:
+          - soldPerYear
+      parameters:
+        - name: name
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 2
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BeerCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
 
 components:
   schemas:
+    BeerCollection:
+      type: object
+      x-dws-envelope: true
+      required:
+        - _embedded
+        - _links
+      properties:
+        _embedded:
+          x-dws-envelope: true
+          type: object
+          required:
+            - beers
+          properties:
+            beers:
+              type: array
+              items:
+                $ref: '#/components/schemas/Beer'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/beers`'
+            next:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:next(data, args.pageSize, env.dotwebstack.base_url, args.requestPathAndQuery)"
+            prev:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:prev(env.dotwebstack.base_url, args.requestPathAndQuery)"
     Beer:
       type: object
       allOf:
@@ -213,12 +312,20 @@ components:
           properties:
             identifier:
               type: string
-        #            link:
-        #              type: string
-        #              x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
-        #            class:
-        #              type: string
-        #              x-dws-default: 'Beer'
+            abv:
+              type: number
+            describedBy:
+              type: object
+              x-dws-envelope: true
+              properties:
+                validStart:
+                  type: string
+                  format: date
+                validEnd:
+                  type: string
+                  format: date
+                  nullable: true
+
         - $ref: '#/components/schemas/NamedItem'
         - $ref: '#/components/schemas/ItemWithIngredients'
     NamedItem:
@@ -242,7 +349,7 @@ components:
       x-dws-envelope: true
       required:
         - _embedded
-#        - _links
+        - _links
       properties:
         _embedded:
           x-dws-envelope: true
@@ -254,33 +361,53 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Brewery'
-#        _links:
-#          x-dws-envelope: true
-#          type: object
-#          required:
-#            - self
-#          properties:
-#            self:
-#              x-dws-envelope: true
-#              type: object
-#              required:
-#                - href
-#              properties:
-#                href:
-#                  type: string
-#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+            next:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:next(data, args.pageSize, env.dotwebstack.base_url, args.requestPathAndQuery)"
+            prev:
+              type: object
+              x-dws-envelope: true
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  format: uri
+                  x-dws-expr: "paging:prev(env.dotwebstack.base_url, args.requestPathAndQuery)"
     Brewery:
       type: object
       required:
-        - identifier
+#        - identifier
         - name
         - visitAddress
         - _links
         - beers
       #        - beers
       properties:
-        identifier:
-          type: string
+#        identifier:
+#          type: string
         name:
           type: string
           x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'

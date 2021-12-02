@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.60-SNAPSHOT</version>
+  <version>0.3.68-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -55,7 +55,7 @@
     <spring.boot.version>2.5.5</spring.boot.version>
     <rdf4j.version>3.7.3</rdf4j.version>
     <graphql.java.version>17.3</graphql.java.version>
-    <graphql.java.orchestrate.version>0.1.6</graphql.java.orchestrate.version>
+    <graphql.java.orchestrate.version>0.1.8</graphql.java.orchestrate.version>
     <commons.jexl.version>3.2.1</commons.jexl.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>

@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
@@ -21,6 +23,11 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 public class DefaultParameterResolver implements ParameterResolver {
+
+  private static final String REQUEST_URI = "requestUri";
+
+  private static final String REQUEST_PATH_AND_QUERY = "requestPathAndQuery";
+
   private final RequestBody requestBody;
 
   private final RequestBodyContext requestBodyContext;
@@ -30,8 +37,6 @@ public class DefaultParameterResolver implements ParameterResolver {
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final JexlHelper jexlHelper;
-
-  private static final String REQUEST_URI = "requestUri";
 
   private final List<Parameter> parameters;
 
@@ -69,10 +74,14 @@ public class DefaultParameterResolver implements ParameterResolver {
   Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
 
-    if (Objects.nonNull(parameters)) {
-      result.put(REQUEST_URI, request.uri()
-          .toString());
+    var requestUri = request.uri();
 
+    result.put(REQUEST_URI, requestUri.toString());
+    result.put(REQUEST_PATH_AND_QUERY, Stream.of(requestUri.getPath(), requestUri.getQuery())
+        .filter(Objects::nonNull)
+        .collect(Collectors.joining("?")));
+
+    if (Objects.nonNull(parameters) && !parameters.isEmpty()) {
       validateParameterExistence("query", getParameterNamesOfType(parameters, "query"), request.queryParams()
           .keySet());
       validateParameterExistence("path", getParameterNamesOfType(parameters, "path"), request.pathVariables()

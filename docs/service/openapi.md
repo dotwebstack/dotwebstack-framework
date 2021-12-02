@@ -37,6 +37,8 @@ maps to the `default_breweries` GraphQL query:
 default_breweries : [Brewery!]!
 ```
 
+Operations without `x-dws-query` will not be handled by the framework.
+
 Each OK operation response (2xx) should have a reference to the return type using `content.<mediaType>.schema.$ref`. The
 following example specifies that the OK response (200) returns the `Breweries` type:
 
@@ -53,7 +55,7 @@ responses:
 A `Redirect` operation response (3xx) does not have a content but must have a `Location` header. The value of a
 the `Location` must be specified in the in a `x-dws-expr` and should be a
 valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression.
-See [Response properties expression](#118-response-properties-expression) for more information over `x-dws-expr`.
+See [Response properties expression](#response-properties-expression) for more information about `x-dws-expr`.
 
 ```yaml
 responses:
@@ -69,16 +71,6 @@ responses:
 Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and
 a 'Allow' response header which contains all allowed httpMethods.
 
-<!-- Use `x-dws-operation` to define whether the OAS operation needs to be handled by the DWS openapi service. If you want
-DWS to ignore this operation set to `false`. Default value is `true`
-
-```yaml
-paths:
-  /breweries:
-    get:
-      x-dws-operation: false
-```
--->
 ## Operation parameters
 
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The
@@ -96,15 +88,16 @@ paths:
             type: string
 ```
 
-By default, a provided parameter is mapped to the corresponding graphQL field argument. The example above would map the `name` parameter to its graphQL counterpart:
+By default, a provided parameter is mapped to the corresponding graphQL field argument. The example above would map the
+`name` parameter to its graphQL counterpart:
 ```
 breweries(name: String): [Brewery!]!
 ```
 Exceptions to this are the arguments `sort`, `filter` and `context` which are treated separately as described below.
 
-<!--All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for a
-given request, the application will return a `400` response with and a message stating which of the given parameters are
-not allowed.-->
+<!--All `Query` and `Path` parameters provided in a request should exist in the OpenApi schema. If this not the case for
+a given request, the application will return a `400` response with and a message stating which of the given parameters
+are not allowed.-->
 
 ## Sort parameter
 
@@ -128,8 +121,11 @@ parameters:
 ```
 
 ## Expand parameter
-The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
-The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a response object `Brewery`.
+The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that
+are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
+
+The following configuration makes the properties `beers`, `beers.ingredients` and `beers.supplements` expandable, for a
+response object `Brewery`.
 
 ```yaml
 x-dws-type: expand
@@ -149,23 +145,47 @@ Properties listed as 'expandable' in the enum support the dotted notation for ne
 
 A property marked as 'expandable' should be nullable or not required.
 
+## Required fields
+A graphql query is usually constructed based on the response schema specified in the OpenAPI document. But in some cases
+it is necessary to request additional fields not specified in the response schema, e.g. for use in 
+[expressions](#response-properties-expression).
+
+To this end it is possible to specify a list of `requiredFields` under the vendor extension `x-dws-query`.
+
+A required field may only be a scalar type and will be evaluated on the response object type of the configured GraphQl
+query.
+
+For example:
+```yaml
+    x-dws-query:
+      field: breweries
+      requiredFields:
+        - hiddenField
+        - secretField 
+```
+
+Will lead to `hiddenField` and `secretField` being added to the selection set of the `breweries` query.
+
 ## Filters
-OpenApi queries may add filter configuration under the vendor extensions `x-dws-query`.
-The filter configuration is mapped to the graphQL filter specified for that field and can make use of parameter values with a key `$<type>.<parametername>` where `type` may be:
+OpenApi queries may add filter configuration under the vendor extension `x-dws-query`.
+The filter configuration is mapped to the graphQL filter specified for that field and can make use of parameter values
+with a key `$<type>.<parametername>` where `type` may be:
 * `path`
 * `body`
 * `header`
 * `query`
 For instance, `$path.name` refers to the `name` parameter that occurs in the path.
 
-Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL query field.
+Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL
+query field.
 ```yaml
     x-dws-query:
       field: breweries
       filters:
         <filterConfig>
 ```
-`<filterConfig>` is a map which can be used to supports any filter structure as described in [filtering](../core/filtering.md).
+`<filterConfig>` is a map which can be used to supports any filter structure as described in
+[filtering](core/filtering.md).
 
 The following describes a filter on the `breweries` field:
 ```yaml
@@ -175,10 +195,12 @@ The following describes a filter on the `breweries` field:
         name:
           in: $query.name
 ```
-With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
+With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter
+`breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
 
 <!-- #### Required values
-A path value may be annotated with a `!`, indicating that the value is required for the parent element in the path. The following configuration specifies that `$path.name` is required:
+A path value may be annotated with a `!`, indicating that the value is required for the parent element in the path. The
+following configuration specifies that `$path.name` is required:
 ```yaml
     x-dws-query:
       field: breweries
@@ -190,10 +212,12 @@ A path value may be annotated with a `!`, indicating that the value is required 
               in: $query.name
               eq: $path.name!
 ```
-If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is provided.-->
+If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is
+provided.-->
 
 ### Expressions
-A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
+A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate
+the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
 ```yaml
     x-dws-query:
       field: breweries
@@ -342,11 +366,8 @@ when both the expression defined in the `value` and the `fallback` field result 
 back to the default value defined in the parent schema. If no default is defined, `null` is the default.
 
 ## Paging
-The openapi module uses the `dotwebstack.yaml` config file to determine if paging is enabled.
-```yaml
-features:
-  - paging
-```
+The openapi module uses the `dotwebstack.yaml` config file to determine if [paging](core/paging.md) is enabled for a
+GraphQl query field.
 When enabled, paging configuration can be added to the `x-dws-query` settings with a `paging` entry.
 ```
   x-dws-query:
@@ -355,15 +376,17 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
       pageSize: $query.pageSize
       page: $query.page
 ```
-The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL [paging settings](core/paging.md).
+The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL 
+[paging settings](core/paging.md).
 If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
 To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
-passed available arguments using existing [Response properties expressions](service/openapi?id=response-properties-expression):
+passed available arguments using existing
+[Response properties expressions](service/openapi?id=response-properties-expression):
 
-- `paging:next(data, args.pageSize, args.requestUri)`
+- `paging:next(data, args.pageSize, env.your.api.base-url.here, args.requestPathAndQuery)`
   generates a next page link, only if a result set's size matches the requested page size.
-- `paging:prev(args.requestUri)`
+- `paging:prev(env.your.api.base-url.here, args.requestPathAndQuery)`
   generates a next page link, only from page 2 and up.
 
 Usage example:
@@ -382,7 +405,7 @@ _links:
         href:
           type: string
           format: uri
-          x-dws-expr: "paging:next(data, args.pageSize, args.requestUri)"
+          x-dws-expr: "paging:next(data, args.pageSize, env.your.api.base-url.here, args.requestPathAndQuery)"
     prev:
       type: object
       x-dws-envelope: true
@@ -392,7 +415,7 @@ _links:
         href:
           type: string
           format: uri
-          x-dws-expr: "paging:prev(args.requestUri)"
+          x-dws-expr: "paging:prev(env.your.api.base-url.here, args.requestPathAndQuery)"
 ```
 
 ## AllOf
@@ -572,7 +595,7 @@ pebble, see https://pebbletemplates.io.
 -->
 ## Application properties
 
-<!-- ### OpenApi document publication
+### OpenApi document publication
 
 By default, the OpenApi document is exposed on the base path of your API excluding the dotwebstack vendor extensions.
 This way, anyone with access to your API can look up the OpenApi document that describes the API.
@@ -588,7 +611,7 @@ dotwebstack:
   openapi:
     apiDocPublicationPath: /openapi.yaml
 ```
--->
+
 ### Date formats
 
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify the
@@ -602,6 +625,22 @@ dotwebstack:
       datetimeformat: yyyy-MM-dd'T'HH:mm:ss.SSSxxx
       timezone: Europe/Amsterdam
 ```
+
+### Spatial
+Optional configuration for populating the `srid` argument of a GraphQL 'Geometry' type with a parameter value may be added under `dotwebstack.openapi.spatial`.
+The following configuration specifies the `accept-crs` parameter as `srid` input:
+```yaml
+dotwebstack:
+  openapi:
+    spatial:
+      sridParameter:
+        name: accept-crs
+        valueMap:
+          '[epsg:28992]': 7415
+          '[epsg:4258]': 7931
+```
+- `sridParameter.name` specifies the name of the parameter. Depending on the presence of `valueMap`, it may either be a `string` or an `integer`.
+- `sridParameter.valueMap` is an optional String to Integer map. When present, the parameter value should be a `string` and will be translated using this map. If the map is not present, the parameter value will be passed as-is, and should be an `integer` or a `string` with integer format.
 
 <!-- ### Serialization of null fields
 

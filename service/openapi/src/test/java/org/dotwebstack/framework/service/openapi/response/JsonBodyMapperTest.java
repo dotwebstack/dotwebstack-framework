@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
+import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
@@ -48,7 +49,7 @@ class JsonBodyMapperTest {
     bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
         .strict(true)
         .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
-        .create(), properties, List.of(new GeometryTypeMapper()));
+        .create(), properties, List.of(new GeometryTypeMapper(new OpenApiProperties())));
   }
 
   static Stream<Arguments> arguments() {
@@ -57,20 +58,24 @@ class JsonBodyMapperTest {
         Arguments.of("/breweries-pageable", APPLICATION_JSON, Map.of(), "brewery-pageable-collection",
             "breweries-json"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
-            Map.of("requestUri", "https://dotwebstack.org/api/breweries"), "brewery-pageable-collection",
+            Map.of("requestPathAndQuery", "/breweries", "pageSize", 10), "brewery-pageable-collection",
             "breweries-json-hal-no-next"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
-            Map.of("requestUri", "https://dotwebstack.org/api/breweries", "pageSize", "10"),
-            "brewery-pageable-collection", "breweries-json-hal-no-next"),
+            Map.of("requestPathAndQuery", "/breweries", "pageSize", 10), "brewery-pageable-collection",
+            "breweries-json-hal-no-next"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
-            Map.of("requestUri", "https://dotwebstack.org/api/breweries", "pageSize", "3"),
-            "brewery-pageable-collection", "breweries-json-hal-next"),
+            Map.of("requestPathAndQuery", "/breweries", "pageSize", 3), "brewery-pageable-collection",
+            "breweries-json-hal-next"),
         Arguments.of("/breweries-pageable", APPLICATION_JSON_HAL,
-            Map.of("requestUri", "https://dotwebstack.org/api/breweries?page=2", "pageSize", "3"),
-            "brewery-pageable-collection", "breweries-json-hal-next-prev"),
+            Map.of("requestPathAndQuery", "/breweries?page=2", "pageSize", 3), "brewery-pageable-collection",
+            "breweries-json-hal-next-prev"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery", "brewery-json"),
         Arguments.of("/brewery/{identifier}", APPLICATION_JSON_HAL, Map.of("identifier", "foo"), "brewery",
-            "brewery-json-hal"));
+            "brewery-json-hal"),
+        Arguments.of("/brewery-nulls/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery",
+            "brewery-json-nulls"),
+        Arguments.of("/brewery-required-empty-nullable-envelope/{identifier}", APPLICATION_JSON,
+            Map.of("identifier", "foo"), "brewery", "brewery-json-required-empty-nullable-envelope"));
   }
 
   @ParameterizedTest
@@ -78,7 +83,7 @@ class JsonBodyMapperTest {
   void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String graphQlResult,
       String expectedBody) {
 
-    when(properties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org"));
+    when(properties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
 
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))

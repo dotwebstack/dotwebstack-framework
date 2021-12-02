@@ -16,6 +16,10 @@
         alias: {
           '/.*/_sidebar.md': '/_sidebar.md',
         },
+        toc: {
+          tocMaxLevel: 3,
+          target: 'h2, h3, h4, h5, h6'
+        },
       };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
@@ -26,6 +30,7 @@
     <script src="https://unpkg.com/prismjs/components/prism-yaml.min.js"></script>
     <script src="//unpkg.com/mermaid/dist/mermaid.js"></script>
     <script src="//unpkg.com/docsify-mermaid@latest/dist/docsify-mermaid.js"></script>
+    <script src="//unpkg.com/docsify-plugin-toc"></script>
     <script>mermaid.initialize({ startOnLoad: true });</script>
   </body>
 </html>

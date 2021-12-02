@@ -529,8 +529,8 @@ class SelectBuilder {
 
     var result = objectRequest.getScalarFields()
         .stream()
-        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, getObjectType(objectRequest), table,
-            objectMapper))
+        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest,
+            (PostgresObjectType) objectField.getTargetType(), table, objectMapper))
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())

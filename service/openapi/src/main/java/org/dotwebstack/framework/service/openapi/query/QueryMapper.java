@@ -140,25 +140,64 @@ public class QueryMapper {
 
   private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
       MappingContext mappingContext) {
-    return schema.getProperties()
+
+    Stream<Field> requiredFields = mapRequiredFields(schema, fieldDefinition, mappingContext);
+
+    Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
         .stream()
         .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition,
             mappingContext));
+
+    return Stream.concat(requiredFields, mappedObjectSchema);
+  }
+
+  private Stream<Field> mapRequiredFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
+      MappingContext mappingContext) {
+    if (!mappingContext.atBase() || isEnvelope(schema)) {
+      return Stream.of();
+    }
+
+    var objectType = unwrapObjectType(fieldDefinition);
+
+    return mappingContext.getRequiredFields()
+        .stream()
+        .map(requiredField -> newRequiredField(requiredField, objectType));
+  }
+
+  private Field newRequiredField(String requiredField, GraphQLObjectType parentObjectType) {
+    var requiredFieldDefinition = parentObjectType.getFieldDefinition(requiredField);
+
+    if (requiredFieldDefinition == null) {
+      throw invalidConfigurationException("Configured required GraphQL field `{}` does not exist for object type `{}`.",
+          requiredField, parentObjectType.getName());
+    }
+
+    var rawFieldType = GraphQLTypeUtil.unwrapAll(requiredFieldDefinition.getType());
+
+    if (!(rawFieldType instanceof GraphQLScalarType)) {
+      throw invalidConfigurationException("Configured required GraphQL field `{}` is not a scalar type.",
+          requiredField);
+    }
+
+    return new Field(requiredField);
+  }
+
+  private GraphQLObjectType unwrapObjectType(GraphQLFieldDefinition fieldDefinition) {
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    if (!(rawType instanceof GraphQLObjectType)) {
+      throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
+          rawType.getName());
+    }
+
+    return (GraphQLObjectType) rawType;
   }
 
   private Stream<Field> mapObjectSchemaProperty(String name, Schema<?> schema, Schema<?> parentSchema,
       GraphQLFieldDefinition parentFieldDefinition, MappingContext mappingContext) {
-    var rawParentType = GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
-
-    if (!(rawParentType instanceof GraphQLObjectType)) {
-      throw invalidConfigurationException("Object schema does not match GraphQL field type (found: {}).",
-          rawParentType.getName());
-    }
-
     mappingContext = mappingContext.updatePath(name, schema);
-
-    var objectType = (GraphQLObjectType) rawParentType;
+    var objectType = unwrapObjectType(parentFieldDefinition);
     var fieldDefinition = objectType.getFieldDefinition(name);
 
     if (fieldDefinition == null || isEnvelope(schema)) {
@@ -169,11 +208,11 @@ public class QueryMapper {
 
     if (typeMappers.containsKey(rawType.getName())) {
       return typeMappers.get(rawType.getName())
-          .schemaToField(name, schema)
+          .schemaToField(name, schema, mappingContext.getParameters())
           .stream();
     }
 
-    if (!isSchemaNullabilityValid(schema, fieldDefinition, (GraphQLObjectType) rawParentType)) {
+    if (!isSchemaNullabilityValid(schema, fieldDefinition, objectType)) {
       throw invalidConfigurationException(
           "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
               .getSimpleName());
@@ -288,7 +327,8 @@ public class QueryMapper {
     boolean notNullable = Boolean.FALSE == schema.getNullable();
     boolean required = notNullable && parentSchema.getRequired() != null && parentSchema.getRequired()
         .contains(name);
-    return mappingContext.isExpandable() && required && notNullable;
+
+    return mappingContext.isExpandable() && required;
   }
 
 }

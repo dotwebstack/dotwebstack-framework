@@ -125,4 +125,17 @@ class RouterConfigurationTest {
         .assertNext(handler -> assertThat(handler, isA(OpenApiRequestHandler.class)))
         .verifyComplete();
   }
+
+  @Test
+  void router_returnsNoHandler_withoutXdwsQueryExtension() {
+    when(openApiProperties.getApiDocPublicationPath()).thenReturn("openapi.yaml");
+
+    when(operationHandlerFactory.create(any(Operation.class))).thenReturn(request -> Mono.empty());
+
+    var routerFunction = routerConfiguration.router();
+
+    StepVerifier.create(routerFunction.route(mockRequest(HttpMethod.GET, "/dws-operation-false")))
+        .verifyComplete();
+  }
+
 }

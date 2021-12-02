@@ -1,0 +1,28 @@
+query Query {
+  breweryPageableCollection(first: 42, offset: 42) {
+    nodes {
+      hiddenField
+      identifier
+      name
+      aliases
+      postalAddress {
+        street
+        postalCode
+        location {
+          asGeoJSON
+        }
+      }
+      visitAddresses {
+        street
+        postalCode
+        location {
+          asGeoJSON
+        }
+      }
+      numberOfEmployees
+      salesAreas {
+        asGeoJSON
+      }
+    }
+  }
+}

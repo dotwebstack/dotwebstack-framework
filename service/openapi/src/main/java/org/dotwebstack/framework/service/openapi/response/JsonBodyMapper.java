@@ -11,10 +11,13 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,7 +73,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     if (data == null) {
-      return null;
+      return emptyValue(schema);
     }
 
     var newContext = updateJexlContext(data, jexlContext);
@@ -90,32 +93,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Object mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     if (MapperUtils.isEnvelope(schema)) {
-      var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
-
-      return schema.getProperties()
-          .entrySet()
-          .stream()
-          .collect(HashMap::new, (acc, entry) -> {
-            var nestedSchema = entry.getValue();
-            var nestedFieldDefinition = rawType.getFieldDefinition(entry.getKey());
-            Object nestedValue;
-
-            if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
-              nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
-            } else {
-              if (!(data instanceof Map)) {
-                throw illegalStateException("Data is not compatible with object schema.");
-              }
-
-              var dataMap = (Map<String, Object>) data;
-              nestedValue =
-                  mapSchema(entry.getValue(), nestedFieldDefinition, dataMap.get(entry.getKey()), jexlContext);
-            }
-
-            if (nestedValue != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
-              acc.put(entry.getKey(), nestedValue);
-            }
-          }, HashMap::putAll);
+      return mapEnvelopeObjectSchema(schema, fieldDefinition, data, jexlContext);
     }
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -135,13 +113,86 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
+          var property = entry.getKey();
           var nestedSchema = entry.getValue();
-          var value = mapObjectSchemaProperty(entry.getKey(), nestedSchema, fieldDefinition, dataMap, jexlContext);
+          var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
-          if (value != null || Boolean.TRUE.equals(nestedSchema.getNullable())) {
+          if ((schema.getRequired() != null && schema.getRequired()
+              .contains(property)) || !valueIsEmpty(value)) {
             acc.put(entry.getKey(), value);
           }
         }, HashMap::putAll);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private Object mapEnvelopeObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
+      JexlContext jexlContext) {
+    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+
+    var envelopeValue = schema.getProperties()
+        .entrySet()
+        .stream()
+        .collect(HashMap::new, (acc, entry) -> {
+          var property = entry.getKey();
+          var nestedSchema = entry.getValue();
+          var nestedFieldDefinition = rawType.getFieldDefinition(property);
+          Object nestedValue;
+
+          if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
+            nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
+          } else {
+            if (!(data instanceof Map)) {
+              throw illegalStateException("Data is not compatible with object schema.");
+            }
+
+            var dataMap = (Map<String, Object>) data;
+            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
+          }
+
+          if ((schema.getRequired() != null && schema.getRequired()
+              .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
+            acc.put(entry.getKey(), nestedValue);
+          }
+        }, HashMap::putAll);
+
+    return valueInEnvelopeIsEmpty(envelopeValue) && Boolean.TRUE.equals(schema.getNullable()) ? null : envelopeValue;
+  }
+
+  private Object emptyValue(Schema<?> schema) {
+    if (Boolean.TRUE.equals(schema.getNullable())) {
+      return null;
+    }
+
+    if (schema instanceof ArraySchema) {
+      return List.of();
+    } else if (schema instanceof ObjectSchema) {
+      return Map.of();
+    } else {
+      return null;
+    }
+  }
+
+  private boolean valueIsEmpty(Object value) {
+    if (value instanceof Collection<?>) {
+      return ((Collection<?>) value).isEmpty();
+    } else if (value instanceof Map<?, ?>) {
+      return ((Map<?, ?>) value).isEmpty();
+    } else {
+      return value == null;
+    }
+  }
+
+  private boolean valueInEnvelopeIsEmpty(Object value) {
+    if (value instanceof Collection<?>) {
+      return ((Collection<?>) value).isEmpty();
+    } else if (value instanceof Map<?, ?>) {
+      var valueMap = ((Map<?, ?>) value);
+      return valueMap.isEmpty() || valueMap.values()
+          .stream()
+          .allMatch(Objects::isNull);
+    } else {
+      return value == null;
+    }
   }
 
   private Object mapObjectSchemaProperty(String name, Schema<?> schema, GraphQLFieldDefinition parentFieldDefinition,
@@ -160,7 +211,7 @@ public class JsonBodyMapper implements BodyMapper {
   private Collection<Object> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
 
-    var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
+    var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (typeMappers.containsKey(rawType.getName())) {
       return (Collection<Object>) typeMappers.get(rawType.getName())
@@ -180,8 +231,8 @@ public class JsonBodyMapper implements BodyMapper {
       }
 
       return ((Collection<Object>) items).stream()
-          .map(item -> mapSchema(schema.getItems(), rawType.getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item,
-              jexlContext))
+          .map(item -> mapSchema(schema.getItems(),
+              ((GraphQLObjectType) rawType).getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item, jexlContext))
           .collect(Collectors.toList());
     }
 

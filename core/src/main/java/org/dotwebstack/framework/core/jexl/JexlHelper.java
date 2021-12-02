@@ -89,16 +89,27 @@ public class JexlHelper {
     } catch (Exception exception) {
       if (Objects.nonNull(fallbackString)) {
         try {
-          LOG.debug("Executing fallback script following an error in the original script: " + exception.getMessage());
+          LOG.debug("Executing fallback script following an error in the original script: {}",
+              getJexlExceptionMessage(exception));
           return evaluateScript(fallbackString, context, clazz);
         } catch (Exception fallbackException) {
-          LOG.warn("Something went wrong while executing the fallback script: " + fallbackException.getMessage());
+          LOG.warn("Something went wrong while executing the fallback script: {}",
+              getJexlExceptionMessage(fallbackException));
         }
       } else {
-        LOG.warn("Something went wrong while executing the script with no fallback: " + exception.getMessage());
+        LOG.warn("Something went wrong while executing the script with no fallback: {}",
+            getJexlExceptionMessage(exception));
       }
       return Optional.empty();
     }
+  }
+
+  private String getJexlExceptionMessage(Exception exception) {
+    if (exception.getCause() == null) {
+      return exception.getMessage();
+    }
+
+    return String.format("%s : %s", exception.getMessage(), exception.getCause());
   }
 
   public <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,

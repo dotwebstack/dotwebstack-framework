@@ -3,27 +3,22 @@
     "breweries": [
       {
         "identifier": "123",
-        "postalCode": null,
         "name": "Brouwerij 1923"
       },
       {
         "identifier": "456",
-        "postalCode": null,
         "name": "Brouwerij Het 58e Genot i.o."
       },
       {
         "identifier": "1",
-        "postalCode": null,
         "name": "Heineken Nederland"
       },
       {
         "identifier": "2",
-        "postalCode": null,
         "name": "Brouwerij De Leckere"
       },
       {
         "identifier": "789",
-        "postalCode": null,
         "name": "Alfa Brouwerij"
       }
     ]
