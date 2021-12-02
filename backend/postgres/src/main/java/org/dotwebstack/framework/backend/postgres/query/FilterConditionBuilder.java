@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
@@ -75,11 +76,11 @@ class FilterConditionBuilder {
     var current = fieldPath.get(0);
 
     if (fieldPath.size() > 1) {
-      var rest = fieldPath.subList(1, fieldPath.size());
+      var subFieldPath = fieldPath.subList(1, fieldPath.size());
 
       if (current.getTargetType()
           .isNested()) {
-        return createFilterCondition(objectRequest, rest, value, table);
+        return createFilterCondition(objectRequest, subFieldPath, value, table);
       }
 
       var filterTable =
@@ -90,15 +91,14 @@ class FilterConditionBuilder {
 
       filterQuery.addSelect(DSL.val(1));
 
-      JoinBuilder.newJoin()
-          .table(table)
+      newJoin().table(table)
           .current(current)
           .tableCreator(createTableCreator(filterQuery, objectRequest.getContextCriteria(), aliasManager))
           .relatedTable(filterTable)
           .build()
           .forEach(filterQuery::addConditions);
 
-      var nestedCondition = createFilterCondition(objectRequest, rest, value, filterTable);
+      var nestedCondition = createFilterCondition(objectRequest, subFieldPath, value, filterTable);
 
       filterQuery.addConditions(nestedCondition);
 

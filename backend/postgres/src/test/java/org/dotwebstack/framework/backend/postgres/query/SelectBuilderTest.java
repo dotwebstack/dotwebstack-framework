@@ -428,8 +428,6 @@ class SelectBuilderTest {
         .setTargetType(breweryObjectType);
     breweryObjectRelationType.getField("node")
         .setObjectType(breweryObjectRelationType);
-    breweryObjectRelationType.getField("node")
-        .setKeyField("ref");
 
     List<JoinColumn> breweryJoinColumns = new ArrayList<>();
     var breweryJoinColumn = new JoinColumn();
