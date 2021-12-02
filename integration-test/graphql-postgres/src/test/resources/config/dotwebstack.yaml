@@ -183,6 +183,7 @@ objectTypes:
         aggregationOf: Beer
         mappedBy: brewery
       history:
+        columnPrefix: his_
         type: History
       multinational:
         type: Boolean
@@ -214,10 +215,8 @@ objectTypes:
     fields:
       age:
         type: Int
-        column: his_age
       history:
         type: String
-        column: his_history
 
 enumerations:
   Taste:
