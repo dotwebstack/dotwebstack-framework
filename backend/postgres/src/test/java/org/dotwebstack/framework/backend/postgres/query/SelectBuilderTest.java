@@ -429,6 +429,14 @@ class SelectBuilderTest {
     breweryObjectRelationType.getField("node")
         .setObjectType(breweryObjectRelationType);
 
+    List<JoinColumn> breweryNodeJoinColumns = new ArrayList<>();
+    var breweryNodeJoinColumn = new JoinColumn();
+    breweryNodeJoinColumn.setName("brewery_column");
+    breweryNodeJoinColumn.setReferencedField("identifier");
+    breweryNodeJoinColumns.add(breweryNodeJoinColumn);
+    breweryObjectRelationType.getField("node")
+        .setJoinColumns(breweryNodeJoinColumns);
+
     List<JoinColumn> breweryJoinColumns = new ArrayList<>();
     var breweryJoinColumn = new JoinColumn();
     breweryJoinColumn.setName("brewery_column");
@@ -475,8 +483,11 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"brewery_column\" as \"x3\",\n"
-            + "  \"x1\".\"brewery_column\" as \"x4\"\n" + "from \"beer\" as \"x1\""));
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x5\".*\n" + "from \"beer\" as \"x1\"\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      \"x3\".\"name_column\" as \"x4\",\n"
+            + "      1 as \"x3\"\n" + "    from \"brewery\" as \"x3\"\n"
+            + "    where \"x1\".\"brewery_column\" = \"x3\".\"identifier_column\"\n" + "    limit 1\n"
+            + "  ) as \"x5\"\n" + "    on true"));
   }
 
   @Test

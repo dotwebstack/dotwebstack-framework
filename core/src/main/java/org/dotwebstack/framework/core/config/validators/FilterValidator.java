@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.config.validators;
 
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import graphql.Scalars;
 import java.util.Map;
 import java.util.Objects;
@@ -54,11 +56,9 @@ public class FilterValidator implements SchemaValidator {
     Optional<? extends ObjectField> field = getField(schema, objectTypeName, filterFieldPathArr);
 
     if (field.isEmpty()) {
-      // throw invalidConfigurationException(
-      // "Filter field '{}' in object type '{}' can't be resolved to a single scalar type.",
-      // filterFieldPath,
-      // objectTypeName);
-      return;
+      throw invalidConfigurationException(
+          "Filter field '{}' in object type '{}' can't be resolved to a single scalar type.", filterFieldPath,
+          objectTypeName);
     }
 
     if (FilterType.TERM.equals(filterEntry.getValue()

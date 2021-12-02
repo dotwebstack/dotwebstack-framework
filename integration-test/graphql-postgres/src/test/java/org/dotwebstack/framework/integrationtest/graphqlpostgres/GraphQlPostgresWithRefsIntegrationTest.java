@@ -15,7 +15,6 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +82,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  @Disabled("Need to fix propagation of joinColumn")
-  void getRequest_returnsBeersWithBreweryNode_withBatchLoadSingleJoinColumn() {
+  void getRequest_returnsBeersWithBreweryNode_withJoinColumn() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    brewery {\n" + "      node {\n" + "        name\n"
         + "      }\n" + "    }\n" + "  }\n" + "}";
 
