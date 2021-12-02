@@ -91,7 +91,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .filter(AggregateHelper::isAggregate)
         .forEach(objectField -> {
           var aggregationOfType = getObjectType(objectTypes, objectField.getAggregationOf());
-          objectField.setAggregationOfType(aggregationOfType);
+          objectField.setTargetType(aggregationOfType);
         });
   }
 

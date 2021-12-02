@@ -607,7 +607,7 @@ class SelectBuilderTest {
         .put("ingredients", ingredientsObjectField);
 
     var aggregateObjectField = createObjectField("ingredientAgg");
-    aggregateObjectField.setAggregationOfType(ingredientObjectType);
+    aggregateObjectField.setTargetType(ingredientObjectType);
     aggregateObjectField.setJoinTable(createIngredientsJoinTable());
     aggregateObjectField.setObjectType(objectType);
 

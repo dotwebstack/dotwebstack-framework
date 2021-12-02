@@ -25,9 +25,6 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected String aggregationOf;
 
-  @Valid
-  protected ObjectType<? extends ObjectField> aggregationOfType;
-
   private ObjectType<? extends ObjectField> targetType;
 
   @Valid

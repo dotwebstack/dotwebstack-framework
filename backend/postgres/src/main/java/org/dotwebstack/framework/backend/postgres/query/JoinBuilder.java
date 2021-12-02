@@ -50,9 +50,7 @@ class JoinBuilder {
     if (!current.getJoinColumns()
         .isEmpty()) {
       // Normal join column
-      var targetType =
-          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
-      return createJoinConditions(table, relatedTable, current.getJoinColumns(), (PostgresObjectType) targetType);
+      return createJoinConditions(table, relatedTable, current.getJoinColumns(), (PostgresObjectType) current.getTargetType());
     }
 
     if (current.getJoinTable() != null) {
@@ -63,11 +61,8 @@ class JoinBuilder {
       var leftSide = createJoinConditions(junctionTable, table, joinTable.getJoinColumns(),
           (PostgresObjectType) current.getObjectType());
 
-      var targetType =
-          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
-
       var rightSide = createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
-          (PostgresObjectType) targetType);
+          (PostgresObjectType) current.getTargetType());
 
       return Stream.concat(leftSide.stream(), rightSide.stream())
           .collect(Collectors.toList());

@@ -267,7 +267,7 @@ class SelectBuilder {
   private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField,
       List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper, Table<Record> table,
       ContextCriteria contextCriteria) {
-    var aggregateObjectType = (PostgresObjectType) objectField.getAggregationOfType();
+    var aggregateObjectType = (PostgresObjectType) objectField.getTargetType();
 
     var aliasedAggregateTable =
         findTable(aggregateObjectType.getTable(), contextCriteria).asTable(aliasManager.newAlias());
