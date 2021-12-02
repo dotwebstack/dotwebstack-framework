@@ -65,7 +65,7 @@ public class FilterValidator implements SchemaValidator {
             .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
             .isPresent()) {
       throw invalidConfigurationException(
-          "Filter '{}' of type 'Term' in object type '{}' doesn´t refer to an 'String' field type.",
+          "Filter '{}' of type 'Term' in object type '{}' doesn´t refer to a 'String' field type.",
           filterEntry.getKey(), objectTypeName);
     }
   }
