@@ -20,6 +20,8 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.TERM_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.TERM_NAME;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATETIME;
 
@@ -44,6 +46,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     registry.add(createFloatFilterType());
     registry.add(createDateFilterType());
     registry.add(createDateTimeFilterType());
+    registry.add(createTermFilterType());
   }
 
   @Override
@@ -54,6 +57,16 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     fieldFilterMap.put(DATE.getName(), DATE_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(DATETIME.getName(), DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLBoolean.getName(), GraphQLBoolean.getName());
+    fieldFilterMap.put(TERM_NAME, TERM_FILTER_INPUT_OBJECT_TYPE);
+  }
+
+  private InputObjectTypeDefinition createTermFilterType() {
+    var typeName = Scalars.GraphQLString.getName();
+
+    return newInputObjectDefinition().name(TERM_FILTER_INPUT_OBJECT_TYPE)
+        .inputValueDefinition(createInputValueDefinition(EQ_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, TERM_FILTER_INPUT_OBJECT_TYPE))
+        .build();
   }
 
   private InputObjectTypeDefinition createStringFilterType() {

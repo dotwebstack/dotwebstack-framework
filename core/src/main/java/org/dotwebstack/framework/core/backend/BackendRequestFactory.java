@@ -289,9 +289,12 @@ public class BackendRequestFactory {
 
           var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 
+          var filterValue = createFilterValue(filterArgument, filterName);
+
           return FilterCriteria.builder()
+              .filterType(filterConfiguration.getType())
               .fieldPath(fieldPath)
-              .value(createFilterValue(filterArgument, filterName))
+              .value(filterValue)
               .build();
 
         })
