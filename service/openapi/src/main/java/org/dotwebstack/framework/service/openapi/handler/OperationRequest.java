@@ -22,7 +22,7 @@ public class OperationRequest {
   private final MediaType preferredMediaType;
 
   @SuppressWarnings("rawtypes")
-  public Schema getResponseSchema() {
+  public Schema<?> getResponseSchema() {
     return context.getSuccessResponse()
         .getContent()
         .get(preferredMediaType.toString())
