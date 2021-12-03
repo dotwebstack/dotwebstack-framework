@@ -85,9 +85,6 @@ objectTypes:
       node:
         type: Brewery
         nullable: true
-        joinColumns:
-          - name: brewery
-            referencedField: record_id
 
   BreweryRef:
     fields:

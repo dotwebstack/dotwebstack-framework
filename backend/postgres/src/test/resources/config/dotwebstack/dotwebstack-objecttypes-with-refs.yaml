@@ -37,7 +37,6 @@ objectTypes:
         type: BreweryRef
       node:
         type: Brewery
-        keyField: ref
 
   BreweryRef:
     fields:
