@@ -28,6 +28,16 @@ class PostgresObjectFieldTest {
   }
 
   @Test
+  void getColumn_returnsColumn_forCamelCasedName() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName("fooBar");
+
+    var result = objectField.getColumn();
+
+    assertThat(result, is("foo_bar"));
+  }
+
+  @Test
   void getColumn_returnsColumn_forNameWithUpperAbbrev() {
     PostgresObjectField objectField = new PostgresObjectField();
     objectField.setName("fooBAR");
