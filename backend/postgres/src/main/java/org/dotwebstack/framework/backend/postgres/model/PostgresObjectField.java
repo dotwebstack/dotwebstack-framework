@@ -13,9 +13,11 @@ import org.dotwebstack.framework.core.model.AbstractObjectField;
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectField extends AbstractObjectField {
 
-  private static final Pattern NAME_PATTERN = Pattern.compile("(?:([^A-Z])([A-Z])|([A-Z])([A-Z][^A-Z]))");
+  private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])([0-9]*[A-Z])");
 
-  private static final String NAME_REPLACEMENT = "$1$3_$2$4";
+  private static final Pattern NAME_PATTERN_2ND = Pattern.compile("([A-Z])([A-Z][^A-Z])");
+
+  private static final String NAME_REPLACEMENT = "$1_$2";
 
   private static final String TSV_PREFIX = "_tsv";
 
@@ -41,7 +43,10 @@ public class PostgresObjectField extends AbstractObjectField {
   public String getColumn() {
     // Lazy-determine default column name
     if (column == null) {
-      column = NAME_PATTERN.matcher(name)
+      var tempName = NAME_PATTERN_1ST.matcher(name)
+          .replaceAll(NAME_REPLACEMENT);
+
+      column = NAME_PATTERN_2ND.matcher(tempName)
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
     }

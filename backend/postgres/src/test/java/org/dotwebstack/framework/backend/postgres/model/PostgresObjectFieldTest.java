@@ -21,7 +21,8 @@ class PostgresObjectFieldTest {
 
   @ParameterizedTest
   @CsvSource({"foo, foo", "fooBar, foo_bar", "fooBarBaz, foo_bar_baz", "fooBAR, foo_bar", "fooBarBAZ, foo_bar_baz",
-      "fooBARBaz, foo_bar_baz", "FOOBarBaz, foo_bar_baz"})
+      "fooBARBaz, foo_bar_baz", "fooBBaz, foo_b_baz", "FOOBarBaz, foo_bar_baz", "foo3D, foo_3d", "foo33D, foo_33d",
+      "foo3DBarBaz, foo_3d_bar_baz"})
   void getColumn_returnsGeneratedColumn_whenColumnUnset(String name, String column) {
     PostgresObjectField objectField = new PostgresObjectField();
     objectField.setName(name);
