@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.config.validators;
 
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -18,8 +17,10 @@ public interface SchemaValidator {
             .get(fieldPath[0]))
         .flatMap(field -> {
           if (isNestedNode(field, fieldPath.length)) {
-            throw invalidConfigurationException("Filter field '{}' in object type '{}' with multiple nested objects!",
-                String.join(".", fieldPath), objectTypeName);
+            // throw invalidConfigurationException("Filter field '{}' in object type '{}' with multiple nested
+            // objects!",
+            // String.join(".", fieldPath), objectTypeName);
+            return Optional.of(field);
           }
           if (fieldPath.length > 1) {
             return getField(schema, field.getType(), Arrays.copyOfRange(fieldPath, 1, fieldPath.length));
