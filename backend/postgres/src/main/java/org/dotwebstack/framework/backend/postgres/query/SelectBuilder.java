@@ -22,7 +22,6 @@ import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSor
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -453,29 +452,30 @@ class SelectBuilder {
     var object = objectRequest.getObjectFields()
         .keySet()
         .stream()
-        .flatMap(fieldRequest -> {
-          var childObjectRequest = objectRequest.getObjectFields()
-              .get(fieldRequest);
-
-          List<SelectResult> selectResults = new ArrayList<>();
-          if (joinColumns.stream()
-              .map(JoinColumn::getReferencedField)
-              .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
-            createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
-                .map(selectField -> SelectResult.builder()
-                    .selectFieldOrAsterisk(selectField)
-                    .build())
-                .forEach(selectResults::add);
-          } else {
-            var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
-
-            createObject(childObjectField, childObjectRequest, table, objectMapper).forEach(selectResults::add);
-          }
-
-          return selectResults.stream();
-        });
+        .flatMap(fieldRequest -> processRelationObjectField(objectField, joinColumns, objectRequest, table,
+            objectMapper, fieldRequest).stream());
 
     return object.collect(Collectors.toList());
+  }
+
+  private List<SelectResult> processRelationObjectField(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+      ObjectRequest objectRequest, Table<Record> table, ObjectMapper objectMapper, FieldRequest fieldRequest) {
+    var childObjectRequest = objectRequest.getObjectFields()
+        .get(fieldRequest);
+
+    if (joinColumns.stream()
+        .map(JoinColumn::getReferencedField)
+        .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
+      return createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
+          .map(selectField -> SelectResult.builder()
+              .selectFieldOrAsterisk(selectField)
+              .build())
+          .collect(Collectors.toList());
+    } else {
+      var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
+
+      return createObject(childObjectField, childObjectRequest, table, objectMapper).collect(Collectors.toList());
+    }
   }
 
   private boolean askedForReference(PostgresObjectField objectField, FieldRequest fieldRequest) {
