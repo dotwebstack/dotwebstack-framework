@@ -26,9 +26,5 @@ public interface ObjectField {
 
   String getAggregationOf();
 
-  String getKeyField();
-
-  ObjectType<? extends ObjectField> getAggregationOfType();
-
   ObjectType<? extends ObjectField> getTargetType();
 }

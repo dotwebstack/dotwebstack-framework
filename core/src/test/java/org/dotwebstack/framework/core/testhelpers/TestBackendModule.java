@@ -70,7 +70,7 @@ public class TestBackendModule implements BackendModule<TestObjectType> {
         .forEach(objectField -> {
           var aggregationOfType = (TestObjectType) objectTypes.get(objectField.getAggregationOf());
 
-          objectField.setAggregationOfType(aggregationOfType);
+          objectField.setTargetType(aggregationOfType);
         });
   }
 }

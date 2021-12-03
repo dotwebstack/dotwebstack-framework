@@ -77,6 +77,7 @@ class QueryHelper {
       return createTable(name, contextCriteria);
     }
 
+
     return DSL.table(DSL.name(name.split("\\.")));
   }
 

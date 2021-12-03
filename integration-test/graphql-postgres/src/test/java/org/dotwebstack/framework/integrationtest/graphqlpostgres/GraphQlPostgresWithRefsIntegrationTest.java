@@ -82,7 +82,7 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
-  void getRequest_returnsBeersWithBreweryNode_withBatchLoadSingleJoinColumn() {
+  void getRequest_returnsBeersWithBreweryNode_withJoinColumn() {
     var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    brewery {\n" + "      node {\n" + "        name\n"
         + "      }\n" + "    }\n" + "  }\n" + "}";
 

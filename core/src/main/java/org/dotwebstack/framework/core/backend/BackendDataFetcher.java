@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.backend;
 
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
-import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
@@ -10,13 +9,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 import org.dataloader.DataLoader;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
-import org.dotwebstack.framework.core.model.ObjectField;
-import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -85,18 +81,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
-    var keyField = Optional.of(requestContext)
-        .map(RequestContext::getObjectField)
-        .map(ObjectField::getKeyField)
-        .orElse(null);
-
-    if (source != null && source.containsKey(keyField)) {
-      var key = getNestedMap(source, keyField);
-      return getOrCreateBatchLoader(environment, () -> createSingleBatchLoader(environment, requestContext)).load(key);
-    } else {
-      return backendLoader.loadSingle(objectRequest, requestContext)
-          .toFuture();
-    }
+    return backendLoader.loadSingle(objectRequest, requestContext)
+        .toFuture();
   }
 
   private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
@@ -128,27 +114,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
       return backendLoader.batchLoadMany(collectionBatchRequest, requestContext)
           .flatMap(group -> group.collectList()
               .map(rows -> Tuples.of(group.key(), rows)))
-          .collectMap(Tuple2::getT1, Tuple2::getT2)
-          .toFuture();
-    };
-
-    return newMappedDataLoader(batchLoader);
-  }
-
-  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
-      DataFetchingEnvironment environment, RequestContext requestContext) {
-    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
-
-    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
-
-    MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
-
-      var batchRequest = BatchRequest.builder()
-          .objectRequest(objectRequest)
-          .keys(keys)
-          .build();
-
-      return backendLoader.batchLoadSingle(batchRequest, requestContext)
           .collectMap(Tuple2::getT1, Tuple2::getT2)
           .toFuture();
     };

@@ -84,7 +84,6 @@ objectTypes:
         type: BreweryRef
       node:
         type: Brewery
-        keyField: ref
         nullable: true
 
   BreweryRef:
