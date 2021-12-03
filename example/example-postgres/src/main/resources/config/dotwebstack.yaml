@@ -150,6 +150,9 @@ objectTypes:
         type: String
       status:
         type: String
+        enum:
+          type: dbeerpedia.brewery_status
+          values: [ "active", "inactive"]
       geometry:
         type: Geometry
         nullable: true

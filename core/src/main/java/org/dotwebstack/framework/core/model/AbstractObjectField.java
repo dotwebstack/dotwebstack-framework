@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.core.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.Data;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 
 @Data
 public abstract class AbstractObjectField implements ObjectField {
@@ -26,6 +28,9 @@ public abstract class AbstractObjectField implements ObjectField {
   protected String aggregationOf;
 
   protected String keyField;
+
+  @JsonProperty("enum")
+  protected FieldEnumConfiguration enumeration;
 
   @Valid
   protected ObjectType<? extends ObjectField> aggregationOfType;
