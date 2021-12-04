@@ -134,22 +134,7 @@ class FilterConditionBuilder {
     }
 
     if (current.getJoinTable() != null) {
-      var joinTable = findTable(current.getJoinTable()
-          .getName(), contextCriteria);
-
-      var leftSide = createJoinConditions(joinTable, table, current.getJoinTable()
-          .getJoinColumns(), (PostgresObjectType) current.getObjectType());
-
-      var filterQuery = dslContext.selectQuery(joinTable);
-
-      filterQuery.addConditions(leftSide);
-
-      filterQuery.addSelect(DSL.val(1));
-
-      createConditionsForMatchingNestedReference(current.getJoinTable()
-          .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
-
-      return DSL.exists(filterQuery);
+      return createConditionsForMatchingNestedReference(current, referencedField);
     }
 
     throw illegalArgumentException("No join configuration!");
@@ -165,6 +150,25 @@ class FilterConditionBuilder {
           return createExactConditions(field, filterCriteria.getValue());
         })
         .collect(Collectors.toList());
+  }
+
+  private Condition createConditionsForMatchingNestedReference(PostgresObjectField current, String referencedField) {
+    var joinTable = findTable(current.getJoinTable()
+        .getName(), contextCriteria);
+
+    var leftSide = createJoinConditions(joinTable, table, current.getJoinTable()
+        .getJoinColumns(), (PostgresObjectType) current.getObjectType());
+
+    var filterQuery = dslContext.selectQuery(joinTable);
+
+    filterQuery.addConditions(leftSide);
+
+    filterQuery.addSelect(DSL.val(1));
+
+    createConditionsForMatchingNestedReference(current.getJoinTable()
+        .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
+
+    return DSL.exists(filterQuery);
   }
 
   private String toFieldPathString(List<ObjectField> fieldPath) {

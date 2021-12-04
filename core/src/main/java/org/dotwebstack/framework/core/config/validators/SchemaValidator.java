@@ -16,26 +16,11 @@ public interface SchemaValidator {
         .map(type -> type.getFields()
             .get(fieldPath[0]))
         .flatMap(field -> {
-          if (isNestedNode(field, fieldPath.length)) {
-            // throw invalidConfigurationException("Filter field '{}' in object type '{}' with multiple nested
-            // objects!",
-            // String.join(".", fieldPath), objectTypeName);
-            return Optional.of(field);
-          }
           if (fieldPath.length > 1) {
             return getField(schema, field.getType(), Arrays.copyOfRange(fieldPath, 1, fieldPath.length));
           } else {
             return Optional.of(field);
           }
         });
-  }
-
-  private boolean isNestedNode(ObjectField objectField, Integer fieldPathLength) {
-    if (objectField.getTargetType() == null) {
-      return false;
-    }
-
-    return objectField.getTargetType()
-        .isNested() && fieldPathLength > 2;
   }
 }
