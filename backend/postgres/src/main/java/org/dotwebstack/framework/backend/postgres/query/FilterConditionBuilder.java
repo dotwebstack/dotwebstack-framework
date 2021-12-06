@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -123,21 +122,23 @@ class FilterConditionBuilder {
     return createCondition(current, filterCriteria.getFilterType(), filterCriteria.getValue());
   }
 
-  private Condition createConditionsForMatchingNestedReference(PostgresObjectField current,
+  private Condition createConditionsForMatchingNestedReference(PostgresObjectField objectField,
       List<ObjectField> fieldPath) {
     String referencedField = toFieldPathString(fieldPath.subList(1, fieldPath.size()));
 
-    if (!current.getJoinColumns()
+    if (!objectField.getJoinColumns()
         .isEmpty()) {
       return andCondition(
-          createConditionsForMatchingNestedReference(current.getJoinColumns(), referencedField, table.getName()));
+          createConditionsForMatchingNestedReference(objectField.getJoinColumns(), referencedField, table.getName()));
     }
 
-    if (current.getJoinTable() != null) {
-      return createConditionsForMatchingNestedReference(current, referencedField);
+    if (objectField.getJoinTable() != null) {
+      return createConditionsForMatchingNestedReference(objectField, referencedField);
     }
 
-    throw illegalArgumentException("No join configuration!");
+    throw illegalArgumentException("ObjectField '' in ObjectType `` has no join configuration", objectField.getName(),
+        objectField.getObjectType()
+            .getName());
   }
 
   private List<Condition> createConditionsForMatchingNestedReference(List<JoinColumn> joinColumns,
@@ -172,9 +173,9 @@ class FilterConditionBuilder {
   }
 
   private String toFieldPathString(List<ObjectField> fieldPath) {
-    return StringUtils.join(fieldPath.stream()
+    return fieldPath.stream()
         .map(ObjectField::getName)
-        .collect(Collectors.toList()), ".");
+        .collect(Collectors.joining("."));
   }
 
   private FilterCriteria createChildCriteria(FilterType filterType, List<ObjectField> fieldPath,
