@@ -39,7 +39,6 @@ class ModelHelperTest {
         .getName(), is("baz"));
   }
 
-
   private TestObjectType createFooObjectType() {
     TestObjectType objectTypeFoo = new TestObjectType();
     TestObjectField objectFieldBar = new TestObjectField();
