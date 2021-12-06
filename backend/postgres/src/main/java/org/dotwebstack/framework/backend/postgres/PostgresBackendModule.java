@@ -9,7 +9,6 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -47,7 +46,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     setTargetType(objectTypes, allFields);
     setMappedByObjectField(objectTypes, allFields);
     setAggregationOfType(objectTypes, allFields);
-    propagateJoinTable(allFields);
+    propagateJoinConfiguration(allFields);
     propagateNestedColumnPrefix(allFields);
   }
 
@@ -94,18 +93,17 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .filter(AggregateHelper::isAggregate)
         .forEach(objectField -> {
           var aggregationOfType = getObjectType(objectTypes, objectField.getAggregationOf());
-          objectField.setAggregationOfType(aggregationOfType);
+          objectField.setTargetType(aggregationOfType);
         });
   }
 
-  private void propagateJoinTable(List<PostgresObjectField> allFields) {
+  private void propagateJoinConfiguration(List<PostgresObjectField> allFields) {
     allFields.stream()
         .filter(JoinHelper::hasNestedReference)
-        .filter(field -> Objects.nonNull(field.getJoinTable()))
-        .forEach(this::propagateJoinTable);
+        .forEach(this::propagateJoinConfiguration);
   }
 
-  private void propagateJoinTable(PostgresObjectField field) {
+  private void propagateJoinConfiguration(PostgresObjectField field) {
     Optional.of(field)
         .stream()
         .map(PostgresObjectField::getTargetType)
@@ -115,10 +113,27 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .map(PostgresObjectField.class::cast)
         .filter(nestedObjectField -> !nestedObjectField.getTargetType()
             .isNested())
-        .forEach(nestedObjectField -> resolveAndSetJoinTable(field, nestedObjectField));
+        .forEach(nestedObjectField -> {
+          if (field.getJoinTable() != null) {
+            resolveAndSetJoinTable(field, nestedObjectField);
+          }
+          resolveAndSetJoinColumns(field, nestedObjectField);
+        });
+  }
+
+  private void resolveAndSetJoinColumns(PostgresObjectField field, PostgresObjectField nestedObjectField) {
+    if (!nestedObjectField.getJoinColumns()
+        .isEmpty()) {
+      return;
+    }
+    var resolvedJoinColumns = JoinHelper.resolveJoinColumns(field.getJoinColumns());
+    nestedObjectField.setJoinColumns(resolvedJoinColumns);
   }
 
   private void resolveAndSetJoinTable(PostgresObjectField field, PostgresObjectField nestedField) {
+    if (nestedField.getJoinTable() != null) {
+      return;
+    }
     var objectType = (PostgresObjectType) field.getObjectType();
     var resolvedJoinTable = resolveJoinTable(objectType, field.getJoinTable());
 

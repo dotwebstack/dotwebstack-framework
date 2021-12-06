@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
+import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
@@ -184,6 +185,107 @@ class FilterConditionBuilderTest {
         equalTo("exists (\n" + "  select 1\n" + "  from \"child_v\" \"x1\"\n" + "  where (\n"
             + "    \"x1\".\"parent_id\" = \"x1\".\"child_id\"\n" + "    and \"x1\".\"child_column\" = 'foo'\n" + "  )\n"
             + ")"));
+  }
+
+  @Test
+  void build_returnsCondition_forReferenceObjectWithJoinColumn() {
+    var identifierField = new PostgresObjectField();
+    identifierField.setName("identifier");
+
+    var refObjectType = new PostgresObjectType();
+    refObjectType.setFields(Map.of("identifier", identifierField));
+
+    var refField = new PostgresObjectField();
+    refField.setName("ref");
+    refField.setTargetType(refObjectType);
+
+    var childObjectType = new PostgresObjectType();
+    childObjectType.setFields(Map.of("ref", refField));
+
+    var joinColumns = new ArrayList<JoinColumn>();
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("parent_id");
+    joinColumn.setReferencedField("ref.identifier");
+    joinColumns.add(joinColumn);
+
+    var childField = new PostgresObjectField();
+    childField.setName("child");
+    childField.setJoinColumns(joinColumns);
+    childField.setTargetType(childObjectType);
+
+    Map<String, Object> values = Map.of("eq", "123");
+
+    var filterCriteria = FilterCriteria.builder()
+        .filterType(FilterType.EXACT)
+        .fieldPath(List.of(childField, refField, identifierField))
+        .value(values)
+        .build();
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo("\"x1\".\"parent_id\" = '123'"));
+  }
+
+  @Test
+  void build_returnsCondition_forReferenceObjectWithJoinTable() {
+    var identifierField = new PostgresObjectField();
+    identifierField.setName("identifier");
+
+    var refObjectType = new PostgresObjectType();
+    refObjectType.setFields(Map.of("identifier", identifierField));
+
+    var refsField = new PostgresObjectField();
+    refsField.setName("refs");
+    refsField.setTargetType(refObjectType);
+
+    var childObjectType = new PostgresObjectType();
+    childObjectType.setFields(Map.of("refs", refsField));
+
+    var joinTable = new JoinTable();
+    joinTable.setName("parent_child");
+    var joinColumns = new ArrayList<JoinColumn>();
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("parent__id");
+    joinColumn.setReferencedField("parent_id");
+    joinColumns.add(joinColumn);
+
+    var inverseJoinColumns = new ArrayList<JoinColumn>();
+    var inverseJoinColumn = new JoinColumn();
+    inverseJoinColumn.setName("child__id");
+    inverseJoinColumn.setReferencedField("refs.identifier");
+    inverseJoinColumns.add(inverseJoinColumn);
+
+    joinTable.setJoinColumns(joinColumns);
+    joinTable.setInverseJoinColumns(inverseJoinColumns);
+
+    var childField = new PostgresObjectField();
+    childField.setName("child");
+    childField.setJoinTable(joinTable);
+    childField.setTargetType(childObjectType);
+
+    var parentIdentifierField = new PostgresObjectField();
+    parentIdentifierField.setName("parent_id");
+
+    var parentType = new PostgresObjectType();
+    parentType.setFields(Map.of("parent_id", parentIdentifierField, "child", childField));
+    childField.setObjectType(parentType);
+
+    Map<String, Object> values = Map.of("eq", "123");
+
+    var filterCriteria = FilterCriteria.builder()
+        .filterType(FilterType.EXACT)
+        .fieldPath(List.of(childField, refsField, identifierField))
+        .value(values)
+        .build();
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(),
+        equalTo("exists (\n" + "  select 1\n" + "  from \"parent_child\"\n" + "  where (\n"
+            + "    \"parent_child\".\"parent__id\" = \"x1\".\"parent_id\"\n"
+            + "    and \"parent_child\".\"child__id\" = '123'\n" + "  )\n" + ")"));
   }
 
   private Condition build(FilterCriteria filterCriteria) {

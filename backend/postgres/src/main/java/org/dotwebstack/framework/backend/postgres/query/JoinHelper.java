@@ -104,6 +104,12 @@ public class JoinHelper {
     return result;
   }
 
+  public static List<JoinColumn> resolveJoinColumns(List<JoinColumn> joinColumns) {
+    return joinColumns.stream()
+        .map(JoinHelper::resolveJoinColumn)
+        .collect(Collectors.toList());
+  }
+
   private static JoinColumn resolveJoinColumn(JoinColumn joinColumn) {
     JoinColumn jc = new JoinColumn();
     jc.setName(joinColumn.getName());

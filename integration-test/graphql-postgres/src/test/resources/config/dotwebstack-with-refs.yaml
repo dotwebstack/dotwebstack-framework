@@ -46,6 +46,10 @@ objectTypes:
     filters:
       name:
         field: name
+      brewery:
+        field: brewery.ref.identifier_brewery
+      ingredient:
+        field: ingredients.refs.code
     sortableBy:
       name:
         - field: name
@@ -86,7 +90,6 @@ objectTypes:
         type: BreweryRef
       node:
         type: Brewery
-        keyField: ref
 
   BreweryRef:
     fields:

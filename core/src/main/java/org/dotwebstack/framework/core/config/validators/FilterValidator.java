@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.config.validators;
 
+
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import graphql.Scalars;

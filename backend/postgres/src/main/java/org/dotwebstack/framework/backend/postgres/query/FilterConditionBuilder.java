@@ -13,7 +13,6 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
-import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
-import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -177,27 +175,27 @@ class FilterConditionBuilder {
     Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
 
     if (FilterConstants.EQ_FIELD.equals(operator)) {
-      return Optional.of(field.eq(getValue(objectField, value)));
+      return Optional.of(field.eq(DSL.val(value)));
     }
 
     if (FilterConstants.LT_FIELD.equals(operator)) {
-      return Optional.of(field.lt(getValue(objectField, value)));
+      return Optional.of(field.lt(DSL.val(value)));
     }
 
     if (FilterConstants.LTE_FIELD.equals(operator)) {
-      return Optional.of(field.le(getValue(objectField, value)));
+      return Optional.of(field.le(DSL.val(value)));
     }
 
     if (FilterConstants.GT_FIELD.equals(operator)) {
-      return Optional.of(field.gt(getValue(objectField, value)));
+      return Optional.of(field.gt(DSL.val(value)));
     }
 
     if (FilterConstants.GTE_FIELD.equals(operator)) {
-      return Optional.of(field.ge(getValue(objectField, value)));
+      return Optional.of(field.ge(DSL.val(value)));
     }
 
     if (FilterConstants.IN_FIELD.equals(operator)) {
-      return Optional.of(field.in(getListValue(objectField, value)));
+      return Optional.of(field.in(castToList(value)));
     }
 
     if (FilterConstants.NOT_FIELD.equals(operator)) {
@@ -212,20 +210,6 @@ class FilterConditionBuilder {
     throw illegalArgumentException("Unknown filter field '%s'", operator);
   }
 
-  private List<Field<?>> getListValue(PostgresObjectField objectField, Object listValue) {
-    return castToList(listValue).stream()
-        .map(value -> getValue(objectField, value))
-        .collect(Collectors.toList());
-  }
-
-  private Field<?> getValue(PostgresObjectField objectField, Object value) {
-    Field<?> field = DSL.val(value);
-
-    return Optional.ofNullable(objectField.getEnumeration())
-        .map(FieldEnumConfiguration::getType)
-        .map(type -> field.cast(getDefaultDataType(type)))
-        .orElse(DSL.val(value));
-  }
 
   private Optional<Condition> createGeometryCondition(String operator, PostgresObjectField objectField, Object value) {
     if (ARGUMENT_SRID.equals(operator)) {

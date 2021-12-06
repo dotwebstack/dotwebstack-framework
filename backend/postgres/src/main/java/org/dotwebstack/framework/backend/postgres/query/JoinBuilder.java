@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelpe
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,9 +51,8 @@ class JoinBuilder {
     if (!current.getJoinColumns()
         .isEmpty()) {
       // Normal join column
-      var targetType =
-          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
-      return createJoinConditions(table, relatedTable, current.getJoinColumns(), (PostgresObjectType) targetType);
+      return createJoinConditions(table, relatedTable, current.getJoinColumns(),
+          (PostgresObjectType) current.getTargetType());
     }
 
     if (current.getJoinTable() != null) {
@@ -63,11 +63,11 @@ class JoinBuilder {
       var leftSide = createJoinConditions(junctionTable, table, joinTable.getJoinColumns(),
           (PostgresObjectType) current.getObjectType());
 
-      var targetType =
-          current.getAggregationOfType() != null ? current.getAggregationOfType() : current.getTargetType();
-
-      var rightSide = createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
-          (PostgresObjectType) targetType);
+      List<Condition> rightSide = new ArrayList<>();
+      if (relatedTable != null) {
+        rightSide.addAll(createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
+            (PostgresObjectType) current.getTargetType()));
+      }
 
       return Stream.concat(leftSide.stream(), rightSide.stream())
           .collect(Collectors.toList());

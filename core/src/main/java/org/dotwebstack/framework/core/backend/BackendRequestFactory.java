@@ -213,7 +213,7 @@ public class BackendRequestFactory {
           var objectField = objectType.getFields()
               .get(selectedField.getName());
 
-          var aggregationObjectType = objectField.getAggregationOfType();
+          var aggregationObjectType = objectField.getTargetType();
 
           return AggregateObjectRequest.builder()
               .objectField(objectField)
