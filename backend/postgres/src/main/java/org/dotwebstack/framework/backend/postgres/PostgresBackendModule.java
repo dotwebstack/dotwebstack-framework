@@ -46,8 +46,10 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     setTargetType(objectTypes, allFields);
     setMappedByObjectField(objectTypes, allFields);
     setAggregationOfType(objectTypes, allFields);
-    propagateJoinConfiguration(allFields);
+
     propagateNestedColumnPrefix(allFields);
+    initColumns(allFields);
+    propagateJoinConfiguration(allFields);
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
@@ -196,13 +198,17 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     PostgresObjectField postgresObjectField = new PostgresObjectField();
     postgresObjectField.setName(field.getName());
     postgresObjectField.setType(field.getType());
-    postgresObjectField.setColumn(determineColumn(columnPrefix, field));
+    postgresObjectField.setColumn(field.getColumn());
+    postgresObjectField.setTsvColumn(field.getTsvColumn());
+    postgresObjectField.setColumnPrefix(field.getColumn() == null ? columnPrefix : null);
     postgresObjectField.setObjectType(field.getObjectType());
+
+    postgresObjectField.initColumns();
+
     return postgresObjectField;
   }
 
-  private String determineColumn(String columnPrefix, PostgresObjectField field) {
-    return field.getColumn()
-        .equals(field.getName()) ? columnPrefix.concat(field.getColumn()) : field.getColumn();
+  private void initColumns(List<PostgresObjectField> allFields) {
+    allFields.forEach(PostgresObjectField::initColumns);
   }
 }

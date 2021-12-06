@@ -22,7 +22,7 @@ class JoinHelperTest {
 
     var targetObjectType = new PostgresObjectType();
     var field = new PostgresObjectField();
-    field.setName("fieldNameRight");
+    field.setColumn("field_name_right");
     targetObjectType.setFields(Map.of("fieldNameRight", field));
     objectField.setTargetType(targetObjectType);
 

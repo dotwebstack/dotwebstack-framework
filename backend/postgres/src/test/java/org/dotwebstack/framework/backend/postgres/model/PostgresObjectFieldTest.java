@@ -26,9 +26,22 @@ class PostgresObjectFieldTest {
   void getColumn_returnsGeneratedColumn_whenColumnUnset(String name, String column) {
     PostgresObjectField objectField = new PostgresObjectField();
     objectField.setName(name);
+    objectField.initColumns();
 
     var result = objectField.getColumn();
 
     assertThat(result, is(column));
+  }
+
+  @Test
+  void getColumn_returnsGeneratedColumn_whenColumnColumnSuffixSet() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName("bar");
+    objectField.setColumnPrefix("foo_");
+    objectField.initColumns();
+
+    var result = objectField.getColumn();
+
+    assertThat(result, is("foo_bar"));
   }
 }

@@ -260,12 +260,12 @@ class FilterConditionBuilderTest {
     joinTable.setInverseJoinColumns(inverseJoinColumns);
 
     var childField = new PostgresObjectField();
-    childField.setName("child");
+    childField.setColumn("child");
     childField.setJoinTable(joinTable);
     childField.setTargetType(childObjectType);
 
     var parentIdentifierField = new PostgresObjectField();
-    parentIdentifierField.setName("parent_id");
+    parentIdentifierField.setColumn("parent_id");
 
     var parentType = new PostgresObjectType();
     parentType.setFields(Map.of("parent_id", parentIdentifierField, "child", childField));
