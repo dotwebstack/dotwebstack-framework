@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.validation.Valid;
 import lombok.Data;
@@ -40,26 +41,22 @@ public class PostgresObjectField extends AbstractObjectField {
   @JsonIgnore
   private PostgresSpatial spatial;
 
-  public String getColumn() {
-    // Lazy-determine default column name
+  public void initColumns() {
     if (column == null) {
       var tempName = NAME_PATTERN_1ST.matcher(name)
           .replaceAll(NAME_REPLACEMENT);
 
-      column = NAME_PATTERN_2ND.matcher(tempName)
+      var columnName = NAME_PATTERN_2ND.matcher(tempName)
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
+
+      column = Optional.ofNullable(columnPrefix)
+          .map(prefix -> prefix.concat(columnName))
+          .orElse(columnName);
     }
 
-    return column;
-  }
-
-  public String getTsvColumn() {
-    // Lazy-determine default tsv column name
     if (tsvColumn == null) {
-      tsvColumn = getColumn().concat(TSV_PREFIX);
+      tsvColumn = column.concat(TSV_PREFIX);
     }
-
-    return tsvColumn;
   }
 }
