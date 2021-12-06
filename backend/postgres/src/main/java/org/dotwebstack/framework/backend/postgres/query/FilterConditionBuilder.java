@@ -136,8 +136,8 @@ class FilterConditionBuilder {
       return createConditionsForMatchingNestedReference(objectField, referencedField);
     }
 
-    throw illegalArgumentException("ObjectField '{}' in ObjectType `{}` has no join configuration", objectField.getName(),
-        objectField.getObjectType()
+    throw illegalArgumentException("ObjectField '{}' in ObjectType `{}` has no join configuration",
+        objectField.getName(), objectField.getObjectType()
             .getName());
   }
 
