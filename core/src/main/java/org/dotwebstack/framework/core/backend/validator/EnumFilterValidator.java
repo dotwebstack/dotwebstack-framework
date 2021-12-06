@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.core.helpers.ModelHelper.createObjectFie
 import static org.dotwebstack.framework.core.helpers.ModelHelper.getObjectType;
 
 import com.google.common.collect.Iterables;
-import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +32,7 @@ public class EnumFilterValidator implements GraphQlValidator {
   private final BackendExecutionStepInfo backendExecutionStepInfo;
 
   public void validate(DataFetchingEnvironment environment) {
-    ExecutionStepInfo executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
+    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
 
     var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
@@ -50,10 +49,10 @@ public class EnumFilterValidator implements GraphQlValidator {
   }
 
   private void validateFilter(ObjectType<?> objectType, Map.Entry<String, Object> filterArgumentEntry) {
-    String filterName = filterArgumentEntry.getKey();
-    Object filterValues = filterArgumentEntry.getValue();
+    var filterName = filterArgumentEntry.getKey();
+    var filterValues = filterArgumentEntry.getValue();
 
-    List<Object> validValues = getValidValues(objectType, filterName);
+    var validValues = getValidValues(objectType, filterName);
 
     boolean hasValidValue = Optional.of(validValues)
         .filter(not(List::isEmpty))
@@ -61,7 +60,7 @@ public class EnumFilterValidator implements GraphQlValidator {
         .orElse(true);
 
     if (!hasValidValue) {
-      String validValuesAsString = getValidValuesAsString(validValues);
+      var validValuesAsString = getValidValuesAsString(validValues);
       throw illegalArgumentException(String.format("Invalid filter value for filter '%s'. Valid values are: [%s]",
           filterName, validValuesAsString));
     }
@@ -86,7 +85,7 @@ public class EnumFilterValidator implements GraphQlValidator {
 
   private boolean hasValidValue(Object argumentValue, List<Object> validValues) {
     if (argumentValue instanceof Map) {
-      return hasValidValue(Iterables.getFirst(((Map<?, ?>) argumentValue).values(), null), validValues);
+      return hasValidValue(((Map<?, ?>) argumentValue).values(), validValues);
     }
     if (argumentValue instanceof Collection) {
       return ((Collection<?>) argumentValue).stream()
