@@ -8,7 +8,6 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,6 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Autowired
   private GraphQL graphQL;
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
   static final GraphQlPostgresWithRefsIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =
@@ -125,5 +122,28 @@ class GraphQlPostgresWithRefsIntegrationTest {
                     List.of(Map.of("name", "Water", "code", "WTR"), Map.of("name", "Hop", "code", "HOP"),
                         Map.of("name", "Barley", "code", "BRL"), Map.of("name", "Yeast", "code", "YST"),
                         Map.of("name", "Orange", "code", "RNG"), Map.of("name", "Caramel", "code", "CRM"))))))));
+  }
+
+  @Test
+  void getRequest_returnsBeers_withJoinColumnFilterOnReferenceObject() {
+    var query = "{\n" + "  beerCollection(filter: {brewery: {eq: \"d3654375-95fa-46b4-8529-08b0f777bd6b\"}}) {\n"
+        + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("beerCollection"), hasItems(equalTo(Map.of("name", "Beer 1")),
+        equalTo(Map.of("name", "Beer 2")), equalTo(Map.of("name", "Beer 4")))));
+  }
+
+  @Test
+  void getRequest_returnsBeers_withJoinTableFilterOnReferenceObject() {
+    var query = "{\n" + "  beerCollection(filter: {ingredient: {eq: \"CRM\"}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("beerCollection"),
+        hasItems(equalTo(Map.of("name", "Beer 1")), equalTo(Map.of("name", "Beer 3")))));
   }
 }
