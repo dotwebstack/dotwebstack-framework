@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.model;
 
 import java.util.List;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 
 public interface ObjectField {
 
@@ -27,4 +28,6 @@ public interface ObjectField {
   String getAggregationOf();
 
   ObjectType<? extends ObjectField> getTargetType();
+
+  FieldEnumConfiguration getEnumeration();
 }

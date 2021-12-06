@@ -156,6 +156,9 @@ objectTypes:
         type: String
       status:
         type: String
+        enum:
+          type: db.brewery_status
+          values: [ "active", "inactive"]
       geometry:
         type: Geometry
       postalAddress:
@@ -189,6 +192,8 @@ objectTypes:
         type: Boolean
     filters:
       name: {}
+      status:
+        field: status
       multinational:
         field: multinational
       geometry: {}

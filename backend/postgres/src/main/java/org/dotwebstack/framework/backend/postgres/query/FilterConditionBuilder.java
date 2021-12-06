@@ -14,6 +14,7 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
+import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -238,7 +240,7 @@ class FilterConditionBuilder {
   private Condition createExactConditions(Field<Object> field, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .map(entry -> createExactCondition(field, entry.getKey(), entry.getValue()))
+        .map(entry -> createExactCondition(null, field, entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
@@ -247,44 +249,61 @@ class FilterConditionBuilder {
   private Condition createExactCondition(PostgresObjectField objectField, String operator, Object value) {
     Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
 
-    return createExactCondition(field, operator, value);
+    return createExactCondition(objectField, field, operator, value);
   }
 
-  private Condition createExactCondition(Field<Object> field, String operator, Object value) {
+  private Condition createExactCondition(PostgresObjectField objectField, Field<Object> field, String operator,
+      Object value) {
     if (FilterConstants.EQ_FIELD.equals(operator)) {
-      return field.eq(DSL.val(value));
+      return field.eq(getValue(objectField, value));
     }
 
     if (FilterConstants.LT_FIELD.equals(operator)) {
-      return field.lt(DSL.val(value));
+      return field.lt(getValue(objectField, value));
     }
 
     if (FilterConstants.LTE_FIELD.equals(operator)) {
-      return field.le(DSL.val(value));
+      return field.le(getValue(objectField, value));
     }
 
     if (FilterConstants.GT_FIELD.equals(operator)) {
-      return field.gt(DSL.val(value));
+      return field.gt(getValue(objectField, value));
     }
 
     if (FilterConstants.GTE_FIELD.equals(operator)) {
-      return field.ge(DSL.val(value));
+      return field.ge(getValue(objectField, value));
     }
 
     if (FilterConstants.IN_FIELD.equals(operator)) {
-      return field.in(castToList(value));
+      return field.in(getListValue(objectField, value));
     }
 
     if (FilterConstants.NOT_FIELD.equals(operator)) {
       var conditions = castToMap(value).entrySet()
           .stream()
-          .map(entry -> createExactCondition(field, entry.getKey(), entry.getValue()))
+          .map(entry -> createExactCondition(objectField, field, entry.getKey(), entry.getValue()))
           .collect(Collectors.toList());
 
       return DSL.not(andCondition(conditions));
     }
 
     throw illegalArgumentException("Unknown filter field '%s'", operator);
+  }
+
+  private List<Field<?>> getListValue(PostgresObjectField objectField, Object listValue) {
+    return castToList(listValue).stream()
+        .map(value -> getValue(objectField, value))
+        .collect(Collectors.toList());
+  }
+
+  private Field<?> getValue(PostgresObjectField objectField, Object value) {
+    Field<?> field = DSL.val(value);
+
+    return Optional.ofNullable(objectField)
+        .map(ObjectField::getEnumeration)
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> field.cast(getDefaultDataType(type)))
+        .orElse(DSL.val(value));
   }
 
   private Optional<Condition> createExactGeometryCondition(PostgresObjectField objectField, String operator,

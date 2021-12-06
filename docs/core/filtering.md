@@ -12,6 +12,18 @@ The following types are currently supported:
 
 The filter type can be configured on each filter with the `type` property. The default filter type is `exact`, the `term` filter type can be used by `String` field types for partial matching.
 
+## Enumeration
+
+For enum it is possible to add extra enum configuration for validation and typing:
+
+```yaml
+enum:
+  type: <type>
+  values: <array of valid values>
+```
+
+Both type and values are optional. `Type` can be used by the backends and `values` will be used to validate the given argument in the filter of the GraphQL query.
+
 ## Setup
 
 The following snippet from an `dotwebstack.yaml` file shows the `filters` configuration properties. 
@@ -42,6 +54,11 @@ objectTypes:
         type: ID
       name:
         type: String
+      status:
+        type: String
+        enum:
+          type: BreweryStatus
+          values: ["active", "inactive"]
       multinational:
         type: Boolean
       beers:
@@ -52,6 +69,7 @@ objectTypes:
     filters:
       name:
         type: Term
+      status: {}
       multinational:
         default: true
 ```
