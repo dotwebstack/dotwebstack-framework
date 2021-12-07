@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static org.dotwebstack.framework.integrationtest.graphqlpostgres.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.equalToObject;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
@@ -76,6 +79,21 @@ class GraphQlPostgresWithRefsIntegrationTest {
     assertThat(data, hasEntry(equalTo("beerCollection"), IsCollectionWithSize.hasSize(6)));
     assertThat(data, hasEntry(equalTo("beerCollection"), hasItems(equalToObject(Map.of("name", "Beer 1", "brewery",
         Map.of("ref", Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b")))))));
+  }
+
+  @Test
+  void getRequest_returnsBeersWithPredecessor_withJoinColumn() {
+    var query = "{\n" + "  beerCollection {\n" + "    name\n" + "    predecessor {\n" + "      ref {\n"
+        + "        identifier_beer\n" + "      }\n" + "    }\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("beerCollection"), IsCollectionWithSize.hasSize(6)));
+    assertThat(data, hasEntry(equalTo("beerCollection"),
+        hasItems(allOf(hasEntry(equalTo("name"), equalTo("Beer 1")), hasEntry(equalTo("predecessor"), nullValue())))));
+    assertThat(data, hasEntry(equalTo("beerCollection"), hasItems(
+        allOf(hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("predecessor"), notNullValue())))));
   }
 
   @Test

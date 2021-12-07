@@ -113,7 +113,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .map(Map::values)
         .flatMap(Collection::stream)
         .map(PostgresObjectField.class::cast)
-        .filter(nestedObjectField -> !nestedObjectField.getTargetType()
+        .filter(nestedObjectField -> nestedObjectField.getTargetType() != null && !nestedObjectField.getTargetType()
             .isNested())
         .forEach(nestedObjectField -> {
           if (field.getJoinTable() != null) {

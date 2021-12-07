@@ -22,6 +22,7 @@ import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSor
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -446,16 +447,28 @@ class SelectBuilder {
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
       ObjectRequest objectRequest, Table<Record> table) {
-    var objectMapper = new ObjectMapper();
+    var objectMapper = new ObjectMapper(aliasManager.newAlias());
     fieldMapper.register(objectField.getName(), objectMapper);
 
-    var object = objectRequest.getObjectFields()
+    List<SelectResult> selectResults = new ArrayList<>();
+
+    joinColumns.stream()
+        .findFirst()
+        .ifPresent(firstJoinColumn -> {
+          selectResults.add(SelectResult.builder()
+              .selectFieldOrAsterisk(DSL.field(DSL.name(table.getName(), firstJoinColumn.getName()))
+                  .as(objectMapper.getAlias()))
+              .build());
+        });
+
+    objectRequest.getObjectFields()
         .keySet()
         .stream()
         .flatMap(fieldRequest -> processRelationObjectField(objectField, joinColumns, objectRequest, table,
-            objectMapper, fieldRequest).stream());
+            objectMapper, fieldRequest).stream())
+        .forEach(selectResults::add);
 
-    return object.collect(Collectors.toList());
+    return selectResults;
   }
 
   private List<SelectResult> processRelationObjectField(PostgresObjectField objectField, List<JoinColumn> joinColumns,
