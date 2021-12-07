@@ -2,19 +2,21 @@ spatial:
   srid:
     28992:
       dimensions: 2
+      precision: 4
       bboxColumnSuffix: _bbox
     7415:
       dimensions: 3
+      precision: 4
       bboxColumnSuffix: _bbox
       equivalent: 28992
     9067:
       dimensions: 2
+      precision: 9
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
     7931:
       dimensions: 3
+      precision: 9
       columnSuffix: _etrs89
-      bboxColumnSuffix: _etrs89_bbox
       equivalent: 9067
 
 subscriptions:

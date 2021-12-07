@@ -4,8 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RD;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RDNAP;
 
 import java.util.Base64;
 import java.util.List;
@@ -57,21 +55,10 @@ public class GeometryReader {
   private static Geometry getGeometryFromWkt(String wkt) {
     var wktReader = new WKTReader();
     try {
-      var geometry = wktReader.read(wkt);
-      if (getDimensionsFromGeometry(geometry) == 2) {
-        geometry.setSRID(SRID_RD);
-      } else {
-        geometry.setSRID(SRID_RDNAP);
-      }
-      return geometry;
+      return wktReader.read(wkt);
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKT is invalid!", e);
     }
-  }
-
-  private static int getDimensionsFromGeometry(Geometry geometry) {
-    return Double.isNaN(geometry.getCoordinate()
-        .getZ()) ? 2 : 3;
   }
 
   private static Geometry getGeometryFromWkb(String wkb) {

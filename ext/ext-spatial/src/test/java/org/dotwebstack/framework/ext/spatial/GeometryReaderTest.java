@@ -3,8 +3,6 @@ package org.dotwebstack.framework.ext.spatial;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RD;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RDNAP;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -35,7 +33,6 @@ class GeometryReaderTest {
         .getY(), is(470973.96));
     assertThat(Double.isNaN(geometry.getCoordinate()
         .getZ()), is(true));
-    assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
   @Test
@@ -52,7 +49,6 @@ class GeometryReaderTest {
         .getY(), is(470973.96));
     assertThat(geometry.getCoordinate()
         .getZ(), is(0.0));
-    assertThat(geometry.getSRID(), is(SRID_RDNAP));
   }
 
   @Test
@@ -69,7 +65,6 @@ class GeometryReaderTest {
         .getY(), is(470973.96));
     assertThat(Double.isNaN(geometry.getCoordinate()
         .getZ()), is(true));
-    assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
   @Test
@@ -88,7 +83,6 @@ class GeometryReaderTest {
         .getY(), is(470973.96));
     assertThat(Double.isNaN(geometry.getCoordinate()
         .getZ()), is(true));
-    assertThat(geometry.getSRID(), is(SRID_RD));
   }
 
   @Test

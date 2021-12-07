@@ -35,10 +35,10 @@ class SpatialModelConfigurationTest {
 
     assertThat(result, is(notNullValue()));
     assertThat(result.getReferenceSystems(),
-        allOf(hasEntry(is(28992), is(createTestSpatialReferenceSystem(2, null, null))),
-            hasEntry(is(7415), is(createTestSpatialReferenceSystem(3, 28992, null))),
-            hasEntry(is(9067), is(createTestSpatialReferenceSystem(2, null, null))),
-            hasEntry(is(7931), is(createTestSpatialReferenceSystem(3, 9067, "test")))));
+        allOf(hasEntry(is(28992), is(createTestSpatialReferenceSystem(2, 4, null, null))),
+            hasEntry(is(7415), is(createTestSpatialReferenceSystem(3, 4, 28992, null))),
+            hasEntry(is(9067), is(createTestSpatialReferenceSystem(2, 9, null, null))),
+            hasEntry(is(7931), is(createTestSpatialReferenceSystem(3, 9, 9067, "test")))));
   }
 
   @Test
@@ -52,10 +52,11 @@ class SpatialModelConfigurationTest {
     assertThat(exception.getMessage(), containsString("dotwebstack-spatial-invalid.yaml is not valid. Reasons (1):"));
   }
 
-  private TestSpatialReferenceSystem createTestSpatialReferenceSystem(Integer dimensions, Integer equivalent,
-      String extraInfo) {
+  private TestSpatialReferenceSystem createTestSpatialReferenceSystem(Integer dimensions, Integer precision,
+      Integer equivalent, String extraInfo) {
     TestSpatialReferenceSystem srs = new TestSpatialReferenceSystem();
     srs.setDimensions(dimensions);
+    srs.setPrecision(precision);
     srs.setEquivalent(equivalent);
     srs.setExtraInfo(extraInfo);
     return srs;

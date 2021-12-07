@@ -2,6 +2,7 @@ spatial:
   srid:
     4326:
       dimensions: 2
+      precision: 9
 
 queries:
   beers:

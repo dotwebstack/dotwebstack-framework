@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TY
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.DEFAULT_PRECISION;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 
@@ -13,7 +14,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
+import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTWriter;
@@ -21,6 +25,8 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 @AllArgsConstructor
 public class SpatialDataFetcher implements DataFetcher<Object> {
+
+  private final Spatial spatial;
 
   private final TypeEnforcer typeEnforcer;
 
@@ -76,9 +82,18 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createGeoJson(Geometry geometry) {
-    var geoJsonWriter = new GeoJsonWriter();
+    var precision = getPrecision(geometry);
+    var geoJsonWriter = new GeoJsonWriter(precision);
     geoJsonWriter.setEncodeCRS(false);
     return geoJsonWriter.write(geometry);
+  }
+
+  private int getPrecision(Geometry geometry) {
+    return Optional.ofNullable(spatial)
+        .map(Spatial::getReferenceSystems)
+        .map(spatialReferenceSystems -> spatialReferenceSystems.get(geometry.getSRID()))
+        .map(SpatialReferenceSystem::getPrecision)
+        .orElse(DEFAULT_PRECISION);
   }
 
   private int getDimensionsFromGeometry(Geometry geometry) {

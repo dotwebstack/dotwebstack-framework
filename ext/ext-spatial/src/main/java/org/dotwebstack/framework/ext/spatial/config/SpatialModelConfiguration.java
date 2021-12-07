@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.ext.spatial.backend.SpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.model.Schema;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Slf4j
 public class SpatialModelConfiguration {
 
   private final SpatialBackendModule<?> backendModule;
@@ -36,6 +38,11 @@ public class SpatialModelConfiguration {
     var objectMapper = createObjectMapper();
 
     Schema schema = new SpatialModelReader(objectMapper).read(configFile);
+
+    if (schema.getSpatial() == null) {
+      LOG.warn("No spatial configuration is found in '{}'.", configFile);
+      return new Spatial();
+    }
 
     validateSpatialFields(configFile, schema);
 

@@ -8,12 +8,15 @@ import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @AllArgsConstructor
 @Configuration
 public class SpatialConfiguration {
+
+  private final Spatial spatial;
 
   private final TypeEnforcer typeEnforcer;
 
@@ -38,7 +41,7 @@ public class SpatialConfiguration {
 
       @Override
       public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
-        return new SpatialDataFetcher(typeEnforcer);
+        return new SpatialDataFetcher(spatial, typeEnforcer);
       }
     };
   }
