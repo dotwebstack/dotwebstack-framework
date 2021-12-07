@@ -203,6 +203,14 @@ public class QueryMapper {
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
+    if (invalidExpand(name, schema, parentSchema, mappingContext)) {
+      throw invalidConfigurationException("Expandable field `{}` should be nullable or not required.", mappingContext);
+    }
+
+    if (!mappingContext.expanded()) {
+      return Stream.of();
+    }
+
     var rawType = unwrapAll(fieldDefinition.getType());
 
     if (typeMappers.containsKey(rawType.getName())) {
@@ -215,14 +223,6 @@ public class QueryMapper {
       throw invalidConfigurationException(
           "Nullability of `{}` of type {} in response schema is stricter than GraphQL schema.", name, schema.getClass()
               .getSimpleName());
-    }
-
-    if (invalidExpand(name, schema, parentSchema, mappingContext)) {
-      throw invalidConfigurationException("Expandable field `{}` should be nullable or not required.", mappingContext);
-    }
-
-    if (!mappingContext.expanded()) {
-      return Stream.of();
     }
 
     if (schema instanceof ArraySchema) {
