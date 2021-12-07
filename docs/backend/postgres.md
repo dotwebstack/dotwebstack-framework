@@ -290,16 +290,20 @@ spatial:
   srid:
     28992:
       dimensions: 2
+      scale: 4
       bboxColumnSuffix: _bbox
     7415:
       dimensions: 3
+      scale: 4
       equivalent: 28992
       bboxColumnSuffix: _bbox
     9067:
       dimensions: 2
+      scale: 9
       columnSuffix: _etrs89
     7931:
       dimensions: 3
+      scale: 9
       columnSuffix: _etrs89
       equivalent: 9067
 ```

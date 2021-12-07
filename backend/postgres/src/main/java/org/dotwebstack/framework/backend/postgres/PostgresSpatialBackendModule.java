@@ -73,11 +73,6 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   @Override
   public void init(Spatial spatial) {
-    if (spatial == null) {
-      LOG.warn("Spatial config is null.");
-      return;
-    }
-
     Map<String, ObjectType<? extends ObjectField>> objectTypes = schema.getObjectTypes();
 
     Map<String, List<PostgresObjectField>> allFieldsPerTableName = objectTypes.values()

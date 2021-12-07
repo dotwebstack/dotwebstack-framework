@@ -10,4 +10,6 @@ public abstract class AbstractSpatialReferenceSystem implements SpatialReference
   private Integer dimensions;
 
   private Integer equivalent;
+
+  private Integer scale;
 }

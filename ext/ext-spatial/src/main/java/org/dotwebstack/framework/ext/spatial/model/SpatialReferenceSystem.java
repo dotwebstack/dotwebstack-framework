@@ -6,4 +6,6 @@ public interface SpatialReferenceSystem {
 
   Integer getEquivalent();
 
+  Integer getScale();
+
 }

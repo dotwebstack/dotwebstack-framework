@@ -171,9 +171,13 @@ spatial:
   srid:
     28992:
       dimensions: 2
+      scale: 4
     7415:
       dimensions: 3
+      scale: 4
       equivalent: 28992
 ```
 
 A three dimensional geometry can be reprojected to a two dimensional geometry when the property `equivalent` is configured.
+
+The scale of a GeoJSON can be configured with the `scale` property. 

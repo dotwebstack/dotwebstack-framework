@@ -520,10 +520,10 @@ class GraphQlPostgresIntegrationTest {
             + "0BKAbRHexneP/H3ztkWhytAGIuG1QAAAEBKAbRmo7M2P/H3ztkWhytAGIttWAAAAEBKAbPOTvzOP/"
             + "H3ztkWhytAGItrwwAAAEBKAbQryMpNP/H3ztkWhytAGItVcAAAAEBKAbOvJmKgP/H3ztkWhys="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01329603,1.123],"
-            + "[6.13609962,52.01324733,1.123],[6.13619283,52.01326342,1.123],[6.13617472,52.01329685,1.123],"
-            + "[6.1362572,52.01331419,1.123],[6.13625653,52.0133179,1.123],[6.1361593,52.01329974,1.123],"
-            + "[6.13615327,52.01331088,1.123],[6.13606811,52.01329603,1.123]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013296026,1.123],"
+            + "[6.136099622,52.013247326,1.123],[6.136192828,52.013263422,1.123],[6.136174724,52.013296851,1.123],"
+            + "[6.136257201,52.013314185,1.123],[6.136256531,52.0133179,1.123],[6.136159301,52.01329974,1.123],"
+            + "[6.136153266,52.013310884,1.123],[6.136068106,52.013296026,1.123]]]}"));
   }
 
   @Test
@@ -603,8 +603,8 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.get("asWKB"), is("ACAAAAMAAB77AAAAAQAAAAVAGItVcAAAAEBKAbIWoDSrQBiLVXAAAABASgG0ZqOzNkAYi4cB////"
         + "QEoBtGajszZAGIuHAf///0BKAbIWoDSrQBiLVXAAAABASgGyFqA0qw=="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01324733],[6.13606811,52.0133179],"
-            + "[6.1362572,52.0133179],[6.1362572,52.01324733],[6.13606811,52.01324733]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013247326],[6.136068106,52.0133179],"
+            + "[6.136257201,52.0133179],[6.136257201,52.013247326],[6.136068106,52.013247326]]]}"));
   }
 
   @Test
@@ -639,10 +639,10 @@ class GraphQlPostgresIntegrationTest {
             + "AAAAQEoBsp2lg9RAGItxYwAAAEBKAbO2EvauQBiLhwH///9ASgG0R3sZ3kAYi4bVAAAAQEoBtGajszZ"
             + "AGIttWAAAAEBKAbPOTvzOQBiLa8MAAABASgG0K8jKTUAYi1VwAAAAQEoBs68mYqA="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.13606811,52.01329603],"
-            + "[6.13609962,52.01324733],[6.13619283,52.01326342],[6.13617472,52.01329685],"
-            + "[6.1362572,52.01331419],[6.13625653,52.0133179],[6.1361593,52.01329974],"
-            + "[6.13615327,52.01331088],[6.13606811,52.01329603]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013296026],[6.136099622,52.013247326],"
+            + "[6.136192828,52.013263422],[6.136174724,52.013296851],[6.136257201,52.013314185],"
+            + "[6.136256531,52.0133179],[6.136159301,52.01329974],[6.136153266,52.013310884],"
+            + "[6.136068106,52.013296026]]]}"));
   }
 
   @Test

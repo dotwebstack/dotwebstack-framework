@@ -22,6 +22,7 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,11 +35,14 @@ class SpatialConfigurationTest {
   private WiringFactory wiringFactory;
 
   @Mock
+  private Spatial spatial;
+
+  @Mock
   private FieldWiringEnvironment environment;
 
   @BeforeEach
   void beforeAll() {
-    wiringFactory = new SpatialConfiguration(new TypeEnforcer()).wiringFactory();
+    wiringFactory = new SpatialConfiguration(spatial, new TypeEnforcer()).wiringFactory();
   }
 
   @Test

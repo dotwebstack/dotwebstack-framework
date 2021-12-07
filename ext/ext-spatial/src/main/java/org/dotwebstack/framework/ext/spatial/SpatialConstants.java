@@ -2,9 +2,7 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
-  static final int SRID_RD = 28992;
-
-  static final int SRID_RDNAP = 7415;
+  static final int DEFAULT_SCALE = 9;
 
   private SpatialConstants() {}
 
