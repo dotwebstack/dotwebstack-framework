@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.BackendExecutionStepInfo;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
@@ -21,10 +22,12 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
+@Conditional(OnLocalSchema.class)
 public class EnumFilterValidator implements GraphQlValidator {
 
   private final Schema schema;
