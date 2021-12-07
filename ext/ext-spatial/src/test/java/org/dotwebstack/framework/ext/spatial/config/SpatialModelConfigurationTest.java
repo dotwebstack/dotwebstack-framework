@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,6 +40,16 @@ class SpatialModelConfigurationTest {
             hasEntry(is(7415), is(createTestSpatialReferenceSystem(3, 4, 28992, null))),
             hasEntry(is(9067), is(createTestSpatialReferenceSystem(2, 9, null, null))),
             hasEntry(is(7931), is(createTestSpatialReferenceSystem(3, 9, 9067, "test")))));
+  }
+
+  @Test
+  void spatial_returnsEmptySpatial_ifNoSpatialConfig() {
+    String localUrl = getDotWebStackConfiguration("src/test/resources/config/dotwebstack/dotwebstack-no-spatial.yaml");
+
+    var result = modelConfiguration.spatial(localUrl);
+
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getReferenceSystems(), is(nullValue()));
   }
 
   @Test
