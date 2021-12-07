@@ -69,7 +69,7 @@ class SpatialDataFetcherTest {
     Spatial spatial = new Spatial();
 
     TestSpatialReferenceSystem srs = new TestSpatialReferenceSystem();
-    srs.setPrecision(15);
+    srs.setScale(15);
 
     spatial.setReferenceSystems(Map.of(7931, srs));
     return spatial;

@@ -6,7 +6,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TY
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.DEFAULT_PRECISION;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.DEFAULT_SCALE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 
@@ -82,18 +82,18 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private String createGeoJson(Geometry geometry) {
-    var precision = getPrecision(geometry);
-    var geoJsonWriter = new GeoJsonWriter(precision);
+    var scale = getScale(geometry);
+    var geoJsonWriter = new GeoJsonWriter(scale);
     geoJsonWriter.setEncodeCRS(false);
     return geoJsonWriter.write(geometry);
   }
 
-  private int getPrecision(Geometry geometry) {
+  private int getScale(Geometry geometry) {
     return Optional.ofNullable(spatial)
         .map(Spatial::getReferenceSystems)
         .map(spatialReferenceSystems -> spatialReferenceSystems.get(geometry.getSRID()))
-        .map(SpatialReferenceSystem::getPrecision)
-        .orElse(DEFAULT_PRECISION);
+        .map(SpatialReferenceSystem::getScale)
+        .orElse(DEFAULT_SCALE);
   }
 
   private int getDimensionsFromGeometry(Geometry geometry) {

@@ -63,11 +63,11 @@ class SpatialModelConfigurationTest {
     assertThat(exception.getMessage(), containsString("dotwebstack-spatial-invalid.yaml is not valid. Reasons (1):"));
   }
 
-  private TestSpatialReferenceSystem createTestSpatialReferenceSystem(Integer dimensions, Integer precision,
+  private TestSpatialReferenceSystem createTestSpatialReferenceSystem(Integer dimensions, Integer scale,
       Integer equivalent, String extraInfo) {
     TestSpatialReferenceSystem srs = new TestSpatialReferenceSystem();
     srs.setDimensions(dimensions);
-    srs.setPrecision(precision);
+    srs.setScale(scale);
     srs.setEquivalent(equivalent);
     srs.setExtraInfo(extraInfo);
     return srs;

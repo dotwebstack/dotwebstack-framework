@@ -11,5 +11,5 @@ public abstract class AbstractSpatialReferenceSystem implements SpatialReference
 
   private Integer equivalent;
 
-  private Integer precision;
+  private Integer scale;
 }

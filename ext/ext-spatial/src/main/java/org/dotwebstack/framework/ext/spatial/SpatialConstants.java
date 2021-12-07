@@ -2,7 +2,7 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
-  static final int DEFAULT_PRECISION = 8;
+  static final int DEFAULT_SCALE = 8;
 
   private SpatialConstants() {}
 
