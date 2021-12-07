@@ -452,14 +452,13 @@ class SelectBuilder {
 
     List<SelectResult> selectResults = new ArrayList<>();
 
+    // select the first joincolumn value for object exist check
     joinColumns.stream()
         .findFirst()
-        .ifPresent(firstJoinColumn -> {
-          selectResults.add(SelectResult.builder()
-              .selectFieldOrAsterisk(DSL.field(DSL.name(table.getName(), firstJoinColumn.getName()))
-                  .as(objectMapper.getAlias()))
-              .build());
-        });
+        .ifPresent(firstJoinColumn -> selectResults.add(SelectResult.builder()
+            .selectFieldOrAsterisk(DSL.field(DSL.name(table.getName(), firstJoinColumn.getName()))
+                .as(objectMapper.getAlias()))
+            .build()));
 
     objectRequest.getObjectFields()
         .keySet()
