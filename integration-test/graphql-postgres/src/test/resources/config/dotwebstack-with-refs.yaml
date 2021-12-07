@@ -85,13 +85,36 @@ objectTypes:
       taste:
         type: Taste
         list: true
+      predecessor:
+        type: BeerBeer
+        nullable: true
+        joinColumns:
+          - name: predecessor
+            referencedField: ref.identifier_beer
+
+  BeerBeer:
+    fields:
+      ref:
+        type: BeerRef
+        nullable: false
+      node:
+        type: Beer
+        nullable: true
+
+  BeerRef:
+    fields:
+      identifier_beer:
+        type: String
+        nullable: false
 
   BeerBrewery:
     fields:
       ref:
         type: BreweryRef
+        nullable: false
       node:
         type: Brewery
+        nullable: true
 
   BreweryRef:
     fields:

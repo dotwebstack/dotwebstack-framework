@@ -35,7 +35,8 @@ CREATE TABLE db.beer (
   sold_per_year INT NOT NULL,
   taste db.taste[] NULL,
   since date NOT NULL,
-  last_brewed timestamp NOT NULL
+  last_brewed timestamp NOT NULL,
+  predecessor character varying REFERENCES db.beer (identifier_beer)
 );
 
 CREATE TABLE db.ingredient (
