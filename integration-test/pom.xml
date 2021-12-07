@@ -5,7 +5,7 @@
     <parent>
         <artifactId>dotwebstack-framework</artifactId>
         <groupId>org.dotwebstack.framework</groupId>
-        <version>0.3.70-SNAPSHOT</version>
+        <version>0.3.70</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
