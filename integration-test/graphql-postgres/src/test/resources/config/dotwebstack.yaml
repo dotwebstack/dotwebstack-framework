@@ -192,6 +192,8 @@ objectTypes:
       history:
         columnPrefix: his_
         type: History
+        nullable: true
+        presenceColumn: his
       multinational:
         type: Boolean
     filters:

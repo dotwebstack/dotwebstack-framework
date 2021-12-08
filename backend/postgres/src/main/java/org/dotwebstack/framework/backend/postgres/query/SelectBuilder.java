@@ -521,19 +521,36 @@ class SelectBuilder {
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table) {
-    var objectMapper = new ObjectMapper();
+    var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
+    var objectMapper = new ObjectMapper(null, presenceAlias);
+
     fieldMapper.register(objectField.getName(), objectMapper);
 
-    var result = objectRequest.getScalarFields()
+    var result = new ArrayList<SelectResult>();
+
+    if (objectField.getPresenceColumn() != null) {
+      SelectResult presenceColumnSelect = createPresenceColumnSelect(objectField, table, objectMapper);
+      result.add(presenceColumnSelect);
+    }
+
+    objectRequest.getScalarFields()
         .stream()
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest,
             (PostgresObjectType) objectField.getTargetType(), table, objectMapper))
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())
-        .collect(Collectors.toList());
+        .forEach(result::add);
 
     return result.stream();
+  }
+
+  private SelectResult createPresenceColumnSelect(PostgresObjectField objectField, Table<Record> table,
+      ObjectMapper objectMapper) {
+    var column = column(table, objectField.getPresenceColumn()).as(objectMapper.getPresenceAlias());
+    return SelectResult.builder()
+        .selectFieldOrAsterisk(column)
+        .build();
   }
 
   private SelectQuery<Record> getJoinTableReferences(PostgresObjectField objectField, ObjectRequest objectRequest,

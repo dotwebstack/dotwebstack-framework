@@ -255,8 +255,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBrewery_withNestedObject() {
-    String query =
-        "{brewery(identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status history{age history}}}";
+    String query = "{breweries{name status history{age history}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -265,14 +264,28 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> data = getDataFromJsonNode(json);
 
     assertThat(data.size(), is(1));
-    assertThat(data.containsKey(BREWERY), is(true));
+    assertThat(data.containsKey(BREWERIES), is(true));
 
-    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(4));
+
+    assertThat(breweries.get(1)
+        .get(NAME), is("Brewery X"));
+
+    assertThat(breweries.get(3)
+        .get(NAME), is("Brewery Z"));
+
+    Map<String, Object> brewery = breweries.get(1);
     assertThat(brewery.containsKey(HISTORY), is(true));
     Map<String, Object> history = getNestedObject(brewery, HISTORY);
     assertThat(history.size(), is(2));
     assertThat(history.get("age"), is(1988));
     assertThat(history.get(HISTORY), is("hip and new"));
+
+    brewery = breweries.get(3);
+    assertThat(brewery.containsKey(HISTORY), is(true));
+    history = getNestedObject(brewery, HISTORY);
+    assertThat(history, is(nullValue()));
   }
 
   @Test

@@ -101,9 +101,40 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequest() {
+    ObjectRequest objectRequest = getObjectRequestWithNestedObject(null);
+
+    var result = selectBuilder.build(objectRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forObjectRequestWithPresenceColumn() {
+    ObjectRequest objectRequest = getObjectRequestWithNestedObject("history_presence");
+
+    var result = selectBuilder.build(objectRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"history_presence\" as \"x4\",\n  \"x1\".\"age_column\" as \"x5\"\n"
+            + "from \"beer\" as \"x1\"\nwhere \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
     var nestedObjectType = createObjectType(null, "age");
+
+    var nestedObjectField = createObjectField("history");
+    nestedObjectField.setTargetType(nestedObjectType);
+    nestedObjectField.setPresenceColumn(presenceColumn);
+    objectType.getFields()
+        .put("history", nestedObjectField);
 
     var nestedObject = ObjectRequest.builder()
         .objectType(nestedObjectType)
@@ -112,12 +143,7 @@ class SelectBuilderTest {
             .build()))
         .build();
 
-    var nestedObjectField = createObjectField("history");
-    nestedObjectField.setTargetType(nestedObjectType);
-    objectType.getFields()
-        .put("history", nestedObjectField);
-
-    var objectRequest = ObjectRequest.builder()
+    return ObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -132,14 +158,6 @@ class SelectBuilderTest {
             .values(Map.of("identifier", "id-1"))
             .build())
         .build();
-
-    var result = selectBuilder.build(objectRequest);
-
-    assertThat(result, notNullValue());
-    assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-            + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
-            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test

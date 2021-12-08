@@ -38,6 +38,8 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private PostgresObjectField mappedByObjectField;
 
+  private String presenceColumn;
+
   @JsonIgnore
   private PostgresSpatial spatial;
 
