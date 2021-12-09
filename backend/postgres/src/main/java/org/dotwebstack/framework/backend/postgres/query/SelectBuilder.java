@@ -567,9 +567,12 @@ class SelectBuilder {
 
   private SelectResult createPresenceColumnSelect(PostgresObjectField objectField, Table<Record> table,
       ObjectMapper objectMapper) {
-    var column = column(table, objectField.getPresenceColumn()).as(objectMapper.getPresenceAlias());
+    var column = column(table, objectField.getPresenceColumn());
+    var columnIsNotNull = DSL.field(column.isNotNull())
+        .as(objectMapper.getPresenceAlias());
+
     return SelectResult.builder()
-        .selectFieldOrAsterisk(column)
+        .selectFieldOrAsterisk(columnIsNotNull)
         .build();
   }
 

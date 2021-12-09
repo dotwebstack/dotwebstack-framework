@@ -114,14 +114,14 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequestWithPresenceColumn() {
-    ObjectRequest objectRequest = getObjectRequestWithNestedObject("history_presence");
+    ObjectRequest objectRequest = getObjectRequestWithNestedObject("age_column");
 
     var result = selectBuilder.build(objectRequest);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-            + "  \"x1\".\"history_presence\" as \"x4\",\n  \"x1\".\"age_column\" as \"x5\"\n"
+            + "  (\"x1\".\"age_column\" is not null) as \"x4\",\n  \"x1\".\"age_column\" as \"x5\"\n"
             + "from \"beer\" as \"x1\"\nwhere \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
