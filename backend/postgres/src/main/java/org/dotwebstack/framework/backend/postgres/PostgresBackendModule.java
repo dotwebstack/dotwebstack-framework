@@ -2,11 +2,9 @@ package org.dotwebstack.framework.backend.postgres;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +13,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.backend.postgres.query.JoinHelper;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -49,7 +46,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
     propagateNestedColumnPrefix(allFields);
     initColumns(allFields);
-    propagateJoinConfiguration(allFields);
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
@@ -97,49 +93,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
           var aggregationOfType = getObjectType(objectTypes, objectField.getAggregationOf());
           objectField.setTargetType(aggregationOfType);
         });
-  }
-
-  private void propagateJoinConfiguration(List<PostgresObjectField> allFields) {
-    allFields.stream()
-        .filter(JoinHelper::hasNestedReference)
-        .forEach(this::propagateJoinConfiguration);
-  }
-
-  private void propagateJoinConfiguration(PostgresObjectField field) {
-    Optional.of(field)
-        .stream()
-        .map(PostgresObjectField::getTargetType)
-        .map(ObjectType::getFields)
-        .map(Map::values)
-        .flatMap(Collection::stream)
-        .map(PostgresObjectField.class::cast)
-        .filter(nestedObjectField -> nestedObjectField.getTargetType() != null && !nestedObjectField.getTargetType()
-            .isNested())
-        .forEach(nestedObjectField -> {
-          if (field.getJoinTable() != null) {
-            resolveAndSetJoinTable(field, nestedObjectField);
-          }
-          resolveAndSetJoinColumns(field, nestedObjectField);
-        });
-  }
-
-  private void resolveAndSetJoinColumns(PostgresObjectField field, PostgresObjectField nestedObjectField) {
-    if (!nestedObjectField.getJoinColumns()
-        .isEmpty()) {
-      return;
-    }
-    var resolvedJoinColumns = JoinHelper.resolveJoinColumns(field.getJoinColumns());
-    nestedObjectField.setJoinColumns(resolvedJoinColumns);
-  }
-
-  private void resolveAndSetJoinTable(PostgresObjectField field, PostgresObjectField nestedField) {
-    if (nestedField.getJoinTable() != null) {
-      return;
-    }
-    var objectType = (PostgresObjectType) field.getObjectType();
-    var resolvedJoinTable = resolveJoinTable(objectType, field.getJoinTable());
-
-    nestedField.setJoinTable(resolvedJoinTable);
   }
 
   private static PostgresObjectType getObjectType(Map<String, ObjectType<? extends ObjectField>> objectTypes,

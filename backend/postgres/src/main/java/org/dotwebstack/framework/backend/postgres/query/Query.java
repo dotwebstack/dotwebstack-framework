@@ -80,7 +80,6 @@ public class Query {
 
     return executeSpec.fetch()
         .all()
-        .map(m -> m)
         .map(rowMapper);
   }
 

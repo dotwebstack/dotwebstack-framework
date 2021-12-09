@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatial
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinConfiguration.toJoinConfiguration;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
@@ -104,7 +105,7 @@ class FilterConditionBuilder {
       filterQuery.addSelect(DSL.val(1));
 
       newJoin().table(table)
-          .current(current)
+          .joinConfiguration(toJoinConfiguration(current))
           .tableCreator(createTableCreator(filterQuery, contextCriteria, aliasManager))
           .relatedTable(filterTable)
           .build()

@@ -84,6 +84,10 @@ public class JoinHelper {
   }
 
   public static JoinTable resolveJoinTable(PostgresObjectType objectType, JoinTable joinTable) {
+    if (joinTable == null) {
+      return null;
+    }
+
     var result = new JoinTable();
     result.setName(joinTable.getName());
 
@@ -105,6 +109,9 @@ public class JoinHelper {
   }
 
   public static List<JoinColumn> resolveJoinColumns(List<JoinColumn> joinColumns) {
+    if (joinColumns == null || joinColumns.isEmpty()) {
+      return joinColumns;
+    }
     return joinColumns.stream()
         .map(JoinHelper::resolveJoinColumn)
         .collect(Collectors.toList());
@@ -114,6 +121,7 @@ public class JoinHelper {
     JoinColumn jc = new JoinColumn();
     jc.setName(joinColumn.getName());
     jc.setReferencedField(StringUtils.substringAfter(joinColumn.getReferencedField(), "."));
+    jc.setReferencedColumn(joinColumn.getReferencedColumn());
     return jc;
   }
 }
