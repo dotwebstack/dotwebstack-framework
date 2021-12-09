@@ -522,10 +522,17 @@ class SelectBuilder {
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table) {
-    var objectMapper = new ObjectMapper();
+    var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
+    var objectMapper = new ObjectMapper(null, presenceAlias);
+
     fieldMapper.register(objectField.getName(), objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
+
+    if (objectField.getPresenceColumn() != null) {
+      SelectResult presenceColumnSelect = createPresenceColumnSelect(objectField, table, objectMapper);
+      selectResults.add(presenceColumnSelect);
+    }
 
     objectRequest.getScalarFields()
         .stream()
@@ -534,13 +541,21 @@ class SelectBuilder {
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())
-            .forEach(selectResults::add);
+        .collect(Collectors.toList());
 
     objectRequest.getObjectFields().entrySet().stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest,entry.getKey().getName()),entry.getValue(),table))
         .forEach(selectResults::add);
 
     return selectResults.stream();
+  }
+
+  private SelectResult createPresenceColumnSelect(PostgresObjectField objectField, Table<Record> table,
+      ObjectMapper objectMapper) {
+    var column = column(table, objectField.getPresenceColumn()).as(objectMapper.getPresenceAlias());
+    return SelectResult.builder()
+        .selectFieldOrAsterisk(column)
+        .build();
   }
 
   private SelectQuery<Record> getJoinTableReferences(PostgresObjectField objectField, ObjectRequest objectRequest,

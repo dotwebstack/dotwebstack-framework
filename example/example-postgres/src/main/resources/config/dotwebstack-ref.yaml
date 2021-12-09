@@ -172,6 +172,8 @@ objectTypes:
             referencedField: brewery
       history:
         type: History
+        nullable: true
+        presenceColumn: his
       relatedTo:
         type: Brewery
         list: true

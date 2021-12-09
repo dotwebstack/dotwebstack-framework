@@ -169,6 +169,8 @@ objectTypes:
         mappedBy: brewery
       history:
         type: History
+        nullable: true
+        presenceColumn: his
 
 
   Ingredient:
