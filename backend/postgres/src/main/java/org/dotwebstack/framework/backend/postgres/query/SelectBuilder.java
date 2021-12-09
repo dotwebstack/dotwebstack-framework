@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHel
 import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
@@ -201,7 +202,7 @@ class SelectBuilder {
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
-            .getName()), entry.getValue(), selectTable))
+            .getName()), entry.getValue(), selectTable, fieldMapper))
         .map(selectResult -> {
           Optional.of(selectResult)
               .map(SelectResult::getSelectQuery)
@@ -282,7 +283,7 @@ class SelectBuilder {
         aliasedAggregateTable));
 
     newJoin().table(table)
-        .current(objectField)
+        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .relatedTable(aliasedAggregateTable)
         .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build()
@@ -360,25 +361,26 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
-      return createRelationObject(objectField, objectRequest, table).stream();
+      return createRelationObject(objectField, objectRequest, table, parentMapper).stream();
     }
 
     // Create a new nested object and take data from the same table
     if (objectField.getTargetType()
         .isNested()) {
-      return createNestedObject(objectField, objectRequest, table);
+      return createNestedObject(objectField, objectRequest, table, parentMapper);
     }
 
     // Create a new object and take data from another table and join with it
-    return createObject(objectField, objectRequest, table, fieldMapper);
+    return createObject(objectField, objectRequest, table, parentMapper,
+        JoinConfiguration.toJoinConfiguration(objectField));
   }
 
   private Stream<SelectResult> createObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     parentMapper.register(objectField.getName(), objectMapper);
 
@@ -397,7 +399,7 @@ class SelectBuilder {
 
     newJoin().table(table)
         .relatedTable(DSL.table(objectMapper.getAlias()))
-        .current(objectField)
+        .joinConfiguration(joinConfiguration)
         .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
         .build()
         .forEach(select::addConditions);
@@ -408,14 +410,14 @@ class SelectBuilder {
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table);
+      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper);
     }
 
     var objectMapper = new ObjectMapper();
-    fieldMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(objectField.getName(), objectMapper);
 
     return objectRequest.getObjectListFields()
         .keySet()
@@ -446,15 +448,16 @@ class SelectBuilder {
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
-      ObjectRequest objectRequest, Table<Record> table) {
+      ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    fieldMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(objectField.getName(), objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
 
     // select the first joincolumn value for object exist check
     joinColumns.stream()
         .findFirst()
+        .filter(joinColumn -> Objects.nonNull(joinColumn.getReferencedField()))
         .ifPresent(firstJoinColumn -> selectResults.add(SelectResult.builder()
             .selectFieldOrAsterisk(DSL.field(DSL.name(table.getName(), firstJoinColumn.getName()))
                 .as(objectMapper.getAlias()))
@@ -477,6 +480,7 @@ class SelectBuilder {
 
     if (joinColumns.stream()
         .map(JoinColumn::getReferencedField)
+        .filter(Objects::nonNull)
         .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
       return createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
@@ -486,7 +490,16 @@ class SelectBuilder {
     } else {
       var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
 
-      return createObject(childObjectField, childObjectRequest, table, objectMapper).collect(Collectors.toList());
+      var joinConfiguration = JoinConfiguration.builder()
+          .targetType((PostgresObjectType) childObjectField.getTargetType())
+          .objectType((PostgresObjectType) childObjectField.getObjectType())
+          .mappedBy(objectField.getMappedByObjectField())
+          .joinTable(resolveJoinTable((PostgresObjectType) objectField.getObjectType(), objectField.getJoinTable()))
+          .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
+          .build();
+
+      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration)
+          .collect(Collectors.toList());
     }
   }
 
@@ -520,17 +533,17 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
-    fieldMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(objectField.getName(), objectMapper);
 
-    var result = new ArrayList<SelectResult>();
+    List<SelectResult> selectResults = new ArrayList<>();
 
     if (objectField.getPresenceColumn() != null) {
       SelectResult presenceColumnSelect = createPresenceColumnSelect(objectField, table, objectMapper);
-      result.add(presenceColumnSelect);
+      selectResults.add(presenceColumnSelect);
     }
 
     objectRequest.getScalarFields()
@@ -540,9 +553,16 @@ class SelectBuilder {
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())
-        .forEach(result::add);
+        .forEach(selectResults::add);
 
-    return result.stream();
+    objectRequest.getObjectFields()
+        .entrySet()
+        .stream()
+        .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
+            .getName()), entry.getValue(), table, objectMapper))
+        .forEach(selectResults::add);
+
+    return selectResults.stream();
   }
 
   private SelectResult createPresenceColumnSelect(PostgresObjectField objectField, Table<Record> table,

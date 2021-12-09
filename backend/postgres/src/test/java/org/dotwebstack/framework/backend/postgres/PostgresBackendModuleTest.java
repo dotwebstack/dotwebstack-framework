@@ -7,13 +7,10 @@ import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Map;
-import java.util.Optional;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
-import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,13 +38,6 @@ class PostgresBackendModuleTest {
     testHelper = new TestHelper(postgresBackendModule);
   }
 
-  private Optional<Spatial> getSpatial() {
-    var spatial = new Spatial();
-    var srs = new PostgresSpatialReferenceSystem();
-    spatial.setReferenceSystems(Map.of(7415, srs));
-    return Optional.of(spatial);
-  }
-
   @Test
   void getObjectTypeClass_returnsPostgresObjectTypeClass() {
     assertThat(postgresBackendModule.getObjectTypeClass(), CoreMatchers.is(PostgresObjectType.class));
@@ -68,22 +58,6 @@ class PostgresBackendModuleTest {
     assertThat(brewery, notNullValue());
     assertThat(brewery.getFields()
         .get("beerAgg"), notNullValue());
-  }
-
-  @Test
-  void init_shouldPropagateJoinTable() throws MalformedURLException {
-    Map<String, ObjectType<?>> objectTypes =
-        init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-refs.yaml");
-
-    assertThat(objectTypes, notNullValue());
-
-    var beerIngredient = (PostgresObjectType) objectTypes.get("BeerIngredient");
-    assertThat(beerIngredient, notNullValue());
-    assertThat(beerIngredient.getFields()
-        .get("nodes"), notNullValue());
-    assertThat(beerIngredient.getFields()
-        .get("nodes")
-        .getJoinTable(), notNullValue());
   }
 
   @Test

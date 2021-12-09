@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.jooq.Condition;
 import org.jooq.Record;
@@ -22,7 +21,7 @@ import org.jooq.Table;
 @Setter
 class JoinBuilder {
   @NotNull
-  private PostgresObjectField current;
+  private JoinConfiguration joinConfiguration;
 
   private Table<Record> table;
 
@@ -40,39 +39,46 @@ class JoinBuilder {
     validateFields(this);
 
     // Inverted mapped by
-    if (current.getMappedByObjectField() != null) {
+    if (joinConfiguration.getMappedBy() != null) {
       return newJoin().table(relatedTable)
           .relatedTable(table)
-          .current(current.getMappedByObjectField())
+          .joinConfiguration(JoinConfiguration.builder()
+              .joinColumns(joinConfiguration.getMappedBy()
+                  .getJoinColumns())
+              .joinTable(joinConfiguration.getMappedBy()
+                  .getJoinTable())
+              .targetType((PostgresObjectType) joinConfiguration.getMappedBy()
+                  .getTargetType())
+              .build())
           .tableCreator(tableCreator)
           .build();
     }
 
-    if (!current.getJoinColumns()
+    if (!joinConfiguration.getJoinColumns()
         .isEmpty()) {
       // Normal join column
-      return createJoinConditions(table, relatedTable, current.getJoinColumns(),
-          (PostgresObjectType) current.getTargetType());
+      return createJoinConditions(table, relatedTable, joinConfiguration.getJoinColumns(),
+          joinConfiguration.getTargetType());
     }
 
-    if (current.getJoinTable() != null) {
-      var joinTable = current.getJoinTable();
+    if (joinConfiguration.getJoinTable() != null) {
+      var joinTable = joinConfiguration.getJoinTable();
 
       var junctionTable = tableCreator.apply(joinTable.getName());
 
-      var leftSide = createJoinConditions(junctionTable, table, joinTable.getJoinColumns(),
-          (PostgresObjectType) current.getObjectType());
+      var leftSide =
+          createJoinConditions(junctionTable, table, joinTable.getJoinColumns(), joinConfiguration.getObjectType());
 
       List<Condition> rightSide = new ArrayList<>();
       if (relatedTable != null) {
         rightSide.addAll(createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
-            (PostgresObjectType) current.getTargetType()));
+            joinConfiguration.getTargetType()));
       }
 
       return Stream.concat(leftSide.stream(), rightSide.stream())
           .collect(Collectors.toList());
     }
 
-    throw illegalArgumentException("Object field '{}' has no relation configuration!", current.getName());
+    throw illegalArgumentException("Object field '{}' has no relation configuration!", joinConfiguration.getName());
   }
 }
