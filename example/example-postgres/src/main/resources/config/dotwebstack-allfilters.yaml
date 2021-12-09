@@ -132,7 +132,7 @@ objectTypes:
       history:
         type: History
         nullable: true
-        presenceColumn: his
+        presenceColumn: his_age
 
 
   Ingredient:

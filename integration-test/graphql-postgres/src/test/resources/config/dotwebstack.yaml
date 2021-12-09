@@ -193,7 +193,7 @@ objectTypes:
         columnPrefix: his_
         type: History
         nullable: true
-        presenceColumn: his
+        presenceColumn: his_age
       multinational:
         type: Boolean
     filters:

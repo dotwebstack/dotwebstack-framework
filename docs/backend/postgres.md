@@ -247,8 +247,8 @@ The outcome for the nested history object of the example below will be `his_age`
 
 #### Presence column
 
-The presence column can be used for nested objects which are nullable. In the example below the `his` column will be used 
-to check if the nested object has a value. If false the backend will return null for the history field within brewery.
+The presence column can be used for nested objects which are nullable. In the example below the `his_age` column will be used 
+to check if the nested object has a value. If `his_age` has a null value the backend will return null for the history field within brewery.
 
 ```yaml
   Brewery:
@@ -259,7 +259,7 @@ to check if the nested object has a value. If false the backend will return null
       history:
         type: History
         nullable: true
-        columnPresence: his
+        columnPresence: his_age
 
   History:
     fields:
