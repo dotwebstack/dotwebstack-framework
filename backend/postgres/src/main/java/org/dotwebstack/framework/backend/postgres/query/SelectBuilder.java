@@ -477,6 +477,7 @@ class SelectBuilder {
 
     if (joinColumns.stream()
         .map(JoinColumn::getReferencedField)
+        .filter(Objects::nonNull)
         .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
       return createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
@@ -524,16 +525,22 @@ class SelectBuilder {
     var objectMapper = new ObjectMapper();
     fieldMapper.register(objectField.getName(), objectMapper);
 
-    var result = objectRequest.getScalarFields()
+    List<SelectResult> selectResults = new ArrayList<>();
+
+    objectRequest.getScalarFields()
         .stream()
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest,
             (PostgresObjectType) objectField.getTargetType(), table, objectMapper))
         .map(columnMapper -> SelectResult.builder()
             .selectFieldOrAsterisk(columnMapper)
             .build())
-        .collect(Collectors.toList());
+            .forEach(selectResults::add);
 
-    return result.stream();
+    objectRequest.getObjectFields().entrySet().stream()
+        .flatMap(entry -> createNestedSelect(getObjectField(objectRequest,entry.getKey().getName()),entry.getValue(),table))
+        .forEach(selectResults::add);
+
+    return selectResults.stream();
   }
 
   private SelectQuery<Record> getJoinTableReferences(PostgresObjectField objectField, ObjectRequest objectRequest,

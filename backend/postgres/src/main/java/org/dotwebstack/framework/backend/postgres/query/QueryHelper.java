@@ -22,6 +22,8 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
+import javax.validation.constraints.NotNull;
+
 class QueryHelper {
 
   private QueryHelper() {}
