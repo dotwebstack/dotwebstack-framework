@@ -26,7 +26,6 @@ import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
-import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
@@ -60,43 +59,6 @@ class SelectBuilderTest {
         .requestContext(requestContext)
         .tableAlias(aliasManager.newAlias())
         .fieldMapper(fieldMapper);
-  }
-
-  @Test
-  void build_returnsSelectQuery_forBatchRequest() {
-    var requestObjectField = createObjectField("node");
-
-    when(requestContext.getObjectField()).thenReturn(requestObjectField);
-
-    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
-
-    var objectRequest = ObjectRequest.builder()
-        .objectType(objectType)
-        .scalarFields(List.of(FieldRequest.builder()
-            .name("name")
-            .build(),
-            FieldRequest.builder()
-                .name("soldPerYear")
-                .build()))
-        .build();
-
-    var keys = new HashSet<Map<String, Object>>();
-    keys.add(Map.of("identifier", "id-1"));
-    keys.add(Map.of("identifier", "id-2"));
-
-    var batchRequest = BatchRequest.builder()
-        .objectRequest(objectRequest)
-        .keys(keys)
-        .build();
-
-    var result = selectBuilder.build(batchRequest);
-
-    assertThat(result, notNullValue());
-    assertThat(result.toString(),
-        equalTo("select *\n" + "from (values\n" + "  ('id-2'),\n" + "  ('id-1')\n" + ") as \"x4\" (\"identifier\")\n"
-            + "  left outer join lateral (\n" + "    select\n" + "      \"x1\".\"name_column\" as \"x2\",\n"
-            + "      \"x1\".\"soldPerYear_column\" as \"x3\"\n" + "    from \"beer\" as \"x1\"\n"
-            + "    where \"identifier\" = \"x4\".\"identifier\"\n" + "  ) as \"x5\"\n" + "    on true"));
   }
 
   @Test
@@ -684,6 +646,8 @@ class SelectBuilderTest {
 
     var objectType = createObjectType("ingredient", "identifier", "name");
 
+    requestObjectField.setTargetType(objectType);
+
     var objectRequest = ObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
@@ -701,6 +665,9 @@ class SelectBuilderTest {
 
     var joinCriteria = JoinCriteria.builder()
         .keys(keys)
+        .joinCondition(PostgresJoinCondition.builder()
+            .joinTable(createIngredientsJoinTable())
+            .build())
         .build();
 
     var result = selectBuilder.build(collectionRequest, joinCriteria);
