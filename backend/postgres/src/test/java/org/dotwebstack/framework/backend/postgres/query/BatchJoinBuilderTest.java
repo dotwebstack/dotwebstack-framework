@@ -34,7 +34,7 @@ class BatchJoinBuilderTest {
   }
 
   @Test
-  public void build_returnsQuery_forMappedBy() {
+  void build_returnsQuery_forMappedBy() {
     var beerType = new PostgresObjectType();
     beerType.setName("Beer");
 
