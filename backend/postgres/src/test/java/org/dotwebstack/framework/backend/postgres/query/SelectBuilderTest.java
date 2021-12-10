@@ -29,7 +29,6 @@ import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
-import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -577,7 +576,7 @@ class SelectBuilderTest {
 
     assertThat(fieldMapperResult, notNullValue());
     assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
-    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(JoinCondition.builder()
+    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
         .key(Map.of("identifier", "id-brewery-1"))
         .build())));
     assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));

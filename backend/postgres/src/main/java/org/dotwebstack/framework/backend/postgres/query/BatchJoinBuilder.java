@@ -70,14 +70,16 @@ class BatchJoinBuilder {
     if (joinConfiguration.getMappedBy() != null) {
       var mappedBy = joinConfiguration.getMappedBy();
 
-      return newBatchJoining().joinConfiguration(JoinConfiguration.builder()
+      var mappedByJoinConfiguration = JoinConfiguration.builder()
           .objectField(mappedBy)
           .joinTable(JoinHelper.invert(mappedBy.getJoinTable()))
           .joinColumns(mappedBy.getJoinColumns())
           .objectType((PostgresObjectType) joinConfiguration.getObjectField()
               .getObjectType())
           .targetType((PostgresObjectType) mappedBy.getObjectType())
-          .build())
+          .build();
+
+      return newBatchJoining().joinConfiguration(mappedByJoinConfiguration)
           .contextCriteria(contextCriteria)
           .aliasManager(aliasManager)
           .fieldMapper(fieldMapper)
