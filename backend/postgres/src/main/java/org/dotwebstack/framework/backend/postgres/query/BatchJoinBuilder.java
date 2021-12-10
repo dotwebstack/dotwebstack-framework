@@ -23,7 +23,6 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
