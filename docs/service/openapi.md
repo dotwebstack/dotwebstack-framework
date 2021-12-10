@@ -380,7 +380,7 @@ The entries `pageSize` and `page` map to parameters which will be used to popula
 [paging settings](core/paging.md).
 If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
-To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
+To create page links in responses, JEXL functions are available, which can be used in a `x-dws-expr`, and need to be
 passed available arguments using existing
 [Response properties expressions](service/openapi?id=response-properties-expression):
 
