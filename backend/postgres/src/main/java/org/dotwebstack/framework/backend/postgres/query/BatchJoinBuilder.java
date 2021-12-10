@@ -93,7 +93,7 @@ class BatchJoinBuilder {
         .stream()
         .flatMap(map -> map.keySet()
             .stream())
-        .collect(Collectors.toMap(key -> key, key -> key));
+        .collect(Collectors.toMap(Function.identity(), Function.identity()));
 
     var keyTable = createValuesTable(keyColumnNames, joinCriteria.getKeys());
 
