@@ -707,14 +707,12 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
 
-    assertThat(result.toString(),
-        equalTo("select *\n" + "from (values\n" + "  ('id-beer-1'),\n" + "  ('id-beer-2')\n"
-            + ") as \"x4\" (\"identifier_column\")\n" + "  left outer join lateral (\n" + "    select\n"
-            + "      \"x1\".\"name_column\" as \"x2\",\n" + "      \"x3\".\"beer_identifier\"\n" + "    from\n"
-            + "      \"ingredient\" as \"x1\",\n" + "      \"beer_ingredient\" as \"x3\"\n" + "    where (\n"
-            + "      \"x3\".\"ingredient_identifier\" = \"x1\".\"identifier_column\"\n"
-            + "      and \"x3\".\"beer_identifier\" = \"x4\".\"identifier_column\"\n" + "    )\n" + "  ) as \"x5\"\n"
-            + "    on true"));
+    assertThat(result.toString(), equalTo("select *\n" + "from (values\n" + "  ('id-beer-1'),\n" + "  ('id-beer-2')\n"
+        + ") as \"x5\" (\"x4\")\n" + "  left outer join lateral (\n" + "    select\n"
+        + "      \"x1\".\"name_column\" as \"x2\",\n" + "      \"x3\".\"beer_identifier\"\n" + "    from\n"
+        + "      \"ingredient\" as \"x1\",\n" + "      \"beer_ingredient\" as \"x3\"\n" + "    where (\n"
+        + "      \"x3\".\"ingredient_identifier\" = \"x1\".\"identifier_column\"\n"
+        + "      and \"x3\".\"beer_identifier\" = \"x5\".\"x4\"\n" + "    )\n" + "  ) as \"x6\"\n" + "    on true"));
   }
 
   private PostgresObjectType createObjectType(String table, String... fields) {

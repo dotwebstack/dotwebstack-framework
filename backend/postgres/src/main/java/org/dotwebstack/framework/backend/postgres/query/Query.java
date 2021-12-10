@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 public class Query {
 
@@ -88,11 +86,6 @@ public class Query {
     return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY))
         .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(),
             groupedFlux.filter(row -> !row.containsKey(EXISTS_KEY) || getNestedMap(row, EXISTS_KEY).size() > 0)));
-  }
-
-  @SuppressWarnings("unchecked")
-  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> executeBatchSingle(DatabaseClient databaseClient) {
-    return execute(databaseClient).map(row -> Tuples.of((Map<String, Object>) row.get(GROUP_KEY), row));
   }
 
   private List<Param<?>> getParams(SelectQuery<Record> selectQuery) {
