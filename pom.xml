@@ -52,11 +52,11 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring.boot.version>2.5.6</spring.boot.version>
-    <rdf4j.version>3.7.3</rdf4j.version>
+    <spring-boot.version>2.6.1</spring-boot.version>
+    <rdf4j.version>3.7.4</rdf4j.version>
     <graphql.java.version>17.3</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.9</graphql.java.orchestrate.version>
-    <commons.jexl.version>3.2.1</commons.jexl.version>
+    <commons.jexl3.version>3.2.1</commons.jexl3.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
@@ -66,10 +66,9 @@
     <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
     <json-path.version>2.6.0</json-path.version>
     <testcontainers.version>1.16.2</testcontainers.version>
-    <postgis-jdbc.version>2.5.1</postgis-jdbc.version>
+    <postgis-jdbc-jtsparser.version>2.5.1</postgis-jdbc-jtsparser.version>
     <jts-io-common.version>1.18.2</jts-io-common.version>
     <carml.version>0.4.0-beta-2</carml.version>
-    <apiguardian.version>1.1.2</apiguardian.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
@@ -87,10 +86,37 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Explicit versions for resolving transitive version conflicts, recheck on every update -->
+      <dependency>
+        <groupId>org.checkerframework</groupId>
+        <artifactId>checker-qual</artifactId>
+        <version>3.14.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>3.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>6.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apiguardian</groupId>
+        <artifactId>apiguardian-api</artifactId>
+        <version>1.1.2</version>
+      </dependency>
+      <!-- Regular dependencies -->
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.boot.version}</version>
+        <version>${spring-boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -119,7 +145,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-jexl3</artifactId>
-        <version>${commons.jexl.version}</version>
+        <version>${commons.jexl3.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -165,14 +191,7 @@
       <dependency>
         <groupId>net.postgis</groupId>
         <artifactId>postgis-jdbc-jtsparser</artifactId>
-        <version>${postgis-jdbc.version}</version>
-        <exclusions>
-          <exclusion>
-            <!-- com.google.guava:guava includes newer version (v3.8.0) -->
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>${postgis-jdbc-jtsparser.version}</version>
       </dependency>
       <dependency>
         <groupId>org.locationtech.jts.io</groupId>
@@ -189,12 +208,6 @@
         <artifactId>carml-logical-source-resolver-jsonpath-jayway-jackson</artifactId>
         <version>${carml.version}</version>
       </dependency>
-      <dependency>
-        <!-- Explicit dependency to prevent version conflicts -->
-        <groupId>org.apiguardian</groupId>
-        <artifactId>apiguardian-api</artifactId>
-        <version>${apiguardian.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -209,17 +222,12 @@
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
             <failOnWarning>true</failOnWarning>
-            <compilerArgs>
-              <arg>-Xlint:all</arg>
-              <!-- Suppress unknown annotation processing warnings -->
-              <arg>-Xlint:-processing</arg>
-            </compilerArgs>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>2.5.3</version>
+          <version>3.0.0-M4</version>
           <configuration>
             <tagNameFormat>v@{project.version}</tagNameFormat>
             <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -259,7 +267,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.0.0-M3</version>
+          <version>3.0.0</version>
           <executions>
             <execution>
               <id>enforce-maven</id>
@@ -268,9 +276,6 @@
               </goals>
               <configuration>
                 <rules>
-                  <requireMavenVersion>
-                    <version>3.3.9</version>
-                  </requireMavenVersion>
                   <!-- Prevent transitive versioning conflicts -->
                   <dependencyConvergence />
                 </rules>
@@ -281,7 +286,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>3.0.0-M5</version>
         </plugin>
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
@@ -347,7 +352,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.5</version>
+          <version>0.8.7</version>
           <configuration>
             <excludes>
               <exclude>org/dotwebstack/framework/backend/rdf4j/**/*</exclude>
@@ -396,7 +401,7 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>1.31.0</version>
+          <version>2.13.0</version>
           <configuration>
             <java>
               <eclipse>

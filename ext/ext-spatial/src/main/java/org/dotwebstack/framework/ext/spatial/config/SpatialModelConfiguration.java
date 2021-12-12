@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import java.io.IOException;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -55,8 +55,10 @@ public class SpatialModelConfiguration {
     var deserializerModule = new SimpleModule().addDeserializer(SpatialReferenceSystem.class,
         new SpatialReferenceSystemDeserializer(backendModule));
 
-    return new ObjectMapper(new YAMLFactory()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(deserializerModule);
+    return YAMLMapper.builder()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .addModule(deserializerModule)
+        .build();
   }
 
   private void validateSpatialFields(String configFile, Schema schema) {
